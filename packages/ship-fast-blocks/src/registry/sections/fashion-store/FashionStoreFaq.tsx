@@ -32,8 +32,35 @@ export const FashionStoreFaq = defineCapsule({
     const go = useNavigate()
     const faqEyebrow = props.eyebrow ?? 'Questions'
     const faqHeading = props.heading ?? 'Common Inquiries'
-    const faqItems = props.items?.length
-      ? props.items
+
+    // Normalize LLM-generated FAQ items that may use `question`/`answer`
+    // (singular string) instead of the schema's `q`/`a` (array of strings).
+    // The lakebed export strips defineCapsule (and thus sanitizeProps), so
+    // the raw component must defend itself against malformed prop shapes.
+    const normalizeFaqItems = (
+      raw: unknown,
+    ): Array<{ q: string; a: string[] }> => {
+      if (!Array.isArray(raw)) return []
+      return raw
+        .map((item) => {
+          if (!item || typeof item !== 'object') return null
+          const rec = item as Record<string, unknown>
+          const q = rec.q ?? rec.question
+          const a = rec.a ?? rec.answers ?? rec.answer
+          if (typeof q !== 'string' || !q.trim()) return null
+          const answers = Array.isArray(a)
+            ? a.filter((x) => typeof x === 'string')
+            : typeof a === 'string'
+              ? [a]
+              : []
+          return { q, a: answers }
+        })
+        .filter((item): item is { q: string; a: string[] } => item !== null)
+    }
+
+    const normalizedItems = normalizeFaqItems(props.items)
+    const faqItems = normalizedItems.length
+      ? normalizedItems
       : [
           {
             q: 'What is your shipping policy?',
