@@ -66,6 +66,18 @@ const isProductObjectText = (directObjectText: string): boolean =>
   productNamePropertyPattern.test(directObjectText) &&
   productPricePropertyPattern.test(directObjectText)
 
+const hasCommerceObjectContext = (source: string, start: number): boolean => {
+  const prefix = source.slice(Math.max(0, start - 320), start)
+  return (
+    /(?:products?|catalog|collections?|inventory|merchandise)\s*[:=]\s*(?:\{|\[|\()/i.test(
+      prefix,
+    ) ||
+    /\b(?:Store|Shop|Product|Commerce|Catalog|Cart)[A-Za-z0-9_]*\s*\([^)]*$/i.test(
+      prefix,
+    )
+  )
+}
+
 const slugifyProductHandle = (value: string): string =>
   value
     .trim()
@@ -182,6 +194,7 @@ const extractOpenUiSourceProducts = (
 
     const objectText = readDirectObjectText(source, start, index)
     if (!isProductObjectText(objectText)) continue
+    if (!hasCommerceObjectContext(source, start)) continue
 
     const product = productFromObjectText(objectText)
     if (product !== undefined) products.push(product)

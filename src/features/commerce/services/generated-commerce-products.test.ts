@@ -99,4 +99,23 @@ describe('countGeneratedCommerceProducts', () => {
       },
     ])
   })
+
+  it('does not treat marketing pricing plans as commerce products', () => {
+    const products = extractGeneratedCommerceProducts({
+      source: `
+        root = MarketingAgencyPricing(
+          "Transparent Pricing",
+          "Choose Your Solution",
+          "Flexible packages designed for every budget.",
+          "All prices include design and installation.",
+          [
+            {"name":"Standard Glass","audience":"Small businesses","price":"$49","period":"per sq ft","features":[{"label":"Tempered glass","included":true}]},
+            {"name":"Premium Glass","audience":"High-end interiors","price":"$79","period":"per sq ft","features":[{"label":"Low-E coating","included":true}]}
+          ]
+        )
+      `,
+    })
+
+    expect(products).toEqual([])
+  })
 })
