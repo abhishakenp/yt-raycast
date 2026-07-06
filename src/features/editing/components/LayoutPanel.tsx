@@ -98,12 +98,13 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
   const isFlex = display === 'flex'
 
   return (
-    <div className="flex flex-col gap-2 p-2 w-full min-w-[420px]">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-2 p-2">
       {/* Display mode */}
       <div className="flex items-center gap-2">
         <span className={cn(labelCls, 'w-12 shrink-0')}>Display</span>
         <ToggleGroup
           type="single"
+          aria-label="Display"
           value={display}
           onValueChange={(v) => {
             if (!v) return
@@ -136,6 +137,7 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
             <span className={cn(labelCls, 'w-12 shrink-0')}>Direction</span>
             <ToggleGroup
               type="single"
+              aria-label="Direction"
               value={flexDirection}
               onValueChange={(v) => {
                 if (!v) return
@@ -164,6 +166,7 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
             <span className={cn(labelCls, 'w-12 shrink-0')}>Justify</span>
             <ToggleGroup
               type="single"
+              aria-label="Justify"
               value={justifyContent}
               onValueChange={(v) => {
                 if (!v) return
@@ -191,6 +194,7 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
             <span className={cn(labelCls, 'w-12 shrink-0')}>Align</span>
             <ToggleGroup
               type="single"
+              aria-label="Align"
               value={alignItems}
               onValueChange={(v) => {
                 if (!v) return
@@ -218,6 +222,7 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
             <span className={cn(labelCls, 'w-12 shrink-0')}>Gap</span>
             <InputGroup>
               <InputGroupInput
+                aria-label="Gap"
                 type="number"
                 value={gap}
                 onChange={(e) => {
@@ -227,8 +232,17 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
                 className="text-xs text-foreground"
               />
               <InputGroupAddon align="inline-end">
-                <Select value={gapUnit} onValueChange={setGapUnit}>
-                  <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
+                <Select
+                  value={gapUnit}
+                  onValueChange={(unit) => {
+                    setGapUnit(unit)
+                    applyLiveStyle('gap', `${gap}${unit}`)
+                  }}
+                >
+                  <SelectTrigger
+                    aria-label="Gap unit"
+                    className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -245,6 +259,7 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
             <span className={cn(labelCls, 'w-12 shrink-0')}>Wrap</span>
             <ToggleGroup
               type="single"
+              aria-label="Wrap"
               value={flexWrap}
               onValueChange={(v) => {
                 if (!v) return

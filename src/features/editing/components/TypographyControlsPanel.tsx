@@ -99,7 +99,7 @@ export function TypographyControlsPanel({
     'text-[10px] uppercase tracking-wider text-white/40 font-medium'
 
   return (
-    <div className="flex w-full min-w-[380px] flex-col gap-1.5 p-2">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-1.5 p-2">
       {/* Font Family */}
       <div className="flex items-center gap-2">
         <span className={labelCls + ' w-12 shrink-0'}>Font</span>
@@ -111,7 +111,10 @@ export function TypographyControlsPanel({
               applyLiveStyle('font-family', v)
             }}
           >
-            <SelectTrigger className="h-auto w-full border-0 bg-transparent text-xs text-white">
+            <SelectTrigger
+              aria-label="Font"
+              className="h-auto w-full border-0 bg-transparent text-xs text-white"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -136,7 +139,10 @@ export function TypographyControlsPanel({
               applyLiveStyle('font-weight', v)
             }}
           >
-            <SelectTrigger className="h-auto w-full border-0 bg-transparent text-xs text-white">
+            <SelectTrigger
+              aria-label="Weight"
+              className="h-auto w-full border-0 bg-transparent text-xs text-white"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -155,6 +161,7 @@ export function TypographyControlsPanel({
         <span className={labelCls + ' w-12 shrink-0'}>Line</span>
         <InputGroup>
           <InputGroupInput
+            aria-label="Line height"
             type="number"
             step="0.1"
             min="0.5"
@@ -171,6 +178,7 @@ export function TypographyControlsPanel({
           <InputGroupAddon align="inline-end">
             <button
               type="button"
+              aria-label="Auto line height"
               onClick={() => {
                 const isNormal = !lineHeightNormal
                 setLineHeightNormal(isNormal)
@@ -197,6 +205,7 @@ export function TypographyControlsPanel({
           <span className={labelCls + ' w-10 shrink-0'}>Letter</span>
           <InputGroup>
             <InputGroupInput
+              aria-label="Letter spacing"
               type="number"
               step="0.01"
               value={letterSpacing}
@@ -212,9 +221,15 @@ export function TypographyControlsPanel({
             <InputGroupAddon align="inline-end">
               <Select
                 value={letterSpacingUnit}
-                onValueChange={setLetterSpacingUnit}
+                onValueChange={(unit) => {
+                  setLetterSpacingUnit(unit)
+                  applyLiveStyle('letter-spacing', `${letterSpacing}${unit}`)
+                }}
               >
-                <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                <SelectTrigger
+                  aria-label="Letter spacing unit"
+                  className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -230,6 +245,7 @@ export function TypographyControlsPanel({
           <span className={labelCls + ' w-10 shrink-0'}>Word</span>
           <InputGroup>
             <InputGroupInput
+              aria-label="Word spacing"
               type="number"
               step="0.01"
               value={wordSpacing}
@@ -245,9 +261,15 @@ export function TypographyControlsPanel({
             <InputGroupAddon align="inline-end">
               <Select
                 value={wordSpacingUnit}
-                onValueChange={setWordSpacingUnit}
+                onValueChange={(unit) => {
+                  setWordSpacingUnit(unit)
+                  applyLiveStyle('word-spacing', `${wordSpacing}${unit}`)
+                }}
               >
-                <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                <SelectTrigger
+                  aria-label="Word spacing unit"
+                  className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -266,6 +288,7 @@ export function TypographyControlsPanel({
         <span className={labelCls + ' w-12 shrink-0'}>Case</span>
         <ToggleGroup
           type="single"
+          aria-label="Case"
           value={textTransform}
           onValueChange={(v) => {
             if (v) {

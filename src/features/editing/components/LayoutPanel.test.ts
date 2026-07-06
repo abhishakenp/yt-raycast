@@ -20,13 +20,28 @@ import { LayoutPanel } from './LayoutPanel'
 
 const onModified = vi.fn<() => void>()
 
+const installPointerCapturePolyfill = () => {
+  for (const [name, value] of [
+    ['hasPointerCapture', () => false],
+    ['setPointerCapture', () => undefined],
+    ['releasePointerCapture', () => undefined],
+  ] as const) {
+    if (!(name in HTMLElement.prototype)) {
+      Object.defineProperty(HTMLElement.prototype, name, {
+        configurable: true,
+        value,
+      })
+    }
+  }
+}
+
 const renderPanel = (activeElement: HTMLElement) =>
   render(createElement(LayoutPanel, { activeElement, onModified }))
 
 const makeComputed = (
   overrides: Partial<Record<string, string>> = {},
-): CSSStyleDeclaration =>
-  ({
+): CSSStyleDeclaration => {
+  const values = {
     display: 'block',
     flexDirection: 'row',
     justifyContent: 'flex-start',
@@ -34,13 +49,20 @@ const makeComputed = (
     gap: '0px',
     flexWrap: 'nowrap',
     ...overrides,
-  }) as CSSStyleDeclaration
+  }
+  return {
+    ...values,
+    getPropertyValue: (property: string) =>
+      values[property as keyof typeof values] ?? '',
+  } as CSSStyleDeclaration
+}
 
 describe('LayoutPanel', () => {
   let activeElement: HTMLElement
   let originalGetComputedStyle: typeof window.getComputedStyle
 
   beforeEach(() => {
+    installPointerCapturePolyfill()
     onModified.mockReset()
     activeElement = document.createElement('div')
     document.body.appendChild(activeElement)
@@ -58,7 +80,11 @@ describe('LayoutPanel', () => {
 
   it('renders without crashing', () => {
     renderPanel(activeElement)
-    expect(document.body).toBeTruthy()
+    expect(
+      Array.from(document.querySelectorAll('[role="radio"]')).map((node) =>
+        node.textContent?.trim(),
+      ),
+    ).toEqual(expect.arrayContaining(['Block', 'Flex']))
   })
 
   it('toggling to Flex mode applies display: flex', () => {
@@ -124,6 +150,49 @@ describe('LayoutPanel', () => {
     expect(gapInput).toBeTruthy()
     fireEvent.change(gapInput, { target: { value: '12' } })
     expect(activeElement.style.gap).toBe('12px')
+  })
+
+  it('gap unit change reapplies the existing value with the new unit', () => {
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ display: 'flex' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+    const gapInput = getByRole('spinbutton', { name: 'Gap' })
+    fireEvent.change(gapInput, { target: { value: '12' } })
+
+    const unit = getByRole('combobox', { name: 'Gap unit' })
+    fireEvent.pointerDown(unit, {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse',
+    })
+    fireEvent.click(getByRole('option', { name: 'rem' }))
+
+    expect(activeElement.style.gap).toBe('12rem')
+    expect(onModified).toHaveBeenCalled()
+  })
+
+  it('exposes flex gap controls by accessible name', () => {
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ display: 'flex' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+
+    expect(getByRole('spinbutton', { name: 'Gap' })).toBeTruthy()
+    expect(getByRole('combobox', { name: 'Gap unit' })).toBeTruthy()
+  })
+
+  it('labels layout toggle groups so repeated options are unambiguous', () => {
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ display: 'flex' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+
+    expect(getByRole('radiogroup', { name: 'Display' })).toBeTruthy()
+    expect(getByRole('radiogroup', { name: 'Direction' })).toBeTruthy()
+    expect(getByRole('radiogroup', { name: 'Justify' })).toBeTruthy()
+    expect(getByRole('radiogroup', { name: 'Align' })).toBeTruthy()
+    expect(getByRole('radiogroup', { name: 'Wrap' })).toBeTruthy()
   })
 
   it('flex wrap toggle applies flex-wrap', () => {

@@ -110,6 +110,36 @@ const parseFilter = (raw: string): FilterState => {
 
 const parseTransform = (raw: string): TransformState => {
   if (!raw || raw === 'none') return { ...DEFAULT_TRANSFORM }
+  const matrix = raw.match(/^matrix\(([^)]+)\)$/)
+  if (matrix) {
+    const values = matrix[1].split(',').map((value) => parseFloat(value.trim()))
+    if (values.length >= 6 && values.every(Number.isFinite)) {
+      const [a, b, , , translateX, translateY] = values
+      const scale = Math.round(Math.sqrt(a * a + b * b) * 100) / 100
+      const rotate = Math.round((Math.atan2(b, a) * 180) / Math.PI)
+      return {
+        ...DEFAULT_TRANSFORM,
+        rotate,
+        scale: scale || DEFAULT_TRANSFORM.scale,
+        translateX,
+        translateY,
+      }
+    }
+  }
+  const matrix3d = raw.match(/^matrix3d\(([^)]+)\)$/)
+  if (matrix3d) {
+    const values = matrix3d[1]
+      .split(',')
+      .map((value) => parseFloat(value.trim()))
+    if (values.length >= 16 && values.every(Number.isFinite)) {
+      return {
+        ...DEFAULT_TRANSFORM,
+        scale: values[0] || DEFAULT_TRANSFORM.scale,
+        translateX: values[12],
+        translateY: values[13],
+      }
+    }
+  }
   const skew = raw.match(/skew\(([\d.-]+)deg,?\s*([\d.-]+)deg\)/)
   const translate = raw.match(/translate\(([\d.-]+)px,?\s*([\d.-]+)px\)/)
   return {
@@ -128,11 +158,16 @@ const parseTransform = (raw: string): TransformState => {
 
 const parseTransition = (raw: string): TransitionState => {
   if (!raw || raw === 'none') return { ...DEFAULT_TRANSITION }
-  const durationMatch = raw.match(/([\d.]+)m?s/)
+  const durationMatch = raw.match(/([\d.]+)(ms|s)\b/)
   const duration = durationMatch
-    ? parseFloat(durationMatch[1])
+    ? durationMatch[2] === 's'
+      ? parseFloat(durationMatch[1]) * 1000
+      : parseFloat(durationMatch[1])
     : DEFAULT_TRANSITION.duration
-  const easing = EASING_PRESETS.find((e) => raw.includes(e)) ?? 'ease'
+  const easing =
+    [...EASING_PRESETS]
+      .sort((a, b) => b.length - a.length)
+      .find((e) => raw.includes(e)) ?? 'ease'
   const property =
     TRANSITION_PROPERTIES.find((p) =>
       raw.toLowerCase().startsWith(p.toLowerCase()),
@@ -224,7 +259,7 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
     'flex items-center gap-1 text-muted-foreground hover:text-foreground text-[10px] transition-colors'
 
   return (
-    <div className="flex flex-col gap-2 p-2 w-full min-w-[420px]">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-2 p-2">
       {/* Opacity */}
       <section className="flex flex-col gap-1.5">
         <span className={labelCls}>Opacity</span>
@@ -454,7 +489,10 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
             value={transition.easing}
             onValueChange={(v) => updateTransition('easing', v)}
           >
-            <SelectTrigger className="h-6 w-full text-xs">
+            <SelectTrigger
+              aria-label="Transition easing"
+              className="h-6 w-full text-xs"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -472,7 +510,10 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
             value={transition.property}
             onValueChange={(v) => updateTransition('property', v)}
           >
-            <SelectTrigger className="h-6 w-full text-xs">
+            <SelectTrigger
+              aria-label="Transition property"
+              className="h-6 w-full text-xs"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

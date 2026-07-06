@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -7,7 +8,18 @@ import {
   waitFor,
 } from '@testing-library/react'
 import { createElement } from 'react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
+
+let intersectionObserverCallback: IntersectionObserverCallback | undefined
+const originalIntersectionObserver = globalThis.IntersectionObserver
 
 // jsdom lacks ResizeObserver / IntersectionObserver — provide stubs.
 if (typeof ResizeObserver === 'undefined') {
@@ -21,23 +33,24 @@ if (typeof ResizeObserver === 'undefined') {
     writable: true,
   })
 }
-if (typeof IntersectionObserver === 'undefined') {
-  Object.defineProperty(globalThis, 'IntersectionObserver', {
-    configurable: true,
-    value: class IntersectionObserver {
-      readonly root: Element | null = null
-      readonly rootMargin: string = ''
-      readonly thresholds: ReadonlyArray<number> = []
-      disconnect() {}
-      observe() {}
-      takeRecords(): IntersectionObserverEntry[] {
-        return []
-      }
-      unobserve() {}
-    },
-    writable: true,
-  })
-}
+Object.defineProperty(globalThis, 'IntersectionObserver', {
+  configurable: true,
+  value: class IntersectionObserver {
+    readonly root: Element | null = null
+    readonly rootMargin: string = ''
+    readonly thresholds: ReadonlyArray<number> = []
+    constructor(callback: IntersectionObserverCallback) {
+      intersectionObserverCallback = callback
+    }
+    disconnect() {}
+    observe() {}
+    takeRecords(): IntersectionObserverEntry[] {
+      return []
+    }
+    unobserve() {}
+  },
+  writable: true,
+})
 
 const searchStockImagesMock = vi.fn(
   async () =>
@@ -117,6 +130,7 @@ const renderPanel = (
 describe('ImageSwapPanel (behavioral)', () => {
   beforeEach(() => {
     searchStockImagesMock.mockReset()
+    intersectionObserverCallback = undefined
     generateUploadUrlMock = vi.fn(async () => 'https://upload.test/url')
     saveUserImageMock = vi.fn(async () => undefined)
     userImagesValue = undefined
@@ -127,7 +141,15 @@ describe('ImageSwapPanel (behavioral)', () => {
   })
   afterEach(() => {
     cleanup()
+    vi.useRealTimers()
     globalThis.fetch = originalFetch
+  })
+  afterAll(() => {
+    Object.defineProperty(globalThis, 'IntersectionObserver', {
+      configurable: true,
+      value: originalIntersectionObserver,
+      writable: true,
+    })
   })
 
   it('1. search input triggers stock image search → results grid appears', async () => {
@@ -140,6 +162,20 @@ describe('ImageSwapPanel (behavioral)', () => {
       expect(
         screen.getAllByRole('button', { name: /Select image /i }).length,
       ).toBe(6),
+    )
+  })
+
+  it('1b. search input is reachable by accessible name', async () => {
+    searchStockImagesMock.mockResolvedValue(makeResult(1))
+    renderPanel({ currentAlt: '' })
+    const input = screen.getByRole('textbox', { name: 'Search stock images' })
+
+    fireEvent.change(input, { target: { value: 'modern glass lobby' } })
+
+    await waitFor(() =>
+      expect(searchStockImagesMock).toHaveBeenCalledWith(
+        expect.objectContaining({ query: 'modern glass lobby' }),
+      ),
     )
   })
 
@@ -327,5 +363,57 @@ describe('ImageSwapPanel (behavioral)', () => {
     await waitFor(() =>
       expect(screen.getByText(/No results found/i)).toBeTruthy(),
     )
+  })
+
+  it('does not show no-results before the debounced search completes', async () => {
+    vi.useFakeTimers()
+    searchStockImagesMock.mockResolvedValue([])
+
+    renderPanel()
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'no matching installations' },
+    })
+
+    expect(screen.queryByText(/No results found/i)).toBeNull()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(350)
+      await Promise.resolve()
+    })
+
+    expect(searchStockImagesMock).toHaveBeenCalledTimes(1)
+    expect(screen.getByText(/No results found/i)).toBeTruthy()
+  })
+
+  it('keeps existing image results selectable when loading more images fails', async () => {
+    searchStockImagesMock
+      .mockResolvedValueOnce(makeResult(10))
+      .mockRejectedValueOnce(new Error('Pexels outage'))
+
+    renderPanel()
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'glass installations' },
+    })
+
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('button', { name: /Select image /i }).length,
+      ).toBe(10),
+    )
+
+    expect(intersectionObserverCallback).toBeDefined()
+    await act(async () => {
+      intersectionObserverCallback?.(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        {} as IntersectionObserver,
+      )
+      await Promise.resolve()
+    })
+
+    await waitFor(() => expect(searchStockImagesMock).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.getByText('Pexels outage')).toBeTruthy())
+    expect(
+      screen.getAllByRole('button', { name: /Select image /i }).length,
+    ).toBe(10)
   })
 })

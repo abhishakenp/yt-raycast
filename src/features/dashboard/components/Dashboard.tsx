@@ -30,7 +30,10 @@ import { toast } from 'sonner'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
-import type { InspectorSelection } from '@/features/editing/element-path'
+import {
+  buildInspectorSelection,
+  type InspectorSelection,
+} from '@/features/editing/element-path'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
@@ -424,6 +427,26 @@ const readCachedGenerationView = (
   return cached === null ? undefined : toDashboardGenerationView(cached)
 }
 
+/** Resolve the section-edit selection to send to the AI patcher.
+ *  Prefers the inspector's current selection (when the section inspector
+ *  already selected something); otherwise builds one from the inline toolbar's
+ *  active element, but only if it lives inside the preview root. Returns null
+ *  when the active element is dashboard chrome (outside the preview). */
+export const resolveSectionEditSelection = ({
+  activeElement,
+  inspectorSelection,
+  previewRoot,
+}: {
+  activeElement: HTMLElement | null
+  inspectorSelection: InspectorSelection | null
+  previewRoot: HTMLElement | null
+}): InspectorSelection | null => {
+  if (inspectorSelection) return inspectorSelection
+  if (!activeElement || !previewRoot) return null
+  if (!previewRoot.contains(activeElement)) return null
+  return buildInspectorSelection(previewRoot, activeElement)
+}
+
 export function Dashboard({
   sessionId,
   initialAdminView = false,
@@ -474,6 +497,13 @@ export function Dashboard({
     anchorRect: null as DOMRect | null,
     activeElement: null as HTMLElement | null,
   })
+  // Leaving inline edit mode must close any open toolbar so the floating
+  // UI does not linger over a non-editable preview.
+  useEffect(() => {
+    if (!editMode && toolbarState.isOpen) {
+      setToolbarState((s) => ({ ...s, isOpen: false }))
+    }
+  }, [editMode, toolbarState.isOpen])
   const [isApplyingStyle, setIsApplyingStyle] = useState(false)
   const [isForkingSession, setIsForkingSession] = useState(false)
   const [isDark, setIsDark] = useState(true)
@@ -1450,6 +1480,28 @@ export function Dashboard({
                   <div
                     className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1"
                     role="group"
+                    aria-label="Edit controls"
+                  >
+                    <button
+                      type="button"
+                      className={cn(
+                        'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
+                        editMode && 'bg-cyan-300/16 text-cyan-100',
+                      )}
+                      data-tip="Edit"
+                      aria-label="Toggle inline edit mode"
+                      aria-pressed={editMode}
+                      onClick={() => {
+                        if (!requireSignInForEdit()) return
+                        setEditMode((mode) => !mode)
+                      }}
+                    >
+                      <Edit3 className="size-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <div
+                    className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1"
+                    role="group"
                     aria-label="Viewport size"
                   >
                     {(['desktop', 'tablet', 'mobile'] as const).map(
@@ -1555,28 +1607,6 @@ export function Dashboard({
                         </button>
                       ),
                     )}
-                  </div>
-                  <div
-                    className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1 max-[760px]:hidden"
-                    role="group"
-                    aria-label="Edit controls"
-                  >
-                    <button
-                      type="button"
-                      className={cn(
-                        'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                        editMode && 'bg-cyan-300/16 text-cyan-100',
-                      )}
-                      data-tip="Edit"
-                      aria-label="Toggle inline edit mode"
-                      aria-pressed={editMode}
-                      onClick={() => {
-                        if (!requireSignInForEdit()) return
-                        setEditMode((mode) => !mode)
-                      }}
-                    >
-                      <Edit3 className="size-4" aria-hidden="true" />
-                    </button>
                   </div>
                 </div>
               ) : null}

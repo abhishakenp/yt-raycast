@@ -36,14 +36,38 @@ import { LayoutPanel } from './LayoutPanel'
 interface StyleControlsPanelProps {
   activeElement: HTMLElement | null
   onModified?: () => void
+  onImageElementPreview?: (newSrc: string | null) => void
   sessionId?: string
 }
 
 type Tab = 'spacing' | 'border' | 'background' | 'size' | 'effects' | 'layout'
 
+function formatDimensionValue(value: string, unit: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (unit === 'auto') return 'auto'
+  if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) return `${trimmed}${unit}`
+  const unitMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)(?:px|%|rem|em|vw|vh)$/i)
+  if (unitMatch) return `${unitMatch[1]}${unit}`
+  return trimmed
+}
+
+function detectDimensionUnit(value: string | undefined): string {
+  const trimmed = value?.trim() ?? ''
+  if (trimmed === 'auto') return 'auto'
+  const match = trimmed.match(/(?:px|%|rem|em|vw|vh)$/i)
+  return match?.[0] ?? 'px'
+}
+
+function detectLengthUnit(value: string | undefined): string {
+  const match = value?.trim().match(/(?:px|rem|em)$/i)
+  return match?.[0] ?? 'px'
+}
+
 export function StyleControlsPanel({
   activeElement,
   onModified,
+  onImageElementPreview,
   sessionId,
 }: StyleControlsPanelProps) {
   const [tab, setTab] = useState<Tab>('spacing')
@@ -68,11 +92,13 @@ export function StyleControlsPanel({
   const [borderStyle, setBorderStyle] = useState('none')
   const [borderColor, setBorderColor] = useState('#000000')
   const [borderRadius, setBorderRadius] = useState('')
-  const [borderUnit, setBorderUnit] = useState('px')
+  const [borderWidthUnit, setBorderWidthUnit] = useState('px')
+  const [borderRadiusUnit, setBorderRadiusUnit] = useState('px')
 
   const [width, setWidth] = useState('')
   const [height, setHeight] = useState('')
-  const [sizeUnit, setSizeUnit] = useState('px')
+  const [widthUnit, setWidthUnit] = useState('px')
+  const [heightUnit, setHeightUnit] = useState('px')
 
   const userModifiedRef = useRef(false)
   const prevElementRef = useRef<HTMLElement | null>(null)
@@ -113,9 +139,13 @@ export function StyleControlsPanel({
     setBorderStyle(computed.borderStyle || 'none')
     setBorderColor(computed.borderColor || '#000000')
     setBorderRadius(String(parseFloat(computed.borderRadius) || 0))
+    setBorderWidthUnit(detectLengthUnit(computed.borderTopWidth))
+    setBorderRadiusUnit(detectLengthUnit(computed.borderRadius))
 
-    setWidth(computed.width)
-    setHeight(computed.height)
+    setWidth(computed.width ?? '')
+    setHeight(computed.height ?? '')
+    setWidthUnit(detectDimensionUnit(computed.width))
+    setHeightUnit(detectDimensionUnit(computed.height))
   }, [activeElement])
 
   const markModified = () => {
@@ -141,6 +171,14 @@ export function StyleControlsPanel({
     )
   }
 
+  const setPaddingUnitValue = (unit: string) => {
+    setPaddingUnit(unit)
+    applyLiveStyle(
+      'padding',
+      `${padding.top}${unit} ${padding.right}${unit} ${padding.bottom}${unit} ${padding.left}${unit}`,
+    )
+  }
+
   const setMarginValue = (side: keyof typeof margin, value: string) => {
     const next = marginLinked
       ? { top: value, right: value, bottom: value, left: value }
@@ -150,6 +188,34 @@ export function StyleControlsPanel({
       'margin',
       `${next.top}${marginUnit} ${next.right}${marginUnit} ${next.bottom}${marginUnit} ${next.left}${marginUnit}`,
     )
+  }
+
+  const setMarginUnitValue = (unit: string) => {
+    setMarginUnit(unit)
+    applyLiveStyle(
+      'margin',
+      `${margin.top}${unit} ${margin.right}${unit} ${margin.bottom}${unit} ${margin.left}${unit}`,
+    )
+  }
+
+  const setBorderWidthUnitValue = (unit: string) => {
+    setBorderWidthUnit(unit)
+    applyLiveStyle('border-width', `${borderWidth}${unit}`)
+  }
+
+  const setBorderRadiusUnitValue = (unit: string) => {
+    setBorderRadiusUnit(unit)
+    applyLiveStyle('border-radius', `${borderRadius}${unit}`)
+  }
+
+  const setWidthUnitValue = (unit: string) => {
+    setWidthUnit(unit)
+    applyLiveStyle('width', formatDimensionValue(width, unit))
+  }
+
+  const setHeightUnitValue = (unit: string) => {
+    setHeightUnit(unit)
+    applyLiveStyle('height', formatDimensionValue(height, unit))
   }
 
   const tabs: Array<{ id: Tab; label: string; icon: typeof Layers }> = [
@@ -166,7 +232,7 @@ export function StyleControlsPanel({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-col gap-2 p-2 w-full min-w-[420px]">
+      <div className="flex w-full min-w-0 max-w-full flex-col gap-2 p-2">
         <div className="flex items-center gap-1">
           {tabs.map((t) => (
             <Tooltip key={t.id}>
@@ -175,6 +241,7 @@ export function StyleControlsPanel({
                   type="button"
                   onClick={() => setTab(t.id)}
                   aria-label={t.label}
+                  aria-pressed={tab === t.id}
                   className={cn(
                     'size-7 grid place-items-center rounded transition-colors',
                     tab === t.id
@@ -209,6 +276,7 @@ export function StyleControlsPanel({
                     aria-label={
                       paddingLinked ? 'Unlink padding' : 'Link padding'
                     }
+                    aria-pressed={paddingLinked}
                   >
                     {paddingLinked ? (
                       <Link2 className="size-3.5" />
@@ -224,6 +292,7 @@ export function StyleControlsPanel({
                         <InputGroupText>{side[0].toUpperCase()}</InputGroupText>
                       </InputGroupAddon>
                       <InputGroupInput
+                        aria-label={`Padding ${side}`}
                         type="number"
                         value={padding[side]}
                         onChange={(e) => setPaddingValue(side, e.target.value)}
@@ -232,9 +301,12 @@ export function StyleControlsPanel({
                       <InputGroupAddon align="inline-end">
                         <Select
                           value={paddingUnit}
-                          onValueChange={setPaddingUnit}
+                          onValueChange={setPaddingUnitValue}
                         >
-                          <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
+                          <SelectTrigger
+                            aria-label={`Padding ${side} unit`}
+                            className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground"
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -262,6 +334,7 @@ export function StyleControlsPanel({
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                     )}
                     aria-label={marginLinked ? 'Unlink margin' : 'Link margin'}
+                    aria-pressed={marginLinked}
                   >
                     {marginLinked ? (
                       <Link2 className="size-3.5" />
@@ -277,6 +350,7 @@ export function StyleControlsPanel({
                         <InputGroupText>{side[0].toUpperCase()}</InputGroupText>
                       </InputGroupAddon>
                       <InputGroupInput
+                        aria-label={`Margin ${side}`}
                         type="number"
                         value={margin[side]}
                         onChange={(e) => setMarginValue(side, e.target.value)}
@@ -285,9 +359,12 @@ export function StyleControlsPanel({
                       <InputGroupAddon align="inline-end">
                         <Select
                           value={marginUnit}
-                          onValueChange={setMarginUnit}
+                          onValueChange={setMarginUnitValue}
                         >
-                          <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
+                          <SelectTrigger
+                            aria-label={`Margin ${side} unit`}
+                            className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground"
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -311,20 +388,27 @@ export function StyleControlsPanel({
               <span className={cn(labelCls, 'w-12')}>W</span>
               <InputGroup>
                 <InputGroupInput
+                  aria-label="Border width"
                   type="number"
                   value={borderWidth}
                   onChange={(e) => {
                     setBorderWidth(e.target.value)
                     applyLiveStyle(
                       'border-width',
-                      `${e.target.value}${borderUnit}`,
+                      `${e.target.value}${borderWidthUnit}`,
                     )
                   }}
                   className="text-xs text-foreground"
                 />
                 <InputGroupAddon align="inline-end">
-                  <Select value={borderUnit} onValueChange={setBorderUnit}>
-                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
+                  <Select
+                    value={borderWidthUnit}
+                    onValueChange={setBorderWidthUnitValue}
+                  >
+                    <SelectTrigger
+                      aria-label="Border width unit"
+                      className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -345,7 +429,10 @@ export function StyleControlsPanel({
                     applyLiveStyle('border-style', v)
                   }}
                 >
-                  <SelectTrigger className="h-auto w-full border-0 bg-transparent px-1 text-xs text-muted-foreground">
+                  <SelectTrigger
+                    aria-label="Border style"
+                    className="h-auto w-full border-0 bg-transparent px-1 text-xs text-muted-foreground"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -363,6 +450,7 @@ export function StyleControlsPanel({
                 <label className="relative cursor-pointer">
                   <input
                     type="color"
+                    aria-label="Border color"
                     value={borderColor}
                     onChange={(e) => {
                       setBorderColor(e.target.value)
@@ -384,20 +472,27 @@ export function StyleControlsPanel({
               <span className={cn(labelCls, 'w-12')}>R</span>
               <InputGroup>
                 <InputGroupInput
+                  aria-label="Border radius"
                   type="number"
                   value={borderRadius}
                   onChange={(e) => {
                     setBorderRadius(e.target.value)
                     applyLiveStyle(
                       'border-radius',
-                      `${e.target.value}${borderUnit}`,
+                      `${e.target.value}${borderRadiusUnit}`,
                     )
                   }}
                   className="text-xs text-foreground"
                 />
                 <InputGroupAddon align="inline-end">
-                  <Select value={borderUnit} onValueChange={setBorderUnit}>
-                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
+                  <Select
+                    value={borderRadiusUnit}
+                    onValueChange={setBorderRadiusUnitValue}
+                  >
+                    <SelectTrigger
+                      aria-label="Border radius unit"
+                      className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -415,6 +510,7 @@ export function StyleControlsPanel({
           <BackgroundPanel
             activeElement={activeElement}
             onModified={onModified}
+            onImageElementPreview={onImageElementPreview}
             sessionId={sessionId}
           />
         )}
@@ -433,18 +529,25 @@ export function StyleControlsPanel({
               <span className={cn(labelCls, 'w-10')}>W</span>
               <InputGroup>
                 <InputGroupInput
+                  aria-label="Width"
                   type="text"
                   value={width}
                   onChange={(e) => {
                     setWidth(e.target.value)
-                    applyLiveStyle('width', e.target.value)
+                    applyLiveStyle(
+                      'width',
+                      formatDimensionValue(e.target.value, widthUnit),
+                    )
                   }}
                   placeholder="auto"
                   className="text-xs text-foreground"
                 />
                 <InputGroupAddon align="inline-end">
-                  <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
+                  <Select value={widthUnit} onValueChange={setWidthUnitValue}>
+                    <SelectTrigger
+                      aria-label="Width unit"
+                      className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -463,18 +566,25 @@ export function StyleControlsPanel({
               <span className={cn(labelCls, 'w-10')}>H</span>
               <InputGroup>
                 <InputGroupInput
+                  aria-label="Height"
                   type="text"
                   value={height}
                   onChange={(e) => {
                     setHeight(e.target.value)
-                    applyLiveStyle('height', e.target.value)
+                    applyLiveStyle(
+                      'height',
+                      formatDimensionValue(e.target.value, heightUnit),
+                    )
                   }}
                   placeholder="auto"
                   className="text-xs text-foreground"
                 />
                 <InputGroupAddon align="inline-end">
-                  <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
+                  <Select value={heightUnit} onValueChange={setHeightUnitValue}>
+                    <SelectTrigger
+                      aria-label="Height unit"
+                      className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
