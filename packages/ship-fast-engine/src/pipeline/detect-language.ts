@@ -117,6 +117,45 @@ export function resolveLanguageModeFromPreference(preferredLanguage: string) {
   return ENGLISH_MODE
 }
 
+// Map Unicode script ranges to BCP-47 language codes for KNOWN_LANGUAGES lookup.
+// Only ranges that unambiguously map to a single language in our known list are included.
+const SCRIPT_RANGE_TO_CODE: Array<[number, number, string]> = [
+  [0x0d00, 0x0d7f, 'ml'], // Malayalam
+  [0x0b80, 0x0bff, 'ta'], // Tamil
+  [0x0c00, 0x0c7f, 'te'], // Telugu
+  [0x0c80, 0x0cff, 'kn'], // Kannada
+  [0x0a80, 0x0aff, 'gu'], // Gujarati
+  [0x0a00, 0x0a7f, 'pa'], // Gurmukhi (Punjabi)
+  [0x0b00, 0x0b7f, 'or'], // Oriya
+]
+
+function detectNativeScriptLanguage(prompt: string) {
+  const text = String(prompt || '')
+  if (!text) return null
+  const counts = new Map<string, number>()
+  for (const ch of text) {
+    const cp = ch.codePointAt(0)
+    if (!cp) continue
+    for (const [lo, hi, code] of SCRIPT_RANGE_TO_CODE) {
+      if (cp >= lo && cp <= hi) {
+        counts.set(code, (counts.get(code) || 0) + 1)
+        break
+      }
+    }
+  }
+  if (!counts.size) return null
+  let bestCode: string | null = null
+  let bestCount = 0
+  for (const [code, count] of counts) {
+    if (count > bestCount) {
+      bestCode = code
+      bestCount = count
+    }
+  }
+  if (!bestCode || bestCount < 3) return null
+  return KNOWN_LANGUAGES.find((l) => l.code === bestCode) || null
+}
+
 function detectKnownLanguageKeyword(prompt: string) {
   const value = String(prompt || '').toLowerCase()
   if (!value) return null
@@ -184,6 +223,17 @@ export async function detectLanguage(
         ? 'Latin'
         : guessScript(keywordLanguage.fontFamily),
       keywordLanguage,
+    )
+  }
+
+  const nativeScriptLanguage = detectNativeScriptLanguage(prompt)
+  if (nativeScriptLanguage) {
+    return buildLanguageMode(
+      nativeScriptLanguage.code,
+      nativeScriptLanguage.name,
+      nativeScriptLanguage.nativeName,
+      guessScript(nativeScriptLanguage.fontFamily),
+      nativeScriptLanguage,
     )
   }
 

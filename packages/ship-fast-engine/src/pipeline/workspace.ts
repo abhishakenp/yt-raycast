@@ -39,7 +39,7 @@ export function readFile(workspace: string, file: string): string | null {
 export function writeFile(
   workspace: string,
   file: string,
-  content: string,
+  content: string | Buffer,
 ): void {
   writeFileSync(join(workspace, file), content)
 }

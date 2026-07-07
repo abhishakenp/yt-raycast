@@ -1,11 +1,15 @@
 {
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "types/**/*.d.ts"],
+  "exclude": ["../../src/**"],
   "compilerOptions": {
     "target": "ES2022",
+    "jsx": "react-jsx",
     "module": "ESNext",
     "paths": {
       "@ship-fast/engine": ["./src/index.ts"],
-      "@ship-fast/engine/*": ["./src/*"]
+      "@ship-fast/engine/*": ["./src/*"],
+      "@/*": ["../../src/*"],
+      "#/*": ["../../src/*"]
     },
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",

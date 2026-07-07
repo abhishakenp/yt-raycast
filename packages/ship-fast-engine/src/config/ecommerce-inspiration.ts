@@ -42,7 +42,10 @@ export const inferPathHintFromReferenceUrl = (rawUrl: unknown) => {
   return ''
 }
 
-export const formatDesignReferenceUrlsForPrompt = (urls = [], notes = '') => {
+export const formatDesignReferenceUrlsForPrompt = (
+  urls: unknown = [],
+  notes: string = '',
+) => {
   const list = (Array.isArray(urls) ? urls : [])
     .map((u) => String(u || '').trim())
     .filter(Boolean)

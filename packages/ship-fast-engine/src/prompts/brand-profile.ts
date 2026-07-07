@@ -1,4 +1,4 @@
-type BrandProfile = {
+export type BrandProfile = {
   verified?: boolean
   requestedName?: string
   officialName?: string
