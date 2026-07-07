@@ -1,9 +1,9 @@
-import { groq } from '../llm/groq.js'
-import { formatTps } from '../llm/utils.js'
-import { promptSnippet } from '../prompt.js'
-import { slug, parseJson, writeFile } from './workspace.js'
-import { contextPrompt } from '../prompts/context.js'
-import type { BrandProfile } from '../prompts/brand-profile.js'
+import { groq } from '../llm/groq'
+import { formatTps } from '../llm/utils'
+import { promptSnippet } from '../prompt'
+import { slug, parseJson, writeFile } from './workspace'
+import { contextPrompt } from '../prompts/context'
+import type { BrandProfile } from '../prompts/brand-profile'
 
 export async function generateContext(
   prompt: string,

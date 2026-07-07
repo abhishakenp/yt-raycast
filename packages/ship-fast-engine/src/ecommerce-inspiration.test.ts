@@ -4,7 +4,7 @@ import {
   DESIGN_REFERENCE_LEGAL_BLOCK,
   formatDesignReferenceUrlsForPrompt,
   inferPathHintFromReferenceUrl,
-} from './config/ecommerce-inspiration.js'
+} from './config/ecommerce-inspiration'
 
 describe('ecommerce inspiration prompt references', () => {
   it('derives human-readable hints from known reference URL paths without fetching pages', () => {

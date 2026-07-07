@@ -7,7 +7,7 @@ import {
   FAMILY_NAMES,
 } from '../v2-compose.ts'
 import { auditOpenUIProgram } from '../openui-program-audit.ts'
-import { renderOpenUIToHTML } from '../../openui-ssr.js'
+import { renderOpenUIToHTML } from '../../openui-ssr'
 import { DEFAULT_MODEL } from '../model-list.ts'
 
 const model = DEFAULT_MODEL

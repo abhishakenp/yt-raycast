@@ -4,8 +4,8 @@ import {
   HOME_OPENUI_FILE,
   OPENUI_MANIFEST_FILE,
   OPENUI_PAGES_DIR,
-} from './openui-constants.js'
-import { slug, writeFile } from './workspace.js'
+} from './openui-constants'
+import { slug, writeFile } from './workspace'
 
 export function routeToOpenUIFile(route = '/') {
   const clean = String(route || '/').trim()

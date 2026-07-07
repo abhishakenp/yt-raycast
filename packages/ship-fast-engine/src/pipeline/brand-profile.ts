@@ -1,5 +1,5 @@
-import { writeFile } from './workspace.js'
-import { resolveBrandfetchBrandProfile } from '../brandfetch.js'
+import { writeFile } from './workspace'
+import { resolveBrandfetchBrandProfile } from '../brandfetch'
 
 interface SearchResult {
   title: string

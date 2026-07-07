@@ -7,11 +7,11 @@ import { saveSiteSpec } from '../spec/index.ts'
 import {
   preferRomanizedBcp47FromSnippet,
   preferMixedEnglishBcp47FromSnippet,
-} from '../config/languages.js'
+} from '../config/languages'
 // @ts-ignore - JS module without type definitions
-import { translateHtml } from '../llm/translator.js'
-import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
-import { slug } from './workspace.js'
+import { translateHtml } from '../llm/translator'
+import { renderOpenUIToHTMLWithTheme } from '../openui-ssr'
+import { slug } from './workspace'
 
 const HOME_OPENUI_FILE = 'home.openui'
 const OPENUI_PAGES_DIR = 'pages'

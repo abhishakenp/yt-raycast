@@ -7,17 +7,17 @@ import {
   renderExactClonePageComponent,
   serializeModule,
   slimSiteSpecForBundle,
-} from '../shared.js'
-import { renderGeneratedSiteLlmsTxt } from '../llms-txt.js'
+} from '../shared'
+import { renderGeneratedSiteLlmsTxt } from '../llms-txt'
 import {
   buildStructuredData,
   renderRobotsTxt,
   renderSitemapXml,
   resolvePageSeo,
   serializeStructuredData,
-} from '../seo.js'
-import { shouldUseSwiper } from '../../lib/swiper-policy.js'
-import { SHIP_FAST_SITE_URL } from '../../marketing.js'
+} from '../seo'
+import { shouldUseSwiper } from '../../lib/swiper-policy'
+import { SHIP_FAST_SITE_URL } from '../../marketing'
 
 function renderReactPackageJson(
   projectName: string,

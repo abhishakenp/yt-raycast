@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import {
   formatDesignReferenceUrlsForPrompt,
   isEcommerceVisionReferencePipelineEnabled,
-} from '../config/ecommerce-inspiration.js'
+} from '../config/ecommerce-inspiration'
 
 const DESIGN_REFS_FILE = 'design-references.json'
 

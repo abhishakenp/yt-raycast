@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   materializeBrandfetchLogoToWorkspace,
   resolveBrandfetchBrandProfile,
-} from './brandfetch.js'
+} from './brandfetch'
 
 const workspaces: string[] = []
 const originalFetch = globalThis.fetch

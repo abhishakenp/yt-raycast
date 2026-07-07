@@ -4,11 +4,11 @@ import { join } from 'node:path'
 import { generateText } from '../generate.ts'
 import { DEFAULT_MODEL } from '../model-list.ts'
 import { pickRandomTheme } from '../theme-apply.ts'
-import { requirePromptText } from '../prompt.js'
+import { requirePromptText } from '../prompt'
 import { saveSiteSpec } from '../spec/index.ts'
 import type { SiteSpecProject } from '../spec/index.ts'
 // @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { resolvePipelineLanguage } from '../pipeline/prompt-language.js'
+import { resolvePipelineLanguage } from '../pipeline/prompt-language'
 // @ts-ignore -- renderers module lacks TypeScript declarations.
 import { renderPreviewToWorkspace } from '../renderers/index.ts'
 

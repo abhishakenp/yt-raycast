@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { groqParallel } from '../llm/groq.js'
-import { stripFences, formatTps } from '../llm/utils.js'
-import { ensureLucideIconRuntime } from './lucide-icons.js'
-import { writeFile, slug } from './workspace.js'
-import { navfixPrompt } from '../prompts/navfix.js'
+import { groqParallel } from '../llm/groq'
+import { stripFences, formatTps } from '../llm/utils'
+import { ensureLucideIconRuntime } from './lucide-icons'
+import { writeFile, slug } from './workspace'
+import { navfixPrompt } from '../prompts/navfix'
 
 interface GroqResult {
   inputTokens?: number

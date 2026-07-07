@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readFile, writeFile } from '../pipeline/workspace.js'
+import { readFile, writeFile } from '../pipeline/workspace'
 
 const REFS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'content-refs')
 const WORKSPACE_FILE = 'content-plan-ref.txt'

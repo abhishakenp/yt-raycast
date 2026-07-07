@@ -9,7 +9,7 @@ import {
   normalizeStockImageMatchKey,
   polishGeneratedMediaHtml,
   verifyTrustedStockImageUrls,
-} from './image-hints.js'
+} from './image-hints'
 
 type PhotoHint = {
   provider: string

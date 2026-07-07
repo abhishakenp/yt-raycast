@@ -1,9 +1,9 @@
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { HOMEPAGE_MODEL, LLM_CONFIG } from '../config.js'
-import { groqStream } from '../llm/groq.js'
-import { brandProfilePromptBlock } from '../prompts/brand-profile.js'
-import { ensureLucideIconRuntime } from './lucide-icons.js'
+import { HOMEPAGE_MODEL, LLM_CONFIG } from '../config'
+import { groqStream } from '../llm/groq'
+import { brandProfilePromptBlock } from '../prompts/brand-profile'
+import { ensureLucideIconRuntime } from './lucide-icons'
 
 type GenerateHtmlInput = {
   system: string

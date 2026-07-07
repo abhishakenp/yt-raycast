@@ -21,7 +21,7 @@ describe('openui SSR runtime compatibility', () => {
       platform: 'browser',
       stdin: {
         contents: `
-          import { renderOpenUIToHTML } from './packages/ship-fast-engine/src/openui-ssr.js'
+          import { renderOpenUIToHTML } from './packages/ship-fast-engine/src/openui-ssr'
           globalThis.__renderOpenUIToHTMLType = typeof renderOpenUIToHTML
           globalThis.__renderOpenUIToHTMLResult = await renderOpenUIToHTML('$page = "Home"\\nroot = Text("Runtime verifier")')
         `,

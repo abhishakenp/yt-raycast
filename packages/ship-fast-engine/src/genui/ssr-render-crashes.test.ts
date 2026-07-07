@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { renderOpenUIToHTML } from '../openui-ssr.js'
+import { renderOpenUIToHTML } from '../openui-ssr'
 
 /**
  * Regression guard: generated pages must never blank out with the

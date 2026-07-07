@@ -7,7 +7,7 @@ import type { ComponentType, HTMLAttributes, ReactNode } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { renderNextProject } from './nextjs/index.js'
+import { renderNextProject } from './nextjs/index'
 
 vi.mock('next/link', async () => {
   const React = await import('react')

@@ -14,7 +14,7 @@ import { generateText } from '../generate.ts'
 import { DEFAULT_MODEL } from '../model-list.ts'
 import { filteredSystemPrompt, ALWAYS_INCLUDE } from '../genui/prompt.ts'
 import { componentNames } from '@ship-fast/blocks/component-names'
-import { validateOpenUISource } from '../pipeline/openui-validate.js'
+import { validateOpenUISource } from '../pipeline/openui-validate'
 import {
   generateFallbackSection,
   contentCoverage,

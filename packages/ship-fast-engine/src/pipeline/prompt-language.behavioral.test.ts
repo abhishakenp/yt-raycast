@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolvePipelineLanguage } from './prompt-language.js'
+import { resolvePipelineLanguage } from './prompt-language'
 
 describe('pipeline language behavior from live session preferences', () => {
   it('treats a live DB "english" preference as English and skips translation', async () => {

@@ -1,4 +1,4 @@
-import { writeFile } from './pipeline/workspace.js'
+import { writeFile } from './pipeline/workspace'
 
 const DEFAULT_TIMEOUT_MS = 6000
 

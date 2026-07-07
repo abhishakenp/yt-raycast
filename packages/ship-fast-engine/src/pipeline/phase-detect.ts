@@ -1,8 +1,8 @@
-import { groq } from '../llm/groq.js'
-import { formatTps } from '../llm/utils.js'
-import { VALID_SITE_TYPES } from '../config.js'
-import { inferSiteTypeHint } from '../lib/infer-site-type.js'
-import { siteTypePrompt } from '../prompts/site-type.js'
+import { groq } from '../llm/groq'
+import { formatTps } from '../llm/utils'
+import { VALID_SITE_TYPES } from '../config'
+import { inferSiteTypeHint } from '../lib/infer-site-type'
+import { siteTypePrompt } from '../prompts/site-type'
 
 export async function detectSiteType(
   prompt: string,

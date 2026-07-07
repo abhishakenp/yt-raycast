@@ -11,7 +11,7 @@ import {
   preferMixedEnglishBcp47FromPrompt,
   preferMixedEnglishBcp47FromSnippet,
   preferRomanizedBcp47FromSnippet,
-} from './config/languages.js'
+} from './config/languages'
 
 describe('engine language catalog behavior', () => {
   it('exposes complete known language entries that generated prompts can render', () => {

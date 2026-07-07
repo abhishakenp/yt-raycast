@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs'
 import { synthesizeComponentCall } from '../openui-signature.ts'
 import { auditOpenUIProgram } from '../openui-program-audit.ts'
-import { renderOpenUIToHTML } from '../../openui-ssr.js'
+import { renderOpenUIToHTML } from '../../openui-ssr'
 
 const FAMILY = 'Crm'
 const SECTIONS = [

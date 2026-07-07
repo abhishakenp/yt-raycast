@@ -11,12 +11,12 @@ import {
   routeToOpenUIFile,
   upsertOpenUIManifestEntry,
   writeOpenUIManifest,
-} from './openui-artifacts.js'
+} from './openui-artifacts'
 import {
   HOME_OPENUI_FILE,
   OPENUI_MANIFEST_FILE,
   OPENUI_PAGES_DIR,
-} from './openui-constants.js'
+} from './openui-constants'
 
 const siteSpec = {
   pages: [

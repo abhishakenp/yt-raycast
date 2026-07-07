@@ -1,14 +1,14 @@
 // @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { formatRunAllReport } from './report.js'
-import { loadSiteSpec } from '../spec/index.js'
-import { requirePromptText } from '../prompt.js'
+import { formatRunAllReport } from './report'
+import { loadSiteSpec } from '../spec/index'
+import { requirePromptText } from '../prompt'
 // @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { resolvePipelineLanguage } from './prompt-language.js'
+import { resolvePipelineLanguage } from './prompt-language'
 import { writeSffHtmlHome } from './phase-sff-html.ts'
 // @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { enrichBrandProfile } from './brand-profile.js'
+import { enrichBrandProfile } from './brand-profile'
 // @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { resolvePexelsImageHints } from './image-hints.js'
+import { resolvePexelsImageHints } from './image-hints'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 

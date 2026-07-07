@@ -1,8 +1,8 @@
-import { groq } from '../llm/groq.js'
-import { stripFences, formatTps } from '../llm/utils.js'
-import { writeFile } from './workspace.js'
-import { designBriefPrompt } from '../prompts/design-brief.js'
-import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
+import { groq } from '../llm/groq'
+import { stripFences, formatTps } from '../llm/utils'
+import { writeFile } from './workspace'
+import { designBriefPrompt } from '../prompts/design-brief'
+import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references'
 
 export async function generateDesignBrief(
   prompt: string,

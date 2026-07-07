@@ -5,9 +5,9 @@
  *
  * Cost target: ~500 input + 80 output tokens, gpt-oss-120b low effort, ~600ms.
  */
-import { SHIPFAST_MOBBIN } from '../../config.js'
-import { groq } from '../../llm/groq.js'
-import { listDnaAppNames, resolveDna, resolveCopyExamples } from './dna.js'
+import { SHIPFAST_MOBBIN } from '../../config'
+import { groq } from '../../llm/groq'
+import { listDnaAppNames, resolveDna, resolveCopyExamples } from './dna'
 
 export function isMobbinEnabled() {
   return SHIPFAST_MOBBIN

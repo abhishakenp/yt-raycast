@@ -1,4 +1,4 @@
-import { withLLMRetry } from './retry.js'
+import { withLLMRetry } from './retry'
 import {
   GROQ_API_KEY,
   GROQ_HOST,
@@ -6,8 +6,8 @@ import {
   LLM_CONFIG,
   OLLAMA_API_KEY,
   OLLAMA_HOST,
-} from '../config.js'
-import { calculateCost, stripGroqReasoningLeak } from './utils.js'
+} from '../config'
+import { calculateCost, stripGroqReasoningLeak } from './utils'
 
 function resolveProvider(model: string) {
   if (model.endsWith(':cloud')) {

@@ -12,7 +12,7 @@ import {
   writeStreamingShellToWorkspace,
 } from './index'
 // @ts-ignore -- JS module without type declarations.
-import { renderNextProject } from './nextjs/index.js'
+import { renderNextProject } from './nextjs/index'
 
 const siteSpec: SiteSpecProject = {
   brand: 'Preview Brand',

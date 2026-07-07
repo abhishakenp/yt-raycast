@@ -1,6 +1,6 @@
-import { resolveDna, synthesizeDna } from './dna.js'
-import { fetchLiveScreensForApp, isMobbinLiveEnabled } from './session.js'
-import type { MobbinAnchor, MobbinDna, MobbinScreen } from './types.js'
+import { resolveDna, synthesizeDna } from './dna'
+import { fetchLiveScreensForApp, isMobbinLiveEnabled } from './session'
+import type { MobbinAnchor, MobbinDna, MobbinScreen } from './types'
 
 function normApp(name: string): string {
   return String(name || '')

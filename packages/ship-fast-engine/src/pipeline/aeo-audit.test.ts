@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { siteSpecPassesAeoAudit } from './aeo-audit.js'
+import { siteSpecPassesAeoAudit } from './aeo-audit'
 
 describe('aeo-audit', () => {
   it('warns when the home page lacks a direct-answer section', () => {

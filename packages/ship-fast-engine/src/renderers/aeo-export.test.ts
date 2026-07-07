@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { renderHtmlProject } from './html/index.js'
-import { renderNextProject } from './nextjs/index.js'
-import { renderReactProject } from './react/index.js'
+import { renderHtmlProject } from './html/index'
+import { renderNextProject } from './nextjs/index'
+import { renderReactProject } from './react/index'
 
 describe('renderHtmlProject AEO export', () => {
   const createSiteSpec = () => ({

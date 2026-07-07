@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { withLLMRetry } from './retry.js'
+import { withLLMRetry } from './retry'
 
 describe('withLLMRetry', () => {
   it('retries transient model errors and returns the eventual success result', async () => {

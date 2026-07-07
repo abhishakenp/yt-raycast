@@ -4,7 +4,7 @@ import {
   type ComposedContent,
 } from './v2-compose.ts'
 import { DEFAULT_MODEL } from './model-list.ts'
-import { detectLanguage } from '../pipeline/detect-language.js'
+import { detectLanguage } from '../pipeline/detect-language'
 import type { GenUIEvent, GeneratedArtifact } from './events.ts'
 
 export type { ComposedContent } from './v2-compose.ts'

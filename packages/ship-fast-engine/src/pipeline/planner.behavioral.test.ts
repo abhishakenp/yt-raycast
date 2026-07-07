@@ -5,23 +5,23 @@ import {
   pickGenome,
   applyGenomeMerge,
   GENOME_NAMES,
-} from './genome-merge.js'
+} from './genome-merge'
 import {
   htmlLooksDegenerate,
   explainNovaMarketingBarFailures,
   promptExpectsNovaDenseMarketing,
-} from './homepage-degeneracy.js'
-import { collectHomepageQualityIssues } from './homepage-quality-audit.js'
+} from './homepage-degeneracy'
+import { collectHomepageQualityIssues } from './homepage-quality-audit'
 import {
   shouldReplaceLlmHomepageWithRenderer,
   htmlDocumentPassesPreviewQuality,
-} from './homepage-substance.js'
-import { injectLLMHomepageSwiper } from './homepage-swiper.js'
-import { stripDestructiveEmptyDesignTheme } from './homepage-theme-sanitize.js'
+} from './homepage-substance'
+import { injectLLMHomepageSwiper } from './homepage-swiper'
+import { stripDestructiveEmptyDesignTheme } from './homepage-theme-sanitize'
 import {
   scoreRalphHomepage,
   passesHomepagePublicDesignVerification,
-} from './ralph-homepage-score.js'
+} from './ralph-homepage-score'
 
 const minimalHtml = (body: string) =>
   `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><script src="/scripts/tailwind-browser.js"></script><script>tailwind.config = { theme: { extend: {} } }</script></head><body>${body}</body></html>`

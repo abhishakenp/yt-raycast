@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   injectStorefrontCartUi,
   stripStorefrontCartUi,
-} from './storefront-cart-ui.js'
+} from './storefront-cart-ui'
 
 const themedStorefrontHtml = `<!doctype html>
 <html>

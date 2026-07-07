@@ -1,4 +1,4 @@
-import { groq } from './groq.js'
+import { groq } from './groq'
 
 interface TargetLanguage {
   code: string

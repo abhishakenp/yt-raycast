@@ -1,4 +1,4 @@
-import { shouldUseSwiper } from '../lib/swiper-policy.js'
+import { shouldUseSwiper } from '../lib/swiper-policy'
 
 const SWIPER_CDN_CSS =
   'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css'

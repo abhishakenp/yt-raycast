@@ -6,7 +6,7 @@ import {
   stripGroqReasoningLeak,
   calculateCost,
   formatTps,
-} from './utils.js'
+} from './utils'
 
 describe('trimInlineAiText', () => {
   it('trims whitespace', () => {

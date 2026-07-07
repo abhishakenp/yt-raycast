@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { renderOpenUIToHTML } from '../openui-ssr.js'
+import { renderOpenUIToHTML } from '../openui-ssr'
 
 /**
  * Contract test: every real engine fixture (captured from actual Convex

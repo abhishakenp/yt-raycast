@@ -1,4 +1,4 @@
-import { PEXELS_API_KEY, UNSPLASH_ACCESS_KEY } from '../config.js'
+import { PEXELS_API_KEY, UNSPLASH_ACCESS_KEY } from '../config'
 
 interface MediaItem {
   kind?: string

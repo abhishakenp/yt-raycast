@@ -7,8 +7,8 @@ import {
   MOTION_DEV_DOCS_REACT,
   MOTION_REACT_GUIDELINES,
   SITE_TYPE_INSTRUCTIONS,
-} from '../config.js'
-import { slug } from '../pipeline/workspace.js'
+} from '../config'
+import { slug } from '../pipeline/workspace'
 
 interface HomepageCtx {
   site_type?: string

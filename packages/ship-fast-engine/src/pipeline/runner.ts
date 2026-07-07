@@ -1,10 +1,10 @@
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { generateAndWriteOpenUIHome } from './phase-openui-home.ts'
-import { formatRunAllReport } from './report.js'
-import { loadSiteSpec } from '../spec/index.js'
-import { requirePromptText } from '../prompt.js'
-import { resolvePipelineLanguage } from './prompt-language.js'
+import { formatRunAllReport } from './report'
+import { loadSiteSpec } from '../spec/index'
+import { requirePromptText } from '../prompt'
+import { resolvePipelineLanguage } from './prompt-language'
 
 interface SessionCtx {
   id?: string

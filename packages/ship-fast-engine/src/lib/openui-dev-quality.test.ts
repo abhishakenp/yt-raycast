@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { openUIDevQualityHints } from './openui-dev-quality.js'
+import { openUIDevQualityHints } from './openui-dev-quality'
 
 describe('openUIDevQualityHints', () => {
   it('flags empty source', () => {
