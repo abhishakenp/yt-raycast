@@ -200,6 +200,9 @@ vi.mock('@/genui/components/ThemePicker', () => ({
 vi.mock('@/genui/theme-apply', () => ({
   resolveThemeStyles: () => undefined,
 }))
+vi.mock('@/hooks/use-mobile', () => ({
+  useIsMobile: () => false,
+}))
 
 describe('Dashboard missing session state', () => {
   beforeEach(() => {
