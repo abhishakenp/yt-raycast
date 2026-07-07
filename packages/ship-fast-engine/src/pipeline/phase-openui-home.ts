@@ -103,7 +103,12 @@ export async function generateAndWriteOpenUIHome(p: {
   log?: (msg: string) => void
   sessionCtx?: any
   variationSeed?: any
-  languageMode?: { code?: string; needsTranslation?: boolean } | null
+  languageMode?: {
+    code?: string
+    name?: string
+    nativeName?: string
+    needsTranslation?: boolean
+  } | null
 }) {
   const log = p.log || console.log
   log('Starting GenUI orchestrator...')

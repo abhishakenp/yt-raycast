@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { defineComponent } from '@openuidev/react-lang'
-import { readJsonOrThrow } from '../../../src/lib/safe-fetch'
+import { readJsonOrThrow } from './lib/safe-fetch'
 
 export type OpenUIIntegrationConfig = Record<string, string | null>
 

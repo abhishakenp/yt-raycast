@@ -414,7 +414,9 @@ describe('planner: substance measure', () => {
   it('shouldReplaceLlmHomepageWithRenderer replaces <32 word pages', () => {
     const html = minimalHtml('<main><p>hi there friend</p></main>')
     expect(
-      shouldReplaceLlmHomepageWithRenderer(html, { pages: ['home'] }),
+      shouldReplaceLlmHomepageWithRenderer(html, {
+        pages: [{ route: 'home' }],
+      }),
     ).toBe(true)
   })
 
@@ -424,7 +426,9 @@ describe('planner: substance measure', () => {
     const words = 'word '.repeat(40)
     const html = minimalHtml(`<div><p>${words}</p></div>`)
     expect(
-      shouldReplaceLlmHomepageWithRenderer(html, { pages: ['home'] }),
+      shouldReplaceLlmHomepageWithRenderer(html, {
+        pages: [{ route: 'home' }],
+      }),
     ).toBe(true)
   })
 

@@ -1,4 +1,4 @@
-export function trimInlineAiText(s: string) {
+export function trimInlineAiText(s: string | null | undefined): string {
   let t = String(s || '').trim()
   if (
     (t.startsWith('"') && t.endsWith('"')) ||

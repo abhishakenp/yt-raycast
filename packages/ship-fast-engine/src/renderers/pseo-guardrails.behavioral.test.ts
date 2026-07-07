@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyGeneratedSitePseoGuardrails } from './pseo-guardrails.js'
+import {
+  applyGeneratedSitePseoGuardrails,
+  type PageSpec,
+  type NavLink,
+} from './pseo-guardrails.js'
 
 const page = (
   route: string,
@@ -33,20 +37,14 @@ describe('generated site PSEO guardrails', () => {
     const result = applyGeneratedSitePseoGuardrails(siteSpec)
 
     expect(
-      result.pages.find(
-        (p: { route: string; seo?: unknown }) =>
-          p.route === '/products?sort=popular',
-      )?.seo,
+      result.pages!.find((p: PageSpec) => p.route === '/products?sort=popular')
+        ?.seo,
     ).toMatchObject({ noIndex: true })
     expect(
-      result.pages.find(
-        (p: { route: string; seo?: unknown }) => p.route === '/pricing#faq',
-      )?.seo,
+      result.pages!.find((p: PageSpec) => p.route === '/pricing#faq')?.seo,
     ).toMatchObject({ noIndex: true })
     expect(
-      result.pages.find(
-        (p: { route: string; seo?: unknown }) => p.route === '/about',
-      )?.seo,
+      result.pages!.find((p: PageSpec) => p.route === '/about')?.seo,
     ).toBeUndefined()
   })
 
@@ -64,22 +62,16 @@ describe('generated site PSEO guardrails', () => {
     const result = applyGeneratedSitePseoGuardrails(siteSpec)
 
     expect(
-      result.pages.find(
-        (p: { route: string; seo?: unknown }) =>
-          p.route === '/locations/city-12',
-      )?.seo,
+      result.pages!.find((p: PageSpec) => p.route === '/locations/city-12')
+        ?.seo,
     ).toBeUndefined()
     expect(
-      result.pages.find(
-        (p: { route: string; seo?: unknown }) =>
-          p.route === '/locations/city-13',
-      )?.seo,
+      result.pages!.find((p: PageSpec) => p.route === '/locations/city-13')
+        ?.seo,
     ).toMatchObject({ noIndex: true })
     expect(
-      result.pages.find(
-        (p: { route: string; seo?: unknown }) =>
-          p.route === '/locations/city-14',
-      )?.seo,
+      result.pages!.find((p: PageSpec) => p.route === '/locations/city-14')
+        ?.seo,
     ).toMatchObject({ noIndex: true })
   })
 
@@ -101,14 +93,10 @@ describe('generated site PSEO guardrails', () => {
     const result = applyGeneratedSitePseoGuardrails(siteSpec)
 
     expect(
-      result.pages.find(
-        (p: { route: string; seo?: unknown }) => p.route === '/clinics/city-13',
-      )?.seo,
+      result.pages!.find((p: PageSpec) => p.route === '/clinics/city-13')?.seo,
     ).toBeUndefined()
     expect(
-      result.pages.find(
-        (p: { route: string; seo?: unknown }) => p.route === '/clinics/city-14',
-      )?.seo,
+      result.pages!.find((p: PageSpec) => p.route === '/clinics/city-14')?.seo,
     ).toBeUndefined()
   })
 
@@ -123,15 +111,15 @@ describe('generated site PSEO guardrails', () => {
     }
 
     const result = applyGeneratedSitePseoGuardrails(siteSpec)
-    const footerHrefs = result.navigation.footer.map(
-      (entry: { href: string }) => entry.href,
+    const footerHrefs = result.navigation!.footer!.map(
+      (entry: NavLink) => entry.href,
     )
 
     expect(
-      footerHrefs.filter((href: string) => href === '/about'),
+      footerHrefs.filter((href: string | undefined) => href === '/about'),
     ).toHaveLength(0)
     expect(
-      footerHrefs.filter((href: string) => href === '/services'),
+      footerHrefs.filter((href: string | undefined) => href === '/services'),
     ).toHaveLength(1)
     expect(footerHrefs).toContain('/blog')
   })

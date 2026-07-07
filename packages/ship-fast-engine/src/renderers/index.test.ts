@@ -210,10 +210,8 @@ describe('renderer Tailwind preview CSS', () => {
 
 describe('Next.js Medusa export', () => {
   it('initializes payment sessions from the retrieved cart object', async () => {
-    const files: Record<string, string> = renderNextProject(
-      { ...siteSpec, siteType: 'ecommerce' },
-      {},
-    ).files
+    const nextSpec: SiteSpecProject = { ...siteSpec, siteType: 'ecommerce' }
+    const files: Record<string, string> = renderNextProject(nextSpec, {}).files
     const medusaSource = files['lib/medusa.js']
     expect(medusaSource).toBeTruthy()
     const workspace = mkdtempSync(join(tmpdir(), 'next-medusa-runtime-'))
