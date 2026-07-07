@@ -3724,6 +3724,7 @@ const buildReactExport = async (
   const seoBundle = buildExportSeoBundle(
     enrichedSpec,
     routes.map((r) => ({ path: r.path, label: r.label })),
+    {},
     routeJsonLd,
   )
   const homeHeadTags = seoBundle?.homeSeo?.headTags ?? []
@@ -3840,6 +3841,7 @@ const buildNextExport = async (
   const seoBundle = buildExportSeoBundle(
     nextEnrichedSpec,
     routes.map((r) => ({ path: r.path, label: r.label })),
+    {},
     nextRouteJsonLd,
   )
   const layoutMetadata = seoBundle?.homeSeo

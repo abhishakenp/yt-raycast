@@ -41,7 +41,7 @@ const buildBundle = (source: string, spec = siteSpec) => {
   })
   const orgName = JSON.parse(spec).projectName || ''
   const routeJsonLd = buildRouteJsonLd(routes, orgName)
-  return buildExportSeoBundle(spec, routePaths, routeJsonLd)
+  return buildExportSeoBundle(spec, routePaths, {}, routeJsonLd)
 }
 
 /** Parse structured data JSON, normalizing single-object to array. */
