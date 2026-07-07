@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { createLakebedHandlerContext } from '@ship-fast/lakebed/server'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 
+const emptyPropertyData = () => ({
+  inquiries: [],
+  listings: [],
+  saved: [],
+  searches: [],
+  state: [],
+})
+
 describe('propertyListingLakebed', () => {
   it('stores shared property search state and history', async () => {
     const first = createLakebedHandlerContext({
@@ -18,7 +26,7 @@ describe('propertyListingLakebed', () => {
     })
 
     const second = createLakebedHandlerContext({
-      data: first.getPatch(),
+      data: { ...emptyPropertyData(), ...first.getPatch() },
       props: {},
       schema: propertyListingLakebed.schema,
     })
@@ -58,7 +66,7 @@ describe('propertyListingLakebed', () => {
     })
 
     const second = createLakebedHandlerContext({
-      data: first.getPatch(),
+      data: { ...emptyPropertyData(), ...first.getPatch() },
       props: {},
       schema: propertyListingLakebed.schema,
     })
@@ -76,7 +84,7 @@ describe('propertyListingLakebed', () => {
     expect(propertyListingLakebed.schema.state.seedFromProps).toBe(false)
 
     const third = createLakebedHandlerContext({
-      data: first.getPatch(),
+      data: { ...emptyPropertyData(), ...first.getPatch() },
       props: {},
       schema: propertyListingLakebed.schema,
       writable: true,
@@ -87,7 +95,7 @@ describe('propertyListingLakebed', () => {
     })
 
     const fourth = createLakebedHandlerContext({
-      data: third.getPatch(),
+      data: { ...emptyPropertyData(), ...third.getPatch() },
       props: {},
       schema: propertyListingLakebed.schema,
     })
@@ -127,7 +135,7 @@ describe('propertyListingLakebed', () => {
     )
 
     const second = createLakebedHandlerContext({
-      data: first.getPatch(),
+      data: { ...emptyPropertyData(), ...first.getPatch() },
       props: {},
       schema: propertyListingLakebed.schema,
     })

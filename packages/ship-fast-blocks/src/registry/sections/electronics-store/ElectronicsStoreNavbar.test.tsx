@@ -2,6 +2,10 @@
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { guestAuthContext } from '@ship-fast/lakebed/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CommerceLakebed } from '../commerce/commerce-interactions.tsx'
@@ -10,6 +14,7 @@ import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 type TestCartItem = {
   createdAt: string
   id: string
+  itemKey: string
   label: string
   price: string
   quantity: number
@@ -20,6 +25,7 @@ type TestProduct = {
   createdAt: string
   id: string
   imageAlt: string
+  itemKey: string
   label: string
   price: string
   subtitle: string
@@ -40,14 +46,14 @@ type TestProductInput = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -219,6 +225,7 @@ function createCommerceLakebedStub() {
         {
           createdAt: timestamp,
           id: `item-${state.items.length + 1}`,
+          itemKey: '',
           label,
           price: input.price ?? '',
           quantity: 1,
@@ -244,6 +251,7 @@ function createCommerceLakebedStub() {
             ? nextProducts[existingIndex].id
             : `product-${nextProducts.length + 1}`,
         imageAlt: product.imageAlt ?? '',
+        itemKey: '',
         label,
         price: product.price ?? '',
         subtitle: product.subtitle ?? '',
@@ -263,12 +271,8 @@ function createCommerceLakebedStub() {
     }
   }
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => guestAuthContext,
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof commerceCartLakebed>({
+    cartSummary: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -279,191 +283,252 @@ function createCommerceLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'cartSummary') return cartSummary()
-      if (name === 'productCatalog') return state.products
-      if (name === 'commerceSearchState') {
-        return {
-          query: state.searchState.query,
-          searches: [],
-          selectedLabel: state.searchState.selectedLabel,
-        }
-      }
-      return null
+      return cartSummary()
     },
-    useMutation: (name) => {
+    productCatalog: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return state.products
+    },
+    commerceSearchState: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return {
+        query: state.searchState.query,
+        searches: [],
+        selectedLabel: state.searchState.selectedLabel,
+      }
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof commerceCartLakebed>({
+    syncCatalog: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncCatalog') {
-        return useTestMutation<
-          typeof commerceCartLakebed.mutations.syncCatalog
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              syncCatalog(input.products)
-              notify()
-              return state.products
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
+      return useTestMutation<typeof commerceCartLakebed.mutations.syncCatalog>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            syncCatalog(input.products)
+            notify()
+            return state.products
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    incrementItem: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<
+        typeof commerceCartLakebed.mutations.incrementItem
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const item = findItem(input)
+            if (item) {
+              replaceItem(item, (current) => ({
+                ...current,
+                quantity: current.quantity + 1,
+                updatedAt: timestamp,
+              }))
             }
-          }, []),
-        })
-      }
-
-      if (name === 'incrementItem') {
-        return useTestMutation<
-          typeof commerceCartLakebed.mutations.incrementItem
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              const item = findItem(input)
-              if (item) {
-                replaceItem(item, (current) => ({
-                  ...current,
-                  quantity: current.quantity + 1,
-                  updatedAt: timestamp,
-                }))
-              }
-              notify()
-              return state.items
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
+            notify()
+            return state.items
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    decrementItem: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<
+        typeof commerceCartLakebed.mutations.decrementItem
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const item = findItem(input)
+            if (item && item.quantity > 1) {
+              replaceItem(item, (current) => ({
+                ...current,
+                quantity: current.quantity - 1,
+                updatedAt: timestamp,
+              }))
             }
-          }, []),
-        })
-      }
-
-      if (name === 'decrementItem' || name === 'removeItem') {
-        return useTestMutation<
-          typeof commerceCartLakebed.mutations.decrementItem
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              const item = findItem(input)
-              if (item && item.quantity > 1) {
-                replaceItem(item, (current) => ({
-                  ...current,
-                  quantity: current.quantity - 1,
-                  updatedAt: timestamp,
-                }))
-              }
-              notify()
-              return state.items
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
+            notify()
+            return state.items
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    removeItem: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof commerceCartLakebed.mutations.removeItem>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const item = findItem(input)
+            if (item && item.quantity > 1) {
+              replaceItem(item, (current) => ({
+                ...current,
+                quantity: current.quantity - 1,
+                updatedAt: timestamp,
+              }))
             }
-          }, []),
-        })
-      }
-
-      if (name === 'deleteItem') {
-        return useTestMutation<typeof commerceCartLakebed.mutations.deleteItem>(
-          {
-            lastError,
-            pendingCount,
-            reset,
-            runMutation: useCallback(async (input) => {
-              setPendingCount((count) => count + 1)
-              setLastError(null)
-              try {
-                const item = findItem(input)
-                state = {
-                  ...state,
-                  items: item
-                    ? state.items.filter((current) => current.id !== item.id)
-                    : state.items,
-                }
-                notify()
-                return state.items
-              } catch (error) {
-                setLastError(error)
-                throw error
-              } finally {
-                setPendingCount((count) => Math.max(0, count - 1))
-              }
-            }, []),
-          },
-        )
-      }
-
-      if (name === 'clearCart') {
-        return useTestMutation<typeof commerceCartLakebed.mutations.clearCart>({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async () => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              state = { ...state, items: [] }
-              notify()
-              return []
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
+            notify()
+            return state.items
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    deleteItem: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof commerceCartLakebed.mutations.deleteItem>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const item = findItem(input)
+            state = {
+              ...state,
+              items: item
+                ? state.items.filter((current) => current.id !== item.id)
+                : state.items,
             }
-          }, []),
-        })
-      }
-
-      if (name === 'setCommerceSearch') {
-        return useTestMutation<
-          typeof commerceCartLakebed.mutations.setCommerceSearch
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              state = {
-                ...state,
-                searchState: {
-                  query: String(input.query ?? '').trim(),
-                  selectedLabel: String(input.selectedLabel ?? '').trim(),
-                },
-              }
-              notify()
-              return []
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
+            notify()
+            return state.items
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    clearCart: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof commerceCartLakebed.mutations.clearCart>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            state = { ...state, items: [] }
+            notify()
+            return []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    setCommerceSearch: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<
+        typeof commerceCartLakebed.mutations.setCommerceSearch
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            state = {
+              ...state,
+              searchState: {
+                query: String(input.query ?? '').trim(),
+                selectedLabel: String(input.selectedLabel ?? '').trim(),
+              },
             }
-          }, []),
-        })
-      }
-
+            notify()
+            return []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    addItem: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<typeof commerceCartLakebed.mutations.addItem>({
         lastError,
         pendingCount,
@@ -484,7 +549,16 @@ function createCommerceLakebedStub() {
         }, []),
       })
     },
-  } satisfies CommerceLakebed
+  })
+
+  const lakebed: CommerceLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => guestAuthContext,
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -541,7 +615,6 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
       <>
         <ElectronicsStoreNavbar.component
           props={{ brand: 'Tech Test', nav: ['Products', 'Deals'] }}
-          lakebed={lakebed}
         />
         <ElectronicsStoreHero.component
           props={{
@@ -550,16 +623,9 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
             imageAlt: 'Sony headphones on a stand',
             primaryCta: 'Shop Now',
           }}
-          lakebed={lakebed}
         />
-        <ElectronicsStoreProducts.component
-          props={{ items: productItems }}
-          lakebed={lakebed}
-        />
-        <ElectronicsStoreDeals.component
-          props={{ items: dealItems }}
-          lakebed={lakebed}
-        />
+        <ElectronicsStoreProducts.component props={{ items: productItems }} />
+        <ElectronicsStoreDeals.component props={{ items: dealItems }} />
       </>,
     )
 
@@ -639,11 +705,8 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
 
     render(
       <>
-        <ElectronicsStoreNavbar.component props={{}} lakebed={lakebed} />
-        <ElectronicsStoreProducts.component
-          props={{ items: productItems }}
-          lakebed={lakebed}
-        />
+        <ElectronicsStoreNavbar.component props={{}} />
+        <ElectronicsStoreProducts.component props={{ items: productItems }} />
       </>,
     )
 

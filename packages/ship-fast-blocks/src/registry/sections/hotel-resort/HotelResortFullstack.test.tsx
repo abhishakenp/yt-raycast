@@ -2,6 +2,10 @@
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HotelResortBooking } from './HotelResortBooking.tsx'
@@ -69,7 +73,7 @@ type MutationArgs<TMutation> = TMutation extends (
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -303,18 +307,8 @@ function createHotelLakebedStub({
     }
   }
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      bookingIntents: state.intents,
-      rooms: state.rooms,
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof hotelResortLakebed>({
+    bookingSummary: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -325,38 +319,52 @@ function createHotelLakebedStub({
         () => version,
         () => version,
       )
-
-      if (name === 'bookingSummary') return bookingSummary()
-      if (name === 'roomCatalog') return state.rooms
-      return null
+      return bookingSummary()
     },
-    useMutation: (name) => {
+    roomCatalog: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return state.rooms
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof hotelResortLakebed>({
+    syncRooms: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncRooms') {
-        return useTestMutation<typeof hotelResortLakebed.mutations.syncRooms>({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              syncRooms(input)
-              notify()
-              return state.rooms
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
+      return useTestMutation<typeof hotelResortLakebed.mutations.syncRooms>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            syncRooms(input)
+            notify()
+            return state.rooms
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    requestBooking: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<
         typeof hotelResortLakebed.mutations.requestBooking
       >({
@@ -383,7 +391,33 @@ function createHotelLakebedStub({
         ),
       })
     },
-  } satisfies HotelResortLakebed
+  })
+
+  const lakebed: HotelResortLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      bookingIntents: state.intents,
+      rooms: state.rooms,
+    }),
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -586,7 +620,6 @@ describe('hotel resort rendered section behavior', () => {
     render(
       <>
         <HotelResortNavbar.component
-          lakebed={lakebed}
           props={{
             brand: 'Azure Test',
             bookTarget: 'Navbar booking intent',
@@ -596,21 +629,18 @@ describe('hotel resort rendered section behavior', () => {
           }}
         />
         <HotelResortHero.component
-          lakebed={lakebed}
           props={{
             primaryCta: 'Hero Reserve',
             secondaryCta: 'Explore Suites',
           }}
         />
         <HotelResortCta.component
-          lakebed={lakebed}
           props={{
             primaryCta: 'CTA Reserve',
             secondaryCta: 'Ask Concierge',
           }}
         />
         <HotelResortRooms.component
-          lakebed={lakebed}
           props={{
             cta: 'Select Suite',
             items: [
@@ -626,7 +656,6 @@ describe('hotel resort rendered section behavior', () => {
           }}
         />
         <HotelResortBooking.component
-          lakebed={lakebed}
           props={{
             formHeading: 'Availability Form',
             guestOptions: ['2 Adults'],

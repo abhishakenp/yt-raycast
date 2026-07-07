@@ -370,7 +370,7 @@ describe('theme + integrations behavioral', () => {
         const { container, unmount } = render(
           React.createElement(
             IntegrationProvider,
-            { medusa: malformed as never, sessionId: null },
+            { medusa: malformed, sessionId: null },
             React.createElement(MedusaProbe),
           ),
         )

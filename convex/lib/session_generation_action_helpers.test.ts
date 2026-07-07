@@ -97,8 +97,9 @@ const referencesFor = (
   getGenerationSession: getGenerationSessionRef,
   completeGenerationInternal: completeGenerationInternalRef,
   loadOpenUISSR: async () => ({
-    renderOpenUIToHTMLWithTheme: (source, _theme, language) => ({
+    renderOpenUIToHTMLWithTheme: async (source, _theme, language) => ({
       html: `<main data-lang="${language}">${source}</main>`,
+      cssVars: '',
     }),
   }),
   ...overrides,
@@ -179,10 +180,11 @@ describe('completeGenerationAction', () => {
         }),
         referencesFor({
           loadOpenUISSR: async () => ({
-            renderOpenUIToHTMLWithTheme: (...args) => {
+            renderOpenUIToHTMLWithTheme: async (...args) => {
               renderCalls.push(args)
               return {
                 html: `<main data-lang="${args[2]}"><h1>${dbObservedBreweryGeneration.brand}</h1><p>${dbObservedBreweryGeneration.menuItem}</p></main>`,
+                cssVars: '',
               }
             },
           }),
@@ -256,8 +258,9 @@ describe('completeGenerationAction', () => {
         }),
         referencesFor({
           loadOpenUISSR: async () => ({
-            renderOpenUIToHTMLWithTheme: () => ({
+            renderOpenUIToHTMLWithTheme: async () => ({
               html: '<div class="openui-error">Failed to render</div>',
+              cssVars: '',
             }),
           }),
         }),

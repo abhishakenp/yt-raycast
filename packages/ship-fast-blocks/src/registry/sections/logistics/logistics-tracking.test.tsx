@@ -3,8 +3,16 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { LogisticsLakebed } from './logistics-interactions.tsx'
-import { logisticsLakebed } from './logistics-lakebed.ts'
+import {
+  logisticsLakebed,
+  type LogisticsShipmentInput,
+  type LogisticsTrackingInput,
+} from './logistics-lakebed.ts'
 
 type TrackShipmentState = ReturnType<
   typeof logisticsLakebed.queries.trackShipment
@@ -17,9 +25,6 @@ type LogisticsStateRow = {
   trackingId: string
   updatedAt: string
 }
-type LogisticsMutationInput =
-  | Parameters<typeof logisticsLakebed.mutations.setTrackingSearch>[1]
-  | Parameters<typeof logisticsLakebed.mutations.syncShipments>[1]
 
 const navigate = vi.fn()
 const lakebedRef: { current: LogisticsLakebed | null } = { current: null }
@@ -170,22 +175,8 @@ function createLogisticsLakebedStub() {
     return { searches, shipment, trackingId }
   }
 
-  const lakebed: LogisticsLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      searches,
-      shipments,
-      state: state ? [state] : [],
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof logisticsLakebed>({
+    shipmentCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -196,89 +187,54 @@ function createLogisticsLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'shipmentCatalog') return shipments
-      if (name === 'trackShipment') return summary()
-      return null
+      return shipments
     },
-    useMutation: (name) => {
+    trackShipment: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof logisticsLakebed>({
+    setTrackingSearch: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: LogisticsMutationInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-
-          try {
-            if (name === 'setTrackingSearch' && typeof input === 'object') {
-              const trackingId = input.trackingId?.trim() ?? ''
-              state = nextRow('state', { trackingId }, 1)
-              searches = [
-                nextRow('search', { trackingId }, searches.length + 1),
-                ...searches,
-              ]
-            }
-
-            if (
-              name === 'syncShipments' &&
-              typeof input === 'object' &&
-              'items' in input
-            ) {
-              const existingByTrackingId = new Map(
-                shipments.map((shipment) => [
-                  shipment.trackingId.toLowerCase(),
-                  shipment,
-                ]),
-              )
-
-              for (const item of input.items) {
-                const trackingId = item.trackingId.trim()
-                if (!trackingId) continue
-
-                const next = {
-                  destination: item.destination?.trim() ?? '',
-                  estimatedDelivery: item.estimatedDelivery?.trim() ?? '',
-                  origin: item.origin?.trim() ?? '',
-                  status: item.status?.trim() ?? '',
-                  trackingId,
-                }
-                const current = existingByTrackingId.get(
-                  trackingId.toLowerCase(),
-                )
-
-                if (current) {
-                  shipments = shipments.map((candidate) =>
-                    candidate.id === current.id
-                      ? { ...current, ...next, updatedAt: now }
-                      : candidate,
-                  )
-                } else {
-                  shipments = [
-                    ...shipments,
-                    nextRow('shipment', next, shipments.length + 1),
-                  ]
-                }
-              }
-            }
-
-            notify()
-            return name === 'trackShipment' ? summary() : []
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [name],
-      )
+      const runMutation = useCallback(async (input: LogisticsTrackingInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const trackingId = input.trackingId?.trim() ?? ''
+          state = nextRow('state', { trackingId }, 1)
+          searches = [
+            nextRow('search', { trackingId }, searches.length + 1),
+            ...searches,
+          ]
+          notify()
+          return state ? [state] : []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (input: LogisticsMutationInput) => runMutation(input),
+          (input: LogisticsTrackingInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -293,6 +249,110 @@ function createLogisticsLakebedStub() {
 
       return mutation
     },
+    syncShipments: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: { items: LogisticsShipmentInput[] }) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingByTrackingId = new Map(
+              shipments.map((shipment) => [
+                shipment.trackingId.toLowerCase(),
+                shipment,
+              ]),
+            )
+
+            for (const item of input.items) {
+              const trackingId = item.trackingId.trim()
+              if (!trackingId) continue
+
+              const next = {
+                destination: item.destination?.trim() ?? '',
+                estimatedDelivery: item.estimatedDelivery?.trim() ?? '',
+                origin: item.origin?.trim() ?? '',
+                status: item.status?.trim() ?? '',
+                trackingId,
+              }
+              const current = existingByTrackingId.get(trackingId.toLowerCase())
+
+              if (current) {
+                shipments = shipments.map((candidate) =>
+                  candidate.id === current.id
+                    ? { ...current, ...next, updatedAt: now }
+                    : candidate,
+                )
+              } else {
+                shipments = [
+                  ...shipments,
+                  nextRow('shipment', next, shipments.length + 1),
+                ]
+              }
+            }
+            notify()
+            return shipments
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: { items: LogisticsShipmentInput[] }) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: LogisticsLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      searches,
+      shipments,
+      state: state ? [state] : [],
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

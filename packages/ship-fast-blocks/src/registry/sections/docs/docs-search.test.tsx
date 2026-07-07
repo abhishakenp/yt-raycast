@@ -3,8 +3,16 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { DocsLakebed } from './docs-interactions.tsx'
-import { docsLakebed } from './docs-lakebed.ts'
+import {
+  docsLakebed,
+  type DocsCatalogInput,
+  type DocsSearchInput,
+} from './docs-lakebed.ts'
 
 type DocsState = ReturnType<typeof docsLakebed.queries.docsState>
 type DocsSearch = DocsState['searches'][number]
@@ -17,9 +25,6 @@ type DocsStateRow = {
   query: string
   updatedAt: string
 }
-type DocsMutationInput =
-  | Parameters<typeof docsLakebed.mutations.setDocsSearch>[1]
-  | Parameters<typeof docsLakebed.mutations.syncDocsArticles>[1]
 
 const navigate = vi.fn()
 const lakebedRef: { current: DocsLakebed | null } = { current: null }
@@ -166,22 +171,8 @@ function createDocsLakebedStub() {
     updatedAt: now,
   })
 
-  const lakebed: DocsLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      articles,
-      searches,
-      state: state ? [state] : [],
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof docsLakebed>({
+    docsCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -192,97 +183,65 @@ function createDocsLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'docsCatalog') return articles
-      if (name === 'docsState') return summary()
-      return null
+      return articles
     },
-    useMutation: (name) => {
+    docsState: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof docsLakebed>({
+    setDocsSearch: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: DocsMutationInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-
-          try {
-            if (name === 'setDocsSearch' && typeof input === 'object') {
-              state = nextRow(
-                'state',
-                {
-                  query: input.query?.trim() ?? '',
-                },
-                1,
-              )
-              searches = [
-                nextRow(
-                  'search',
-                  {
-                    query: state.query,
-                  },
-                  searches.length + 1,
-                ),
-                ...searches,
-              ]
-            }
-
-            if (
-              name === 'syncDocsArticles' &&
-              typeof input === 'object' &&
-              'articles' in input
-            ) {
-              const existingBySlug = new Map(
-                articles.map((article) => [
-                  article.slug.toLowerCase(),
-                  article,
-                ]),
-              )
-
-              for (const article of input.articles) {
-                const slug = article.slug.trim()
-                if (!slug) continue
-
-                const next = {
-                  category: article.category?.trim() ?? '',
-                  content: article.content?.trim() ?? '',
-                  slug,
-                  title: article.title?.trim() ?? '',
-                }
-                const current = existingBySlug.get(slug.toLowerCase())
-
-                if (current) {
-                  articles = articles.map((candidate) =>
-                    candidate.id === current.id
-                      ? { ...current, ...next, updatedAt: now }
-                      : candidate,
-                  )
-                } else {
-                  articles = [
-                    ...articles,
-                    nextRow('article', next, articles.length + 1),
-                  ]
-                }
-              }
-            }
-
-            notify()
-            return name === 'docsState' ? summary() : []
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [name],
-      )
+      const runMutation = useCallback(async (input: DocsSearchInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          state = nextRow(
+            'state',
+            {
+              query: input.query?.trim() ?? '',
+            },
+            1,
+          )
+          searches = [
+            nextRow(
+              'search',
+              {
+                query: state.query,
+              },
+              searches.length + 1,
+            ),
+            ...searches,
+          ]
+          notify()
+          return state ? [state] : []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (input: DocsMutationInput) => runMutation(input),
+          (input: DocsSearchInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -297,6 +256,106 @@ function createDocsLakebedStub() {
 
       return mutation
     },
+    syncDocsArticles: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: { articles: DocsCatalogInput[] }) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingBySlug = new Map(
+              articles.map((article) => [article.slug.toLowerCase(), article]),
+            )
+
+            for (const article of input.articles) {
+              const slug = article.slug.trim()
+              if (!slug) continue
+
+              const next = {
+                category: article.category?.trim() ?? '',
+                content: article.content?.trim() ?? '',
+                slug,
+                title: article.title?.trim() ?? '',
+              }
+              const current = existingBySlug.get(slug.toLowerCase())
+
+              if (current) {
+                articles = articles.map((candidate) =>
+                  candidate.id === current.id
+                    ? { ...current, ...next, updatedAt: now }
+                    : candidate,
+                )
+              } else {
+                articles = [
+                  ...articles,
+                  nextRow('article', next, articles.length + 1),
+                ]
+              }
+            }
+            notify()
+            return articles
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: { articles: DocsCatalogInput[] }) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: DocsLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      articles,
+      searches,
+      state: state ? [state] : [],
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

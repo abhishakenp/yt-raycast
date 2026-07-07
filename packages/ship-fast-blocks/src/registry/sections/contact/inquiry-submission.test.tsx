@@ -4,6 +4,10 @@ import type { ComponentType } from 'react'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedQueryStub,
+  createLakebedMutationStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { InquiryLakebed } from './inquiry-interactions.tsx'
 import type { inquiryLakebed } from './inquiry-lakebed.ts'
 
@@ -11,15 +15,17 @@ type InquiryActionInput = Parameters<
   typeof inquiryLakebed.mutations.recordContactAction
 >[1]
 type InquiryActionRecord = {
+  createdAt: string
   id: string
   kind: string
   label: string
   source: string
   target: string
+  updatedAt: string
 }
 type InquiryInput = Parameters<typeof inquiryLakebed.mutations.submitInquiry>[1]
-type InquiryMutationInput = InquiryActionInput | InquiryInput
 type InquiryRecord = {
+  createdAt: string
   email: string
   fieldsJson: string
   id: string
@@ -28,6 +34,7 @@ type InquiryRecord = {
   phone: string
   source: string
   subject: string
+  updatedAt: string
 }
 type InquiryComponent = ComponentType<{
   props: Record<string, unknown>
@@ -131,12 +138,7 @@ const submitButtonForm = (button: HTMLElement) => {
   fireEvent.submit(form)
 }
 
-const isInquiryInput = (input: InquiryMutationInput): input is InquiryInput =>
-  !isActionInput(input)
-
-const isActionInput = (
-  input: InquiryMutationInput,
-): input is InquiryActionInput => 'label' in input
+const now = '2026-06-26T00:00:00.000Z'
 
 function createInquiryLakebedStub() {
   let version = 0
@@ -158,18 +160,8 @@ function createInquiryLakebedStub() {
     return ''
   }
 
-  const lakebed: InquiryLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({ actions, inquiries }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof inquiryLakebed>({
+    inquirySummary: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -181,110 +173,71 @@ function createInquiryLakebedStub() {
         () => version,
       )
 
-      if (name === 'inquirySummary') {
-        return {
-          count: inquiries.length,
-          inquiries,
-          latest: inquiries.at(-1),
-        }
+      return {
+        count: inquiries.length,
+        inquiries,
+        latest: inquiries.at(-1),
       }
-
-      if (name === 'actionSummary') {
-        return {
-          actions,
-          count: actions.length,
-          latest: actions.at(-1),
-        }
-      }
-
-      return null
     },
-    useMutation: (name) => {
+    actionSummary: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+
+      return {
+        actions,
+        count: actions.length,
+        latest: actions.at(-1),
+      }
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof inquiryLakebed>({
+    recordContactAction: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: InquiryMutationInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
+      const runMutation = useCallback(async (input: InquiryActionInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
 
-          try {
-            if (name === 'recordContactAction' && isActionInput(input)) {
-              actions = [
-                ...actions,
-                {
-                  id: `action-${actions.length + 1}`,
-                  kind: normalize(input.kind) || 'contact',
-                  label: normalize(input.label) || 'Contact',
-                  source: normalize(input.source),
-                  target: normalize(input.target),
-                },
-              ]
-            }
+        try {
+          actions = [
+            ...actions,
+            {
+              createdAt: now,
+              id: `action-${actions.length + 1}`,
+              kind: normalize(input.kind) || 'contact',
+              label: normalize(input.label) || 'Contact',
+              source: normalize(input.source),
+              target: normalize(input.target),
+              updatedAt: now,
+            },
+          ]
 
-            if (name === 'submitInquiry' && isInquiryInput(input)) {
-              const fields = input.fields ?? {}
-              inquiries = [
-                ...inquiries,
-                {
-                  email: normalizeEmail(
-                    input.email || pickField(fields, ['email', 'emailAddress']),
-                  ),
-                  fieldsJson: JSON.stringify(fields),
-                  id: `inquiry-${inquiries.length + 1}`,
-                  message: normalize(
-                    input.message ||
-                      pickField(fields, [
-                        'message',
-                        'vision',
-                        'details',
-                        'notes',
-                      ]),
-                  ),
-                  name: normalize(
-                    input.name ||
-                      pickField(fields, [
-                        'name',
-                        'fullName',
-                        'firstName',
-                        'first',
-                        'lastName',
-                      ]),
-                  ),
-                  phone: normalize(input.phone || pickField(fields, ['phone'])),
-                  source: normalize(input.source),
-                  subject: normalize(
-                    input.subject ||
-                      pickField(fields, [
-                        'subject',
-                        'service',
-                        'eventType',
-                        'projectType',
-                        'budget',
-                        'date',
-                      ]),
-                  ),
-                },
-              ]
-            }
+          notify()
+          return actions
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
 
-            notify()
-            return name === 'recordContactAction' ? actions : inquiries
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [name],
-      )
-
+      const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input: InquiryMutationInput) => runMutation(input), {
+          Object.assign((input: InquiryActionInput) => runMutation(input), {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           }),
@@ -298,6 +251,111 @@ function createInquiryLakebedStub() {
 
       return mutation
     },
+    submitInquiry: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(async (input: InquiryInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+
+        try {
+          const fields = input.fields ?? {}
+          inquiries = [
+            ...inquiries,
+            {
+              createdAt: now,
+              email: normalizeEmail(
+                input.email || pickField(fields, ['email', 'emailAddress']),
+              ),
+              fieldsJson: JSON.stringify(fields),
+              id: `inquiry-${inquiries.length + 1}`,
+              message: normalize(
+                input.message ||
+                  pickField(fields, ['message', 'vision', 'details', 'notes']),
+              ),
+              name: normalize(
+                input.name ||
+                  pickField(fields, [
+                    'name',
+                    'fullName',
+                    'firstName',
+                    'first',
+                    'lastName',
+                  ]),
+              ),
+              phone: normalize(input.phone || pickField(fields, ['phone'])),
+              source: normalize(input.source),
+              subject: normalize(
+                input.subject ||
+                  pickField(fields, [
+                    'subject',
+                    'service',
+                    'eventType',
+                    'projectType',
+                    'budget',
+                    'date',
+                  ]),
+              ),
+              updatedAt: now,
+            },
+          ]
+
+          notify()
+          return inquiries
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+
+      const initialLastError: unknown | null = null
+      const mutation = useMemo(
+        () =>
+          Object.assign((input: InquiryInput) => runMutation(input), {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          }),
+        [reset, runMutation],
+      )
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: InquiryLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest' as const,
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest' as const,
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({ actions, inquiries }),
+    useQuery,
+    useMutation,
   }
 
   return { actions: () => actions, inquiries: () => inquiries, lakebed }

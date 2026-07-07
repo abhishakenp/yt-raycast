@@ -2,6 +2,10 @@
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import type { CommerceLakebed } from '../commerce/commerce-interactions.tsx'
@@ -10,18 +14,24 @@ import { ProductDetailHero } from './ProductDetailHero.tsx'
 import { ProductDetailNavbar } from './ProductDetailNavbar.tsx'
 
 type TestCartItem = {
+  createdAt: string
   id: string
   itemKey: string
   label: string
   price: string
   quantity: number
+  updatedAt: string
 }
 
 type TestProduct = {
+  createdAt: string
+  id: string
   imageAlt: string
+  itemKey: string
   label: string
   price: string
   subtitle: string
+  updatedAt: string
 }
 
 type TestState = {
@@ -29,15 +39,18 @@ type TestState = {
   products: TestProduct[]
 }
 
+type PublicCartItem = Omit<TestCartItem, 'createdAt' | 'updatedAt'>
+type PublicProduct = Omit<TestProduct, 'createdAt' | 'updatedAt'>
+
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -122,6 +135,8 @@ function useTestMutation<TMutation>({
   return mutation
 }
 
+const timestamp = '2026-06-26T00:00:00.000Z'
+
 function createCommerceLakebedStub() {
   let version = 0
   const deferred = createDeferred()
@@ -134,11 +149,18 @@ function createCommerceLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
+  const subscribe = (listener: () => void) => {
+    listeners.add(listener)
+    return () => {
+      listeners.delete(listener)
+    }
+  }
+  const getSnapshot = () => version
   const cartSummary = () => ({
     count: state.items.reduce((total, item) => total + item.quantity, 0),
     items: state.items,
   })
-  const syncCatalog = (
+  const syncCatalogProducts = (
     products: MutationArgs<
       typeof commerceCartLakebed.mutations.syncCatalog
     >[0]['products'],
@@ -146,11 +168,14 @@ function createCommerceLakebedStub() {
     state = {
       ...state,
       products: products.map((product, index) => ({
+        createdAt: timestamp,
+        id: `product-${index + 1}`,
         imageAlt: product.imageAlt ?? '',
+        itemKey: '',
         label: product.label,
         price: product.price ?? '',
         subtitle: product.subtitle ?? '',
-        id: `product-${index + 1}`,
+        updatedAt: timestamp,
       })),
     }
   }
@@ -174,72 +199,62 @@ function createCommerceLakebedStub() {
         : [
             ...state.items,
             {
+              createdAt: timestamp,
               id: `item-${state.items.length + 1}`,
               itemKey,
               label,
               price,
               quantity: 1,
+              updatedAt: timestamp,
             },
           ],
     }
   }
 
-  const lakebed = {
-    signInWithGoogle: async () => ({
-      bundle: { challenge: 'challenge', state: 'state', verifier: 'verifier' },
-      url: 'https://shoo.dev/auth',
-    }),
-    signOut: () => {},
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => state,
-    useQuery: (name) => {
-      useSyncExternalStore(
-        (listener) => {
-          listeners.add(listener)
-          return () => {
-            listeners.delete(listener)
-          }
-        },
-        () => version,
-        () => version,
-      )
-
-      if (name === 'cartSummary') return cartSummary()
-      if (name === 'productCatalog') return state.products
+  const useQuery = createLakebedQueryStub<typeof commerceCartLakebed>({
+    cartSummary: () => {
+      useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+      return cartSummary()
+    },
+    productCatalog: () => {
+      useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+      return state.products
+    },
+    commerceSearchState: () => {
+      useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
       return null
     },
-    useMutation: (name) => {
+  })
+
+  const useMutation = createLakebedMutationStub<typeof commerceCartLakebed>({
+    syncCatalog: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncCatalog') {
-        return useTestMutation<
-          typeof commerceCartLakebed.mutations.syncCatalog
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              syncCatalog(input.products)
-              notify()
-              return state.products
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
+      return useTestMutation<typeof commerceCartLakebed.mutations.syncCatalog>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            syncCatalogProducts(input.products)
+            notify()
+            return state.products
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    addItem: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<typeof commerceCartLakebed.mutations.addItem>({
         lastError,
         pendingCount,
@@ -260,12 +275,124 @@ function createCommerceLakebedStub() {
         }, []),
       })
     },
-  } satisfies CommerceLakebed
+    clearCart: () => {
+      const [pendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof commerceCartLakebed.mutations.clearCart>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => [], []),
+      })
+    },
+    incrementItem: () => {
+      const [pendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<
+        typeof commerceCartLakebed.mutations.incrementItem
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => [], []),
+      })
+    },
+    decrementItem: () => {
+      const [pendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<
+        typeof commerceCartLakebed.mutations.decrementItem
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => [], []),
+      })
+    },
+    deleteItem: () => {
+      const [pendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof commerceCartLakebed.mutations.deleteItem>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => [], []),
+      })
+    },
+    removeItem: () => {
+      const [pendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof commerceCartLakebed.mutations.removeItem>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => [], []),
+      })
+    },
+    setCommerceSearch: () => {
+      const [pendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<
+        typeof commerceCartLakebed.mutations.setCommerceSearch
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => [], []),
+      })
+    },
+  })
+
+  const lakebed: CommerceLakebed = {
+    signInWithGoogle: async () => ({
+      bundle: { challenge: 'challenge', state: 'state', verifier: 'verifier' },
+      url: 'https://shoo.dev/auth',
+    }),
+    signOut: () => {},
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => null,
+    useQuery,
+    useMutation,
+  }
+
+  const publicCartItem = ({
+    createdAt: _ca,
+    updatedAt: _ua,
+    ...item
+  }: TestCartItem): PublicCartItem => item
+  const publicProduct = ({
+    createdAt: _ca,
+    updatedAt: _ua,
+    ...product
+  }: TestProduct): PublicProduct => product
 
   return {
     completeAddItem: deferred.complete,
     lakebed,
-    state: () => state,
+    state: () => ({
+      items: state.items.map(publicCartItem),
+      products: state.products.map(publicProduct),
+    }),
   }
 }
 
@@ -286,7 +413,6 @@ describe('product detail add-to-cart loading state', () => {
     render(
       <>
         <ProductDetailCta.component
-          lakebed={lakebed}
           props={{
             actions: [
               { label: 'Add to Cart', variant: 'primary' },
@@ -297,7 +423,6 @@ describe('product detail add-to-cart loading state', () => {
           }}
         />
         <ProductDetailHero.component
-          lakebed={lakebed}
           props={{
             description: 'Portable studio monitoring with low-latency audio.',
             imageAlt: 'Aurora Pro studio headphones product image',
@@ -307,7 +432,6 @@ describe('product detail add-to-cart loading state', () => {
           }}
         />
         <ProductDetailNavbar.component
-          lakebed={lakebed}
           props={{
             nav: ['Overview', 'Features'],
             productPrice: '$299',
@@ -334,8 +458,8 @@ describe('product detail add-to-cart loading state', () => {
     expect(addButtons[0].textContent).toContain('Add to Cart')
     expect(addButtons[2].getAttribute('aria-busy')).toBe('false')
     expect(addButtons[2].textContent).toContain('Add to Cart')
-    expect(addButtons[0].disabled).toBe(false)
-    expect(addButtons[2].disabled).toBe(false)
+    expect((addButtons[0] as HTMLButtonElement).disabled).toBe(false)
+    expect((addButtons[2] as HTMLButtonElement).disabled).toBe(false)
 
     completeAddItem()
 
@@ -361,7 +485,6 @@ describe('product detail add-to-cart loading state', () => {
     render(
       <>
         <ProductDetailCta.component
-          lakebed={lakebed}
           props={{
             actions: [
               { label: 'Add to bag', variant: 'primary' },
@@ -372,7 +495,6 @@ describe('product detail add-to-cart loading state', () => {
           }}
         />
         <ProductDetailNavbar.component
-          lakebed={lakebed}
           props={{
             cta: { label: 'Pre-order', variant: 'primary' },
             nav: ['Overview', 'Features'],
@@ -421,7 +543,6 @@ describe('product detail add-to-cart loading state', () => {
 
     render(
       <ProductDetailHero.component
-        lakebed={lakebed}
         props={{
           price: '$299',
           primaryCta: 'Add to Cart',
@@ -455,7 +576,6 @@ describe('product detail add-to-cart loading state', () => {
 
     render(
       <ProductDetailHero.component
-        lakebed={lakebed}
         props={{
           price: '$299',
           primaryCta: 'View details',

@@ -168,7 +168,14 @@ function createIllustratorLakebedStub() {
     signOut,
     useAuth: () => ({
       isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
     }),
     useData: () => ({
       items: state.items,
@@ -270,11 +277,12 @@ function createIllustratorLakebedStub() {
         },
         [name],
       )
+      const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
           Object.assign((input?: TestMutationInput) => runMutation(input), {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           }),

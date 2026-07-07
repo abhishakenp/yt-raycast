@@ -13,7 +13,7 @@ export type OpenUIIntegrationConfig = Record<string, string | null>
 
 export type OpenUIIntegrationPayload = {
   enabled: boolean
-  config?: OpenUIIntegrationConfig | null
+  config?: unknown
 }
 
 export type OpenUILibraryComponent = ReturnType<typeof defineComponent>
@@ -51,9 +51,14 @@ function sanitizeOpenUIIntegrationConfig(
   return output
 }
 
+type NormalizedIntegrationPayload = {
+  enabled: boolean
+  config: OpenUIIntegrationConfig
+}
+
 function normalizeOpenUIIntegrationPayload(
   raw: unknown,
-): OpenUIIntegrationPayload {
+): NormalizedIntegrationPayload {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return { enabled: false, config: {} }
   }
@@ -258,8 +263,8 @@ export function IntegrationProvider({
   medusa,
   sessionId,
 }: {
-  children: ReactNode
-  medusa?: OpenUIIntegrationPayload | null
+  children?: ReactNode
+  medusa?: unknown
   sessionId?: string | null
 }) {
   const normalizedMedusa = normalizeOpenUIIntegrationPayload(medusa)

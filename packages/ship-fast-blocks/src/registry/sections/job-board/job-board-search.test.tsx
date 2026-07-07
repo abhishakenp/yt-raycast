@@ -3,8 +3,18 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { JobBoardLakebed } from './job-board-interactions.tsx'
-import { jobBoardLakebed } from './job-board-lakebed.ts'
+import {
+  jobBoardLakebed,
+  type JobBoardActionInput,
+  type JobBoardApplicationInput,
+  type JobBoardCatalogInput,
+  type JobBoardSearchInput,
+} from './job-board-lakebed.ts'
 
 type JobBoardState = ReturnType<typeof jobBoardLakebed.queries.jobBoardState>
 type JobBoardAction = JobBoardState['actions'][number]
@@ -13,12 +23,6 @@ type JobCatalogItem = ReturnType<
   typeof jobBoardLakebed.queries.jobCatalog
 >[number]
 type JobBoardSearch = JobBoardState['searches'][number]
-type JobMutationInput =
-  | number
-  | Parameters<typeof jobBoardLakebed.mutations.applyToJob>[1]
-  | Parameters<typeof jobBoardLakebed.mutations.recordJobBoardAction>[1]
-  | Parameters<typeof jobBoardLakebed.mutations.setJobSearch>[1]
-  | Parameters<typeof jobBoardLakebed.mutations.syncJobs>[1]
 type JobBoardStateRow = {
   createdAt: string
   filter: string
@@ -185,24 +189,8 @@ function createJobBoardLakebedStub() {
     updatedAt: now,
   })
 
-  const lakebed: JobBoardLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      actions,
-      applications,
-      items,
-      searches,
-      state: state ? [state] : [],
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof jobBoardLakebed>({
+    jobCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -213,140 +201,52 @@ function createJobBoardLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'jobCatalog') return items
-      if (name === 'jobBoardState') return summary()
-      return null
+      return items
     },
-    useMutation: (name) => {
+    jobBoardState: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof jobBoardLakebed>({
+    applyToJob: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
       const runMutation = useCallback(
-        async (input: JobMutationInput) => {
+        async (input: JobBoardApplicationInput) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
-
           try {
-            if (name === 'setJobSearch' && typeof input === 'object') {
-              state = nextRow(
-                'state',
-                {
-                  filter: input.filter?.trim() || 'All Jobs',
-                  location: input.location?.trim() ?? '',
-                  query: input.query?.trim() ?? '',
-                  visibleCount: 3,
-                },
-                1,
-              )
-              searches = [
+            const role = input.role.trim()
+            if (
+              role &&
+              !applications.some((application) => application.role === role)
+            ) {
+              applications = [
+                ...applications,
                 nextRow(
-                  'search',
+                  'application',
                   {
-                    filter: state.filter,
-                    location: state.location,
-                    query: state.query,
+                    company: input.company?.trim() ?? '',
+                    role,
                   },
-                  searches.length + 1,
+                  applications.length + 1,
                 ),
-                ...searches,
               ]
             }
-
-            if (name === 'loadMoreJobs') {
-              const increment = typeof input === 'number' ? input : 3
-              state = nextRow(
-                'state',
-                {
-                  filter: state?.filter ?? 'All Jobs',
-                  location: state?.location ?? '',
-                  query: state?.query ?? '',
-                  visibleCount: (state?.visibleCount ?? 3) + increment,
-                },
-                1,
-              )
-            }
-
-            if (
-              name === 'applyToJob' &&
-              typeof input === 'object' &&
-              'role' in input
-            ) {
-              const role = input.role.trim()
-              if (
-                role &&
-                !applications.some((application) => application.role === role)
-              ) {
-                applications = [
-                  ...applications,
-                  nextRow(
-                    'application',
-                    {
-                      company: input.company?.trim() ?? '',
-                      role,
-                    },
-                    applications.length + 1,
-                  ),
-                ]
-              }
-            }
-
-            if (
-              name === 'recordJobBoardAction' &&
-              typeof input === 'object' &&
-              'action' in input
-            ) {
-              actions = [
-                nextRow(
-                  'action',
-                  {
-                    action: input.action.trim(),
-                    source: input.source?.trim() ?? '',
-                  },
-                  actions.length + 1,
-                ),
-                ...actions,
-              ]
-            }
-
-            if (
-              name === 'syncJobs' &&
-              typeof input === 'object' &&
-              'items' in input
-            ) {
-              const existingByRole = new Map(
-                items.map((item) => [item.role.toLowerCase(), item]),
-              )
-
-              for (const job of input.items) {
-                const role = job.role.trim()
-                if (!role) continue
-
-                const current = existingByRole.get(role.toLowerCase())
-                const next = {
-                  badge: job.badge?.trim() ?? '',
-                  company: job.company?.trim() ?? '',
-                  description: job.description?.trim() ?? '',
-                  logoAlt: job.logoAlt?.trim() ?? '',
-                  posted: job.posted?.trim() ?? '',
-                  role,
-                  tags: job.tags?.trim() ?? '',
-                }
-
-                if (current) {
-                  items = items.map((candidate) =>
-                    candidate.id === current.id
-                      ? { ...current, ...next, updatedAt: now }
-                      : candidate,
-                  )
-                } else {
-                  items = [...items, nextRow('job', next, items.length + 1)]
-                }
-              }
-            }
-
             notify()
-            return name === 'jobBoardState' ? summary() : []
+            return applications
           } catch (error) {
             setLastError(error)
             throw error
@@ -354,14 +254,15 @@ function createJobBoardLakebedStub() {
             setPendingCount((count) => Math.max(0, count - 1))
           }
         },
-        [name],
+        [],
       )
       const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (input: JobMutationInput) => runMutation(input),
+          (input: JobBoardApplicationInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -376,6 +277,265 @@ function createJobBoardLakebedStub() {
 
       return mutation
     },
+    loadMoreJobs: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(async (increment: number = 3) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          state = nextRow(
+            'state',
+            {
+              filter: state?.filter ?? 'All Jobs',
+              location: state?.location ?? '',
+              query: state?.query ?? '',
+              visibleCount: (state?.visibleCount ?? 3) + increment,
+            },
+            1,
+          )
+          notify()
+          return state ? [state] : []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (increment: number = 3) => runMutation(increment),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    recordJobBoardAction: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(async (input: JobBoardActionInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          actions = [
+            nextRow(
+              'action',
+              {
+                action: input.action.trim(),
+                source: input.source?.trim() ?? '',
+              },
+              actions.length + 1,
+            ),
+            ...actions,
+          ]
+          notify()
+          return actions
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: JobBoardActionInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    setJobSearch: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(async (input: JobBoardSearchInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          state = nextRow(
+            'state',
+            {
+              filter: input.filter?.trim() || 'All Jobs',
+              location: input.location?.trim() ?? '',
+              query: input.query?.trim() ?? '',
+              visibleCount: 3,
+            },
+            1,
+          )
+          searches = [
+            nextRow(
+              'search',
+              {
+                filter: state.filter,
+                location: state.location,
+                query: state.query,
+              },
+              searches.length + 1,
+            ),
+            ...searches,
+          ]
+          notify()
+          return state ? [state] : []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: JobBoardSearchInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    syncJobs: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: { items: JobBoardCatalogInput[] }) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingByRole = new Map(
+              items.map((item) => [item.role.toLowerCase(), item]),
+            )
+
+            for (const job of input.items) {
+              const role = job.role.trim()
+              if (!role) continue
+
+              const current = existingByRole.get(role.toLowerCase())
+              const next = {
+                badge: job.badge?.trim() ?? '',
+                company: job.company?.trim() ?? '',
+                description: job.description?.trim() ?? '',
+                logoAlt: job.logoAlt?.trim() ?? '',
+                posted: job.posted?.trim() ?? '',
+                role,
+                tags: job.tags?.trim() ?? '',
+              }
+
+              if (current) {
+                items = items.map((candidate) =>
+                  candidate.id === current.id
+                    ? { ...current, ...next, updatedAt: now }
+                    : candidate,
+                )
+              } else {
+                items = [...items, nextRow('job', next, items.length + 1)]
+              }
+            }
+            notify()
+            return items
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: { items: JobBoardCatalogInput[] }) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: JobBoardLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      actions,
+      applications,
+      items,
+      searches,
+      state: state ? [state] : [],
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

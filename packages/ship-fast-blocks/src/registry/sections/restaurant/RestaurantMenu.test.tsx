@@ -3,8 +3,18 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { RestaurantLakebed } from './restaurant-interactions.tsx'
-import { restaurantLakebed } from './restaurant-lakebed.ts'
+import {
+  restaurantLakebed,
+  type RestaurantCatalogInput,
+  type RestaurantMenuItemInput,
+  type RestaurantOrderItemTarget,
+  type RestaurantReservationInput,
+} from './restaurant-lakebed.ts'
 
 type RestaurantOrder = ReturnType<
   typeof restaurantLakebed.queries.restaurantOrder
@@ -18,12 +28,6 @@ type RestaurantExperience = ReturnType<
 >
 type RestaurantReservation = RestaurantExperience['reservations'][number]
 type RestaurantSelection = RestaurantOrder['selections'][number]
-type RestaurantMutationInput =
-  | Parameters<typeof restaurantLakebed.mutations.addMenuItem>[1]
-  | Parameters<typeof restaurantLakebed.mutations.removeMenuItem>[1]
-  | Parameters<typeof restaurantLakebed.mutations.reserveTable>[1]
-  | Parameters<typeof restaurantLakebed.mutations.selectMenuItem>[1]
-  | Parameters<typeof restaurantLakebed.mutations.syncMenuCatalog>[1]
 
 const navigate = vi.fn()
 const lakebedRef: { current: RestaurantLakebed | null } = { current: null }
@@ -37,6 +41,13 @@ type RestaurantMutationName = Extract<
   string
 >
 
+type GenericMutation = ((input?: unknown) => Promise<unknown>) & {
+  isPending: boolean
+  lastError: unknown | null
+  pendingCount: number
+  reset(): void
+}
+
 vi.mock('@ship-fast/lakebed/react', () => ({
   createLakebedClient: vi.fn(() => {
     if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
@@ -46,10 +57,10 @@ vi.mock('@ship-fast/lakebed/react', () => ({
     lakebed: RestaurantLakebed,
     name: RestaurantMutationName,
   ) => {
-    const mutation = lakebed.useMutation(name)
+    const mutation = lakebed.useMutation(name) as GenericMutation
     const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
     const run = useCallback(
-      async (key: string, input?: RestaurantMutationInput) => {
+      async (key: string, input?: unknown) => {
         if (pendingKeys.includes(key)) return undefined
 
         setPendingKeys((current) =>
@@ -225,24 +236,8 @@ function createRestaurantLakebedStub({
     selectedPrice,
   })
 
-  const lakebed: RestaurantLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      catalog,
-      orderItems,
-      reservations,
-      selections,
-      state: [],
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof restaurantLakebed>({
+    menuCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -253,164 +248,89 @@ function createRestaurantLakebedStub({
         () => version,
         () => version,
       )
-
-      if (name === 'menuCatalog') return catalog
-      if (name === 'restaurantExperience') return experience()
-      if (name === 'restaurantOrder' && restaurantOrderOverride !== undefined) {
+      return catalog
+    },
+    restaurantExperience: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return experience()
+    },
+    restaurantOrder: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      if (restaurantOrderOverride !== undefined) {
         return restaurantOrderOverride as RestaurantOrder
       }
-      if (name === 'restaurantOrder') return summary()
-      return null
+      return summary()
     },
-    useMutation: (name) => {
+  })
+
+  const useMutation = createLakebedMutationStub<typeof restaurantLakebed>({
+    addMenuItem: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
       const runMutation = useCallback(
-        async (input?: RestaurantMutationInput) => {
+        async (input: RestaurantMenuItemInput) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
           try {
-            if (name === 'addMenuItem') {
-              await addDelay?.()
-              const nextInput =
-                input && 'category' in input
-                  ? input
-                  : {
-                      category: '',
-                      description: '',
-                      name: 'Item',
-                      price: '',
-                    }
-              const existing = orderItems.find(
-                (item) => item.name === nextInput.name,
+            await addDelay?.()
+            const existing = orderItems.find((item) => item.name === input.name)
+
+            if (existing) {
+              orderItems = orderItems.map((item) =>
+                item.name === input.name
+                  ? { ...item, quantity: item.quantity + 1 }
+                  : item,
               )
-
-              if (existing) {
-                orderItems = orderItems.map((item) =>
-                  item.name === nextInput.name
-                    ? { ...item, quantity: item.quantity + 1 }
-                    : item,
-                )
-              } else {
-                orderItems = [
-                  ...orderItems,
-                  row(
-                    'order',
-                    {
-                      category: nextInput.category,
-                      description: nextInput.description ?? '',
-                      name: nextInput.name,
-                      price: nextInput.price ?? '',
-                      quantity: 1,
-                      tag: nextInput.tag ?? '',
-                    },
-                    orderItems.length + 1,
-                  ),
-                ]
-              }
-
-              selections = [
+            } else {
+              orderItems = [
+                ...orderItems,
                 row(
-                  'selection',
+                  'order',
                   {
-                    category: nextInput.category,
-                    name: nextInput.name,
-                    price: nextInput.price ?? '',
-                    source: 'order',
+                    category: input.category,
+                    description: input.description ?? '',
+                    name: input.name,
+                    price: input.price ?? '',
+                    quantity: 1,
+                    tag: input.tag ?? '',
                   },
-                  selections.length + 1,
+                  orderItems.length + 1,
                 ),
-                ...selections,
               ]
             }
 
-            if (name === 'clearRestaurantOrder') {
-              orderItems = []
-            }
-
-            if (name === 'reserveTable') {
-              await reserveDelay?.()
-              const nextInput =
-                input && 'source' in input
-                  ? input
-                  : {
-                      label: '',
-                      source: 'Reservations',
-                    }
-              reservations = [
-                row(
-                  'reservation',
-                  {
-                    label: nextInput.label ?? '',
-                    source: nextInput.source,
-                  },
-                  reservations.length + 1,
-                ),
-                ...reservations,
-              ]
-            }
-
-            if (name === 'selectMenuItem') {
-              await selectDelay?.()
-              const nextInput =
-                input && 'name' in input
-                  ? input
-                  : {
-                      category: '',
-                      name: 'Item',
-                      price: '',
-                      source: 'search',
-                    }
-              selectedCategory = nextInput.category
-              selectedMenuItem = nextInput.name
-              selectedPrice = nextInput.price ?? ''
-              selections = [
-                row(
-                  'selection',
-                  {
-                    category: nextInput.category,
-                    name: nextInput.name,
-                    price: nextInput.price ?? '',
-                    source: nextInput.source ?? 'search',
-                  },
-                  selections.length + 1,
-                ),
-                ...selections,
-              ]
-            }
-
-            if (name === 'syncMenuCatalog') {
-              const nextInput =
-                input && 'items' in input
-                  ? input
-                  : {
-                      items: [],
-                    }
-              for (const item of nextInput.items) {
-                const existingIndex = catalog.findIndex(
-                  (current) => current.name === item.name,
-                )
-                const nextItem = row(
-                  'catalog',
-                  {
-                    category: item.category,
-                    description: item.description ?? '',
-                    name: item.name,
-                    price: item.price ?? '',
-                    tag: item.tag ?? '',
-                  },
-                  existingIndex >= 0 ? existingIndex + 1 : catalog.length + 1,
-                )
-                if (existingIndex >= 0) {
-                  catalog = catalog.map((current, index) =>
-                    index === existingIndex ? nextItem : current,
-                  )
-                } else {
-                  catalog = [...catalog, nextItem]
-                }
-              }
-            }
+            selections = [
+              row(
+                'selection',
+                {
+                  category: input.category,
+                  name: input.name,
+                  price: input.price ?? '',
+                  source: 'order',
+                },
+                selections.length + 1,
+              ),
+              ...selections,
+            ]
 
             notify()
             return orderItems
@@ -421,14 +341,15 @@ function createRestaurantLakebedStub({
             setPendingCount((count) => Math.max(0, count - 1))
           }
         },
-        [name],
+        [],
       )
       const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (input?: RestaurantMutationInput) => runMutation(input),
+          (input: RestaurantMenuItemInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -443,6 +364,289 @@ function createRestaurantLakebedStub({
 
       return mutation
     },
+    clearRestaurantOrder: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(async () => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          orderItems = []
+          notify()
+          return []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(() => runMutation(), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    removeMenuItem: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: RestaurantOrderItemTarget) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            orderItems = orderItems.filter((item) => item.name !== input.name)
+            notify()
+            return orderItems
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: RestaurantOrderItemTarget) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    reserveTable: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: RestaurantReservationInput) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            await reserveDelay?.()
+            reservations = [
+              row(
+                'reservation',
+                {
+                  label: input.label ?? '',
+                  source: input.source,
+                },
+                reservations.length + 1,
+              ),
+              ...reservations,
+            ]
+            notify()
+            return reservations
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: RestaurantReservationInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    selectMenuItem: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: RestaurantMenuItemInput & { source?: string }) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            await selectDelay?.()
+            selectedCategory = input.category
+            selectedMenuItem = input.name
+            selectedPrice = input.price ?? ''
+            selections = [
+              row(
+                'selection',
+                {
+                  category: input.category,
+                  name: input.name,
+                  price: input.price ?? '',
+                  source: input.source ?? 'search',
+                },
+                selections.length + 1,
+              ),
+              ...selections,
+            ]
+            notify()
+            return selections
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: RestaurantMenuItemInput & { source?: string }) =>
+            runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    syncMenuCatalog: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(async (input: RestaurantCatalogInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          for (const item of input.items) {
+            const existingIndex = catalog.findIndex(
+              (current) => current.name === item.name,
+            )
+            const nextItem = row(
+              'catalog',
+              {
+                category: item.category,
+                description: item.description ?? '',
+                name: item.name,
+                price: item.price ?? '',
+                tag: item.tag ?? '',
+              },
+              existingIndex >= 0 ? existingIndex + 1 : catalog.length + 1,
+            )
+            if (existingIndex >= 0) {
+              catalog = catalog.map((current, index) =>
+                index === existingIndex ? nextItem : current,
+              )
+            } else {
+              catalog = [...catalog, nextItem]
+            }
+          }
+          notify()
+          return catalog
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: RestaurantCatalogInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: RestaurantLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      catalog,
+      orderItems,
+      reservations,
+      selections,
+      state: [],
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

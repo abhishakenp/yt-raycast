@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
-import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import type {
+  LakebedClientRuntime,
+  LakebedMutationFunction,
+} from '@ship-fast/lakebed/react'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AnalyticsHeader } from './AnalyticsHeader.tsx'
 import { AnalyticsSidebar } from './AnalyticsSidebar.tsx'
@@ -11,9 +18,7 @@ import type {
   AnalyticsNotificationInput,
 } from './analytics-admin-lakebed.ts'
 
-type AnalyticsAdminLakebed = NonNullable<
-  Parameters<typeof AnalyticsHeader.component>[0]['lakebed']
->
+type AnalyticsAdminLakebed = LakebedClientRuntime<typeof analyticsAdminLakebed>
 
 type TestAction = {
   createdAt: string
@@ -34,14 +39,14 @@ type TestNotification = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -214,19 +219,8 @@ function createAnalyticsAdminLakebedStub() {
     state.notifications.filter((notification) => notification.read === 'false')
       .length
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => ({
-      isAuthenticated: true,
-      user: {
-        displayName: 'Morgan Analyst',
-        email: 'morgan@dataflow.dev',
-        isGuest: false,
-      },
-    }),
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof analyticsAdminLakebed>({
+    actionSummary: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -237,89 +231,119 @@ function createAnalyticsAdminLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'actionSummary') return actionSummary()
-      if (name === 'notifications') return state.notifications
-      if (name === 'unreadNotificationCount') return unreadNotificationCount()
-      return null
+      return actionSummary()
     },
-    useMutation: (name) => {
+    notifications: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return state.notifications
+    },
+    unreadNotificationCount: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return unreadNotificationCount()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof analyticsAdminLakebed>({
+    markNotificationRead: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'markNotificationRead') {
-        return useTestMutation<
-          typeof analyticsAdminLakebed.mutations.markNotificationRead
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              markNotificationRead(input.id)
-              notify()
-              return state.notifications
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
-      if (name === 'clearAllNotifications') {
-        return useTestMutation<
-          typeof analyticsAdminLakebed.mutations.clearAllNotifications
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async () => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              clearAllNotifications()
-              notify()
-              return []
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
-      if (name === 'syncNotifications') {
-        return useTestMutation<
-          typeof analyticsAdminLakebed.mutations.syncNotifications
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              syncNotifications(input.notifications)
-              notify()
-              return state.notifications
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
+      return useTestMutation<
+        typeof analyticsAdminLakebed.mutations.markNotificationRead
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            markNotificationRead(input.id)
+            notify()
+            return state.notifications
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    clearAllNotifications: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<
+        typeof analyticsAdminLakebed.mutations.clearAllNotifications
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            clearAllNotifications()
+            notify()
+            return []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    syncNotifications: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<
+        typeof analyticsAdminLakebed.mutations.syncNotifications
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            syncNotifications(input.notifications)
+            notify()
+            return state.notifications
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    recordAction: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<
         typeof analyticsAdminLakebed.mutations.recordAction
       >({
@@ -342,7 +366,30 @@ function createAnalyticsAdminLakebedStub() {
         }, []),
       })
     },
-  } satisfies AnalyticsAdminLakebed
+  })
+
+  const lakebed: AnalyticsAdminLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => ({
+      displayName: 'Morgan Analyst',
+      isAuthenticated: true,
+      isGuest: false,
+      provider: 'google',
+      user: {
+        displayName: 'Morgan Analyst',
+        email: 'morgan@dataflow.dev',
+        id: 'google:morgan',
+        isGuest: false,
+        provider: 'google',
+        userId: 'google:morgan',
+      },
+      userId: 'google:morgan',
+    }),
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -368,8 +415,8 @@ describe('analytics admin fullstack behavior', () => {
 
     render(
       <>
-        <AnalyticsSidebar.component lakebed={lakebed} props={{}} />
-        <AnalyticsHeader.component lakebed={lakebed} props={{}} />
+        <AnalyticsSidebar.component props={{}} />
+        <AnalyticsHeader.component props={{}} />
       </>,
     )
 

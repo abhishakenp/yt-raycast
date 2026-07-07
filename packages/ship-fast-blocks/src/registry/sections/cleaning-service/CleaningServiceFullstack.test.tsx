@@ -3,6 +3,10 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
 import { guestAuthContext } from '@ship-fast/lakebed/server'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { LocalServiceLakebed } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
@@ -39,14 +43,14 @@ type TestBookingInput = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -262,12 +266,8 @@ function createCleaningServiceLakebedStub({
     }
   }
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => guestAuthContext,
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof localServiceLakebed>({
+    serviceCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -278,20 +278,30 @@ function createCleaningServiceLakebedStub({
         () => version,
         () => version,
       )
-
-      if (name === 'serviceCatalog') return state.services
-      if (name === 'bookingSummary') return summary()
-      return null
+      return state.services
     },
-    useMutation: (name) => {
+    bookingSummary: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof localServiceLakebed>({
+    syncServices: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncServices') {
-        return useTestMutation<
-          typeof localServiceLakebed.mutations.syncServices
-        >({
+      return useTestMutation<typeof localServiceLakebed.mutations.syncServices>(
+        {
           lastError,
           pendingCount,
           reset,
@@ -313,9 +323,13 @@ function createCleaningServiceLakebedStub({
             },
             [mutationDelay],
           ),
-        })
-      }
-
+        },
+      )
+    },
+    requestBooking: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<
         typeof localServiceLakebed.mutations.requestBooking
       >({
@@ -342,7 +356,16 @@ function createCleaningServiceLakebedStub({
         ),
       })
     },
-  } satisfies LocalServiceLakebed
+  })
+
+  const lakebed: LocalServiceLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => guestAuthContext,
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -405,16 +428,11 @@ describe('CleaningService fullstack behavior', () => {
       <>
         <CleaningServiceNavbar.component
           props={{ brand: 'PureSpace', nav: ['Services', 'Pricing'] }}
-          lakebed={lakebed}
         />
         <CleaningServiceServices.component
           props={{ items: cleaningServices }}
-          lakebed={lakebed}
         />
-        <CleaningServicePricing.component
-          props={{ plans: cleaningPlans }}
-          lakebed={lakebed}
-        />
+        <CleaningServicePricing.component props={{ plans: cleaningPlans }} />
       </>,
     )
 
@@ -462,16 +480,12 @@ describe('CleaningService fullstack behavior', () => {
 
     render(
       <>
-        <CleaningServiceHero.component props={{}} lakebed={lakebed} />
+        <CleaningServiceHero.component props={{}} />
         <CleaningServiceServices.component
           props={{ items: cleaningServices }}
-          lakebed={lakebed}
         />
-        <CleaningServicePricing.component
-          props={{ plans: cleaningPlans }}
-          lakebed={lakebed}
-        />
-        <CleaningServiceContactCta.component props={{}} lakebed={lakebed} />
+        <CleaningServicePricing.component props={{ plans: cleaningPlans }} />
+        <CleaningServiceContactCta.component props={{}} />
       </>,
     )
 

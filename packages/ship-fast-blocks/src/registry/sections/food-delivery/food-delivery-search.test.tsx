@@ -3,8 +3,18 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { FoodDeliveryLakebed } from './food-delivery-interactions.tsx'
-import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
+import {
+  foodDeliveryLakebed,
+  type FoodDeliveryActionInput,
+  type FoodDeliveryCatalogInput,
+  type FoodDeliveryRestaurantInput,
+  type FoodDeliverySearchInput,
+} from './food-delivery-lakebed.ts'
 
 type FoodDeliveryState = ReturnType<
   typeof foodDeliveryLakebed.queries.foodDeliveryState
@@ -24,11 +34,6 @@ type FoodStateRow = {
   selectedRestaurant: string
   updatedAt: string
 }
-type FoodMutationInput =
-  | Parameters<typeof foodDeliveryLakebed.mutations.recordFoodAction>[1]
-  | Parameters<typeof foodDeliveryLakebed.mutations.selectRestaurant>[1]
-  | Parameters<typeof foodDeliveryLakebed.mutations.setFoodSearch>[1]
-  | Parameters<typeof foodDeliveryLakebed.mutations.syncRestaurants>[1]
 
 const navigate = vi.fn()
 const lakebedRef: { current: FoodDeliveryLakebed | null } = { current: null }
@@ -182,24 +187,8 @@ function createFoodDeliveryLakebedStub() {
     selections,
   })
 
-  const lakebed: FoodDeliveryLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      actions,
-      items,
-      searches,
-      selections,
-      state: state ? [state] : [],
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof foodDeliveryLakebed>({
+    restaurantCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -210,123 +199,46 @@ function createFoodDeliveryLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'restaurantCatalog') return items
-      if (name === 'foodDeliveryState') return summary()
-      return null
+      return items
     },
-    useMutation: (name) => {
+    foodDeliveryState: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof foodDeliveryLakebed>({
+    recordFoodAction: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
       const runMutation = useCallback(
-        async (input: FoodMutationInput) => {
+        async (input: FoodDeliveryActionInput) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
-
           try {
-            if (name === 'setFoodSearch') {
-              const address =
-                'address' in input ? (input.address?.trim() ?? '') : ''
-              const query =
-                'query' in input ? input.query?.trim() || address : address
-              state = row(
-                'state',
+            actions = [
+              row(
+                'action',
                 {
-                  address,
-                  query,
-                  selectedCuisine: '',
-                  selectedRestaurant: '',
+                  action: input.action.trim(),
+                  source: input.source?.trim() ?? '',
                 },
-                1,
-              )
-              searches = [
-                row(
-                  'search',
-                  {
-                    address: state.address,
-                    query: state.query,
-                  },
-                  searches.length + 1,
-                ),
-                ...searches,
-              ]
-            }
-
-            if (name === 'selectRestaurant' && 'name' in input) {
-              const selectedRestaurant = input.name.trim()
-              const selectedCuisine = input.cuisine?.trim() ?? ''
-              state = row(
-                'state',
-                {
-                  address: state?.address ?? '',
-                  query: state?.query ?? '',
-                  selectedCuisine,
-                  selectedRestaurant,
-                },
-                1,
-              )
-              selections = [
-                row(
-                  'selection',
-                  {
-                    cuisine: selectedCuisine,
-                    name: selectedRestaurant,
-                  },
-                  selections.length + 1,
-                ),
-                ...selections,
-              ]
-            }
-
-            if (name === 'recordFoodAction' && 'action' in input) {
-              actions = [
-                row(
-                  'action',
-                  {
-                    action: input.action.trim(),
-                    source: input.source?.trim() ?? '',
-                  },
-                  actions.length + 1,
-                ),
-                ...actions,
-              ]
-            }
-
-            if (name === 'syncRestaurants' && 'items' in input) {
-              const existingByName = new Map(
-                items.map((item) => [item.name.toLowerCase(), item]),
-              )
-
-              for (const item of input.items) {
-                const nameValue = item.name.trim()
-                if (!nameValue) continue
-
-                const current = existingByName.get(nameValue.toLowerCase())
-                const next = {
-                  category: item.category?.trim() ?? '',
-                  cuisine: item.cuisine?.trim() ?? '',
-                  delivery: item.delivery?.trim() ?? '',
-                  imageAlt: item.imageAlt?.trim() ?? '',
-                  name: nameValue,
-                  rating: item.rating?.trim() ?? '',
-                  time: item.time?.trim() ?? '',
-                }
-
-                if (current) {
-                  items = items.map((candidate) =>
-                    candidate.id === current.id
-                      ? { ...current, ...next, updatedAt: now }
-                      : candidate,
-                  )
-                } else {
-                  items = [...items, row('item', next, items.length + 1)]
-                }
-              }
-            }
-
+                actions.length + 1,
+              ),
+              ...actions,
+            ]
             notify()
-            return []
+            return actions
           } catch (error) {
             setLastError(error)
             throw error
@@ -334,14 +246,15 @@ function createFoodDeliveryLakebedStub() {
             setPendingCount((count) => Math.max(0, count - 1))
           }
         },
-        [name],
+        [],
       )
       const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (input: FoodMutationInput) => runMutation(input),
+          (input: FoodDeliveryActionInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -356,6 +269,236 @@ function createFoodDeliveryLakebedStub() {
 
       return mutation
     },
+    selectRestaurant: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: FoodDeliveryRestaurantInput) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const selectedRestaurant = input.name.trim()
+            const selectedCuisine = input.cuisine?.trim() ?? ''
+            state = row(
+              'state',
+              {
+                address: state?.address ?? '',
+                query: state?.query ?? '',
+                selectedCuisine,
+                selectedRestaurant,
+              },
+              1,
+            )
+            selections = [
+              row(
+                'selection',
+                {
+                  cuisine: selectedCuisine,
+                  name: selectedRestaurant,
+                },
+                selections.length + 1,
+              ),
+              ...selections,
+            ]
+            notify()
+            return selections
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: FoodDeliveryRestaurantInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    setFoodSearch: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: FoodDeliverySearchInput) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const address = input.address?.trim() ?? ''
+            const query = input.query?.trim() || address
+            state = row(
+              'state',
+              {
+                address,
+                query,
+                selectedCuisine: '',
+                selectedRestaurant: '',
+              },
+              1,
+            )
+            searches = [
+              row(
+                'search',
+                {
+                  address: state.address,
+                  query: state.query,
+                },
+                searches.length + 1,
+              ),
+              ...searches,
+            ]
+            notify()
+            return state ? [state] : []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: FoodDeliverySearchInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    syncRestaurants: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: { items: FoodDeliveryCatalogInput[] }) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingByName = new Map(
+              items.map((item) => [item.name.toLowerCase(), item]),
+            )
+
+            for (const item of input.items) {
+              const nameValue = item.name.trim()
+              if (!nameValue) continue
+
+              const current = existingByName.get(nameValue.toLowerCase())
+              const next = {
+                category: item.category?.trim() ?? '',
+                cuisine: item.cuisine?.trim() ?? '',
+                delivery: item.delivery?.trim() ?? '',
+                imageAlt: item.imageAlt?.trim() ?? '',
+                name: nameValue,
+                rating: item.rating?.trim() ?? '',
+                time: item.time?.trim() ?? '',
+              }
+
+              if (current) {
+                items = items.map((candidate) =>
+                  candidate.id === current.id
+                    ? { ...current, ...next, updatedAt: now }
+                    : candidate,
+                )
+              } else {
+                items = [...items, row('item', next, items.length + 1)]
+              }
+            }
+            notify()
+            return items
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: { items: FoodDeliveryCatalogInput[] }) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: FoodDeliveryLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      actions,
+      items,
+      searches,
+      selections,
+      state: state ? [state] : [],
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

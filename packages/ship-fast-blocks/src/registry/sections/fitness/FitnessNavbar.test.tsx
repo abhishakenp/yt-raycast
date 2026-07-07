@@ -3,6 +3,10 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedQueryStub,
+  createLakebedMutationStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { NewsletterLakebed } from '../newsletter/newsletter-interactions.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 
@@ -105,20 +109,8 @@ function createNewsletterLakebedStub() {
     updatedAt: now,
   })
 
-  const lakebed: NewsletterLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      subscribers,
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof newsletterLakebed>({
+    subscriberSummary: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -130,51 +122,44 @@ function createNewsletterLakebedStub() {
         () => version,
       )
 
-      if (name === 'subscriberSummary') {
-        return { count: subscribers.length, subscribers }
-      }
-
-      return null
+      return { count: subscribers.length, subscribers }
     },
-    useMutation: (name) => {
+  })
+
+  const useMutation = createLakebedMutationStub<typeof newsletterLakebed>({
+    subscribe: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: SubscribeInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
+      const runMutation = useCallback(async (input: SubscribeInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
 
-          try {
-            if (name === 'subscribe') {
-              const email = input.email.trim().toLowerCase()
-              if (email) {
-                subscribers = [
-                  ...subscribers.filter(
-                    (subscriber) => subscriber.email !== email,
-                  ),
-                  row(input, subscribers.length + 1),
-                ]
-              }
-            }
-
-            notify()
-            return subscribers
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
+        try {
+          const email = input.email.trim().toLowerCase()
+          if (email) {
+            subscribers = [
+              ...subscribers.filter((subscriber) => subscriber.email !== email),
+              row(input, subscribers.length + 1),
+            ]
           }
-        },
-        [name],
-      )
+
+          notify()
+          return subscribers
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+      const initialLastError: unknown | null = null
       const mutation = useMemo(() => {
         const callable = Object.assign(
           (input: SubscribeInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -189,6 +174,34 @@ function createNewsletterLakebedStub() {
 
       return mutation
     },
+  })
+
+  const lakebed: NewsletterLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest' as const,
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest' as const,
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      subscribers,
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

@@ -3,8 +3,16 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { KnowledgeBaseLakebed } from './knowledge-base-interactions.tsx'
-import { knowledgeBaseLakebed } from './knowledge-base-lakebed.ts'
+import {
+  knowledgeBaseLakebed,
+  type KnowledgeBaseArticleInput,
+  type KnowledgeBaseSearchInput,
+} from './knowledge-base-lakebed.ts'
 
 type KbSearchState = ReturnType<typeof knowledgeBaseLakebed.queries.kbSearch>
 type KbArticle = KbSearchState['articles'][number]
@@ -15,9 +23,6 @@ type KbStateRow = {
   query: string
   updatedAt: string
 }
-type KbMutationInput =
-  | Parameters<typeof knowledgeBaseLakebed.mutations.setKbSearch>[1]
-  | Parameters<typeof knowledgeBaseLakebed.mutations.syncKbArticles>[1]
 
 const navigate = vi.fn()
 const lakebedRef: { current: KnowledgeBaseLakebed | null } = { current: null }
@@ -171,22 +176,8 @@ function createKbLakebedStub() {
     return { articles, query, results, searches }
   }
 
-  const lakebed: KnowledgeBaseLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      articles,
-      searches,
-      state: state ? [state] : [],
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof knowledgeBaseLakebed>({
+    kbCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -197,71 +188,41 @@ function createKbLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'kbCatalog') return articles
-      if (name === 'kbSearch') return summary()
-      return null
+      return articles
     },
-    useMutation: (name) => {
+    kbSearch: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof knowledgeBaseLakebed>({
+    setKbSearch: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
       const runMutation = useCallback(
-        async (input: KbMutationInput) => {
+        async (input: KnowledgeBaseSearchInput) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
-
           try {
-            if (name === 'setKbSearch' && typeof input === 'object') {
-              const query = input.query?.trim() ?? ''
-              state = nextRow('state', { query }, 1)
-              searches = [
-                nextRow('search', { query }, searches.length + 1),
-                ...searches,
-              ]
-            }
-
-            if (
-              name === 'syncKbArticles' &&
-              typeof input === 'object' &&
-              'items' in input
-            ) {
-              const existingBySlug = new Map(
-                articles.map((article) => [
-                  article.slug.toLowerCase(),
-                  article,
-                ]),
-              )
-
-              for (const item of input.items) {
-                const slug = item.slug.trim()
-                if (!slug) continue
-
-                const next = {
-                  category: item.category?.trim() ?? '',
-                  content: item.content?.trim() ?? '',
-                  slug,
-                  title: item.title?.trim() ?? '',
-                }
-                const current = existingBySlug.get(slug.toLowerCase())
-
-                if (current) {
-                  articles = articles.map((candidate) =>
-                    candidate.id === current.id
-                      ? { ...current, ...next, updatedAt: now }
-                      : candidate,
-                  )
-                } else {
-                  articles = [
-                    ...articles,
-                    nextRow('article', next, articles.length + 1),
-                  ]
-                }
-              }
-            }
-
+            const query = input.query?.trim() ?? ''
+            state = nextRow('state', { query }, 1)
+            searches = [
+              nextRow('search', { query }, searches.length + 1),
+              ...searches,
+            ]
             notify()
-            return name === 'kbSearch' ? summary() : []
+            return state ? [state] : []
           } catch (error) {
             setLastError(error)
             throw error
@@ -269,14 +230,15 @@ function createKbLakebedStub() {
             setPendingCount((count) => Math.max(0, count - 1))
           }
         },
-        [name],
+        [],
       )
       const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (input: KbMutationInput) => runMutation(input),
+          (input: KnowledgeBaseSearchInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -291,6 +253,106 @@ function createKbLakebedStub() {
 
       return mutation
     },
+    syncKbArticles: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: { items: KnowledgeBaseArticleInput[] }) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingBySlug = new Map(
+              articles.map((article) => [article.slug.toLowerCase(), article]),
+            )
+
+            for (const item of input.items) {
+              const slug = item.slug.trim()
+              if (!slug) continue
+
+              const next = {
+                category: item.category?.trim() ?? '',
+                content: item.content?.trim() ?? '',
+                slug,
+                title: item.title?.trim() ?? '',
+              }
+              const current = existingBySlug.get(slug.toLowerCase())
+
+              if (current) {
+                articles = articles.map((candidate) =>
+                  candidate.id === current.id
+                    ? { ...current, ...next, updatedAt: now }
+                    : candidate,
+                )
+              } else {
+                articles = [
+                  ...articles,
+                  nextRow('article', next, articles.length + 1),
+                ]
+              }
+            }
+            notify()
+            return articles
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: { items: KnowledgeBaseArticleInput[] }) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: KnowledgeBaseLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      articles,
+      searches,
+      state: state ? [state] : [],
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

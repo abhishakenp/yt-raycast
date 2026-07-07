@@ -69,10 +69,10 @@ describe('newsletterLakebed', () => {
 
     const patch = buildSeedPatchFromProps({
       data: { subscribers: [] },
+      definition: newsletterLakebed,
       props: {
         subscribers: [{ email: 'seed@example.com', source: 'Props' }],
       },
-      schema: newsletterLakebed.schema,
     })
 
     expect(patch).toEqual({})

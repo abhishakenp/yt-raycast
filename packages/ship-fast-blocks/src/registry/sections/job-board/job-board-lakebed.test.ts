@@ -2,10 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { createLakebedHandlerContext } from '@ship-fast/lakebed/server'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 
+const emptyJobBoardData = () => ({
+  actions: [],
+  applications: [],
+  items: [],
+  searches: [],
+  state: [],
+})
+
 describe('jobBoardLakebed', () => {
   it('stores shared search state and history', async () => {
     const first = createLakebedHandlerContext({
-      data: { applications: [], searches: [], state: [] },
+      data: emptyJobBoardData(),
       props: {},
       schema: jobBoardLakebed.schema,
       writable: true,
@@ -18,7 +26,7 @@ describe('jobBoardLakebed', () => {
     })
 
     const second = createLakebedHandlerContext({
-      data: first.getPatch(),
+      data: { ...emptyJobBoardData(), ...first.getPatch() },
       props: {},
       schema: jobBoardLakebed.schema,
     })
@@ -41,7 +49,7 @@ describe('jobBoardLakebed', () => {
 
   it('records applications once and increases visible job count', async () => {
     const context = createLakebedHandlerContext({
-      data: { applications: [], searches: [], state: [] },
+      data: emptyJobBoardData(),
       props: {},
       schema: jobBoardLakebed.schema,
       writable: true,
@@ -58,7 +66,7 @@ describe('jobBoardLakebed', () => {
     await jobBoardLakebed.mutations.loadMoreJobs(context.context, 3)
 
     const summaryContext = createLakebedHandlerContext({
-      data: context.getPatch(),
+      data: { ...emptyJobBoardData(), ...context.getPatch() },
       props: {},
       schema: jobBoardLakebed.schema,
     })

@@ -3,8 +3,18 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { DirectoryLakebed } from './directory-interactions.tsx'
-import { directoryLakebed } from './directory-lakebed.ts'
+import {
+  directoryLakebed,
+  type DirectoryLeadInput,
+  type DirectoryListingInput,
+  type DirectorySearchInput,
+  type DirectorySelectInput,
+} from './directory-lakebed.ts'
 
 type DirectoryState = ReturnType<typeof directoryLakebed.queries.directoryState>
 type DirectoryCatalogItem = ReturnType<
@@ -13,11 +23,6 @@ type DirectoryCatalogItem = ReturnType<
 type DirectoryLead = DirectoryState['leads'][number]
 type DirectorySearch = DirectoryState['searches'][number]
 type DirectorySelection = DirectoryState['selections'][number]
-type DirectoryMutationInput =
-  | Parameters<typeof directoryLakebed.mutations.requestListing>[1]
-  | Parameters<typeof directoryLakebed.mutations.selectListing>[1]
-  | Parameters<typeof directoryLakebed.mutations.setDirectorySearch>[1]
-  | Parameters<typeof directoryLakebed.mutations.syncListings>[1]
 type DirectoryStateRow = {
   category: string
   createdAt: string
@@ -181,24 +186,8 @@ function createDirectoryLakebedStub() {
     updatedAt: now,
   })
 
-  const lakebed: DirectoryLakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      items,
-      leads,
-      searches,
-      selections,
-      state: state ? [state] : [],
-    }),
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof directoryLakebed>({
+    directoryCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -209,131 +198,59 @@ function createDirectoryLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'directoryCatalog') return items
-      if (name === 'directoryState') return summary()
-      return null
+      return items
     },
-    useMutation: (name) => {
+    directoryState: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof directoryLakebed>({
+    requestListing: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: DirectoryMutationInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-
-          try {
-            if (name === 'setDirectorySearch') {
-              if (!('query' in input)) {
-                throw new Error('Expected directory search input')
-              }
-              state = row(
-                'state',
-                {
-                  category: input.category?.trim() ?? '',
-                  query: input.query?.trim() ?? '',
-                  selectedName: '',
-                },
-                1,
-              )
-              searches = [
-                row(
-                  'search',
-                  { category: state.category, query: state.query },
-                  searches.length + 1,
-                ),
-                ...searches,
-              ]
-            }
-
-            if (name === 'selectListing' && 'name' in input) {
-              const nameValue = input.name.trim()
-              state = row(
-                'state',
-                {
-                  category: state?.category ?? '',
-                  query: state?.query ?? '',
-                  selectedName: nameValue,
-                },
-                1,
-              )
-              selections = [
-                row(
-                  'selection',
-                  {
-                    category: input.category?.trim() ?? '',
-                    name: nameValue,
-                  },
-                  selections.length + 1,
-                ),
-                ...selections,
-              ]
-            }
-
-            if (name === 'requestListing' && 'action' in input) {
-              leads = [
-                row(
-                  'lead',
-                  {
-                    action: input.action.trim(),
-                    source: input.source?.trim() ?? '',
-                  },
-                  leads.length + 1,
-                ),
-                ...leads,
-              ]
-            }
-
-            if (name === 'syncListings' && 'items' in input) {
-              const existingByName = new Map(
-                items.map((item) => [item.name.toLowerCase(), item]),
-              )
-
-              for (const item of input.items) {
-                const nameValue = item.name.trim()
-                if (!nameValue) continue
-
-                const current = existingByName.get(nameValue.toLowerCase())
-                const next = {
-                  address: item.address?.trim() ?? '',
-                  category: item.category?.trim() ?? '',
-                  hours: item.hours?.trim() ?? '',
-                  imageAlt: item.imageAlt?.trim() ?? '',
-                  name: nameValue,
-                  rating: item.rating?.trim() ?? '',
-                  reviews: item.reviews?.trim() ?? '',
-                }
-
-                if (current) {
-                  items = items.map((candidate) =>
-                    candidate.id === current.id
-                      ? { ...current, ...next, updatedAt: now }
-                      : candidate,
-                  )
-                } else {
-                  items = [...items, row('item', next, items.length + 1)]
-                }
-              }
-            }
-
-            notify()
-            return []
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [name],
-      )
+      const runMutation = useCallback(async (input: DirectoryLeadInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          leads = [
+            row(
+              'lead',
+              {
+                action: input.action.trim(),
+                source: input.source?.trim() ?? '',
+              },
+              leads.length + 1,
+            ),
+            ...leads,
+          ]
+          notify()
+          return leads
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (input: DirectoryMutationInput) => runMutation(input),
+          (input: DirectoryLeadInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -348,6 +265,222 @@ function createDirectoryLakebedStub() {
 
       return mutation
     },
+    selectListing: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(async (input: DirectorySelectInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const nameValue = input.name.trim()
+          state = row(
+            'state',
+            {
+              category: state?.category ?? '',
+              query: state?.query ?? '',
+              selectedName: nameValue,
+            },
+            1,
+          )
+          selections = [
+            row(
+              'selection',
+              {
+                category: input.category?.trim() ?? '',
+                name: nameValue,
+              },
+              selections.length + 1,
+            ),
+            ...selections,
+          ]
+          notify()
+          return selections
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: DirectorySelectInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    setDirectorySearch: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(async (input: DirectorySearchInput) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          state = row(
+            'state',
+            {
+              category: input.category?.trim() ?? '',
+              query: input.query?.trim() ?? '',
+              selectedName: '',
+            },
+            1,
+          )
+          searches = [
+            row(
+              'search',
+              { category: state.category, query: state.query },
+              searches.length + 1,
+            ),
+            ...searches,
+          ]
+          notify()
+          return state ? [state] : []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: DirectorySearchInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    syncListings: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: { items: DirectoryListingInput[] }) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingByName = new Map(
+              items.map((item) => [item.name.toLowerCase(), item]),
+            )
+
+            for (const item of input.items) {
+              const nameValue = item.name.trim()
+              if (!nameValue) continue
+
+              const current = existingByName.get(nameValue.toLowerCase())
+              const next = {
+                address: item.address?.trim() ?? '',
+                category: item.category?.trim() ?? '',
+                hours: item.hours?.trim() ?? '',
+                imageAlt: item.imageAlt?.trim() ?? '',
+                name: nameValue,
+                rating: item.rating?.trim() ?? '',
+                reviews: item.reviews?.trim() ?? '',
+              }
+
+              if (current) {
+                items = items.map((candidate) =>
+                  candidate.id === current.id
+                    ? { ...current, ...next, updatedAt: now }
+                    : candidate,
+                )
+              } else {
+                items = [...items, row('item', next, items.length + 1)]
+              }
+            }
+            notify()
+            return items
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: { items: DirectoryListingInput[] }) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: DirectoryLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      items,
+      leads,
+      searches,
+      selections,
+      state: state ? [state] : [],
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

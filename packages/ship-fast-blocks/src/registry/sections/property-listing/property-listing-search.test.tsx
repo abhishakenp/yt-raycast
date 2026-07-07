@@ -3,8 +3,19 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import type { PropertyListingLakebed } from './property-listing-interactions.tsx'
-import { propertyListingLakebed } from './property-listing-lakebed.ts'
+import {
+  propertyListingLakebed,
+  type PropertyListingCatalogInput,
+  type PropertyListingInquiryInput,
+  type PropertyListingSaveInput,
+  type PropertyListingSearchInput,
+  type PropertyListingSelectInput,
+} from './property-listing-lakebed.ts'
 
 type PropertyListingState = ReturnType<
   typeof propertyListingLakebed.queries.propertyListingState
@@ -245,24 +256,8 @@ function createPropertyListingLakebedStub(
     selectedAddress: state?.selectedAddress ?? '',
   })
 
-  const lakebed = {
-    signInWithGoogle: vi.fn(async () => ({
-      bundle: { challenge: '', state: '', verifier: '' },
-      url: '',
-    })),
-    signOut: vi.fn(),
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => ({
-      inquiries,
-      listings,
-      saved,
-      searches,
-      state: state ? [state] : [],
-    }),
-    useQuery: (name: string) => {
+  const useQuery = createLakebedQueryStub<typeof propertyListingLakebed>({
+    propertyCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -273,135 +268,50 @@ function createPropertyListingLakebedStub(
         () => version,
         () => version,
       )
-
-      if (name === 'propertyCatalog') return listings
-      if (name === 'propertyListingState') return summary()
-      return null
+      return listings
     },
-    useMutation: (name: string) => {
+    propertyListingState: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof propertyListingLakebed>({
+    recordPropertyInquiry: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
       const runMutation = useCallback(
-        async (input: PropertyMutationInput = {}) => {
+        async (input: PropertyListingInquiryInput) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
-
           try {
-            await waitForMutation(name)
-
-            if (name === 'setPropertySearch') {
-              if (!('filter' in input)) return []
-              state = row(
-                'state',
-                {
-                  filter: input.filter?.trim() ?? '',
-                  location: input.location?.trim() ?? '',
-                  query: input.query?.trim() ?? '',
-                  selectedAddress: '',
-                },
-                1,
-              )
-              searches = [
+            const intent = input.intent.trim()
+            if (intent) {
+              inquiries = [
                 row(
-                  'search',
+                  'inquiry',
                   {
-                    filter: state.filter,
-                    location: state.location,
-                    query: state.query,
+                    address: input.address?.trim() ?? '',
+                    intent,
+                    source: input.source?.trim() ?? '',
                   },
-                  searches.length + 1,
+                  inquiries.length + 1,
                 ),
-                ...searches,
+                ...inquiries,
               ]
             }
-
-            if (name === 'saveListing') {
-              if (!('address' in input)) return []
-              const address = input.address?.trim() ?? ''
-              const existing = saved.find((item) => item.address === address)
-              saved = existing
-                ? saved.filter((item) => item.address !== address)
-                : [
-                    row(
-                      'saved',
-                      {
-                        address,
-                        price: input.price?.trim() ?? '',
-                      },
-                      saved.length + 1,
-                    ),
-                    ...saved,
-                  ]
-            }
-
-            if (name === 'selectListing') {
-              if (!('address' in input)) return []
-              const selectedAddress = input.address?.trim() ?? ''
-              state = row(
-                'state',
-                {
-                  filter: state?.filter ?? '',
-                  location: state?.location ?? '',
-                  query: state?.query ?? '',
-                  selectedAddress,
-                },
-                1,
-              )
-            }
-
-            if (name === 'recordPropertyInquiry') {
-              if (!('intent' in input)) return []
-              const intent = input.intent.trim()
-              if (intent) {
-                inquiries = [
-                  row(
-                    'inquiry',
-                    {
-                      address: input.address?.trim() ?? '',
-                      intent,
-                      source: input.source?.trim() ?? '',
-                    },
-                    inquiries.length + 1,
-                  ),
-                  ...inquiries,
-                ]
-              }
-            }
-
-            if (name === 'syncPropertyListings') {
-              if (!('listings' in input)) return []
-              const existingByAddress = new Map(
-                listings.map((listing) => [
-                  listing.address.toLowerCase(),
-                  listing,
-                ]),
-              )
-              listings = input.listings
-                .filter((listing) => listing.address.trim())
-                .map((listing, index) => {
-                  const address = listing.address.trim()
-                  const existing = existingByAddress.get(address.toLowerCase())
-
-                  return row(
-                    'listing',
-                    {
-                      address,
-                      baths: listing.baths.trim(),
-                      beds: listing.beds.trim(),
-                      price: listing.price.trim(),
-                      sqft: listing.sqft.trim(),
-                      tag: listing.tag?.trim() ?? '',
-                    },
-                    existing
-                      ? Number(existing.id.split('-').at(-1))
-                      : index + 1,
-                  )
-                })
-            }
-
             notify()
-            return []
+            return inquiries
           } catch (error) {
             setLastError(error)
             throw error
@@ -409,14 +319,15 @@ function createPropertyListingLakebedStub(
             setPendingCount((count) => Math.max(0, count - 1))
           }
         },
-        [name],
+        [],
       )
       const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (input?: PropertyMutationInput) => runMutation(input),
+          (input: PropertyListingInquiryInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },
@@ -431,6 +342,278 @@ function createPropertyListingLakebedStub(
 
       return mutation
     },
+    saveListing: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: PropertyListingSaveInput) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const address = input.address.trim()
+            const existing = saved.find((item) => item.address === address)
+            saved = existing
+              ? saved.filter((item) => item.address !== address)
+              : [
+                  row(
+                    'saved',
+                    {
+                      address,
+                      price: input.price?.trim() ?? '',
+                    },
+                    saved.length + 1,
+                  ),
+                  ...saved,
+                ]
+            notify()
+            return saved
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: PropertyListingSaveInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    selectListing: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: PropertyListingSelectInput) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            await waitForMutation('selectListing')
+            const selectedAddress = input.address.trim()
+            state = row(
+              'state',
+              {
+                filter: state?.filter ?? '',
+                location: state?.location ?? '',
+                query: state?.query ?? '',
+                selectedAddress,
+              },
+              1,
+            )
+            notify()
+            return state ? [state] : []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: PropertyListingSelectInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    setPropertySearch: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: PropertyListingSearchInput) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            await waitForMutation('setPropertySearch')
+            state = row(
+              'state',
+              {
+                filter: input.filter?.trim() ?? '',
+                location: input.location?.trim() ?? '',
+                query: input.query?.trim() ?? '',
+                selectedAddress: '',
+              },
+              1,
+            )
+            searches = [
+              row(
+                'search',
+                {
+                  filter: state.filter,
+                  location: state.location,
+                  query: state.query,
+                },
+                searches.length + 1,
+              ),
+              ...searches,
+            ]
+            notify()
+            return state ? [state] : []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: PropertyListingSearchInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+    syncPropertyListings: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: { listings: PropertyListingCatalogInput[] }) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingByAddress = new Map(
+              listings.map((listing) => [
+                listing.address.toLowerCase(),
+                listing,
+              ]),
+            )
+            listings = input.listings
+              .filter((listing) => listing.address.trim())
+              .map((listing, index) => {
+                const address = listing.address.trim()
+                const existing = existingByAddress.get(address.toLowerCase())
+
+                return row(
+                  'listing',
+                  {
+                    address,
+                    baths: listing.baths.trim(),
+                    beds: listing.beds.trim(),
+                    price: listing.price.trim(),
+                    sqft: listing.sqft.trim(),
+                    tag: listing.tag?.trim() ?? '',
+                  },
+                  existing ? Number(existing.id.split('-').at(-1)) : index + 1,
+                )
+              })
+            notify()
+            return listings
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
+      const mutation = useMemo(() => {
+        const initialLastError: unknown | null = null
+        const callable = Object.assign(
+          (input: { listings: PropertyListingCatalogInput[] }) =>
+            runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  })
+
+  const lakebed: PropertyListingLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => ({
+      inquiries,
+      listings,
+      saved,
+      searches,
+      state: state ? [state] : [],
+    }),
+    useQuery,
+    useMutation,
   }
 
   return {

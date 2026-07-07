@@ -2,6 +2,10 @@
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { EventCta } from './EventCta.tsx'
 import { EventHero } from './EventHero.tsx'
@@ -33,14 +37,14 @@ type TestTicket = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -191,18 +195,8 @@ function createEventLakebedStub() {
     }
   }
 
-  const lakebed = {
-    signInWithGoogle: async () => ({
-      bundle: { challenge: 'challenge', state: 'state', verifier: 'verifier' },
-      url: 'https://shoo.dev/auth',
-    }),
-    signOut: () => {},
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof eventLakebed>({
+    registrationSummary: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -213,38 +207,52 @@ function createEventLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'registrationSummary') return registrationSummary()
-      if (name === 'ticketCatalog') return state.tickets
-      return null
+      return registrationSummary()
     },
-    useMutation: (name) => {
+    ticketCatalog: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return state.tickets
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof eventLakebed>({
+    syncTickets: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncTickets') {
-        return useTestMutation<typeof eventLakebed.mutations.syncTickets>({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              syncTickets(input.tickets)
-              notify()
-              return state.tickets
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
+      return useTestMutation<typeof eventLakebed.mutations.syncTickets>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            syncTickets(input.tickets)
+            notify()
+            return state.tickets
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    recordEventAction: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<typeof eventLakebed.mutations.recordEventAction>({
         lastError,
         pendingCount,
@@ -265,7 +273,32 @@ function createEventLakebedStub() {
         }, []),
       })
     },
-  } satisfies EventLakebed
+  })
+
+  const lakebed: EventLakebed = {
+    signInWithGoogle: async () => ({
+      bundle: { challenge: 'challenge', state: 'state', verifier: 'verifier' },
+      url: 'https://shoo.dev/auth',
+    }),
+    signOut: () => {},
+    useAuth: () => ({
+      displayName: 'Guest',
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      user: {
+        displayName: 'Guest',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -291,7 +324,6 @@ describe('event fullstack behavior', () => {
     render(
       <>
         <EventNavbar.component
-          lakebed={lakebed}
           props={{
             brand: 'FrontConf',
             ctaLabel: 'Get Tickets',
@@ -299,14 +331,12 @@ describe('event fullstack behavior', () => {
           }}
         />
         <EventHero.component
-          lakebed={lakebed}
           props={{
             primaryCta: 'Register Now',
             secondaryCta: 'View Full Agenda',
           }}
         />
         <EventTickets.component
-          lakebed={lakebed}
           props={{
             tiers: [
               {
@@ -329,7 +359,6 @@ describe('event fullstack behavior', () => {
           }}
         />
         <EventCta.component
-          lakebed={lakebed}
           props={{
             email: 'team@frontconf.dev',
             primaryCta: 'Get Your Ticket',

@@ -5,7 +5,7 @@ import { directoryLakebed } from './directory-lakebed.ts'
 describe('directoryLakebed', () => {
   it('stores shared directory search state and history', async () => {
     const first = createLakebedHandlerContext({
-      data: { searches: [], selections: [], state: [] },
+      data: { items: [], leads: [], searches: [], selections: [], state: [] },
       props: {},
       schema: directoryLakebed.schema,
       writable: true,
@@ -38,7 +38,7 @@ describe('directoryLakebed', () => {
 
   it('records selected listings without seeding interaction rows from props', async () => {
     const first = createLakebedHandlerContext({
-      data: { searches: [], selections: [], state: [] },
+      data: { items: [], leads: [], searches: [], selections: [], state: [] },
       props: {},
       schema: directoryLakebed.schema,
       writable: true,

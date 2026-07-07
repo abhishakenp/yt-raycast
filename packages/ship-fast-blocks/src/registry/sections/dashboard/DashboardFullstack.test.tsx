@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
-import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import type {
+  LakebedClientRuntime,
+  LakebedMutationFunction,
+} from '@ship-fast/lakebed/react'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DashboardHeader } from './DashboardHeader.tsx'
 import { DashboardKpis } from './DashboardKpis.tsx'
@@ -10,9 +17,7 @@ import { DashboardSidebar } from './DashboardSidebar.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 import type { DashboardOrderInput } from './dashboard-lakebed.ts'
 
-type DashboardLakebed = NonNullable<
-  Parameters<typeof DashboardHeader.component>[0]['lakebed']
->
+type DashboardLakebed = LakebedClientRuntime<typeof dashboardLakebed>
 
 type TestOrder = {
   amount: string
@@ -28,14 +33,14 @@ type TestOrder = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -168,19 +173,8 @@ function createDashboardLakebedStub() {
     }
   }
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => ({
-      isAuthenticated: true,
-      user: {
-        displayName: 'Taylor Admin',
-        email: 'taylor@orbit.dev',
-        isGuest: false,
-      },
-    }),
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof dashboardLakebed>({
+    orders: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -191,69 +185,81 @@ function createDashboardLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'orders') return state.orders
-      if (name === 'orderSummary') {
-        const current = state.orders.at(-1) ?? null
-        return {
-          count: state.orders.length,
-          current,
-          currentOrderId: current?.orderId ?? '',
-        }
-      }
-      return null
+      return state.orders
     },
-    useMutation: (name) => {
+    orderSummary: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      const current = state.orders.at(-1) ?? null
+      return {
+        count: state.orders.length,
+        current,
+        currentOrderId: current?.orderId ?? '',
+      }
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof dashboardLakebed>({
+    setOrderStatus: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'setOrderStatus') {
-        return useTestMutation<
-          typeof dashboardLakebed.mutations.setOrderStatus
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              setOrderStatus(input)
-              notify()
-              return state.orders
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
-      if (name === 'removeOrder') {
-        return useTestMutation<typeof dashboardLakebed.mutations.removeOrder>({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              removeOrder(input)
-              notify()
-              return state.orders
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
+      return useTestMutation<typeof dashboardLakebed.mutations.setOrderStatus>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            setOrderStatus(input)
+            notify()
+            return state.orders
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    removeOrder: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof dashboardLakebed.mutations.removeOrder>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            removeOrder(input)
+            notify()
+            return state.orders
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    addOrder: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<typeof dashboardLakebed.mutations.addOrder>({
         lastError,
         pendingCount,
@@ -274,7 +280,30 @@ function createDashboardLakebedStub() {
         }, []),
       })
     },
-  } satisfies DashboardLakebed
+  })
+
+  const lakebed: DashboardLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => ({
+      displayName: 'Taylor Admin',
+      isAuthenticated: true,
+      isGuest: false,
+      provider: 'google',
+      userId: 'google:taylor',
+      user: {
+        displayName: 'Taylor Admin',
+        email: 'taylor@orbit.dev',
+        id: 'google:taylor',
+        isGuest: false,
+        provider: 'google',
+        userId: 'google:taylor',
+      },
+    }),
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -299,10 +328,10 @@ describe('dashboard fullstack behavior', () => {
 
     render(
       <>
-        <DashboardSidebar.component lakebed={lakebed} props={{}} />
-        <DashboardHeader.component lakebed={lakebed} props={{}} />
-        <DashboardKpis.component lakebed={lakebed} props={{}} />
-        <DashboardOrdersTable.component lakebed={lakebed} props={{}} />
+        <DashboardSidebar.component props={{}} />
+        <DashboardHeader.component props={{}} />
+        <DashboardKpis.component props={{}} />
+        <DashboardOrdersTable.component props={{}} />
       </>,
     )
 

@@ -2,8 +2,6 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import type { ComponentRenderProps } from '@openuidev/react-lang'
-import type { ReactElement } from 'react'
 
 const navigate = vi.fn()
 
@@ -42,7 +40,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
   signOut: vi.fn(),
 }))
 
-import { isCapsule } from '#/capsules/openui.ts'
+import { isCapsule, type CapsuleRenderer } from '#/capsules/openui.ts'
 import { GovernmentPortalEvents } from './GovernmentPortalEvents.tsx'
 import { GovernmentPortalAbout } from './GovernmentPortalAbout.tsx'
 import { GovernmentPortalFaq } from './GovernmentPortalFaq.tsx'
@@ -55,10 +53,8 @@ const CONTENT = [
   ['GovernmentPortalContact', GovernmentPortalContact],
 ] as const
 
-const renderCapsule = <P,>(
-  Component: (props: ComponentRenderProps<P>) => ReactElement,
-  props: P,
-) => render(<Component props={props} statementId="test" />)
+const renderCapsule = <P,>(Component: CapsuleRenderer<P>, props: P) =>
+  render(<Component props={props} statementId="test" />)
 
 afterEach(() => {
   cleanup()

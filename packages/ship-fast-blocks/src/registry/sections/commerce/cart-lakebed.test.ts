@@ -3,10 +3,17 @@ import { createLakebedHandlerContext } from '@ship-fast/lakebed/server'
 import { buildSeedPatchFromProps } from '@ship-fast/lakebed/react'
 import { commerceCartLakebed } from './cart-lakebed.ts'
 
+const emptyCartData = () => ({
+  items: [],
+  products: [],
+  searches: [],
+  state: [],
+})
+
 describe('commerceCartLakebed', () => {
   it('adds cart items through the shared Lakebed mutation and increments repeats', async () => {
     const first = createLakebedHandlerContext({
-      data: { items: [] },
+      data: { items: [], products: [], searches: [], state: [] },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -27,7 +34,7 @@ describe('commerceCartLakebed', () => {
     ])
 
     const second = createLakebedHandlerContext({
-      data: firstPatch,
+      data: { ...emptyCartData(), ...firstPatch },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -50,7 +57,7 @@ describe('commerceCartLakebed', () => {
 
   it('keeps products with the same label but different keys as separate cart lines', async () => {
     const context = createLakebedHandlerContext({
-      data: { items: [] },
+      data: { items: [], products: [], searches: [], state: [] },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -137,6 +144,9 @@ describe('commerceCartLakebed', () => {
             updatedAt: '2026-06-26T00:00:00.000Z',
           },
         ],
+        products: [],
+        searches: [],
+        state: [],
       },
       props: {},
       schema: commerceCartLakebed.schema,
@@ -157,6 +167,7 @@ describe('commerceCartLakebed', () => {
             itemKey: 'Serum\u0000$28',
             label: 'Serum',
             price: '$28',
+            quantity: 0,
             updatedAt: '2026-06-26T00:00:00.000Z',
           },
           {
@@ -178,6 +189,9 @@ describe('commerceCartLakebed', () => {
             updatedAt: '2026-06-26T00:00:00.000Z',
           },
         ],
+        products: [],
+        searches: [],
+        state: [],
       },
       props: {},
       schema: commerceCartLakebed.schema,
@@ -191,7 +205,7 @@ describe('commerceCartLakebed', () => {
 
   it('syncs searchable product catalog rows into the shared commerce document', async () => {
     const first = createLakebedHandlerContext({
-      data: { items: [], products: [] },
+      data: { items: [], products: [], searches: [], state: [] },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -218,7 +232,7 @@ describe('commerceCartLakebed', () => {
     ])
 
     const second = createLakebedHandlerContext({
-      data: first.getPatch(),
+      data: { ...emptyCartData(), ...first.getPatch() },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -246,7 +260,7 @@ describe('commerceCartLakebed', () => {
 
   it('stores product search state and history outside navigation', async () => {
     const context = createLakebedHandlerContext({
-      data: { searches: [], state: [] },
+      data: { items: [], products: [], searches: [], state: [] },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -288,7 +302,7 @@ describe('commerceCartLakebed', () => {
 
   it('increments, decrements, deletes, and clears cart rows through shared Lakebed mutations', async () => {
     const initial = createLakebedHandlerContext({
-      data: { items: [] },
+      data: { items: [], products: [], searches: [], state: [] },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -304,7 +318,7 @@ describe('commerceCartLakebed', () => {
     })
 
     const mutate = createLakebedHandlerContext({
-      data: initial.getPatch(),
+      data: { ...emptyCartData(), ...initial.getPatch() },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -358,7 +372,7 @@ describe('commerceCartLakebed', () => {
     })
 
     const clear = createLakebedHandlerContext({
-      data: mutate.getPatch(),
+      data: { ...emptyCartData(), ...mutate.getPatch() },
       props: {},
       schema: commerceCartLakebed.schema,
       writable: true,
@@ -373,6 +387,8 @@ describe('commerceCartLakebed', () => {
       data: {
         items: [],
         products: [],
+        searches: [],
+        state: [],
       },
       definition: commerceCartLakebed,
       props: {

@@ -158,7 +158,14 @@ function createCommerceLakebedStub() {
     signOut,
     useAuth: () => ({
       isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
     }),
     useQuery: (name: string) => {
       useSyncExternalStore(
@@ -281,12 +288,13 @@ function createCommerceLakebedStub() {
         },
         [name],
       )
+      const initialLastError: unknown | null = null
       const mutation = useMemo(() => {
         const callable = Object.assign(
           (input?: TestMutationInput) => runMutation(input),
           {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           },

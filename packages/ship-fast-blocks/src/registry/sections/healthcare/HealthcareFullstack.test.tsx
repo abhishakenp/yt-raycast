@@ -3,6 +3,10 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
 import { guestAuthContext } from '@ship-fast/lakebed/server'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { LocalServiceLakebed } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
@@ -39,14 +43,14 @@ type TestBookingInput = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -253,12 +257,8 @@ function createHealthcareLakebedStub({
     }
   }
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => guestAuthContext,
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof localServiceLakebed>({
+    serviceCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -269,20 +269,30 @@ function createHealthcareLakebedStub({
         () => version,
         () => version,
       )
-
-      if (name === 'serviceCatalog') return state.services
-      if (name === 'bookingSummary') return bookingSummary()
-      return null
+      return state.services
     },
-    useMutation: (name) => {
+    bookingSummary: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return bookingSummary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof localServiceLakebed>({
+    syncServices: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncServices') {
-        return useTestMutation<
-          typeof localServiceLakebed.mutations.syncServices
-        >({
+      return useTestMutation<typeof localServiceLakebed.mutations.syncServices>(
+        {
           lastError,
           pendingCount,
           reset,
@@ -304,9 +314,13 @@ function createHealthcareLakebedStub({
             },
             [mutationDelay],
           ),
-        })
-      }
-
+        },
+      )
+    },
+    requestBooking: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<
         typeof localServiceLakebed.mutations.requestBooking
       >({
@@ -333,7 +347,16 @@ function createHealthcareLakebedStub({
         ),
       })
     },
-  } satisfies LocalServiceLakebed
+  })
+
+  const lakebed: LocalServiceLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => guestAuthContext,
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -395,16 +418,9 @@ describe('Healthcare fullstack behavior', () => {
       <>
         <HealthcareNavbar.component
           props={{ brand: 'Vitality', nav: ['Services', 'Pricing'] }}
-          lakebed={lakebed}
         />
-        <HealthcareServices.component
-          props={{ items: healthcareServices }}
-          lakebed={lakebed}
-        />
-        <HealthcarePricing.component
-          props={{ items: healthcarePlans }}
-          lakebed={lakebed}
-        />
+        <HealthcareServices.component props={{ items: healthcareServices }} />
+        <HealthcarePricing.component props={{ items: healthcarePlans }} />
       </>,
     )
 
@@ -451,16 +467,10 @@ describe('Healthcare fullstack behavior', () => {
 
     render(
       <>
-        <HealthcareHero.component props={{}} lakebed={lakebed} />
-        <HealthcareServices.component
-          props={{ items: healthcareServices }}
-          lakebed={lakebed}
-        />
-        <HealthcarePricing.component
-          props={{ items: healthcarePlans }}
-          lakebed={lakebed}
-        />
-        <HealthcareCta.component props={{}} lakebed={lakebed} />
+        <HealthcareHero.component props={{}} />
+        <HealthcareServices.component props={{ items: healthcareServices }} />
+        <HealthcarePricing.component props={{ items: healthcarePlans }} />
+        <HealthcareCta.component props={{}} />
       </>,
     )
 

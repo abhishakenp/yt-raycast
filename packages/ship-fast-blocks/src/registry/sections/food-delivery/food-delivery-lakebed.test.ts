@@ -2,10 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { createLakebedHandlerContext } from '@ship-fast/lakebed/server'
 import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
 
+const emptyFoodDeliveryData = () => ({
+  actions: [],
+  items: [],
+  searches: [],
+  selections: [],
+  state: [],
+})
+
 describe('foodDeliveryLakebed', () => {
   it('stores shared delivery search state and history', async () => {
     const first = createLakebedHandlerContext({
-      data: { searches: [], selections: [], state: [] },
+      data: emptyFoodDeliveryData(),
       props: {},
       schema: foodDeliveryLakebed.schema,
       writable: true,
@@ -17,7 +25,7 @@ describe('foodDeliveryLakebed', () => {
     })
 
     const second = createLakebedHandlerContext({
-      data: first.getPatch(),
+      data: { ...emptyFoodDeliveryData(), ...first.getPatch() },
       props: {},
       schema: foodDeliveryLakebed.schema,
     })
@@ -40,7 +48,7 @@ describe('foodDeliveryLakebed', () => {
 
   it('records selected restaurants without seeding interaction rows from props', async () => {
     const first = createLakebedHandlerContext({
-      data: { searches: [], selections: [], state: [] },
+      data: emptyFoodDeliveryData(),
       props: {},
       schema: foodDeliveryLakebed.schema,
       writable: true,
@@ -52,7 +60,7 @@ describe('foodDeliveryLakebed', () => {
     })
 
     const second = createLakebedHandlerContext({
-      data: first.getPatch(),
+      data: { ...emptyFoodDeliveryData(), ...first.getPatch() },
       props: {},
       schema: foodDeliveryLakebed.schema,
     })

@@ -16,8 +16,7 @@
  */
 
 import { cleanup, render, screen } from '@testing-library/react'
-import type { ComponentRenderProps } from '@openuidev/react-lang'
-import type { ReactElement } from 'react'
+import type { CapsuleRenderer } from '#/capsules/openui.ts'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { FashionStoreFaq } from './FashionStoreFaq.tsx'
@@ -47,10 +46,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
   }),
 }))
 
-const renderCapsule = <P,>(
-  component: (props: ComponentRenderProps<P>) => ReactElement,
-  props: P,
-) => {
+const renderCapsule = <P,>(component: CapsuleRenderer<P>, props: P) => {
   const Component = component
   return render(<Component props={props} statementId="faq-malformed-test" />)
 }

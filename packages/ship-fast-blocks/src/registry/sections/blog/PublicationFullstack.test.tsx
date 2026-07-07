@@ -269,7 +269,14 @@ function createPublicationLakebedStub() {
     signOut: vi.fn(),
     useAuth: () => ({
       isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
     }),
     useData: () => ({
       actions,
@@ -328,11 +335,12 @@ function createPublicationLakebedStub() {
         },
         [name],
       )
+      const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
           Object.assign((input: TestMutationInput) => run(input), {
             isPending: false,
-            lastError: null,
+            lastError: initialLastError,
             pendingCount: 0,
             reset,
           }),

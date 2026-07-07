@@ -2,6 +2,10 @@
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 import type { AutoDealershipLakebed } from './auto-dealership-interactions.tsx'
@@ -43,14 +47,14 @@ type TestLeadInput = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -148,7 +152,10 @@ function useTestMutation<TMutation>({
 
 function createAutoDealershipLakebedStub() {
   let version = 0
-  const signInWithGoogle = vi.fn(async () => undefined)
+  const signInWithGoogle = vi.fn(async () => ({
+    bundle: { challenge: '', state: '', verifier: '' },
+    url: '',
+  }))
   const signOut = vi.fn()
   let state: {
     leads: TestLead[]
@@ -222,15 +229,8 @@ function createAutoDealershipLakebedStub() {
     }
   }
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof autoDealershipLakebed>({
+    leadSummary: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -241,40 +241,54 @@ function createAutoDealershipLakebedStub() {
         () => version,
         () => version,
       )
-
-      if (name === 'leadSummary') return leadSummary()
-      if (name === 'vehicleCatalog') return state.vehicles
-      return null
+      return leadSummary()
     },
-    useMutation: (name) => {
+    vehicleCatalog: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return state.vehicles
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof autoDealershipLakebed>({
+    syncVehicles: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncVehicles') {
-        return useTestMutation<
-          typeof autoDealershipLakebed.mutations.syncVehicles
-        >({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(async (input) => {
-            setPendingCount((count) => count + 1)
-            setLastError(null)
-            try {
-              syncVehicles(input.vehicles)
-              notify()
-              return state.vehicles
-            } catch (error) {
-              setLastError(error)
-              throw error
-            } finally {
-              setPendingCount((count) => Math.max(0, count - 1))
-            }
-          }, []),
-        })
-      }
-
+      return useTestMutation<
+        typeof autoDealershipLakebed.mutations.syncVehicles
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            syncVehicles(input.vehicles)
+            notify()
+            return state.vehicles
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+    recordLead: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<typeof autoDealershipLakebed.mutations.recordLead>(
         {
           lastError,
@@ -297,7 +311,29 @@ function createAutoDealershipLakebedStub() {
         },
       )
     },
-  } satisfies AutoDealershipLakebed
+  })
+
+  const lakebed: AutoDealershipLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => ({
+      displayName: 'Guest',
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+      user: {
+        displayName: 'Guest',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -322,7 +358,6 @@ describe('auto dealership fullstack behavior', () => {
     render(
       <>
         <AutoDealershipNavbar.component
-          lakebed={lakebed}
           props={{
             brand: 'Meridian Test',
             cta: 'Book Drive',
@@ -331,14 +366,12 @@ describe('auto dealership fullstack behavior', () => {
           }}
         />
         <AutoDealershipHero.component
-          lakebed={lakebed}
           props={{
             primaryCta: 'Browse Cars',
             secondaryCta: 'Schedule Test Drive',
           }}
         />
         <AutoDealershipInventory.component
-          lakebed={lakebed}
           props={{
             items: [
               {
@@ -355,7 +388,6 @@ describe('auto dealership fullstack behavior', () => {
           }}
         />
         <AutoDealershipFinancing.component
-          lakebed={lakebed}
           props={{ cta: 'Apply for Financing' }}
         />
       </>,

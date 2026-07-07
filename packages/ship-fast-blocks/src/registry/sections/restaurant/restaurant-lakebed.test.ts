@@ -65,7 +65,7 @@ describe('restaurantLakebed', () => {
     })
 
     const read = createLakebedHandlerContext({
-      data: context.getPatch(),
+      data: { ...emptyRestaurantData(), ...context.getPatch() },
       props: {},
       schema: restaurantLakebed.schema,
     })
@@ -81,7 +81,7 @@ describe('restaurantLakebed', () => {
     })
 
     const clear = createLakebedHandlerContext({
-      data: context.getPatch(),
+      data: { ...emptyRestaurantData(), ...context.getPatch() },
       props: {},
       schema: restaurantLakebed.schema,
       writable: true,

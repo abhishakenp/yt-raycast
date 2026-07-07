@@ -139,7 +139,7 @@ export function BrandLogoProvider({
   children,
 }: {
   value?: BrandLogoSelection | null
-  children: ReactNode
+  children?: ReactNode
 }) {
   useEffect(() => {
     if (typeof document === 'undefined') return

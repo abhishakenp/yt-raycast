@@ -117,21 +117,23 @@ const engineAdapterEventMessage = (event: {
   type: string
   message?: string
   phase?: string
-  task?: EngineWorkspaceTask
-  tasks?: EngineWorkspaceTask[]
+  task?: unknown
+  tasks?: unknown[]
 }): string | undefined => {
   switch (event.type) {
     case 'status':
     case 'log':
       return event.message
-    case 'task':
-      return event.task === undefined
+    case 'task': {
+      const task = event.task as { label?: string; status?: string } | undefined
+      return task === undefined ? undefined : `${task.label}: ${task.status}`
+    }
+    case 'tasks': {
+      const tasks = event.tasks as unknown[] | undefined
+      return tasks === undefined
         ? undefined
-        : `${event.task.label}: ${event.task.status}`
-    case 'tasks':
-      return event.tasks === undefined
-        ? undefined
-        : `${event.tasks.length} engine tasks planned`
+        : `${tasks.length} engine tasks planned`
+    }
     case 'preview_ready':
       return 'Homepage preview ready'
     case 'openui_ready':

@@ -3,6 +3,10 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
 import { guestAuthContext } from '@ship-fast/lakebed/server'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { LocalServiceLakebed } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
@@ -39,14 +43,14 @@ type TestBookingInput = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -253,12 +257,8 @@ function createDentalLakebedStub({
     }
   }
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => guestAuthContext,
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof localServiceLakebed>({
+    serviceCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -269,20 +269,30 @@ function createDentalLakebedStub({
         () => version,
         () => version,
       )
-
-      if (name === 'serviceCatalog') return state.services
-      if (name === 'bookingSummary') return bookingSummary()
-      return null
+      return state.services
     },
-    useMutation: (name) => {
+    bookingSummary: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return bookingSummary()
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof localServiceLakebed>({
+    syncServices: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncServices') {
-        return useTestMutation<
-          typeof localServiceLakebed.mutations.syncServices
-        >({
+      return useTestMutation<typeof localServiceLakebed.mutations.syncServices>(
+        {
           lastError,
           pendingCount,
           reset,
@@ -304,9 +314,13 @@ function createDentalLakebedStub({
             },
             [mutationDelay],
           ),
-        })
-      }
-
+        },
+      )
+    },
+    requestBooking: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<
         typeof localServiceLakebed.mutations.requestBooking
       >({
@@ -333,7 +347,16 @@ function createDentalLakebedStub({
         ),
       })
     },
-  } satisfies LocalServiceLakebed
+  })
+
+  const lakebed: LocalServiceLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => guestAuthContext,
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
@@ -395,16 +418,9 @@ describe('Dental fullstack behavior', () => {
       <>
         <DentalNavbar.component
           props={{ brand: 'Bright Smile', nav: ['Services', 'Pricing'] }}
-          lakebed={lakebed}
         />
-        <DentalServices.component
-          props={{ items: dentalServices }}
-          lakebed={lakebed}
-        />
-        <DentalPricing.component
-          props={{ plans: dentalPlans }}
-          lakebed={lakebed}
-        />
+        <DentalServices.component props={{ items: dentalServices }} />
+        <DentalPricing.component props={{ plans: dentalPlans }} />
       </>,
     )
 
@@ -451,16 +467,10 @@ describe('Dental fullstack behavior', () => {
 
     render(
       <>
-        <DentalHero.component props={{}} lakebed={lakebed} />
-        <DentalServices.component
-          props={{ items: dentalServices }}
-          lakebed={lakebed}
-        />
-        <DentalPricing.component
-          props={{ plans: dentalPlans }}
-          lakebed={lakebed}
-        />
-        <DentalContactCta.component props={{}} lakebed={lakebed} />
+        <DentalHero.component props={{}} />
+        <DentalServices.component props={{ items: dentalServices }} />
+        <DentalPricing.component props={{ plans: dentalPlans }} />
+        <DentalContactCta.component props={{}} />
       </>,
     )
 

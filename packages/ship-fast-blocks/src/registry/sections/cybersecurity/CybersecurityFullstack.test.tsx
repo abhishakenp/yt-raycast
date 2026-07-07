@@ -2,6 +2,10 @@
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import {
+  createLakebedMutationStub,
+  createLakebedQueryStub,
+} from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import type { SaasLakebed } from '../saas/saas-interactions.tsx'
@@ -40,14 +44,14 @@ type TestIntentInput = {
 }
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: unknown,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: ReadonlyArray<unknown>
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
@@ -243,15 +247,8 @@ function createCybersecurityLakebedStub({
     }
   }
 
-  const lakebed = {
-    signInWithGoogle,
-    signOut,
-    useAuth: () => ({
-      isAuthenticated: false,
-      user: { displayName: 'Guest', email: '', isGuest: true },
-    }),
-    useData: () => state,
-    useQuery: (name) => {
+  const useQuery = createLakebedQueryStub<typeof saasLakebed>({
+    planCatalog: () => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -262,71 +259,100 @@ function createCybersecurityLakebedStub({
         () => version,
         () => version,
       )
-
-      if (name === 'planCatalog') return state.plans
-      if (name === 'conversionSummary') return summary()
-      return null
+      return state.plans
     },
-    useMutation: (name) => {
+    conversionSummary: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return summary()
+    },
+    authSessionSummary: () => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+      return { count: 0, lastSession: null, sessions: [] }
+    },
+  })
+
+  const useMutation = createLakebedMutationStub<typeof saasLakebed>({
+    syncPlans: () => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-
-      if (name === 'syncPlans') {
-        return useTestMutation<typeof saasLakebed.mutations.syncPlans>({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(
-            async (input) => {
-              setPendingCount((count) => count + 1)
-              setLastError(null)
-              try {
-                await mutationDelay?.syncPlans?.()
-                state = {
-                  ...state,
-                  plans: input.plans.map(testPlan),
-                }
-                notify()
-                return state.plans
-              } catch (error) {
-                setLastError(error)
-                throw error
-              } finally {
-                setPendingCount((count) => Math.max(0, count - 1))
+      return useTestMutation<typeof saasLakebed.mutations.syncPlans>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(
+          async (input) => {
+            setPendingCount((count) => count + 1)
+            setLastError(null)
+            try {
+              await mutationDelay?.syncPlans?.()
+              state = {
+                ...state,
+                plans: input.plans.map(testPlan),
               }
-            },
-            [mutationDelay],
-          ),
-        })
-      }
-
-      if (name === 'requestDemo') {
-        return useTestMutation<typeof saasLakebed.mutations.requestDemo>({
-          lastError,
-          pendingCount,
-          reset,
-          runMutation: useCallback(
-            async (input) => {
-              setPendingCount((count) => count + 1)
-              setLastError(null)
-              try {
-                await mutationDelay?.requestDemo?.()
-                recordIntent({ input, type: 'demo' })
-                notify()
-                return state.intents
-              } catch (error) {
-                setLastError(error)
-                throw error
-              } finally {
-                setPendingCount((count) => Math.max(0, count - 1))
-              }
-            },
-            [mutationDelay],
-          ),
-        })
-      }
-
+              notify()
+              return state.plans
+            } catch (error) {
+              setLastError(error)
+              throw error
+            } finally {
+              setPendingCount((count) => Math.max(0, count - 1))
+            }
+          },
+          [mutationDelay],
+        ),
+      })
+    },
+    requestDemo: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof saasLakebed.mutations.requestDemo>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(
+          async (input) => {
+            setPendingCount((count) => count + 1)
+            setLastError(null)
+            try {
+              await mutationDelay?.requestDemo?.()
+              recordIntent({ input, type: 'demo' })
+              notify()
+              return state.intents
+            } catch (error) {
+              setLastError(error)
+              throw error
+            } finally {
+              setPendingCount((count) => Math.max(0, count - 1))
+            }
+          },
+          [mutationDelay],
+        ),
+      })
+    },
+    selectPlan: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
       return useTestMutation<typeof saasLakebed.mutations.selectPlan>({
         lastError,
         pendingCount,
@@ -351,7 +377,78 @@ function createCybersecurityLakebedStub({
         ),
       })
     },
-  } satisfies SaasLakebed
+    clearAuthSessions: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof saasLakebed.mutations.clearAuthSessions>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            await mutationDelay?.clearAuthSessions?.()
+            notify()
+            return []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, [mutationDelay]),
+      })
+    },
+    recordAuthSession: () => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      return useTestMutation<typeof saasLakebed.mutations.recordAuthSession>({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async () => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            await mutationDelay?.recordAuthSession?.()
+            notify()
+            return []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, [mutationDelay]),
+      })
+    },
+  })
+
+  const lakebed: SaasLakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => ({
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest' as const,
+      userId: 'guest:local',
+      displayName: 'Guest',
+      user: {
+        displayName: 'Guest',
+        email: '',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest' as const,
+        userId: 'guest:local',
+      },
+    }),
+    useData: () => state,
+    useQuery,
+    useMutation,
+  }
 
   return {
     lakebed,
