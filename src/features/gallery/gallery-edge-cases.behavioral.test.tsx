@@ -62,6 +62,23 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('convex/react', () => ({
   useMutation: () => galleryMocks.deleteMine,
+  ConvexReactClient: class {
+    watchQuery() {
+      return {
+        localQueryResult: () => undefined,
+        onUpdate: () => () => {},
+        journal: () => undefined,
+      }
+    }
+    connectionState() {
+      return {
+        hasInflightRequests: false,
+        isWebSocketConnected: false,
+        timeOfOldestInflightRequest: null,
+      }
+    }
+  },
+  ConvexProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({

@@ -7,7 +7,8 @@
     ".": "./src/server.ts",
     "./auth": "./src/auth.tsx",
     "./react": "./src/react.tsx",
-    "./server": "./src/server.ts"
+    "./server": "./src/server.ts",
+    "./test-helpers": "./src/test-helpers.ts"
   },
   "dependencies": {
     "lakebed": "0.0.25"

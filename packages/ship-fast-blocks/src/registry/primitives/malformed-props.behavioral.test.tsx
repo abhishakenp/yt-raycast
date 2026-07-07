@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
 import { cleanup, render, screen } from '@testing-library/react'
-import type { ComponentRenderProps } from '@openuidev/react-lang'
-import type { ReactElement } from 'react'
+import type { CapsuleRenderer } from '#/capsules/openui.ts'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AvatarGroup } from './avatar.tsx'
@@ -31,18 +30,12 @@ vi.mock('@ship-fast/lakebed/react', () => ({
   }),
 }))
 
-const renderCapsule = <P,>(
-  component: (props: ComponentRenderProps<P>) => ReactElement,
-  props: P,
-) => {
+const renderCapsule = <P,>(component: CapsuleRenderer<P>, props: P) => {
   const Component = component
   return render(<Component props={props} statementId="malformed-props-test" />)
 }
 
-const renderMalformed = <P,>(
-  component: (props: ComponentRenderProps<P>) => ReactElement,
-  props: P,
-) => {
+const renderMalformed = <P,>(component: CapsuleRenderer<P>, props: P) => {
   expect(() => renderCapsule(component, props)).not.toThrow()
 }
 

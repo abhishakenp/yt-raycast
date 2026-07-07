@@ -18,7 +18,7 @@ export function ImageContextProvider({
   children,
 }: {
   value: ImageContext | null | undefined
-  children: ReactNode
+  children?: ReactNode
 }) {
   return (
     <ImageContextContext.Provider value={value ?? null}>

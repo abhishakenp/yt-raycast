@@ -265,7 +265,7 @@ export function LakebedSessionProvider({
   sessionId,
 }: {
   anonymousOwnerSecret?: string
-  children: ReactNode
+  children?: ReactNode
   sessionId: string
 }) {
   const value = useMemo(

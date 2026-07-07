@@ -42,7 +42,8 @@ describe('ship-fast block hooks', () => {
   afterEach(() => {
     cleanup()
     vi.restoreAllMocks()
-    delete (window as Window & { matchMedia?: unknown }).matchMedia
+    delete (window as Omit<Window, 'matchMedia'> & { matchMedia?: unknown })
+      .matchMedia
   })
 
   it('updates mobile state from matchMedia change events and viewport width', () => {
@@ -60,7 +61,8 @@ describe('ship-fast block hooks', () => {
   })
 
   it('does not crash generated UI hooks when matchMedia is unavailable', () => {
-    delete (window as Window & { matchMedia?: unknown }).matchMedia
+    delete (window as Omit<Window, 'matchMedia'> & { matchMedia?: unknown })
+      .matchMedia
 
     expect(() => renderHook(() => useIsMobile())).not.toThrow()
   })

@@ -55,13 +55,14 @@ export type CompleteGenerationActionInput = {
 }
 
 export type OpenUIRenderLoader = () => Promise<{
-  renderOpenUIToHTMLWithTheme: (
+  renderOpenUIToHTMLWithTheme(
     source: string,
-    theme?: object,
-    language?: string,
-    integrations?: object,
-    imageContext?: object,
-  ) => object
+    theme?: Record<string, unknown> | null,
+    locale?: string,
+    integrations?: Record<string, unknown> | null,
+    imageContext?: Record<string, unknown> | null | undefined,
+    brandLogo?: Record<string, unknown> | null | undefined,
+  ): Promise<{ html: string; cssVars: string }>
 }>
 
 export type CompleteGenerationActionReferences = {

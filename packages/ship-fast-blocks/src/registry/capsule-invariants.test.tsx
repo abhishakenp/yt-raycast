@@ -2,8 +2,6 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
-import type { ComponentRenderProps } from '@openuidev/react-lang'
-import type { ReactElement } from 'react'
 
 vi.mock('#/lib/use-navigate.tsx', () => ({
   RoutesContext: ({ children }: { children: React.ReactNode }) => children,
@@ -50,6 +48,7 @@ import {
   isCapsule,
   isDefinedComponent,
   type ShipFastCapsule,
+  type CapsuleRenderer,
 } from '#/capsules/openui.ts'
 import { library, componentNames } from '#/library.ts'
 import { capsuleCategories } from '#/generated/capsule-categories.ts'
@@ -58,10 +57,8 @@ import { GovernmentPortalNavbar } from '#/registry/sections/government-portal/Go
 import { GovernmentPortalFaq } from '#/registry/sections/government-portal/GovernmentPortalFaq.tsx'
 import { GovernmentPortalStats } from '#/registry/sections/government-portal/GovernmentPortalStats.tsx'
 
-const renderCapsule = <P,>(
-  Component: (props: ComponentRenderProps<P>) => ReactElement,
-  props: P,
-) => render(<Component props={props} statementId="invariant-test" />)
+const renderCapsule = <P,>(Component: CapsuleRenderer<P>, props: P) =>
+  render(<Component props={props} statementId="invariant-test" />)
 
 afterEach(() => {
   cleanup()

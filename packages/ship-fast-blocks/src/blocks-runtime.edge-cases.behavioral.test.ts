@@ -19,14 +19,13 @@ import { z } from 'zod/v4'
 import { Renderer } from '@openuidev/react-lang'
 
 import {
-  extractAllComponentNames,
   extractOpenUIRuntimeComponentNames,
   getOpenUIRuntimeLibraryCacheKey,
   loadOpenUIRuntimeComponent,
   loadOpenUIRuntimeLibrary,
   type AiCapsuleRecord,
 } from './runtime-library.ts'
-import { createLibrary, defineCapsule, isCapsule } from './capsules/openui.ts'
+import { defineCapsule, isCapsule } from './capsules/openui.ts'
 import { sanitizeProps } from './capsules/sanitize-props.ts'
 import {
   THEME_CATALOG,
@@ -354,7 +353,9 @@ describe('runtime', () => {
       const output = capsule.client.component({
         props: { text: 'hello' },
         statementId: 'hero_block',
-      } as Parameters<typeof capsule.client.component>[0]) as React.ReactElement
+      } as Parameters<
+        typeof capsule.client.component
+      >[0]) as React.ReactElement<Record<string, unknown>>
 
       expect(output).toBeTruthy()
       expect(output.props['data-openui-component']).toBe('TestSection')

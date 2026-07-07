@@ -350,7 +350,7 @@ export function createLakebedObjectRuntime<TData extends JsonRecord>({
     ]),
   ) as unknown as LakebedDbFromData<TData>
 
-  const getPatch = () => {
+  const getPatch = (): TData => {
     const patch: JsonRecord = {}
 
     for (const tableName of stateCell.changedTables) {
@@ -359,7 +359,7 @@ export function createLakebedObjectRuntime<TData extends JsonRecord>({
       ).map((row) => cloneRow(row))
     }
 
-    return patch
+    return patch as TData
   }
 
   return { db, getPatch }

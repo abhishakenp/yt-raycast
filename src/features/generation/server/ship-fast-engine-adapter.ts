@@ -3,16 +3,13 @@ import {
   prepareEngineWorkspace,
   readEngineWorkspaceArtifacts,
 } from './engine-workspace'
-import type {
-  EngineWorkspaceArtifacts,
-  EngineWorkspaceTask,
-} from './engine-workspace'
+import type { EngineWorkspaceArtifacts } from './engine-workspace'
 
 export type ShipFastEngineSessionEvent =
   | { type: 'log'; message: string }
   | { type: 'status'; message: string; phase?: string }
-  | { type: 'task'; task: EngineWorkspaceTask }
-  | { type: 'tasks'; tasks: EngineWorkspaceTask[] }
+  | { type: 'task'; task: unknown }
+  | { type: 'tasks'; tasks: unknown[] }
   | { type: 'preview_ready' }
   | { type: 'openui_ready' }
   | { type: 'broadcast'; payload: unknown }
@@ -21,8 +18,8 @@ export type ShipFastEngineSessionContext = {
   id: string
   broadcast: (payload: unknown) => void
   setPrompt: (prompt: string) => void
-  setTasks: (tasks: EngineWorkspaceTask[]) => void
-  updateTask: (task: EngineWorkspaceTask) => void
+  setTasks: (tasks: unknown[]) => void
+  updateTask: (task: unknown) => void
   signalHomepageReady: () => void
   signalOpenuiReady: () => void
   setElapsed: (elapsed: number) => void
@@ -33,7 +30,14 @@ export type RunShipFastEngine = (input: {
   prompt: string
   workspace: string
   sessionCtx: ShipFastEngineSessionContext
-  integrations?: unknown
+  integrations?: {
+    afterSiteSpecSaved?: (opts: {
+      workspace: string
+      siteSpec: unknown
+      log: (msg: string) => void
+      status: (message: string, phase: string) => void
+    }) => Promise<void>
+  }
   preferredLanguage?: string
 }) => Promise<unknown>
 

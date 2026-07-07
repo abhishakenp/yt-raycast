@@ -68,6 +68,35 @@ export type CapsuleLakebedConfig<
   >
 }
 
+/**
+ * Props for a capsule component as seen by consumers/tests. `renderNode` is
+ * optional because capsule components are leaf renderers — they produce React
+ * nodes directly and never delegate sub-node rendering. The OpenUI runtime
+ * always supplies `renderNode`, but direct calls (e.g. in tests) may omit it.
+ */
+export type CapsuleComponentProps<P = Record<string, unknown>> = {
+  props: P
+  renderNode?: (value: unknown) => ReactNode
+  statementId?: string
+}
+
+/**
+ * A React FC for a capsule component — accepts optional `renderNode`.
+ */
+export type CapsuleRenderer<P = Record<string, unknown>> = React.FC<
+  CapsuleComponentProps<P>
+>
+
+/**
+ * A DefinedComponent variant whose `component` accepts optional `renderNode`.
+ * This is what `defineCapsule` exposes so tests and consumers can call capsule
+ * components without supplying a no-op `renderNode`.
+ */
+export type CapsuleDefinedComponent<TProps extends $ZodObject = $ZodObject> =
+  Omit<OpenUI.DefinedComponent<TProps>, 'component'> & {
+    component: CapsuleRenderer<z.infer<TProps>>
+  }
+
 export type CapsuleComponentRenderer<
   TProps,
   TLakebed extends
@@ -119,7 +148,7 @@ export type DefineCapsuleInput<
 }
 
 export type ShipFastCapsule<
-  TClient extends OpenUI.DefinedComponent<any> = OpenUI.DefinedComponent<any>,
+  TClient extends CapsuleDefinedComponent<any> = CapsuleDefinedComponent<any>,
   TServer extends CapsuleLakebedConfig<any, any, any, any, any, any> =
     CapsuleLakebedConfig<any, any, any, any, any, any>,
   TClientResult = unknown,
@@ -261,7 +290,7 @@ export const defineCapsule = <
     TClientResult
   >,
 ): ShipFastCapsule<
-  OpenUI.DefinedComponent<TProps>,
+  CapsuleDefinedComponent<TProps>,
   CapsuleLakebedConfig<
     z.infer<TProps>,
     TSchema,
@@ -327,12 +356,24 @@ export const defineCapsule = <
     },
   })
 
+  // Wrap component so renderNode defaults to a no-op. Capsule components are
+  // leaf renderers that never use renderNode, but the upstream OpenUI type
+  // requires it. This lets tests and consumers call capsule components
+  // without supplying a no-op renderNode.
+  const capsuleComponent: CapsuleRenderer<z.infer<TProps>> = (input) =>
+    client.component({
+      ...input,
+      renderNode: input.renderNode ?? (() => null),
+    })
+
+  const capsuleClient = { ...client, component: capsuleComponent }
+
   return Object.assign(
     {
-      client,
+      client: capsuleClient,
       lakebed: effectiveLakebed,
     },
-    client,
+    capsuleClient,
   )
 }
 
