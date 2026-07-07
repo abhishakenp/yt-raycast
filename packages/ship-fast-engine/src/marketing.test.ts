@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
 
-import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from './marketing.js'
+import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from './marketing'
 
 describe('Ship Fast marketing markup', () => {
   it('exposes the canonical site URL used by generated footer links', () => {

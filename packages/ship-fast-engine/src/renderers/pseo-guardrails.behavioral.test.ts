@@ -4,7 +4,7 @@ import {
   applyGeneratedSitePseoGuardrails,
   type PageSpec,
   type NavLink,
-} from './pseo-guardrails.js'
+} from './pseo-guardrails'
 
 const page = (
   route: string,

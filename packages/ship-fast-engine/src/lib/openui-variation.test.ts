@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildOpenUIVariationBlock } from './openui-variation.js'
+import { buildOpenUIVariationBlock } from './openui-variation'
 
 describe('buildOpenUIVariationBlock', () => {
   const prompt =

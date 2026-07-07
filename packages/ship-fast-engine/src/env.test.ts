@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-import { getEngineEnvPaths, shouldAutoLoadEngineEnv } from './env.js'
+import { getEngineEnvPaths, shouldAutoLoadEngineEnv } from './env'
 
 describe('engine env loader', () => {
   it('loads root env files with .env.local taking precedence over .env', () => {

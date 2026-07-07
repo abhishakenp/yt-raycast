@@ -1,4 +1,4 @@
-import { normalizeSiteUrl, resolvePageSeo } from './seo.js'
+import { normalizeSiteUrl, resolvePageSeo } from './seo'
 import type { SitePageLike, SiteSpecLike } from '@ship-fast/aeo'
 
 function normalizePath(value = '/') {

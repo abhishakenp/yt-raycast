@@ -1,4 +1,4 @@
-import { promptSnippet } from '../prompt.js'
+import { promptSnippet } from '../prompt'
 
 export function siteTypePrompt(prompt: string): {
   system: string

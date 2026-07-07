@@ -1,13 +1,13 @@
-import { VALID_SITE_TYPES } from '../config.js'
+import { VALID_SITE_TYPES } from '../config'
 import {
   loadContentPlanRef,
   readContentPlanRefFromWorkspace,
-} from './content-refs.js'
+} from './content-refs'
 import {
   DESIGN_REF_ENTRIES,
   GLOBAL_DEFAULT_REF_ID,
   sortEntriesByPriority,
-} from './design-refs/registry.js'
+} from './design-refs/registry'
 
 interface DesignRefEntry {
   id: string

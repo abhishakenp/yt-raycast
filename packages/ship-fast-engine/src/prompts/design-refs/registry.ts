@@ -1,4 +1,4 @@
-import { VALID_SITE_TYPES } from '../../config.js'
+import { VALID_SITE_TYPES } from '../../config'
 
 export const GLOBAL_DEFAULT_REF_ID = 'landing-base'
 

@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   resolvePipelineLanguage,
   withLanguageEnforcementBlock,
-} from './prompt-language.js'
+} from './prompt-language'
 
 const makeWorkspace = (preferredLanguage: string): string => {
   const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-language-'))

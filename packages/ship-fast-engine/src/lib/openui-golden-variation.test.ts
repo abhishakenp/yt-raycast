@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildOpenUIVariationBlock } from './openui-variation.js'
+import { buildOpenUIVariationBlock } from './openui-variation'
 
 describe('golden variation spread (same prompt, many seeds)', () => {
   it('achieves high unique block ratio for a fixed brief', () => {

@@ -21,8 +21,8 @@ const groqConfig = vi.hoisted(() => ({
 vi.mock('../config.js', () => groqConfig)
 
 // Real utils (pure functions) for cost + reasoning leak stripping
-import { calculateCost, stripGroqReasoningLeak } from './utils.js'
-import { groq, groqStream, groqParallel } from './groq.js'
+import { calculateCost, stripGroqReasoningLeak } from './utils'
+import { groq, groqStream, groqParallel } from './groq'
 
 // --- Claude: mock the SDK ----------------------------------------------------
 
@@ -34,16 +34,16 @@ vi.mock('@anthropic-ai/claude-agent-sdk', () => ({
   query: claudeSdk.query,
 }))
 
-import { claude, claudeStream } from './claude.js'
+import { claude, claudeStream } from './claude'
 
 // --- Translator: no module mock needed — translator calls groq() which calls
 // fetch(); translator tests mock fetch directly (same as groq client tests).
 
-import { translateHtml, translateHtmlSequential } from './translator.js'
+import { translateHtml, translateHtmlSequential } from './translator'
 
 // --- Retry: real module (pure) ----------------------------------------------
 
-import { withLLMRetry } from './retry.js'
+import { withLLMRetry } from './retry'
 
 // ===========================================================================
 

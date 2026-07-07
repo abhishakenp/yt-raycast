@@ -12,8 +12,8 @@
  * `anchor` shape: { app, category, dna, copyExamples, palette?, accents? }
  * Pure module — no I/O.
  */
-import { resolveCopyExamples, resolveDna, synthesizeDna } from './dna.js'
-import type { MobbinAnchor, MobbinDna } from './types.js'
+import { resolveCopyExamples, resolveDna, synthesizeDna } from './dna'
+import type { MobbinAnchor, MobbinDna } from './types'
 
 function formatPaletteLine(palette: string[] = []) {
   if (!palette.length) return ''

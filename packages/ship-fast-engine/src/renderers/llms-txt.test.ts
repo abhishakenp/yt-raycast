@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { renderShipFastLlmsTxt } from './llms-txt.js'
+import { renderShipFastLlmsTxt } from './llms-txt'
 
 describe('Ship Fast llms.txt', () => {
   it('summarizes product scope, canonical pages, and export capabilities', () => {

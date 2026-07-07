@@ -6,17 +6,17 @@ import {
   routeToNextSegments,
   serializeModule,
   slimSiteSpecForBundle,
-} from '../shared.js'
+} from '../shared'
 import {
   buildNextMetadata,
   buildSitemapEntries,
   buildStructuredData,
   resolvePageSeo,
   serializeStructuredData,
-} from '../seo.js'
-import { renderGeneratedSiteLlmsTxt } from '../llms-txt.js'
-import { shouldUseSwiper } from '../../lib/swiper-policy.js'
-import { SHIP_FAST_SITE_URL } from '../../marketing.js'
+} from '../seo'
+import { renderGeneratedSiteLlmsTxt } from '../llms-txt'
+import { shouldUseSwiper } from '../../lib/swiper-policy'
+import { SHIP_FAST_SITE_URL } from '../../marketing'
 import type { SiteSpecLike, SitePageLike } from '@ship-fast/aeo'
 
 type SiteSpec = SiteSpecLike & {

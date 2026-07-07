@@ -1,4 +1,4 @@
-import { SITE_TYPE_INSTRUCTIONS } from '../config.js'
+import { SITE_TYPE_INSTRUCTIONS } from '../config'
 
 export function templatePrompt(
   siteType: string = 'landing',

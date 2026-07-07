@@ -1,7 +1,7 @@
 import { renderAeoSectionHtml } from '@ship-fast/aeo'
-import { isMixedEnglishIndicCode } from '../config/languages.js'
-import { shouldUseSwiper } from '../lib/swiper-policy.js'
-import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
+import { isMixedEnglishIndicCode } from '../config/languages'
+import { shouldUseSwiper } from '../lib/swiper-policy'
+import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing'
 
 /**
  * Returns a Google Fonts <link> tag for the Noto Sans script matching the

@@ -13,24 +13,24 @@ export {
   resolveCopyExamples,
   resolveDna,
   synthesizeDna,
-} from './dna.js'
+} from './dna'
 export {
   mobbinDoctrineBlock,
   mobbinSessionBlock,
   resolveAnchor,
-} from './prompt-blocks.js'
+} from './prompt-blocks'
 export {
   anchorAvoidsAurora,
   anchorAvoidsSaasMarketing,
   detectVerbatimAnchorCopy,
   relaxAuroraAuditForAnchor,
   scoreMobbinCoverage,
-} from './score.js'
-export { inferMobbinAnchor, isMobbinEnabled } from './anchor-router.js'
+} from './score'
+export { inferMobbinAnchor, isMobbinEnabled } from './anchor-router'
 export {
   readMobbinAnchorFromWorkspace,
   writeMobbinAnchorToWorkspace,
-} from './workspace.js'
+} from './workspace'
 export {
   authFilePath,
   autocompleteMobbinApp,
@@ -45,5 +45,5 @@ export {
   resolveMobbinAppByName,
   validateMobbinSession,
   writeAuthToDisk,
-} from './session.js'
-export { enrichAnchorWithLiveMobbin } from './live-enrich.js'
+} from './session'
+export { enrichAnchorWithLiveMobbin } from './live-enrich'

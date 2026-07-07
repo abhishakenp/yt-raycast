@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { shouldUseSwiper } from './lib/swiper-policy.js'
+import { shouldUseSwiper } from './lib/swiper-policy'
 
 describe('swiper export policy', () => {
   it('enables swiper for ecommerce exports even without prompt keywords', () => {

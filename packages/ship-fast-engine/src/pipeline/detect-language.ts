@@ -1,4 +1,4 @@
-import { GROQ_API_KEY, GROQ_HOST } from '../config.js'
+import { GROQ_API_KEY, GROQ_HOST } from '../config'
 import {
   KNOWN_LANGUAGES,
   INDIAN_LANGUAGE_CODES,
@@ -10,7 +10,7 @@ import {
   preferMixedEnglishBcp47FromSnippet,
   preferRomanizedBcp47FromSnippet,
   isRomanizedIndicCode,
-} from '../config/languages.js'
+} from '../config/languages'
 
 const DETECT_MODEL = 'llama-3.3-70b-versatile'
 

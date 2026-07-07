@@ -2,8 +2,8 @@
  * Mobbin Pro coverage scoring + aurora-relax filter + verbatim-copy detector.
  * Lifted from scripts/forge-mobbin.mjs. Pure module.
  */
-import { COPY_EXAMPLES } from './dna.js'
-import type { MobbinAnchor, MobbinDna } from './types.js'
+import { COPY_EXAMPLES } from './dna'
+import type { MobbinAnchor, MobbinDna } from './types'
 
 interface VerifyResult {
   ok: boolean

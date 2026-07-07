@@ -1,9 +1,9 @@
-import { detectLanguage } from './detect-language.js'
-import { getWorkspacePreferredLanguage } from '../session-prefs.js'
+import { detectLanguage } from './detect-language'
+import { getWorkspacePreferredLanguage } from '../session-prefs'
 import {
   isMixedEnglishIndicCode,
   isRomanizedIndicCode,
-} from '../config/languages.js'
+} from '../config/languages'
 
 const DEFAULT_LANG = 'en'
 

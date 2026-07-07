@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { getWorkspacePreferredLanguage } from './session-prefs.js'
+import { getWorkspacePreferredLanguage } from './session-prefs'
 
 const workspaces: string[] = []
 

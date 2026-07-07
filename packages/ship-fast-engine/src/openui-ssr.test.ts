@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  renderOpenUIToHTML,
-  renderOpenUIToHTMLWithTheme,
-} from './openui-ssr.js'
+import { renderOpenUIToHTML, renderOpenUIToHTMLWithTheme } from './openui-ssr'
 
 describe('renderOpenUIToHTML', () => {
   it('renders simple text OpenUI source without an error shell', async () => {

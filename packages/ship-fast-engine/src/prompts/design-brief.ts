@@ -3,13 +3,13 @@ import {
   getEcommerceGenerationGuidelines,
   GLOBAL_UI_CRAFT_GUIDELINES,
   MOTION_DEV_DOCS_REACT,
-} from '../config.js'
-import { inferSiteTypeHint } from '../lib/infer-site-type.js'
+} from '../config'
+import { inferSiteTypeHint } from '../lib/infer-site-type'
 import {
   mobbinDoctrineBlock,
   mobbinSessionBlock,
-} from '../lib/mobbin/prompt-blocks.js'
-import type { MobbinAnchor } from '../lib/mobbin/types.js'
+} from '../lib/mobbin/prompt-blocks'
+import type { MobbinAnchor } from '../lib/mobbin/types'
 
 function mobbinAnchorAppendix(anchor: MobbinAnchor | null): {
   systemAppend: string

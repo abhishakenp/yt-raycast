@@ -18,7 +18,7 @@ import {
 } from '@ship-fast/blocks/runtime'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
-import { preprocessOpenUIResponse } from './lib/openui-preprocess.js'
+import { preprocessOpenUIResponse } from './lib/openui-preprocess'
 
 /**
  * Inert Convex client for server-side rendering. Data-backed capsules (e.g. the

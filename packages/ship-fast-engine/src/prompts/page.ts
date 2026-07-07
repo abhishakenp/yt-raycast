@@ -3,8 +3,8 @@ import {
   getEcommerceGenerationGuidelines,
   ECOMMERCE_MEDUSA_DOCS_LEARN,
   MOTION_REACT_GUIDELINES,
-} from '../config.js'
-import { brandProfilePromptBlock, type BrandProfile } from './brand-profile.js'
+} from '../config'
+import { brandProfilePromptBlock, type BrandProfile } from './brand-profile'
 
 interface PhotoHint {
   url: string

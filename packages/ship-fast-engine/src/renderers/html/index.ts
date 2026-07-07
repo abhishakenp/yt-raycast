@@ -8,8 +8,8 @@ import {
   pageUsesExactClone,
   renderSectionHtml,
   routeToHtmlFile,
-} from '../shared.js'
-import { renderGeneratedSiteLlmsTxt } from '../llms-txt.js'
+} from '../shared'
+import { renderGeneratedSiteLlmsTxt } from '../llms-txt'
 import { renderSeoHeadMarkup as renderAeoHeadMarkup } from '@ship-fast/aeo'
 import {
   buildStructuredData,
@@ -17,8 +17,8 @@ import {
   renderSitemapXml,
   resolvePageSeo,
   serializeStructuredData,
-} from '../seo.js'
-import { shouldUseSwiper } from '../../lib/swiper-policy.js'
+} from '../seo'
+import { shouldUseSwiper } from '../../lib/swiper-policy'
 
 function renderSeoHeadMarkup(siteSpec: any, page: any) {
   const seo = resolvePageSeo(siteSpec, page)

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   importSessionFromBrowserCookie,
   SUPABASE_COOKIE_PREFIX,
-} from './session.js'
+} from './session'
 
 describe('importSessionFromBrowserCookie', () => {
   it('parses chunked Supabase auth cookies', () => {

@@ -7,11 +7,11 @@ import type { SiteSpecProject } from '../spec/index.ts'
 import type { ExtractedTokens } from '../clone/types.ts'
 import { looksSerif } from '../clone/tokens.ts'
 // @ts-ignore - JS module without type definitions
-import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
+import { renderOpenUIToHTMLWithTheme } from '../openui-ssr'
 // @ts-ignore - JS module without type definitions
-import { renderGeneratedSiteLlmsTxt } from './llms-txt.js'
+import { renderGeneratedSiteLlmsTxt } from './llms-txt'
 // @ts-ignore - JS module without type definitions
-import { renderRobotsTxt, renderSitemapXml } from './seo.js'
+import { renderRobotsTxt, renderSitemapXml } from './seo'
 
 const HOME_OPENUI_FILE = 'home.openui'
 type OpenUIRenderResult = { html: string; cssVars?: string }

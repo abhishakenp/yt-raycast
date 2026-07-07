@@ -1,4 +1,4 @@
-import { brandProfilePromptBlock, type BrandProfile } from './brand-profile.js'
+import { brandProfilePromptBlock, type BrandProfile } from './brand-profile'
 
 export function contextPrompt(
   prompt: string,

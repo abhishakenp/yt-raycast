@@ -5,8 +5,8 @@
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { resolveAnchor } from './prompt-blocks.js'
-import type { MobbinAnchor } from './types.js'
+import { resolveAnchor } from './prompt-blocks'
+import type { MobbinAnchor } from './types'
 
 const ANCHOR_FILE = 'mobbin-anchor.json'
 

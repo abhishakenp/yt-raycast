@@ -37,7 +37,7 @@ export {
   KNOWN_LANGUAGES as SUPPORTED_INDIAN_LANGUAGES,
   INDIAN_DESIGN_TOKENS,
   INDIAN_LANGUAGE_CODES,
-} from './config/languages.js'
+} from './config/languages'
 
 export const LLM_CONFIG = {
   default: {
@@ -95,7 +95,7 @@ export const ECOMMERCE_DRIBBBLE_TAG_URL =
 
 export const ECOMMERCE_MEDUSA_DOCS_LEARN = 'https://docs.medusajs.com/learn'
 
-import { ECOMMERCE_CURATED_STYLE_ANCHORS } from './config/ecommerce-inspiration.js'
+import { ECOMMERCE_CURATED_STYLE_ANCHORS } from './config/ecommerce-inspiration'
 
 export const ECOMMERCE_REFERENCE_EXEMPLAR_URLS = Object.freeze([
   'https://www.mvmt.com/home',
