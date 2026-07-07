@@ -173,9 +173,13 @@ const searchPexels = async (
   // Try the full query first, then progressively shorter variants.
   // This handles transliterated words the LLM failed to translate —
   // dropping them gives Pexels a cleaner English query to match.
+  // On provider errors (null) we stop retrying variants and fall through
+  // to the next provider; only empty result sets ([]) warrant a shorter
+  // query, since the provider is reachable but the full query didn't match.
   for (const variant of progressiveQueries(searchQuery)) {
     const photos = await trySearch(variant)
-    if (photos && photos.length > 0) {
+    if (photos === null) break
+    if (photos.length > 0) {
       return choosePhotoUrl(photos[seedIndex(seed, photos.length)], w, h)
     }
   }
@@ -211,6 +215,7 @@ const searchUnsplash = async (
 
   for (const variant of progressiveQueries(searchQuery)) {
     const results = await trySearch(variant)
+    if (results === null) break
     if (results && results.length > 0) {
       const photo = results[seedIndex(seed, results.length)]
       const base =
