@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { findTextElement } from './useTextEdit'
+import { isInRadixPortal } from '../lib/radix-portal'
 import {
   buildInspectorSelection,
   type InspectorSelection,
@@ -147,8 +148,10 @@ export function useElementInspector(
       if (!(target instanceof HTMLElement)) return
       if (container.contains(target)) return
       if (target.closest('.inline-edit-toolbar')) return
-      // Radix AlertDialog (Delete confirmation) portals to document.body.
-      if (target.closest('[role="alertdialog"]')) return
+      // Radix overlays (Select dropdown, popover, AlertDialog) portal to
+      // document.body. Clicking a portalled control (e.g. the gap unit
+      // px → rem item) must not clear the selection.
+      if (isInRadixPortal(target)) return
       if (selectedElementRef.current) clearSelection()
     }
 
