@@ -30,6 +30,8 @@ import {
   Link as LinkIcon,
   ChevronUp,
   ChevronDown,
+  BringToFront,
+  SendToBack,
   Sparkles,
   Image as ImageIcon,
   Copy,
@@ -1004,6 +1006,52 @@ export function InlineEditToolbar({
     onClose()
   }
 
+  // Bring the selected element to the front (top) or send it to the back
+  // (bottom) of its stacking context by editing its z-index. z-index only
+  // applies to a positioned element, so a `static` element is first promoted
+  // to `position: relative` (a no-offset relative keeps it in place visually
+  // while enabling stacking). The new z-index is computed relative to the
+  // element's siblings so the layering is meaningful within its own parent —
+  // max(siblings)+1 for front, min(siblings)-1 for back.
+  //
+  // This is a LIVE PREVIEW only — like every other style control (typography,
+  // spacing, paste-style), it mutates the element's inline style and marks the
+  // edit as user-modified, but does NOT persist or close. The toolbar stays
+  // open so the user can see the result and keep adjusting; the change is
+  // committed only when Apply is pressed (handleApply reads the full inline
+  // style) and reverted by closeWithoutSaving (restores originalStyleRef) if
+  // the user cancels, clicks away, or presses Escape without saving.
+  const handleLayer = (direction: 'front' | 'back') => {
+    if (!activeElement || isApplying || isForking) return
+
+    const computed = window.getComputedStyle(activeElement)
+    const position = computed.position
+    // Empty string covers jsdom, which reports no value for the default.
+    if (!position || position === 'static') {
+      activeElement.style.position = 'relative'
+    }
+
+    const siblingZIndices = (
+      activeElement.parentElement
+        ? Array.from(activeElement.parentElement.children)
+        : []
+    )
+      .filter((el) => el !== activeElement)
+      .map((el) => parseInt(window.getComputedStyle(el).zIndex, 10))
+      .filter((z) => Number.isFinite(z))
+
+    const nextZIndex =
+      direction === 'front'
+        ? (siblingZIndices.length ? Math.max(...siblingZIndices) : 0) + 1
+        : (siblingZIndices.length ? Math.min(...siblingZIndices) : 0) - 1
+
+    activeElement.style.zIndex = String(nextZIndex)
+
+    // Same commit-on-Apply / revert-on-cancel contract as handlePasteStyle.
+    forcePersistStyleRef.current = true
+    markUserModified()
+  }
+
   const handleClose = closeWithoutSaving
 
   // Mark that the user has started modifying styles. The style-applying
@@ -1487,6 +1535,42 @@ export function InlineEditToolbar({
                   </Tooltip>
                 </>
               )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => handleLayer('front')}
+                    disabled={isApplying || isForking}
+                    className={cn(
+                      'grid size-7 place-items-center rounded transition-colors',
+                      'text-white/60 hover:bg-white/5 hover:text-white',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                    )}
+                    aria-label="Bring to front"
+                  >
+                    <BringToFront className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Bring to front (top layer)</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => handleLayer('back')}
+                    disabled={isApplying || isForking}
+                    className={cn(
+                      'grid size-7 place-items-center rounded transition-colors',
+                      'text-white/60 hover:bg-white/5 hover:text-white',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                    )}
+                    aria-label="Send to back"
+                  >
+                    <SendToBack className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Send to back (bottom layer)</TooltipContent>
+              </Tooltip>
               <div className="flex items-center gap-1 border-r border-white/10 pr-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
