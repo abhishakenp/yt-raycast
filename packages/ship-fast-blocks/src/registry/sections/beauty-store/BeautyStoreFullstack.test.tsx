@@ -613,8 +613,7 @@ describe('BeautyStore fullstack commerce behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Barrier Dew Cream'))
     expect(navigate).not.toHaveBeenCalledWith('Barrier Dew Cream')
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(

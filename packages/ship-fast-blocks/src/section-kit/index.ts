@@ -23,7 +23,15 @@ export { FeatureGrid } from './FeatureGrid.tsx'
 export { PricingGrid } from './PricingGrid.tsx'
 export { TestimonialGrid } from './TestimonialGrid.tsx'
 export { GalleryGrid } from './GalleryGrid.tsx'
-export { CommandSearch } from './CommandSearch.tsx'
+export {
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
+} from './CommandSearch.tsx'
 export {
   AccountDropdown,
   AccountDropdownTrigger,

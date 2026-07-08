@@ -2,16 +2,8 @@ import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
-import { Loader2Icon, MenuIcon, SearchIcon } from 'lucide-react'
+import { Loader2Icon, MenuIcon } from 'lucide-react'
 
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetContent,
@@ -31,6 +23,13 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 
 import type {
@@ -206,62 +205,52 @@ export function FoodDeliverySearchButton({
   lakebed: FoodDeliveryLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const foodSearch = useFoodDeliverySearch(lakebed)
   const catalog = normalizeRecords<FoodRestaurantCatalogItem>(
     lakebed.useQuery('restaurantCatalog'),
   )
 
-  const chooseRestaurant = (restaurant: FoodRestaurantCatalogItem) => {
-    foodSearch.chooseSearch({
-      address: '',
-      query: restaurant.name,
-    })
-    setOpen(false)
-  }
-
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: catalog,
+        getKey: (restaurant) => restaurant.id ?? restaurant.name,
+        getValue: (restaurant) =>
+          `${restaurant.name} ${restaurant.cuisine} ${restaurant.category}`,
+        onSelect: (restaurant) =>
+          foodSearch.chooseSearch({
+            address: '',
+            query: restaurant.name,
+          }),
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search restaurants"
         description="Search the generated restaurant catalog."
       >
-        <CommandInput placeholder="Search restaurants..." />
-        <CommandList>
-          <CommandEmpty>No restaurants found.</CommandEmpty>
-          <CommandGroup heading="Restaurants">
-            {catalog.map((restaurant) => (
-              <CommandItem
-                key={restaurant.id}
-                value={`${restaurant.name} ${restaurant.cuisine} ${restaurant.category}`}
-                onSelect={() => chooseRestaurant(restaurant)}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {restaurant.name}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[restaurant.cuisine, restaurant.category]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search restaurants..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No restaurants found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Restaurants">
+            {(restaurant) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">
+                  {restaurant.name}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[restaurant.cuisine, restaurant.category]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

@@ -417,8 +417,7 @@ describe('Subscription-box fullstack commerce behavior', () => {
       expect(navigate).toHaveBeenCalledWith('How it works')
     })
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(

@@ -2,16 +2,8 @@ import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
-import { Loader2Icon, MenuIcon, SearchIcon } from 'lucide-react'
+import { Loader2Icon, MenuIcon } from 'lucide-react'
 
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetContent,
@@ -38,13 +30,16 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 
 export type JobBoardLakebed = LakebedClientRuntime<typeof jobBoardLakebed>
-
-type JobCatalogItem = NonNullable<
-  ReturnType<typeof jobBoardLakebed.queries.jobCatalog>
->[number]
 
 export const jobBoardCatalogItem = ({
   badge,
@@ -215,57 +210,46 @@ export function JobBoardSearchButton({
   lakebed: JobBoardLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const jobSearch = useJobBoardSearch(lakebed)
   const catalog = lakebed.useQuery('jobCatalog') ?? []
 
-  const chooseJob = (job: JobCatalogItem) => {
-    jobSearch.chooseSearch({
-      filter: 'All Jobs',
-      location: '',
-      query: job.role,
-    })
-    setOpen(false)
-  }
-
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: catalog,
+        getKey: (job) => job.id,
+        getValue: (job) => `${job.role} ${job.company} ${job.tags}`,
+        onSelect: (job) =>
+          jobSearch.chooseSearch({
+            filter: 'All Jobs',
+            location: '',
+            query: job.role,
+          }),
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search jobs"
         description="Search the generated job catalog."
       >
-        <CommandInput placeholder="Search jobs..." />
-        <CommandList>
-          <CommandEmpty>No jobs found.</CommandEmpty>
-          <CommandGroup heading="Jobs">
-            {catalog.map((job) => (
-              <CommandItem
-                key={job.id}
-                value={`${job.role} ${job.company} ${job.tags}`}
-                onSelect={() => chooseJob(job)}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{job.role}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[job.company, job.tags].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search jobs..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No jobs found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Jobs">
+            {(job) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{job.role}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[job.company, job.tags].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

@@ -611,8 +611,7 @@ describe('FurnitureStore fullstack commerce behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Oak Dining Table'))
     expect(navigate).not.toHaveBeenCalledWith('Oak Dining Table')
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(

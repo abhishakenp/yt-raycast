@@ -2,16 +2,8 @@ import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
-import { Loader2Icon, MenuIcon, SearchIcon } from 'lucide-react'
+import { Loader2Icon, MenuIcon } from 'lucide-react'
 
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetContent,
@@ -34,6 +26,13 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 
 export type HotelResortLakebed = LakebedClientRuntime<typeof hotelResortLakebed>
@@ -236,58 +235,50 @@ export function HotelSearchButton({
   lakebed: HotelResortLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const booking = useKeyedLakebedMutation(lakebed, 'requestBooking')
   const rooms = lakebed.useQuery('roomCatalog') ?? []
 
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: rooms,
+        getKey: (room) => room.id ?? room.name,
+        getValue: (room) =>
+          `${room.name} ${room.price} ${room.meta} ${room.description}`,
+        onSelect: (room) =>
+          booking.run(`search:${room.name}`, {
+            action: 'search',
+            label: `Selected ${room.name}`,
+            room: room.name,
+            source: 'search',
+          }),
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search rooms"
         description="Search room categories and start an availability request."
       >
-        <CommandInput placeholder="Search rooms..." />
-        <CommandList>
-          <CommandEmpty>No rooms found.</CommandEmpty>
-          <CommandGroup heading="Rooms">
-            {rooms.map((room) => (
-              <CommandItem
-                key={room.id}
-                value={`${room.name} ${room.price} ${room.meta} ${room.description}`}
-                onSelect={() => {
-                  setOpen(false)
-                  void booking.run(`search:${room.name}`, {
-                    action: 'search',
-                    label: `Selected ${room.name}`,
-                    room: room.name,
-                    source: 'search',
-                  })
-                }}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{room.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[room.price, room.meta, room.description]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search rooms..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No rooms found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Rooms">
+            {(room) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{room.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[room.price, room.meta, room.description]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

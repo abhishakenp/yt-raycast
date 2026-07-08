@@ -1,16 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
-import { Loader2Icon, MenuIcon, SearchIcon, SparklesIcon } from 'lucide-react'
+import { Loader2Icon, MenuIcon, SparklesIcon } from 'lucide-react'
 
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 import {
   AccountDropdown,
@@ -21,6 +13,13 @@ import {
   AccountDropdownItem,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 import {
   Sheet,
@@ -184,59 +183,52 @@ export function SaasSearchButton({
   lakebed: SaasLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const go = useNavigate()
   const selectPlan = lakebed.useMutation('selectPlan')
   const plans = lakebed.useQuery('planCatalog') ?? []
 
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: plans,
+        getKey: (plan) => plan.id,
+        getValue: (plan) =>
+          `${plan.name} ${plan.price} ${plan.period} ${plan.summary}`,
+        onSelect: (plan) => {
+          void selectPlan({
+            label: `Selected ${plan.name}`,
+            plan: plan.name,
+            source: 'search',
+          })
+          go(plan.name)
+        },
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search plans"
         description="Search generated plans and select one for the workspace."
       >
-        <CommandInput placeholder="Search plans..." />
-        <CommandList>
-          <CommandEmpty>No plans found.</CommandEmpty>
-          <CommandGroup heading="Plans">
-            {plans.map((plan) => (
-              <CommandItem
-                key={plan.id}
-                value={`${plan.name} ${plan.price} ${plan.period} ${plan.summary}`}
-                onSelect={() => {
-                  setOpen(false)
-                  void selectPlan({
-                    label: `Selected ${plan.name}`,
-                    plan: plan.name,
-                    source: 'search',
-                  })
-                  go(plan.name)
-                }}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{plan.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[plan.price, plan.period, plan.summary]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search plans..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No plans found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Plans">
+            {(plan) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{plan.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[plan.price, plan.period, plan.summary]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

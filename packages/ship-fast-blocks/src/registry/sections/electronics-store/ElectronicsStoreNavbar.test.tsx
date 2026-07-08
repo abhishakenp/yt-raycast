@@ -663,8 +663,7 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
     })
     expect(navigate).not.toHaveBeenCalledWith('Bose QuietComfort Ultra')
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: /Shop Now/ }))

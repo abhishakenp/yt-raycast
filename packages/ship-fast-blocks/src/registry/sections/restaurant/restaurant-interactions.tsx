@@ -2,21 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
-import {
-  CalendarCheckIcon,
-  Loader2Icon,
-  MenuIcon,
-  SearchIcon,
-} from 'lucide-react'
+import { CalendarCheckIcon, Loader2Icon, MenuIcon } from 'lucide-react'
 
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetContent,
@@ -36,6 +23,13 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 import type {
   RestaurantCatalogInput,
@@ -45,9 +39,6 @@ import type {
 } from './restaurant-lakebed.ts'
 
 export type RestaurantLakebed = LakebedClientRuntime<typeof restaurantLakebed>
-type RestaurantCatalogItem = ReturnType<
-  typeof restaurantLakebed.queries.menuCatalog
->[number]
 type RestaurantOrderItem = ReturnType<
   typeof restaurantLakebed.queries.restaurantOrder
 >['items'][number]
@@ -195,67 +186,52 @@ export function RestaurantSearchButton({
   lakebed: RestaurantLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const selectMenuItem = useKeyedLakebedMutation(lakebed, 'selectMenuItem')
   const catalog = lakebed.useQuery('menuCatalog') ?? []
-  const select = (item: RestaurantCatalogItem) => {
-    void selectMenuItem
-      .run(`select:${item.name}`, {
-        category: item.category,
-        description: item.description,
-        name: item.name,
-        price: item.price,
-        source: 'search',
-        tag: item.tag,
-      })
-      .then(
-        () => setOpen(false),
-        () => {},
-      )
-  }
 
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: catalog,
+        getKey: (item) => item.id ?? item.name,
+        getValue: (item) =>
+          `${item.name} ${item.category} ${item.description} ${item.price} ${item.tag}`,
+        onSelect: (item) =>
+          selectMenuItem.run(`select:${item.name}`, {
+            category: item.category,
+            description: item.description,
+            name: item.name,
+            price: item.price,
+            source: 'search',
+            tag: item.tag,
+          }),
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search menu"
         description="Search the generated restaurant menu."
       >
-        <CommandInput placeholder="Search dishes..." />
-        <CommandList>
-          <CommandEmpty>No dishes found.</CommandEmpty>
-          <CommandGroup heading="Menu">
-            {catalog.map((item) => (
-              <CommandItem
-                key={item.id ?? item.name}
-                value={`${item.name} ${item.category} ${item.description} ${
-                  item.price
-                } ${item.tag}`}
-                onSelect={() => select(item)}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{item.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[item.category, item.price, item.tag]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search dishes..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No dishes found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Menu">
+            {(item) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{item.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[item.category, item.price, item.tag]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

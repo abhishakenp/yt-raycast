@@ -1,16 +1,8 @@
 import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
-import { Loader2Icon, MenuIcon, SearchIcon } from 'lucide-react'
+import { Loader2Icon, MenuIcon } from 'lucide-react'
 
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetContent,
@@ -33,13 +25,16 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 
 export type PublicationLakebed = LakebedClientRuntime<typeof publicationLakebed>
-
-type PublicationArticle = ReturnType<
-  typeof publicationLakebed.queries.articleCatalog
->[number]
 
 export const publicationArticle = ({
   author,
@@ -264,63 +259,52 @@ export function PublicationSearchButton({
   lakebed: PublicationLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const go = useNavigate()
   const recordSearch = lakebed.useMutation('recordSearch')
   const articles = lakebed.useQuery('articleCatalog') ?? []
 
-  const chooseArticle = (article: PublicationArticle) => {
-    setOpen(false)
-    void recordSearch({
-      articleTitle: article.title,
-      query: article.title,
-      source: 'navbar search',
-    })
-    go(article.target || article.title)
-  }
-
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: articles,
+        getKey: (article) => article.id,
+        getValue: (article) =>
+          `${article.title} ${article.category} ${article.author} ${article.excerpt}`,
+        onSelect: (article) => {
+          go(article.target || article.title)
+          return recordSearch({
+            articleTitle: article.title,
+            query: article.title,
+            source: 'navbar search',
+          }).then(() => {})
+        },
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search articles"
         description="Search the generated publication catalog."
       >
-        <CommandInput placeholder="Search articles..." />
-        <CommandList>
-          <CommandEmpty>No articles found.</CommandEmpty>
-          <CommandGroup heading="Articles">
-            {articles.map((article) => (
-              <CommandItem
-                key={article.id}
-                value={`${article.title} ${article.category} ${article.author} ${article.excerpt}`}
-                onSelect={() => chooseArticle(article)}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {article.title}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[article.category, article.author, article.date]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search articles..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No articles found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Articles">
+            {(article) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{article.title}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[article.category, article.author, article.date]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

@@ -404,8 +404,7 @@ describe('Illustrator fullstack commerce behavior', () => {
       expect(navigate).toHaveBeenCalledWith('Shop')
     })
 
-    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Account' })[0])
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Sign in' })[0])
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(

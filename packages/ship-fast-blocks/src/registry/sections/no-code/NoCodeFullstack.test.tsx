@@ -541,8 +541,7 @@ describe('No-code fullstack generated section behavior', () => {
       expect(screen.getAllByText('Enterprise').length).toBeGreaterThan(1)
     })
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Sign in' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))

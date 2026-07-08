@@ -536,8 +536,7 @@ describe('AI product fullstack generated section behavior', () => {
       expect(screen.getByText('Writer Pro')).toBeTruthy()
     })
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Sign in' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))

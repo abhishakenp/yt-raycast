@@ -687,8 +687,7 @@ describe('auth fullstack generated section behavior', () => {
       expect(screen.getAllByText('Pro').length).toBeGreaterThan(1)
     })
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
@@ -789,6 +788,7 @@ describe('auth fullstack generated section behavior', () => {
       ).toBeNull()
     })
     fireEvent.click(screen.getByText('Sign out'))
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
 
     expect(signOut).toHaveBeenCalledTimes(1)
     expect(signInWithGoogle).not.toHaveBeenCalled()
