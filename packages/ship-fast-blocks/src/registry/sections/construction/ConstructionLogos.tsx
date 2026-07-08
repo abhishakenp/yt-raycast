@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ConstructionLogos — trusted-by client logo wall for a construction /
@@ -36,7 +37,11 @@ export const ConstructionLogos = defineCapsule({
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {heading}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-60 md:grid-cols-3 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-3-6"
+            gap="lg"
+            className="items-center opacity-60"
+          >
             {items.map((logo) => (
               <div key={logo} className="flex items-center justify-center">
                 <span className="text-xl font-bold text-muted-foreground">
@@ -44,7 +49,7 @@ export const ConstructionLogos = defineCapsule({
                 </span>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

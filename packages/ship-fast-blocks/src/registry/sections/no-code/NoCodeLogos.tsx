@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * NoCodeLogos — slim trusted-by logo strip on a card-surface band with top and
@@ -36,7 +37,11 @@ export const NoCodeLogos = defineCapsule({
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 md:grid-cols-3 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-3-6"
+            gap="lg"
+            className="items-center opacity-70"
+          >
             {names.map((name) => (
               <div
                 key={name}
@@ -45,7 +50,7 @@ export const NoCodeLogos = defineCapsule({
                 {name}
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

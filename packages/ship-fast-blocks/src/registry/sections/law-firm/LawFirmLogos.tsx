@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * LawFirmLogos — a quiet "trusted by industry leaders" client logo strip on the
@@ -38,7 +39,11 @@ export const LawFirmLogos = defineCapsule({
           <p className="mb-10 text-center text-sm uppercase tracking-widest text-muted-foreground">
             {heading}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-60 md:grid-cols-4 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-4-6"
+            gap="lg"
+            className="items-center opacity-60"
+          >
             {items.map((logo) => (
               <button
                 key={logo}
@@ -49,7 +54,7 @@ export const LawFirmLogos = defineCapsule({
                 {logo}
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

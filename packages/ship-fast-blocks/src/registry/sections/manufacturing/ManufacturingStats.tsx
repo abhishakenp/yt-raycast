@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ManufacturingStats — a compact company stats band for a precision-
@@ -38,7 +39,7 @@ export const ManufacturingStats = defineCapsule({
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="sr-only">Company Statistics</h2>
-          <div className="grid grid-cols-2 gap-8 text-center lg:grid-cols-4">
+          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
             {items.map((s) => (
               <div key={s.label}>
                 <p className="text-4xl font-semibold text-foreground lg:text-5xl">
@@ -47,7 +48,7 @@ export const ManufacturingStats = defineCapsule({
                 <p className="mt-2 text-sm text-muted-foreground">{s.label}</p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

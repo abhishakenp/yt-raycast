@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * PhotographyLogos — a "Featured In" publication logo strip for a fine-art /
@@ -50,7 +51,11 @@ export const PhotographyLogos = defineCapsule({
           <p className="mb-12 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {label}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-60 md:grid-cols-4 lg:grid-cols-6 lg:gap-12">
+          <ResponsiveGrid
+            cols="2-4-6"
+            gap="lg"
+            className="items-center opacity-60 lg:gap-12"
+          >
             {items.map((logo, i) => (
               <button
                 key={logo}
@@ -64,7 +69,7 @@ export const PhotographyLogos = defineCapsule({
                 {logo}
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

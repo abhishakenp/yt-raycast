@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * KidsEducationStats — dark stats band for a kids / family learning platform. A
@@ -37,7 +38,7 @@ export const KidsEducationStats = defineCapsule({
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 text-center lg:grid-cols-4">
+          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
             {items.map((s, i) => (
               <div key={s.label}>
                 <p
@@ -53,7 +54,7 @@ export const KidsEducationStats = defineCapsule({
                 <p className="text-background/70">{s.label}</p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

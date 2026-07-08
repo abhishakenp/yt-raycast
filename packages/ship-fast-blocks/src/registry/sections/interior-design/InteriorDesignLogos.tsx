@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * InteriorDesignLogos — understated "trusted by" brand logo strip for an upscale
@@ -43,7 +44,11 @@ export const InteriorDesignLogos = defineCapsule({
           <p className="mb-10 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
             {heading}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-60 md:grid-cols-4 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-4-6"
+            gap="lg"
+            className="items-center opacity-60"
+          >
             {items.map((logo, i) => (
               <div
                 key={logo}
@@ -57,7 +62,7 @@ export const InteriorDesignLogos = defineCapsule({
                 </span>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

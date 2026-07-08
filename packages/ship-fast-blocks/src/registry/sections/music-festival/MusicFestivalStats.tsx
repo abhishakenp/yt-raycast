@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MusicFestivalStats — a compact dark stats band for a music / arts festival
@@ -37,14 +38,14 @@ export const MusicFestivalStats = defineCapsule({
         className={cn('bg-foreground py-16 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4">
+          <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {items.map((s) => (
               <div key={s.label}>
                 <p className="text-4xl font-bold lg:text-5xl">{s.value}</p>
                 <p className="mt-2 text-background/60">{s.label}</p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

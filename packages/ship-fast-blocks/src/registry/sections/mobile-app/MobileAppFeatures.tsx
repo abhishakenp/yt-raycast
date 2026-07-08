@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MobileAppFeatures — a centered-intro, 6-up feature grid for a clean,
@@ -163,7 +164,7 @@ export const MobileAppFeatures = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg" className="lg:gap-12">
             {items.map((item, i) => (
               <div key={item.title} className="group">
                 <div className="mb-5 grid size-12 place-items-center rounded-xl bg-muted text-foreground transition-colors group-hover:bg-accent">
@@ -175,7 +176,7 @@ export const MobileAppFeatures = defineCapsule({
                 </p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

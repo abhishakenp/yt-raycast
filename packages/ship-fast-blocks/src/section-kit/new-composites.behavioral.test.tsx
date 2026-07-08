@@ -73,6 +73,7 @@ describe('ResponsiveGrid', () => {
     expect(grid?.className).toContain('grid')
     expect(grid?.className).toContain('lg:grid-cols-3')
     expect(grid?.className).toContain('gap-8')
+    expect(grid?.getAttribute('data-slot')).toBe('responsive-grid')
   })
 
   it('applies custom cols preset', () => {
@@ -84,6 +85,85 @@ describe('ResponsiveGrid', () => {
     const grid = screen.getByText('B').parentElement
     expect(grid?.className).toContain('lg:grid-cols-4')
     expect(grid?.className).toContain('gap-6')
+  })
+
+  it('applies gap="none" with gap-0', () => {
+    render(
+      <ResponsiveGrid gap="none">
+        <div>C</div>
+      </ResponsiveGrid>,
+    )
+    const grid = screen.getByText('C').parentElement
+    expect(grid?.className).toContain('gap-0')
+  })
+
+  it('applies gap="2xl" with gap-12', () => {
+    render(
+      <ResponsiveGrid gap="2xl">
+        <div>C2</div>
+      </ResponsiveGrid>,
+    )
+    const grid = screen.getByText('C2').parentElement
+    expect(grid?.className).toContain('gap-12')
+  })
+
+  it('applies 2-4-6 cols preset', () => {
+    render(
+      <ResponsiveGrid cols="2-4-6">
+        <div>F</div>
+      </ResponsiveGrid>,
+    )
+    const grid = screen.getByText('F').parentElement
+    expect(grid?.className).toContain('grid-cols-2')
+    expect(grid?.className).toContain('md:grid-cols-4')
+    expect(grid?.className).toContain('lg:grid-cols-6')
+  })
+
+  it('applies 1-md-2-3 cols preset', () => {
+    render(
+      <ResponsiveGrid cols="1-md-2-3">
+        <div>G</div>
+      </ResponsiveGrid>,
+    )
+    const grid = screen.getByText('G').parentElement
+    expect(grid?.className).toContain('md:grid-cols-2')
+    expect(grid?.className).toContain('lg:grid-cols-3')
+  })
+
+  it('merges className', () => {
+    render(
+      <ResponsiveGrid className="mt-10">
+        <div>D</div>
+      </ResponsiveGrid>,
+    )
+    const grid = screen.getByText('D').parentElement
+    expect(grid?.className).toContain('mt-10')
+    expect(grid?.className).toContain('grid')
+  })
+
+  it('forwards ref', () => {
+    const ref = { current: null as HTMLDivElement | null }
+    render(
+      <ResponsiveGrid ref={ref}>
+        <div>E</div>
+      </ResponsiveGrid>,
+    )
+    expect(ref.current).not.toBeNull()
+    expect(ref.current?.tagName).toBe('DIV')
+  })
+
+  it('asChild renders as child element with merged classes', () => {
+    render(
+      <ResponsiveGrid asChild cols="2">
+        <ul data-testid="grid-ul">
+          <li>item</li>
+        </ul>
+      </ResponsiveGrid>,
+    )
+    const el = screen.getByTestId('grid-ul')
+    expect(el.tagName).toBe('UL')
+    expect(el.className).toContain('grid')
+    expect(el.className).toContain('grid-cols-2')
   })
 })
 

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MarketingAgencyLogos — a horizontal client trust strip. A muted, border-banded
@@ -34,7 +35,11 @@ export const MarketingAgencyLogos = defineCapsule({
           <p className="mb-8 text-center text-sm text-muted-foreground">
             {heading}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 md:grid-cols-3 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-3-6"
+            gap="lg"
+            className="items-center opacity-70"
+          >
             {items.map((logo) => (
               <div
                 key={logo}
@@ -43,7 +48,7 @@ export const MarketingAgencyLogos = defineCapsule({
                 {logo}
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

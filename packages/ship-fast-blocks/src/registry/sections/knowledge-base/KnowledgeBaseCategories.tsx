@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * KnowledgeBaseCategories — "browse by category" grid for a help center. A
@@ -225,7 +226,7 @@ export const KnowledgeBaseCategories = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="md">
             {items.map((cat, i) => (
               <button
                 key={cat.title}
@@ -248,7 +249,7 @@ export const KnowledgeBaseCategories = defineCapsule({
                 </span>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

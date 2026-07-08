@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * InsuranceLogos — press / trust logo strip for an insurance / fintech page. A
@@ -33,7 +34,11 @@ export const InsuranceLogos = defineCapsule({
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 md:grid-cols-3 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-3-6"
+            gap="lg"
+            className="items-center opacity-70"
+          >
             {items.map((logo) => (
               <div key={logo} className="flex items-center justify-center">
                 <span className="text-lg font-semibold text-muted-foreground">
@@ -41,7 +46,7 @@ export const InsuranceLogos = defineCapsule({
                 </span>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

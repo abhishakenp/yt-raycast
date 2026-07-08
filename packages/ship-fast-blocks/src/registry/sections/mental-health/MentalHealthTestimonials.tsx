@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MentalHealthTestimonials — a 3-up testimonials grid for a therapy practice. A
@@ -94,7 +95,7 @@ export const MentalHealthTestimonials = defineCapsule({
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((t) => (
               <div
                 key={t.name}
@@ -123,7 +124,7 @@ export const MentalHealthTestimonials = defineCapsule({
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

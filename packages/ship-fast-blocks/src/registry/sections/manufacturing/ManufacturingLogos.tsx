@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ManufacturingLogos — a "trusted by industry leaders" client-logo strip for a
@@ -45,7 +46,7 @@ export const ManufacturingLogos = defineCapsule({
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {heading}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 md:grid-cols-3 lg:grid-cols-6">
+          <ResponsiveGrid cols="2-3-6" gap="lg" className="items-center">
             {items.map((logo) => (
               <button
                 key={logo}
@@ -65,7 +66,7 @@ export const ManufacturingLogos = defineCapsule({
                 <span className="font-semibold">{logo}</span>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

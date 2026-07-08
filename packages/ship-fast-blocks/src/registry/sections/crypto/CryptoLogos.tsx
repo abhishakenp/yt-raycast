@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CryptoLogos — trusted-by protocol logo strip for a crypto / DeFi landing
@@ -38,7 +39,7 @@ export const CryptoLogos = defineCapsule({
           <p className="mb-8 text-center text-sm text-muted-foreground">
             {heading}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 md:grid-cols-3 lg:grid-cols-6">
+          <ResponsiveGrid cols="2-3-6" gap="lg" className="items-center">
             {items.map((logo) => (
               <button
                 key={logo}
@@ -49,7 +50,7 @@ export const CryptoLogos = defineCapsule({
                 {logo}
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

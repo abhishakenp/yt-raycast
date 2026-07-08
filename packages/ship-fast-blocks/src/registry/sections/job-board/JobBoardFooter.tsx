@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * JobBoardFooter — a fat, multi-column site footer for a job-board / careers
@@ -164,7 +165,7 @@ export const JobBoardFooter = defineCapsule({
       >
         <h2 className="sr-only">Footer</h2>
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
+          <ResponsiveGrid cols="2-4-5" gap="lg" className="lg:gap-12">
             <div className="col-span-2 lg:col-span-2">
               <button
                 type="button"
@@ -214,7 +215,7 @@ export const JobBoardFooter = defineCapsule({
                 </ul>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
             <p className="text-sm text-muted-foreground">{note}</p>
             <div className="flex gap-6 text-sm">

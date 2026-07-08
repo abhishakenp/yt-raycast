@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { directoryLakebed } from './directory-lakebed.ts'
 import { useDirectorySearch } from './directory-interactions.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * DirectoryCategories — browse-by-category tile grid for a local-business
@@ -192,7 +193,7 @@ export const DirectoryCategories = defineCapsule({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+          <ResponsiveGrid cols="2-3-4" gap="sm" className="sm:gap-6">
             {items.map((cat, i) => (
               <button
                 key={cat.title}
@@ -222,7 +223,7 @@ export const DirectoryCategories = defineCapsule({
                 <p className="text-sm text-muted-foreground">{cat.count}</p>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-10 text-center">
             <button

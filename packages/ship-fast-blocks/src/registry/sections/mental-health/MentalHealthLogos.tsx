@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MentalHealthLogos — a subtle insurance / trust logo strip for a therapy
@@ -37,7 +38,11 @@ export const MentalHealthLogos = defineCapsule({
           <p className="mb-8 text-center text-sm text-muted-foreground">
             {title}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-60 md:grid-cols-4 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-4-6"
+            gap="lg"
+            className="items-center opacity-60"
+          >
             {items.map((logo) => (
               <div key={logo} className="flex items-center justify-center">
                 <span className="text-lg font-semibold text-muted-foreground">
@@ -45,7 +50,7 @@ export const MentalHealthLogos = defineCapsule({
                 </span>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

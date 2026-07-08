@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * PortfolioWork — selected-work / project gallery for a dark creative portfolio.
@@ -117,7 +118,7 @@ export const PortfolioWork = defineCapsule({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-2-3" gap="md">
             {items.map((item) => (
               <button
                 key={item.title}
@@ -152,7 +153,7 @@ export const PortfolioWork = defineCapsule({
                 </div>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

@@ -58,7 +58,11 @@ export {
   ProductCardPrice,
   productCardVariants,
 } from './ProductCard.tsx'
-export { ResponsiveGrid } from './ResponsiveGrid.tsx'
+export {
+  ResponsiveGrid,
+  gridColsVariants,
+  type ResponsiveGridProps,
+} from './ResponsiveGrid.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

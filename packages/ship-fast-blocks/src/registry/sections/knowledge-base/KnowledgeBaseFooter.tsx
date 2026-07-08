@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * KnowledgeBaseFooter — five-column site footer for a help center on the page
@@ -94,7 +95,7 @@ export const KnowledgeBaseFooter = defineCapsule({
         className={cn('border-t border-border bg-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
+          <ResponsiveGrid cols="2-4-5" gap="lg">
             <div className="col-span-2 lg:col-span-2">
               <button
                 type="button"
@@ -145,7 +146,7 @@ export const KnowledgeBaseFooter = defineCapsule({
                 </ul>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
           <div className="mt-12 border-t border-border pt-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <p className="text-sm text-muted-foreground">{copyright}</p>

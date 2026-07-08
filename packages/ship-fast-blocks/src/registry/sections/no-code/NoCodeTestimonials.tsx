@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * NoCodeTestimonials — centered-header 3-column star-rated testimonials grid on
@@ -101,7 +102,7 @@ export const NoCodeTestimonials = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((t) => (
               <div
                 key={t.name}
@@ -133,7 +134,7 @@ export const NoCodeTestimonials = defineCapsule({
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

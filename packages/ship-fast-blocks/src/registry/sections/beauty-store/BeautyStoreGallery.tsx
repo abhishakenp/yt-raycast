@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * BeautyStoreGallery — a behind-the-scenes mosaic image gallery for a beauty /
@@ -59,7 +60,7 @@ export const BeautyStoreGallery = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <ResponsiveGrid cols="2-lg-4" gap="sm">
             {imageAlts.map((alt, i) =>
               i === 0 ? (
                 <div
@@ -94,7 +95,7 @@ export const BeautyStoreGallery = defineCapsule({
                 </div>
               ),
             )}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

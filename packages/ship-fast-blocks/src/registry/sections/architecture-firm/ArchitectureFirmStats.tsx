@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ArchitectureFirmStats — inverted statistics band for an architecture-studio /
@@ -40,7 +41,7 @@ export const ArchitectureFirmStats = defineCapsule({
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4">
+          <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {items.map((s) => (
               <div key={s.label}>
                 <p className="mb-2 text-4xl font-light sm:text-5xl">
@@ -49,7 +50,7 @@ export const ArchitectureFirmStats = defineCapsule({
                 <p className="text-sm text-background/70">{s.label}</p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * NewsTopics — browse-by-topic / section nav grid for a news outlet. On a card
@@ -132,7 +133,7 @@ export const NewsTopics = defineCapsule({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <ResponsiveGrid cols="2-3-4" gap="sm">
             {items.map((topic) => (
               <button
                 key={topic.name}
@@ -166,7 +167,7 @@ export const NewsTopics = defineCapsule({
                 </div>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ElectronicsStoreCategories — a "Shop by Category" image-tile grid for an
@@ -92,7 +93,7 @@ export const ElectronicsStoreCategories = defineCapsule({
           <h2 className="mb-8 text-2xl font-semibold text-foreground">
             {heading}
           </h2>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <ResponsiveGrid cols="2-lg-4" gap="sm">
             {items.map((c) => (
               <button
                 key={c.name}
@@ -117,7 +118,7 @@ export const ElectronicsStoreCategories = defineCapsule({
                 </div>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

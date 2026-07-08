@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * AutoDealershipStats — bold full-bleed stats band for an auto dealership site.
@@ -40,7 +41,11 @@ export const AutoDealershipStats = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 text-center lg:grid-cols-4 lg:gap-12">
+          <ResponsiveGrid
+            cols="2-lg-4"
+            gap="lg"
+            className="text-center lg:gap-12"
+          >
             {items.map((s) => (
               <div key={s.label}>
                 <p className="text-4xl font-semibold lg:text-5xl">{s.value}</p>
@@ -49,7 +54,7 @@ export const AutoDealershipStats = defineCapsule({
                 </p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

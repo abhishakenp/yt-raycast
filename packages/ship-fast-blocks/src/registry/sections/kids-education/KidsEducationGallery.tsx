@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * KidsEducationGallery — "learning in action" masonry photo gallery for a kids /
@@ -94,7 +95,7 @@ export const KidsEducationGallery = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <ResponsiveGrid cols="2-3-4" gap="sm">
             {items.map((g, i) => (
               <div
                 key={g.caption}
@@ -116,7 +117,7 @@ export const KidsEducationGallery = defineCapsule({
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

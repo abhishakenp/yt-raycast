@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * FoodTruckStats — a compact metrics strip on a subtle muted band. A centered 2-up
@@ -33,7 +34,7 @@ export const FoodTruckStats = defineCapsule({
     return (
       <section className={cn('bg-muted px-6 py-16', props.className)}>
         <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4">
+          <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {stats.map((s) => (
               <div key={s.label}>
                 <p className="text-3xl font-bold text-foreground md:text-4xl">
@@ -42,7 +43,7 @@ export const FoodTruckStats = defineCapsule({
                 <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

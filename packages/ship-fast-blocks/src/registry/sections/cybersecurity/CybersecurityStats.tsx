@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CybersecurityStats — dark, full-bleed real-time threat-intelligence stats
@@ -92,7 +93,7 @@ export const CybersecurityStats = defineCapsule({
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-background/60">{description}</p>
           </div>
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
+          <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
             {items.map((s) => (
               <div key={s.label} className="text-center">
                 <div className="mb-2 text-4xl font-bold sm:text-5xl lg:text-6xl">
@@ -102,7 +103,7 @@ export const CybersecurityStats = defineCapsule({
                 <div className="mt-2 text-sm text-primary">{s.note}</div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
           <div className="mt-16 border-t border-background/20 pt-16">
             <div className="grid gap-8 text-center md:grid-cols-3">
               {secondary.map((s) => (

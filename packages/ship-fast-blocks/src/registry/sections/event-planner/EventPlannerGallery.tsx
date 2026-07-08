@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * EventPlannerGallery — portfolio gallery of past events. A centered intro
@@ -67,7 +68,7 @@ export const EventPlannerGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{galleryDesc}</p>
           </div>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+          <ResponsiveGrid cols="2-lg-4" gap="sm" className="lg:gap-6">
             {galleryImages.map((alt, i) => (
               <button
                 key={alt}
@@ -87,7 +88,7 @@ export const EventPlannerGallery = defineCapsule({
                 />
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
           <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-6">
             {galleryWide.map((alt, i) => (
               <button

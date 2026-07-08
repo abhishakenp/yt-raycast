@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CommunityForumStats — dark KPI stats band for a community-platform / discussion-forum
@@ -34,7 +35,7 @@ export const CommunityForumStats = defineCapsule({
     return (
       <section className={cn('bg-foreground py-16', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 text-center lg:grid-cols-4">
+          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
             {items.map((s) => (
               <div key={s.label}>
                 <div className="mb-2 text-3xl font-bold text-background sm:text-4xl">
@@ -43,7 +44,7 @@ export const CommunityForumStats = defineCapsule({
                 <div className="text-sm text-background/60">{s.label}</div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

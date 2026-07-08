@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * FaqFooter — a five-column resource footer for a help-center / SaaS product page.
@@ -119,7 +120,7 @@ export const FaqFooter = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
+          <ResponsiveGrid cols="2-4-5" gap="lg" className="lg:gap-12">
             <div className="col-span-2 md:col-span-4 lg:col-span-1">
               <button
                 type="button"
@@ -170,7 +171,7 @@ export const FaqFooter = defineCapsule({
                 </ul>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
             <p className="text-sm text-muted-foreground">{copyright}</p>

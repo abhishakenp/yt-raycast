@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CafeGallery — masonry photo gallery for a cozy cafe / coffee shop page,
@@ -38,7 +39,7 @@ export const CafeGallery = defineCapsule({
     return (
       <section className={cn('bg-card py-20', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+          <ResponsiveGrid cols="2-md-3" gap="sm">
             <div className="space-y-4">
               <div className="aspect-[3/4] overflow-hidden rounded-xl">
                 <Image
@@ -99,7 +100,7 @@ export const CafeGallery = defineCapsule({
                 />
               </div>
             </div>
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

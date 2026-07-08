@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MusicFestivalGallery — a dark photo gallery band of past-year memories for a
@@ -64,7 +65,7 @@ export const MusicFestivalGallery = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <ResponsiveGrid cols="2-md-4" gap="sm">
             {imageAlts.map((alt, i) => (
               <Image
                 key={alt}
@@ -79,7 +80,7 @@ export const MusicFestivalGallery = defineCapsule({
                 )}
               />
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

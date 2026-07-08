@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MarketingAgencyServices — a 6-up services / capabilities grid. A centered
@@ -190,7 +191,7 @@ export const MarketingAgencyServices = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((item, i) => (
               <div
                 key={item.title}
@@ -215,7 +216,7 @@ export const MarketingAgencyServices = defineCapsule({
                 </ul>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

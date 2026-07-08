@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * JobBoardCategories — a browse-by-category icon grid for a job-board / careers
@@ -180,7 +181,7 @@ export const JobBoardCategories = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <ResponsiveGrid cols="2-3-4" gap="sm">
             {items.map((cat, i) => (
               <button
                 key={cat.title}
@@ -197,7 +198,7 @@ export const JobBoardCategories = defineCapsule({
                 <p className="text-sm text-muted-foreground">{cat.count}</p>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

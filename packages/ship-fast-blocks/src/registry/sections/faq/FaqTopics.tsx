@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * FaqTopics — a "Browse by Topic" category grid for a help-center / knowledge-base
@@ -206,7 +207,7 @@ export const FaqTopics = defineCapsule({
             {heading}
           </h2>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-2-3" gap="sm">
             {items.map((topic, i) => (
               <button
                 key={topic.title}
@@ -234,7 +235,7 @@ export const FaqTopics = defineCapsule({
                 </span>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

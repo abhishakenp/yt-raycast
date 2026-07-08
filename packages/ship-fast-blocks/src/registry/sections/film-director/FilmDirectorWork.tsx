@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * FilmDirectorWork — an inverted, near-black "Selected Work" reel grid for a
@@ -165,7 +166,7 @@ export const FilmDirectorWork = defineCapsule({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="md">
             {workItems.map((proj) => (
               <button
                 key={proj.title}
@@ -201,7 +202,7 @@ export const FilmDirectorWork = defineCapsule({
                 </div>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-12 text-center">
             <button

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * LogisticsTestimonials — a three-up customer testimonials grid for a global-
@@ -87,7 +88,7 @@ export const LogisticsTestimonials = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="md">
             {items.map((t) => (
               <div
                 key={t.name}
@@ -117,7 +118,7 @@ export const LogisticsTestimonials = defineCapsule({
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

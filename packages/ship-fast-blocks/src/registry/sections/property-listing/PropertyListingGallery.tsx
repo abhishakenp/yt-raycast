@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { FilterChip } from '#/section-kit/index.ts'
+import { FilterChip, ResponsiveGrid } from '#/section-kit/index.ts'
 import type { PropertyListingCatalogInput } from './property-listing-lakebed.ts'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
@@ -184,7 +184,7 @@ export const PropertyListingGallery = defineCapsule({
               : ''}
           </p>
 
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-2-3" gap="md" className="mt-10">
             {matchingListings.map((listing, index) => (
               <article
                 key={`${listing.address}-${index}`}
@@ -272,7 +272,7 @@ export const PropertyListingGallery = defineCapsule({
                 No listings match the current search.
               </div>
             ) : null}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

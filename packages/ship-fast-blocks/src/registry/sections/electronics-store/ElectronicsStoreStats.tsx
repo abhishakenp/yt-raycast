@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ElectronicsStoreStats — a compact horizontally-ruled stats band for an
@@ -36,7 +37,7 @@ export const ElectronicsStoreStats = defineCapsule({
         className={cn('border-y border-border py-16 lg:py-20', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
+          <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
             {stats.map((s) => (
               <div key={s.label} className="text-center">
                 <div className="mb-2 text-4xl font-semibold text-foreground">
@@ -45,7 +46,7 @@ export const ElectronicsStoreStats = defineCapsule({
                 <div className="text-sm text-muted-foreground">{s.label}</div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CrmStats — compact KPI stats band for a CRM / SaaS landing page. A
@@ -40,7 +41,7 @@ export const CrmStats = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+          <ResponsiveGrid cols="2-lg-4" gap="lg">
             {items.map((s) => (
               <div key={s.label} className="text-center">
                 <p className="mb-2 text-4xl font-bold text-foreground sm:text-5xl">
@@ -49,7 +50,7 @@ export const CrmStats = defineCapsule({
                 <p className="text-muted-foreground">{s.label}</p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

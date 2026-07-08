@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * BakeryGallery — masonry photo gallery for an artisan-bakery page, on a soft
@@ -54,7 +55,7 @@ export const BakeryGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <ResponsiveGrid cols="2-md-4" gap="sm">
             {[0, 1, 2, 3].map((col) => (
               <div key={col} className="space-y-4">
                 <Image
@@ -79,7 +80,7 @@ export const BakeryGallery = defineCapsule({
                 />
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

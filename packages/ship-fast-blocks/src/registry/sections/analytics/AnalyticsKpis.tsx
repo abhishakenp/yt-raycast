@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * AnalyticsKpis — a 4-up KPI metric-card grid for a SaaS analytics dashboard. A
@@ -115,7 +116,7 @@ export const AnalyticsKpis = defineCapsule({
         aria-label="Key performance indicators"
         className={cn(props.className)}
       >
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ResponsiveGrid cols="1-2-4" gap="md">
           {kpis.map((kpi, i) => (
             <article
               key={kpi.label}
@@ -148,7 +149,7 @@ export const AnalyticsKpis = defineCapsule({
               </p>
             </article>
           ))}
-        </div>
+        </ResponsiveGrid>
       </section>
     )
   },

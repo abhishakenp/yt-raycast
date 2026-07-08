@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 const cardIcons: Record<string, ReactNode> = {
   power: (
@@ -145,7 +146,7 @@ export const GovernmentPortalServices = defineCapsule({
               titleClassName="text-[18px] font-medium text-[#3346B5]"
             />
           ) : null}
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <ResponsiveGrid cols="2-lg-4" gap="sm">
             {cards.map((card) => (
               <button
                 type="button"
@@ -167,7 +168,7 @@ export const GovernmentPortalServices = defineCapsule({
                 ) : null}
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

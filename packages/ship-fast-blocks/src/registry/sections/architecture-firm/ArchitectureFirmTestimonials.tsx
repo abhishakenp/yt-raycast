@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ArchitectureFirmTestimonials — client testimonials grid for an
@@ -98,7 +99,7 @@ export const ArchitectureFirmTestimonials = defineCapsule({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((t) => (
               <blockquote key={t.name} className="bg-muted p-8">
                 <QuoteMark />
@@ -120,7 +121,7 @@ export const ArchitectureFirmTestimonials = defineCapsule({
                 </footer>
               </blockquote>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

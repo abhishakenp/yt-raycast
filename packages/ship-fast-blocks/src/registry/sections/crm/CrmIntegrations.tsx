@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CrmIntegrations — centered integrations grid for a CRM / SaaS landing page. A
@@ -59,7 +60,7 @@ export const CrmIntegrations = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-6">
+          <ResponsiveGrid cols="2-4-6" gap="md">
             {items.map((item) => (
               <button
                 key={item.name}
@@ -92,7 +93,7 @@ export const CrmIntegrations = defineCapsule({
                 </span>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

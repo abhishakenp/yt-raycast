@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CorporateLogos — client logo trust bar for an enterprise / corporate B2B
@@ -41,7 +42,11 @@ export const CorporateLogos = defineCapsule({
           <p className="mb-10 text-center text-sm font-medium text-muted-foreground">
             {heading}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 md:grid-cols-4 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-4-6"
+            gap="lg"
+            className="items-center opacity-70"
+          >
             {items.map((logo) => (
               <button
                 key={logo}
@@ -54,7 +59,7 @@ export const CorporateLogos = defineCapsule({
                 </span>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

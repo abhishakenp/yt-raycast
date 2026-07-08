@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * DirectoryStats — compact 4-up statistics band for a local-business directory.
@@ -37,7 +38,7 @@ export const DirectoryStats = defineCapsule({
         className={cn('border-y border-border bg-muted py-12', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4">
+          <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {stats.map((s) => (
               <div key={s.label}>
                 <div className="text-3xl font-semibold text-foreground sm:text-4xl">
@@ -46,7 +47,7 @@ export const DirectoryStats = defineCapsule({
                 <div className="mt-1 text-muted-foreground">{s.label}</div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

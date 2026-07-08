@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ManufacturingCapabilities — a 6-up capabilities / services grid for a
@@ -168,7 +169,7 @@ export const ManufacturingCapabilities = defineCapsule({
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((item, i) => (
               <article
                 key={item.title}
@@ -185,7 +186,7 @@ export const ManufacturingCapabilities = defineCapsule({
                 </p>
               </article>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

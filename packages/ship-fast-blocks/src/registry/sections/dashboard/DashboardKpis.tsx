@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
@@ -129,12 +130,7 @@ export const DashboardKpis = defineCapsule({
     }
 
     return (
-      <div
-        className={cn(
-          'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4',
-          props.className,
-        )}
-      >
+      <ResponsiveGrid cols="1-2-4" gap="sm" className={props.className}>
         {kpis.map((kpi) => {
           const tone = kpi.tone ?? 'primary'
           const up = kpi.trendUp ?? true
@@ -218,7 +214,7 @@ export const DashboardKpis = defineCapsule({
             </div>
           )
         })}
-      </div>
+      </ResponsiveGrid>
     )
   },
 })

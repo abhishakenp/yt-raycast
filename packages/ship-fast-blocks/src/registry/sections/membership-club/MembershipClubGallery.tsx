@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MembershipClubGallery — masonry-style photo gallery of gatherings for a private
@@ -53,7 +54,7 @@ export const MembershipClubGallery = defineCapsule({
               {heading}
             </h2>
           </div>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+          <ResponsiveGrid cols="2-lg-4" gap="sm" className="lg:gap-6">
             {images.map((alt, i) => (
               <Image
                 key={alt}
@@ -67,7 +68,7 @@ export const MembershipClubGallery = defineCapsule({
                 )}
               />
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

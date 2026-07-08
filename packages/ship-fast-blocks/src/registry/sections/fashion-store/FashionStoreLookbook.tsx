@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * FashionStoreLookbook — editorial Lookbook masonry gallery for a minimalist
@@ -124,7 +125,7 @@ export const FashionStoreLookbook = defineCapsule({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-6">
+          <ResponsiveGrid cols="2-lg-3" gap="sm" className="lg:gap-6">
             {lookbookItems.map((item) => (
               <button
                 key={item.look}
@@ -159,7 +160,7 @@ export const FashionStoreLookbook = defineCapsule({
                 </div>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-12 text-center">
             <button

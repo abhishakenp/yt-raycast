@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * BeautyStoreLogos — trusted-by beauty-brand logo strip for a cosmetics / skincare
@@ -43,7 +44,11 @@ export const BeautyStoreLogos = defineCapsule({
           <p className="mb-10 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {heading}
           </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-60 md:grid-cols-3 lg:grid-cols-6">
+          <ResponsiveGrid
+            cols="2-3-6"
+            gap="lg"
+            className="items-center opacity-60"
+          >
             {brands.map((name) => (
               <button
                 key={name}
@@ -56,7 +61,7 @@ export const BeautyStoreLogos = defineCapsule({
                 </span>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

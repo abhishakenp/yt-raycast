@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CoworkingFooter — deep, quiet closing footer for a coworking or shared-
@@ -189,7 +190,7 @@ export const CoworkingFooter = defineCapsule({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-10 sm:grid-cols-4">
+            <ResponsiveGrid cols="2-4" gap="xl">
               {columns.map((column) => (
                 <div key={column.title}>
                   <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
@@ -212,7 +213,7 @@ export const CoworkingFooter = defineCapsule({
                   </ul>
                 </div>
               ))}
-            </div>
+            </ResponsiveGrid>
           </div>
 
           <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-8 sm:flex-row">
