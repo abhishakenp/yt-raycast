@@ -10,6 +10,7 @@ afterEach(() => {
 import {
   Card,
   CommandSearch,
+  CommandSearchTrigger,
   AccountDropdown,
   AccountDropdownTrigger,
   AccountDropdownContent,
@@ -283,15 +284,15 @@ describe('CommandSearch', () => {
   it('renders trigger button with default search icon', () => {
     render(
       <CommandSearch
-        title="Search"
-        description="Search items"
-        placeholder="Search..."
-        items={[]}
-        getKey={() => 'x'}
-        getValue={() => 'x'}
-        renderRow={() => null}
-        onSelect={() => {}}
-      />,
+        search={{
+          items: [],
+          getKey: () => 'x',
+          getValue: () => 'x',
+          onSelect: () => {},
+        }}
+      >
+        <CommandSearchTrigger aria-label="Search" />
+      </CommandSearch>,
     )
     const btn = screen.getByRole('button', { name: 'Search' })
     expect(btn).toBeTruthy()
