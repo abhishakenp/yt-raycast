@@ -39,4 +39,35 @@ describe('preprocessOpenUIRuntimeResponse', () => {
     expect(result).toContain('{"footer":{"note":"Done"}}, null)')
     expect(result).not.toContain('{"footer":{"note":"Done"}, null)')
   })
+
+  // Mirrors the server preprocess: full-bleed section bands own their padding,
+  // so the page-root Stack that stacks them renders gapless (default gap-4 shows
+  // the page bg as black slivers). Fixes existing persisted programs on render.
+  describe('gapless section-band stack', () => {
+    it('forces gap="none" on a Stack whose children are all SectionAnchors', () => {
+      const source = [
+        'nav = CafeNavbar("Acme")',
+        'nav_anchor = SectionAnchor("nav", nav)',
+        'hero = CafeHero("Welcome")',
+        'hero_anchor = SectionAnchor("hero", hero, "scroll-mt-28")',
+        'home = Stack([nav_anchor, hero_anchor])',
+        'root = PageSwitch(["Home"], [home])',
+      ].join('\n')
+      const result = preprocessOpenUIRuntimeResponse(source)
+      expect(result).toContain(
+        'home = Stack([nav_anchor, hero_anchor], "col", "none")',
+      )
+    })
+
+    it('leaves freeform-app / inner content stacks untouched', () => {
+      const source = [
+        'status = StateText("on", false, "Status: ")',
+        'toggle = StateButton("Toggle", "on", "toggle")',
+        'root = Stack([status, toggle])',
+      ].join('\n')
+      const result = preprocessOpenUIRuntimeResponse(source)
+      expect(result).toContain('root = Stack([status, toggle])')
+      expect(result).not.toContain('"col", "none"')
+    })
+  })
 })

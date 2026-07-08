@@ -261,17 +261,54 @@ export function balancePartial(code: string): string {
   return result
 }
 
+/**
+ * Full-bleed section bands own their vertical padding, so the page-root Stack
+ * that stacks them must not add gap between bands — the Stack default (gap-4 =
+ * 16px) shows the transparent page background as black slivers between every
+ * band. Force gap="none" on that stack ONLY.
+ *
+ * Detected structurally (generic, not per-site): a `X = Stack([a, b, ...])`
+ * statement with no explicit args whose children are ALL vars assigned via
+ * `= SectionAnchor(...)`. Inner content / freeform-app stacks (non-anchor
+ * children or an explicit gap arg) are left untouched, preserving their
+ * intended default spacing. Mirrors the server preprocess so live preview,
+ * SSR, and exports all render band pages identically. Runs on the named form,
+ * so existing persisted programs are fixed on next render (no regeneration).
+ */
+function forceGaplessSectionBandStack(code: string): string {
+  const anchors = new Set(
+    [...code.matchAll(/^\s*([A-Za-z_$][\w$]*)\s*=\s*SectionAnchor\s*\(/gm)].map(
+      (m) => m[1],
+    ),
+  )
+  if (anchors.size === 0) return code
+  return code.replace(
+    /^(\s*[A-Za-z_$][\w$]*\s*=\s*)Stack\(\s*\[([^[\]]*)\]\s*\)(\s*)$/gm,
+    (match, prefix: string, inner: string, tail: string) => {
+      const children = inner
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean)
+      if (children.length === 0) return match
+      if (!children.every((c) => anchors.has(c))) return match
+      return `${prefix}Stack([${children.join(', ')}], "col", "none")${tail}`
+    },
+  )
+}
+
 export function preprocessOpenUIRuntimeResponse(source: string): string {
   const withoutFences = String(source || '')
     .replace(/^```[a-z-]*\n?/i, '')
     .replace(/\n?```\s*$/, '')
     .replace(/Action\([^)]*\)/g, 'null')
 
-  return balancePartial(
-    sanitizePartialImages(
-      balanceStatements(
-        repairObjectNullArgumentBoundaries(
-          repairMalformedQuotedObjectKeys(withoutFences),
+  return forceGaplessSectionBandStack(
+    balancePartial(
+      sanitizePartialImages(
+        balanceStatements(
+          repairObjectNullArgumentBoundaries(
+            repairMalformedQuotedObjectKeys(withoutFences),
+          ),
         ),
       ),
     ),

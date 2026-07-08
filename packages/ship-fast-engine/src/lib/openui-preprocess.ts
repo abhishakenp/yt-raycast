@@ -545,6 +545,43 @@ function balancePartial(code: string): string {
   return result
 }
 
+/**
+ * Full-bleed section bands own their vertical padding, so the page-root Stack
+ * that stacks them must not add gap between bands — the Stack default (gap-4 =
+ * 16px) leaves the transparent page background showing as black slivers between
+ * every band. Force gap="none" on that stack ONLY.
+ *
+ * Detected structurally (generic, not per-site): a `X = Stack([a, b, ...])`
+ * statement with no explicit args whose children are ALL vars assigned via
+ * `= SectionAnchor(...)`. Inner content stacks and freeform-app stacks (whose
+ * children are content elements, not section anchors, or that pass an explicit
+ * gap) are untouched, so their intended default spacing is preserved.
+ *
+ * Applied at render time on the named form (before ref resolution), so every
+ * existing persisted program is fixed on its next render without regeneration.
+ */
+function forceGaplessSectionBandStack(code: string): string {
+  const anchors = new Set(
+    [...code.matchAll(/^\s*([A-Za-z_$][\w$]*)\s*=\s*SectionAnchor\s*\(/gm)].map(
+      (m) => m[1],
+    ),
+  )
+  if (anchors.size === 0) return code
+  // Array-only Stack (no trailing args): `X = Stack([ ...idents... ])`.
+  return code.replace(
+    /^(\s*[A-Za-z_$][\w$]*\s*=\s*)Stack\(\s*\[([^[\]]*)\]\s*\)(\s*)$/gm,
+    (match, prefix: string, inner: string, tail: string) => {
+      const children = inner
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean)
+      if (children.length === 0) return match
+      if (!children.every((c) => anchors.has(c))) return match
+      return `${prefix}Stack([${children.join(', ')}], "col", "none")${tail}`
+    },
+  )
+}
+
 export function preprocessOpenUIResponse(
   s: string,
   options: { resolveRefs?: boolean } = {},
@@ -568,6 +605,7 @@ export function preprocessOpenUIResponse(
   result = repairObjectParenthesisArgumentBoundaries(result)
   result = balanceStatements(result)
   result = stripTopLevelSectionArgLabels(result)
+  result = forceGaplessSectionBandStack(result)
 
   if (resolveRefs) result = resolveVariables(result)
   result = sanitizePartialImages(result)
