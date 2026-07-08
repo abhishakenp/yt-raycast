@@ -336,6 +336,27 @@ const isOpenUIPromptSpecModule = (moduleId: string) => {
   )
 }
 
+// Bundled CJS dependencies (notably `typescript`, pulled in by the OpenUI export
+// builders) reference the CommonJS globals `__filename` / `__dirname`. In the
+// Nitro `nodeServer` ESM output those identifiers are undefined, so the first use
+// throws `ReferenceError: __filename is not defined in ES module scope` and every
+// SSR request that touches an export builder 500s. Inject per-chunk definitions so
+// the free identifiers resolve to the running module's path. Only chunks that
+// actually reference the globals are touched, and any chunk that already declares
+// them is skipped to avoid a redeclaration SyntaxError.
+const cjsDirnameShim = (): Plugin => ({
+  name: 'ship-fast-cjs-dirname-shim',
+  renderChunk(code: string) {
+    if (!/(?<![.\w])__(?:filename|dirname)\b/.test(code)) return null
+    if (/(?:const|let|var)\s+__(?:filename|dirname)\b/.test(code)) return null
+    const shim =
+      "import { fileURLToPath as __shimFileURLToPath } from 'node:url'\n" +
+      'const __filename = __shimFileURLToPath(import.meta.url)\n' +
+      "const __dirname = __filename.slice(0, Math.max(0, __filename.lastIndexOf('/')))\n"
+    return { code: shim + code, map: null }
+  },
+})
+
 const pexelsDevApi = (): Plugin => ({
   name: 'ship-fast-pexels-dev-api',
   configureServer(server) {
@@ -406,7 +427,10 @@ const config = defineConfig({
     devtools(),
     pexelsDevApi(),
     nitro({
-      rollupConfig: { external: [/^@sentry\//] },
+      rollupConfig: {
+        external: [/^@sentry\//],
+        plugins: [cjsDirnameShim()],
+      },
       preset: 'nodeServer',
     }),
     tailwindcss(),
