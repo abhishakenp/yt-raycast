@@ -67,4 +67,65 @@ describe('preprocessOpenUIResponse', () => {
     expect(result).toContain('"https://facebook.com/blog"')
     expect(result).not.toContain(',https://facebook.com/blog"')
   })
+
+  // Full-bleed section bands own their padding; the page-root Stack that stacks
+  // them must render gapless (default gap-4 shows the page bg as black slivers
+  // between bands). Applied at render time so EXISTING persisted programs are
+  // fixed on next render without regeneration.
+  describe('gapless section-band stack', () => {
+    const bandProgram = [
+      'nav = CafeNavbar("Acme")',
+      'nav_anchor = SectionAnchor("nav", nav)',
+      'hero = CafeHero("Welcome")',
+      'hero_anchor = SectionAnchor("hero", hero, "scroll-mt-28")',
+      'foot = CafeFooter("Acme")',
+      'foot_anchor = SectionAnchor("foot", foot, "scroll-mt-28")',
+      'home = Stack([nav_anchor, hero_anchor, foot_anchor])',
+      'root = PageSwitch(["Home"], [home])',
+    ].join('\n')
+
+    it('forces gap="none" on a Stack whose children are all SectionAnchors', () => {
+      const result = preprocessOpenUIResponse(bandProgram, {
+        resolveRefs: false,
+      })
+      expect(result).toContain(
+        'home = Stack([nav_anchor, hero_anchor, foot_anchor], "col", "none")',
+      )
+    })
+
+    it('leaves inner content stacks (non-anchor children) at their default gap', () => {
+      const source = [
+        'h = Heading("Acme", "1")',
+        'sub = Text("Insight", "muted")',
+        'inner = Stack([h, sub])',
+        'root = Stack([inner])',
+      ].join('\n')
+      const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+      // No SectionAnchors anywhere → nothing is rewritten.
+      expect(result).toContain('inner = Stack([h, sub])')
+      expect(result).not.toContain('"col", "none"')
+    })
+
+    it('leaves freeform-app root stacks (no section anchors) untouched', () => {
+      const source = [
+        'status = StateText("on", false, "Status: ")',
+        'toggle = StateButton("Toggle", "on", "toggle")',
+        'root = Stack([status, toggle])',
+      ].join('\n')
+      const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+      expect(result).toContain('root = Stack([status, toggle])')
+      expect(result).not.toContain('"col", "none"')
+    })
+
+    it('does not touch a band stack that already carries an explicit gap', () => {
+      const source = [
+        'nav = CafeNavbar("Acme")',
+        'nav_anchor = SectionAnchor("nav", nav)',
+        'home = Stack([nav_anchor], "col", "sm")',
+        'root = PageSwitch(["Home"], [home])',
+      ].join('\n')
+      const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+      expect(result).toContain('home = Stack([nav_anchor], "col", "sm")')
+    })
+  })
 })
