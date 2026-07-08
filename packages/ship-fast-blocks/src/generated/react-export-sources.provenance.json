@@ -13,8 +13,8 @@
     "src/generated/capsule-categories.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 1135,
-  "sectionComponentCount": 1064,
+  "componentCount": 1126,
+  "sectionComponentCount": 1055,
   "components": [
     {
       "name": "AboutHero",
@@ -2055,42 +2055,6 @@
     {
       "name": "FurnitureStoreTestimonials",
       "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreTestimonials.tsx"
-    },
-    {
-      "name": "GovernmentPortalAbout",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalAbout.tsx"
-    },
-    {
-      "name": "GovernmentPortalContact",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalContact.tsx"
-    },
-    {
-      "name": "GovernmentPortalEvents",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalEvents.tsx"
-    },
-    {
-      "name": "GovernmentPortalFaq",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalFaq.tsx"
-    },
-    {
-      "name": "GovernmentPortalFooter",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalFooter.tsx"
-    },
-    {
-      "name": "GovernmentPortalHero",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalHero.tsx"
-    },
-    {
-      "name": "GovernmentPortalNavbar",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalNavbar.tsx"
-    },
-    {
-      "name": "GovernmentPortalServices",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalServices.tsx"
-    },
-    {
-      "name": "GovernmentPortalStats",
-      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalStats.tsx"
     },
     {
       "name": "Grid",

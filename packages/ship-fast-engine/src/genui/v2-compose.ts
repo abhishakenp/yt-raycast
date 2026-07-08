@@ -558,41 +558,6 @@ const INTENT_GROUPS: { hints: string[]; families: string[] }[] = [
     ],
     families: ['Newsroom', 'Newsletter'],
   },
-  // Classic Indian-government / public-sector / PSU portals are an obvious, common
-  // ask ("indian government site", "classical site", "PSU power utility") — route
-  // them firmly to the GovernmentPortal family.
-  {
-    hints: [
-      'government',
-      'indian',
-      'india',
-      'sarkari',
-      'gov',
-      'public',
-      'sector',
-      'psu',
-      'ministry',
-      'department',
-      'municipal',
-      'municipality',
-      'civic',
-      'citizen',
-      'classic',
-      'classical',
-      'official',
-      'portal',
-      'tender',
-      'notice',
-      'utility',
-      'electricity',
-      'nigam',
-      'nagar',
-      'board',
-      'authority',
-      'commission',
-    ],
-    families: ['GovernmentPortal'],
-  },
 ]
 
 /** Top-K candidate families by local keyword overlap (no model call). */

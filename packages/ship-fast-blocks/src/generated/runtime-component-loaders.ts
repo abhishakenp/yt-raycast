@@ -2061,42 +2061,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/furniture-store/FurnitureStoreTestimonials.tsx').then(
       (module) => toCapsule(module, 'FurnitureStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  GovernmentPortalAbout: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalAbout.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalAbout'),
-    )) satisfies RuntimeComponentLoader,
-  GovernmentPortalContact: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalContact.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalContact'),
-    )) satisfies RuntimeComponentLoader,
-  GovernmentPortalEvents: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalEvents.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalEvents'),
-    )) satisfies RuntimeComponentLoader,
-  GovernmentPortalFaq: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalFaq.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalFaq'),
-    )) satisfies RuntimeComponentLoader,
-  GovernmentPortalFooter: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalFooter.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalFooter'),
-    )) satisfies RuntimeComponentLoader,
-  GovernmentPortalHero: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalHero.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalHero'),
-    )) satisfies RuntimeComponentLoader,
-  GovernmentPortalNavbar: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalNavbar.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalNavbar'),
-    )) satisfies RuntimeComponentLoader,
-  GovernmentPortalServices: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalServices.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalServices'),
-    )) satisfies RuntimeComponentLoader,
-  GovernmentPortalStats: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalStats.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalStats'),
-    )) satisfies RuntimeComponentLoader,
   Grid: (() =>
     import('../registry/primitives/layout.tsx').then((module) =>
       toCapsule(module, 'Grid'),

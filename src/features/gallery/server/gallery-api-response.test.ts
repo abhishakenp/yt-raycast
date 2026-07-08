@@ -378,7 +378,7 @@ describe('Gallery API Response', () => {
 
     it('renders DB-observed translated OpenUI source as static gallery HTML instead of a PNG preview', async () => {
       const translatedOpenUiSource =
-        'home_navbar = GovernmentPortalNavbar("Gov Hindi", "भारत सरकार", "सभी नागरिकों की सेवा में", "भारत राजधानी, नई दिल्ली", ["Home","Contact","Events","About","Services"], "/")\nhome_services = GovernmentPortalServices("हमारी प्रमुख सेवाएँ", [{"title":"डिजिटल पहचान प्रमाणन","href":"/services/digital-id"}])\nroot = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})'
+        'home_navbar = ChurchNavbar("भारत सरकार", ["Home","Contact","Events","About","Services"], "/")\nhome_services = ChurchServices("सेवाएँ", "हमारी प्रमुख सेवाएँ", "", [{"title":"डिजिटल पहचान प्रमाणन","detail":"","location":""}])\nroot = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})'
       const mockClient = {
         query: async () => ({
           availableCategories: [],
@@ -432,9 +432,7 @@ describe('Gallery API Response', () => {
       expect(JSON.stringify(data.items[0])).not.toContain(
         'hindi-gov-preview.png',
       )
-      expect(JSON.stringify(data.items[0])).not.toContain(
-        'GovernmentPortalServices("',
-      )
+      expect(JSON.stringify(data.items[0])).not.toContain('ChurchServices("')
     })
 
     it('renders DB-shaped edited, translated, themed OpenUI as the only public gallery preview artifact', async () => {

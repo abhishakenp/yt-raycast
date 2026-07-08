@@ -129,7 +129,7 @@ const dbObservedOpenUiRows = [
 </body>
 </html>`,
     moduleSource:
-      'home_navbar = GovernmentPortalNavbar("Gov Hindi", "भारत सरकार", "सभी नागरिकों की सेवा में", "भारत राजधानी, नई दिल्ली", ["Home","Contact","Events","About","Services"], "/")\nhome_services = GovernmentPortalServices("हमारी प्रमुख सेवाएँ", [{"title":"डिजिटल पहचान प्रमाणन","href":"/services/digital-id"}])\nroot = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})',
+      'home_navbar = ChurchNavbar("भारत सरकार", ["Home","Contact","Events","About","Services"], "/")\nhome_services = ChurchServices("सेवाएँ", "हमारी प्रमुख सेवाएँ", "", [{"title":"डिजिटल पहचान प्रमाणन","detail":"","location":""}])\nroot = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})',
   },
 ] as Array<GalleryPayload['items'][number] & { engineVersion: 'v1' | 'v3' }>
 

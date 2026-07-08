@@ -248,7 +248,7 @@ export const KINDS: KindEntry[] = [
   },
   {
     kind: 'government',
-    defaultFamily: 'GovernmentPortal',
+    defaultFamily: 'Nonprofit',
     keywordHints: [
       'government',
       'public',
@@ -258,7 +258,7 @@ export const KINDS: KindEntry[] = [
       'portal',
       'ministry',
     ],
-    covers: ['GovernmentPortal', 'Nonprofit', 'Church'],
+    covers: ['Nonprofit', 'Church'],
   },
   {
     kind: 'logistics',
