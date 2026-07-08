@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { FilterChip } from '#/section-kit/index.ts'
 import type { PropertyListingCatalogInput } from './property-listing-lakebed.ts'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
@@ -151,30 +152,27 @@ export const PropertyListingGallery = defineCapsule({
               {heading}
             </h2>
             <div className="flex flex-wrap gap-2">
-              {filters.map((filter, i) => (
-                <button
-                  key={filter}
-                  type="button"
-                  aria-pressed={
-                    activeFilter === filter || (i === 0 && !activeFilter)
-                  }
-                  onClick={() =>
-                    propertySearch.chooseSearch({
-                      filter,
-                      location: propertySearch.state?.location ?? '',
-                      query: propertySearch.state?.query ?? '',
-                    })
-                  }
-                  className={cn(
-                    'inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
-                    activeFilter === filter || (i === 0 && !activeFilter)
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-background text-foreground hover:bg-muted',
-                  )}
-                >
-                  {filter}
-                </button>
-              ))}
+              {filters.map((filter, i) => {
+                const isActive =
+                  activeFilter === filter || (i === 0 && !activeFilter)
+                return (
+                  <FilterChip
+                    key={filter}
+                    active={isActive}
+                    variant={isActive ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() =>
+                      propertySearch.chooseSearch({
+                        filter,
+                        location: propertySearch.state?.location ?? '',
+                        query: propertySearch.state?.query ?? '',
+                      })
+                    }
+                  >
+                    {filter}
+                  </FilterChip>
+                )
+              })}
             </div>
           </div>
 

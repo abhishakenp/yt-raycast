@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { FilterChip } from '#/section-kit/index.ts'
 import { knowledgeBaseLakebed } from './knowledge-base-lakebed.ts'
 import {
   useKbSearch,
@@ -149,14 +150,14 @@ export const KnowledgeBaseHero = defineCapsule({
           <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm">
             <span className="text-muted-foreground">{popularLabel}</span>
             {popular.map((topic) => (
-              <button
+              <FilterChip
                 key={topic}
-                type="button"
+                variant="muted"
+                size="sm"
                 onClick={() => kbSearch.chooseSearch({ query: topic })}
-                className="rounded-full bg-muted px-3 py-1 text-secondary-foreground transition-colors hover:bg-accent"
               >
                 {topic}
-              </button>
+              </FilterChip>
             ))}
           </div>
 

@@ -42,8 +42,11 @@ export {
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
 } from './AccountDropdown.tsx'
-export { Card, surfaceCard } from './Card.tsx'
-export { FilterChip } from './FilterChip.tsx'
+export {
+  FilterChip,
+  chipVariants,
+  type FilterChipProps,
+} from './FilterChip.tsx'
 export {
   ProductCard,
   ProductCardImage,
@@ -55,8 +58,6 @@ export {
   ProductCardPrice,
   productCardVariants,
 } from './ProductCard.tsx'
-export { PersonCard } from './PersonCard.tsx'
-export { Eyebrow } from './Eyebrow.tsx'
 export { ResponsiveGrid } from './ResponsiveGrid.tsx'
 
 export type { KitAction } from './types.ts'

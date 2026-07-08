@@ -1,14 +1,13 @@
 // @vitest-environment jsdom
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 afterEach(() => {
   cleanup()
 })
 
 import {
-  Card,
   CommandSearch,
   CommandSearchTrigger,
   AccountDropdown,
@@ -26,65 +25,25 @@ import {
   ProductCardTitle,
   ProductCardSubtitle,
   ProductCardPrice,
-  PersonCard,
-  Eyebrow,
   ResponsiveGrid,
-  surfaceCard,
 } from './index.ts'
 
-describe('Card', () => {
-  it('renders children with default variants', () => {
-    render(<Card>Content</Card>)
-    const el = screen.getByText('Content')
-    expect(el.className).toContain('border')
-    expect(el.className).toContain('bg-card')
-    expect(el.className).toContain('rounded-xl')
-    expect(el.className).toContain('p-6')
-  })
-
-  it('applies rounded, padding, shadow variants', () => {
-    render(
-      <Card rounded="2xl" padding="lg" shadow="lg">
-        X
-      </Card>,
-    )
-    const el = screen.getByText('X')
-    expect(el.className).toContain('rounded-2xl')
-    expect(el.className).toContain('p-8')
-    expect(el.className).toContain('shadow-lg')
-  })
-
-  it('merges className', () => {
-    render(<Card className="custom-class">Y</Card>)
-    expect(screen.getByText('Y').className).toContain('custom-class')
-  })
-})
-
-describe('surfaceCard', () => {
-  it('returns base classes with defaults', () => {
-    const cls = surfaceCard()
-    expect(cls).toContain('border')
-    expect(cls).toContain('bg-card')
-    expect(cls).toContain('rounded-xl')
-  })
-})
-
 describe('FilterChip', () => {
-  it('renders as span when no onClick', () => {
+  it('renders as button with rounded-full', () => {
     render(<FilterChip>Tag</FilterChip>)
     const el = screen.getByText('Tag')
-    expect(el.tagName).toBe('SPAN')
-    expect(el.className).toContain('rounded-full')
-  })
-
-  it('renders as button when onClick provided', () => {
-    render(<FilterChip onClick={() => {}}>Click</FilterChip>)
-    const el = screen.getByText('Click')
     expect(el.tagName).toBe('BUTTON')
     expect(el.className).toContain('rounded-full')
   })
 
-  it('applies active variant', () => {
+  it('calls onClick when clicked', () => {
+    const onClick = vi.fn()
+    render(<FilterChip onClick={onClick}>Click</FilterChip>)
+    fireEvent.click(screen.getByText('Click'))
+    expect(onClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('applies active variant with bg-primary', () => {
     render(
       <FilterChip active variant="muted">
         Active
@@ -92,16 +51,14 @@ describe('FilterChip', () => {
     )
     const el = screen.getByText('Active')
     expect(el.className).toContain('bg-primary')
+    expect(el.getAttribute('aria-pressed')).toBe('true')
   })
-})
 
-describe('Eyebrow', () => {
-  it('renders eyebrow text', () => {
-    render(<Eyebrow>Section Label</Eyebrow>)
-    const el = screen.getByText('Section Label')
-    expect(el.tagName).toBe('SPAN')
-    expect(el.className).toContain('rounded-full')
-    expect(el.className).toContain('uppercase')
+  it('applies muted variant when not active', () => {
+    render(<FilterChip variant="muted">Inactive</FilterChip>)
+    const el = screen.getByText('Inactive')
+    expect(el.className).toContain('bg-muted')
+    expect(el.getAttribute('aria-pressed')).toBe('false')
   })
 })
 
@@ -261,22 +218,6 @@ describe('ProductCard', () => {
     const el = screen.getByText('Title')
     expect(el.tagName).toBe('BUTTON')
     expect(el.className).toContain('font-medium')
-  })
-})
-
-describe('PersonCard', () => {
-  it('renders name, role, bio', () => {
-    render(
-      <PersonCard
-        avatar={<img alt="avatar" />}
-        name="Jane Doe"
-        role="CEO"
-        bio="Experienced leader"
-      />,
-    )
-    expect(screen.getByText('Jane Doe')).toBeTruthy()
-    expect(screen.getByText('CEO')).toBeTruthy()
-    expect(screen.getByText('Experienced leader')).toBeTruthy()
   })
 })
 

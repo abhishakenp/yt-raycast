@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { FilterChip } from '#/section-kit/index.ts'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import {
   jobBoardCatalogItem,
@@ -206,27 +207,26 @@ export const JobBoardJobs = defineCapsule({
           </div>
 
           <div className="mb-8 flex flex-wrap gap-3">
-            {filters.map((filter, i) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() =>
-                  jobSearch.chooseSearch({
-                    filter,
-                    location: filter === 'Remote' ? 'Remote' : '',
-                    query: '',
-                  })
-                }
-                className={cn(
-                  'rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                  activeFilter === filter || (i === 0 && !activeFilter)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                )}
-              >
-                {filter}
-              </button>
-            ))}
+            {filters.map((filter, i) => {
+              const isActive =
+                activeFilter === filter || (i === 0 && !activeFilter)
+              return (
+                <FilterChip
+                  key={filter}
+                  active={isActive}
+                  variant={isActive ? 'default' : 'muted'}
+                  onClick={() =>
+                    jobSearch.chooseSearch({
+                      filter,
+                      location: filter === 'Remote' ? 'Remote' : '',
+                      query: '',
+                    })
+                  }
+                >
+                  {filter}
+                </FilterChip>
+              )
+            })}
           </div>
 
           <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">

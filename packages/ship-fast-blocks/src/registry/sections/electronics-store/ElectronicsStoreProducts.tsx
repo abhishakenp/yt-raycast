@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { FilterChip } from '#/section-kit/index.ts'
 import {
   ProductCard,
   ProductCardImage,
@@ -192,19 +193,15 @@ export const ElectronicsStoreProducts = defineCapsule({
             </h2>
             <div className="flex gap-2">
               {filters.map((f, i) => (
-                <button
+                <FilterChip
                   key={f}
-                  type="button"
+                  active={i === 0}
+                  variant={i === 0 ? 'default' : 'outline'}
+                  className="rounded-lg"
                   onClick={() => go(f)}
-                  className={cn(
-                    'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
-                    i === 0
-                      ? 'bg-primary text-primary-foreground'
-                      : 'border border-border bg-card text-card-foreground hover:bg-accent',
-                  )}
                 >
                   {f}
-                </button>
+                </FilterChip>
               ))}
             </div>
           </div>

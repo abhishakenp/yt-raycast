@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { FilterChip } from '#/section-kit/index.ts'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import { useJobBoardSearch } from './job-board-interactions.tsx'
 
@@ -155,9 +156,10 @@ export const JobBoardHero = defineCapsule({
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>{popularLabel}</span>
                 {popular.map((p) => (
-                  <button
+                  <FilterChip
                     key={p}
-                    type="button"
+                    variant="muted"
+                    size="sm"
                     onClick={() =>
                       jobSearch.chooseSearch({
                         filter: p === 'Remote' ? 'Remote' : 'All Jobs',
@@ -165,10 +167,9 @@ export const JobBoardHero = defineCapsule({
                         query: p === 'Remote' ? '' : p,
                       })
                     }
-                    className="rounded-full bg-muted px-3 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     {p}
-                  </button>
+                  </FilterChip>
                 ))}
               </div>
             </div>

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { FilterChip } from '#/section-kit/index.ts'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import { usePropertyListingSearch } from './property-listing-interactions.tsx'
 
@@ -96,28 +97,26 @@ export const PropertyListingHero = defineCapsule({
               <input type="hidden" name="filter" value={activeFilter} />
               <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="flex flex-1 flex-wrap gap-2">
-                  {filters.map((filter) => (
-                    <button
-                      key={filter}
-                      type="button"
-                      aria-pressed={activeFilter === filter}
-                      onClick={() =>
-                        propertySearch.chooseSearch({
-                          filter,
-                          location: locationValue,
-                          query: '',
-                        })
-                      }
-                      className={cn(
-                        'inline-flex items-center rounded-lg border px-3 py-2 text-sm transition-colors',
-                        activeFilter === filter
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-background text-foreground hover:bg-muted',
-                      )}
-                    >
-                      {filter}
-                    </button>
-                  ))}
+                  {filters.map((filter) => {
+                    const isActive = activeFilter === filter
+                    return (
+                      <FilterChip
+                        key={filter}
+                        active={isActive}
+                        variant={isActive ? 'default' : 'outline'}
+                        className="rounded-lg"
+                        onClick={() =>
+                          propertySearch.chooseSearch({
+                            filter,
+                            location: locationValue,
+                            query: '',
+                          })
+                        }
+                      >
+                        {filter}
+                      </FilterChip>
+                    )
+                  })}
                 </div>
                 <button
                   type="submit"
@@ -142,10 +141,11 @@ export const PropertyListingHero = defineCapsule({
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <span className="text-sm text-muted-foreground">Popular:</span>
               {popular.map((item) => (
-                <button
+                <FilterChip
                   key={item}
-                  type="button"
-                  aria-pressed={propertySearch.state?.query === item}
+                  active={propertySearch.state?.query === item}
+                  variant="muted"
+                  size="sm"
                   onClick={() =>
                     propertySearch.chooseSearch({
                       filter: searchTarget,
@@ -153,10 +153,9 @@ export const PropertyListingHero = defineCapsule({
                       query: item,
                     })
                   }
-                  className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {item}
-                </button>
+                </FilterChip>
               ))}
             </div>
           </div>
