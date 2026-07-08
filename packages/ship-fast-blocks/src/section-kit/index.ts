@@ -59,6 +59,16 @@ export {
   productCardVariants,
 } from './ProductCard.tsx'
 export {
+  PersonCard,
+  PersonCardAvatar,
+  PersonCardContent,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+  personCardVariants,
+  type PersonCardProps,
+} from './PersonCard.tsx'
+export {
   ResponsiveGrid,
   gridColsVariants,
   type ResponsiveGridProps,

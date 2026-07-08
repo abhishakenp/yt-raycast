@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * NewsAuthors — meet our columnists / contributors grid for a news outlet. On a
@@ -157,9 +163,11 @@ export const NewsAuthors = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {authors.map((author) => (
-              <div
+              <PersonCard
                 key={author.name}
-                className="flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm"
+                variant="outlined"
+                rounded="xl"
+                className="p-6 shadow-sm"
               >
                 <button
                   type="button"
@@ -174,18 +182,16 @@ export const NewsAuthors = defineCapsule({
                     className="size-14 shrink-0 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="font-semibold text-foreground transition-colors group-hover:text-muted-foreground">
+                    <PersonCardName className="transition-colors group-hover:text-muted-foreground">
                       {author.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {author.role}
-                    </p>
+                    </PersonCardName>
+                    <PersonCardRole>{author.role}</PersonCardRole>
                   </div>
                 </button>
 
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                <PersonCardBio className="mt-4 leading-relaxed">
                   {author.bio}
-                </p>
+                </PersonCardBio>
 
                 <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-4">
                   {author.column ? (
@@ -210,7 +216,7 @@ export const NewsAuthors = defineCapsule({
                     </button>
                   ) : null}
                 </div>
-              </div>
+              </PersonCard>
             ))}
           </div>
         </div>

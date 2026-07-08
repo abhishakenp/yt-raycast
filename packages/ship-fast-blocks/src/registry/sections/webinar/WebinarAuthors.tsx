@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 export const WebinarAuthors = defineCapsule({
   name: 'WebinarAuthors',
@@ -77,9 +83,11 @@ export const WebinarAuthors = defineCapsule({
 
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {speakers.map((speaker, i) => (
-              <div
+              <PersonCard
                 key={`${speaker.name}-${i}`}
-                className="flex flex-col items-center rounded-2xl border border-border bg-card p-8 text-center text-card-foreground"
+                variant="outlined"
+                rounded="2xl"
+                className="items-center p-8 text-center"
               >
                 <Image
                   alt={speaker.avatarAlt}
@@ -88,19 +96,19 @@ export const WebinarAuthors = defineCapsule({
                   loading="lazy"
                   className="size-20 rounded-full object-cover"
                 />
-                <h3 className="mt-5 text-lg font-semibold text-foreground">
+                <PersonCardName className="mt-5 text-lg">
                   {speaker.name}
-                </h3>
-                <p className="mt-1 text-sm font-medium text-primary">
+                </PersonCardName>
+                <PersonCardRole className="mt-1 font-medium text-primary">
                   {speaker.role}
-                </p>
+                </PersonCardRole>
                 <p className="text-sm text-muted-foreground">
                   {speaker.company}
                 </p>
-                <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                <PersonCardBio className="mt-4 leading-6">
                   {speaker.bio}
-                </p>
-              </div>
+                </PersonCardBio>
+              </PersonCard>
             ))}
           </div>
         </div>

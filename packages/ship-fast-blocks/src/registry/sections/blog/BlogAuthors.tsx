@@ -5,6 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * BlogAuthors — contributor / author cards grid for an editorial blog or
@@ -110,9 +116,11 @@ export const BlogAuthors = defineCapsule({
 
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {authors.map((author) => (
-            <div
+            <PersonCard
               key={author.name}
-              className="flex flex-col rounded-xl border border-border bg-card p-6"
+              variant="outlined"
+              rounded="xl"
+              className="p-6"
             >
               <div className="flex items-center gap-4">
                 <Image
@@ -123,15 +131,15 @@ export const BlogAuthors = defineCapsule({
                   className="size-16 rounded-full object-cover"
                 />
                 <div className="min-w-0">
-                  <p className="truncate font-semibold text-foreground">
+                  <PersonCardName className="truncate">
                     {author.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{author.role}</p>
+                  </PersonCardName>
+                  <PersonCardRole>{author.role}</PersonCardRole>
                 </div>
               </div>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              <PersonCardBio className="mt-4 leading-relaxed">
                 {author.bio}
-              </p>
+              </PersonCardBio>
               <button
                 type="button"
                 onClick={() => go(author.name)}
@@ -139,7 +147,7 @@ export const BlogAuthors = defineCapsule({
               >
                 View profile
               </button>
-            </div>
+            </PersonCard>
           ))}
         </div>
       </section>

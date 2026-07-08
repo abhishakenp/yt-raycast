@@ -3,6 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * FitnessTrainers — expert-trainers / coaches grid for a gym or fitness studio. A
@@ -80,7 +86,12 @@ export const FitnessTrainers = defineCapsule({
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {trainerItems.map((trainer) => (
-              <article key={trainer.name} className="text-center">
+              <PersonCard
+                key={trainer.name}
+                variant="bare"
+                rounded="none"
+                className="text-center"
+              >
                 <Image
                   alt={trainer.imageAlt}
                   w={400}
@@ -88,14 +99,12 @@ export const FitnessTrainers = defineCapsule({
                   loading="lazy"
                   className="mb-4 h-72 w-full rounded-lg object-cover"
                 />
-                <h3 className="text-lg font-semibold text-foreground">
+                <PersonCardName className="text-lg">
                   {trainer.name}
-                </h3>
-                <p className="text-sm text-muted-foreground">{trainer.role}</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {trainer.bio}
-                </p>
-              </article>
+                </PersonCardName>
+                <PersonCardRole>{trainer.role}</PersonCardRole>
+                <PersonCardBio className="mt-2">{trainer.bio}</PersonCardBio>
+              </PersonCard>
             ))}
           </div>
         </div>

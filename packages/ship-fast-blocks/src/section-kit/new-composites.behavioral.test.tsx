@@ -25,6 +25,12 @@ import {
   ProductCardTitle,
   ProductCardSubtitle,
   ProductCardPrice,
+  PersonCard,
+  PersonCardAvatar,
+  PersonCardContent,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
   ResponsiveGrid,
 } from './index.ts'
 
@@ -298,6 +304,118 @@ describe('ProductCard', () => {
     const el = screen.getByText('Title')
     expect(el.tagName).toBe('BUTTON')
     expect(el.className).toContain('font-medium')
+  })
+})
+
+describe('PersonCard', () => {
+  it('renders as article with border, bg-card, rounded-xl', () => {
+    render(<PersonCard data-testid="pc" />)
+    const el = screen.getByTestId('pc')
+    expect(el.tagName).toBe('ARTICLE')
+    expect(el.className).toContain('border')
+    expect(el.className).toContain('bg-card')
+    expect(el.className).toContain('rounded-xl')
+    expect(el.getAttribute('data-slot')).toBe('person-card')
+  })
+
+  it('elevated variant is shadowed with no border', () => {
+    render(<PersonCard variant="elevated" rounded="2xl" data-testid="pc" />)
+    const el = screen.getByTestId('pc')
+    expect(el.className).toContain('rounded-2xl')
+    expect(el.className).toContain('shadow-sm')
+    expect(el.className).toContain('bg-card')
+    expect(el.className).not.toContain('border-border')
+  })
+
+  it('bare variant has no surface (no border, bg, or shadow)', () => {
+    render(<PersonCard variant="bare" rounded="none" data-testid="pc" />)
+    const el = screen.getByTestId('pc')
+    expect(el.className).not.toContain('border-border')
+    expect(el.className).not.toContain('bg-card')
+    expect(el.className).not.toContain('shadow')
+  })
+
+  it('plain variant has bg-card fill but no border', () => {
+    render(<PersonCard variant="plain" data-testid="pc" />)
+    const el = screen.getByTestId('pc')
+    expect(el.className).toContain('bg-card')
+    expect(el.className).not.toContain('border-border')
+  })
+
+  it('composes avatar, content, name, role, bio', () => {
+    render(
+      <PersonCard>
+        <PersonCardAvatar data-testid="avatar" />
+        <PersonCardContent>
+          <PersonCardName>Jane Doe</PersonCardName>
+          <PersonCardRole>CEO</PersonCardRole>
+          <PersonCardBio>Experienced leader</PersonCardBio>
+        </PersonCardContent>
+      </PersonCard>,
+    )
+    expect(screen.getByText('Jane Doe').tagName).toBe('H3')
+    expect(screen.getByText('CEO').tagName).toBe('P')
+    expect(screen.getByText('Experienced leader').tagName).toBe('P')
+    expect(screen.getByTestId('avatar').className).toContain('aspect-square')
+    expect(screen.getByTestId('avatar').getAttribute('data-slot')).toBe(
+      'person-card-avatar',
+    )
+  })
+
+  it('merges className on all sub-components', () => {
+    render(
+      <PersonCard className="custom-card" data-testid="pc">
+        <PersonCardAvatar className="custom-avatar" data-testid="avatar" />
+        <PersonCardContent className="custom-content" data-testid="content" />
+        <PersonCardName className="custom-name" data-testid="name">
+          N
+        </PersonCardName>
+        <PersonCardRole className="custom-role" data-testid="role">
+          R
+        </PersonCardRole>
+        <PersonCardBio className="custom-bio" data-testid="bio">
+          B
+        </PersonCardBio>
+      </PersonCard>,
+    )
+    expect(screen.getByTestId('pc').className).toContain('custom-card')
+    expect(screen.getByTestId('avatar').className).toContain('custom-avatar')
+    expect(screen.getByTestId('content').className).toContain('custom-content')
+    expect(screen.getByTestId('name').className).toContain('custom-name')
+    expect(screen.getByTestId('role').className).toContain('custom-role')
+    expect(screen.getByTestId('bio').className).toContain('custom-bio')
+  })
+
+  it('asChild renders as child element with merged classes', () => {
+    render(
+      <PersonCard asChild rounded="2xl" data-testid="pc">
+        <div>X</div>
+      </PersonCard>,
+    )
+    const el = screen.getByTestId('pc')
+    expect(el.tagName).toBe('DIV')
+    expect(el.className).toContain('border')
+    expect(el.className).toContain('rounded-2xl')
+  })
+
+  it('PersonCardName asChild renders as span', () => {
+    render(
+      <PersonCard>
+        <PersonCardName asChild>
+          <span>Custom Name</span>
+        </PersonCardName>
+      </PersonCard>,
+    )
+    const el = screen.getByText('Custom Name')
+    expect(el.tagName).toBe('SPAN')
+    expect(el.className).toContain('font-semibold')
+  })
+
+  it('forwards ref to article', () => {
+    const ref = { current: null as HTMLElement | null }
+    render(<PersonCard ref={ref} />)
+    expect(ref.current).not.toBeNull()
+    expect(ref.current?.tagName).toBe('ARTICLE')
   })
 })
 

@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardContent,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * AccountingFirmTeam — leadership team grid for a CPA / accounting-firm site. A
@@ -111,10 +118,7 @@ export const AccountingFirmTeam = defineCapsule({
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {members.map((member) => (
-              <article
-                key={member.name}
-                className="overflow-hidden rounded-lg border border-border bg-card"
-              >
+              <PersonCard key={member.name} variant="outlined" rounded="lg">
                 <Image
                   alt={member.avatarAlt}
                   w={400}
@@ -122,16 +126,16 @@ export const AccountingFirmTeam = defineCapsule({
                   loading="lazy"
                   className="aspect-square w-full object-cover"
                 />
-                <div className="p-5">
-                  <h3 className="text-lg font-semibold text-foreground">
+                <PersonCardContent>
+                  <PersonCardName className="text-lg">
                     {member.name}
-                  </h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
+                  </PersonCardName>
+                  <PersonCardRole className="mb-3">
                     {member.role}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{member.bio}</p>
-                </div>
-              </article>
+                  </PersonCardRole>
+                  <PersonCardBio>{member.bio}</PersonCardBio>
+                </PersonCardContent>
+              </PersonCard>
             ))}
           </div>
 

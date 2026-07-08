@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * BlogPostAuthors — bespoke "About the author" bio card for the end of an
@@ -61,7 +67,7 @@ export const BlogPostAuthors = defineCapsule({
     return (
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-3xl px-6 lg:px-8">
-          <div className="rounded-2xl border border-border bg-card p-8">
+          <PersonCard variant="outlined" rounded="2xl" className="p-8">
             <div className="flex flex-col items-start gap-6 sm:flex-row">
               <Image
                 alt={avatarAlt}
@@ -73,13 +79,13 @@ export const BlogPostAuthors = defineCapsule({
                 <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {eyebrow}
                 </p>
-                <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                  {name}
-                </h2>
-                <p className="mb-4 text-sm text-muted-foreground">{role}</p>
-                <p className="mb-6 leading-relaxed text-muted-foreground">
+                <PersonCardName asChild className="text-lg tracking-tight">
+                  <h2>{name}</h2>
+                </PersonCardName>
+                <PersonCardRole className="mb-4">{role}</PersonCardRole>
+                <PersonCardBio className="mb-6 text-base leading-relaxed">
                   {bio}
-                </p>
+                </PersonCardBio>
                 <div className="flex flex-wrap items-center gap-3">
                   <button
                     type="button"
@@ -104,7 +110,7 @@ export const BlogPostAuthors = defineCapsule({
                 </div>
               </div>
             </div>
-          </div>
+          </PersonCard>
         </div>
       </section>
     )

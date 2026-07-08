@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * NewsroomAuthors — editorial "meet our columnists" block for a digital
@@ -124,9 +130,11 @@ export const NewsroomAuthors = defineCapsule({
           </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {authors.map((a) => (
-              <article
+              <PersonCard
                 key={a.name}
-                className="flex flex-col rounded-2xl border border-border bg-card p-6"
+                variant="outlined"
+                rounded="2xl"
+                className="p-6"
               >
                 <Image
                   alt={a.avatarAlt}
@@ -135,15 +143,15 @@ export const NewsroomAuthors = defineCapsule({
                   loading="lazy"
                   className="mb-5 size-20 rounded-full object-cover"
                 />
-                <h3 className="font-serif text-xl font-bold text-card-foreground">
+                <PersonCardName className="font-serif text-xl font-bold text-card-foreground">
                   {a.name}
-                </h3>
-                <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+                </PersonCardName>
+                <PersonCardRole className="mb-3 font-semibold uppercase tracking-wider text-primary">
                   {a.role}
-                </p>
-                <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
+                </PersonCardRole>
+                <PersonCardBio className="mb-5 leading-relaxed">
                   {a.bio}
-                </p>
+                </PersonCardBio>
                 <div className="mt-auto">
                   <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Latest column
@@ -175,7 +183,7 @@ export const NewsroomAuthors = defineCapsule({
                     </button>
                   </div>
                 </div>
-              </article>
+              </PersonCard>
             ))}
           </div>
         </div>

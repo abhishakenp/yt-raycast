@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * EventSpeakers — a featured-speakers grid for a conference or event page. A muted
@@ -128,24 +134,30 @@ export const EventSpeakers = defineCapsule({
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {items.map((sp) => (
-              <button
+              <PersonCard
                 key={sp.name}
-                type="button"
-                onClick={() => go(sp.name)}
-                className="group rounded-2xl border border-border bg-card p-6 text-left transition-colors hover:border-primary/40"
+                asChild
+                variant="outlined"
+                rounded="2xl"
               >
-                <Image
-                  alt={`Professional headshot portrait of ${sp.name}, ${sp.role}`}
-                  w={200}
-                  h={200}
-                  className="mb-4 size-20 rounded-full object-cover"
-                />
-                <h3 className="font-semibold text-card-foreground">
-                  {sp.name}
-                </h3>
-                <p className="mb-2 text-sm text-muted-foreground">{sp.role}</p>
-                <p className="text-sm text-muted-foreground">{sp.bio}</p>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => go(sp.name)}
+                  className="group p-6 text-left transition-colors hover:border-primary/40"
+                >
+                  <Image
+                    alt={`Professional headshot portrait of ${sp.name}, ${sp.role}`}
+                    w={200}
+                    h={200}
+                    className="mb-4 size-20 rounded-full object-cover"
+                  />
+                  <PersonCardName className="text-card-foreground">
+                    {sp.name}
+                  </PersonCardName>
+                  <PersonCardRole className="mb-2">{sp.role}</PersonCardRole>
+                  <PersonCardBio>{sp.bio}</PersonCardBio>
+                </button>
+              </PersonCard>
             ))}
           </div>
         </div>

@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * MentalHealthTeam — a clinician team gallery for a therapy practice. A centered
@@ -104,7 +110,12 @@ export const MentalHealthTeam = defineCapsule({
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {members.map((m) => (
-              <div key={m.name} className="group">
+              <PersonCard
+                key={m.name}
+                variant="bare"
+                rounded="none"
+                className="group"
+              >
                 <div className="relative mb-4 overflow-hidden rounded-2xl">
                   <Image
                     alt={m.imageAlt}
@@ -114,16 +125,14 @@ export const MentalHealthTeam = defineCapsule({
                     className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  {m.name}
-                </h3>
-                <p className="mb-2 text-sm font-medium text-primary">
+                <PersonCardName className="text-lg">{m.name}</PersonCardName>
+                <PersonCardRole className="mb-2 font-medium text-primary">
                   {m.role}
-                </p>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                </PersonCardRole>
+                <PersonCardBio className="leading-relaxed">
                   {m.bio}
-                </p>
-              </div>
+                </PersonCardBio>
+              </PersonCard>
             ))}
           </div>
 

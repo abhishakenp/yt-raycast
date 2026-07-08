@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 export const PodcastAuthors = defineCapsule({
   name: 'PodcastAuthors',
@@ -80,9 +86,11 @@ export const PodcastAuthors = defineCapsule({
           />
           <div className="mt-16 grid gap-8 md:grid-cols-3">
             {hosts.map((host, i) => (
-              <article
+              <PersonCard
                 key={`${host.name}-${i}`}
-                className="rounded-2xl border border-border bg-card p-8 text-card-foreground"
+                variant="outlined"
+                rounded="2xl"
+                className="p-8"
               >
                 <Image
                   alt={host.avatarAlt}
@@ -91,15 +99,15 @@ export const PodcastAuthors = defineCapsule({
                   loading="lazy"
                   className="size-24 rounded-full object-cover"
                 />
-                <h3 className="mt-6 text-lg font-bold text-foreground">
+                <PersonCardName className="mt-6 text-lg font-bold">
                   {host.name}
-                </h3>
-                <p className="mt-1 text-sm font-medium text-primary">
+                </PersonCardName>
+                <PersonCardRole className="mt-1 font-medium text-primary">
                   {host.role}
-                </p>
-                <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                </PersonCardRole>
+                <PersonCardBio className="mt-4 leading-6">
                   {host.bio}
-                </p>
+                </PersonCardBio>
                 {host.socials?.length ? (
                   <div className="mt-6 flex flex-wrap gap-2">
                     {host.socials.map((social, j) => (
@@ -112,7 +120,7 @@ export const PodcastAuthors = defineCapsule({
                     ))}
                   </div>
                 ) : null}
-              </article>
+              </PersonCard>
             ))}
           </div>
         </div>

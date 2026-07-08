@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardContent,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * LawFirmAttorneys — a centered-intro attorney / partner gallery for a law firm.
@@ -136,7 +143,12 @@ export const LawFirmAttorneys = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((person) => (
-              <div key={person.name} className="group bg-card">
+              <PersonCard
+                key={person.name}
+                variant="plain"
+                rounded="none"
+                className="group"
+              >
                 <div className="overflow-hidden">
                   <Image
                     alt={person.imageAlt}
@@ -146,16 +158,16 @@ export const LawFirmAttorneys = defineCapsule({
                     className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <div className="p-6">
-                  <h3 className="mb-1 font-serif text-xl text-foreground">
+                <PersonCardContent className="p-6">
+                  <PersonCardName className="mb-1 font-serif text-xl font-normal">
                     {person.name}
-                  </h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
+                  </PersonCardName>
+                  <PersonCardRole className="mb-3">
                     {person.title}
-                  </p>
-                  <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                  </PersonCardRole>
+                  <PersonCardBio className="mb-4 leading-relaxed">
                     {person.bio}
-                  </p>
+                  </PersonCardBio>
                   <div className="flex gap-3">
                     <button
                       type="button"
@@ -174,8 +186,8 @@ export const LawFirmAttorneys = defineCapsule({
                       <MailIcon className="size-5" />
                     </button>
                   </div>
-                </div>
-              </div>
+                </PersonCardContent>
+              </PersonCard>
             ))}
           </div>
         </div>

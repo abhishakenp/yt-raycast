@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardAvatar,
+  PersonCardName,
+  PersonCardRole,
+  PersonCardBio,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * HealthcareDoctors — physician team grid for a medical-clinic page. A centered
@@ -98,8 +105,13 @@ export const HealthcareDoctors = defineCapsule({
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {items.map((doc) => (
-              <article key={doc.name} className="group">
-                <div className="mb-6 aspect-[3/4] overflow-hidden rounded-2xl bg-muted">
+              <PersonCard
+                key={doc.name}
+                variant="bare"
+                rounded="none"
+                className="group"
+              >
+                <PersonCardAvatar className="mb-6 aspect-[3/4] rounded-2xl bg-muted">
                   <Image
                     alt={doc.photoAlt}
                     w={600}
@@ -107,15 +119,17 @@ export const HealthcareDoctors = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                </div>
-                <h3 className="mb-1 text-xl font-bold text-foreground">
+                </PersonCardAvatar>
+                <PersonCardName className="mb-1 text-xl font-bold">
                   {doc.name}
-                </h3>
-                <p className="mb-2 font-medium text-primary">{doc.specialty}</p>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                </PersonCardName>
+                <PersonCardRole className="mb-2 text-base font-medium text-primary">
+                  {doc.specialty}
+                </PersonCardRole>
+                <PersonCardBio className="leading-relaxed">
                   {doc.bio}
-                </p>
-              </article>
+                </PersonCardBio>
+              </PersonCard>
             ))}
           </div>
         </div>

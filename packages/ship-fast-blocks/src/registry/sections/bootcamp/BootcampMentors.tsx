@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  PersonCard,
+  PersonCardName,
+  PersonCardRole,
+} from '#/section-kit/PersonCard.tsx'
 
 /**
  * BootcampMentors — world-class mentors gallery for a coding bootcamp / career-
@@ -93,29 +98,30 @@ export const BootcampMentors = defineCapsule({
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {mentorItems.map((m) => (
-              <button
-                key={m.name}
-                type="button"
-                onClick={() => go(m.name)}
-                className="group block text-left"
-              >
-                <div className="relative mb-4 overflow-hidden rounded-2xl">
-                  <Image
-                    alt={`professional headshot of ${m.name}, ${m.role} at ${m.company}`}
-                    w={400}
-                    h={400}
-                    loading="lazy"
-                    className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 to-transparent p-4">
-                    <p className="text-sm font-medium text-background">
-                      {m.company}
-                    </p>
+              <PersonCard key={m.name} asChild variant="bare" rounded="none">
+                <button
+                  type="button"
+                  onClick={() => go(m.name)}
+                  className="group text-left"
+                >
+                  <div className="relative mb-4 overflow-hidden rounded-2xl">
+                    <Image
+                      alt={`professional headshot of ${m.name}, ${m.role} at ${m.company}`}
+                      w={400}
+                      h={400}
+                      loading="lazy"
+                      className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 to-transparent p-4">
+                      <p className="text-sm font-medium text-background">
+                        {m.company}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <h3 className="font-semibold">{m.name}</h3>
-                <p className="text-sm text-muted-foreground">{m.role}</p>
-              </button>
+                  <PersonCardName>{m.name}</PersonCardName>
+                  <PersonCardRole>{m.role}</PersonCardRole>
+                </button>
+              </PersonCard>
             ))}
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
