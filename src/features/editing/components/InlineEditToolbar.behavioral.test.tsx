@@ -813,6 +813,156 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(onMoveDown).toHaveBeenCalledTimes(1)
   })
 
+  // --- Layering (bring to front / send to back) ----------------------------
+  // This file globally mocks getComputedStyle to a fixed fakeComputedStyle
+  // (no z-index/position). handleLayer reads sibling z-index and the active
+  // element's position through getComputedStyle, so the layering tests install
+  // a reflective mock that surfaces each element's real inline z-index/position
+  // (falling back to the CSS defaults 'auto'/'static'). Everything else the
+  // toolbar reads (font size/weight, etc.) still comes from fakeComputedStyle.
+  function useReflectiveComputedStyle() {
+    vi.mocked(window.getComputedStyle).mockImplementation(
+      (el: Element) =>
+        ({
+          ...fakeComputedStyle,
+          zIndex: (el as HTMLElement).style?.zIndex || 'auto',
+          position: (el as HTMLElement).style?.position || 'static',
+        }) as unknown as CSSStyleDeclaration,
+    )
+  }
+
+  // Builds an element nested among siblings that carry inline z-indices, so
+  // the front/back computation (max+1 / min-1) is exercised against real
+  // sibling stacking values surfaced by the reflective getComputedStyle mock.
+  function makeLayeringEl(siblingZIndices: number[] = []) {
+    const parent = document.createElement('div')
+    const el = document.createElement('div')
+    el.className = 'promo-badge'
+    el.textContent = 'Popular'
+    parent.appendChild(el)
+    for (const z of siblingZIndices) {
+      const sib = document.createElement('div')
+      sib.className = 'sib'
+      sib.style.zIndex = String(z)
+      parent.appendChild(sib)
+    }
+    document.body.appendChild(parent)
+    return el
+  }
+
+  // 13a. Bring to front is a LIVE PREVIEW: promotes static→relative, sets
+  // z-index above the highest sibling on the element immediately, but keeps
+  // the toolbar open and does NOT persist until Apply is pressed.
+  it('13a. bring to front: live z-index = max(siblings)+1, promotes position, persists only on Apply', () => {
+    const el = makeLayeringEl([3, 7])
+    const { onStyleApply, onClose } = renderToolbar({ activeElement: el })
+    useReflectiveComputedStyle()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Bring to front' }))
+
+    // Live DOM updated for the preview — but nothing committed and the toolbar
+    // stays open so the user can keep adjusting / decide to keep or revert.
+    expect(el.style.zIndex).toBe('8')
+    expect(el.style.position).toBe('relative')
+    expect(onStyleApply).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+
+    // Commit via Apply → persisted through the style-override path with the
+    // full merged inline style.
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    expect(onStyleApply).toHaveBeenCalledTimes(1)
+    const arg = onStyleApply.mock.calls[0][0] as {
+      sourceAnchor: string
+      style: string
+      occurrenceIndex: number
+    }
+    expect(arg.sourceAnchor).toBe('promo-badge')
+    expect(arg.occurrenceIndex).toBe(0)
+    expect(arg.style).toContain('z-index: 8')
+    expect(arg.style).toContain('position: relative')
+  })
+
+  // 13b. Send to back: live z-index below the lowest sibling; Apply persists.
+  it('13b. send to back: live z-index = min(siblings)-1, persists on Apply', () => {
+    const el = makeLayeringEl([3, 7])
+    const { onStyleApply } = renderToolbar({ activeElement: el })
+    useReflectiveComputedStyle()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Send to back' }))
+    expect(el.style.zIndex).toBe('2')
+    expect(onStyleApply).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    const arg = onStyleApply.mock.calls[0][0] as { style: string }
+    expect(arg.style).toContain('z-index: 2')
+  })
+
+  // 13c. No positioned siblings → front defaults to 1, back to -1. An already
+  // non-static position is left untouched (not clobbered back to relative).
+  it('13c. no positioned siblings → front=1 / back=-1; keeps explicit position', () => {
+    const front = makeLayeringEl()
+    front.style.position = 'absolute'
+    renderToolbar({ activeElement: front })
+    useReflectiveComputedStyle()
+    fireEvent.click(screen.getByRole('button', { name: 'Bring to front' }))
+    expect(front.style.zIndex).toBe('1')
+    // position:absolute preserved — layering must not override author intent.
+    expect(front.style.position).toBe('absolute')
+    cleanup()
+    document.body.innerHTML = ''
+
+    const back = makeLayeringEl()
+    renderToolbar({ activeElement: back })
+    useReflectiveComputedStyle()
+    fireEvent.click(screen.getByRole('button', { name: 'Send to back' }))
+    expect(back.style.zIndex).toBe('-1')
+  })
+
+  // 13d. Reverts on cancel: previewing a layer change then closing without
+  // Apply restores the element's original inline style and persists nothing.
+  it('13d. bring to front then Close (cancel) → reverts to original, no persist', () => {
+    const el = makeLayeringEl([3, 7])
+    el.setAttribute('style', 'color: blue')
+    const { onStyleApply } = renderToolbar({ activeElement: el })
+    useReflectiveComputedStyle()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Bring to front' }))
+    // Preview is visible...
+    expect(el.style.zIndex).toBe('8')
+
+    // ...then the user cancels → original style restored, nothing saved.
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    expect(el.getAttribute('style')).toBe('color: blue')
+    expect(onStyleApply).not.toHaveBeenCalled()
+  })
+
+  // 13e. Merges into existing inline style on Apply (does not clobber prior
+  // overrides); the buttons are disabled while a save is in flight.
+  it('13e. merges with existing inline style on Apply; disabled while applying', () => {
+    const el = makeLayeringEl([2])
+    el.setAttribute('style', 'color: red')
+    const { onStyleApply } = renderToolbar({ activeElement: el })
+    useReflectiveComputedStyle()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Bring to front' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    const arg = onStyleApply.mock.calls[0][0] as { style: string }
+    expect(arg.style).toContain('color: red')
+    expect(arg.style).toContain('z-index: 3')
+
+    cleanup()
+    document.body.innerHTML = ''
+
+    const el2 = makeLayeringEl([2])
+    const r2 = renderToolbar({ activeElement: el2, isApplying: true })
+    const frontBtn = screen.getByRole('button', { name: 'Bring to front' })
+    expect((frontBtn as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(frontBtn)
+    // No live mutation happened either — guard short-circuits.
+    expect(el2.style.zIndex).toBe('')
+    expect(r2.onStyleApply).not.toHaveBeenCalled()
+  })
+
   // 14. Undo: click → onUndo called; when undo stack empty, button is disabled
   it('14. undo: click → onUndo; disabled when canUndo=false', () => {
     const { onUndo } = renderToolbar({ canUndo: true })
