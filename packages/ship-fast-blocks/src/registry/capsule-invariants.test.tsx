@@ -53,9 +53,9 @@ import {
 import { library, componentNames } from '#/library.ts'
 import { capsuleCategories } from '#/generated/capsule-categories.ts'
 import { Button } from '#/registry/primitives/button.tsx'
-import { GovernmentPortalNavbar } from '#/registry/sections/government-portal/GovernmentPortalNavbar.tsx'
-import { GovernmentPortalFaq } from '#/registry/sections/government-portal/GovernmentPortalFaq.tsx'
-import { GovernmentPortalStats } from '#/registry/sections/government-portal/GovernmentPortalStats.tsx'
+import { ChurchNavbar } from '#/registry/sections/church/ChurchNavbar.tsx'
+import { ChurchFaq } from '#/registry/sections/church/ChurchFaq.tsx'
+import { ChurchStats } from '#/registry/sections/church/ChurchStats.tsx'
 
 const renderCapsule = <P,>(Component: CapsuleRenderer<P>, props: P) =>
   render(<Component props={props} statementId="invariant-test" />)
@@ -111,20 +111,20 @@ describe('registry capsule invariants', () => {
       button.container.firstElementChild?.getAttribute('data-openui-component'),
     ).toBe('Button')
 
-    const navbar = renderCapsule(GovernmentPortalNavbar.client.component, {})
+    const navbar = renderCapsule(ChurchNavbar.client.component, {})
     expect(
       navbar.container.firstElementChild?.getAttribute('data-openui-component'),
-    ).toBe('GovernmentPortalNavbar')
+    ).toBe('ChurchNavbar')
 
-    const faq = renderCapsule(GovernmentPortalFaq.client.component, {})
+    const faq = renderCapsule(ChurchFaq.client.component, {})
     expect(
       faq.container.firstElementChild?.getAttribute('data-openui-component'),
-    ).toBe('GovernmentPortalFaq')
+    ).toBe('ChurchFaq')
 
-    const stats = renderCapsule(GovernmentPortalStats.client.component, {})
+    const stats = renderCapsule(ChurchStats.client.component, {})
     expect(
       stats.container.firstElementChild?.getAttribute('data-openui-component'),
-    ).toBe('GovernmentPortalStats')
+    ).toBe('ChurchStats')
   })
 
   it('isCapsule rejects non-capsule values', () => {

@@ -124,15 +124,4 @@ home = CafeMenu()`)
     expect(html).not.toContain('openui-error')
     expect(html).toContain('Crafted with intention')
   })
-
-  // GovernmentPortalEvents builds each tab's `rows` from defaults; the
-  // `(active.rows ?? [])` guard protects the rows-less tab case. Render with
-  // minimal props and assert the default heading paints (no error shell).
-  it('GovernmentPortalEvents renders without crashing on minimal props', async () => {
-    const html = await renderOpenUIToHTML(`$page = "Home"
-home = GovernmentPortalEvents()`)
-
-    expect(html).not.toContain('openui-error')
-    expect(html).toContain('Latest Updates')
-  })
 })

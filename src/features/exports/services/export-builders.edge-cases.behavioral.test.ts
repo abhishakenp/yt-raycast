@@ -87,8 +87,8 @@ const editedBreweryPreviewHtml = `<!doctype html>
 </body>
 </html>`
 const dbObservedHindiGovernmentSource =
-  'home_navbar = GovernmentPortalNavbar("Gov Hindi", "भारत सरकार", "सभी नागरिकों की सेवा में", "भारत राजधानी, नई दिल्ली", ["Home","Contact","Events","About","Services"], "/")\n' +
-  'home_services = GovernmentPortalServices("मुख्य सेवाएँ", [{"title":"स्वास्थ्य सेवा","href":"/services/health","color":"#4CAF50","icon":"health","desc":"सरकारी अस्पतालों में निःशुल्क उपचार"},{"title":"शिक्षा पोर्टल","href":"/services/education","color":"#2196F3","icon":"business","desc":"ऑनलाइन पाठ्यक्रम और परीक्षा परिणाम"}])\n' +
+  'home_navbar = ChurchNavbar("भारत सरकार", ["Home","Contact","Events","About","Services"], "/")\n' +
+  'home_services = ChurchServices("सेवाएँ", "मुख्य सेवाएँ", "सभी नागरिकों की सेवा में", [{"title":"स्वास्थ्य सेवा","detail":"सरकारी अस्पतालों में निःशुल्क उपचार","location":"भारत"},{"title":"शिक्षा पोर्टल","detail":"ऑनलाइन पाठ्यक्रम और परीक्षा परिणाम","location":"भारत"}])\n' +
   'home = Stack([home_navbar, home_services])\n' +
   'root = PageSwitch(["Home"], [home], "", {"Home":"Home"})'
 const dbObservedHindiGovernmentSiteSpecJson = JSON.stringify({
@@ -675,8 +675,8 @@ describe('OpenUI HTML export builder edge cases', () => {
 
   it('renders the live DB-observed Hindi government service item text in static HTML', async () => {
     const source =
-      'home_navbar = GovernmentPortalNavbar("Gov Hindi", "भारत सरकार", "सभी नागरिकों की सेवा में", "भारत राजधानी, नई दिल्ली", ["Home","Contact","Events","About","Services"], "/")\n' +
-      'home_services = GovernmentPortalServices("हमारी प्रमुख सेवाएँ", [{"title":"डिजिटल पहचान प्रमाणन","href":"/services/digital-id"}])\n' +
+      'home_navbar = ChurchNavbar("भारत सरकार", ["Home","Contact","Events","About","Services"], "/")\n' +
+      'home_services = ChurchServices("सेवाएँ", "हमारी प्रमुख सेवाएँ", "", [{"title":"डिजिटल पहचान प्रमाणन","detail":"","location":""}])\n' +
       'root = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})'
     const result = await buildOpenUIHtmlExport({
       source,
