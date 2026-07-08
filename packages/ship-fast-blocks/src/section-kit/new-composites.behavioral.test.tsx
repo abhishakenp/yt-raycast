@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 afterEach(() => {
@@ -11,6 +11,11 @@ import {
   Card,
   CommandSearch,
   AccountDropdown,
+  AccountDropdownTrigger,
+  AccountDropdownContent,
+  AccountDropdownLabel,
+  AccountDropdownSignOut,
+  AccountDropdownUnauthenticated,
   FilterChip,
   ProductCard,
   ProductCardImage,
@@ -293,18 +298,229 @@ describe('CommandSearch', () => {
   })
 })
 
+const mockAuthed = {
+  useAuth: () => ({
+    user: {
+      displayName: 'Jane Doe',
+      email: 'jane@test.com',
+      isGuest: false,
+      picture: undefined,
+      provider: 'google',
+    },
+    isAuthenticated: true,
+    isLoading: false,
+  }),
+  signOut: () => {},
+  signInWithGoogle: () => {},
+}
+
+const mockUnauthed = {
+  useAuth: () => ({
+    user: null,
+    isAuthenticated: false,
+    isLoading: false,
+  }),
+  signOut: () => {},
+  signInWithGoogle: () => {},
+}
+
+const mockGuest = {
+  useAuth: () => ({
+    user: {
+      displayName: 'Guest',
+      email: undefined,
+      isGuest: true,
+      picture: undefined,
+      provider: 'guest',
+    },
+    isAuthenticated: true,
+    isLoading: false,
+  }),
+  signOut: () => {},
+  signInWithGoogle: () => {},
+}
+
 describe('AccountDropdown', () => {
-  it('renders trigger button', () => {
+  it('authenticated: trigger renders avatar with initials', () => {
     render(
-      <AccountDropdown
-        displayName="Jane"
-        email="jane@test.com"
-        isAuthenticated
-        onSignOut={() => {}}
-        onSignIn={() => {}}
-      />,
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownTrigger aria-label="Account" data-testid="trigger" />
+      </AccountDropdown>,
     )
-    const btn = screen.getByRole('button', { name: 'Account' })
-    expect(btn).toBeTruthy()
+    const trigger = screen.getByTestId('trigger')
+    expect(trigger.tagName).toBe('BUTTON')
+    expect(trigger.className).toContain('rounded-full')
+    expect(trigger.textContent).toContain('JD')
+  })
+
+  it('authenticated: trigger with asChild renders custom child', () => {
+    render(
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownTrigger asChild aria-label="Account">
+          <button type="button" data-testid="custom">
+            Custom
+          </button>
+        </AccountDropdownTrigger>
+      </AccountDropdown>,
+    )
+    expect(screen.getByTestId('custom').textContent).toBe('Custom')
+  })
+
+  it('authenticated: label auto-shows displayName and email', async () => {
+    render(
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownTrigger aria-label="Account" />
+        <AccountDropdownContent>
+          <AccountDropdownLabel data-testid="label" />
+        </AccountDropdownContent>
+      </AccountDropdown>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Account' })
+    await fireEvent.pointerDown(trigger, { pointerType: 'mouse' })
+    await fireEvent.pointerUp(trigger, { pointerType: 'mouse' })
+    expect(screen.getByTestId('label').textContent).toContain('Jane Doe')
+    expect(screen.getByTestId('label').textContent).toContain('jane@test.com')
+  })
+
+  it('authenticated: label with custom children overrides defaults', async () => {
+    render(
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownTrigger aria-label="Account" />
+        <AccountDropdownContent>
+          <AccountDropdownLabel>
+            <span>Custom Label</span>
+          </AccountDropdownLabel>
+        </AccountDropdownContent>
+      </AccountDropdown>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Account' })
+    await fireEvent.pointerDown(trigger, { pointerType: 'mouse' })
+    await fireEvent.pointerUp(trigger, { pointerType: 'mouse' })
+    expect(screen.getByText('Custom Label')).toBeTruthy()
+  })
+
+  it('authenticated: content renders with w-56 default', async () => {
+    render(
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownTrigger aria-label="Account" />
+        <AccountDropdownContent data-testid="content">
+          <AccountDropdownLabel />
+        </AccountDropdownContent>
+      </AccountDropdown>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Account' })
+    await fireEvent.pointerDown(trigger, { pointerType: 'mouse' })
+    await fireEvent.pointerUp(trigger, { pointerType: 'mouse' })
+    expect(screen.getByTestId('content').className).toContain('w-56')
+  })
+
+  it('authenticated: SignOut renders as dropdown item with destructive styling', async () => {
+    render(
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownTrigger aria-label="Account" />
+        <AccountDropdownContent>
+          <AccountDropdownSignOut data-testid="signout" />
+        </AccountDropdownContent>
+      </AccountDropdown>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Account' })
+    await fireEvent.pointerDown(trigger, { pointerType: 'mouse' })
+    await fireEvent.pointerUp(trigger, { pointerType: 'mouse' })
+    const signout = screen.getByTestId('signout')
+    expect(signout.textContent).toContain('Sign out')
+    expect(signout.className).toContain('text-destructive')
+  })
+
+  it('authenticated: Unauthenticated returns null', () => {
+    render(
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownUnauthenticated data-testid="unauth">
+          Should not render
+        </AccountDropdownUnauthenticated>
+      </AccountDropdown>,
+    )
+    expect(screen.queryByTestId('unauth')).toBeNull()
+  })
+
+  it('unauthenticated: trigger renders nothing', () => {
+    render(
+      <AccountDropdown auth={mockUnauthed}>
+        <AccountDropdownTrigger aria-label="Account" data-testid="trigger" />
+      </AccountDropdown>,
+    )
+    expect(screen.queryByTestId('trigger')).toBeNull()
+  })
+
+  it('unauthenticated: content returns null', () => {
+    render(
+      <AccountDropdown auth={mockUnauthed}>
+        <AccountDropdownContent data-testid="content">
+          <AccountDropdownLabel />
+        </AccountDropdownContent>
+      </AccountDropdown>,
+    )
+    expect(screen.queryByTestId('content')).toBeNull()
+  })
+
+  it('unauthenticated: Unauthenticated renders default sign-in button', () => {
+    render(
+      <AccountDropdown auth={mockUnauthed}>
+        <AccountDropdownUnauthenticated data-testid="unauth" />
+      </AccountDropdown>,
+    )
+    const unauth = screen.getByTestId('unauth')
+    expect(unauth.tagName).toBe('BUTTON')
+    expect(unauth.textContent).toContain('Sign in')
+  })
+
+  it('unauthenticated: Unauthenticated with custom children', () => {
+    render(
+      <AccountDropdown auth={mockUnauthed}>
+        <AccountDropdownUnauthenticated>
+          Login with Google
+        </AccountDropdownUnauthenticated>
+      </AccountDropdown>,
+    )
+    expect(screen.getByText('Login with Google')).toBeTruthy()
+  })
+
+  it('guest: treated as unauthenticated (trigger renders nothing)', () => {
+    render(
+      <AccountDropdown auth={mockGuest}>
+        <AccountDropdownTrigger aria-label="Account" data-testid="trigger" />
+      </AccountDropdown>,
+    )
+    expect(screen.queryByTestId('trigger')).toBeNull()
+  })
+
+  it('merges className on trigger when authenticated', () => {
+    render(
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownTrigger
+          className="custom-trigger"
+          aria-label="Account"
+          data-testid="trigger"
+        />
+      </AccountDropdown>,
+    )
+    expect(screen.getByTestId('trigger').className).toContain('custom-trigger')
+  })
+
+  it('merges className on content', async () => {
+    render(
+      <AccountDropdown auth={mockAuthed}>
+        <AccountDropdownTrigger aria-label="Account" />
+        <AccountDropdownContent
+          className="custom-content"
+          data-testid="content"
+        >
+          <AccountDropdownLabel />
+        </AccountDropdownContent>
+      </AccountDropdown>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Account' })
+    await fireEvent.pointerDown(trigger, { pointerType: 'mouse' })
+    await fireEvent.pointerUp(trigger, { pointerType: 'mouse' })
+    expect(screen.getByTestId('content').className).toContain('custom-content')
   })
 })

@@ -524,7 +524,7 @@ describe('hotel resort fullstack interactions', () => {
 
     expect(screen.getByLabelText('Search rooms')).toBeTruthy()
 
-    expect(screen.getByLabelText('Account')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy()
     expect(signInWithGoogle).not.toHaveBeenCalled()
     expect(screen.getByLabelText('Open menu')).toBeTruthy()
 
@@ -747,8 +747,7 @@ describe('hotel resort rendered section behavior', () => {
       })
     })
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))

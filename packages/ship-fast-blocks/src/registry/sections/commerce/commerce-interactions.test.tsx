@@ -1879,8 +1879,7 @@ describe('commerce interaction surfaces', () => {
     const guest = createCommerceLakebedStub()
     render(<CommerceAccountButton lakebed={guest.lakebed} />)
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(guest.signInWithGoogle).toHaveBeenCalledTimes(1)
 
     cleanup()
@@ -1906,6 +1905,7 @@ describe('commerce interaction surfaces', () => {
     render(<CommerceAccountButton lakebed={user.lakebed} />)
     fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
     fireEvent.click(await screen.findByText('Sign out'))
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
     expect(user.signOut).toHaveBeenCalledTimes(1)
   })
 

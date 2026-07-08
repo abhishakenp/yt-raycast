@@ -10,7 +10,6 @@ import {
   SearchIcon,
   ShoppingBagIcon,
   Trash2Icon,
-  UserIcon,
 } from 'lucide-react'
 
 import {
@@ -32,14 +31,6 @@ import {
   CommandList,
 } from '#/components/ui/command.tsx'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '#/components/ui/dropdown-menu.tsx'
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -51,6 +42,15 @@ import {
 import { normalizeRecords } from '#/lib/normalize-records.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  AccountDropdown,
+  AccountDropdownTrigger,
+  AccountDropdownContent,
+  AccountDropdownLabel,
+  AccountDropdownSeparator,
+  AccountDropdownSignOut,
+  AccountDropdownUnauthenticated,
+} from '#/section-kit/index.ts'
 import type {
   commerceCartLakebed,
   CommerceCatalogProductInput,
@@ -687,39 +687,17 @@ export function CommerceAccountButton({
   lakebed: CommerceLakebed
   label?: string
 }) {
-  const auth = lakebed.useAuth()
-  const user = auth.user
-  const displayName = user?.displayName ?? 'Guest'
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button type="button" aria-label={label} className={buttonClassName}>
-          {children ?? <UserIcon className="size-5" aria-hidden="true" />}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
-          <span className="block truncate">{displayName}</span>
-          <span className="block truncate text-xs font-normal text-muted-foreground">
-            {user?.email ?? (user?.isGuest ? 'Guest profile' : 'Signed in')}
-          </span>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {auth.isAuthenticated && !user?.isGuest ? (
-          <DropdownMenuItem onSelect={() => lakebed.signOut()}>
-            Sign out
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem
-            onSelect={() => {
-              void lakebed.signInWithGoogle()
-            }}
-          >
-            Sign in with Shoo
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <AccountDropdown auth={lakebed}>
+      <AccountDropdownTrigger aria-label={label} className={buttonClassName}>
+        {children}
+      </AccountDropdownTrigger>
+      <AccountDropdownContent>
+        <AccountDropdownLabel />
+        <AccountDropdownSeparator />
+        <AccountDropdownSignOut />
+      </AccountDropdownContent>
+      <AccountDropdownUnauthenticated />
+    </AccountDropdown>
   )
 }

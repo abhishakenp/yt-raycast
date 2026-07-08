@@ -24,7 +24,16 @@ export { PricingGrid } from './PricingGrid.tsx'
 export { TestimonialGrid } from './TestimonialGrid.tsx'
 export { GalleryGrid } from './GalleryGrid.tsx'
 export { CommandSearch } from './CommandSearch.tsx'
-export { AccountDropdown } from './AccountDropdown.tsx'
+export {
+  AccountDropdown,
+  AccountDropdownTrigger,
+  AccountDropdownContent,
+  AccountDropdownLabel,
+  AccountDropdownSeparator,
+  AccountDropdownItem,
+  AccountDropdownSignOut,
+  AccountDropdownUnauthenticated,
+} from './AccountDropdown.tsx'
 export { Card, surfaceCard } from './Card.tsx'
 export { FilterChip } from './FilterChip.tsx'
 export {

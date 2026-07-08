@@ -436,10 +436,7 @@ describe('publication fullstack interactions', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))
 
-    const accountButton = screen.getByRole('button', { name: 'Account' })
-    fireEvent.pointerDown(accountButton)
-    fireEvent.click(accountButton)
-    fireEvent.click(screen.getByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(lakebed.signInWithGoogle).toHaveBeenCalled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }))

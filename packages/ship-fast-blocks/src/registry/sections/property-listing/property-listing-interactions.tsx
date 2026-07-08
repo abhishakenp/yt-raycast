@@ -2,13 +2,7 @@ import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
-import {
-  HeartIcon,
-  Loader2Icon,
-  MenuIcon,
-  SearchIcon,
-  UserIcon,
-} from 'lucide-react'
+import { HeartIcon, Loader2Icon, MenuIcon, SearchIcon } from 'lucide-react'
 
 import {
   CommandDialog,
@@ -18,14 +12,6 @@ import {
   CommandItem,
   CommandList,
 } from '#/components/ui/command.tsx'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '#/components/ui/dropdown-menu.tsx'
 import {
   Sheet,
   SheetContent,
@@ -45,6 +31,15 @@ import type {
   PropertyListingSelectInput,
   propertyListingLakebed,
 } from './property-listing-lakebed.ts'
+import {
+  AccountDropdown,
+  AccountDropdownTrigger,
+  AccountDropdownContent,
+  AccountDropdownLabel,
+  AccountDropdownSeparator,
+  AccountDropdownSignOut,
+  AccountDropdownUnauthenticated,
+} from '#/section-kit/index.ts'
 
 export type PropertyListingLakebed = LakebedClientRuntime<
   typeof propertyListingLakebed
@@ -372,40 +367,18 @@ export function PropertyListingAccountButton({
   lakebed: PropertyListingLakebed
   label?: string
 }) {
-  const auth = lakebed.useAuth()
-  const user = auth.user
-  const displayName = user?.displayName ?? 'Guest'
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button type="button" aria-label={label} className={buttonClassName}>
-          {children ?? <UserIcon className="size-5" aria-hidden="true" />}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
-          <span className="block truncate">{displayName}</span>
-          <span className="block truncate text-xs font-normal text-muted-foreground">
-            {user?.email ?? (user?.isGuest ? 'Guest profile' : 'Signed in')}
-          </span>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {auth.isAuthenticated && !user?.isGuest ? (
-          <DropdownMenuItem onSelect={() => lakebed.signOut()}>
-            Sign out
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem
-            onSelect={() => {
-              void lakebed.signInWithGoogle()
-            }}
-          >
-            Sign in with Shoo
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <AccountDropdown auth={lakebed}>
+      <AccountDropdownTrigger aria-label={label} className={buttonClassName}>
+        {children}
+      </AccountDropdownTrigger>
+      <AccountDropdownContent>
+        <AccountDropdownLabel />
+        <AccountDropdownSeparator />
+        <AccountDropdownSignOut />
+      </AccountDropdownContent>
+      <AccountDropdownUnauthenticated />
+    </AccountDropdown>
   )
 }
 

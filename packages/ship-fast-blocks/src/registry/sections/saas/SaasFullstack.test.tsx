@@ -681,8 +681,7 @@ describe('SaaS fullstack generated section behavior', () => {
       expect(screen.getAllByText('Pro').length).toBeGreaterThan(1)
     })
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
@@ -813,6 +812,7 @@ describe('SaaS fullstack generated section behavior', () => {
       ).toBeNull()
     })
     fireEvent.click(screen.getByText('Sign out'))
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
 
     expect(signOut).toHaveBeenCalledTimes(1)
     expect(signInWithGoogle).not.toHaveBeenCalled()
@@ -845,12 +845,7 @@ describe('SaaS fullstack generated section behavior', () => {
 
     render(<SaasProbe />)
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-
-    expect(await screen.findByText('Guest')).toBeTruthy()
-    expect(screen.getAllByText('Guest profile').length).toBeGreaterThan(0)
-
-    fireEvent.click(screen.getByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
   })

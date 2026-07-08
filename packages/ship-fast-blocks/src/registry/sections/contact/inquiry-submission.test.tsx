@@ -406,8 +406,7 @@ describe('inquiry submission capsules', () => {
 
     render(<Navbar props={{ nav: ['Services', 'FAQ'] }} />)
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: /shoo account/i }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(lakebed.signInWithGoogle).toHaveBeenCalledTimes(1)
     expect(navigate).not.toHaveBeenCalled()
 

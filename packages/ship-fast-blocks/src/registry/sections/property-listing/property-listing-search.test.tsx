@@ -873,8 +873,7 @@ describe('property listing fullstack search', () => {
 
     render(<Navbar props={{}} statementId="property_listing_navbar" />)
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(lakebed.signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
