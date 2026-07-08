@@ -4,6 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  ProductCard,
+  ProductCardImage,
+  ProductCardBadge,
+  ProductCardActions,
+  ProductCardTitle,
+  ProductCardSubtitle,
+  ProductCardPrice,
+} from '#/section-kit/ProductCard.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -170,8 +179,8 @@ export const FurnitureStoreProducts = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((product) => (
-              <article key={product.name} className="group">
-                <div className="relative mb-4 aspect-square overflow-hidden rounded-lg bg-muted">
+              <ProductCard key={product.name} variant="none">
+                <ProductCardImage className="mb-4 rounded-lg">
                   <button
                     type="button"
                     onClick={() => go(product.name)}
@@ -187,41 +196,42 @@ export const FurnitureStoreProducts = defineCapsule({
                     />
                   </button>
                   {product.badge ? (
-                    <span
+                    <ProductCardBadge
                       className={cn(
-                        'absolute left-3 top-3 rounded-sm px-2 py-1 text-xs font-medium',
                         product.badge.toLowerCase() === 'sale'
                           ? 'bg-destructive text-destructive-foreground'
                           : 'bg-primary text-primary-foreground',
                       )}
                     >
                       {product.badge}
-                    </span>
+                    </ProductCardBadge>
                   ) : null}
-                  <CommerceAddItemButton
-                    lakebed={lakebed}
-                    item={{
-                      label: product.name,
-                      price: product.price,
-                    }}
-                    className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-card p-2 opacity-0 shadow transition-opacity disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
-                    aria-label={`Add ${product.name} to cart`}
-                  >
-                    <svg
-                      className="size-5 text-card-foreground"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
+                  <ProductCardActions>
+                    <CommerceAddItemButton
+                      lakebed={lakebed}
+                      item={{
+                        label: product.name,
+                        price: product.price,
+                      }}
+                      className="grid size-10 place-items-center rounded-full bg-card p-2 opacity-0 shadow transition-opacity disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
+                      aria-label={`Add ${product.name} to cart`}
                     >
-                      <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  </CommerceAddItemButton>
-                </div>
-                <h3 className="mb-1 font-medium">
+                      <svg
+                        className="size-5 text-card-foreground"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </CommerceAddItemButton>
+                  </ProductCardActions>
+                </ProductCardImage>
+                <ProductCardTitle asChild className="mb-1">
                   <button
                     type="button"
                     onClick={() => go(product.name)}
@@ -229,19 +239,19 @@ export const FurnitureStoreProducts = defineCapsule({
                   >
                     {product.name}
                   </button>
-                </h3>
-                <p className="mb-2 text-sm text-muted-foreground">
+                </ProductCardTitle>
+                <ProductCardSubtitle className="mb-2 mt-0">
                   {product.variant}
-                </p>
-                <p className="font-medium">
+                </ProductCardSubtitle>
+                <ProductCardPrice>
                   {product.oldPrice ? (
                     <span className="mr-2 text-muted-foreground/70 line-through">
                       {product.oldPrice}
                     </span>
                   ) : null}
                   {product.price}
-                </p>
-              </article>
+                </ProductCardPrice>
+              </ProductCard>
             ))}
           </div>
         </div>

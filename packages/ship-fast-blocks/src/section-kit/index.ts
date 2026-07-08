@@ -23,6 +23,24 @@ export { FeatureGrid } from './FeatureGrid.tsx'
 export { PricingGrid } from './PricingGrid.tsx'
 export { TestimonialGrid } from './TestimonialGrid.tsx'
 export { GalleryGrid } from './GalleryGrid.tsx'
+export { CommandSearch } from './CommandSearch.tsx'
+export { AccountDropdown } from './AccountDropdown.tsx'
+export { Card, surfaceCard } from './Card.tsx'
+export { FilterChip } from './FilterChip.tsx'
+export {
+  ProductCard,
+  ProductCardImage,
+  ProductCardBadge,
+  ProductCardActions,
+  ProductCardContent,
+  ProductCardTitle,
+  ProductCardSubtitle,
+  ProductCardPrice,
+  productCardVariants,
+} from './ProductCard.tsx'
+export { PersonCard } from './PersonCard.tsx'
+export { Eyebrow } from './Eyebrow.tsx'
+export { ResponsiveGrid } from './ResponsiveGrid.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

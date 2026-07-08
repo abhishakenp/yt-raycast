@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  ProductCard,
+  ProductCardImage,
+  ProductCardBadge,
+  ProductCardActions,
+  ProductCardContent,
+} from '#/section-kit/ProductCard.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -202,11 +209,12 @@ export const BeautyStoreProducts = defineCapsule({
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8">
             {visibleItems.map((product) => (
-              <article
+              <ProductCard
                 key={product.title}
-                className="group overflow-hidden rounded-xl bg-card shadow-sm transition-shadow hover:shadow-lg"
+                variant="elevated"
+                className="shadow-sm transition-shadow hover:shadow-lg"
               >
-                <div className="relative aspect-square overflow-hidden bg-muted">
+                <ProductCardImage>
                   <Image
                     alt={`${product.brand} ${product.title} product photo`}
                     w={600}
@@ -215,28 +223,30 @@ export const BeautyStoreProducts = defineCapsule({
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {product.badge ? (
-                    <span
+                    <ProductCardBadge
                       className={cn(
-                        'absolute left-3 top-3 rounded-full px-2 py-1 text-xs font-semibold',
+                        'rounded-full font-semibold',
                         badgeClass(product.badge),
                       )}
                     >
                       {product.badge}
-                    </span>
+                    </ProductCardBadge>
                   ) : null}
-                  <CommerceAddItemButton
-                    lakebed={lakebed}
-                    item={{
-                      label: product.title,
-                      price: product.price,
-                    }}
-                    aria-label={`Add ${product.title} to cart`}
-                    className="absolute bottom-3 right-3 flex size-10 items-center justify-center rounded-full bg-card text-card-foreground opacity-0 shadow-md transition-opacity hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
-                  >
-                    <PlusIcon />
-                  </CommerceAddItemButton>
-                </div>
-                <div className="p-4">
+                  <ProductCardActions>
+                    <CommerceAddItemButton
+                      lakebed={lakebed}
+                      item={{
+                        label: product.title,
+                        price: product.price,
+                      }}
+                      aria-label={`Add ${product.title} to cart`}
+                      className="flex size-10 items-center justify-center rounded-full bg-card text-card-foreground opacity-0 shadow-md transition-opacity hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
+                    >
+                      <PlusIcon />
+                    </CommerceAddItemButton>
+                  </ProductCardActions>
+                </ProductCardImage>
+                <ProductCardContent className="p-4">
                   <p className="mb-1 text-xs text-muted-foreground">
                     {product.brand}
                   </p>
@@ -256,8 +266,8 @@ export const BeautyStoreProducts = defineCapsule({
                   <p className="font-semibold text-card-foreground">
                     {product.price}
                   </p>
-                </div>
-              </article>
+                </ProductCardContent>
+              </ProductCard>
             ))}
           </div>
         </div>

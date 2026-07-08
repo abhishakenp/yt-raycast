@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  ProductCard,
+  ProductCardImage,
+  ProductCardContent,
+  ProductCardTitle,
+} from '#/section-kit/ProductCard.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -137,11 +143,12 @@ export const IllustratorShop = defineCapsule({
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((item) => (
-              <article
+              <ProductCard
                 key={item.title}
-                className="group overflow-hidden rounded-lg border border-border/60 bg-card transition-shadow hover:shadow-lg"
+                variant="outlined"
+                className="border-border/60 transition-shadow hover:shadow-lg"
               >
-                <div className="aspect-square overflow-hidden bg-muted">
+                <ProductCardImage>
                   <Image
                     alt={item.title}
                     w={500}
@@ -149,11 +156,11 @@ export const IllustratorShop = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
-                <div className="p-5">
-                  <h3 className="mb-1 font-serif text-lg text-card-foreground">
+                </ProductCardImage>
+                <ProductCardContent>
+                  <ProductCardTitle className="mb-1 font-serif text-lg text-card-foreground">
                     {item.title}
-                  </h3>
+                  </ProductCardTitle>
                   <p className="mb-3 text-xs text-muted-foreground">
                     {item.meta}
                   </p>
@@ -179,8 +186,8 @@ export const IllustratorShop = defineCapsule({
                       {addToCart}
                     </CommerceAddItemButton>
                   </div>
-                </div>
-              </article>
+                </ProductCardContent>
+              </ProductCard>
             ))}
           </div>
           <div className="mt-12 text-center">

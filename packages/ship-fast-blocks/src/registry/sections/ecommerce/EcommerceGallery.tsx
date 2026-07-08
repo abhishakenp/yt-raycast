@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import {
+  ProductCard,
+  ProductCardImage,
+  ProductCardBadge,
+  ProductCardContent,
+  ProductCardTitle,
+} from '#/section-kit/ProductCard.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -152,11 +159,8 @@ export const EcommerceGallery = defineCapsule({
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
             {visibleProducts.map((product) => (
-              <article
-                key={product.name}
-                className="group overflow-hidden rounded-lg border border-border bg-card"
-              >
-                <div className="relative aspect-square overflow-hidden bg-muted">
+              <ProductCard key={product.name} variant="outlined">
+                <ProductCardImage>
                   <Image
                     alt={
                       product.imageAlt ??
@@ -168,15 +172,15 @@ export const EcommerceGallery = defineCapsule({
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {product.badge ? (
-                    <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground">
+                    <ProductCardBadge className="rounded-full bg-primary px-2.5 py-1 text-primary-foreground">
                       {product.badge}
-                    </span>
+                    </ProductCardBadge>
                   ) : null}
-                </div>
-                <div className="p-4">
-                  <h3 className="text-sm font-medium text-foreground sm:text-base">
+                </ProductCardImage>
+                <ProductCardContent className="p-4">
+                  <ProductCardTitle className="text-sm text-foreground sm:text-base">
                     {product.name}
-                  </h3>
+                  </ProductCardTitle>
                   <div className="mt-1.5 flex items-baseline gap-2">
                     <span className="font-semibold text-foreground">
                       {product.price}
@@ -203,8 +207,8 @@ export const EcommerceGallery = defineCapsule({
                   >
                     {addToCartLabel}
                   </CommerceAddItemButton>
-                </div>
-              </article>
+                </ProductCardContent>
+              </ProductCard>
             ))}
           </div>
         </div>

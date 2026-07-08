@@ -4,6 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  ProductCard,
+  ProductCardImage,
+  ProductCardBadge,
+  ProductCardActions,
+  ProductCardContent,
+  ProductCardTitle,
+  ProductCardSubtitle,
+} from '#/section-kit/ProductCard.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -202,11 +211,12 @@ export const ElectronicsStoreProducts = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((p) => (
-              <div
+              <ProductCard
                 key={p.title}
-                className="group overflow-hidden rounded-xl bg-card text-card-foreground transition-shadow hover:shadow-lg"
+                variant="elevated"
+                className="transition-shadow hover:shadow-lg"
               >
-                <div className="relative aspect-square bg-muted">
+                <ProductCardImage className="overflow-visible">
                   <Image
                     alt={p.imageAlt}
                     w={400}
@@ -215,47 +225,49 @@ export const ElectronicsStoreProducts = defineCapsule({
                     className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   {p.badge ? (
-                    <span
+                    <ProductCardBadge
                       className={cn(
-                        'absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium',
+                        'rounded',
                         p.badge === 'Best Seller'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-foreground text-background',
                       )}
                     >
                       {p.badge}
-                    </span>
+                    </ProductCardBadge>
                   ) : null}
-                  <CommerceAddItemButton
-                    lakebed={lakebed}
-                    item={{
-                      label: p.title,
-                      price: p.price,
-                    }}
-                    aria-label={`Add ${p.title} to cart`}
-                    className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-card text-card-foreground shadow-md transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
-                  >
-                    <svg
-                      className="size-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
+                  <ProductCardActions>
+                    <CommerceAddItemButton
+                      lakebed={lakebed}
+                      item={{
+                        label: p.title,
+                        price: p.price,
+                      }}
+                      aria-label={`Add ${p.title} to cart`}
+                      className="grid size-10 place-items-center rounded-full bg-card text-card-foreground shadow-md transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
                     >
-                      <path d="M12 4v16m8-8H4" />
-                    </svg>
-                  </CommerceAddItemButton>
-                </div>
-                <div className="p-4">
-                  <h3 className="mb-1 font-medium text-card-foreground">
+                      <svg
+                        className="size-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 4v16m8-8H4" />
+                      </svg>
+                    </CommerceAddItemButton>
+                  </ProductCardActions>
+                </ProductCardImage>
+                <ProductCardContent className="p-4">
+                  <ProductCardTitle className="mb-1 text-card-foreground">
                     {p.title}
-                  </h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
+                  </ProductCardTitle>
+                  <ProductCardSubtitle className="mb-3 mt-0">
                     {p.subtitle}
-                  </p>
+                  </ProductCardSubtitle>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-semibold text-card-foreground">
                       {p.price}
@@ -267,8 +279,8 @@ export const ElectronicsStoreProducts = defineCapsule({
                       </span>
                     </div>
                   </div>
-                </div>
-              </div>
+                </ProductCardContent>
+              </ProductCard>
             ))}
           </div>
 

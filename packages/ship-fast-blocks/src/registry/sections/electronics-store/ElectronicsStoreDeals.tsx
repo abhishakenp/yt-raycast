@@ -3,6 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import {
+  ProductCard,
+  ProductCardImage,
+  ProductCardBadge,
+  ProductCardContent,
+  ProductCardTitle,
+  ProductCardSubtitle,
+} from '#/section-kit/ProductCard.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -162,42 +170,47 @@ export const ElectronicsStoreDeals = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((d) => (
-              <CommerceAddItemButton
+              <ProductCard
                 key={d.title}
-                lakebed={lakebed}
-                item={{ label: d.title, price: d.price }}
-                pendingChildren={<CommerceMutationSpinner />}
-                className="group block overflow-hidden rounded-xl bg-card text-left text-card-foreground transition-shadow hover:shadow-xl"
+                asChild
+                variant="elevated"
+                className="text-left transition-shadow hover:shadow-xl"
               >
-                <div className="relative aspect-square bg-muted">
-                  <Image
-                    alt={d.imageAlt}
-                    w={400}
-                    h={400}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <span className="absolute left-3 top-3 rounded bg-destructive px-2 py-1 text-xs font-medium text-destructive-foreground">
-                    {d.discount}
-                  </span>
-                </div>
-                <div className="p-4">
-                  <h3 className="mb-1 font-medium text-card-foreground">
-                    {d.title}
-                  </h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    {d.subtitle}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-semibold text-card-foreground">
-                      {d.price}
-                    </span>
-                    <span className="text-sm text-muted-foreground line-through">
-                      {d.was}
-                    </span>
-                  </div>
-                </div>
-              </CommerceAddItemButton>
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={{ label: d.title, price: d.price }}
+                  pendingChildren={<CommerceMutationSpinner />}
+                >
+                  <ProductCardImage className="overflow-visible">
+                    <Image
+                      alt={d.imageAlt}
+                      w={400}
+                      h={400}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <ProductCardBadge className="rounded bg-destructive px-2 py-1 text-destructive-foreground">
+                      {d.discount}
+                    </ProductCardBadge>
+                  </ProductCardImage>
+                  <ProductCardContent className="block p-4">
+                    <ProductCardTitle className="mb-1 text-card-foreground">
+                      {d.title}
+                    </ProductCardTitle>
+                    <ProductCardSubtitle className="mb-3 mt-0">
+                      {d.subtitle}
+                    </ProductCardSubtitle>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-semibold text-card-foreground">
+                        {d.price}
+                      </span>
+                      <span className="text-sm text-muted-foreground line-through">
+                        {d.was}
+                      </span>
+                    </div>
+                  </ProductCardContent>
+                </CommerceAddItemButton>
+              </ProductCard>
             ))}
           </div>
         </div>

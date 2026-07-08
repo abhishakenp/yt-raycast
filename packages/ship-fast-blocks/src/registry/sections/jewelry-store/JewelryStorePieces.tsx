@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  ProductCard,
+  ProductCardImage,
+  ProductCardBadge,
+  ProductCardTitle,
+  ProductCardSubtitle,
+  ProductCardPrice,
+} from '#/section-kit/ProductCard.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -156,13 +164,17 @@ export const JewelryStorePieces = defineCapsule({
           </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((p) => (
-              <article key={p.title} className="group block w-full text-left">
+              <ProductCard
+                key={p.title}
+                variant="none"
+                className="w-full text-left"
+              >
                 <button
                   type="button"
                   onClick={() => go(p.title)}
                   className="block w-full text-left"
                 >
-                  <div className="relative mb-5 aspect-square overflow-hidden bg-muted">
+                  <ProductCardImage className="mb-5">
                     <Image
                       alt={p.imageAlt}
                       w={600}
@@ -171,24 +183,28 @@ export const JewelryStorePieces = defineCapsule({
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     {p.badge ? (
-                      <span
+                      <ProductCardBadge
                         className={cn(
-                          'absolute left-4 top-4 px-3 py-1 text-xs uppercase tracking-widest',
+                          'left-4 px-3 py-1 uppercase tracking-widest',
                           p.badge === 'New'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-secondary text-secondary-foreground',
                         )}
                       >
                         {p.badge}
-                      </span>
+                      </ProductCardBadge>
                     ) : null}
-                  </div>
-                  <h3 className="mb-1 font-serif text-lg text-foreground">
+                  </ProductCardImage>
+                  <ProductCardTitle className="mb-1 font-serif text-lg text-foreground">
                     {p.title}
-                  </h3>
+                  </ProductCardTitle>
                 </button>
-                <p className="mb-2 text-sm text-muted-foreground">{p.spec}</p>
-                <p className="text-primary">{p.price}</p>
+                <ProductCardSubtitle className="mb-2 mt-0">
+                  {p.spec}
+                </ProductCardSubtitle>
+                <ProductCardPrice className="text-primary">
+                  {p.price}
+                </ProductCardPrice>
                 <CommerceAddItemButton
                   lakebed={lakebed}
                   item={{ label: p.title, price: p.price }}
@@ -202,7 +218,7 @@ export const JewelryStorePieces = defineCapsule({
                 >
                   {addToCartLabel}
                 </CommerceAddItemButton>
-              </article>
+              </ProductCard>
             ))}
           </div>
         </div>
