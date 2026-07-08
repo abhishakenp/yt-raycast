@@ -92,6 +92,8 @@ vi.mock('../../../../convex/_generated/api', () => ({
 
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: searchStockImagesMock,
+  buildBackgroundImageUrl: (result: StockImageResult, resolution: string) =>
+    result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 vi.mock('@/lib/image-context', () => ({
   generateContextAwareQuery: vi.fn((alt: string) => alt),
@@ -484,6 +486,7 @@ interface RenderOpts {
   onSelectParentSection?: Parameters<
     typeof InlineEditToolbar
   >[0]['onSelectParentSection']
+  onSelectParent?: Parameters<typeof InlineEditToolbar>[0]['onSelectParent']
   onSectionEdit?: (prompt: string) => void
   disableSectionEdit?: boolean
 }
@@ -522,6 +525,7 @@ function renderToolbar(opts: RenderOpts = {}) {
       onLinkEdit,
       onImageSelect,
       onSelectParentSection: opts.onSelectParentSection,
+      onSelectParent: opts.onSelectParent,
       sessionId: opts.sessionId,
       onSectionEdit: sectionEditProp,
       isSectionSubmitting: opts.isSectionSubmitting ?? false,
@@ -548,6 +552,7 @@ function renderToolbar(opts: RenderOpts = {}) {
     onLinkEdit,
     onImageSelect,
     onSelectParentSection: opts.onSelectParentSection,
+    onSelectParent: opts.onSelectParent,
     sessionId: opts.sessionId,
     onSectionEdit: sectionEditProp,
     isSectionSubmitting: opts.isSectionSubmitting ?? false,
@@ -3100,5 +3105,49 @@ describe('InlineEditToolbar (behavioral)', () => {
     document.body.appendChild(outside)
     fireEvent.mouseDown(outside)
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  // 26. Select parent — promote selection one DOM level up
+  it('26a. shows a Select parent button that promotes to the immediate parent', () => {
+    const wrapper = document.createElement('div')
+    const child = document.createElement('div')
+    wrapper.appendChild(child)
+    document.body.appendChild(wrapper)
+    const onSelectParent = vi.fn()
+
+    renderToolbar({ activeElement: child, onSelectParent })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select parent' }))
+    expect(onSelectParent).toHaveBeenCalledWith(wrapper)
+    wrapper.remove()
+  })
+
+  it('26b. hides Select parent at the preview boundary (nothing above to edit)', () => {
+    const preview = document.createElement('div')
+    preview.className = 'genui-preview'
+    const pageRoot = document.createElement('div')
+    preview.appendChild(pageRoot)
+    document.body.appendChild(preview)
+
+    renderToolbar({ activeElement: pageRoot, onSelectParent: vi.fn() })
+
+    expect(
+      screen.queryByRole('button', { name: 'Select parent' }),
+    ).toBeNull()
+    preview.remove()
+  })
+
+  it('26c. omits the button entirely when no onSelectParent handler is wired', () => {
+    const wrapper = document.createElement('div')
+    const child = document.createElement('div')
+    wrapper.appendChild(child)
+    document.body.appendChild(wrapper)
+
+    renderToolbar({ activeElement: child })
+
+    expect(
+      screen.queryByRole('button', { name: 'Select parent' }),
+    ).toBeNull()
+    wrapper.remove()
   })
 })

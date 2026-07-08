@@ -37,6 +37,7 @@ import {
   Copy,
   ClipboardPaste,
   PanelTop,
+  SquareArrowUp,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
@@ -108,6 +109,10 @@ interface InlineEditToolbarProps {
   onImageSelect?: (newSrc: string, originalSrc: string) => void
   /** Promote the active child element to its nearest editable section. */
   onSelectParentSection?: (element: HTMLElement) => void
+  /** Promote the selection to the immediate parent DOM element (one level up).
+   *  Lets the user reach containers that have no clickable gap — e.g. the page
+   *  root to edit the whole-app background. */
+  onSelectParent?: (element: HTMLElement) => void
   sessionId?: string
   /** Section AI edit */
   onSectionEdit?: (prompt: string) => void
@@ -266,6 +271,24 @@ function findParentSectionElement(element: HTMLElement): HTMLElement | null {
   return nearestSemantic
 }
 
+/** The immediate parent element the selection can be promoted to, bounded so
+ *  it never escapes the generated page into the preview chrome (`.genui-preview`
+ *  / `[data-preview-container]`) or the document body. Returns null at the page
+ *  root, which naturally hides the button once there's nothing above to edit. */
+function findSelectableParent(element: HTMLElement): HTMLElement | null {
+  const parent = element.parentElement
+  if (!parent) return null
+  const tag = parent.tagName.toLowerCase()
+  if (tag === 'body' || tag === 'html') return null
+  if (
+    parent.classList.contains('genui-preview') ||
+    parent.hasAttribute('data-preview-container')
+  ) {
+    return null
+  }
+  return parent
+}
+
 function findPageElement(element: HTMLElement): HTMLElement | null {
   const exportPageElement = element.closest('[data-sf-export-page]')
   if (exportPageElement instanceof HTMLElement) return exportPageElement
@@ -328,6 +351,7 @@ export function InlineEditToolbar({
   canMoveDown = false,
   onImageSelect,
   onSelectParentSection,
+  onSelectParent,
   sessionId,
   onSectionEdit,
   isSectionSubmitting = false,
@@ -1098,6 +1122,9 @@ export function InlineEditToolbar({
     : null
   const canSelectPageElement =
     pageElement !== null && pageElement !== activeElement
+  const selectableParent = onSelectParent
+    ? findSelectableParent(activeElement)
+    : null
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -1126,6 +1153,34 @@ export function InlineEditToolbar({
             data-inline-toolbar-scroll="true"
             className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
+            {selectableParent && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onPointerDown={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                    }}
+                    onMouseDown={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                    }}
+                    onClick={() => onSelectParent?.(selectableParent)}
+                    disabled={isApplying || isForking}
+                    className={cn(
+                      'grid size-7 place-items-center rounded transition-colors',
+                      'text-white/60 hover:bg-white/5 hover:text-white',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                    )}
+                    aria-label="Select parent"
+                  >
+                    <SquareArrowUp className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Select parent element</TooltipContent>
+              </Tooltip>
+            )}
             {parentSectionElement && (
               <Tooltip>
                 <TooltipTrigger asChild>
