@@ -2152,4 +2152,158 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
       expect(restored!.scrollTop).toBe(320)
     })
   })
+
+  // 12c. Scroll position preserved across remounts triggered by undo/redo.
+  // Undo/redo call restoreVersion which bumps previewVersion → remount →
+  // scrollTop=0. Without saving scroll before the restore, the user loses
+  // their place in the page after every undo/redo.
+  it('restores the preview scroll position after a remount triggered by undo', async () => {
+    setupReady({
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const undo = vi.fn().mockResolvedValue(undefined)
+    getConvexState().undoRedo = {
+      canUndo: true,
+      canRedo: false,
+      undo,
+      redo: vi.fn(),
+    }
+    const { rerender } = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+
+    const previewEl = document.querySelector(
+      '.genui-preview',
+    ) as HTMLElement | null
+    expect(previewEl).not.toBeNull()
+    previewEl!.scrollTop = 250
+
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-undo'))
+    expect(undo).toHaveBeenCalledTimes(1)
+
+    // Bump previewVersion → renderedPreviewKey changes → remount + restore.
+    const bumped = readyGenerationView({
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready v2</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 200,
+      },
+    })
+    getConvexState().generationView = bumped
+    rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      const restored = document.querySelector(
+        '.genui-preview',
+      ) as HTMLElement | null
+      expect(restored).not.toBeNull()
+      expect(restored!.scrollTop).toBe(250)
+    })
+  })
+
+  it('restores the preview scroll position after a remount triggered by redo', async () => {
+    setupReady({
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const redo = vi.fn().mockResolvedValue(undefined)
+    getConvexState().undoRedo = {
+      canUndo: false,
+      canRedo: true,
+      undo: vi.fn(),
+      redo,
+    }
+    const { rerender } = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+
+    const previewEl = document.querySelector(
+      '.genui-preview',
+    ) as HTMLElement | null
+    expect(previewEl).not.toBeNull()
+    previewEl!.scrollTop = 180
+
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-redo'))
+    expect(redo).toHaveBeenCalledTimes(1)
+
+    // Bump previewVersion → renderedPreviewKey changes → remount + restore.
+    const bumped = readyGenerationView({
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready v2</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 200,
+      },
+    })
+    getConvexState().generationView = bumped
+    rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      const restored = document.querySelector(
+        '.genui-preview',
+      ) as HTMLElement | null
+      expect(restored).not.toBeNull()
+      expect(restored!.scrollTop).toBe(180)
+    })
+  })
+
+  // 12d. Scroll position preserved across remounts triggered by a link edit.
+  // handleLinkEdit calls editController.applyEdit but previously didn't save
+  // scroll position, so a successful link edit bumped previewVersion and the
+  // preview remounted at scrollTop=0.
+  it('restores the preview scroll position after a remount triggered by a link edit', async () => {
+    setupReady({
+      homeModule: {
+        source: `links: [{ label: "Docs", href: "/docs" }]`,
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const { rerender } = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+
+    const previewEl = document.querySelector(
+      '.genui-preview',
+    ) as HTMLElement | null
+    expect(previewEl).not.toBeNull()
+    previewEl!.scrollTop = 140
+
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
+    expect(getConvexState().editController.applyEdit).toHaveBeenCalled()
+
+    // Bump previewVersion → renderedPreviewKey changes → remount + restore.
+    const bumped = readyGenerationView({
+      homeModule: {
+        source: `links: [{ label: "Learn", href: "/learn" }]`,
+        status: 'succeeded',
+        updatedAt: 200,
+      },
+    })
+    getConvexState().generationView = bumped
+    rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      const restored = document.querySelector(
+        '.genui-preview',
+      ) as HTMLElement | null
+      expect(restored).not.toBeNull()
+      expect(restored!.scrollTop).toBe(140)
+    })
+  })
 })

@@ -1248,6 +1248,11 @@ export function Dashboard({
       occurrenceIndex: payload.occurrenceIndex,
     })
     if (!result.replaced) return
+    // Save scroll position before the edit (see handleTextChange for rationale)
+    const previewScrollEl = getPreviewScrollEl()
+    if (previewScrollEl) {
+      savedPreviewScrollRef.current = previewScrollEl.scrollTop
+    }
     await editController.applyEdit(
       'ai_rewrite',
       `link: ${payload.oldHref} → ${payload.newHref}`,
@@ -1256,6 +1261,25 @@ export function Dashboard({
       'replace link href',
       result.source,
     )
+  }
+
+  // Undo/redo restore a previous preview version, which bumps previewVersion
+  // → renderedPreviewKey changes → scroll container remounts at scrollTop=0.
+  // Save the scroll position before the restore so it can be restored after.
+  const handleUndo = async () => {
+    const previewScrollEl = getPreviewScrollEl()
+    if (previewScrollEl) {
+      savedPreviewScrollRef.current = previewScrollEl.scrollTop
+    }
+    await undoRedo.undo()
+  }
+
+  const handleRedo = async () => {
+    const previewScrollEl = getPreviewScrollEl()
+    if (previewScrollEl) {
+      savedPreviewScrollRef.current = previewScrollEl.scrollTop
+    }
+    await undoRedo.redo()
   }
 
   const handleMoveUp = async () => {
@@ -2478,8 +2502,8 @@ export function Dashboard({
           isForking={isForkingSession}
           canUndo={undoRedo.canUndo}
           canRedo={undoRedo.canRedo}
-          onUndo={undoRedo.undo}
-          onRedo={undoRedo.redo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
           onLinkEdit={handleLinkEdit}
           onMoveUp={inspectorSelection ? handleSectionMoveUp : handleMoveUp}
           onMoveDown={
