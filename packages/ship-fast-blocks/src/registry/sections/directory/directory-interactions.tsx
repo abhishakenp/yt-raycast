@@ -2,16 +2,7 @@ import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
-import { Loader2Icon, MenuIcon, SearchIcon } from 'lucide-react'
-
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
+import { Loader2Icon, MenuIcon } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -30,6 +21,13 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 
 import type {
@@ -41,10 +39,6 @@ import type {
 } from './directory-lakebed.ts'
 
 export type DirectoryLakebed = LakebedClientRuntime<typeof directoryLakebed>
-
-type DirectoryCatalogItem = NonNullable<
-  ReturnType<typeof directoryLakebed.queries.directoryCatalog>
->[number]
 
 export const directoryListing = ({
   address,
@@ -202,56 +196,45 @@ export function DirectorySearchButton({
   lakebed: DirectoryLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const directorySearch = useDirectorySearch(lakebed)
   const catalog = lakebed.useQuery('directoryCatalog') ?? []
 
-  const chooseItem = (item: DirectoryCatalogItem) => {
-    directorySearch.chooseSearch({
-      category: item.category,
-      query: item.name,
-    })
-    setOpen(false)
-  }
-
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: catalog,
+        getKey: (item) => item.id,
+        getValue: (item) => `${item.name} ${item.category} ${item.address}`,
+        onSelect: (item) =>
+          directorySearch.chooseSearch({
+            category: item.category,
+            query: item.name,
+          }),
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search directory"
         description="Search the generated business directory."
       >
-        <CommandInput placeholder="Search businesses..." />
-        <CommandList>
-          <CommandEmpty>No businesses found.</CommandEmpty>
-          <CommandGroup heading="Businesses">
-            {catalog.map((item) => (
-              <CommandItem
-                key={item.id}
-                value={`${item.name} ${item.category} ${item.address}`}
-                onSelect={() => chooseItem(item)}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{item.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[item.category, item.address].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search businesses..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No businesses found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Businesses">
+            {(item) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{item.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[item.category, item.address].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

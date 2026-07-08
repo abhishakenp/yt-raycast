@@ -18,6 +18,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Dashboard } from './Dashboard'
 
+// jsdom doesn't implement scrollIntoView; stub it so the section-move
+// scroll-into-view effect can be spied on.
+if (typeof Element.prototype.scrollIntoView !== 'function') {
+  Element.prototype.scrollIntoView = function scrollIntoView() {}
+}
+
 // ─── controllable convex / controller test state ───────────────────────────
 type EditEntry = {
   editType: 'text' | 'ai_rewrite' | 'style' | 'image'
@@ -1875,6 +1881,58 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
         'home_inspector_hero',
         'down',
       )
+    })
+  })
+
+  // Regression: moving a section up/down should scroll the moved section
+  // into view in its new position after the preview remounts, instead of
+  // leaving the preview at the top (scrollTop=0).
+  it('scrolls the moved section into view after a section move', async () => {
+    setupReady({
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const scrollIntoViewSpy = vi.fn()
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoViewSpy,
+    })
+    const { rerender } = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-attached-section-activate'))
+
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-move-up'))
+    await waitFor(() => {
+      expect(getConvexState().reorder.reorder).toHaveBeenCalledWith(
+        'home_hero',
+        'up',
+      )
+    })
+
+    // Bump previewVersion → renderedPreviewKey changes → remount. The mock
+    // preview remounts empty, so re-append the moved section (mirrors a real
+    // OpenUI render where the section is in the source).
+    getConvexState().generationView = readyGenerationView({
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready v2</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 200,
+      },
+    })
+    rerender(<Dashboard sessionId="ready-session" />)
+    const remountedPreview = document.querySelector('.genui-preview')
+    const movedSection = document.createElement('section')
+    movedSection.setAttribute('data-openui-var', 'home_hero')
+    remountedPreview?.append(movedSection)
+
+    await waitFor(() => {
+      expect(scrollIntoViewSpy).toHaveBeenCalledWith({ block: 'center' })
     })
   })
 

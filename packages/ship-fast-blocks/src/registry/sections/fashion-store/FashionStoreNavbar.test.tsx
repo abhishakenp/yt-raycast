@@ -632,8 +632,7 @@ describe('FashionStore fullstack commerce behavior', () => {
     })
     expect(navigate).not.toHaveBeenCalledWith('Black Wool Coat')
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(

@@ -2,16 +2,8 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
-import { Loader2Icon, MenuIcon, SearchIcon } from 'lucide-react'
+import { Loader2Icon, MenuIcon } from 'lucide-react'
 
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetContent,
@@ -34,6 +26,13 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 
 export type AutoDealershipLakebed = LakebedClientRuntime<
@@ -177,58 +176,50 @@ export function AutoSearchButton({
   lakebed: AutoDealershipLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const lead = useKeyedLakebedMutation(lakebed, 'recordLead')
   const vehicles = lakebed.useQuery('vehicleCatalog') ?? []
 
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: vehicles,
+        getKey: (vehicle) => vehicle.id,
+        getValue: (vehicle) =>
+          `${vehicle.name} ${vehicle.price} ${vehicle.specs} ${vehicle.badge}`,
+        onSelect: (vehicle) =>
+          lead.run(`search:${vehicle.name}`, {
+            action: 'search',
+            label: `Selected ${vehicle.name}`,
+            source: 'search',
+            vehicle: vehicle.name,
+          }),
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search vehicles"
         description="Search inventory and start a test-drive request."
       >
-        <CommandInput placeholder="Search by model, price, or specs..." />
-        <CommandList>
-          <CommandEmpty>No vehicles found.</CommandEmpty>
-          <CommandGroup heading="Inventory">
-            {vehicles.map((vehicle) => (
-              <CommandItem
-                key={vehicle.id}
-                value={`${vehicle.name} ${vehicle.price} ${vehicle.specs} ${vehicle.badge}`}
-                onSelect={() => {
-                  setOpen(false)
-                  void lead.run(`search:${vehicle.name}`, {
-                    action: 'search',
-                    label: `Selected ${vehicle.name}`,
-                    source: 'search',
-                    vehicle: vehicle.name,
-                  })
-                }}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{vehicle.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[vehicle.price, vehicle.specs, vehicle.badge]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search by model, price, or specs..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No vehicles found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Inventory">
+            {(vehicle) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{vehicle.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[vehicle.price, vehicle.specs, vehicle.badge]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

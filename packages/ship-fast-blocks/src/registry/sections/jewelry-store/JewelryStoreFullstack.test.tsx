@@ -612,8 +612,7 @@ describe('JewelryStore fullstack commerce behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Celeste Pendant'))
     expect(navigate).not.toHaveBeenCalledWith('Celeste Pendant')
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(

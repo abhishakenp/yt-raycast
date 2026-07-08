@@ -7,7 +7,6 @@ import {
   MinusIcon,
   PlusIcon,
   Loader2Icon,
-  SearchIcon,
   ShoppingBagIcon,
   Trash2Icon,
 } from 'lucide-react'
@@ -22,14 +21,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '#/components/ui/alert-dialog.tsx'
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetContent,
@@ -50,6 +41,13 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 import type {
   commerceCartLakebed,
@@ -606,73 +604,58 @@ export function CommerceSearchButton({
   lakebed: CommerceLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const commerceSearch = useCommerceSearch(lakebed)
   const searchState = commerceSearch.state
   const catalog = normalizeRecords<CommerceCatalogProduct>(
     lakebed.useQuery('productCatalog'),
   )
   const query = searchState?.query ?? ''
-  const chooseProduct = (product: CommerceCatalogProduct) => {
-    commerceSearch.chooseSearch({
-      query: product.label,
-      selectedLabel: product.label,
-    })
-    setOpen(false)
-  }
 
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: catalog,
+        getKey: (product) => product.id ?? product.label,
+        getValue: (product) =>
+          `${product.label} ${product.subtitle ?? ''} ${product.price ?? ''}`,
+        onSelect: (product) =>
+          commerceSearch.chooseSearch({
+            query: product.label,
+            selectedLabel: product.label,
+          }),
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search products"
         description="Search the generated product catalog."
       >
-        <CommandInput
+        <CommandSearchInput
           placeholder="Search products..."
           value={query}
           onValueChange={(value) => {
             commerceSearch.chooseSearch({ query: value, selectedLabel: '' })
           }}
         />
-        <CommandList>
-          <CommandEmpty>No products found.</CommandEmpty>
-          <CommandGroup heading="Products">
-            {catalog.map((product) => (
-              <CommandItem
-                key={product.id ?? product.label}
-                value={`${product.label} ${product.subtitle ?? ''} ${
-                  product.price ?? ''
-                }`}
-                onSelect={() => {
-                  chooseProduct(product)
-                }}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {product.label}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[product.subtitle, product.price]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchList>
+          <CommandSearchEmpty>No products found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Products">
+            {(product) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{product.label}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[product.subtitle, product.price]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

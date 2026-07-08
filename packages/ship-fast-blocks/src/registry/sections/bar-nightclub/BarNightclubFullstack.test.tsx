@@ -386,8 +386,7 @@ describe('Bar/nightclub fullstack commerce behavior', () => {
       expect(navigate).toHaveBeenCalledWith('Menu')
     })
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(

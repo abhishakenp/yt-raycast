@@ -460,8 +460,7 @@ describe('CleaningService fullstack behavior', () => {
     expect(navigate).toHaveBeenCalledWith('Standard Cleaning')
     expect(screen.getAllByText('Standard Cleaning').length).toBeGreaterThan(0)
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
-    fireEvent.click(await screen.findByText('Sign in with Shoo'))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))

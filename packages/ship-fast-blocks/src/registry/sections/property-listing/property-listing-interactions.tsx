@@ -2,16 +2,8 @@ import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
-import { HeartIcon, Loader2Icon, MenuIcon, SearchIcon } from 'lucide-react'
+import { HeartIcon, Loader2Icon, MenuIcon } from 'lucide-react'
 
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetContent,
@@ -39,15 +31,18 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  CommandSearch,
+  CommandSearchTrigger,
+  CommandSearchContent,
+  CommandSearchInput,
+  CommandSearchList,
+  CommandSearchEmpty,
+  CommandSearchGroup,
 } from '#/section-kit/index.ts'
 
 export type PropertyListingLakebed = LakebedClientRuntime<
   typeof propertyListingLakebed
 >
-
-type PropertyCatalogItem = NonNullable<
-  ReturnType<typeof propertyListingLakebed.queries.propertyCatalog>
->[number]
 
 export const propertyListingCatalogItem = ({
   address,
@@ -295,64 +290,54 @@ export function PropertyListingSearchButton({
   lakebed: PropertyListingLakebed
   label?: string
 }) {
-  const [open, setOpen] = useState(false)
   const search = usePropertyListingSearch(lakebed)
   const selectListing = lakebed.useMutation('selectListing')
   const listings = lakebed.useQuery('propertyCatalog') ?? []
 
-  const chooseListing = (listing: PropertyCatalogItem) => {
-    setOpen(false)
-    void search
-      .chooseSearch({
-        filter: listing.price.includes('/mo') ? 'For Rent' : 'For Sale',
-        location: '',
-        query: listing.address,
-      })
-      .then(() => selectListing({ address: listing.address }))
-  }
-
   return (
-    <>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => setOpen(true)}
-        className={buttonClassName}
-      >
-        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
-      </button>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
+    <CommandSearch
+      search={{
+        items: listings,
+        getKey: (listing) => listing.id ?? listing.address,
+        getValue: (listing) =>
+          `${listing.address} ${listing.price} ${listing.beds} ${listing.baths} ${listing.sqft} ${listing.tag}`,
+        onSelect: (listing) =>
+          search
+            .chooseSearch({
+              filter: listing.price.includes('/mo') ? 'For Rent' : 'For Sale',
+              location: '',
+              query: listing.address,
+            })
+            .then(() => selectListing({ address: listing.address })),
+      }}
+    >
+      <CommandSearchTrigger className={buttonClassName} aria-label={label}>
+        {children}
+      </CommandSearchTrigger>
+      <CommandSearchContent
         title="Search listings"
         description="Search the generated property catalog."
       >
-        <CommandInput placeholder="Search listings..." />
-        <CommandList>
-          <CommandEmpty>No listings found.</CommandEmpty>
-          <CommandGroup heading="Listings">
-            {listings.map((listing) => (
-              <CommandItem
-                key={listing.id}
-                value={`${listing.address} ${listing.price} ${listing.beds} ${listing.baths} ${listing.sqft} ${listing.tag}`}
-                onSelect={() => chooseListing(listing)}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {listing.address}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[listing.price, `${listing.beds} bd`, listing.tag]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </>
+        <CommandSearchInput placeholder="Search listings..." />
+        <CommandSearchList>
+          <CommandSearchEmpty>No listings found.</CommandSearchEmpty>
+          <CommandSearchGroup heading="Listings">
+            {(listing) => (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">
+                  {listing.address}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[listing.price, `${listing.beds} bd`, listing.tag]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </CommandSearchGroup>
+        </CommandSearchList>
+      </CommandSearchContent>
+    </CommandSearch>
   )
 }
 

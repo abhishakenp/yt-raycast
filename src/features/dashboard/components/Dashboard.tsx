@@ -483,6 +483,11 @@ export function Dashboard({
   // new preview mounts. Without this, every successful edit resets scroll
   // to top because the key change forces a full remount of the scroll container.
   const savedPreviewScrollRef = useRef<number | null>(null)
+  // After a section move (up/down), scroll the moved section into view in
+  // its new position instead of leaving the preview at the top. Set to the
+  // moved section's OpenUI var name (or id fallback) right before the
+  // reorder mutation; consumed by the effect below once the preview remounts.
+  const pendingScrollToSectionRef = useRef<string | null>(null)
   // Find the actual scrollable element inside the preview. The scroll
   // container may be .genui-preview itself or a descendant div depending
   // on the rendered layout.
@@ -916,6 +921,35 @@ export function Dashboard({
     return () => cancelAnimationFrame(raf)
   }, [renderedPreviewKey])
 
+  // After a section move, the preview remounts (renderedPreviewKey changes)
+  // and the moved section lands in a new position. Scroll it into view so the
+  // user sees the result of the move instead of being dumped at the top.
+  useEffect(() => {
+    if (pendingScrollToSectionRef.current === null) return
+    const varName = pendingScrollToSectionRef.current
+    pendingScrollToSectionRef.current = null
+    let raf = 0
+    let attempts = 0
+    const tryScroll = () => {
+      const root = document.querySelector('.genui-preview')
+      const escaped =
+        typeof CSS?.escape === 'function' ? CSS.escape(varName) : varName
+      const el =
+        root?.querySelector<HTMLElement>(`[data-openui-var="${escaped}"]`) ??
+        root?.querySelector<HTMLElement>(`#${escaped}`)
+      if (el) {
+        el.scrollIntoView({ block: 'center' })
+        return
+      }
+      // Content not ready yet — retry for up to ~500ms (30 frames)
+      if (attempts++ < 30) {
+        raf = requestAnimationFrame(tryScroll)
+      }
+    }
+    raf = requestAnimationFrame(tryScroll)
+    return () => cancelAnimationFrame(raf)
+  }, [renderedPreviewKey])
+
   const handlePublish = async () => {
     if (resolvedSessionId === undefined) return
 
@@ -968,48 +1002,34 @@ export function Dashboard({
     document.dispatchEvent(new CustomEvent('ship-fast-inspector-clear'))
   }
 
-  const handleSectionMoveUp = async () => {
-    if (!inspectorSelection) return
-    const varName = inspectorSelection.openuiVar
-    if (varName) {
-      await reorder.reorder(varName, 'up')
-      return
-    }
+  const resolveMoveVarName = (): string | undefined => {
+    if (!inspectorSelection) return undefined
+    if (inspectorSelection.openuiVar) return inspectorSelection.openuiVar
     const root = document.querySelector('.genui-preview')
-    if (!root) return
+    if (!root) return undefined
     const el = root.querySelector<HTMLElement>(inspectorSelection.elementPath)
-    if (!el) return
-    const resolved =
+    if (!el) return undefined
+    return (
       el.getAttribute('data-openui-var') ??
       el.closest('[data-openui-var]')?.getAttribute('data-openui-var') ??
       el.getAttribute('id') ??
       el.closest('[id]')?.getAttribute('id') ??
       undefined
-    if (resolved) {
-      await reorder.reorder(resolved, 'up')
-    }
+    )
+  }
+
+  const handleSectionMoveUp = async () => {
+    const varName = resolveMoveVarName()
+    if (!varName) return
+    pendingScrollToSectionRef.current = varName
+    await reorder.reorder(varName, 'up')
   }
 
   const handleSectionMoveDown = async () => {
-    if (!inspectorSelection) return
-    const varName = inspectorSelection.openuiVar
-    if (varName) {
-      await reorder.reorder(varName, 'down')
-      return
-    }
-    const root = document.querySelector('.genui-preview')
-    if (!root) return
-    const el = root.querySelector<HTMLElement>(inspectorSelection.elementPath)
-    if (!el) return
-    const resolved =
-      el.getAttribute('data-openui-var') ??
-      el.closest('[data-openui-var]')?.getAttribute('data-openui-var') ??
-      el.getAttribute('id') ??
-      el.closest('[id]')?.getAttribute('id') ??
-      undefined
-    if (resolved) {
-      await reorder.reorder(resolved, 'down')
-    }
+    const varName = resolveMoveVarName()
+    if (!varName) return
+    pendingScrollToSectionRef.current = varName
+    await reorder.reorder(varName, 'down')
   }
 
   const handleSectionEditSubmit = async (prompt: string) => {
@@ -1248,6 +1268,7 @@ export function Dashboard({
       el.closest('[id]')?.getAttribute('id') ??
       undefined
     if (varName) {
+      pendingScrollToSectionRef.current = varName
       await reorder.reorder(varName, 'up')
     }
   }
@@ -1262,6 +1283,7 @@ export function Dashboard({
       el.closest('[id]')?.getAttribute('id') ??
       undefined
     if (varName) {
+      pendingScrollToSectionRef.current = varName
       await reorder.reorder(varName, 'down')
     }
   }
