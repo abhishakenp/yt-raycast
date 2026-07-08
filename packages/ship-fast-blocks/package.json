@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@ship-fast/lakebed": "workspace:*",
+    "class-variance-authority": "^0.7.1",
     "framer-motion": "^12.40.0"
   },
   "imports": {
