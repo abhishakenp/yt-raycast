@@ -162,6 +162,20 @@ export function useElementInspector(
       selectedElementRef.current = null
     }
 
+    // The toolbar's "select parent" button dispatches this event to promote the
+    // selection to a specific element (one the user can't reach by clicking,
+    // e.g. a gapless page root). Routing it through commitSelection keeps the
+    // cyan overlay, onSectionSelect, and the toolbar in sync — exactly as a
+    // real click would.
+    const onSelectRequest = (e: Event) => {
+      const target = (e as CustomEvent<{ element?: HTMLElement }>).detail
+        ?.element
+      if (target instanceof HTMLElement && container.contains(target)) {
+        hideHover()
+        commitSelection(target)
+      }
+    }
+
     container.addEventListener('mousemove', onMouseMove)
     container.addEventListener('mouseleave', onMouseLeave)
     container.addEventListener('click', onClick, true)
@@ -170,6 +184,7 @@ export function useElementInspector(
     document.addEventListener('keydown', onKey)
     document.addEventListener('mousedown', onDocumentMouseDown)
     document.addEventListener('ship-fast-inspector-clear', onClearRequest)
+    document.addEventListener('ship-fast-inspector-select', onSelectRequest)
 
     return () => {
       container.removeEventListener('mousemove', onMouseMove)
@@ -180,6 +195,10 @@ export function useElementInspector(
       document.removeEventListener('keydown', onKey)
       document.removeEventListener('mousedown', onDocumentMouseDown)
       document.removeEventListener('ship-fast-inspector-clear', onClearRequest)
+      document.removeEventListener(
+        'ship-fast-inspector-select',
+        onSelectRequest,
+      )
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current)
         rafRef.current = null

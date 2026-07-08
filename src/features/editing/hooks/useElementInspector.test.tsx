@@ -389,4 +389,41 @@ describe('useElementInspector — behavioral', () => {
     expect(onSectionSelect).toHaveBeenCalledTimes(1) // not cleared
     dialog.remove()
   })
+
+  it('promotes selection to a specific element via the ship-fast-inspector-select event', () => {
+    const onSectionSelect = vi.fn()
+    const { getByTestId } = render(
+      <Harness active={true} onSectionSelect={onSectionSelect} />,
+    )
+    const card = getByTestId('card')
+    vi.spyOn(card, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(5, 6, 7, 8),
+    )
+    act(() => {
+      document.dispatchEvent(
+        new CustomEvent('ship-fast-inspector-select', {
+          detail: { element: card },
+        }),
+      )
+    })
+    // Same path as a real click: emits a selection and paints the cyan overlay.
+    expect(onSectionSelect).toHaveBeenCalledTimes(1)
+    expect(overlayByRole('selected')?.style.display).toBe('block')
+  })
+
+  it('ignores select events for elements outside the preview container', () => {
+    const onSectionSelect = vi.fn()
+    render(<Harness active={true} onSectionSelect={onSectionSelect} />)
+    const outside = document.createElement('div')
+    document.body.appendChild(outside)
+    act(() => {
+      document.dispatchEvent(
+        new CustomEvent('ship-fast-inspector-select', {
+          detail: { element: outside },
+        }),
+      )
+    })
+    expect(onSectionSelect).not.toHaveBeenCalled()
+    outside.remove()
+  })
 })

@@ -77,6 +77,11 @@ vi.mock('../../../../convex/_generated/api', () => ({
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: (...args: unknown[]) =>
     searchStockImagesMock(...(args as [])),
+  buildBackgroundImageUrl: (
+    result: { imageUrl: string; baseUrl?: string },
+    resolution: string,
+  ) =>
+    result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: vi.fn(() => undefined),
@@ -431,8 +436,8 @@ describe('BackgroundPanel (edge cases)', () => {
     return { ...result, activeElement, onModified }
   }
 
-  it('7. Solid color mode — pick color → hex display updates', () => {
-    const { container } = renderPanel()
+  it('7. Solid color mode — pick color → control + applied style update', () => {
+    const { container, activeElement } = renderPanel()
     // Default mode is 'solid'.
     const colorInput = container.querySelector(
       'input[type="color"]',
@@ -440,8 +445,27 @@ describe('BackgroundPanel (edge cases)', () => {
     expect(colorInput).toBeTruthy()
 
     fireEvent.change(colorInput, { target: { value: '#3b82f6' } })
-    // Hex display span updates.
-    expect(screen.getByText('#3b82f6')).toBeTruthy()
+    // The color control reflects the pick and it is applied to the element.
+    expect(colorInput.value).toBe('#3b82f6')
+    expect(activeElement.style.backgroundColor).toBe('rgb(59, 130, 246)')
+  })
+
+  it('7b. Solid color mode — opacity can be set to any intermediate value', () => {
+    const { container, activeElement } = renderPanel()
+    const colorInput = container.querySelector(
+      'input[type="color"]',
+    ) as HTMLInputElement
+    fireEvent.change(colorInput, { target: { value: '#3b82f6' } })
+
+    // Not just 0/100 — a mid-range opacity applies a real rgba fill.
+    const opacity = screen.getByRole('slider', {
+      name: 'Background opacity',
+    })
+    fireEvent.change(opacity, { target: { value: '40' } })
+    expect(activeElement.style.backgroundColor).toBe('rgba(59, 130, 246, 0.4)')
+
+    fireEvent.change(opacity, { target: { value: '75' } })
+    expect(activeElement.style.backgroundColor).toBe('rgba(59, 130, 246, 0.75)')
   })
 
   it('8. Gradient mode — toggle linear→radial → angle slider disappears', () => {

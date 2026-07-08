@@ -1226,6 +1226,17 @@ export function Dashboard({
     })
   }
 
+  // "Select parent" toolbar button — promote selection one DOM level up so the
+  // user can reach gapless containers (e.g. the page root for the whole-app
+  // background). Route through the inspector's select event so the cyan
+  // overlay, inspectorSelection and toolbar all move together, exactly as a
+  // real click on that element would.
+  const handleSelectParent = (element: HTMLElement) => {
+    document.dispatchEvent(
+      new CustomEvent('ship-fast-inspector-select', { detail: { element } }),
+    )
+  }
+
   const handleLinkEdit = async (payload: {
     oldHref: string
     newHref: string
@@ -2512,6 +2523,7 @@ export function Dashboard({
           canMoveUp={true}
           canMoveDown={true}
           onImageSelect={handleImageSelect}
+          onSelectParent={handleSelectParent}
           sessionId={sessionId}
           onSectionEdit={handleSectionEditSubmit}
           isSectionSubmitting={isSectionEditing}

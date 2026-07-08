@@ -38,6 +38,11 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
 }))
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: vi.fn(async () => []),
+  buildBackgroundImageUrl: (
+    result: { imageUrl: string; baseUrl?: string },
+    resolution: string,
+  ) =>
+    result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 
 import { StyleControlsPanel } from './StyleControlsPanel'

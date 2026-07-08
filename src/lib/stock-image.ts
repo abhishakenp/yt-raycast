@@ -116,6 +116,71 @@ export type StockImageResult = {
   imageUrl: string
   source: 'pexels' | 'unsplash' | 'picsum'
   query: string
+  /**
+   * Highest-fidelity source URL for this image, used to derive higher
+   * resolution variants when the image is applied (e.g. as a section
+   * background) instead of the small grid thumbnail in `imageUrl`.
+   * Optional so callers/tests that build results with only a thumbnail
+   * still type-check; the URL builder falls back to `imageUrl` when absent.
+   */
+  baseUrl?: string
+}
+
+/** Selectable output quality when applying a stock image as a background. */
+export type BackgroundImageResolution = 'standard' | 'high' | 'max'
+
+/** Target pixel dimensions for the capped tiers (3:2 landscape). `max` is
+ *  intentionally omitted — it means "the provider's native original, no
+ *  downscaling", which has no fixed dimensions. */
+export const BACKGROUND_RESOLUTION_DIMENSIONS: Record<
+  Exclude<BackgroundImageResolution, 'max'>,
+  { w: number; h: number }
+> = {
+  standard: { w: 1280, h: 853 },
+  high: { w: 1920, h: 1280 },
+}
+
+const stripQuery = (url: string): string => url.split('?')[0]
+
+/**
+ * Build a high-resolution URL for a stock image at the requested quality
+ * tier. Grid thumbnails stay small (fast) via `imageUrl`; this derives a
+ * crisp full-size URL from the provider's original/raw source at apply time.
+ *
+ * `max` returns the provider's **native original** with no width/height cap —
+ * the highest resolution available (light lossless compression only) — for
+ * full-bleed heroes and retina displays. Falls back to the thumbnail when no
+ * hi-res source URL is available.
+ */
+export const buildBackgroundImageUrl = (
+  result: StockImageResult,
+  resolution: BackgroundImageResolution,
+): string => {
+  const base = result.baseUrl
+  if (!base) return result.imageUrl
+  if (resolution === 'max') {
+    switch (result.source) {
+      case 'unsplash':
+        // `raw` is the full-resolution imgix master; format only, no resize.
+        return `${stripQuery(base)}?q=90&auto=format`
+      case 'pexels':
+        // `original` is the native full-resolution file; compress only.
+        return `${stripQuery(base)}?auto=compress&cs=tinysrgb`
+      case 'picsum':
+        // Picsum has no true original; request a very large 4K frame.
+        return `${stripQuery(base)}/3840/2160`
+    }
+  }
+  const { w, h } = BACKGROUND_RESOLUTION_DIMENSIONS[resolution]
+  const q = resolution === 'high' ? 85 : 80
+  switch (result.source) {
+    case 'unsplash':
+      return `${stripQuery(base)}?w=${w}&h=${h}&fit=crop&q=${q}&auto=format`
+    case 'pexels':
+      return `${stripQuery(base)}?auto=compress&cs=tinysrgb&fit=crop&w=${w}&h=${h}`
+    case 'picsum':
+      return `${stripQuery(base)}/${w}/${h}`
+  }
 }
 
 /** Search both Pexels and Unsplash for multiple images at once, merged and
@@ -167,6 +232,7 @@ export const searchStockImages = async ({
               imageUrl: pexelsPhotoUrl(photo, w, h),
               source: 'pexels' as const,
               query,
+              baseUrl: photo.src.original,
             }))
           } catch {
             return [] as StockImageResult[]
@@ -186,6 +252,7 @@ export const searchStockImages = async ({
               imageUrl: `${photo.urls.regular || photo.urls.small || photo.urls.full}${unsplashSizeParam(w, h)}`,
               source: 'unsplash' as const,
               query,
+              baseUrl: photo.urls.raw || photo.urls.full || photo.urls.regular,
             }))
           } catch {
             return [] as StockImageResult[]
@@ -229,6 +296,7 @@ export const searchStockImages = async ({
         imageUrl: `https://picsum.photos/seed/${seed}/${w}/${h}`,
         source: 'picsum' as const,
         query,
+        baseUrl: `https://picsum.photos/seed/${seed}`,
       }
     })
 

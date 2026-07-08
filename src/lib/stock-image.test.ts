@@ -336,4 +336,142 @@ describe('searchStockImages', () => {
     )
     expect(fetch).toHaveBeenCalledTimes(2)
   })
+
+  it('carries a hi-res baseUrl (Pexels original, Unsplash raw) for later upscaling', async () => {
+    const fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('pexels')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            photos: [
+              {
+                src: {
+                  medium: 'https://images.pexels.com/m.jpg',
+                  large: 'https://images.pexels.com/l.jpg',
+                  large2x: 'https://images.pexels.com/l2x.jpg',
+                  original: 'https://images.pexels.com/original.jpg',
+                },
+              },
+            ],
+          }),
+        })
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          results: [
+            {
+              urls: {
+                regular: 'https://images.unsplash.com/photo-1?w=1080',
+                small: 'https://images.unsplash.com/photo-1?w=400',
+                full: 'https://images.unsplash.com/photo-1?w=2000',
+                raw: 'https://images.unsplash.com/photo-1',
+              },
+            },
+          ],
+        }),
+      })
+    })
+    vi.stubGlobal('fetch', fetch)
+    const { searchStockImages } = await loadStockImage({
+      PEXELS_API_KEY: 'pk',
+      UNSPLASH_ACCESS_KEY: 'uk',
+    })
+
+    const results = await searchStockImages({ query: 'canyon', perPage: 6 })
+
+    const pexels = results.find((r) => r.source === 'pexels')
+    const unsplash = results.find((r) => r.source === 'unsplash')
+    expect(pexels?.baseUrl).toBe('https://images.pexels.com/original.jpg')
+    expect(unsplash?.baseUrl).toBe('https://images.unsplash.com/photo-1')
+  })
+
+  it('picsum fallback baseUrl omits dimensions so they can be re-sized', async () => {
+    const { searchStockImages } = await loadStockImage()
+    const results = await searchStockImages({ query: 'lake', perPage: 3 })
+    expect(results[0].baseUrl).toMatch(
+      /^https:\/\/picsum\.photos\/seed\/lake-1-0$/,
+    )
+    expect(results[0].baseUrl).not.toContain('/400/300')
+  })
+})
+
+describe('buildBackgroundImageUrl', () => {
+  const load = () => import('./stock-image')
+
+  it('upscales an Unsplash source to the requested tier, stripping old params', async () => {
+    const { buildBackgroundImageUrl } = await load()
+    const url = buildBackgroundImageUrl(
+      {
+        imageUrl: 'https://images.unsplash.com/photo-1?w=400&h=300&fit=crop',
+        source: 'unsplash',
+        query: 'x',
+        baseUrl: 'https://images.unsplash.com/photo-1?ixid=track',
+      },
+      'high',
+    )
+    expect(url).toBe(
+      'https://images.unsplash.com/photo-1?w=1920&h=1280&fit=crop&q=85&auto=format',
+    )
+  })
+
+  it('max returns the native Pexels original with no width/height cap', async () => {
+    const { buildBackgroundImageUrl } = await load()
+    const url = buildBackgroundImageUrl(
+      {
+        imageUrl: 'https://images.pexels.com/photos/1/p.jpeg?w=400',
+        source: 'pexels',
+        query: 'x',
+        baseUrl: 'https://images.pexels.com/photos/1/p.jpeg',
+      },
+      'max',
+    )
+    // Highest possible: original file, compression only — no w/h downscaling.
+    expect(url).toBe(
+      'https://images.pexels.com/photos/1/p.jpeg?auto=compress&cs=tinysrgb',
+    )
+    expect(url).not.toContain('w=')
+  })
+
+  it('max returns the full-resolution Unsplash master with no resize', async () => {
+    const { buildBackgroundImageUrl } = await load()
+    const url = buildBackgroundImageUrl(
+      {
+        imageUrl: 'https://images.unsplash.com/photo-1?w=400',
+        source: 'unsplash',
+        query: 'x',
+        baseUrl: 'https://images.unsplash.com/photo-1?ixid=track',
+      },
+      'max',
+    )
+    expect(url).toBe('https://images.unsplash.com/photo-1?q=90&auto=format')
+    expect(url).not.toContain('w=')
+  })
+
+  it('appends standard dimensions to a Picsum seed URL', async () => {
+    const { buildBackgroundImageUrl } = await load()
+    const url = buildBackgroundImageUrl(
+      {
+        imageUrl: 'https://picsum.photos/seed/lake/400/300',
+        source: 'picsum',
+        query: 'x',
+        baseUrl: 'https://picsum.photos/seed/lake',
+      },
+      'standard',
+    )
+    expect(url).toBe('https://picsum.photos/seed/lake/1280/853')
+  })
+
+  it('falls back to the thumbnail when no hi-res baseUrl is available', async () => {
+    const { buildBackgroundImageUrl } = await load()
+    const url = buildBackgroundImageUrl(
+      {
+        imageUrl: 'https://images.pexels.com/thumb.jpeg',
+        source: 'pexels',
+        query: 'x',
+      },
+      'max',
+    )
+    expect(url).toBe('https://images.pexels.com/thumb.jpeg')
+  })
 })

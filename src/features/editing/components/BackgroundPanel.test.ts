@@ -35,6 +35,14 @@ if (typeof IntersectionObserver === 'undefined') {
 
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: vi.fn(async () => []),
+  // Mirror production behaviour: with no hi-res baseUrl, fall back to the
+  // thumbnail; when a baseUrl exists, hand back a resolution-tagged URL so
+  // tests can assert the quality tier is threaded through.
+  buildBackgroundImageUrl: (
+    result: { imageUrl: string; baseUrl?: string },
+    resolution: string,
+  ) =>
+    result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 vi.mock('convex/react', () => ({
   useMutation: vi.fn(() => vi.fn(async () => {})),
@@ -486,5 +494,188 @@ describe('BackgroundPanel', () => {
     const blurThumb = getByRole('slider', { name: 'Backdrop blur' })
     // Was 20 before the fix; should now be 100.
     expect(blurThumb?.getAttribute('aria-valuemax')).toBe('100')
+  })
+
+  it('makes the solid background transparent by dragging opacity to 0', () => {
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ backgroundColor: 'rgb(10, 20, 30)' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+
+    // Home moves a Radix slider thumb to its minimum (0% opacity).
+    const opacity = getByRole('slider', { name: 'Background opacity' })
+    fireEvent.keyDown(opacity, { key: 'Home' })
+
+    expect(activeElement.style.backgroundColor).toBe('transparent')
+    expect(onModified).toHaveBeenCalled()
+  })
+
+  it('exposes a single panel-level opacity slider', () => {
+    const { getByRole } = renderPanel(activeElement)
+    expect(getByRole('slider', { name: 'Background opacity' })).toBeTruthy()
+  })
+
+  it('opacity slider climbs back from 0 to full and keeps the chosen hue', () => {
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ backgroundColor: 'rgb(255, 0, 0)' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+    const opacity = getByRole('slider', { name: 'Background opacity' })
+
+    // Home → 0% (transparent), End → 100% must restore the red, not go black.
+    fireEvent.keyDown(opacity, { key: 'Home' })
+    expect(activeElement.style.backgroundColor).toBe('transparent')
+
+    fireEvent.keyDown(opacity, { key: 'End' })
+    expect(activeElement.style.backgroundColor).toBe('rgb(255, 0, 0)')
+  })
+
+  it('opacity slider dims the whole gradient, not just a solid fill', () => {
+    const { getByRole, getByText } = renderPanel(activeElement)
+    fireEvent.click(getByText('Gradient'))
+    expect(activeElement.style.backgroundImage).toContain('linear-gradient')
+
+    // Drop opacity to 0 → both stops become transparent.
+    const opacity = getByRole('slider', { name: 'Background opacity' })
+    fireEvent.keyDown(opacity, { key: 'Home' })
+    expect(activeElement.style.backgroundImage).toContain('transparent')
+  })
+
+  it('fades a div background image via an overlay layer, leaving foreground opaque', async () => {
+    vi.mocked(searchStockImages).mockResolvedValue([
+      {
+        imageUrl: 'https://images.pexels.com/photos/thumb.jpeg',
+        query: 'mountains',
+        source: 'pexels',
+        baseUrl: 'https://images.pexels.com/photos/original.jpeg',
+      },
+    ])
+    const { getByRole } = renderPanel(activeElement)
+    fireEvent.change(
+      getByRole('textbox', { name: 'Search background images' }),
+      { target: { value: 'mountains' } },
+    )
+    fireEvent.click(getByRole('button', { name: 'Search images' }))
+    const tile = await waitFor(() =>
+      getByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(tile)
+    // At full opacity: just the image, no overlay.
+    expect(activeElement.style.backgroundImage).toContain('original.jpeg')
+    expect(activeElement.style.backgroundImage).not.toContain('linear-gradient')
+
+    // Lower opacity → a translucent overlay layer dims the image while the
+    // image URL stays, and the element's own opacity is NEVER touched (so
+    // foreground text is not faded).
+    const opacity = getByRole('slider', { name: 'Background opacity' })
+    fireEvent.keyDown(opacity, { key: 'Home' })
+    expect(activeElement.style.backgroundImage).toContain('linear-gradient')
+    expect(activeElement.style.backgroundImage).toContain('original.jpeg')
+    expect(activeElement.style.opacity).toBe('')
+
+    // Back to full → overlay removed, foreground still untouched.
+    fireEvent.keyDown(opacity, { key: 'End' })
+    expect(activeElement.style.backgroundImage).not.toContain('linear-gradient')
+    expect(activeElement.style.opacity).toBe('')
+  })
+
+  it('fades an <img> element background via its own opacity (no foreground to protect)', async () => {
+    vi.mocked(searchStockImages).mockResolvedValue([
+      {
+        imageUrl: 'https://images.pexels.com/photos/thumb.jpeg',
+        query: 'mountains',
+        source: 'pexels',
+        baseUrl: 'https://images.pexels.com/photos/original.jpeg',
+      },
+    ])
+    const imageElement = document.createElement('img')
+    imageElement.src = 'https://example.com/orig.jpeg'
+    document.body.appendChild(imageElement)
+    const { getByRole } = renderPanel(imageElement)
+
+    fireEvent.change(
+      getByRole('textbox', { name: 'Search background images' }),
+      { target: { value: 'mountains' } },
+    )
+    fireEvent.click(getByRole('button', { name: 'Search images' }))
+    const tile = await waitFor(() =>
+      getByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(tile)
+
+    const opacity = getByRole('slider', { name: 'Background opacity' })
+    fireEvent.keyDown(opacity, { key: 'Home' })
+    expect(imageElement.style.opacity).toBe('0')
+    fireEvent.keyDown(opacity, { key: 'End' })
+    expect(imageElement.style.opacity).toBe('')
+    imageElement.remove()
+  })
+
+  it('changes background-size when a fit option is chosen for a background image', () => {
+    vi.mocked(useQuery).mockReturnValue([
+      { url: 'https://ship-fast.test/uploaded/a.jpg', filename: 'a.jpg' },
+    ])
+    const { getByRole } = renderPanel(activeElement, { sessionId: 'sess-1' })
+
+    fireEvent.click(getByRole('button', { name: 'Select uploaded image 1' }))
+    expect(activeElement.style.backgroundSize).toBe('cover')
+
+    fireEvent.click(getByRole('radio', { name: 'Contain' }))
+    expect(activeElement.style.backgroundSize).toBe('contain')
+
+    fireEvent.click(getByRole('radio', { name: 'Fill' }))
+    expect(activeElement.style.backgroundSize).toBe('100% 100%')
+    expect(onModified).toHaveBeenCalled()
+  })
+
+  it('applies a stock background at the selected resolution and re-resolves when quality changes', async () => {
+    vi.mocked(searchStockImages).mockResolvedValue([
+      {
+        imageUrl: 'https://images.pexels.com/photos/thumb.jpeg',
+        query: 'rolling hills',
+        source: 'pexels',
+        baseUrl: 'https://images.pexels.com/photos/original.jpeg',
+      },
+    ])
+    const { getByRole } = renderPanel(activeElement)
+
+    fireEvent.change(
+      getByRole('textbox', { name: 'Search background images' }),
+      { target: { value: 'rolling hills' } },
+    )
+    fireEvent.click(getByRole('button', { name: 'Search images' }))
+    const tile = await waitFor(() =>
+      getByRole('button', { name: 'Select image 1' }),
+    )
+
+    fireEvent.click(tile)
+    expect(activeElement.style.backgroundImage).toContain('res=standard')
+    expect(activeElement.style.backgroundImage).toContain(
+      'https://images.pexels.com/photos/original.jpeg',
+    )
+
+    fireEvent.click(getByRole('radio', { name: 'High' }))
+    expect(activeElement.style.backgroundImage).toContain('res=high')
+  })
+})
+
+describe('color + alpha helpers', () => {
+  it('parses hex, rgb, rgba, and transparent into hex + 0–100 alpha', async () => {
+    const { parseColor } = await import('./BackgroundPanel')
+    expect(parseColor('#ff0000')).toEqual({ hex: '#ff0000', alpha: 100 })
+    expect(parseColor('#f00')).toEqual({ hex: '#ff0000', alpha: 100 })
+    expect(parseColor('rgb(0, 255, 0)')).toEqual({ hex: '#00ff00', alpha: 100 })
+    expect(parseColor('rgba(0, 0, 255, 0.5)')).toEqual({
+      hex: '#0000ff',
+      alpha: 50,
+    })
+    expect(parseColor('transparent')).toEqual({ hex: '#000000', alpha: 0 })
+  })
+
+  it('composes hex + alpha back into a CSS color (hex, rgba, transparent)', async () => {
+    const { toCssColor } = await import('./BackgroundPanel')
+    expect(toCssColor('#ff0000', 100)).toBe('#ff0000')
+    expect(toCssColor('#ff0000', 0)).toBe('transparent')
+    expect(toCssColor('#0000ff', 50)).toBe('rgba(0, 0, 255, 0.50)')
   })
 })
