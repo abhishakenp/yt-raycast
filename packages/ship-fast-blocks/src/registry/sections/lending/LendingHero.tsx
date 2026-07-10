@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LendingHero — split, conversion-focused hero for a personal-lending / loan
@@ -165,7 +166,7 @@ export const LendingHero = defineCapsule({
             </div>
 
             <div className="relative">
-              <div className="rounded-2xl border border-border bg-card p-8 shadow-xl">
+              <Card rounded="2xl" padding="lg" shadow="xl">
                 <div className="mb-6 flex items-center gap-3">
                   <span className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground">
                     <svg
@@ -269,7 +270,7 @@ export const LendingHero = defineCapsule({
                     {heroCardCta}
                   </button>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

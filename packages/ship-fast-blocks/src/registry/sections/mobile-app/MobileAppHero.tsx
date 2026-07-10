@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -196,7 +197,12 @@ export const MobileAppHero = defineCapsule({
                   h={800}
                   className="relative w-72 rounded-[2.5rem] border-8 border-foreground object-cover shadow-2xl sm:w-80 lg:w-96"
                 />
-                <div className="absolute -bottom-6 -right-6 rounded-2xl border border-border bg-card p-4 shadow-xl">
+                <Card
+                  rounded="2xl"
+                  padding="sm"
+                  shadow="xl"
+                  className="absolute -bottom-6 -right-6"
+                >
                   <div className="flex items-center gap-3">
                     <div className="grid size-10 place-items-center rounded-full bg-primary/10">
                       <CheckIcon className="size-5 text-primary" />
@@ -210,8 +216,13 @@ export const MobileAppHero = defineCapsule({
                       </p>
                     </div>
                   </div>
-                </div>
-                <div className="absolute -right-4 -top-4 rounded-2xl border border-border bg-card p-3 shadow-xl">
+                </Card>
+                <Card
+                  rounded="2xl"
+                  padding="none"
+                  shadow="xl"
+                  className="absolute -right-4 -top-4 p-3"
+                >
                   <div className="text-center">
                     <p className="text-2xl font-bold text-card-foreground">
                       {streakValue}
@@ -220,7 +231,7 @@ export const MobileAppHero = defineCapsule({
                       {streakLabel}
                     </p>
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
           </div>

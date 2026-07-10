@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { logisticsLakebed } from './logistics-lakebed.ts'
 import {
   useShipmentTracking,
@@ -185,9 +186,11 @@ export const LogisticsHero = defineCapsule({
                 </p>
 
                 {trackingIdValue ? (
-                  <div
-                    className="mt-4 rounded-xl border border-border bg-background p-4"
+                  <Card
                     aria-live="polite"
+                    variant="outline"
+                    padding="sm"
+                    className="mt-4 bg-background"
                   >
                     {shipment ? (
                       <div className="space-y-2">
@@ -211,7 +214,7 @@ export const LogisticsHero = defineCapsule({
                         No shipment found for &ldquo;{trackingIdValue}&rdquo;.
                       </p>
                     )}
-                  </div>
+                  </Card>
                 ) : null}
               </form>
 
@@ -234,7 +237,11 @@ export const LogisticsHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 rounded-xl border border-border bg-card p-4 shadow-lg">
+              <Card
+                padding="sm"
+                shadow="lg"
+                className="absolute -bottom-6 -left-6"
+              >
                 <div className="flex items-center gap-3">
                   <div className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
                     <svg
@@ -259,7 +266,7 @@ export const LogisticsHero = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

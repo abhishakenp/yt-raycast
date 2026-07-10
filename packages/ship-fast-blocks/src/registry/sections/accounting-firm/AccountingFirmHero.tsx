@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * AccountingFirmHero — split, editorial hero band for a CPA / accounting-firm
@@ -134,12 +135,17 @@ export const AccountingFirmHero = defineCapsule({
                 h={600}
                 className="aspect-[4/3] w-full rounded-lg object-cover shadow-xl"
               />
-              <div className="absolute -bottom-6 -left-6 hidden rounded-lg border border-border bg-card p-4 shadow-lg sm:block">
+              <Card
+                rounded="lg"
+                padding="sm"
+                shadow="lg"
+                className="absolute -bottom-6 -left-6 hidden sm:block"
+              >
                 <p className="text-3xl font-bold text-foreground">
                   {statValue}
                 </p>
                 <p className="text-sm text-muted-foreground">{statLabel}</p>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

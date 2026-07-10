@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -169,7 +170,13 @@ await ds.storage.set(\`user:\${user.id}\`, {
                   </pre>
                 </div>
               </div>
-              <div className="absolute -bottom-4 -right-4 hidden rounded-lg border border-border bg-background p-3 shadow-lg sm:block">
+              <Card
+                rounded="lg"
+                padding="none"
+                shadow="lg"
+                variant="outline"
+                className="absolute -bottom-4 -right-4 hidden bg-background p-3 sm:block"
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
                     <Image
@@ -198,7 +205,7 @@ await ds.storage.set(\`user:\${user.id}\`, {
                     <p className="text-muted-foreground">{proofSubtitle}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

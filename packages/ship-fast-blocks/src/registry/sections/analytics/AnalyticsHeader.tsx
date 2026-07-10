@@ -5,6 +5,7 @@ import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   Sheet,
   SheetContent,
@@ -318,12 +319,11 @@ export const AnalyticsHeader = defineCapsule({
                   const key = `read:${notification.id}`
 
                   return (
-                    <div
+                    <Card
                       key={notification.id}
-                      className={cn(
-                        'rounded-lg border border-border bg-card p-4',
-                        !read && 'bg-muted/40',
-                      )}
+                      rounded="lg"
+                      padding="sm"
+                      className={cn(!read && 'bg-muted/40')}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -350,7 +350,7 @@ export const AnalyticsHeader = defineCapsule({
                           </button>
                         ) : null}
                       </div>
-                    </div>
+                    </Card>
                   )
                 })
               ) : (

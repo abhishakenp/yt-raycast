@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -164,7 +165,11 @@ export const CloudInfraHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 hidden rounded-xl border border-border bg-card p-4 shadow-lg sm:block">
+              <Card
+                padding="sm"
+                shadow="lg"
+                className="absolute -bottom-6 -left-6 hidden sm:block"
+              >
                 <div className="flex items-center gap-3">
                   <div className="grid size-10 place-items-center rounded-lg bg-chart-2/15 text-chart-2">
                     <svg
@@ -187,7 +192,7 @@ export const CloudInfraHero = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

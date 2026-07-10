@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * BootcampTestimonials — 6-up student-story testimonial grid for a coding
@@ -109,10 +110,7 @@ export const BootcampTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {testimonialItems.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-2xl border border-border bg-card p-8 shadow-sm"
-              >
+              <Card key={t.name} rounded="2xl" padding="lg" shadow="sm">
                 <div className="mb-6 flex items-center gap-4">
                   <Image
                     alt={`professional headshot of ${t.name}, ${t.role}`}
@@ -136,7 +134,7 @@ export const BootcampTestimonials = defineCapsule({
                     <Star key={n} />
                   ))}
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

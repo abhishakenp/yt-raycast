@@ -1,9 +1,9 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * AboutHero — mission hero band for a modern company / ABOUT page. A spacious
@@ -46,20 +46,6 @@ export const AboutHero = defineCapsule({
     const primaryCta = props.primaryCta ?? 'Read our story'
     const secondaryCta = props.secondaryCta ?? 'Get in touch'
 
-    // Reusable eyebrow pill — indigo soft chip with optional icon.
-    const Eyebrow = ({
-      icon,
-      children,
-    }: {
-      icon: ReactNode
-      children: ReactNode
-    }) => (
-      <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-primary">
-        {icon}
-        {children}
-      </span>
-    )
-
     const SparkleIcon = () => (
       <svg
         width="14"
@@ -91,7 +77,9 @@ export const AboutHero = defineCapsule({
           <div className="absolute -bottom-28 -left-24 size-[380px] rounded-full bg-accent/40 blur-3xl" />
         </div>
         <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
-          <Eyebrow icon={<SparkleIcon />}>{eyebrow}</Eyebrow>
+          <Eyebrow variant="primary" icon={<SparkleIcon />}>
+            {eyebrow}
+          </Eyebrow>
           <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             {heading}{' '}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

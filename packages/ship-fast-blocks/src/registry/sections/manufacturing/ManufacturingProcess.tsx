@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ManufacturingProcess — a numbered quote-to-delivery process band for a
@@ -104,7 +105,7 @@ export const ManufacturingProcess = defineCapsule({
               </div>
             ))}
           </div>
-          <div className="mt-16 rounded-lg border border-border bg-muted p-8">
+          <Card variant="muted" rounded="lg" padding="lg" className="mt-16">
             <div className="grid gap-8 text-center md:grid-cols-3">
               {stats.map((s) => (
                 <div key={s.label}>
@@ -117,7 +118,7 @@ export const ManufacturingProcess = defineCapsule({
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
       </section>
     )

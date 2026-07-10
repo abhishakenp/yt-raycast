@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import {
   LocalServiceBookingButton,
@@ -226,9 +227,11 @@ export const HealthcareServices = defineCapsule({
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <article
+              <Card
                 key={item.title}
-                className="rounded-2xl border border-border bg-card p-8 transition-shadow hover:shadow-lg"
+                rounded="2xl"
+                padding="lg"
+                className="transition-shadow hover:shadow-lg"
               >
                 <div className="mb-6 grid size-14 place-items-center rounded-xl bg-accent text-primary">
                   {serviceIcons[i % serviceIcons.length]}
@@ -252,7 +255,7 @@ export const HealthcareServices = defineCapsule({
                     <ChevronRight />
                   </span>
                 </LocalServiceBookingButton>
-              </article>
+              </Card>
             ))}
           </div>
         </div>

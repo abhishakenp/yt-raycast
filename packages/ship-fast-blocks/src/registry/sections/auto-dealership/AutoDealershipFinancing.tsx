@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   AutoLeadActionButton,
   AutoMutationSpinner,
@@ -102,9 +103,12 @@ export const AutoDealershipFinancing = defineCapsule({
               </div>
               <div className="space-y-4">
                 {steps.map((step, i) => (
-                  <div
+                  <Card
                     key={step.title}
-                    className="flex items-start gap-4 rounded-lg border border-border bg-muted p-4"
+                    variant="muted"
+                    rounded="lg"
+                    padding="sm"
+                    className="flex items-start gap-4"
                   >
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                       {i + 1}
@@ -115,7 +119,7 @@ export const AutoDealershipFinancing = defineCapsule({
                         {step.description}
                       </p>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
               <div className="rounded-lg bg-muted p-6">

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * AccountingFirmProcess — "how we work" steps band for a CPA / accounting-firm
@@ -98,7 +99,7 @@ export const AccountingFirmProcess = defineCapsule({
             ))}
           </div>
 
-          <div className="mt-16 rounded-lg border border-border bg-muted p-8">
+          <Card variant="muted" rounded="lg" padding="lg" className="mt-16">
             <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
               <div>
                 <h4 className="mb-2 text-xl font-semibold text-foreground">
@@ -114,7 +115,7 @@ export const AccountingFirmProcess = defineCapsule({
                 {ctaButton}
               </button>
             </div>
-          </div>
+          </Card>
         </div>
       </section>
     )

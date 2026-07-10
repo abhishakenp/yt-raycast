@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -143,9 +144,11 @@ export const CybersecurityFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group rounded-2xl border border-border bg-card p-8 transition-all hover:border-border/80 hover:shadow-lg"
+                rounded="2xl"
+                padding="lg"
+                className="group transition-all hover:border-border/80 hover:shadow-lg"
               >
                 <div className="mb-6 flex size-14 items-center justify-center rounded-xl bg-muted transition-colors group-hover:bg-primary">
                   <svg
@@ -170,7 +173,7 @@ export const CybersecurityFeatures = defineCapsule({
                   {cta}
                   <ArrowRight className="size-4" />
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

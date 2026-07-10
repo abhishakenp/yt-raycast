@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { ResponsiveGrid, Card } from '#/section-kit/index.ts'
 
 /**
  * AgencyServices — capabilities / services grid for a creative digital-agency
@@ -177,9 +177,11 @@ export const AgencyServices = defineCapsule({
           </div>
           <ResponsiveGrid cols="1-md-2-3" gap="md">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group rounded-2xl border border-border bg-card p-8 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.45)]"
+                rounded="2xl"
+                padding="lg"
+                className="group transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.45)]"
               >
                 <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
                   {serviceIcons[i % serviceIcons.length]}
@@ -190,7 +192,7 @@ export const AgencyServices = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </ResponsiveGrid>
         </div>

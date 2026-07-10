@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -168,7 +169,11 @@ export const ElectronicsStoreHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl border border-border bg-card p-4 shadow-lg">
+              <Card
+                padding="sm"
+                shadow="lg"
+                className="absolute -bottom-6 -left-6 max-w-xs"
+              >
                 <div className="flex items-center gap-3">
                   <div className="grid size-12 place-items-center rounded-lg bg-muted text-muted-foreground">
                     <Star className="size-6" />
@@ -182,7 +187,7 @@ export const ElectronicsStoreHero = defineCapsule({
                     </div>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

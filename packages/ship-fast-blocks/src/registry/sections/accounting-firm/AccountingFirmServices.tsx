@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * AccountingFirmServices — capabilities grid for a CPA / accounting-firm site.
@@ -208,9 +209,11 @@ export const AccountingFirmServices = defineCapsule({
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <article
+              <Card
                 key={item.title}
-                className="rounded-lg border border-border bg-muted p-6 transition-colors hover:border-primary/40"
+                variant="muted"
+                rounded="lg"
+                className="transition-colors hover:border-primary/40"
               >
                 <div className="mb-5 grid size-12 place-items-center rounded-lg bg-primary text-primary-foreground [&>svg]:size-6">
                   {serviceIcons[i % serviceIcons.length]}
@@ -227,7 +230,7 @@ export const AccountingFirmServices = defineCapsule({
                     </li>
                   ))}
                 </ul>
-              </article>
+              </Card>
             ))}
           </div>
         </div>

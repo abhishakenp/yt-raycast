@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
@@ -135,10 +135,11 @@ export const DashboardKpis = defineCapsule({
           const tone = kpi.tone ?? 'primary'
           const up = kpi.trendUp ?? true
           return (
-            <div
+            <Card
               key={kpi.label}
               aria-label={`${kpi.label}: ${kpi.value}`}
-              className="rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)]"
+              padding="sm"
+              className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)]"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -211,7 +212,7 @@ export const DashboardKpis = defineCapsule({
                   </svg>
                 </span>
               </div>
-            </div>
+            </Card>
           )
         })}
       </ResponsiveGrid>

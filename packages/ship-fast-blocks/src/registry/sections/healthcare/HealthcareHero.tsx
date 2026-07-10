@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -178,7 +179,11 @@ export const HealthcareHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 rounded-xl border border-border bg-card p-4 shadow-xl">
+              <Card
+                padding="sm"
+                shadow="xl"
+                className="absolute -bottom-6 -left-6"
+              >
                 <div className="flex items-center gap-3">
                   <div className="grid size-12 place-items-center rounded-full bg-accent text-primary">
                     <svg
@@ -204,8 +209,12 @@ export const HealthcareHero = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
-              <div className="absolute -right-4 -top-4 rounded-xl border border-border bg-card p-4 shadow-xl">
+              </Card>
+              <Card
+                padding="sm"
+                shadow="xl"
+                className="absolute -right-4 -top-4"
+              >
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2" aria-hidden="true">
                     {['a', 'b', 'c'].map((k) => (
@@ -219,7 +228,7 @@ export const HealthcareHero = defineCapsule({
                     {patientCount}
                   </span>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

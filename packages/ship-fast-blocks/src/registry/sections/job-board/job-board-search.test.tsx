@@ -596,7 +596,7 @@ describe('job board fullstack search', () => {
 
     const frontendCard = screen
       .getByText('Senior Frontend Engineer')
-      .closest('article')
+      .closest('[data-slot="card"]')
     if (!frontendCard) throw new Error('Expected frontend job card')
     fireEvent.click(
       within(frontendCard).getByRole('button', { name: 'Apply Now' }),

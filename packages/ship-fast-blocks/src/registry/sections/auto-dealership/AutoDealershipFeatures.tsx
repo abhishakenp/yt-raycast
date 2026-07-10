@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * AutoDealershipFeatures — "why buy from us" trust band for an auto dealership
@@ -181,7 +182,7 @@ export const AutoDealershipFeatures = defineCapsule({
                 loading="lazy"
                 className="aspect-[16/10] w-full rounded-lg object-cover shadow-lg"
               />
-              <div className="rounded-lg border border-border bg-card p-6">
+              <Card rounded="lg">
                 <blockquote className="italic text-muted-foreground">
                   &ldquo;{quote}&rdquo;
                 </blockquote>
@@ -197,7 +198,7 @@ export const AutoDealershipFeatures = defineCapsule({
                     <p className="text-sm text-muted-foreground">{quoteRole}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

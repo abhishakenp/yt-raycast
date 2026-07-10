@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { FilterChip } from '#/section-kit/index.ts'
+import { Card, FilterChip } from '#/section-kit/index.ts'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import { useJobBoardSearch } from './job-board-interactions.tsx'
 
@@ -82,7 +82,12 @@ export const JobBoardHero = defineCapsule({
               {subheading}
             </p>
 
-            <div className="mx-auto max-w-4xl rounded-2xl border border-border bg-card p-2 shadow-lg sm:p-4">
+            <Card
+              rounded="2xl"
+              padding="none"
+              shadow="lg"
+              className="mx-auto max-w-4xl p-2 sm:p-4"
+            >
               <form
                 key={`${queryValue}:${locationValue}`}
                 className="flex flex-col gap-3 sm:flex-row"
@@ -172,7 +177,7 @@ export const JobBoardHero = defineCapsule({
                   </FilterChip>
                 ))}
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </section>

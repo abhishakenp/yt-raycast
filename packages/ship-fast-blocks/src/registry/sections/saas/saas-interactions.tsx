@@ -13,6 +13,7 @@ import {
   AccountDropdownItem,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  Card,
   CommandSearch,
   CommandSearchTrigger,
   CommandSearchContent,
@@ -402,9 +403,11 @@ export function SaasAccountButton({
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
             {sessions.length ? (
               sessions.map((session) => (
-                <div
+                <Card
                   key={session.id}
-                  className="rounded-lg border border-border bg-card p-3"
+                  rounded="lg"
+                  padding="sm"
+                  className="p-3"
                 >
                   <p className="truncate text-sm font-semibold text-card-foreground">
                     {session.displayName || session.email}
@@ -420,7 +423,7 @@ export function SaasAccountButton({
                         : 'Unknown time'}
                     </span>
                   </div>
-                </div>
+                </Card>
               ))
             ) : (
               <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-5 text-center">

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LendingBenefits — a "why borrowers choose us" benefits grid for a lending or
@@ -88,10 +89,7 @@ export const LendingBenefits = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {benefitItems.map((item, i) => (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-border bg-card p-8 shadow-sm"
-              >
+              <Card key={item.title} rounded="2xl" padding="lg" shadow="sm">
                 <div className="mb-5 grid size-12 place-items-center rounded-xl bg-muted text-foreground">
                   <svg
                     viewBox="0 0 24 24"
@@ -112,7 +110,7 @@ export const LendingBenefits = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

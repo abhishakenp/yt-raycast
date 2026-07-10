@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LendingRates — a transparent rates-and-fees band plus a sample payment-schedule
@@ -175,7 +176,7 @@ export const LendingRates = defineCapsule({
             </div>
           </div>
 
-          <div className="mx-auto mt-8 max-w-5xl rounded-xl border border-border bg-card p-6">
+          <Card className="mx-auto mt-8 max-w-5xl">
             <h3 className="mb-4 font-semibold text-card-foreground">
               {tableTitle}
             </h3>
@@ -215,7 +216,7 @@ export const LendingRates = defineCapsule({
               </table>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">{tableNote}</p>
-          </div>
+          </Card>
         </div>
       </section>
     )

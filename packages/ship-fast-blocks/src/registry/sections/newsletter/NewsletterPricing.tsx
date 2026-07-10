@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
@@ -131,7 +132,7 @@ export const NewsletterPricing = defineCapsule({
 
           <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
             {/* Free Plan */}
-            <div className="rounded-2xl border border-border bg-card p-8 text-card-foreground lg:p-10">
+            <Card rounded="2xl" padding="lg" className="lg:p-10">
               <div className="mb-2 flex items-baseline gap-1">
                 <span className="font-serif text-4xl font-medium text-foreground">
                   {freePrice}
@@ -159,7 +160,7 @@ export const NewsletterPricing = defineCapsule({
                 buttonClassName="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
                 emailLabel="Email address for free subscription"
               />
-            </div>
+            </Card>
 
             {/* Paid Plan */}
             <div className="relative overflow-hidden rounded-2xl bg-foreground p-8 text-background lg:p-10">

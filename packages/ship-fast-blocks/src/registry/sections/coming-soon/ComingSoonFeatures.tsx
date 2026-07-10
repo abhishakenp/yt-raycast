@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ComingSoonFeatures — product capabilities grid for a "launching soon" / waitlist
@@ -180,10 +181,7 @@ export const ComingSoonFeatures = defineCapsule({
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12">
             {items.map((item, i) => (
-              <div
-                key={item.title}
-                className="rounded-xl border border-border bg-card p-8 shadow-sm"
-              >
+              <Card key={item.title} padding="lg" shadow="sm">
                 <div className="mb-6 flex size-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   {featureIcons[i % featureIcons.length]}
                 </div>
@@ -193,7 +191,7 @@ export const ComingSoonFeatures = defineCapsule({
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

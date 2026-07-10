@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -109,10 +110,7 @@ export const FoodDeliveryFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
             {featureItems.map((item, i) => (
-              <div
-                key={item.title}
-                className="rounded-xl border border-border bg-card p-8"
-              >
+              <Card key={item.title} padding="lg">
                 <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-muted">
                   {featureIcons[i % featureIcons.length]}
                 </div>
@@ -122,7 +120,7 @@ export const FoodDeliveryFeatures = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

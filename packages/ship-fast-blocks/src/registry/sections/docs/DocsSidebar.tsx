@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed } from './docs-lakebed.ts'
@@ -277,8 +278,10 @@ export const DocsSidebar = defineCapsule({
           </form>
 
           {showingResults ? (
-            <div
-              className="mb-6 rounded-lg border border-border bg-card p-1.5"
+            <Card
+              rounded="lg"
+              padding="none"
+              className="mb-6 p-1.5"
               aria-live="polite"
             >
               <p className="px-2 py-1.5 text-xs text-muted-foreground">
@@ -311,7 +314,7 @@ export const DocsSidebar = defineCapsule({
                   </li>
                 ) : null}
               </ul>
-            </div>
+            </Card>
           ) : null}
 
           {/* Navigation groups */}

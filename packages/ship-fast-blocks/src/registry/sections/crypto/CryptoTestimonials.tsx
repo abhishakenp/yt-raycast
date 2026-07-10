@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -108,10 +109,7 @@ export const CryptoTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-xl border border-border bg-muted p-6"
-              >
+              <Card key={t.name} variant="muted">
                 <div className="mb-4 flex items-center gap-4">
                   <Image
                     alt={t.avatarAlt}
@@ -128,7 +126,7 @@ export const CryptoTestimonials = defineCapsule({
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   &ldquo;{t.quote}&rdquo;
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

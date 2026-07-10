@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * LogisticsTestimonials — a three-up customer testimonials grid for a global-
@@ -90,10 +90,7 @@ export const LogisticsTestimonials = defineCapsule({
 
           <ResponsiveGrid cols="1-md-2-3" gap="md">
             {items.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-2xl border border-border bg-card p-8"
-              >
+              <Card key={t.name} rounded="2xl" padding="lg">
                 <div className="mb-4 flex items-center gap-1 text-chart-4">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} />
@@ -116,7 +113,7 @@ export const LogisticsTestimonials = defineCapsule({
                     <p className="text-sm text-muted-foreground">{t.role}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </ResponsiveGrid>
         </div>

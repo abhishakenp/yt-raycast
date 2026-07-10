@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * MarketingFeatures — a centered-header 6-up feature grid for a SaaS /
@@ -174,9 +175,10 @@ export const MarketingFeatures = defineCapsule({
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <article
+              <Card
                 key={item.title}
-                className="rounded-2xl border border-border bg-card p-7 transition-all hover:-translate-y-1 hover:border-muted-foreground/30 hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]"
+                rounded="2xl"
+                className="p-7 transition-all hover:-translate-y-1 hover:border-muted-foreground/30 hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]"
               >
                 <div className="mb-4 grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
                   {featureIcons[i % featureIcons.length]}
@@ -187,7 +189,7 @@ export const MarketingFeatures = defineCapsule({
                 <p className="text-[0.92rem] leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </article>
+              </Card>
             ))}
           </div>
         </div>

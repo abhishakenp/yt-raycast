@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * NoCodeFeatures — centered-header 6-up feature grid on a bright canvas. A
@@ -192,9 +193,10 @@ export const NoCodeFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group rounded-2xl border border-border bg-card p-6 transition-all hover:border-border/80 hover:shadow-lg"
+                rounded="2xl"
+                className="group transition-all hover:border-border/80 hover:shadow-lg"
               >
                 <div
                   className={cn(
@@ -210,7 +212,7 @@ export const NoCodeFeatures = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

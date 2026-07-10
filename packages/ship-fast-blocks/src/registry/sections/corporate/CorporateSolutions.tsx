@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -205,9 +206,11 @@ export const CorporateSolutions = defineCapsule({
           {sectionHead(heading, description)}
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group rounded-xl border border-border bg-muted/50 p-8 transition-colors hover:border-border/60"
+                variant="muted"
+                padding="lg"
+                className="group bg-muted/50 transition-colors hover:border-border/60"
               >
                 <div className="mb-6 grid size-12 place-items-center rounded-lg bg-foreground text-background">
                   {solutionIcons[i % solutionIcons.length]}
@@ -226,7 +229,7 @@ export const CorporateSolutions = defineCapsule({
                   Learn more
                   <ArrowRight className="ml-1 size-4" />
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

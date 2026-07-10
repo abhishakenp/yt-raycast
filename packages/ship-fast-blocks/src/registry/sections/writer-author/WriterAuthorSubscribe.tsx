@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
@@ -49,7 +50,11 @@ export const WriterAuthorSubscribe = defineCapsule({
     return (
       <section className={cn('bg-background py-20 sm:py-24', props.className)}>
         <div className="mx-auto max-w-3xl px-6 lg:px-8">
-          <div className="rounded-2xl border border-border bg-card p-8 text-center text-card-foreground sm:p-12">
+          <Card
+            rounded="2xl"
+            padding="lg"
+            className="text-center text-card-foreground sm:p-12"
+          >
             <SectionHeading
               eyebrow={eyebrow}
               title={heading}
@@ -67,7 +72,7 @@ export const WriterAuthorSubscribe = defineCapsule({
               buttonClassName="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
             />
             <p className="mt-4 text-sm text-muted-foreground">{privacy}</p>
-          </div>
+          </Card>
         </div>
       </section>
     )

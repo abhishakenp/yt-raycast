@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -208,10 +209,7 @@ export const CleaningServicePricing = defineCapsule({
                   </LocalServiceBookingButton>
                 </div>
               ) : (
-                <div
-                  key={plan.name}
-                  className="rounded-2xl border border-border bg-card p-8 shadow-sm"
-                >
+                <Card key={plan.name} rounded="2xl" padding="lg" shadow="sm">
                   <h3 className="mb-2 text-lg font-semibold text-card-foreground">
                     {plan.name}
                   </h3>
@@ -244,7 +242,7 @@ export const CleaningServicePricing = defineCapsule({
                   >
                     {plan.cta}
                   </LocalServiceBookingButton>
-                </div>
+                </Card>
               ),
             )}
           </div>

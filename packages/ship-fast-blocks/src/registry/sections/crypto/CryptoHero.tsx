@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -137,7 +138,11 @@ export const CryptoHero = defineCapsule({
                 aria-hidden="true"
                 className="absolute inset-0 rotate-3 rounded-3xl bg-gradient-to-br from-muted to-muted/40"
               />
-              <div className="relative rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-sm">
+              <Card
+                rounded="2xl"
+                shadow="sm"
+                className="relative text-card-foreground"
+              >
                 <div className="mb-6 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="grid size-12 place-items-center rounded-xl bg-gradient-to-br from-foreground to-foreground/70 text-background">
@@ -208,7 +213,7 @@ export const CryptoHero = defineCapsule({
                   <span>{token.volume}</span>
                   <span>{token.supply}</span>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

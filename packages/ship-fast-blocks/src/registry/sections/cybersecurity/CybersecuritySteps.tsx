@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -101,9 +102,13 @@ export const CybersecuritySteps = defineCapsule({
                 <h3 className="mb-3 text-xl font-bold">{step.title}</h3>
                 <p className="text-muted-foreground">{step.description}</p>
                 {i === 0 && (
-                  <div className="mt-4 rounded-lg border border-border bg-card p-4 font-mono text-xs text-muted-foreground">
+                  <Card
+                    rounded="lg"
+                    padding="sm"
+                    className="mt-4 font-mono text-xs text-muted-foreground"
+                  >
                     {snippet}
-                  </div>
+                  </Card>
                 )}
                 {i === 1 && (
                   <ul className="mt-4 space-y-2 text-sm text-muted-foreground">

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -53,7 +54,7 @@ export const LinkInBioSubscribe = defineCapsule({
       <section
         className={cn('mx-auto w-full max-w-md px-6 py-10', props.className)}
       >
-        <div className="rounded-2xl border border-border bg-card p-6 text-center sm:p-8">
+        <Card rounded="2xl" className="text-center sm:p-8">
           <div className="mx-auto grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
             <svg
               width="22"
@@ -90,7 +91,7 @@ export const LinkInBioSubscribe = defineCapsule({
           />
 
           <p className="mt-3 text-xs text-muted-foreground">{note}</p>
-        </div>
+        </Card>
       </section>
     )
   },

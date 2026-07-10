@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -272,9 +273,12 @@ export const NoCodeHero = defineCapsule({
                       Components
                     </div>
                     {['Text', 'Image', 'Button', 'Form'].map((c, i) => (
-                      <div
+                      <Card
                         key={c}
-                        className="flex items-center gap-3 rounded-lg border border-border bg-card p-2 shadow-sm"
+                        rounded="lg"
+                        padding="none"
+                        shadow="sm"
+                        className="flex items-center gap-3 p-2"
                       >
                         <div
                           className={cn(
@@ -289,7 +293,7 @@ export const NoCodeHero = defineCapsule({
                         <span className="text-sm font-medium text-card-foreground">
                           {c}
                         </span>
-                      </div>
+                      </Card>
                     ))}
                   </div>
                   <div className="relative col-span-6 bg-card p-6">
@@ -314,10 +318,10 @@ export const NoCodeHero = defineCapsule({
                           Get Started
                         </span>
                       </div>
-                      <div className="rounded-lg border border-border bg-muted p-4">
+                      <Card variant="muted" rounded="lg" padding="sm">
                         <div className="mb-2 h-2 w-3/4 rounded bg-border" />
                         <div className="h-2 w-1/2 rounded bg-border" />
-                      </div>
+                      </Card>
                     </div>
                   </div>
                   <div className="col-span-3 border-l border-border bg-muted/50 p-4">
@@ -360,7 +364,11 @@ export const NoCodeHero = defineCapsule({
                   </div>
                 </div>
               </div>
-              <div className="absolute -right-4 -top-4 rounded-xl border border-border bg-card p-3 shadow-lg">
+              <Card
+                padding="none"
+                shadow="lg"
+                className="absolute -right-4 -top-4 p-3"
+              >
                 <div className="flex items-center gap-2">
                   <div className="grid size-8 place-items-center rounded-full bg-chart-2/15">
                     <Check className="size-4 text-chart-2" />
@@ -369,7 +377,7 @@ export const NoCodeHero = defineCapsule({
                     {toast}
                   </span>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

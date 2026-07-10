@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * BootcampHero — split-layout hero section for a coding bootcamp / career-school
@@ -138,7 +139,11 @@ export const BootcampHero = defineCapsule({
                 h={600}
                 className="relative aspect-[4/3] w-full rounded-2xl border border-border object-cover shadow-lg"
               />
-              <div className="absolute -bottom-6 -left-6 rounded-xl border border-border bg-card p-4 shadow-lg">
+              <Card
+                padding="sm"
+                shadow="lg"
+                className="absolute -bottom-6 -left-6"
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
                     {[
@@ -162,7 +167,7 @@ export const BootcampHero = defineCapsule({
                     <p className="text-muted-foreground">{heroStatLabel}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CleaningServiceSteps — a "how it works" + "what's included" combo section for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of numbered step cards (with connector lines on desktop), followed by a split-row card: left side shows a "what's included" checklist with checkmark icons, right side shows a 2x2 lazy-loaded photo grid. Use for process-explanation / expectations-setting blocks for residential cleaning companies, maid services, or home-service platforms. Renders fully with no props via baked-in defaults.
@@ -104,7 +105,7 @@ export const CleaningServiceSteps = defineCapsule({
           <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
             {items.map((step, i) => (
               <div key={step.title} className="relative">
-                <div className="h-full rounded-2xl border border-border bg-card p-8 shadow-sm">
+                <Card rounded="2xl" padding="lg" shadow="sm" className="h-full">
                   <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
                     {i + 1}
                   </div>
@@ -114,7 +115,7 @@ export const CleaningServiceSteps = defineCapsule({
                   <p className="leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
-                </div>
+                </Card>
                 {i < items.length - 1 ? (
                   <div
                     aria-hidden="true"
@@ -124,7 +125,12 @@ export const CleaningServiceSteps = defineCapsule({
               </div>
             ))}
           </div>
-          <div className="mt-16 rounded-2xl border border-border bg-card p-8 shadow-sm lg:p-12">
+          <Card
+            rounded="2xl"
+            padding="lg"
+            shadow="sm"
+            className="mt-16 lg:p-12"
+          >
             <div className="grid items-center gap-8 lg:grid-cols-2">
               <div>
                 <h3 className="mb-4 text-2xl font-bold text-card-foreground">
@@ -152,7 +158,7 @@ export const CleaningServiceSteps = defineCapsule({
                 ))}
               </div>
             </div>
-          </div>
+          </Card>
         </div>
       </section>
     )

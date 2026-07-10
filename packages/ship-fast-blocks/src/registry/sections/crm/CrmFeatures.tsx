@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -160,9 +161,9 @@ export const CrmFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-border hover:shadow-lg"
+                className="group transition-all hover:border-border hover:shadow-lg"
               >
                 <div className="mb-4 grid size-12 place-items-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
                   {featureIcons[i % featureIcons.length]}
@@ -173,7 +174,7 @@ export const CrmFeatures = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

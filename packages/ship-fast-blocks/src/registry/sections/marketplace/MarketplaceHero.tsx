@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -273,7 +274,11 @@ export const MarketplaceHero = defineCapsule({
                   ))}
                 </div>
               </div>
-              <div className="absolute -bottom-4 -left-4 rounded-xl border border-border bg-card p-4 shadow-lg">
+              <Card
+                padding="sm"
+                shadow="lg"
+                className="absolute -bottom-4 -left-4"
+              >
                 <div className="flex items-center gap-3">
                   <div className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
                     <Check className="size-5" />
@@ -287,7 +292,7 @@ export const MarketplaceHero = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * MusicFestivalTestimonials — a three-up starred testimonial grid for a music /
@@ -92,10 +93,7 @@ export const MusicFestivalTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {items.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-xl border border-border bg-card p-8 text-card-foreground"
-              >
+              <Card key={t.name} padding="lg">
                 <div className="mb-6 flex items-center gap-4">
                   <Image
                     alt={t.avatarAlt}
@@ -117,7 +115,7 @@ export const MusicFestivalTestimonials = defineCapsule({
                 <p className="leading-relaxed text-card-foreground/80">
                   &ldquo;{t.quote}&rdquo;
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

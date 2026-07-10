@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CafeReviews — 3-up customer-review wall for a cozy cafe / coffee shop page.
@@ -100,10 +101,7 @@ export const CafeReviews = defineCapsule({
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((r) => (
-              <div
-                key={r.name}
-                className="rounded-xl border border-border bg-card p-8 shadow-sm"
-              >
+              <Card key={r.name} padding="lg" shadow="sm">
                 <div className="mb-4 flex gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} />
@@ -124,7 +122,7 @@ export const CafeReviews = defineCapsule({
                     <p className="text-sm text-muted-foreground">{r.role}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
 

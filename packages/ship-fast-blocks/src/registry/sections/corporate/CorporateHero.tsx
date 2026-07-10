@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -130,7 +131,11 @@ export const CorporateHero = defineCapsule({
                 loading="eager"
                 className="aspect-[4/3] w-full rounded-xl object-cover shadow-2xl"
               />
-              <div className="absolute -bottom-6 -left-6 hidden rounded-xl border border-border bg-card p-4 shadow-lg sm:block">
+              <Card
+                padding="sm"
+                shadow="lg"
+                className="absolute -bottom-6 -left-6 hidden sm:block"
+              >
                 <div className="flex items-center gap-3">
                   <div className="grid size-10 place-items-center rounded-lg bg-muted text-foreground">
                     <svg
@@ -156,7 +161,7 @@ export const CorporateHero = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

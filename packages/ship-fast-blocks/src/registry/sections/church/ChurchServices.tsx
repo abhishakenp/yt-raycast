@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ChurchServices — split weekly service-times section for a church or faith-community
@@ -157,10 +158,7 @@ export const ChurchServices = defineCapsule({
               </p>
               <div className="space-y-6">
                 {items.map((s, i) => (
-                  <div
-                    key={s.title}
-                    className="flex items-start gap-4 rounded-xl border border-border bg-card p-6"
-                  >
+                  <Card key={s.title} className="flex items-start gap-4">
                     <div className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-muted">
                       {serviceIcons[i % serviceIcons.length]}
                     </div>
@@ -173,7 +171,7 @@ export const ChurchServices = defineCapsule({
                         {s.location}
                       </p>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -187,7 +185,7 @@ export const ChurchServices = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="mt-6 rounded-xl border border-border bg-card p-6">
+              <Card className="mt-6">
                 <h4 className="mb-3 font-medium text-card-foreground">
                   {expectTitle}
                 </h4>
@@ -199,7 +197,7 @@ export const ChurchServices = defineCapsule({
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * KnowledgeBasePopular — popular-articles list beside a sticky-style support
@@ -263,7 +264,7 @@ export const KnowledgeBasePopular = defineCapsule({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card p-6">
+              <Card>
                 <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground">
                   {helpHeading}
                 </h3>
@@ -281,7 +282,7 @@ export const KnowledgeBasePopular = defineCapsule({
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             </aside>
           </div>
         </div>

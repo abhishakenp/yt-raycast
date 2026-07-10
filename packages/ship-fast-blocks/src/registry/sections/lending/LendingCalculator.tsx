@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LendingCalculator — an interactive personalized-rate calculator panel for a
@@ -212,7 +213,7 @@ export const LendingCalculator = defineCapsule({
                     {calcOfferTitle}
                   </h3>
                   <div className="space-y-6">
-                    <div className="rounded-xl border border-border bg-card p-6">
+                    <Card>
                       <div className="mb-1 text-sm text-muted-foreground">
                         {calcPaymentLabel}
                       </div>
@@ -222,7 +223,7 @@ export const LendingCalculator = defineCapsule({
                       <div className="mt-1 text-sm text-muted-foreground">
                         {calcPaymentNote}
                       </div>
-                    </div>
+                    </Card>
                     <div className="space-y-3">
                       {calcSummary.map((row, i) => (
                         <div

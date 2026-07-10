@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CloudInfraTestimonials — 3-up star-rated testimonial grid for a cloud-infrastructure /
@@ -88,10 +89,7 @@ export const CloudInfraTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
-              <article
-                key={t.name}
-                className="rounded-xl border border-border bg-card p-8"
-              >
+              <Card key={t.name} padding="lg">
                 <div className="mb-6 flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} className="size-5 text-chart-4" />
@@ -115,7 +113,7 @@ export const CloudInfraTestimonials = defineCapsule({
                     <p className="text-sm text-muted-foreground">{t.role}</p>
                   </div>
                 </div>
-              </article>
+              </Card>
             ))}
           </div>
         </div>

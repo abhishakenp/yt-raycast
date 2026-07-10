@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -161,10 +162,7 @@ export const FintechFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
-                key={item.title}
-                className="rounded-xl border border-border bg-muted p-6"
-              >
+              <Card key={item.title} variant="muted">
                 <div className="mb-4 grid size-12 place-items-center rounded-lg bg-primary text-primary-foreground">
                   {featureIcons[i % featureIcons.length]}
                 </div>
@@ -174,7 +172,7 @@ export const FintechFeatures = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

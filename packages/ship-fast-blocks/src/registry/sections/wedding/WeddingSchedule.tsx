@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const WeddingSchedule = defineCapsule({
@@ -69,9 +70,10 @@ export const WeddingSchedule = defineCapsule({
 
           <div className="mt-16 grid gap-8 md:grid-cols-2">
             {events.map((event, i) => (
-              <div
+              <Card
                 key={`${event.title}-${i}`}
-                className="rounded-xl border border-border bg-card p-8 text-card-foreground"
+                padding="lg"
+                className="text-card-foreground"
               >
                 <h3 className="font-serif text-2xl font-medium text-foreground">
                   {event.title}
@@ -113,7 +115,7 @@ export const WeddingSchedule = defineCapsule({
                     {event.note}
                   </p>
                 ) : null}
-              </div>
+              </Card>
             ))}
           </div>
         </div>

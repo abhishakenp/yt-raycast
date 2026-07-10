@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 export const AeoUseCases = defineCapsule({
   name: 'AeoUseCases',
@@ -59,17 +60,14 @@ export const AeoUseCases = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {items.map((item) => (
-              <article
-                key={item.title}
-                className="rounded-xl border border-border bg-card p-6 shadow-sm"
-              >
+              <Card key={item.title} shadow="sm">
                 <h3 className="mb-2 text-lg font-semibold text-foreground">
                   {item.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </article>
+              </Card>
             ))}
           </div>
         </div>

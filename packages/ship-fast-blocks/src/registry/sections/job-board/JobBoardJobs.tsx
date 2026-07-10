@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { FilterChip } from '#/section-kit/index.ts'
+import { Card, FilterChip } from '#/section-kit/index.ts'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import {
   jobBoardCatalogItem,
@@ -245,9 +245,9 @@ export const JobBoardJobs = defineCapsule({
               const pending = pendingRole === job.role
 
               return (
-                <article
+                <Card
                   key={job.role}
-                  className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-foreground/30 hover:shadow-lg"
+                  className="group transition-all hover:border-foreground/30 hover:shadow-lg"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                     <Image
@@ -319,7 +319,7 @@ export const JobBoardJobs = defineCapsule({
                       </button>
                     </div>
                   </div>
-                </article>
+                </Card>
               )
             })}
             {!visibleItems.length ? (

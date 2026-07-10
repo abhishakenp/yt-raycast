@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LendingTestimonials — a 3-up borrower-testimonials grid on a muted band for a
@@ -90,10 +91,7 @@ export const LendingTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {testimonialItems.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-2xl border border-border bg-card p-8 shadow-sm"
-              >
+              <Card key={t.name} rounded="2xl" padding="lg" shadow="sm">
                 <div className="mb-4 flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} className="size-5 text-chart-4" />
@@ -118,7 +116,7 @@ export const LendingTestimonials = defineCapsule({
                     </div>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

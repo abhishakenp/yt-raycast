@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed } from './docs-lakebed.ts'
@@ -267,8 +268,9 @@ export const DocsHero = defineCapsule({
         </form>
 
         {showingResults ? (
-          <div
-            className="mx-auto mt-4 max-w-2xl rounded-xl border border-border bg-card p-2 text-left shadow-sm"
+          <Card
+            shadow="sm"
+            className="mx-auto mt-4 max-w-2xl p-2 text-left"
             aria-live="polite"
           >
             <p className="px-3 py-2 text-sm text-muted-foreground">
@@ -299,7 +301,7 @@ export const DocsHero = defineCapsule({
                 </li>
               ) : null}
             </ul>
-          </div>
+          </Card>
         ) : null}
 
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">

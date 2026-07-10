@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * AboutStory — "our story" split band for a modern company / ABOUT page. A
@@ -56,20 +57,6 @@ export const AboutStory = defineCapsule({
         ]
     const quote = props.quote ?? "We don't chase trends. We chase outcomes."
 
-    // Reusable eyebrow pill — indigo soft chip with optional icon.
-    const Eyebrow = ({
-      icon,
-      children,
-    }: {
-      icon: ReactNode
-      children: ReactNode
-    }) => (
-      <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-primary">
-        {icon}
-        {children}
-      </span>
-    )
-
     const SmallIcon = ({ children }: { children: ReactNode }) => (
       <svg
         width="14"
@@ -91,6 +78,7 @@ export const AboutStory = defineCapsule({
         <div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
           <div className="mb-10 max-w-2xl">
             <Eyebrow
+              variant="primary"
               icon={
                 <SmallIcon>
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />

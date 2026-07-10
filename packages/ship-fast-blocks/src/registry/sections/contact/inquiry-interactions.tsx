@@ -22,6 +22,7 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+  Card,
 } from '#/section-kit/index.ts'
 
 export type InquiryLakebed = LakebedClientRuntime<typeof inquiryLakebed>
@@ -215,14 +216,14 @@ export function InquiryContactSheetButton({
           <SheetDescription>{detail}</SheetDescription>
         </SheetHeader>
         <div className="space-y-4 px-5 py-5">
-          <div className="rounded-lg border border-border bg-card p-4">
+          <Card rounded="lg" padding="sm">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Contact route
             </p>
             <p className="mt-1 text-sm font-medium text-foreground">
               {target ?? label}
             </p>
-          </div>
+          </Card>
           <p className="text-sm text-muted-foreground" aria-live="polite">
             {summary?.count ?? 0} contact action
             {(summary?.count ?? 0) === 1 ? '' : 's'} captured.

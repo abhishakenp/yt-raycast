@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MobileAppTestimonials — a centered-intro, 6-up testimonials grid on a calm
@@ -120,10 +120,7 @@ export const MobileAppTestimonials = defineCapsule({
           </div>
           <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-2xl border border-border bg-card p-8 shadow-sm"
-              >
+              <Card key={t.name} rounded="2xl" padding="lg" shadow="sm">
                 <div className="mb-4 flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} />
@@ -146,7 +143,7 @@ export const MobileAppTestimonials = defineCapsule({
                     <p className="text-sm text-muted-foreground">{t.role}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </ResponsiveGrid>
         </div>

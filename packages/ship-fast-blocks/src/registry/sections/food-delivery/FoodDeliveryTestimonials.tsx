@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -92,9 +93,11 @@ export const FoodDeliveryTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {testimonialItems.map((t) => (
-              <div
+              <Card
                 key={t.name}
-                className="rounded-xl border border-border bg-background p-8"
+                variant="outline"
+                padding="lg"
+                className="bg-background"
               >
                 <div className="mb-4 flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -121,7 +124,7 @@ export const FoodDeliveryTestimonials = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

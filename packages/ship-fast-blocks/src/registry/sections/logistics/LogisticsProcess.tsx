@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LogisticsProcess — a two-column "how it works" flow for a global-logistics /
@@ -105,7 +106,7 @@ export const LogisticsProcess = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="absolute right-6 top-6 rounded-xl border border-border bg-card p-4 shadow-lg">
+              <Card padding="sm" shadow="lg" className="absolute right-6 top-6">
                 <div className="flex items-center gap-3">
                   <div className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground">
                     <svg
@@ -130,7 +131,7 @@ export const LogisticsProcess = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

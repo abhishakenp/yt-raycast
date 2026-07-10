@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CommunityForumFeatures — capabilities grid for a community-platform / discussion-forum
@@ -166,9 +167,10 @@ export const CommunityForumFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group rounded-xl border border-border bg-card p-8 transition-colors hover:border-foreground/20"
+                padding="lg"
+                className="group transition-colors hover:border-foreground/20"
               >
                 <div className="mb-6 flex size-12 items-center justify-center rounded-xl bg-muted text-foreground/80">
                   {featureIcons[i % featureIcons.length]}
@@ -179,7 +181,7 @@ export const CommunityForumFeatures = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

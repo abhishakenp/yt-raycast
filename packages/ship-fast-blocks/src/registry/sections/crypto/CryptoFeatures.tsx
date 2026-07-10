@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -172,9 +173,9 @@ export const CryptoFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="rounded-xl border border-border bg-card p-6 text-card-foreground transition-colors hover:border-border/60"
+                className="text-card-foreground transition-colors hover:border-border/60"
               >
                 <div className="mb-4 grid size-10 place-items-center rounded-lg bg-muted text-foreground">
                   {featureIcons[i % featureIcons.length]}
@@ -183,7 +184,7 @@ export const CryptoFeatures = defineCapsule({
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

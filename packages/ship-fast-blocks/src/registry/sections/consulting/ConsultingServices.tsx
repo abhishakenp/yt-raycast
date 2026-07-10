@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ConsultingServices — 6-up services / capabilities grid with icon tiles for a
@@ -167,9 +168,11 @@ export const ConsultingServices = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group rounded-xl border border-border bg-muted p-8 transition-all hover:bg-card hover:shadow-xl"
+                variant="muted"
+                padding="lg"
+                className="group transition-all hover:bg-card hover:shadow-xl"
               >
                 <div className="mb-6 grid size-14 place-items-center rounded-lg bg-primary text-primary-foreground transition-transform group-hover:scale-110">
                   {serviceIcons[i % serviceIcons.length]}
@@ -180,7 +183,7 @@ export const ConsultingServices = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

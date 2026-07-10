@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CommunityForumTestimonials — star-rated testimonial grid for a community-platform /
@@ -90,10 +91,7 @@ export const CommunityForumTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-xl border border-border bg-card p-8"
-              >
+              <Card key={t.name} padding="lg">
                 <div className="mb-4 flex items-center gap-1 text-chart-4">
                   {Array.from({ length: 5 }).map((_, s) => (
                     <Star key={s} className="size-5" />
@@ -118,7 +116,7 @@ export const CommunityForumTestimonials = defineCapsule({
                     </div>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

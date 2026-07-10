@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
@@ -74,9 +75,10 @@ export const AuthSteps = defineCapsule({
 
           <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
             {steps.filter(Boolean).map((step, i) => (
-              <div
+              <Card
                 key={step.title}
-                className="flex flex-col rounded-xl border border-border bg-card p-7 text-card-foreground"
+                padding="none"
+                className="flex flex-col p-7"
               >
                 <span className="inline-flex size-11 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-accent">
                   {i + 1}
@@ -92,7 +94,7 @@ export const AuthSteps = defineCapsule({
                     {step.snippet}
                   </code>
                 )}
-              </div>
+              </Card>
             ))}
           </div>
         </div>

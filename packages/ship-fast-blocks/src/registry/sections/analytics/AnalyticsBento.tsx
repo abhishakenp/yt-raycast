@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * AnalyticsBento — bespoke asymmetric capability bento for an analytics product.
@@ -94,9 +95,11 @@ export const AnalyticsBento = defineCapsule({
               />
             </div>
             {tiles.map((tile) => (
-              <div
+              <Card
                 key={tile.title}
-                className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-7"
+                rounded="2xl"
+                padding="none"
+                className="flex flex-col gap-2 p-7"
               >
                 <h3 className="text-base font-semibold text-foreground">
                   {tile.title}
@@ -104,7 +107,7 @@ export const AnalyticsBento = defineCapsule({
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {tile.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

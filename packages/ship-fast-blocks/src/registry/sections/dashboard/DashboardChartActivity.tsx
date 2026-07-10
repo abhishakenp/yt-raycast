@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * DashboardChartActivity — a two-column analytics band for a SaaS admin
@@ -217,7 +217,7 @@ export const DashboardChartActivity = defineCapsule({
     return (
       <ResponsiveGrid cols="1-lg-3" gap="md" className={props.className}>
         {/* Revenue chart */}
-        <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
+        <Card padding="sm" className="p-5 lg:col-span-2">
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-foreground">
@@ -318,10 +318,10 @@ export const DashboardChartActivity = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Recent activity */}
-        <div className="rounded-xl border border-border bg-card p-5">
+        <Card padding="sm" className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-semibold text-foreground">
               {activityTitle}
@@ -385,7 +385,7 @@ export const DashboardChartActivity = defineCapsule({
               )
             })}
           </div>
-        </div>
+        </Card>
       </ResponsiveGrid>
     )
   },

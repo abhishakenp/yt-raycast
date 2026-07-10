@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LogisticsServices — a services / capabilities grid for a global-logistics /
@@ -182,9 +183,11 @@ export const LogisticsServices = defineCapsule({
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="rounded-2xl border border-border bg-card p-8 transition-shadow hover:shadow-lg"
+                rounded="2xl"
+                padding="lg"
+                className="transition-shadow hover:shadow-lg"
               >
                 <div
                   className={cn(
@@ -203,7 +206,7 @@ export const LogisticsServices = defineCapsule({
                 <p className="text-sm font-medium text-card-foreground">
                   {item.price}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
@@ -126,9 +127,11 @@ export const SubscriptionBoxSteps = defineCapsule({
             {steps.map((step, i) => {
               const Icon = STEP_ICONS[i % STEP_ICONS.length]
               return (
-                <div
+                <Card
                   key={i}
-                  className="relative flex flex-col gap-4 rounded-2xl border border-border bg-card p-8"
+                  rounded="2xl"
+                  padding="lg"
+                  className="relative flex flex-col gap-4"
                 >
                   <span className="inline-flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
                     {i + 1}
@@ -142,7 +145,7 @@ export const SubscriptionBoxSteps = defineCapsule({
                   <p className="text-sm leading-6 text-muted-foreground">
                     {step.description}
                   </p>
-                </div>
+                </Card>
               )
             })}
           </div>

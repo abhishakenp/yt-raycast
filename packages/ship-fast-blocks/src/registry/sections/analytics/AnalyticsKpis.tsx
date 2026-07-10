@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { ResponsiveGrid, Card } from '#/section-kit/index.ts'
 
 /**
  * AnalyticsKpis — a 4-up KPI metric-card grid for a SaaS analytics dashboard. A
@@ -118,10 +118,7 @@ export const AnalyticsKpis = defineCapsule({
       >
         <ResponsiveGrid cols="1-2-4" gap="md">
           {kpis.map((kpi, i) => (
-            <article
-              key={kpi.label}
-              className="rounded-xl border border-border bg-card p-6"
-            >
+            <Card key={kpi.label}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
@@ -147,7 +144,7 @@ export const AnalyticsKpis = defineCapsule({
               <p className="mt-4 text-xs text-muted-foreground">
                 {kpi.caption}
               </p>
-            </article>
+            </Card>
           ))}
         </ResponsiveGrid>
       </section>

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ManufacturingFaq — a static FAQ list for a precision-manufacturing site. On a
@@ -85,15 +86,12 @@ export const ManufacturingFaq = defineCapsule({
           </div>
           <dl className="space-y-4">
             {items.map((item) => (
-              <div
-                key={item.question}
-                className="rounded-lg border border-border bg-card p-6"
-              >
+              <Card key={item.question} rounded="lg">
                 <dt className="mb-2 font-semibold text-card-foreground">
                   {item.question}
                 </dt>
                 <dd className="text-muted-foreground">{item.answer}</dd>
-              </div>
+              </Card>
             ))}
           </dl>
         </div>

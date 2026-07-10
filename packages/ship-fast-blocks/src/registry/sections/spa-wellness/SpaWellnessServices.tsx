@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * SpaWellnessServices — treatment-menu grid for a day-spa / wellness page. A
@@ -103,9 +104,11 @@ export const SpaWellnessServices = defineCapsule({
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (
-              <article
+              <Card
                 key={service.name}
-                className="flex flex-col rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-sm transition-shadow hover:shadow-md lg:p-8"
+                rounded="2xl"
+                shadow="sm"
+                className="flex flex-col text-card-foreground transition-shadow hover:shadow-md lg:p-8"
               >
                 <h3 className="font-serif text-xl font-semibold text-foreground">
                   {service.name}
@@ -121,7 +124,7 @@ export const SpaWellnessServices = defineCapsule({
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                   {service.description}
                 </p>
-              </article>
+              </Card>
             ))}
           </div>
         </div>

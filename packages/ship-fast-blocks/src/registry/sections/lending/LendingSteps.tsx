@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LendingSteps — a 3-step "how it works" flow on a muted section band for a
@@ -70,7 +71,7 @@ export const LendingSteps = defineCapsule({
           <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
             {stepItems.map((step, i) => (
               <div key={step.title} className="relative">
-                <div className="h-full rounded-2xl border border-border bg-card p-8">
+                <Card rounded="2xl" padding="lg" className="h-full">
                   <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
                     {i + 1}
                   </div>
@@ -95,7 +96,7 @@ export const LendingSteps = defineCapsule({
                     </svg>
                     <span>{step.note}</span>
                   </div>
-                </div>
+                </Card>
                 {i < stepItems.length - 1 && (
                   <div className="absolute -right-6 top-1/2 z-10 hidden -translate-y-1/2 md:block">
                     <svg

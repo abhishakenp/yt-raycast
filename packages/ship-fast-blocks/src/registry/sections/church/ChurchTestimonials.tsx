@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ChurchTestimonials — a 3-up member testimonials wall for a church or faith-community
@@ -88,10 +89,7 @@ export const ChurchTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {items.map((t) => (
-              <figure
-                key={t.name}
-                className="rounded-xl border border-border bg-card p-8"
-              >
+              <Card key={t.name} padding="lg">
                 <blockquote className="mb-6 leading-relaxed text-card-foreground">
                   &ldquo;{t.quote}&rdquo;
                 </blockquote>
@@ -107,7 +105,7 @@ export const ChurchTestimonials = defineCapsule({
                     <p className="text-sm text-muted-foreground">{t.meta}</p>
                   </div>
                 </figcaption>
-              </figure>
+              </Card>
             ))}
           </div>
         </div>

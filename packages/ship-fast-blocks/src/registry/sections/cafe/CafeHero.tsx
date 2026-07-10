@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -177,7 +178,7 @@ export const CafeHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl border border-border bg-card p-6 shadow-lg">
+              <Card shadow="lg" className="absolute -bottom-6 -left-6 max-w-xs">
                 <p className="mb-2 font-serif text-lg text-card-foreground">
                   &ldquo;{quote}&rdquo;
                 </p>
@@ -195,7 +196,7 @@ export const CafeHero = defineCapsule({
                     <p className="text-xs text-muted-foreground">{quoteRole}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

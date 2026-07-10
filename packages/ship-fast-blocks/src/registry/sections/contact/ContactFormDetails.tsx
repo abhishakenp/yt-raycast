@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { inquiryLakebed } from './inquiry-lakebed.ts'
 import {
   InquiryContactSheetButton,
@@ -212,7 +213,11 @@ export const ContactFormDetails = defineCapsule({
         )}
       >
         {/* Contact form */}
-        <div className="rounded-2xl border border-border bg-card p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60">
+        <Card
+          rounded="2xl"
+          padding="none"
+          className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
+        >
           <h2 className="sr-only">Contact form</h2>
           <form onSubmit={inquiry.submitForm}>
             <div className="mb-6">
@@ -288,10 +293,14 @@ export const ContactFormDetails = defineCapsule({
               {inquiry.statusText}
             </p>
           </form>
-        </div>
+        </Card>
 
         {/* Contact details */}
-        <div className="rounded-2xl border border-border bg-card p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60">
+        <Card
+          rounded="2xl"
+          padding="none"
+          className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
+        >
           <h2 className="mb-6 text-xl font-bold text-foreground">
             {detailsHeading}
           </h2>
@@ -374,7 +383,7 @@ export const ContactFormDetails = defineCapsule({
               )
             })}
           </div>
-        </div>
+        </Card>
       </section>
     )
   },

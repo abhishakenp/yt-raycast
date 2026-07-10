@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -166,9 +167,10 @@ export const InvestingFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((f, i) => (
-              <div
+              <Card
                 key={f.title}
-                className="rounded-xl border border-border bg-card p-8 text-card-foreground transition-shadow hover:shadow-lg"
+                padding="lg"
+                className="text-card-foreground transition-shadow hover:shadow-lg"
               >
                 <div
                   className={cn(
@@ -182,7 +184,7 @@ export const InvestingFeatures = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {f.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

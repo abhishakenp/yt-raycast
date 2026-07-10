@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ManufacturingIndustries — an 8-up industries-served grid for a precision-
@@ -233,10 +234,7 @@ export const ManufacturingIndustries = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {items.map((item, i) => (
-              <article
-                key={item.title}
-                className="rounded-lg border border-border bg-card p-6 shadow-sm"
-              >
+              <Card key={item.title} rounded="lg" shadow="sm">
                 <div
                   className={cn(
                     'mb-4 grid size-10 place-items-center rounded-lg',
@@ -254,7 +252,7 @@ export const ManufacturingIndustries = defineCapsule({
                 <span className="text-xs font-medium text-primary">
                   {item.tag}
                 </span>
-              </article>
+              </Card>
             ))}
           </div>
         </div>

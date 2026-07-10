@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import {
   SaasMutationSpinner,
@@ -237,7 +238,12 @@ export const CrmHero = defineCapsule({
                 </div>
               </div>
               {/* Floating badge */}
-              <div className="absolute -bottom-4 -left-4 rounded-lg border border-border bg-card p-3 shadow-lg">
+              <Card
+                rounded="lg"
+                padding="none"
+                shadow="lg"
+                className="absolute -bottom-4 -left-4 p-3"
+              >
                 <div className="flex items-center gap-3">
                   <div className="grid size-10 place-items-center rounded-full bg-chart-2/15 text-chart-2">
                     <svg
@@ -262,7 +268,7 @@ export const CrmHero = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

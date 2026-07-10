@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * LendingStats — a stats / about split with a glowing photo and a floating review
@@ -80,17 +81,14 @@ export const LendingStats = defineCapsule({
               </p>
               <div className="grid grid-cols-2 gap-6">
                 {statsItems.map((s) => (
-                  <div
-                    key={s.label}
-                    className="rounded-xl border border-border bg-muted p-6"
-                  >
+                  <Card key={s.label} variant="muted">
                     <div className="mb-1 text-3xl font-bold text-foreground">
                       {s.value}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {s.label}
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -102,7 +100,7 @@ export const LendingStats = defineCapsule({
                 loading="lazy"
                 className="w-full rounded-2xl object-cover shadow-lg"
               />
-              <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl border border-border bg-card p-6 shadow-lg">
+              <Card shadow="lg" className="absolute -bottom-6 -left-6 max-w-xs">
                 <div className="mb-2 flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} className="size-5 text-chart-4" />
@@ -127,7 +125,7 @@ export const LendingStats = defineCapsule({
                     </div>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

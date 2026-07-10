@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -208,7 +209,7 @@ export const CloudInfraPricing = defineCapsule({
             ))}
           </div>
           <div className="mx-auto mt-12 max-w-3xl">
-            <div className="rounded-xl border border-border bg-card p-6">
+            <Card>
               <h4 className="mb-4 text-lg font-semibold text-card-foreground">
                 {enterpriseHeading}
               </h4>
@@ -223,7 +224,7 @@ export const CloudInfraPricing = defineCapsule({
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </section>

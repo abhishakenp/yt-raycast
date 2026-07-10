@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -140,7 +141,11 @@ export const InvestingHero = defineCapsule({
                 aria-hidden="true"
                 className="absolute -bottom-8 -left-8 -z-10 size-72 rounded-full bg-chart-1/15 opacity-60 blur-3xl"
               />
-              <div className="relative rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-2xl">
+              <Card
+                rounded="2xl"
+                shadow="2xl"
+                className="relative text-card-foreground"
+              >
                 <div className="mb-6 flex items-center justify-between">
                   <div>
                     <p className="mb-1 text-sm text-muted-foreground">
@@ -212,7 +217,7 @@ export const InvestingHero = defineCapsule({
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </div>

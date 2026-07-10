@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CloudInfraFeatures — product capabilities grid for a cloud-infrastructure /
@@ -158,9 +159,10 @@ export const CloudInfraFeatures = defineCapsule({
           </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <article
+              <Card
                 key={item.title}
-                className="group rounded-xl border border-border bg-card p-8 transition-colors hover:border-primary/40"
+                padding="lg"
+                className="group transition-colors hover:border-primary/40"
               >
                 <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
                   {icons[i % icons.length]}
@@ -171,7 +173,7 @@ export const CloudInfraFeatures = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </article>
+              </Card>
             ))}
           </div>
         </div>

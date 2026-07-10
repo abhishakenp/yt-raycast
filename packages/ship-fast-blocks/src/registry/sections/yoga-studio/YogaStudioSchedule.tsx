@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * YogaStudioSchedule — weekly class-schedule grid for a yoga-studio page. A
@@ -108,9 +109,11 @@ export const YogaStudioSchedule = defineCapsule({
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {days.map((day) => (
-              <div
+              <Card
                 key={day.day}
-                className="rounded-2xl border border-border bg-card p-5 text-card-foreground"
+                rounded="2xl"
+                padding="sm"
+                className="p-5 text-card-foreground"
               >
                 <h3 className="border-b border-border pb-3 text-sm font-semibold uppercase tracking-wide text-foreground">
                   {day.day}
@@ -135,7 +138,7 @@ export const YogaStudioSchedule = defineCapsule({
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

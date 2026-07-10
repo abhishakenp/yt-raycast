@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -136,14 +137,14 @@ export const FintechHero = defineCapsule({
             </ul>
           </div>
           <div className="relative">
-            <div className="overflow-hidden rounded-2xl border border-border bg-card p-2 shadow-2xl">
+            <Card rounded="2xl" shadow="2xl" className="overflow-hidden p-2">
               <Image
                 alt={imageAlt}
                 w={720}
                 h={540}
                 className="aspect-[4/3] w-full rounded-xl object-cover"
               />
-            </div>
+            </Card>
           </div>
         </div>
       </section>

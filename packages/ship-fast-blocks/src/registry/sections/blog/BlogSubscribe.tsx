@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { PublicationSubscribeForm } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
 
@@ -54,7 +55,11 @@ export const BlogSubscribe = defineCapsule({
         aria-label="Newsletter signup"
         className={cn('mx-auto w-full max-w-4xl px-6 py-16', props.className)}
       >
-        <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:p-12">
+        <Card
+          rounded="2xl"
+          padding="lg"
+          className="text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:p-12"
+        >
           <span className="inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-accent">
             {eyebrow}
           </span>
@@ -75,7 +80,7 @@ export const BlogSubscribe = defineCapsule({
             buttonClassName="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
           />
           <p className="mt-4 text-[0.8rem] text-muted-foreground">{note}</p>
-        </div>
+        </Card>
       </section>
     )
   },

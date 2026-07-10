@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 const DEFAULT_STEPS: { title: string; description: string }[] = [
@@ -68,14 +69,14 @@ export const TutoringSteps = defineCapsule({
                 <span className="relative z-10 inline-flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
                   {i + 1}
                 </span>
-                <div className="rounded-xl border border-border bg-card p-6">
+                <Card>
                   <h3 className="text-lg font-semibold text-card-foreground">
                     {step.title}
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {step.description}
                   </p>
-                </div>
+                </Card>
               </li>
             ))}
           </ol>

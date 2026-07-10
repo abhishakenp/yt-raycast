@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * MembershipClubBenefits — 6-up member-benefits grid for a private membership club
@@ -176,9 +177,10 @@ export const MembershipClubBenefits = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="rounded-xl border border-border bg-card p-8 transition-colors hover:border-border/60"
+                padding="lg"
+                className="transition-colors hover:border-border/60"
               >
                 <div className="mb-6 grid size-12 place-items-center rounded-lg bg-muted text-foreground">
                   {benefitIcons[i % benefitIcons.length]}
@@ -189,7 +191,7 @@ export const MembershipClubBenefits = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

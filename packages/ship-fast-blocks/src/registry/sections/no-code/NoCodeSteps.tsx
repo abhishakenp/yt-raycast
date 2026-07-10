@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * NoCodeSteps — centered-header 3-step "how it works" flow on a subtle muted
@@ -91,7 +92,7 @@ export const NoCodeSteps = defineCapsule({
                 <div className="mx-auto mb-6 grid size-16 place-items-center rounded-2xl bg-foreground text-2xl font-bold text-background">
                   {i + 1}
                 </div>
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <Card rounded="2xl" shadow="sm">
                   <div className="mb-4 aspect-video overflow-hidden rounded-xl bg-muted">
                     <Image
                       alt={step.imageAlt}
@@ -107,7 +108,7 @@ export const NoCodeSteps = defineCapsule({
                   <p className="text-center text-sm leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
-                </div>
+                </Card>
                 {i < items.length - 1 && (
                   <div
                     aria-hidden="true"
