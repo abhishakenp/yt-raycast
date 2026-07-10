@@ -486,7 +486,7 @@ export const GovPortalNavbar = defineCapsule({
                     <NavigationMenuItem key={group.page}>
                       <NavigationMenuTrigger
                         onClick={() => go(group.page)}
-                        className="bg-transparent text-sm font-medium text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground focus:bg-primary-foreground/15 focus:text-primary-foreground data-[state=open]:bg-primary-foreground/15 data-[state=open]:text-primary-foreground"
+                        className="bg-transparent text-sm font-medium text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground focus:bg-primary-foreground/15 focus:text-primary-foreground data-[state=open]:bg-primary-foreground/15 data-[state=open]:text-primary-foreground data-[state=open]:hover:bg-primary-foreground/15 data-[state=open]:hover:text-primary-foreground data-[state=open]:focus:bg-primary-foreground/15 data-[state=open]:focus:text-primary-foreground"
                       >
                         {label(group)}
                       </NavigationMenuTrigger>
@@ -510,7 +510,10 @@ export const GovPortalNavbar = defineCapsule({
                     </NavigationMenuItem>
                   ) : (
                     <NavigationMenuItem key={group.page}>
-                      <NavigationMenuLink asChild>
+                      <NavigationMenuLink
+                        asChild
+                        className="hover:bg-primary-foreground/15 hover:text-primary-foreground focus:bg-primary-foreground/15 focus:text-primary-foreground"
+                      >
                         <button
                           type="button"
                           onClick={() => go(group.page)}
