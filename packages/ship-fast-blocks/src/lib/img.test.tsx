@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Image, ImageContextProvider } from './img'
+import { encodeMultiImageSrc } from './multi-image-src'
 
 const srcOf = (markup: string): string => {
   const m = markup.match(/src="([^"]*)"/)
@@ -71,5 +72,34 @@ describe('Image + ImageContextProvider', () => {
     )
 
     expect(srcOf(markup)).toBe(replacementSrc)
+  })
+
+  it('keeps caller image sizing on the carousel wrapper', () => {
+    const markup = renderToStaticMarkup(
+      <ImageContextProvider
+        value={{
+          overrides: {
+            Hero: encodeMultiImageSrc([
+              'https://cdn.example.com/one.jpg',
+              'https://cdn.example.com/two.jpg',
+            ]),
+          },
+        }}
+      >
+        <Image
+          alt="Hero"
+          w={1200}
+          h={600}
+          className="w-full rounded-2xl object-cover"
+        />
+      </ImageContextProvider>,
+    )
+
+    expect(markup).toContain('data-ship-image-carousel')
+    expect(markup).toContain('w-full rounded-2xl object-cover')
+    expect(markup).toContain('data-slot="carousel-content"')
+    expect(markup).toContain('overflow-hidden h-full')
+    expect(markup).toContain('aspect-ratio:1200/600')
+    expect(markup).not.toContain('relative h-full w-full')
   })
 })

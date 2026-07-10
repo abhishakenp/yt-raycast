@@ -12,6 +12,7 @@
     "./generated/runtime-component-loaders": "./src/generated/runtime-component-loaders.ts",
     "./generated/react-export-sources.compressed": "./src/generated/react-export-sources.compressed.ts",
     "./theme": "./src/theme.ts",
+    "./multi-image-src": "./src/lib/multi-image-src.ts",
     "./runtime": "./src/runtime.ts",
     "./portal": "./src/components/ui/portal-container.tsx"
   },
