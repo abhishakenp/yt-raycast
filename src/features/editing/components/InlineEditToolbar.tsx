@@ -63,6 +63,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '#/components/ui/tooltip'
+import { firstImageSrc } from '@ship-fast/blocks/multi-image-src'
 import { isEditableTextLeaf } from '../hooks/useTextEdit'
 import { StyleControlsPanel } from './StyleControlsPanel'
 import { TypographyControlsPanel } from './TypographyControlsPanel'
@@ -953,7 +954,9 @@ export function InlineEditToolbar({
   }
 
   // Live-preview an image swap without persisting. The actual save happens
-  // in handleApply; handleClose reverts the src.
+  // in handleApply; handleClose reverts the src. newSrc may be a multi-image
+  // payload (encodeMultiImageSrc) — the live <img> previews its first URL and
+  // the full payload is kept pending so Apply persists the whole carousel.
   const handleImagePreview = (newSrc: string | null) => {
     if (!activeElement || !isImageElement) return
     if (originalImageSrcRef.current === null) {
@@ -967,7 +970,7 @@ export function InlineEditToolbar({
       setPendingImageSrc(null)
       return
     }
-    ;(activeElement as HTMLImageElement).src = newSrc
+    ;(activeElement as HTMLImageElement).src = firstImageSrc(newSrc)
     pendingImageSrcRef.current = newSrc
     imagePreviewClearedRef.current = false
     setPendingImageSrc(newSrc)

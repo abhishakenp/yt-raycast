@@ -1,6 +1,8 @@
 // Shared edit helper functions that work in both client and server environments
 // These are pure functions that don't depend on Convex or other server-only dependencies
 
+import { firstImageSrc } from '@ship-fast/blocks/multi-image-src'
+
 const SCRIPT_STYLE_BLOCK_RE =
   /<(script|style|noscript|template)\b[\s\S]*?<\/\1>/gi
 
@@ -242,7 +244,10 @@ export const applyImageSwap = (
   occurrenceIndex?: number,
 ): { html: string; replaced: boolean } => {
   const alt = String(altAnchor ?? '')
-  const to = String(newSrc ?? '')
+  // A multi-select payload (JSON array of URLs) renders as a carousel through
+  // the client-side Image override; static HTML consumers (preview.html,
+  // exports) degrade to the first selected image.
+  const to = firstImageSrc(String(newSrc ?? ''))
   if (!html.trim() || !alt.trim()) return { html, replaced: false }
 
   const imgPattern = /<img\b[^>]*>/gi

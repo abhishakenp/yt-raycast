@@ -5,6 +5,7 @@ import { createElement } from 'react'
 
 import { applyImageSwap, applyPreviewTextEdit } from '@/lib/edit-helpers'
 import { Image } from '../../../packages/ship-fast-blocks/src/lib/img'
+import { encodeMultiImageSrc } from '../../../packages/ship-fast-blocks/src/lib/multi-image-src'
 
 /**
  * Image swap edit persistence contract tests.
@@ -401,6 +402,74 @@ describe('image edit persistence: full chain', () => {
     // Both server-patched HTML and client-rendered Image show the same src
     expect(serverResult.html).toContain('src="/cdn/new-hero.jpg"')
     expect(markup).toContain('src="/cdn/new-hero.jpg"')
+  })
+})
+
+// ─── Tests: multi-image (carousel) payloads ────────────────────────────────
+
+describe('image edit persistence: multi-image carousel payloads', () => {
+  const urls = [
+    'https://cdn.example.com/slide-1.jpg',
+    'https://cdn.example.com/slide-2.jpg',
+    'https://cdn.example.com/slide-3.jpg',
+  ]
+
+  it('applyImageSwap patches static HTML with the FIRST url of a payload', () => {
+    const html = '<img alt="Hero" src="/old.jpg" />'
+    const result = applyImageSwap(html, 'Hero', encodeMultiImageSrc(urls))
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="https://cdn.example.com/slide-1.jpg"')
+    // The raw JSON payload must never leak into a src attribute.
+    expect(result.html).not.toContain('[')
+  })
+
+  it('Image renders an auto-sliding carousel when the override holds 2+ urls', () => {
+    const overrides = { Hero: encodeMultiImageSrc(urls) }
+    const markup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Hero', context: { overrides } }),
+    )
+    // All slides render, in selection order.
+    for (const url of urls) {
+      expect(markup).toContain(`src="${url}"`)
+    }
+    expect(markup.indexOf(urls[0])).toBeLessThan(markup.indexOf(urls[1]))
+    // Carousel chrome: region wrapper + prev/next arrows on both sides.
+    expect(markup).toContain('data-ship-image-carousel')
+    expect(markup).toContain('aria-roledescription="carousel"')
+    expect(markup).toContain('Previous slide')
+    expect(markup).toContain('Next slide')
+    // Each slide keeps the alt so inline-edit anchors keep resolving.
+    expect(markup.match(/alt="Hero"/g)?.length).toBe(urls.length)
+    expect(markup).not.toContain('/api/pexels')
+  })
+
+  it('Image renders a single plain img when the override payload holds 1 url', () => {
+    const overrides = { Hero: encodeMultiImageSrc([urls[0]]) }
+    const markup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Hero', context: { overrides } }),
+    )
+    expect(markup).toContain(`src="${urls[0]}"`)
+    expect(markup).not.toContain('data-ship-image-carousel')
+  })
+
+  it('full chain: multi-select edit record → imageOverrides → carousel markup', () => {
+    const editHistory = [
+      {
+        editType: 'image',
+        beforeText: 'Gallery photo',
+        afterText: encodeMultiImageSrc(urls),
+      },
+    ]
+    const overrides = buildImageOverrides(editHistory)
+    expect(overrides['Gallery photo']).toBe(encodeMultiImageSrc(urls))
+
+    const markup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Gallery photo', context: { overrides } }),
+    )
+    expect(markup).toContain('data-ship-image-carousel')
+    for (const url of urls) {
+      expect(markup).toContain(`src="${url}"`)
+    }
   })
 })
 

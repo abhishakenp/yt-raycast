@@ -112,7 +112,7 @@ const makeResult = (n: number) =>
 const renderPanel = (
   props?: Partial<{
     currentAlt: string
-    onImageSelect: (url: string) => void
+    onImageSelect: (payload: string | null) => void
     sessionId: string
     imageWidth: number
     imageHeight: number
@@ -415,5 +415,134 @@ describe('ImageSwapPanel (behavioral)', () => {
     expect(
       screen.getAllByRole('button', { name: /Select image /i }).length,
     ).toBe(10)
+  })
+
+  // ── Multi-select → carousel payload ─────────────────────────────────────
+
+  const searchAndAwaitTiles = async (count: number) => {
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'cats' },
+    })
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('button', { name: /Select image /i }).length,
+      ).toBe(count),
+    )
+    return screen.getAllByRole('button', { name: /Select image /i })
+  }
+
+  it('12. selecting two images emits an encoded multi-image payload', async () => {
+    searchStockImagesMock.mockResolvedValue(makeResult(3))
+    const onImageSelect = vi.fn()
+    renderPanel({ onImageSelect })
+    const tiles = await searchAndAwaitTiles(3)
+
+    fireEvent.click(tiles[0])
+    expect(onImageSelect).toHaveBeenLastCalledWith('https://stock.test/0.jpg')
+
+    fireEvent.click(tiles[2])
+    expect(onImageSelect).toHaveBeenLastCalledWith(
+      JSON.stringify(['https://stock.test/0.jpg', 'https://stock.test/2.jpg']),
+    )
+    // Carousel hint appears once 2+ images are selected.
+    expect(
+      screen.getByText(/2 images selected — they will display as an/i),
+    ).toBeTruthy()
+    // Ordered badges reflect slide order.
+    expect(tiles[0].textContent).toContain('1')
+    expect(tiles[2].textContent).toContain('2')
+  })
+
+  it('13. clicking a selected image deselects it (back to single URL, then null)', async () => {
+    searchStockImagesMock.mockResolvedValue(makeResult(2))
+    const onImageSelect = vi.fn()
+    renderPanel({ onImageSelect })
+    const tiles = await searchAndAwaitTiles(2)
+
+    fireEvent.click(tiles[0])
+    fireEvent.click(tiles[1])
+    expect(onImageSelect).toHaveBeenLastCalledWith(
+      JSON.stringify(['https://stock.test/0.jpg', 'https://stock.test/1.jpg']),
+    )
+
+    fireEvent.click(tiles[0])
+    expect(onImageSelect).toHaveBeenLastCalledWith('https://stock.test/1.jpg')
+
+    fireEvent.click(tiles[1])
+    expect(onImageSelect).toHaveBeenLastCalledWith(null)
+  })
+
+  it('14b. selected images render in a pinned strip; clicking a strip chip deselects', async () => {
+    searchStockImagesMock.mockResolvedValue(makeResult(3))
+    const onImageSelect = vi.fn()
+    renderPanel({ onImageSelect })
+    const tiles = await searchAndAwaitTiles(3)
+
+    fireEvent.click(tiles[0])
+    fireEvent.click(tiles[1])
+    // Strip shows both selections in order.
+    expect(
+      screen.getByRole('button', { name: 'Deselect image 1' }),
+    ).toBeTruthy()
+    expect(
+      screen.getByRole('button', { name: 'Deselect image 2' }),
+    ).toBeTruthy()
+
+    // Deselect the first via the strip → payload collapses to the remaining URL.
+    fireEvent.click(screen.getByRole('button', { name: 'Deselect image 1' }))
+    expect(onImageSelect).toHaveBeenLastCalledWith('https://stock.test/1.jpg')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Deselect image 1' }))
+    expect(onImageSelect).toHaveBeenLastCalledWith(null)
+    expect(screen.queryByRole('button', { name: /Deselect image/i })).toBeNull()
+  })
+
+  it('14c. strip keeps selections deselectable after a new search replaces the grid', async () => {
+    searchStockImagesMock.mockResolvedValue(makeResult(2))
+    const onImageSelect = vi.fn()
+    renderPanel({ onImageSelect })
+    const tiles = await searchAndAwaitTiles(2)
+
+    fireEvent.click(tiles[0])
+    fireEvent.click(tiles[1])
+
+    // New search → completely different result URLs; old tiles vanish.
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl: 'https://stock.test/other-0.jpg',
+        source: 'pexels' as const,
+        query: 'dogs',
+      },
+    ])
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'dogs' },
+    })
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('button', { name: /^Select image \d+$/ }).length,
+      ).toBe(1),
+    )
+
+    // The selected (now off-grid) images are still pinned and deselectable.
+    expect(
+      screen.getAllByRole('button', { name: /Deselect image/i }).length,
+    ).toBe(2)
+    fireEvent.click(screen.getByRole('button', { name: 'Deselect image 2' }))
+    expect(onImageSelect).toHaveBeenLastCalledWith('https://stock.test/0.jpg')
+    fireEvent.click(screen.getByRole('button', { name: 'Deselect image 1' }))
+    expect(onImageSelect).toHaveBeenLastCalledWith(null)
+  })
+
+  it('14. selection order defines payload order regardless of grid order', async () => {
+    searchStockImagesMock.mockResolvedValue(makeResult(3))
+    const onImageSelect = vi.fn()
+    renderPanel({ onImageSelect })
+    const tiles = await searchAndAwaitTiles(3)
+
+    fireEvent.click(tiles[2])
+    fireEvent.click(tiles[0])
+    expect(onImageSelect).toHaveBeenLastCalledWith(
+      JSON.stringify(['https://stock.test/2.jpg', 'https://stock.test/0.jpg']),
+    )
   })
 })

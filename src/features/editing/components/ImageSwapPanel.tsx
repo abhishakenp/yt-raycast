@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useMutation, useQuery } from 'convex/react'
-import { Search, Image as ImageIcon, Loader2, Upload } from 'lucide-react'
+import {
+  Search,
+  Image as ImageIcon,
+  Loader2,
+  Upload,
+  GalleryHorizontal,
+  X,
+} from 'lucide-react'
+import { encodeMultiImageSrc } from '@ship-fast/blocks/multi-image-src'
 import {
   generateContextAwareQuery,
   type ImageContext,
@@ -43,7 +51,10 @@ function extractImageFiles(files: File[]): File[] {
 
 interface ImageSwapPanelProps {
   currentAlt: string
-  onImageSelect: (newSrc: string) => void
+  /** Fires on every selection change. Payload is a single URL (one image
+   *  selected), an encodeMultiImageSrc JSON payload (multi-select → rendered
+   *  as an auto-sliding carousel), or null (selection cleared). */
+  onImageSelect: (payload: string | null) => void
   context?: ImageContext
   /** Target image's natural dimensions — used to request appropriately-sized
    *  photos from Pexels/Unsplash. Falls back to 1200x800 if unknown. */
@@ -83,6 +94,8 @@ export function ImageSwapPanel({
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string>()
+  // Ordered multi-selection — click toggles membership; order = slide order.
+  const [selectedSrcs, setSelectedSrcs] = useState<string[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -113,6 +126,8 @@ export function ImageSwapPanel({
     const queryKey = JSON.stringify([currentAlt, context ?? null])
     if (appliedInitialQueryKeyRef.current === queryKey) return
     appliedInitialQueryKeyRef.current = queryKey
+    // New target image → start from an empty selection.
+    setSelectedSrcs([])
 
     if (!currentAlt.trim()) {
       setSearchQuery('')
@@ -317,6 +332,23 @@ export function ImageSwapPanel({
     [uploadFile],
   )
 
+  // ── Multi-select toggle ──────────────────────────────────────────────
+  // 1 selected → plain URL (single swap, as before). 2+ selected → encoded
+  // payload rendered as an auto-sliding carousel. 0 → clear the preview.
+  const toggleImage = (url: string) => {
+    const next = selectedSrcs.includes(url)
+      ? selectedSrcs.filter((selected) => selected !== url)
+      : [...selectedSrcs, url]
+    setSelectedSrcs(next)
+    onImageSelect(
+      next.length === 0
+        ? null
+        : next.length === 1
+          ? next[0]
+          : encodeMultiImageSrc(next),
+    )
+  }
+
   // ── Build display list: uploaded images first, then stock results ────
 
   const uploadedImages: DisplayImage[] =
@@ -388,6 +420,47 @@ export function ImageSwapPanel({
         />
       </div>
 
+      {/* Pinned selection strip — selected images stay visible (and
+          deselectable) even after the grid below re-searches or paginates
+          them out of view. */}
+      {selectedSrcs.length > 0 && (
+        <div className="shrink-0 border-b border-cyan-300/20 bg-cyan-300/10 px-3 py-2">
+          {selectedSrcs.length > 1 && (
+            <div className="mb-1.5 flex items-center gap-2 text-xs text-cyan-200">
+              <GalleryHorizontal className="size-3.5 shrink-0" />
+              {selectedSrcs.length} images selected — they will display as an
+              auto-sliding carousel
+            </div>
+          )}
+          <div className="flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:thin]">
+            {selectedSrcs.map((src, index) => (
+              <button
+                key={`selected-${src}-${index}`}
+                type="button"
+                onClick={() => {
+                  toggleImage(src)
+                }}
+                aria-label={`Deselect image ${index + 1}`}
+                className="group relative size-12 shrink-0 overflow-hidden rounded-md border border-cyan-300/60 ring-1 ring-cyan-300/30 transition-all hover:border-red-400/70 hover:ring-red-400/40"
+              >
+                <img
+                  src={src}
+                  alt={`Selected image ${index + 1}`}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+                <span className="absolute left-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-cyan-300 text-[10px] font-bold text-black">
+                  {index + 1}
+                </span>
+                <span className="absolute inset-0 grid place-items-center bg-black/55 opacity-0 transition-opacity group-hover:opacity-100">
+                  <X className="size-4 text-red-300" />
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Upload error banner */}
       {uploadError && (
         <div className="shrink-0 border-b border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs text-red-300">
@@ -447,25 +520,38 @@ export function ImageSwapPanel({
                   Your uploads
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  {uploadedImages.map((result, index) => (
-                    <button
-                      key={`upload-${result.imageUrl}-${index}`}
-                      type="button"
-                      onClick={() => {
-                        onImageSelect(result.imageUrl)
-                      }}
-                      className="group relative aspect-square overflow-hidden rounded-lg border border-cyan-300/30 bg-white/5 transition-all hover:border-cyan-300/60 hover:ring-2 hover:ring-cyan-300/30"
-                      aria-label={`Select uploaded image ${index + 1}`}
-                    >
-                      <img
-                        src={result.imageUrl}
-                        alt={result.alt}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                    </button>
-                  ))}
+                  {uploadedImages.map((result, index) => {
+                    const selectionIndex = selectedSrcs.indexOf(result.imageUrl)
+                    return (
+                      <button
+                        key={`upload-${result.imageUrl}-${index}`}
+                        type="button"
+                        onClick={() => {
+                          toggleImage(result.imageUrl)
+                        }}
+                        aria-pressed={selectionIndex !== -1}
+                        className={`group relative aspect-square overflow-hidden rounded-lg border bg-white/5 transition-all ${
+                          selectionIndex !== -1
+                            ? 'border-cyan-300 ring-2 ring-cyan-300/60'
+                            : 'border-cyan-300/30 hover:border-cyan-300/60 hover:ring-2 hover:ring-cyan-300/30'
+                        }`}
+                        aria-label={`Select uploaded image ${index + 1}`}
+                      >
+                        <img
+                          src={result.imageUrl}
+                          alt={result.alt}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                        {selectionIndex !== -1 && (
+                          <span className="absolute right-1 top-1 grid size-5 place-items-center rounded-full bg-cyan-300 text-[11px] font-bold text-black">
+                            {selectionIndex + 1}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -478,25 +564,38 @@ export function ImageSwapPanel({
                   </p>
                 )}
                 <div className="grid grid-cols-3 gap-2">
-                  {stockImages.map((result, index) => (
-                    <button
-                      key={`stock-${result.imageUrl}-${index}`}
-                      type="button"
-                      onClick={() => {
-                        onImageSelect(result.imageUrl)
-                      }}
-                      className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-white/5 transition-all hover:border-cyan-300/50 hover:ring-2 hover:ring-cyan-300/30"
-                      aria-label={`Select image ${index + 1}`}
-                    >
-                      <img
-                        src={result.imageUrl}
-                        alt={result.alt}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                    </button>
-                  ))}
+                  {stockImages.map((result, index) => {
+                    const selectionIndex = selectedSrcs.indexOf(result.imageUrl)
+                    return (
+                      <button
+                        key={`stock-${result.imageUrl}-${index}`}
+                        type="button"
+                        onClick={() => {
+                          toggleImage(result.imageUrl)
+                        }}
+                        aria-pressed={selectionIndex !== -1}
+                        className={`group relative aspect-square overflow-hidden rounded-lg border bg-white/5 transition-all ${
+                          selectionIndex !== -1
+                            ? 'border-cyan-300 ring-2 ring-cyan-300/60'
+                            : 'border-white/10 hover:border-cyan-300/50 hover:ring-2 hover:ring-cyan-300/30'
+                        }`}
+                        aria-label={`Select image ${index + 1}`}
+                      >
+                        <img
+                          src={result.imageUrl}
+                          alt={result.alt}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                        {selectionIndex !== -1 && (
+                          <span className="absolute right-1 top-1 grid size-5 place-items-center rounded-full bg-cyan-300 text-[11px] font-bold text-black">
+                            {selectionIndex + 1}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}
