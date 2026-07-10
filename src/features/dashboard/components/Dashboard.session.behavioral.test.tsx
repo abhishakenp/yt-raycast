@@ -85,6 +85,7 @@ type EditControllerStub = {
   edits: EditEntry[] | null
   history: Array<{ version: number }> | null
   applyEdit: ReturnType<typeof vi.fn>
+  applyCommand: ReturnType<typeof vi.fn>
   forkCurrentSession: ReturnType<typeof vi.fn>
   restoreVersion: ReturnType<typeof vi.fn>
   editError?: string
@@ -126,6 +127,7 @@ const getConvexState = (): ConvexTestState => {
       edits: [],
       history: [],
       applyEdit: vi.fn().mockResolvedValue(true),
+      applyCommand: vi.fn().mockResolvedValue(true),
       forkCurrentSession: vi.fn().mockResolvedValue(true),
       restoreVersion: vi.fn().mockResolvedValue(undefined),
       editError: undefined,
@@ -842,6 +844,7 @@ const resetEditController = () => {
     edits: [],
     history: [],
     applyEdit: vi.fn().mockResolvedValue(true),
+    applyCommand: vi.fn().mockResolvedValue(true),
     forkCurrentSession: vi.fn().mockResolvedValue(true),
     restoreVersion: vi.fn().mockResolvedValue(undefined),
     editError: undefined,
@@ -1429,21 +1432,24 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     fireEvent.click(screen.getByTestId('gmp-trigger-text-change'))
 
     await waitFor(() => {
-      expect(getConvexState().editController.applyEdit).toHaveBeenCalledWith(
-        'text',
-        'H1: Hello world…',
-        'Hello world',
-        'Hi there',
-        'inline edit',
-        undefined,
-        0,
+      expect(getConvexState().editController.applyCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          args: expect.objectContaining({
+            editType: 'text',
+            targetLabel: 'H1: Hello world…',
+            beforeText: 'Hello world',
+            afterText: 'Hi there',
+            instruction: 'inline edit',
+            occurrenceIndex: 0,
+          }),
+        }),
       )
     })
   })
 
   it('reverts an optimistic text edit when the save fails', async () => {
     setupReady()
-    getConvexState().editController.applyEdit.mockResolvedValueOnce({
+    getConvexState().editController.applyCommand.mockResolvedValueOnce({
       error: 'Text save failed',
     })
     const consoleError = vi
@@ -1463,21 +1469,24 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     await waitFor(() => {
       expect(heading.textContent).toBe('Hello world')
     })
-    expect(getConvexState().editController.applyEdit).toHaveBeenCalledWith(
-      'text',
-      'H1: Hi there…',
-      'Hello world',
-      'Hi there',
-      'inline edit',
-      undefined,
-      0,
+    expect(getConvexState().editController.applyCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        args: expect.objectContaining({
+          editType: 'text',
+          targetLabel: 'H1: Hi there…',
+          beforeText: 'Hello world',
+          afterText: 'Hi there',
+          instruction: 'inline edit',
+          occurrenceIndex: 0,
+        }),
+      }),
     )
     consoleError.mockRestore()
   })
 
   it('reverts an optimistic text edit when a required fork fails', async () => {
     setupReady()
-    getConvexState().editController.applyEdit.mockResolvedValueOnce(
+    getConvexState().editController.applyCommand.mockResolvedValueOnce(
       'fork_needed',
     )
     getConvexState().editController.forkCurrentSession.mockResolvedValueOnce(
@@ -1514,21 +1523,24 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     fireEvent.click(screen.getByTestId('gmp-trigger-image-change'))
 
     await waitFor(() => {
-      expect(getConvexState().editController.applyEdit).toHaveBeenCalledWith(
-        'image',
-        'IMG: Hero product showcas…',
-        'Hero product showcase',
-        'https://images.example/new.jpg',
-        'inline image swap',
-        undefined,
-        0,
+      expect(getConvexState().editController.applyCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          args: expect.objectContaining({
+            editType: 'image',
+            targetLabel: 'Hero product showcase',
+            beforeText: 'Hero product showcase',
+            afterText: 'https://images.example/new.jpg',
+            instruction: 'inline image swap',
+            occurrenceIndex: 0,
+          }),
+        }),
       )
     })
   })
 
   it('reverts an optimistic image swap when the save fails', async () => {
     setupReady()
-    getConvexState().editController.applyEdit.mockResolvedValueOnce({
+    getConvexState().editController.applyCommand.mockResolvedValueOnce({
       error: 'Image save failed',
     })
     const consoleError = vi
@@ -1548,21 +1560,24 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     await waitFor(() => {
       expect(image.src).toBe('https://images.example/old.jpg')
     })
-    expect(getConvexState().editController.applyEdit).toHaveBeenCalledWith(
-      'image',
-      'IMG: Hero product showcas…',
-      'Hero product showcase',
-      'https://images.example/new.jpg',
-      'inline image swap',
-      undefined,
-      0,
+    expect(getConvexState().editController.applyCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        args: expect.objectContaining({
+          editType: 'image',
+          targetLabel: 'Hero product showcase',
+          beforeText: 'Hero product showcase',
+          afterText: 'https://images.example/new.jpg',
+          instruction: 'inline image swap',
+          occurrenceIndex: 0,
+        }),
+      }),
     )
     consoleError.mockRestore()
   })
 
   it('reverts an optimistic image swap when a required fork fails', async () => {
     setupReady()
-    getConvexState().editController.applyEdit.mockResolvedValueOnce(
+    getConvexState().editController.applyCommand.mockResolvedValueOnce(
       'fork_needed',
     )
     getConvexState().editController.forkCurrentSession.mockResolvedValueOnce(
@@ -1599,21 +1614,24 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     fireEvent.click(await screen.findByTestId('toolbar-trigger-style-apply'))
 
     await waitFor(() => {
-      expect(getConvexState().editController.applyEdit).toHaveBeenCalledWith(
-        'style',
-        'SECTION: Hero section…',
-        'hero-section',
-        'background-color: rgb(255, 0, 0);',
-        'inline style',
-        undefined,
-        0,
+      expect(getConvexState().editController.applyCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          args: expect.objectContaining({
+            editType: 'style',
+            targetLabel: 'SECTION: Hero section…',
+            beforeText: 'hero-section',
+            afterText: 'background-color: rgb(255, 0, 0);',
+            instruction: 'inline style',
+            occurrenceIndex: 0,
+          }),
+        }),
       )
     })
   })
 
   it('reverts a live-previewed background style when the style save fails', async () => {
     setupReady()
-    getConvexState().editController.applyEdit.mockResolvedValueOnce({
+    getConvexState().editController.applyCommand.mockResolvedValueOnce({
       error: 'Style save failed',
     })
     const consoleError = vi
@@ -1637,21 +1655,24 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     await waitFor(() => {
       expect(heading!.getAttribute('style')).toBe(originalStyle)
     })
-    expect(getConvexState().editController.applyEdit).toHaveBeenCalledWith(
-      'style',
-      'H2: Hero section…',
-      'hero-section',
-      'background-color: rgb(255, 0, 0);',
-      'inline style',
-      undefined,
-      0,
+    expect(getConvexState().editController.applyCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        args: expect.objectContaining({
+          editType: 'style',
+          targetLabel: 'H2: Hero section…',
+          beforeText: 'hero-section',
+          afterText: 'background-color: rgb(255, 0, 0);',
+          instruction: 'inline style',
+          occurrenceIndex: 0,
+        }),
+      }),
     )
     consoleError.mockRestore()
   })
 
   it('reverts live-previewed style and clears forking state when a required fork fails', async () => {
     setupReady()
-    getConvexState().editController.applyEdit.mockResolvedValueOnce(
+    getConvexState().editController.applyCommand.mockResolvedValueOnce(
       'fork_needed',
     )
     let resolveFork!: (result: null) => void
@@ -1710,17 +1731,18 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
 
     await waitFor(() => {
-      expect(getConvexState().editController.applyEdit).toHaveBeenCalledWith(
-        'ai_rewrite',
-        'link: /docs → /learn',
-        undefined,
-        undefined,
-        'replace link href',
-        expect.stringContaining('label: "Learn"'),
+      expect(getConvexState().editController.applyCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          args: expect.objectContaining({
+            editType: 'ai_rewrite',
+            afterHtml: expect.stringContaining('label: "Learn"'),
+          }),
+        }),
       )
     })
     const rewriteSource =
-      getConvexState().editController.applyEdit.mock.calls.at(-1)?.[5] ?? ''
+      getConvexState().editController.applyCommand.mock.calls.at(-1)?.[0]?.args
+        ?.afterHtml ?? ''
     expect(rewriteSource).toContain('href: "/learn"')
     expect(rewriteSource).toContain('target: "_blank"')
     expect(rewriteSource).toContain('rel: "noopener noreferrer"')
@@ -2073,7 +2095,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
 
     // Trigger an inline text edit; the handler saves scrollTop before applying.
     fireEvent.click(screen.getByTestId('gmp-trigger-text-change'))
-    expect(getConvexState().editController.applyEdit).toHaveBeenCalled()
+    expect(getConvexState().editController.applyCommand).toHaveBeenCalled()
 
     // Bump the preview version so renderedPreviewKey changes → remount + restore.
     const bumped = readyGenerationView({
@@ -2285,7 +2307,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     previewEl!.scrollTop = 140
 
     fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
-    expect(getConvexState().editController.applyEdit).toHaveBeenCalled()
+    expect(getConvexState().editController.applyCommand).toHaveBeenCalled()
 
     // Bump previewVersion → renderedPreviewKey changes → remount + restore.
     const bumped = readyGenerationView({

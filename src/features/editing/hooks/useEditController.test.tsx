@@ -42,6 +42,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 import { useEditController } from './useEditController'
+import { buildStyleApplyCommand } from '@/features/editing/lib/inline-edit-commands'
 
 /**
  * Tests that applyEdit returns the error synchronously (not via stale React
@@ -122,6 +123,45 @@ describe('useEditController: applyEdit error return', () => {
     })
 
     expect(editResult).toBe(true)
+  })
+
+  it('applyCommand persists a semantic-builder command through the same createEdit surface as the AI', async () => {
+    mockCreateEdit.mockResolvedValueOnce({ saved: true })
+
+    const { result } = renderHook(() =>
+      useEditController('test-session-id' as Id<'sessions'>),
+    )
+
+    // The exact builder the AI's `styleApply` code-mode tool uses — the UI
+    // (handleStyleApply) now calls this same function, so there is one source
+    // of truth for what a style edit persists.
+    const command = buildStyleApplyCommand(
+      {
+        sourceAnchor: '.hero',
+        style: 'background-color: rgb(255, 0, 0);',
+        targetLabel: 'SECTION: Hero…',
+        occurrenceIndex: 0,
+      },
+      { sessionId: 'test-session-id', instruction: 'inline style' },
+    )
+
+    let editResult: unknown
+    await act(async () => {
+      editResult = await result.current.applyCommand(command)
+    })
+
+    expect(editResult).toBe(true)
+    expect(mockCreateEdit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        editType: 'style',
+        targetLabel: 'SECTION: Hero…',
+        beforeText: '.hero',
+        afterText: 'background-color: rgb(255, 0, 0);',
+        instruction: 'inline style',
+        occurrenceIndex: 0,
+        anonymousOwnerSecret: 'owner-secret',
+      }),
+    )
   })
 
   it('returns fork_needed when mutation throws FORBIDDEN error', async () => {

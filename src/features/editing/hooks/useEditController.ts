@@ -5,7 +5,10 @@ import { useRef, useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
-import { buildCreateEditCommand } from '@/features/editing/lib/inline-edit-commands'
+import {
+  buildCreateEditCommand,
+  type CreateInlineEditCommand,
+} from '@/features/editing/lib/inline-edit-commands'
 import { setCachedTranslation } from '@/island/openui/_providers/translation'
 
 type CreateEditResult = {
@@ -51,15 +54,24 @@ export const useEditController = (sessionId: string) => {
     occurrenceIndex?: number
   } | null>(null)
 
-  const applyEdit = async (
-    editType: 'text' | 'ai_rewrite' | 'style' | 'image',
-    targetLabel: string | undefined,
-    beforeText: string | undefined,
-    afterText: string | undefined,
-    instruction: string | undefined,
-    afterHtml?: string,
-    occurrenceIndex?: number,
+  /** Persist a prebuilt inline-edit command (the SAME `CreateInlineEditCommand`
+   *  the AI code-mode path produces via `inline-edit-commands.ts`). This is the
+   *  single execution surface for `createEdit`-backed edits: the fork-on-
+   *  FORBIDDEN retry, translation caching, in-flight refcount, and error
+   *  handling all live here so the UI handlers and the AI stay behaviourally
+   *  identical. `applyEdit` is a thin wrapper that builds the command first. */
+  const applyCommand = async (
+    command: CreateInlineEditCommand,
   ): Promise<true | 'fork_needed' | { ok: false; error: string }> => {
+    const {
+      editType,
+      targetLabel,
+      beforeText,
+      afterText,
+      afterHtml,
+      instruction,
+      occurrenceIndex,
+    } = command.args
     // Guard: reject empty/undefined content without touching the mutation.
     // An edit must carry some content (afterText, afterHtml, or instruction);
     // a completely empty edit is a no-op and must never reach createEdit.
@@ -81,22 +93,6 @@ export const useEditController = (sessionId: string) => {
         typeof window === 'undefined'
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, sessionId)
-
-      const command = buildCreateEditCommand(
-        {
-          editType,
-          targetLabel,
-          beforeText,
-          afterText,
-          afterHtml,
-          instruction,
-          occurrenceIndex,
-        },
-        {
-          sessionId,
-          anonymousOwnerSecret,
-        },
-      )
 
       const result = (await createEdit({
         ...command.args,
@@ -157,6 +153,30 @@ export const useEditController = (sessionId: string) => {
       setIsEditing(activeEditsRef.current > 0)
     }
   }
+
+  const applyEdit = async (
+    editType: 'text' | 'ai_rewrite' | 'style' | 'image',
+    targetLabel: string | undefined,
+    beforeText: string | undefined,
+    afterText: string | undefined,
+    instruction: string | undefined,
+    afterHtml?: string,
+    occurrenceIndex?: number,
+  ): Promise<true | 'fork_needed' | { ok: false; error: string }> =>
+    applyCommand(
+      buildCreateEditCommand(
+        {
+          editType,
+          targetLabel,
+          beforeText,
+          afterText,
+          afterHtml,
+          instruction,
+          occurrenceIndex,
+        },
+        { sessionId },
+      ),
+    )
 
   const forkCurrentSession = async () => {
     setEditError(undefined)
@@ -225,6 +245,7 @@ export const useEditController = (sessionId: string) => {
 
   return {
     applyEdit,
+    applyCommand,
     editError,
     edits,
     history,
