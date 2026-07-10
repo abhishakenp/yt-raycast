@@ -507,6 +507,178 @@ describe('session edit mutation helpers', () => {
     })
   })
 
+  it('accepts a text edit whose text exists ONLY in Lakebed sessionData (gov-portal boards/tenders) instead of throwing TEXT_NOT_FOUND', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'Gov portal home')
+
+    // Library-capsule content (board members, tenders, directory rows) is
+    // seeded into sessionData and rendered via Lakebed live queries. It never
+    // appears in preview.html (SSR renders with inert Lakebed stubs) nor in
+    // homeModule.source (which only carries the capsule call).
+    await t.mutation(api.lakebed.mergeSessionData, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      capsule: 'GovPortal',
+      patch: {
+        boardMembers: [
+          {
+            name: 'Sri. Sudhir Tripathi, IAS',
+            designation: 'Chief Secretary GOJ and Director TVNL',
+          },
+        ],
+      },
+    })
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Board member name',
+        beforeText: 'Sri. Sudhir Tripathi, IAS',
+        afterText: 'Sri. Renamed Director, IAS',
+      }),
+    ).resolves.toMatchObject({
+      previewVersion: 2,
+      saved: true,
+    })
+
+    // The Lakebed row is patched — the capsule re-renders live from it.
+    await expect(
+      t.query(api.lakebed.getSessionData, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        capsule: 'GovPortal',
+      }),
+    ).resolves.toMatchObject({
+      boardMembers: [
+        {
+          name: 'Sri. Renamed Director, IAS',
+          designation: 'Chief Secretary GOJ and Director TVNL',
+        },
+      ],
+    })
+
+    // Canonical artifacts are untouched (the text never lived there).
+    const reloaded = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    expect(reloaded?.homeModule?.source).toContain('Gov portal home')
+    expect(reloaded?.homeModule?.source).not.toContain('Renamed Director')
+  })
+
+  it('accepts a text edit found in preview.html and sessionData but absent from the generated source (second gate)', async () => {
+    const t = sessionEditConvexTest()
+    const { sessionId } = await t.mutation(api.sessions.create, {
+      prompt: 'Gate two page',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      workspace: 'workspace_gate_two_page',
+      anonymousClientId: 'anon_gate_two_page',
+      anonymousOwnerSecret: 'owner-secret',
+    })
+    await t.action(internal.sessions.completeGeneration, {
+      sessionId,
+      // "Shared banner" is in the rendered preview html (so the FIRST gate
+      // passes) but not in the OpenUI source or siteSpec — only sessionData
+      // carries it, exercising the second (artifact) gate's fallback.
+      html: '<html><body><h1>Gate two page</h1><p>Shared banner</p></body></html>',
+      openUiSource: '$page = "Home"\nroot = Text("Gate two page")',
+      siteSpecJson: JSON.stringify({ hero: { headline: 'Gate two page' } }),
+      tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+      elapsed: 1000,
+    })
+    await t.mutation(api.lakebed.mergeSessionData, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      capsule: 'GovPortalNotice:home_notice',
+      patch: { banner: 'Shared banner' },
+    })
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Notice banner',
+        beforeText: 'Shared banner',
+        afterText: 'Updated banner',
+      }),
+    ).resolves.toMatchObject({
+      previewVersion: 2,
+      saved: true,
+    })
+
+    await expect(
+      t.query(api.lakebed.getSessionData, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        capsule: 'GovPortalNotice:home_notice',
+      }),
+    ).resolves.toMatchObject({ banner: 'Updated banner' })
+  })
+
+  it('does NOT corrupt a longer sessionData leaf when the unfound text is merely its substring (capsule-hardcoded strings)', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'Substring guard page')
+
+    // "Board of Directors" is hardcoded inside the GovPortalLeadership capsule
+    // (pickLang fallback) — it exists in NO store. The sessionData heading
+    // "Leadership & Board of Directors" merely CONTAINS it. The fallback gate
+    // must not substring-splice the heading; it must keep failing loudly.
+    await t.mutation(api.lakebed.mergeSessionData, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      capsule: 'GovPortalLeadership:company_lead',
+      patch: { heading: 'Leadership & Board of Directors' },
+    })
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Board heading',
+        beforeText: 'Board of Directors',
+        afterText: 'Board of Directorate',
+      }),
+    ).rejects.toThrow(/TEXT_NOT_FOUND|not found/)
+
+    await expect(
+      t.query(api.lakebed.getSessionData, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        capsule: 'GovPortalLeadership:company_lead',
+      }),
+    ).resolves.toMatchObject({
+      heading: 'Leadership & Board of Directors',
+    })
+  })
+
+  it('still throws TEXT_NOT_FOUND when the text exists in no store at all', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'No match page')
+
+    await t.mutation(api.lakebed.mergeSessionData, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      capsule: 'GovPortal',
+      patch: { boardMembers: [{ name: 'Some Director' }] },
+    })
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Nowhere text',
+        beforeText: 'Text that exists in no store whatsoever',
+        afterText: 'Replacement',
+      }),
+    ).rejects.toThrow(/TEXT_NOT_FOUND|not found/)
+  })
+
   it('records edit history with target label and occurrence metadata', async () => {
     const t = sessionEditConvexTest()
     const sessionId = await createReadySession(t, 'Repeated headline')
