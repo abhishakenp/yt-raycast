@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useMutation, useQuery } from 'convex/react'
-import { Search, Loader2, X, Upload } from 'lucide-react'
+import { Search, Loader2, X, Upload, Sparkles } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
 import { Slider } from '#/components/ui/slider'
@@ -104,6 +104,53 @@ function resolveBackdropColor(el: HTMLElement): string {
   return '#ffffff'
 }
 
+/** A CSS property on an ancestor that flattens the backdrop and so silently
+ *  disables `backdrop-filter` on any descendant. Verified in a real compositor:
+ *  overflow-clipping AND transform both kill descendant blur. */
+export function backdropDefeatReason(s: CSSStyleDeclaration): string | null {
+  if (s.transform && s.transform !== 'none') return 'transform'
+  if (s.perspective && s.perspective !== 'none') return 'perspective'
+  if (s.filter && s.filter !== 'none') return 'filter'
+  const bf =
+    s.backdropFilter ||
+    (s as unknown as Record<string, string>).webkitBackdropFilter ||
+    ''
+  if (bf && bf !== 'none') return 'backdrop-filter'
+  if (/\b(transform|perspective|filter)\b/.test(s.willChange || ''))
+    return 'will-change'
+  if (/\b(paint|strict|content|layout)\b/.test(s.contain || ''))
+    return 'contain'
+  const op = parseFloat(s.opacity || '1')
+  if (!Number.isNaN(op) && op < 1) return 'opacity'
+  const ox = s.overflowX || ''
+  const oy = s.overflowY || ''
+  if ((ox && ox !== 'visible') || (oy && oy !== 'visible')) return 'overflow'
+  return null
+}
+
+/** Walk ancestors looking for the first element that would defeat a
+ *  `backdrop-filter` on `el`. Returns the offending element + which property,
+ *  or null when the blur will render. */
+export function findBackdropDefeatingAncestor(
+  el: HTMLElement | null,
+): { element: HTMLElement; reason: string } | null {
+  if (!el) return null
+  const view =
+    el.ownerDocument?.defaultView ??
+    (typeof window !== 'undefined' ? window : null)
+  if (!view) return null
+  const root = el.ownerDocument?.documentElement ?? null
+  let node = el.parentElement
+  let guard = 0
+  while (node && node !== root && guard < 100) {
+    const reason = backdropDefeatReason(view.getComputedStyle(node))
+    if (reason) return { element: node, reason }
+    node = node.parentElement
+    guard++
+  }
+  return null
+}
+
 const CHECKER_STYLE: React.CSSProperties = {
   backgroundImage:
     'conic-gradient(#c8c8c8 25%, #fff 0 50%, #c8c8c8 0 75%, #fff 0)',
@@ -137,7 +184,10 @@ function ColorSwatch({
         className="relative size-7 overflow-hidden rounded-md border border-input shadow-xs"
         style={CHECKER_STYLE}
       >
-        <div className="absolute inset-0" style={{ backgroundColor: display }} />
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: display }}
+        />
       </div>
     </label>
   )
@@ -251,6 +301,10 @@ export function BackgroundPanel({
   const [bgOpacity, setBgOpacity] = useState(100)
   const [gradient, setGradient] = useState<GradientState>(DEFAULT_GRADIENT)
   const [backdropBlur, setBackdropBlur] = useState(0)
+  const [blurDefeatedBy, setBlurDefeatedBy] = useState<{
+    tag: string
+    reason: string
+  } | null>(null)
   const [bgFit, setBgFit] = useState<BgFit>('cover')
   const [bgResolution, setBgResolution] =
     useState<BackgroundImageResolution>('standard')
@@ -350,6 +404,13 @@ export function BackgroundPanel({
       ''
     const blurMatch = backdrop.match(/blur\((\d+(?:\.\d+)?)px\)/)
     setBackdropBlur(blurMatch ? Math.round(parseFloat(blurMatch[1])) : 0)
+
+    const defeat = findBackdropDefeatingAncestor(activeElement)
+    setBlurDefeatedBy(
+      defeat
+        ? { tag: defeat.element.tagName.toLowerCase(), reason: defeat.reason }
+        : null,
+    )
   }, [activeElement])
 
   const markModified = () => {
@@ -745,6 +806,36 @@ export function BackgroundPanel({
     }
   }
 
+  // One-click frosted glass: a translucent tint + a moderate backdrop blur set
+  // together, since blur alone over a transparent fill reads as almost nothing.
+  // Tint follows the element's own fill when it has one, else the nearest opaque
+  // surface behind it — so dark bars stay dark (text stays readable) and light
+  // bars stay light, instead of forcing a white wash.
+  const applyFrostedGlass = () => {
+    if (!activeElement) return
+    const own = parseColor(
+      window.getComputedStyle(activeElement).backgroundColor,
+    )
+    const tint = own.alpha > 0 ? own.hex : resolveBackdropColor(activeElement)
+    const tintOpacity = 60
+    const blur = 16
+    setBgMode('solid')
+    setBgColor(tint)
+    setBgOpacity(tintOpacity)
+    setBackdropBlur(blur)
+    activeElement.style.setProperty('background-image', '')
+    activeElement.style.setProperty(
+      'background-color',
+      toCssColor(tint, tintOpacity),
+    )
+    activeElement.style.setProperty('backdrop-filter', `blur(${blur}px)`)
+    activeElement.style.setProperty(
+      '-webkit-backdrop-filter',
+      `blur(${blur}px)`,
+    )
+    markModified()
+  }
+
   const labelCls =
     'text-[10px] uppercase tracking-wider text-muted-foreground font-medium'
 
@@ -781,6 +872,17 @@ export function BackgroundPanel({
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
+
+      {/* One-click frosted glass preset */}
+      <button
+        type="button"
+        onClick={applyFrostedGlass}
+        aria-label="Frosted glass"
+        className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/20"
+      >
+        <Sparkles className="size-3" />
+        Frosted glass
+      </button>
 
       {bgMode === 'solid' && (
         <div className="flex items-center gap-1.5">
@@ -1183,6 +1285,19 @@ export function BackgroundPanel({
           {backdropBlur}px
         </span>
       </div>
+
+      {blurDefeatedBy && backdropBlur > 0 && (
+        <p
+          role="alert"
+          className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] leading-snug text-amber-600 dark:text-amber-400"
+        >
+          Backdrop blur won&apos;t render here — parent{' '}
+          <code className="font-mono">&lt;{blurDefeatedBy.tag}&gt;</code> has{' '}
+          <span className="font-medium">{blurDefeatedBy.reason}</span>, which
+          flattens the backdrop. Select that parent and clear it, or apply the
+          glass to that element instead.
+        </p>
+      )}
 
       {/* Background opacity */}
       <div className="flex items-center gap-2">
