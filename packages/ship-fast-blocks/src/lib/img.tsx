@@ -1,10 +1,22 @@
 import {
   createContext,
   useContext,
+  useEffect,
+  useState,
   type ImgHTMLAttributes,
   type ReactNode,
 } from 'react'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from '#/components/ui/carousel.tsx'
+import { cn } from '#/lib/utils.ts'
 import { buildImageSearchQuery, type ImageContext } from './image-search-query'
+import { decodeMultiImageSrc } from './multi-image-src'
 
 export type { ImageContext }
 
@@ -228,6 +240,84 @@ function getPexelsProxyUrl(
   return `/api/pexels?${params.toString()}`
 }
 
+const IMAGE_CAROUSEL_INTERVAL_MS = 5000
+
+type ImageCarouselProps = {
+  srcs: string[]
+  alt: string
+  w: number
+  h: number
+  className?: string
+  loading?: ImgHTMLAttributes<HTMLImageElement>['loading']
+} & Omit<
+  ImgHTMLAttributes<HTMLImageElement>,
+  'src' | 'alt' | 'width' | 'height'
+>
+
+/** Auto-advancing image carousel rendered when an inline-edit override holds
+ *  multiple URLs (multi-select in the image swap panel). Same embla carousel
+ *  as the gov-portal hero, with prev/next arrows on both sides. Each slide
+ *  keeps the original img className and alt so inline-edit anchors (alt +
+ *  occurrence index) keep resolving. */
+function ImageCarousel({
+  srcs,
+  alt,
+  w,
+  h,
+  className,
+  loading,
+  style,
+  ...rest
+}: ImageCarouselProps) {
+  const [api, setApi] = useState<CarouselApi | null>(null)
+  const wrapperStyle: ImgHTMLAttributes<HTMLImageElement>['style'] = {
+    aspectRatio: `${w}/${h}`,
+    ...(!className ? { width: w, maxWidth: '100%' } : {}),
+    ...style,
+  }
+
+  useEffect(() => {
+    if (!api) return
+    const id = setInterval(() => {
+      if (api.canScrollNext()) api.scrollNext()
+      else api.scrollTo(0)
+    }, IMAGE_CAROUSEL_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [api])
+
+  return (
+    <Carousel
+      setApi={setApi}
+      opts={{ loop: true }}
+      className={cn(
+        'relative overflow-hidden [&_[data-slot=carousel-item]]:h-full',
+        !className && 'inline-block max-w-full',
+        className,
+      )}
+      style={wrapperStyle}
+      data-ship-image-carousel=""
+    >
+      <CarouselContent className="ml-0 h-full" viewportClassName="h-full">
+        {srcs.map((src, index) => (
+          <CarouselItem key={`${src}-${index}`} className="basis-full pl-0">
+            <img
+              src={src}
+              alt={alt}
+              width={w}
+              height={h}
+              className={cn('h-full w-full object-cover', className)}
+              loading={index === 0 ? loading : 'lazy'}
+              {...rest}
+            />
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious className="left-3 z-10 border-white/40 bg-black/25 text-white backdrop-blur hover:bg-black/45 hover:text-white" />
+      <CarouselNext className="right-3 z-10 border-white/40 bg-black/25 text-white backdrop-blur hover:bg-black/45 hover:text-white" />
+    </Carousel>
+  )
+}
+
 /** Drop-in replacement for `<img>` that resolves a relevant Pexels image from `alt` text.
  *  Uses server-side proxy for SSR compatibility. Pass an explicit `src` to use a pre-resolved URL verbatim
  *  (e.g. a photo already synced to Medusa), bypassing Pexels resolution entirely. */
@@ -258,9 +348,27 @@ export function Image({
   const overrideSrc =
     effectiveContext?.overrides?.[normalizedAlt] ??
     (trimmedSrc ? effectiveContext?.overrides?.[trimmedSrc] : undefined)
+  // Multi-select in the image swap panel stores the whole selection as one
+  // JSON-array payload — 2+ URLs become an auto-advancing carousel in place
+  // of the single img.
+  const overrideSrcs = decodeMultiImageSrc(overrideSrc)
+  if (overrideSrcs && overrideSrcs.length > 1) {
+    return (
+      <ImageCarousel
+        srcs={overrideSrcs}
+        alt={normalizedAlt}
+        w={w}
+        h={h}
+        className={className}
+        loading={loading}
+        {...rest}
+      />
+    )
+  }
+  const resolvedOverrideSrc = overrideSrcs?.[0] ?? overrideSrc
   const imageSrc =
-    typeof overrideSrc === 'string' && overrideSrc.trim()
-      ? overrideSrc
+    typeof resolvedOverrideSrc === 'string' && resolvedOverrideSrc.trim()
+      ? resolvedOverrideSrc
       : trimmedSrc
         ? trimmedSrc
         : getPexelsProxyUrl(normalizedAlt, w, h, effectiveContext)
