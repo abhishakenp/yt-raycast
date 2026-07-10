@@ -979,24 +979,37 @@ const lakebedColorKeys = [
   'sidebar-ring',
 ] as const
 
-const buildLakebedThemeCss = (
+export const buildLakebedThemeCss = (
   styles: ThemeStyles | null,
   isDark: boolean,
 ): string => {
-  const selected = styles
-    ? { ...styles.light, ...(isDark ? styles.dark : {}) }
+  void isDark
+  // Ship BOTH palettes: the light vars on `:root` and the dark vars on `.dark`
+  // so a single `document.documentElement.classList.toggle('dark')` repaints the
+  // whole site with the theme's REAL dark colors. Baking only one palette (the
+  // old behavior) left the toggle with nothing to switch to and made a dark
+  // session render "light" mode as dark.
+  const lightVars = styles ? { ...styles.light } : defaultLakebedThemeVars
+  const darkVars = styles
+    ? { ...styles.light, ...styles.dark }
     : defaultLakebedThemeVars
-  const declarations = themeVarKeys
-    .map((key) => {
-      const value = selected[key] ?? defaultLakebedThemeVars[key]
-      return value == null ? null : `  --${key}: ${String(value)};`
-    })
-    .filter((line): line is string => Boolean(line))
-    .join('\n')
+  const declarationsFor = (vars: Record<string, string>): string =>
+    themeVarKeys
+      .map((key) => {
+        const value = vars[key] ?? defaultLakebedThemeVars[key]
+        return value == null ? null : `  --${key}: ${String(value)};`
+      })
+      .filter((line): line is string => Boolean(line))
+      .join('\n')
 
   return `:root {
-${declarations}
-  color-scheme: ${isDark ? 'dark' : 'light'};
+${declarationsFor(lightVars)}
+  color-scheme: light;
+}
+
+.dark {
+${declarationsFor(darkVars)}
+  color-scheme: dark;
 }
 
 html,
@@ -1192,9 +1205,20 @@ const topLevelDeclarationNames = (statement: ts.Statement): string[] => {
   return []
 }
 
-const collectIdentifierTexts = (node: ts.Node) => {
+// Value-only identifier collector. Type annotations, `typeof` type queries and
+// type arguments are erased by esbuild before the Lakebed client bundle is
+// built, so an identifier that appears ONLY inside a type position is NOT a
+// runtime dependency. Following those type edges during prelude resolution
+// wrongly drags runtime declarations (e.g. a module-level `const schema =
+// z.object(...)` referenced solely via `z.infer<typeof schema>`) into the
+// client bundle — and with them a reference to `z`, whose zod import was
+// stripped as build-time-only → `z is not defined` → blank render. Skipping
+// TypeNode subtrees keeps dependency resolution aligned with what actually
+// survives compilation.
+const collectValueIdentifierTexts = (node: ts.Node) => {
   const identifiers = new Set<string>()
   const visit = (current: ts.Node) => {
+    if (ts.isTypeNode(current)) return
     if (ts.isIdentifier(current)) {
       identifiers.add(current.text)
     }
@@ -1202,6 +1226,188 @@ const collectIdentifierTexts = (node: ts.Node) => {
   }
   visit(node)
   return identifiers
+}
+
+// JS + browser globals available at runtime in a Lakebed client bundle without
+// an import. Used by the free-variable guard below: anything referenced but
+// neither bound in the module nor listed here is a dropped/stripped import.
+const CLIENT_RUNTIME_GLOBALS = new Set<string>([
+  // ECMAScript
+  'globalThis', 'undefined', 'NaN', 'Infinity', 'Object', 'Array', 'String',
+  'Number', 'Boolean', 'Symbol', 'BigInt', 'Math', 'JSON', 'Date', 'RegExp',
+  'Function', 'Promise', 'Map', 'Set', 'WeakMap', 'WeakSet', 'WeakRef', 'Proxy',
+  'Reflect', 'Error', 'EvalError', 'RangeError', 'ReferenceError', 'SyntaxError',
+  'TypeError', 'URIError', 'AggregateError', 'parseInt', 'parseFloat', 'isNaN',
+  'isFinite', 'encodeURI', 'encodeURIComponent', 'decodeURI',
+  'decodeURIComponent', 'escape', 'unescape', 'Intl', 'ArrayBuffer',
+  'SharedArrayBuffer', 'DataView', 'Atomics', 'Int8Array', 'Uint8Array',
+  'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array',
+  'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array',
+  'structuredClone', 'queueMicrotask', 'eval',
+  // Console / timers / scheduling
+  'console', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
+  'requestAnimationFrame', 'cancelAnimationFrame', 'requestIdleCallback',
+  'cancelIdleCallback', 'performance', 'queueMicrotask',
+  // DOM / BOM
+  'window', 'self', 'top', 'parent', 'frames', 'document', 'navigator',
+  'location', 'history', 'screen', 'localStorage', 'sessionStorage', 'alert',
+  'confirm', 'prompt', 'getComputedStyle', 'matchMedia', 'getSelection',
+  'scrollTo', 'scrollBy', 'scrollX', 'scrollY', 'innerWidth', 'innerHeight',
+  'devicePixelRatio', 'customElements', 'crypto', 'caches',
+  // Fetch / network / encoding
+  'fetch', 'XMLHttpRequest', 'URL', 'URLSearchParams', 'Headers', 'Request',
+  'Response', 'FormData', 'Blob', 'File', 'FileReader', 'WebSocket',
+  'EventSource', 'AbortController', 'AbortSignal', 'TextEncoder', 'TextDecoder',
+  'atob', 'btoa', 'BroadcastChannel', 'MessageChannel', 'Worker',
+  // DOM constructors / observers / events
+  'Node', 'Element', 'HTMLElement', 'DocumentFragment', 'Text', 'Comment',
+  'ShadowRoot', 'Event', 'CustomEvent', 'EventTarget', 'KeyboardEvent',
+  'MouseEvent', 'PointerEvent', 'TouchEvent', 'FocusEvent', 'InputEvent',
+  'DragEvent', 'WheelEvent', 'ClipboardEvent', 'SubmitEvent', 'PopStateEvent',
+  'HashChangeEvent', 'MessageEvent', 'StorageEvent', 'ProgressEvent',
+  'CloseEvent', 'ErrorEvent', 'PromiseRejectionEvent', 'AnimationEvent',
+  'TransitionEvent', 'PageTransitionEvent', 'BeforeUnloadEvent', 'UIEvent',
+  'CompositionEvent', 'MediaQueryListEvent', 'MutationObserver',
+  'ResizeObserver', 'IntersectionObserver', 'PerformanceObserver', 'DOMParser',
+  'XMLSerializer', 'Image', 'Audio', 'Option', 'CSS', 'DOMException',
+  'HTMLInputElement', 'HTMLElement', 'FontFace',
+  // Preact / JSX runtime helpers that may appear un-imported in generated code
+  'Fragment',
+  // Node-ish (defensive; should not appear in client code)
+  'process', 'Buffer',
+])
+
+// Identifiers that must be skipped when collecting *references* because they
+// are member names, property keys, JSX attribute names, or binding targets —
+// not free-variable uses. Misclassifying these would flag `.map`, `className`,
+// object keys etc. as undefined.
+const isReferenceIdentifier = (node: ts.Identifier): boolean => {
+  const parent = node.parent
+  if (!parent) return true
+  // `obj.name` — the member, not a reference to a variable named `name`.
+  if (ts.isPropertyAccessExpression(parent) && parent.name === node) return false
+  // `{ key: value }` object-literal key (non-computed).
+  if (ts.isPropertyAssignment(parent) && parent.name === node) return false
+  // Method / accessor / property member names in objects and classes.
+  if (
+    (ts.isMethodDeclaration(parent) ||
+      ts.isPropertyDeclaration(parent) ||
+      ts.isGetAccessorDeclaration(parent) ||
+      ts.isSetAccessorDeclaration(parent) ||
+      ts.isEnumMember(parent)) &&
+    parent.name === node
+  ) {
+    return false
+  }
+  // `<div className=... />` — JSX attribute name.
+  if (ts.isJsxAttribute(parent) && parent.name === node) return false
+  // `{ a: b }` destructuring source key; `b` (the binding) is handled elsewhere.
+  if (ts.isBindingElement(parent) && parent.propertyName === node) return false
+  // Import / export specifier and binding names are declarations, not uses.
+  if (ts.isImportSpecifier(parent) || ts.isExportSpecifier(parent)) return false
+  if (ts.isImportClause(parent) || ts.isNamespaceImport(parent)) return false
+  // Label references (break/continue/labeled statement).
+  if (
+    ts.isLabeledStatement(parent) ||
+    ts.isBreakStatement(parent) ||
+    ts.isContinueStatement(parent)
+  ) {
+    return false
+  }
+  // JSX intrinsic element tag (`<div>`, `<span>`) — a string tag name, not a
+  // variable reference. Component tags (`<Carousel>`, uppercase) are kept so a
+  // dropped component import is still flagged.
+  if (
+    (ts.isJsxOpeningElement(parent) ||
+      ts.isJsxSelfClosingElement(parent) ||
+      ts.isJsxClosingElement(parent)) &&
+    parent.tagName === node &&
+    /^[a-z]/.test(node.text)
+  ) {
+    return false
+  }
+  return true
+}
+
+// Collect every name bound ANYWHERE in the module (imports, declarations,
+// parameters, catch vars, function/class names). Scope-insensitive on purpose:
+// treating a name bound in any scope as "available" cannot produce a false
+// positive (only, at worst, a missed leak), while the goal — catching an
+// import that was dropped so the name is bound in NO scope — is preserved.
+const collectAllBoundNames = (sourceFile: ts.SourceFile): Set<string> => {
+  const bound = new Set<string>()
+  const add = (name: ts.BindingName | undefined) => {
+    if (!name) return
+    for (const text of bindingIdentifierNames(name)) bound.add(text)
+  }
+  const visit = (node: ts.Node) => {
+    if (ts.isImportClause(node)) {
+      if (node.name) bound.add(node.name.text)
+      const named = node.namedBindings
+      if (named && ts.isNamespaceImport(named)) bound.add(named.name.text)
+      if (named && ts.isNamedImports(named)) {
+        for (const element of named.elements) bound.add(element.name.text)
+      }
+    } else if (ts.isVariableDeclaration(node) || ts.isParameter(node)) {
+      add(node.name)
+    } else if (
+      (ts.isFunctionDeclaration(node) ||
+        ts.isFunctionExpression(node) ||
+        ts.isClassDeclaration(node) ||
+        ts.isClassExpression(node)) &&
+      node.name
+    ) {
+      bound.add(node.name.text)
+    } else if (ts.isCatchClause(node) && node.variableDeclaration) {
+      add(node.variableDeclaration.name)
+    } else if (
+      ts.isTypeAliasDeclaration(node) ||
+      ts.isInterfaceDeclaration(node) ||
+      ts.isEnumDeclaration(node) ||
+      ts.isTypeParameterDeclaration(node)
+    ) {
+      // Type-level names are erased before bundling, so a reference to one is
+      // never a runtime leak — record them as "bound" so they are not flagged.
+      bound.add(node.name.text)
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+  return bound
+}
+
+// Free-variable guard for an emitted Lakebed client module. Returns the names
+// referenced at runtime that are bound nowhere in the module and are not
+// runtime globals — i.e. imports that were stripped or dropped during rewrite.
+// This is the general form of the `z is not defined` / `useEmblaCarousel is not
+// defined` blank-render bugs: any such name blank-renders the deploy.
+export const findUnboundClientReferences = (
+  moduleSource: string,
+  fileName: string,
+): string[] => {
+  const sourceFile = ts.createSourceFile(
+    fileName,
+    moduleSource,
+    ts.ScriptTarget.Latest,
+    true,
+    fileName.endsWith('.ts') ? ts.ScriptKind.TS : ts.ScriptKind.TSX,
+  )
+  const bound = collectAllBoundNames(sourceFile)
+  const unbound = new Set<string>()
+  const visit = (node: ts.Node) => {
+    if (ts.isTypeNode(node)) return
+    if (
+      ts.isIdentifier(node) &&
+      isReferenceIdentifier(node) &&
+      !bound.has(node.text) &&
+      !CLIENT_RUNTIME_GLOBALS.has(node.text)
+    ) {
+      unbound.add(node.text)
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+  return [...unbound]
 }
 
 const collectClientComponentPreludeSources = (
@@ -1224,14 +1430,14 @@ const collectClientComponentPreludeSources = (
   }
 
   const requiredNames = new Set<string>()
-  const queuedNames = [...collectIdentifierTexts(componentSource)]
+  const queuedNames = [...collectValueIdentifierTexts(componentSource)]
   for (const name of queuedNames) {
     if (requiredNames.has(name)) continue
     const statement = declarationByName.get(name)
     if (!statement) continue
 
     requiredNames.add(name)
-    for (const identifier of collectIdentifierTexts(statement)) {
+    for (const identifier of collectValueIdentifierTexts(statement)) {
       if (!requiredNames.has(identifier)) {
         queuedNames.push(identifier)
       }
@@ -1357,6 +1563,48 @@ const normalizeLakebedSchemaSource = (source: string | null): string | null =>
     )
     .replace(/\bnumber\s*\(\s*\)/g, 'string()') ?? null
 
+// Inline a `table(helper())` argument to `table({ ...fields })` by resolving a
+// shared field helper (e.g. `const noticeFields = () => ({...})`) to its
+// returned object literal. Without this the downstream field extractor cannot
+// read the helper call and SILENTLY DROPS the table from the schema — so
+// `ctx.db.<table>` is undefined at runtime and any query reading it throws,
+// which cascades every section back to its prop-fallback sample.
+const inlineTableCallArg = (
+  tableCall: ts.CallExpression,
+  sourceFile: ts.SourceFile,
+): ts.Expression => {
+  const arg = tableCall.arguments[0]
+  if (!arg || !ts.isCallExpression(arg) || !ts.isIdentifier(arg.expression)) {
+    return tableCall
+  }
+  const initializer = findVariableInitializer(sourceFile, arg.expression.text)
+  const fn =
+    initializer &&
+    (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer))
+      ? initializer
+      : null
+  if (!fn) return tableCall
+
+  let object: ts.ObjectLiteralExpression | null = null
+  const body = fn.body
+  if (
+    ts.isParenthesizedExpression(body) &&
+    ts.isObjectLiteralExpression(body.expression)
+  ) {
+    object = body.expression
+  } else if (ts.isObjectLiteralExpression(body)) {
+    object = body
+  } else if (ts.isBlock(body)) {
+    const returned = body.statements.find(ts.isReturnStatement)?.expression
+    const unwrapped = returned ? unwrapExpression(returned) : undefined
+    if (unwrapped && ts.isObjectLiteralExpression(unwrapped)) object = unwrapped
+  }
+  if (!object) return tableCall
+  return ts.factory.createCallExpression(tableCall.expression, undefined, [
+    object,
+  ])
+}
+
 const lakebedSchemaSource = (
   schema: ts.ObjectLiteralExpression,
   sourceFile: ts.SourceFile,
@@ -1365,7 +1613,7 @@ const lakebedSchemaSource = (
     .filter(ts.isPropertyAssignment)
     .map((property) => {
       const initializer = unwrapExpression(property.initializer)
-      const tableSource = ts.isObjectLiteralExpression(initializer)
+      const rawTableSource = ts.isObjectLiteralExpression(initializer)
         ? initializer.properties.find(
             (item): item is ts.SpreadAssignment =>
               ts.isSpreadAssignment(item) &&
@@ -1373,6 +1621,10 @@ const lakebedSchemaSource = (
               item.expression.expression.getText(sourceFile) === 'table',
           )?.expression
         : undefined
+      const tableSource =
+        rawTableSource && ts.isCallExpression(rawTableSource)
+          ? inlineTableCallArg(rawTableSource, sourceFile)
+          : rawTableSource
       return `${property.name.getText(sourceFile)}: ${printNode(
         tableSource ?? initializer,
         sourceFile,
@@ -2477,16 +2729,45 @@ const seedRowsForTable = (
   return [...rowsByKey.values()]
 }
 
-const renderSeedData = (
+// Project real catalog rows (from the session's Lakebed store) onto a table's
+// declared fields, dropping engine-managed keys (id/createdAt/updatedAt) and
+// coercing to strings (the anonymous Lakebed schema is all-string).
+const projectExternalSeedRows = (
+  rows: Array<Record<string, unknown>>,
+  fields: string[],
+): Array<Record<string, string>> =>
+  rows
+    .map((item) => {
+      const row: Record<string, string> = {}
+      let hasFieldValue = false
+      for (const field of fields) {
+        const raw = item[field]
+        const value = raw == null ? '' : String(raw)
+        row[field] = value
+        if (value) hasFieldValue = true
+      }
+      return hasFieldValue ? row : null
+    })
+    .filter((row): row is Record<string, string> => row !== null)
+
+export const renderSeedData = (
   routes: LakebedRoute[],
   tableFields: Map<string, string[]>,
+  externalSeed?: Record<string, Array<Record<string, unknown>>>,
 ): string => {
   const seedRows = Object.fromEntries(
     [...tableFields.entries()]
-      .map(([tableName, fields]) => [
-        tableName,
-        seedRowsForTable(tableName, fields, routes),
-      ])
+      .map(([tableName, fields]) => {
+        // Prefer the real seeded catalog for this table (the full tvnl.in data
+        // published to the session's Lakebed store); fall back to
+        // props/default-derived rows only when no external rows exist.
+        const external = externalSeed?.[tableName]
+        const rows =
+          Array.isArray(external) && external.length > 0
+            ? projectExternalSeedRows(external, fields)
+            : seedRowsForTable(tableName, fields, routes)
+        return [tableName, rows] as const
+      })
       .filter(([, rows]) => rows.length > 0),
   )
 
@@ -2897,31 +3178,54 @@ const rewriteNamedBareImport = (
     return null
   }
   const clause = statement.importClause
-  const namedBindings = clause?.namedBindings
+  if (!clause) return null
+  const namedBindings = clause.namedBindings
   if (!namedBindings || !ts.isNamedImports(namedBindings)) return null
 
-  return namedBindings.elements
-    .map((element) => {
-      const localName = element.name.text
-      const importedName = (element.propertyName ?? element.name).text
-      const target = resolveVendorNamedExport(moduleName, importedName)
-      const vendorPath = copyVendorSourceFile(
-        target.sourcePath,
-        context.files,
-        context.seenVendorFiles,
+  const lines: string[] = []
+
+  // Default import binding — e.g. `import useEmblaCarousel, { type ... } from
+  // 'embla-carousel-react'`. This clause was previously ignored entirely, so
+  // the default value binding was dropped and the vendored module's default
+  // export became `undefined` at runtime (`useEmblaCarousel is not defined` →
+  // blank Lakebed deploy). Re-emit it as a default import from the vendor file.
+  if (clause.name && !clause.isTypeOnly) {
+    const vendorPath = copyBareVendorImport(
+      moduleName,
+      context.files,
+      context.seenVendorFiles,
+    )
+    const importPath = relativeImportPath(context.outPath, vendorPath)
+    lines.push(`import ${clause.name.text} from "${importPath}";`)
+  }
+
+  for (const element of namedBindings.elements) {
+    // Inline `type X` specifiers are erased before bundling — a runtime import
+    // for them resolves to nothing and only adds noise.
+    if (element.isTypeOnly) continue
+    const localName = element.name.text
+    const importedName = (element.propertyName ?? element.name).text
+    const target = resolveVendorNamedExport(moduleName, importedName)
+    const vendorPath = copyVendorSourceFile(
+      target.sourcePath,
+      context.files,
+      context.seenVendorFiles,
+    )
+    const importPath = relativeImportPath(context.outPath, vendorPath)
+    if (target.namespace) {
+      lines.push(`import * as ${localName} from "${importPath}";`)
+    } else if (target.importName === 'default') {
+      lines.push(`import { default as ${localName} } from "${importPath}";`)
+    } else if (target.importName === localName) {
+      lines.push(`import { ${target.importName} } from "${importPath}";`)
+    } else {
+      lines.push(
+        `import { ${target.importName} as ${localName} } from "${importPath}";`,
       )
-      const importPath = relativeImportPath(context.outPath, vendorPath)
-      if (target.namespace)
-        return `import * as ${localName} from "${importPath}";`
-      if (target.importName === 'default') {
-        return `import { default as ${localName} } from "${importPath}";`
-      }
-      if (target.importName === localName) {
-        return `import { ${target.importName} } from "${importPath}";`
-      }
-      return `import { ${target.importName} as ${localName} } from "${importPath}";`
-    })
-    .join('\n')
+    }
+  }
+
+  return lines.join('\n')
 }
 
 function rewriteLakebedClientImports(
@@ -3137,10 +3441,15 @@ const transformHandler = (
     initializer && ts.isCallExpression(initializer)
       ? initializer.arguments.find(ts.isArrowFunction)
       : initializer
+  // Lazy-seed ONLY in mutations. Lakebed queries are read-only, so calling
+  // `ensureSeedData` (which inserts) inside a query throws whenever a table is
+  // empty — breaking the whole query and forcing every section back to its
+  // prop-fallback sample. Real data now arrives via the authorized
+  // `/api/__sync` endpoint; queries must just read.
+  const seedCall = wrapper === 'mutation' ? '  ensureSeedData(ctx.db);\n' : ''
   if (!handler || !ts.isArrowFunction(handler)) {
     return `${name}: ${wrapper}((ctx) => {
-  ensureSeedData(ctx.db);
-  return { ok: true, userId: ctx.auth.userId };
+${seedCall}  return { ok: true, userId: ctx.auth.userId };
 })`
   }
 
@@ -3168,8 +3477,7 @@ const transformHandler = (
       .map((statement) => printNode(statement, sourceFile))
       .join('\n')
     return `${name}: ${wrapper}((${prefix}) => {
-  ensureSeedData(ctx.db);
-  const db = ctx.db
+${seedCall}  const db = ctx.db
 ${contextAlias}${normalizeHandlerSource(body)
       .split('\n')
       .map((line) => `  ${line}`)
@@ -3181,8 +3489,7 @@ ${contextAlias}${normalizeHandlerSource(body)
     printNode(handler.body, sourceFile),
   ).replace(/(^|[^A-Za-z0-9_$.])db\./g, '$1ctx.db.')
   return `${name}: ${wrapper}((${prefix}) => {
-  ensureSeedData(ctx.db);
-${contextAlias}  return ${expression};
+${seedCall}${contextAlias}  return ${expression};
 })`
 }
 
@@ -3391,13 +3698,43 @@ export const imageSources = ${JSON.stringify(imageSources, null, 2)} satisfies A
 const renderClientTheme = (
   themeCss: string,
   tailwindThemeCss: string,
+  defaultDark: boolean,
 ): string => `import { useEffect } from "preact/hooks";
 
 export const themeCss = ${JSON.stringify(themeCss)};
 export const tailwindThemeCss = ${JSON.stringify(tailwindThemeCss)};
+export const defaultDark = ${defaultDark ? 'true' : 'false'};
+
+// Shared dark-mode contract for the whole site: the \`.dark\` class on <html>
+// selects the dark CSS-var palette (see themeCss). The active mode is persisted
+// under THEME_STORAGE_KEY so it survives reloads and stays consistent across the
+// theme runtime and any in-page toggle (e.g. a section's light/dark button).
+export const THEME_STORAGE_KEY = "lakebed:theme-dark";
+
+export function isThemeDark() {
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "1") return true;
+    if (stored === "0") return false;
+  } catch {}
+  return defaultDark;
+}
+
+export function applyThemeMode(dark) {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle("dark", dark);
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, dark ? "1" : "0");
+  } catch {}
+  window.dispatchEvent(new CustomEvent("lakebed:themechange", { detail: { dark } }));
+}
 
 export function StyleRuntime() {
   useEffect(() => {
+    // Apply the persisted (or default) light/dark mode before first paint of
+    // themed content so the deployed site opens in the right palette.
+    applyThemeMode(isThemeDark());
+
     let style = document.getElementById("site-theme");
     if (!style) {
       style = document.createElement("style");
@@ -3633,7 +3970,7 @@ const renderClientLakebed = (): string => `import {
   useMutation,
   useQuery,
 } from "lakebed/client";
-import { useCallback, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 export { signInWithGoogle, signOut, useAuth };
 
@@ -3877,6 +4214,18 @@ export function AuthRuntime() {
   return null;
 }
 
+// Seeds the deployed DB once on mount by calling the server's __lakebedSeed
+// mutation. Mutations run in the SAME state scope the page's queries read, so
+// this makes baked seed data visible to the site (endpoint writes do not share
+// that scope). Idempotent server-side (skips already-seeded tables).
+export function SeedRuntime() {
+  const seed = useLakebedMutation("__lakebedSeed");
+  useEffect(() => {
+    void (seed as (...args: unknown[]) => Promise<unknown>)().catch(() => {});
+  }, []);
+  return null;
+}
+
 export function useLakebedAdapter() {
   const auth = useAuth();
 
@@ -3911,6 +4260,44 @@ export function useLakebedAdapter() {
   };
 }
 `
+
+// Bindings the client import transformer deliberately strips because they are
+// build-time-only — their imports cannot be resolved by the Lakebed client
+// bundler (which allows only preact/* and lakebed/client). `z` (zod) is the
+// canonical case: props schemas are validated at build time and erased. If such
+// a binding survives into the emitted client module as a *value* reference the
+// bundle silently blank-renders at runtime (`z is not defined`). Type-position
+// references are erased by esbuild and are fine — the guard only inspects value
+// positions (via collectValueIdentifierTexts).
+// A client file that our builder generates or copies (not a third-party
+// vendored ESM module, which legitimately reads browser globals we don't model).
+const isGuardedClientSourcePath = (path: string): boolean =>
+  path.startsWith('client/') &&
+  !path.startsWith('client/vendor/') &&
+  /\.tsx?$/.test(path)
+
+// Fail the build if any generated/copied client file references a value that is
+// bound nowhere in the module and is not a runtime global — i.e. an import that
+// was stripped or dropped during rewrite. This is the general form of the
+// `z is not defined` / `useEmblaCarousel is not defined` blank-render bugs:
+// esbuild treats the free identifier as a global, ships the bundle, and it
+// throws a ReferenceError at render → blank deploy with no build error.
+const assertNoUnboundClientReferences = (
+  files: Record<string, string>,
+): void => {
+  const offenders: string[] = []
+  for (const [path, contents] of Object.entries(files)) {
+    if (!isGuardedClientSourcePath(path)) continue
+    const unbound = findUnboundClientReferences(contents, path)
+    if (unbound.length > 0) offenders.push(`${path}: ${unbound.join(', ')}`)
+  }
+  if (offenders.length > 0) {
+    throw new Error(
+      `Lakebed client bundle references undefined bindings (stripped/dropped ` +
+        `imports) — these blank-render the deploy:\n  ${offenders.join('\n  ')}`,
+    )
+  }
+}
 
 const renderClientComponentModule = (
   component: ClientComponentDefinition,
@@ -3952,6 +4339,30 @@ export const ${toIdentifier(component.name)}Block: (input: {
 `
 }
 
+// Test seam: run the real client-component transformation (import stripping +
+// value-only prelude resolution + build-only-leak guard) over an arbitrary
+// capsule source string and return the emitted Lakebed client module. Used by
+// the export-builder unit tests to lock the zod-leak regression without wiring
+// up the whole generated-source manifest.
+export const buildLakebedClientComponentForTest = (
+  componentName: string,
+  source: string,
+): { module: string; preludeSources: string[] } | null => {
+  const files: Record<string, string> = {}
+  const definition = readClientComponentDefinition(
+    componentName,
+    { file: `${componentName}.tsx`, source },
+    files,
+    new Set<string>(),
+    new Set<string>(),
+  )
+  if (!definition) return null
+  return {
+    module: renderClientComponentModule(definition),
+    preludeSources: definition.preludeSources,
+  }
+}
+
 const renderClientIndex = (
   routes: LakebedRoute[],
   components: ClientComponentDefinition[],
@@ -3960,6 +4371,19 @@ const renderClientIndex = (
 ): string => {
   void routes
   void input.selectedBrandLogo
+  // Bake the full catalog into the client so capsules can render it directly
+  // (their `useGovCatalog`-style fallbacks read `globalThis.__LAKEBED_GOV_SEED__`).
+  // Lakebed's per-context DB state isn't reliably shared between the deploy-time
+  // seed and the page's queries, so the baked data is the deployed source of
+  // truth; a live query result overrides it when present.
+  const bakedSeed = input.lakebedSeedData ?? {}
+  const bakedSeedAssignment =
+    Object.keys(bakedSeed).length > 0
+      ? `if (typeof globalThis !== "undefined") {
+  (globalThis as { __LAKEBED_GOV_SEED__?: unknown }).__LAKEBED_GOV_SEED__ = ${JSON.stringify(bakedSeed)};
+}
+`
+      : ''
   const componentImports = components
     .map(
       (component) =>
@@ -3996,6 +4420,7 @@ import { AuthRuntime, useLakebedAdapter, type LakebedAdapter } from "./lib/lakeb
 import { StyleRuntime } from "./lib/theme";
 ${componentImports}
 
+${bakedSeedAssignment}
 type PageComponent = (input: {
   props: Record<string, unknown>;
   lakebed: LakebedAdapter;
@@ -4182,10 +4607,92 @@ export function App() {
 }
 `
 
+// Auto-generated authorized data-sync endpoint. Our platform POSTs catalog data
+// to `POST /__lakebed/sync` with `Authorization: Bearer <syncSecret>` to seed or
+// update the deployed DB — the deployed app never calls out (it can't). The
+// secret is baked into the SERVER bundle only (never the client), so only our
+// platform can write. Rows are projected to each table's declared fields
+// (unknown/engine-managed keys are rejected by lakebed inserts), and every
+// posted table is bulk-replaced (idempotent). Proven end-to-end in ~/test-lakebed.
+export const injectSyncEndpoint = (
+  endpointsSource: string,
+  tableFields: Map<string, string[]>,
+  syncSecret?: string,
+): string => {
+  if (!syncSecret) return endpointsSource
+  const fieldMap = JSON.stringify(Object.fromEntries(tableFields))
+  const entry = `
+  __lakebedSync: endpoint(
+    { method: "POST", path: "/api/__sync" },
+    async (ctx, req) => {
+      if (req.headers.get("authorization") !== "Bearer " + ${JSON.stringify(syncSecret)}) {
+        return json({ error: "unauthorized" }, { status: 401 });
+      }
+      let payload;
+      try {
+        payload = await req.json();
+      } catch {
+        return json({ error: "invalid json" }, { status: 400 });
+      }
+      const tables =
+        payload && typeof payload === "object" ? payload.tables : null;
+      if (!tables || typeof tables !== "object") {
+        return json({ error: "tables object required" }, { status: 400 });
+      }
+      const fieldMap = ${fieldMap};
+      const result = {};
+      for (const name of Object.keys(tables)) {
+        const fields = fieldMap[name];
+        const target = ctx.db[name];
+        const rows = tables[name];
+        if (!fields || !target || !Array.isArray(rows)) continue;
+        for (const existing of target.all()) target.delete(existing.id);
+        let inserted = 0;
+        for (const raw of rows) {
+          if (!raw || typeof raw !== "object") continue;
+          const row = {};
+          for (const field of fields) {
+            const value = raw[field];
+            row[field] = value == null ? "" : String(value);
+          }
+          try {
+            target.insert(row);
+            inserted += 1;
+          } catch {
+            // skip malformed row
+          }
+        }
+        result[name] = inserted;
+      }
+      return json({ ok: true, tables: result });
+    }
+  ),`
+  const trimmed = endpointsSource.trimStart()
+  if (!trimmed.startsWith('{')) return endpointsSource
+  return trimmed.replace('{', `{${entry}`)
+}
+
+// Client-triggerable seed mutation. Mutations run in the SAME state scope the
+// page's queries read (unlike endpoint handlers), so a one-shot client call to
+// this on mount populates the DB the sections actually query. `ensureSeedData`
+// is idempotent (skips non-empty tables).
+const injectSeedMutation = (mutationsSource: string): string => {
+  const entry = `
+  __lakebedSeed: mutation((ctx) => {
+    ensureSeedData(ctx.db);
+    return { ok: true };
+  }),`
+  const trimmed = mutationsSource.trimStart()
+  if (!trimmed.startsWith('{')) return mutationsSource
+  return trimmed.replace('{', `{${entry}`)
+}
+
 const renderServerIndex = (
   projectName: string,
   definitions: LakebedDefinition[],
   routes: LakebedRoute[],
+  externalSeed?: Record<string, Array<Record<string, unknown>>>,
+  syncSecret?: string,
 ): string => {
   const renderedSchema = renderMergedSchema(
     definitions.map((definition) => definition.schemaSource),
@@ -4216,11 +4723,12 @@ const renderServerIndex = (
   ),
 }`,
   )
-  const mutationsSource = mergeHandlers(
-    definitions,
-    'mutations',
-    'mutation',
-    `{
+  const mutationsSource = injectSeedMutation(
+    mergeHandlers(
+      definitions,
+      'mutations',
+      'mutation',
+      `{
   addToReadingList: mutation((ctx, articleTitle: string) => {
     const existing = ctx.db.readingList.where("articleTitle", articleTitle).all()[0]
     if (!existing) {
@@ -4229,8 +4737,13 @@ const renderServerIndex = (
     return ctx.db.readingList.all()
   }),
 }`,
+    ),
   )
-  const endpointsSource = mergeEndpointHandlers(definitions)
+  const endpointsSource = injectSyncEndpoint(
+    mergeEndpointHandlers(definitions),
+    renderedSchema.tableFields,
+    syncSecret,
+  )
   const imports = [
     'capsule',
     'mutation',
@@ -4241,7 +4754,7 @@ const renderServerIndex = (
 
   return `import { ${[...new Set(imports)].sort().join(', ')} } from "lakebed/server";
 
-${renderSeedData(routes, renderedSchema.tableFields)}
+${renderSeedData(routes, renderedSchema.tableFields, externalSeed)}
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
@@ -4402,11 +4915,14 @@ export async function buildOpenUILakebedProjectFiles(
     'client/lib/theme.tsx': renderClientTheme(
       themeCss + renderClientStyleOverridesCss(styleOverrides),
       tailwindThemeCss,
+      isDarkTheme,
     ),
     'server/index.ts': renderServerIndex(
       parsed.projectName,
       definitions,
       routes,
+      input.lakebedSeedData,
+      input.syncSecret,
     ),
     'shared/content.ts': renderSharedContent(parsed.projectName, routes),
   })
@@ -4428,6 +4944,7 @@ export async function buildOpenUILakebedProjectFiles(
   }
   const formattedFiles = await formatExportFiles(files)
   assertNoLeakedSourceTerms(formattedFiles)
+  assertNoUnboundClientReferences(formattedFiles)
 
   return {
     files: formattedFiles,

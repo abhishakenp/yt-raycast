@@ -16,6 +16,7 @@ import type * as export_artifacts from "../export_artifacts.js";
 import type * as generation from "../generation.js";
 import type * as generationConfig from "../generationConfig.js";
 import type * as github from "../github.js";
+import type * as gov_uploads from "../gov_uploads.js";
 import type * as lakebed from "../lakebed.js";
 import type * as lakebed_deploy from "../lakebed_deploy.js";
 import type * as lib_disposable_email from "../lib/disposable_email.js";
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   generation: typeof generation;
   generationConfig: typeof generationConfig;
   github: typeof github;
+  gov_uploads: typeof gov_uploads;
   lakebed: typeof lakebed;
   lakebed_deploy: typeof lakebed_deploy;
   "lib/disposable_email": typeof lib_disposable_email;
