@@ -32,6 +32,7 @@ import {
   PersonCardRole,
   PersonCardBio,
   Card,
+  Eyebrow,
   ResponsiveGrid,
 } from './index.ts'
 
@@ -479,6 +480,97 @@ describe('Card', () => {
     render(<Card ref={ref} />)
     expect(ref.current).not.toBeNull()
     expect(ref.current?.tagName).toBe('DIV')
+  })
+})
+
+describe('Eyebrow', () => {
+  it('renders as span with pill classes by default', () => {
+    render(<Eyebrow data-testid="eb">Label</Eyebrow>)
+    const el = screen.getByTestId('eb')
+    expect(el.tagName).toBe('SPAN')
+    expect(el.className).toContain('rounded-full')
+    expect(el.className).toContain('border')
+    expect(el.className).toContain('bg-background')
+    expect(el.className).toContain('uppercase')
+    expect(el.getAttribute('data-slot')).toBe('eyebrow')
+  })
+
+  it('solid variant has bg-primary text-primary-foreground', () => {
+    render(
+      <Eyebrow variant="solid" data-testid="eb">
+        Label
+      </Eyebrow>,
+    )
+    const el = screen.getByTestId('eb')
+    expect(el.className).toContain('bg-primary')
+    expect(el.className).toContain('text-primary-foreground')
+  })
+
+  it('muted variant has bg-muted', () => {
+    render(
+      <Eyebrow variant="muted" data-testid="eb">
+        Label
+      </Eyebrow>,
+    )
+    expect(screen.getByTestId('eb').className).toContain('bg-muted')
+  })
+
+  it('text variant has no surface classes', () => {
+    render(
+      <Eyebrow variant="text" data-testid="eb">
+        Label
+      </Eyebrow>,
+    )
+    const el = screen.getByTestId('eb')
+    expect(el.className).toContain('text-primary')
+    expect(el.className).not.toContain('rounded-full')
+    expect(el.className).not.toContain('border-border')
+  })
+
+  it('primary variant has primary-tinted surface', () => {
+    render(
+      <Eyebrow variant="primary" data-testid="eb">
+        Label
+      </Eyebrow>,
+    )
+    const el = screen.getByTestId('eb')
+    expect(el.className).toContain('text-primary')
+    expect(el.className).toContain('border-primary/15')
+  })
+
+  it('renders icon before children', () => {
+    render(<Eyebrow icon={<span data-testid="icon">★</span>}>Label</Eyebrow>)
+    const icon = screen.getByTestId('icon')
+    expect(icon).toBeTruthy()
+    expect(icon.parentElement?.textContent).toContain('★')
+    expect(icon.parentElement?.textContent).toContain('Label')
+  })
+
+  it('merges className', () => {
+    render(
+      <Eyebrow className="custom-eb" data-testid="eb">
+        Label
+      </Eyebrow>,
+    )
+    expect(screen.getByTestId('eb').className).toContain('custom-eb')
+  })
+
+  it('asChild renders as child element', () => {
+    render(
+      <Eyebrow asChild data-testid="eb">
+        <div>Label</div>
+      </Eyebrow>,
+    )
+    const el = screen.getByTestId('eb')
+    expect(el.tagName).toBe('DIV')
+    expect(el.className).toContain('rounded-full')
+  })
+
+  it('forwards ref to span', () => {
+    const ref = { current: null as HTMLSpanElement | null }
+    render(<Eyebrow ref={ref}>Label</Eyebrow>)
+    expect(ref.current).not.toBeNull()
+    expect(ref.current?.tagName).toBe('SPAN')
   })
 })
 
