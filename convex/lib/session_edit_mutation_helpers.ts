@@ -73,30 +73,99 @@ const uniqueNonEmptyTexts = (values: Array<string | undefined>): string[] => {
   return texts
 }
 
+/**
+ * Replace the first string leaf that EQUALS oldText (trimmed). Unlike
+ * replaceFirstJsonText this never does substring/fuzzy matching, so a short
+ * beforeText (e.g. a capsule-hardcoded heading like "Board of Directors")
+ * cannot silently corrupt an unrelated longer leaf that merely contains it
+ * ("Leadership & Board of Directors").
+ */
+const replaceEqualJsonTextLeaf = (
+  value: unknown,
+  oldText: string,
+  newText: string,
+): { value: unknown; replaced: boolean } => {
+  if (typeof value === 'string') {
+    if (value.trim() === oldText) return { value: newText, replaced: true }
+    return { value, replaced: false }
+  }
+
+  if (Array.isArray(value)) {
+    let replaced = false
+    const next = value.map((item) => {
+      if (replaced) return item
+      const result = replaceEqualJsonTextLeaf(item, oldText, newText)
+      replaced = result.replaced
+      return result.value
+    })
+    return { value: next, replaced }
+  }
+
+  if (!isJsonObject(value)) return { value, replaced: false }
+
+  let replaced = false
+  const next: JsonObject = {}
+  for (const [key, item] of Object.entries(value)) {
+    if (replaced) {
+      next[key] = item
+      continue
+    }
+
+    const result = replaceEqualJsonTextLeaf(item, oldText, newText)
+    next[key] = result.value
+    replaced = result.replaced
+  }
+
+  return { value: next, replaced }
+}
+
+/**
+ * Patch the first JSON string-leaf occurrence of any candidate beforeText in
+ * the session's Lakebed data rows. Library capsules (gov-portal boards,
+ * tenders, directories, …) render this data live — it is the ONLY store that
+ * contains their text: preview.html is an SSR shell rendered with inert
+ * Lakebed stubs and homeModule.source only carries the capsule call, so a
+ * text edit on that content can never match anywhere else. Returns whether
+ * any row was patched so applySessionEdit can treat a sessionData match as a
+ * successful edit instead of throwing TEXT_NOT_FOUND.
+ *
+ * `exactLeafOnly` is used by the TEXT_NOT_FOUND fallback gates: when
+ * sessionData is the LAST possible store, only a leaf that equals the
+ * selected text may match. A clicked text node's full value equals its leaf
+ * (names, designations, bios, headings), whereas capsule-hardcoded strings
+ * that merely appear inside a longer leaf must keep failing loudly instead
+ * of silently rewriting an unrelated leaf. The post-gate sync call keeps the
+ * historical substring semantics so partial-node edits that already matched
+ * preview/source still propagate into mirrored sessionData values.
+ */
 const patchTextEditIntoSessionData = async (
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
   beforeTexts: Array<string | undefined>,
   afterText: string | undefined,
   now: number,
-): Promise<void> => {
+  exactLeafOnly = false,
+): Promise<boolean> => {
   const replacement = String(afterText ?? '').trim()
-  if (!replacement) return
+  if (!replacement) return false
 
   const candidates = uniqueNonEmptyTexts(beforeTexts)
-  if (candidates.length === 0) return
+  if (candidates.length === 0) return false
 
   const docs = await ctx.db
     .query('sessionData')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
     .take(128)
 
+  let anyReplaced = false
   for (const doc of docs) {
     let nextData: unknown = doc.data
     let replaced = false
 
     for (const candidate of candidates) {
-      const edit = replaceFirstJsonText(nextData, candidate, replacement)
+      const edit = exactLeafOnly
+        ? replaceEqualJsonTextLeaf(nextData, candidate, replacement)
+        : replaceFirstJsonText(nextData, candidate, replacement)
       if (!edit.replaced) continue
       nextData = edit.value
       replaced = true
@@ -104,12 +173,14 @@ const patchTextEditIntoSessionData = async (
     }
 
     if (replaced && isJsonObject(nextData)) {
+      anyReplaced = true
       await ctx.db.patch(doc._id, {
         data: nextData,
         updatedAt: now,
       })
     }
   }
+  return anyReplaced
 }
 
 export type SessionEditInput = {
@@ -718,6 +789,12 @@ export const applySessionEdit = async (
               )
 
   let sourceAlreadyPatched = false
+  // Set when the edited text was found (and patched) in the session's Lakebed
+  // sessionData rows — the only store that holds library-capsule content
+  // (gov-portal boards, tenders, directories, …). A sessionData match is a
+  // fully successful edit: the capsule re-renders live from the patched row,
+  // so neither TEXT_NOT_FOUND gate may throw for it.
+  let sessionDataPatched = false
   if (!editedPreview.replaced) {
     // Style edits: the stored preview.html is OpenUI source code, not rendered
     // HTML — it has no `class="..."` attributes for applyStyleEdit to anchor on.
@@ -766,6 +843,24 @@ export const applySessionEdit = async (
           patchArgs.occurrenceIndex,
         )
         if (aiCapsuleEdits.length > 0) {
+          editedPreview = { html: preview.html, replaced: true }
+        }
+      }
+      if (!editedPreview.replaced) {
+        // Last store: Lakebed sessionData (library-capsule content). This is
+        // where gov-portal boards/tenders/directory text actually lives —
+        // preview.html is an SSR shell (Lakebed stubbed out) and the source
+        // only contains the capsule call, so for this content every earlier
+        // matcher is guaranteed to miss.
+        sessionDataPatched = await patchTextEditIntoSessionData(
+          ctx,
+          sessionId,
+          [args.beforeText, patchArgs.beforeText],
+          patchArgs.afterText,
+          now,
+          true, // exactLeafOnly — see patchTextEditIntoSessionData
+        )
+        if (sessionDataPatched) {
           editedPreview = { html: preview.html, replaced: true }
         }
       }
@@ -825,13 +920,27 @@ export const applySessionEdit = async (
     )
     if (
       !artifactSnapshot.openUiReplaced &&
-      !artifactSnapshot.aiCapsuleReplaced
+      !artifactSnapshot.aiCapsuleReplaced &&
+      !sessionDataPatched
     ) {
-      throw new ConvexError({
-        code: 'TEXT_NOT_FOUND',
-        message:
-          'Selected text was not found in the current preview. Select a smaller text block and try again.',
-      })
+      // The text matched preview.html but no generated artifact. Before
+      // giving up, try the Lakebed sessionData rows — library-capsule
+      // content lives only there (see patchTextEditIntoSessionData).
+      sessionDataPatched = await patchTextEditIntoSessionData(
+        ctx,
+        sessionId,
+        [args.beforeText, patchArgs.beforeText],
+        patchArgs.afterText,
+        now,
+        true, // exactLeafOnly — see patchTextEditIntoSessionData
+      )
+      if (!sessionDataPatched) {
+        throw new ConvexError({
+          code: 'TEXT_NOT_FOUND',
+          message:
+            'Selected text was not found in the current preview. Select a smaller text block and try again.',
+        })
+      }
     }
     openUiSource = artifactSnapshot.openUiSource
     siteSpecJson = artifactSnapshot.siteSpecJson
@@ -861,15 +970,17 @@ export const applySessionEdit = async (
       patchArgs.afterText,
       now,
     )
-    await patchTextEditIntoSessionData(
-      ctx,
-      sessionId,
-      isLocaleScopedTranslatedTextEdit
-        ? [args.beforeText]
-        : [args.beforeText, patchArgs.beforeText],
-      patchArgs.afterText,
-      now,
-    )
+    if (!sessionDataPatched) {
+      await patchTextEditIntoSessionData(
+        ctx,
+        sessionId,
+        isLocaleScopedTranslatedTextEdit
+          ? [args.beforeText]
+          : [args.beforeText, patchArgs.beforeText],
+        patchArgs.afterText,
+        now,
+      )
+    }
   }
 
   await ctx.db.insert('previews', {
