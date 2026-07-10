@@ -44,6 +44,21 @@ const ALIGN_ITEMS_OPTIONS = [
   { value: 'baseline', label: 'Baseline' },
 ] as const
 
+const POSITION_OPTIONS = [
+  { value: 'static', label: 'Static' },
+  { value: 'relative', label: 'Relative' },
+  { value: 'absolute', label: 'Absolute' },
+  { value: 'sticky', label: 'Sticky' },
+  { value: 'fixed', label: 'Fixed' },
+] as const
+
+const OFFSET_SIDES = [
+  { value: 'top', label: 'Top' },
+  { value: 'right', label: 'Right' },
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'left', label: 'Left' },
+] as const
+
 export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
   const [display, setDisplay] = useState('block')
   const [flexDirection, setFlexDirection] = useState('row')
@@ -52,6 +67,14 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
   const [gap, setGap] = useState('0')
   const [gapUnit, setGapUnit] = useState('px')
   const [flexWrap, setFlexWrap] = useState('nowrap')
+  const [position, setPosition] = useState('static')
+  const [offsets, setOffsets] = useState({
+    top: '',
+    right: '',
+    bottom: '',
+    left: '',
+  })
+  const [zIndex, setZIndex] = useState('')
 
   const userModifiedRef = useRef(false)
   const prevElementRef = useRef<HTMLElement | null>(null)
@@ -79,6 +102,18 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
           : 'px',
     )
     setGap(String(parseFloat(computedGap) || 0))
+
+    setPosition(computed.position || 'static')
+    const inline = activeElement.style
+    const readOffset = (v: string) =>
+      v && v !== 'auto' ? String(parseFloat(v) || 0) : ''
+    setOffsets({
+      top: readOffset(inline.top),
+      right: readOffset(inline.right),
+      bottom: readOffset(inline.bottom),
+      left: readOffset(inline.left),
+    })
+    setZIndex(inline.zIndex && inline.zIndex !== 'auto' ? inline.zIndex : '')
   }, [activeElement])
 
   const markModified = () => {
@@ -93,9 +128,41 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
     }
   }
 
+  const removeLiveStyle = (prop: string) => {
+    if (activeElement) {
+      activeElement.style.removeProperty(prop)
+      markModified()
+    }
+  }
+
+  const applyOffset = (side: string, value: string) => {
+    setOffsets((prev) => ({ ...prev, [side]: value }))
+    if (value === '') removeLiveStyle(side)
+    else applyLiveStyle(side, `${value}px`)
+  }
+
+  const applyZIndex = (value: string) => {
+    setZIndex(value)
+    if (value === '') removeLiveStyle('z-index')
+    else applyLiveStyle('z-index', value)
+  }
+
+  const onPositionChange = (v: string) => {
+    setPosition(v)
+    if (v === 'static') removeLiveStyle('position')
+    else applyLiveStyle('position', v)
+    // Sticky/fixed need an anchor offset to actually stick — seed top:0 if none set.
+    const hasOffset =
+      offsets.top || offsets.right || offsets.bottom || offsets.left
+    if ((v === 'sticky' || v === 'fixed') && !hasOffset) {
+      applyOffset('top', '0')
+    }
+  }
+
   const labelCls =
     'text-[10px] uppercase tracking-wider text-muted-foreground font-medium'
   const isFlex = display === 'flex'
+  const isPositioned = position !== 'static'
 
   return (
     <div className="flex w-full min-w-0 max-w-full flex-col gap-2 p-2">
@@ -129,6 +196,71 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
+
+      {/* Position */}
+      <div className="flex items-center gap-2">
+        <span className={cn(labelCls, 'w-12 shrink-0')}>Position</span>
+        <Select value={position} onValueChange={onPositionChange}>
+          <SelectTrigger
+            aria-label="Position"
+            className="h-7 flex-1 text-xs text-foreground"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {POSITION_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {isPositioned && (
+        <>
+          {/* Offsets */}
+          <div className="grid grid-cols-2 gap-2">
+            {OFFSET_SIDES.map((side) => (
+              <div key={side.value} className="flex items-center gap-2">
+                <span className={cn(labelCls, 'w-10 shrink-0')}>
+                  {side.label}
+                </span>
+                <InputGroup>
+                  <InputGroupInput
+                    aria-label={side.label}
+                    type="number"
+                    placeholder="auto"
+                    value={offsets[side.value]}
+                    onChange={(e) => applyOffset(side.value, e.target.value)}
+                    className="text-xs text-foreground"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <span className="px-1 text-xs text-muted-foreground">
+                      px
+                    </span>
+                  </InputGroupAddon>
+                </InputGroup>
+              </div>
+            ))}
+          </div>
+
+          {/* Z-Index */}
+          <div className="flex items-center gap-2">
+            <span className={cn(labelCls, 'w-12 shrink-0')}>Z-Index</span>
+            <InputGroup>
+              <InputGroupInput
+                aria-label="Z-Index"
+                type="number"
+                placeholder="auto"
+                value={zIndex}
+                onChange={(e) => applyZIndex(e.target.value)}
+                className="text-xs text-foreground"
+              />
+            </InputGroup>
+          </div>
+        </>
+      )}
 
       {isFlex && (
         <>

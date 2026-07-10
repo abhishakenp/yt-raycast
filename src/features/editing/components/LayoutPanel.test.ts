@@ -207,4 +207,79 @@ describe('LayoutPanel', () => {
     fireEvent.click(wrapBtn)
     expect(activeElement.style.flexWrap).toBe('wrap')
   })
+
+  const selectPosition = (
+    getByRole: ReturnType<typeof render>['getByRole'],
+    name: string,
+  ) => {
+    const trigger = getByRole('combobox', { name: 'Position' })
+    fireEvent.pointerDown(trigger, {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse',
+    })
+    fireEvent.click(getByRole('option', { name }))
+  }
+
+  it('offsets and z-index are hidden while position is static', () => {
+    const { queryByRole } = renderPanel(activeElement)
+    expect(queryByRole('spinbutton', { name: 'Top' })).toBeNull()
+    expect(queryByRole('spinbutton', { name: 'Z-Index' })).toBeNull()
+  })
+
+  it('choosing Sticky applies position and seeds top:0 so it actually sticks', () => {
+    const { getByRole } = renderPanel(activeElement)
+    selectPosition(getByRole, 'Sticky')
+    expect(activeElement.style.position).toBe('sticky')
+    expect(activeElement.style.top).toBe('0px')
+    expect(onModified).toHaveBeenCalled()
+  })
+
+  it('choosing Relative does not seed an offset', () => {
+    const { getByRole } = renderPanel(activeElement)
+    selectPosition(getByRole, 'Relative')
+    expect(activeElement.style.position).toBe('relative')
+    expect(activeElement.style.top).toBe('')
+  })
+
+  it('choosing Static removes the position property', () => {
+    activeElement.style.position = 'sticky'
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ position: 'sticky' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+    selectPosition(getByRole, 'Static')
+    expect(activeElement.style.position).toBe('')
+  })
+
+  it('offset input applies the side as px when positioned', () => {
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ position: 'sticky' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+    const topInput = getByRole('spinbutton', { name: 'Top' })
+    fireEvent.change(topInput, { target: { value: '24' } })
+    expect(activeElement.style.top).toBe('24px')
+  })
+
+  it('clearing an offset removes the property', () => {
+    activeElement.style.top = '10px'
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ position: 'sticky' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+    const topInput = getByRole('spinbutton', { name: 'Top' })
+    fireEvent.change(topInput, { target: { value: '' } })
+    expect(activeElement.style.top).toBe('')
+  })
+
+  it('z-index input applies z-index', () => {
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ position: 'sticky' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+    const zInput = getByRole('spinbutton', { name: 'Z-Index' })
+    fireEvent.change(zInput, { target: { value: '50' } })
+    expect(activeElement.style.zIndex).toBe('50')
+  })
 })
