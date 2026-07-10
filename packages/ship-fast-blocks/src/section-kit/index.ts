@@ -68,6 +68,7 @@ export {
   personCardVariants,
   type PersonCardProps,
 } from './PersonCard.tsx'
+export { Card, surfaceCard, type CardProps } from './Card.tsx'
 export {
   ResponsiveGrid,
   gridColsVariants,
