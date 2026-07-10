@@ -116,6 +116,8 @@ const THEME_DESCRIPTIONS: Record<string, string> = {
     'Dreamy lavender pastels, very rounded — soft, gentle, lifestyle, kids.',
   'clean-slate':
     'Cool slate + indigo on light — corporate, trustworthy, dashboard, SaaS.',
+  corporate:
+    'Professional indigo primary with clean neutrals — government, PSU, enterprise, institutional.',
   caffeine: 'Warm coffee browns and cream — café, roastery, cozy hospitality.',
   'ocean-breeze':
     'Fresh aqua-green on airy blue-white — coastal, health, fresh, wellness.',
