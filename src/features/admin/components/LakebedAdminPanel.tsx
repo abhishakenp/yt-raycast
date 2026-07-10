@@ -19,7 +19,7 @@ import {
   TrashIcon,
 } from '@radix-ui/react-icons'
 import classNames from 'classnames'
-import { useMutation, useQuery } from 'convex/react'
+import { useConvex, useMutation, useQuery } from 'convex/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Group as PanelGroup,
@@ -1174,14 +1174,54 @@ function DataCell({
 }) {
   const cellRef = useRef<HTMLDivElement | null>(null)
   const editorRef = useRef<HTMLDivElement | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [showEditor, setShowEditor] = useState(false)
   const [draft, setDraft] = useState(previewAdminValue(value))
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string>()
+  const session = useLakebedSession()
+  const convex = useConvex()
+  const generateUploadUrl = useMutation(api.gov_uploads.generateUploadUrl)
+  const isDocumentColumn = /url$/i.test(column) && !column.startsWith('_')
 
   useEffect(() => {
     setDraft(previewAdminValue(value))
   }, [value])
+
+  const uploadDocument = async (file: File) => {
+    setError(undefined)
+    setIsUploading(true)
+    try {
+      const uploadUrl = await generateUploadUrl({
+        sessionId: session.sessionId,
+        ...(session.anonymousOwnerSecret
+          ? { anonymousOwnerSecret: session.anonymousOwnerSecret }
+          : {}),
+      })
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file,
+      })
+      if (!response.ok) throw new Error(`Upload failed: ${response.status}`)
+      const { storageId } = (await response.json()) as { storageId: string }
+      const served = await convex.query(api.gov_uploads.getStorageUrl, {
+        sessionId: session.sessionId,
+        storageId: storageId as never,
+      })
+      if (typeof served !== 'string') throw new Error('Could not resolve URL')
+      setDraft(served)
+      await onSave(served)
+      setShowEditor(false)
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error ? uploadError.message : 'Upload failed',
+      )
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   useClickAway(editorRef, () => {
     if (showEditor && !isSaving) setShowEditor(false)
@@ -1258,14 +1298,38 @@ function DataCell({
             ) : (
               <span>Esc to cancel · Cmd Enter to save</span>
             )}
-            <button
-              type="button"
-              className="rounded border border-[#57544f] bg-[#383531] px-2 py-1 text-[#f8f8f2] disabled:opacity-45"
-              disabled={isSaving}
-              onClick={() => void save()}
-            >
-              Save
-            </button>
+            <div className="flex items-center gap-1.5">
+              {isDocumentColumn ? (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0]
+                      event.target.value = ''
+                      if (file) void uploadDocument(file)
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="rounded border border-[#57544f] bg-[#383531] px-2 py-1 text-[#f8f8f2] disabled:opacity-45"
+                    disabled={isSaving || isUploading}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {isUploading ? 'Uploading…' : 'Upload file'}
+                  </button>
+                </>
+              ) : null}
+              <button
+                type="button"
+                className="rounded border border-[#57544f] bg-[#383531] px-2 py-1 text-[#f8f8f2] disabled:opacity-45"
+                disabled={isSaving || isUploading}
+                onClick={() => void save()}
+              >
+                Save
+              </button>
+            </div>
           </div>
           <span className="sr-only">{document.__rowId}</span>
         </div>

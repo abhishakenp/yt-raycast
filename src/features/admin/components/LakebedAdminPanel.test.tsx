@@ -22,6 +22,7 @@ const restaurantSchema: CapsuleSchemaRegistry = {
       fields: {
         category: { kind: 'string', defaultValue: '' },
         description: { kind: 'string', defaultValue: '' },
+        docUrl: { kind: 'string', defaultValue: '' },
         name: { kind: 'string' },
         price: { kind: 'string', defaultValue: '' },
         tag: { kind: 'string', defaultValue: '' },
@@ -63,6 +64,9 @@ vi.mock('convex/react', () => ({
     return input
   },
   useQuery: () => mocks.docs,
+  useConvex: () => ({
+    query: async () => 'https://example.convex.cloud/api/storage/mock',
+  }),
 }))
 
 if (typeof ResizeObserver === 'undefined') {
@@ -149,6 +153,37 @@ describe('LakebedAdminPanel', () => {
       expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy()
     })
     expect(JSON.stringify(mocks.replaceCalls[0])).toContain('Spicy Ramen')
+  })
+
+  it('offers a document upload button when editing a *Url column but not a plain column', async () => {
+    mocks.docs = [
+      {
+        capsule: 'Restaurant',
+        createdAt: 1,
+        updatedAt: 2,
+        data: {
+          catalog: [
+            {
+              name: 'Ramen',
+              price: '12',
+              category: 'Mains',
+              docUrl: 'menu-pdf-marker',
+            },
+          ],
+        },
+      },
+    ]
+    renderAdminPanel()
+    fireEvent.click(screen.getByRole('button', { name: 'catalog' }))
+
+    // Plain column editor has no upload button.
+    fireEvent.doubleClick(screen.getByText('Ramen'))
+    expect(screen.queryByRole('button', { name: 'Upload file' })).toBeNull()
+    fireEvent.keyDown(screen.getByDisplayValue('Ramen'), { key: 'Escape' })
+
+    // The docUrl (*Url) column editor exposes the upload button.
+    fireEvent.doubleClick(screen.getByText('menu-pdf-marker'))
+    expect(screen.getByRole('button', { name: 'Upload file' })).toBeTruthy()
   })
 
   it('renders schema tables from a dataKey doc and filters rows', async () => {
