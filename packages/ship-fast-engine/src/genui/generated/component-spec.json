@@ -2041,6 +2041,74 @@
       "signature": "FurnitureStoreTestimonials(eyebrow?: string, heading?: string, items?: {quote: string, name: string, meta: string, avatarAlt: string}[], className?: string)",
       "description": "Centered star-rated customer-review grid: a padded section with a centered eyebrow + heading above a 1/3-column grid of muted-card blockquotes; each card has a 5-star row (primary-tinted), the quote in quotation marks, and a footer with a round customer avatar beside the name and a location / purchase meta line. Use as social proof for furniture, home-decor, interiors, or any warm retail brand."
     },
+    "GovPortalAbout": {
+      "signature": "GovPortalAbout(heading?: string, body?: string, points?: string[], headingHi?: string, bodyHi?: string, pointsHi?: string[], imageAlt?: string, className?: string)",
+      "description": "Prose-and-bullets narrative block for a government / PSU portal, used for company overview, sustainability, environment or safety statements — a heading, body paragraphs and a checklist of commitments. Fully content-driven."
+    },
+    "GovPortalContact": {
+      "signature": "GovPortalContact(heading?: string, headOffice?: {name: string, addr?: string, email?: string, phone?: string, hours?: string}, plantOffice?: {name: string, addr?: string, email?: string, phone?: string, hours?: string}, importantLinks?: Record<string, any>[], className?: string)",
+      "description": "Contact section for a government / PSU portal with head-office and plant-office cards (address, email, phone, working hours) plus a grid of important external government links. Use as the contact page of a government portal."
+    },
+    "GovPortalDirectory": {
+      "signature": "GovPortalDirectory(heading?: string, directory?: Record<string, any>[], className?: string)",
+      "description": "Searchable telephone / staff directory on a government portal — a table with Sl.No., Name, Designation and Email columns and a live name/designation filter. Use as the directory page of a government or PSU portal."
+    },
+    "GovPortalDownloads": {
+      "signature": "GovPortalDownloads(heading?: string, downloads?: Record<string, any>[], className?: string)",
+      "description": "Grid of downloadable government formats and documents (bidder forms, vendor manuals, BG formats), each a titled card with a category tag and a download link. Use as a downloads / formats section on a government portal."
+    },
+    "GovPortalFooter": {
+      "signature": "GovPortalFooter(brand?: string, brandHi?: string, about?: string, aboutHi?: string, navLinks?: {label: string, labelHi?: string, target?: string}[], headOffice?: {name: string, nameHi?: string, addr?: string, addrHi?: string, email?: string, phone?: string, hours?: string, hoursHi?: string}, plantOffice?: {name: string, nameHi?: string, addr?: string, addrHi?: string, email?: string, phone?: string, hours?: string, hoursHi?: string}, className?: string)",
+      "description": "Indigo government / PSU portal footer with an about blurb, a navigation column of page links, and two office cards (head office + plant office) each with address, email, phone and working hours. Use as the closing footer on a government or civic portal."
+    },
+    "GovPortalGrievance": {
+      "signature": "GovPortalGrievance(heading?: string, description?: string, className?: string)",
+      "description": "Public grievance-redressal form on a government portal (name, email, mobile, subject, description, address) that records the grievance to the backend and confirms submission. Use as the grievance / complaint intake section of a government or PSU portal."
+    },
+    "GovPortalHero": {
+      "signature": "GovPortalHero(eyebrow?: string, title?: string, subtitle?: string, primaryCta?: string, secondaryCta?: string, videos?: string[], className?: string)",
+      "description": "Government / PSU portal hero with a full-bleed auto-advancing background video carousel (power, grid, industry, renewables), a primary gradient overlay, an eyebrow, a two-line headline, a supporting sentence and primary + secondary CTAs. Use as the top hero on a government, PSU or civic homepage."
+    },
+    "GovPortalLeadership": {
+      "signature": "GovPortalLeadership(heading?: string, messages?: Record<string, any>[], boardMembers?: Record<string, any>[], className?: string)",
+      "description": "Leadership block for a government / PSU portal: a featured Managing Director / Chairman message with a portrait, followed by a grid of board-of-directors cards (photo, name, designation, bio). Use on the company / about page of a government portal."
+    },
+    "GovPortalMedia": {
+      "signature": "GovPortalMedia(heading?: string, subheading?: string, media?: Record<string, any>[], className?: string)",
+      "description": "Photo and video gallery grid for a government / PSU portal, each tile a captioned image. Use as the media / photo-gallery section of a government portal."
+    },
+    "GovPortalNavbar": {
+      "signature": "GovPortalNavbar(brand?: string, tagline?: string, cin?: string, location?: string, logoUrl?: string, phone?: string, className?: string)",
+      "description": "Sticky government / PSU portal chrome (theme-token based) with a slim utility strip (Career / Events + EN/HI language picker), a brand header showing the uploaded logo, wordmark and CIN plus a shiny Shoo sign-in / account dropdown, and a primary mega-navigation with proper popover dropdowns and a mobile drawer. Brand + logo are read from the DB. Use as the top navigation on a government, PSU or civic portal."
+    },
+    "GovPortalNewsEvents": {
+      "signature": "GovPortalNewsEvents(heading?: string, newsEvents?: Record<string, any>[], className?: string)",
+      "description": "Card feed of news items and events on a government / PSU portal, each with an image, date, title and excerpt. Use as the news-and-events section of a government portal."
+    },
+    "GovPortalNotices": {
+      "signature": "GovPortalNotices(heading?: string, circulars?: Record<string, any>[], publicNotices?: Record<string, any>[], employmentNotices?: Record<string, any>[], updates?: Record<string, any>[], className?: string)",
+      "description": "Filter-chip board of government notices (Circulars / Office Orders, Public Notices, Employment Notices, Latest Updates), each a dated title with a PDF link. Use as the notices / circulars board on a government or PSU portal."
+    },
+    "GovPortalPowerPlants": {
+      "signature": "GovPortalPowerPlants(heading?: string, powerPlants?: Record<string, any>[], className?: string)",
+      "description": "Grid of power-generating stations / facilities on a government / PSU portal, each a card with name, installed capacity, operational status, location and a short specification line. Use on a power-generation or operations page."
+    },
+    "GovPortalQuickLinks": {
+      "signature": "GovPortalQuickLinks(heading?: string, items?: {label: string, description?: string, target?: string}[], className?: string)",
+      "description": "Row of icon quick-link tiles on a government / PSU portal linking to primary service areas (power generation, business, environment, sustainability), each with an icon, label and short description. Use directly under the hero on a government homepage."
+    },
+    "GovPortalStats": {
+      "signature": "GovPortalStats(heading?: string, stats?: {value: string, label: string, valueHi?: string, labelHi?: string}[], className?: string)",
+      "description": "Band of headline performance figures on a government / PSU portal (installed capacity, plant load factor, units, uptime), each a large value with a caption, using the shared StatGrid. Use as a KPI strip on a government homepage or performance page."
+    },
+    "GovPortalTenderBoard": {
+      "signature": "GovPortalTenderBoard(heading?: string, tenders?: Record<string, any>[], extensionNotices?: Record<string, any>[], corrigendums?: Record<string, any>[], cancellationNotices?: Record<string, any>[], className?: string)",
+      "description": "Tabbed government e-tender board switching between Tender Notices, Extension Notices, Corrigendum and Cancellation Notices, with a financial-year Select filter and live search over the active tab. Each row shows the NIT number, work description, date and a PDF link. Use as the primary tenders board on a government / PSU procurement portal."
+    },
+    "GovPortalVendor": {
+      "signature": "GovPortalVendor(heading?: string, className?: string)",
+      "description": "In-stack vendor / bidder portal for a government procurement site: register as a vendor, submit a bid against a tender, and pay an RFx fee via a mock payment gateway (pending → paid with receipt). Replaces external SRM / payment portals; records are stored in the backend. Use as the vendor portal on a government tender site."
+    },
     "Grid": {
       "signature": "Grid(children?: any[], cols?: \"1\" | \"2\" | \"3\" | \"4\" | \"5\" | \"6\", gap?: \"none\" | \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\", className?: string)",
       "description": "Responsive grid container. `cols` is the column count at desktop width (collapses on mobile)."
@@ -2192,6 +2260,10 @@
     "IllustratorWork": {
       "signature": "IllustratorWork(eyebrow?: string, heading?: string, viewAll?: string, items?: {title: string, meta: string}[], className?: string)",
       "description": "Selected-work project gallery for an illustrator / visual-artist portfolio on a raised card-colored band: a header row pairing an uppercase accent eyebrow + serif heading with a 'view all' arrow link, above a responsive 3-up grid of clickable projects, each a tall 4:5 image that zooms on hover with a serif title and small meta line. Items and the view-all link route through useNavigate. Use to showcase an artist's recent books, editorial spreads, campaigns, and personal projects."
+    },
+    "Image": {
+      "signature": "Image(alt: string, src?: string, w?: number, h?: number, className?: string)",
+      "description": "Standalone image. `alt` describes the subject and drives automatic stock-photo resolution; pass an explicit `src` URL to bypass it. Rounded by default via className."
     },
     "Input": {
       "signature": "Input(placeholder?: string, type?: \"text\" | \"email\" | \"password\" | \"number\" | \"search\" | \"tel\" | \"url\", defaultValue?: string, disabled?: boolean, className?: string)",
