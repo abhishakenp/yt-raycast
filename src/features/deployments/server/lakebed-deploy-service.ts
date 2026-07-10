@@ -334,6 +334,27 @@ const createSourcePlugin = (
           }
         }
 
+        // Pin every preact specifier — from OUR client files AND from nested
+        // third-party imports (preact/compat's CJS `require("preact")`,
+        // lakebed/client's ESM `import ... from "preact"`) — to one physical
+        // module so the whole bundle shares a SINGLE preact core. esbuild's
+        // default resolver otherwise picks the CJS build for `require` and the
+        // ESM build for `import`, bundling two cores: the tree is diffed by one
+        // core while hooks/events bind to the other's `options`, so the app
+        // renders twice and click handlers (dark-mode, language switcher)
+        // silently do nothing. Applies across namespaces, before the
+        // sourceNamespace gate, so nested dependency imports are caught too.
+        if (
+          target === 'client' &&
+          (args.path === 'preact' || args.path.startsWith('preact/'))
+        ) {
+          try {
+            return { path: require.resolve(args.path) }
+          } catch {
+            // fall through to normal resolution
+          }
+        }
+
         if (args.namespace !== sourceNamespace) return undefined
 
         if (args.path.startsWith('node:')) {
@@ -748,6 +769,71 @@ render(createElement(App, {}), document.getElementById("app"));
   }
 }
 
+// Test seam: bundle ONLY the client from a files map (no server build / no
+// network) using the exact production client-entry + esbuild + resolution
+// pipeline. Returns the bundled JS so tests can evaluate it and assert the
+// single-preact-core contract (single render, live event handlers).
+export const buildLakebedClientBundleForTest = async (
+  files: Record<string, string>,
+  options: { format?: 'esm' | 'iife'; minify?: boolean } = {},
+): Promise<{ code: string; metafile: esbuild.Metafile }> => {
+  const sourceStore = createSourceStore(files)
+  const workingStore = sourceStore.clone()
+  if (!workingStore.hasFile('client/index.tsx')) {
+    throw new Error('Missing Lakebed client entry: client/index.tsx')
+  }
+  await workingStore.writeFile(
+    '__lakebed/client-entry.tsx',
+    `import { createElement, render } from "preact/compat";
+import { App } from "../client/index.tsx";
+
+render(createElement(App, {}), document.getElementById("app"));
+`,
+  )
+  ensureEsbuildBinaryExecutable()
+  const result = await esbuild.build({
+    bundle: true,
+    entryPoints: ['__lakebed/client-entry.tsx'],
+    format: options.format ?? 'esm',
+    jsx: 'automatic',
+    jsxImportSource: 'preact',
+    metafile: true,
+    minify: options.minify ?? false,
+    nodePaths: [packageNodeModules],
+    platform: 'browser',
+    plugins: [createSourcePlugin(workingStore, 'client')],
+    sourcemap: false,
+    write: false,
+  })
+  return {
+    code: result.outputFiles?.[0]?.text ?? '',
+    metafile: result.metafile,
+  }
+}
+
+// Preact subpackages (core, hooks, compat, jsx-runtime) that a client bundle
+// pulls in as MORE THAN ONE physical build — e.g. `preact/hooks` bundled as both
+// the CJS `hooks.js` (via preact/compat's `require`) and the ESM
+// `hooks.module.js` (via an `import`). Each duplicated subpackage keeps its own
+// module state (the hooks dispatcher, the core's `options`), so hooks/events
+// bind to one copy while the tree is diffed by the other → the app renders
+// twice and click handlers silently do nothing. The invariant: every preact
+// subpackage resolves to exactly one build. Returns the offenders (empty = ok).
+export const duplicatedPreactPackagesFromMetafile = (
+  metafile: esbuild.Metafile,
+): Record<string, string[]> => {
+  const byPackage: Record<string, string[]> = {}
+  for (const input of Object.keys(metafile.inputs)) {
+    const match = input.match(/(^|\/)(preact(?:\/(?:hooks|compat|jsx-runtime))?)\//)
+    if (!match) continue
+    const pkg = match[2]
+    ;(byPackage[pkg] ??= []).push(input)
+  }
+  return Object.fromEntries(
+    Object.entries(byPackage).filter(([, builds]) => builds.length > 1),
+  )
+}
+
 export const buildLakebedAnonymousDeployRequest = async (
   files: Record<string, string>,
   options: { inspectPolicy?: 'public'; log?: LakebedDeployLogger } = {},
@@ -773,8 +859,13 @@ export const buildLakebedAnonymousDeployRequest = async (
     sourceFilesBytes: sourceFiles.reduce((sum, file) => sum + file.bytes, 0),
   })
   options.log?.('anonymous-request:diagnostics:start')
+  // Async server handlers ARE supported by the anonymous runtime (verified live:
+  // an async `endpoint` handler that awaits `req.json()` deploys and runs). The
+  // `allowAsync:false` default is just an over-conservative source lint; the
+  // `lakebed` CLI itself deploys async handlers. Our authorized `/__lakebed/sync`
+  // endpoint must `await req.json()` to read the posted catalog, so allow it.
   const diagnostics = forbiddenSourceDiagnostics(sourceFiles, {
-    allowAsync: false,
+    allowAsync: true,
   })
   const { diagnostics: schemaDiagnostics, schema } = serializeSchema(app.schema)
   const { diagnostics: endpointDiagnostics, endpoints } = serializeEndpoints(

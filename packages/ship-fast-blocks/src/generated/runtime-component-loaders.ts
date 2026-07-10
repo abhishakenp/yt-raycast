@@ -2061,6 +2061,74 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/furniture-store/FurnitureStoreTestimonials.tsx').then(
       (module) => toCapsule(module, 'FurnitureStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
+  GovPortalAbout: (() =>
+    import('../registry/sections/gov-portal/GovPortalCompany.tsx').then(
+      (module) => toCapsule(module, 'GovPortalAbout'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalContact: (() =>
+    import('../registry/sections/gov-portal/GovPortalForms.tsx').then(
+      (module) => toCapsule(module, 'GovPortalContact'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalDirectory: (() =>
+    import('../registry/sections/gov-portal/GovPortalInfo.tsx').then((module) =>
+      toCapsule(module, 'GovPortalDirectory'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalDownloads: (() =>
+    import('../registry/sections/gov-portal/GovPortalTenders.tsx').then(
+      (module) => toCapsule(module, 'GovPortalDownloads'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalFooter: (() =>
+    import('../registry/sections/gov-portal/GovPortalFooter.tsx').then(
+      (module) => toCapsule(module, 'GovPortalFooter'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalGrievance: (() =>
+    import('../registry/sections/gov-portal/GovPortalForms.tsx').then(
+      (module) => toCapsule(module, 'GovPortalGrievance'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalHero: (() =>
+    import('../registry/sections/gov-portal/GovPortalHome.tsx').then((module) =>
+      toCapsule(module, 'GovPortalHero'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalLeadership: (() =>
+    import('../registry/sections/gov-portal/GovPortalCompany.tsx').then(
+      (module) => toCapsule(module, 'GovPortalLeadership'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalMedia: (() =>
+    import('../registry/sections/gov-portal/GovPortalInfo.tsx').then((module) =>
+      toCapsule(module, 'GovPortalMedia'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalNavbar: (() =>
+    import('../registry/sections/gov-portal/GovPortalNavbar.tsx').then(
+      (module) => toCapsule(module, 'GovPortalNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalNewsEvents: (() =>
+    import('../registry/sections/gov-portal/GovPortalInfo.tsx').then((module) =>
+      toCapsule(module, 'GovPortalNewsEvents'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalNotices: (() =>
+    import('../registry/sections/gov-portal/GovPortalTenders.tsx').then(
+      (module) => toCapsule(module, 'GovPortalNotices'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalPowerPlants: (() =>
+    import('../registry/sections/gov-portal/GovPortalCompany.tsx').then(
+      (module) => toCapsule(module, 'GovPortalPowerPlants'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalQuickLinks: (() =>
+    import('../registry/sections/gov-portal/GovPortalHome.tsx').then((module) =>
+      toCapsule(module, 'GovPortalQuickLinks'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalStats: (() =>
+    import('../registry/sections/gov-portal/GovPortalHome.tsx').then((module) =>
+      toCapsule(module, 'GovPortalStats'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalTenderBoard: (() =>
+    import('../registry/sections/gov-portal/GovPortalTenders.tsx').then(
+      (module) => toCapsule(module, 'GovPortalTenderBoard'),
+    )) satisfies RuntimeComponentLoader,
+  GovPortalVendor: (() =>
+    import('../registry/sections/gov-portal/GovPortalForms.tsx').then(
+      (module) => toCapsule(module, 'GovPortalVendor'),
+    )) satisfies RuntimeComponentLoader,
   Grid: (() =>
     import('../registry/primitives/layout.tsx').then((module) =>
       toCapsule(module, 'Grid'),

@@ -13,8 +13,8 @@
     "src/generated/capsule-categories.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 1126,
-  "sectionComponentCount": 1055,
+  "componentCount": 1143,
+  "sectionComponentCount": 1072,
   "components": [
     {
       "name": "AboutHero",
@@ -2055,6 +2055,74 @@
     {
       "name": "FurnitureStoreTestimonials",
       "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreTestimonials.tsx"
+    },
+    {
+      "name": "GovPortalAbout",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalCompany.tsx"
+    },
+    {
+      "name": "GovPortalContact",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalForms.tsx"
+    },
+    {
+      "name": "GovPortalDirectory",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalInfo.tsx"
+    },
+    {
+      "name": "GovPortalDownloads",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalTenders.tsx"
+    },
+    {
+      "name": "GovPortalFooter",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalFooter.tsx"
+    },
+    {
+      "name": "GovPortalGrievance",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalForms.tsx"
+    },
+    {
+      "name": "GovPortalHero",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalHome.tsx"
+    },
+    {
+      "name": "GovPortalLeadership",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalCompany.tsx"
+    },
+    {
+      "name": "GovPortalMedia",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalInfo.tsx"
+    },
+    {
+      "name": "GovPortalNavbar",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalNavbar.tsx"
+    },
+    {
+      "name": "GovPortalNewsEvents",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalInfo.tsx"
+    },
+    {
+      "name": "GovPortalNotices",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalTenders.tsx"
+    },
+    {
+      "name": "GovPortalPowerPlants",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalCompany.tsx"
+    },
+    {
+      "name": "GovPortalQuickLinks",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalHome.tsx"
+    },
+    {
+      "name": "GovPortalStats",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalHome.tsx"
+    },
+    {
+      "name": "GovPortalTenderBoard",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalTenders.tsx"
+    },
+    {
+      "name": "GovPortalVendor",
+      "sourceFile": "src/registry/sections/gov-portal/GovPortalForms.tsx"
     },
     {
       "name": "Grid",

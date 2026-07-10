@@ -1,7 +1,7 @@
 import { ConvexError, v } from 'convex/values'
 
 import { isAuthDisabled } from './lib/session_export_helpers'
-import { mutation, query } from './_generated/server'
+import { internalMutation, mutation, query } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 
@@ -370,6 +370,40 @@ export const mergeSessionData = mutation({
     }
 
     return data
+  },
+})
+
+/**
+ * Seed a SHARED lakebed row (ownerKey === undefined) that every visitor — owner,
+ * anonymous, or guest — reads via `getSessionDataDoc`'s shared-row fallback.
+ * Used by the seed pipeline to publish content directly to the DB so a guest
+ * sees it without any owner secret. Internal (no auth); callable only from the
+ * server / CLI (`convex run internal.lakebed.seedSharedSessionData`).
+ */
+export const seedSharedSessionData = internalMutation({
+  args: {
+    capsule: v.string(),
+    data: sessionDataValidator,
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => {
+    await getSessionOrThrow(ctx, args.sessionId)
+    const now = Date.now()
+    const doc = await getSessionDataDoc(ctx, args.sessionId, args.capsule)
+
+    if (doc) {
+      await ctx.db.patch(doc._id, { data: args.data, updatedAt: now })
+    } else {
+      await ctx.db.insert('sessionData', {
+        capsule: args.capsule,
+        createdAt: now,
+        data: args.data,
+        sessionId: args.sessionId,
+        updatedAt: now,
+      })
+    }
+
+    return { capsule: args.capsule, rows: Object.keys(args.data).length }
   },
 })
 
