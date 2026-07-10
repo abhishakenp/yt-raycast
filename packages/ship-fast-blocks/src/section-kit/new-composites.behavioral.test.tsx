@@ -31,6 +31,7 @@ import {
   PersonCardName,
   PersonCardRole,
   PersonCardBio,
+  Card,
   ResponsiveGrid,
 } from './index.ts'
 
@@ -416,6 +417,68 @@ describe('PersonCard', () => {
     render(<PersonCard ref={ref} />)
     expect(ref.current).not.toBeNull()
     expect(ref.current?.tagName).toBe('ARTICLE')
+  })
+})
+
+describe('Card', () => {
+  it('renders as div with border, bg-card, rounded-xl, p-6 by default', () => {
+    render(<Card data-testid="card" />)
+    const el = screen.getByTestId('card')
+    expect(el.tagName).toBe('DIV')
+    expect(el.className).toContain('border')
+    expect(el.className).toContain('bg-card')
+    expect(el.className).toContain('rounded-xl')
+    expect(el.className).toContain('p-6')
+    expect(el.getAttribute('data-slot')).toBe('card')
+  })
+
+  it('applies rounded-2xl, padding-lg, shadow-sm variants', () => {
+    render(<Card rounded="2xl" padding="lg" shadow="sm" data-testid="card" />)
+    const el = screen.getByTestId('card')
+    expect(el.className).toContain('rounded-2xl')
+    expect(el.className).toContain('p-8')
+    expect(el.className).toContain('shadow-sm')
+  })
+
+  it('muted variant has bg-muted', () => {
+    render(<Card variant="muted" data-testid="card" />)
+    expect(screen.getByTestId('card').className).toContain('bg-muted')
+  })
+
+  it('outline variant has bg-transparent', () => {
+    render(<Card variant="outline" data-testid="card" />)
+    const el = screen.getByTestId('card')
+    expect(el.className).toContain('bg-transparent')
+    expect(el.className).not.toContain('bg-card')
+  })
+
+  it('elevated variant has shadow-sm', () => {
+    render(<Card variant="elevated" data-testid="card" />)
+    expect(screen.getByTestId('card').className).toContain('shadow-sm')
+  })
+
+  it('merges className', () => {
+    render(<Card className="custom-card" data-testid="card" />)
+    expect(screen.getByTestId('card').className).toContain('custom-card')
+  })
+
+  it('asChild renders as child element with merged classes', () => {
+    render(
+      <Card asChild rounded="2xl" data-testid="card">
+        <article>Content</article>
+      </Card>,
+    )
+    const el = screen.getByTestId('card')
+    expect(el.tagName).toBe('ARTICLE')
+    expect(el.className).toContain('border')
+    expect(el.className).toContain('rounded-2xl')
+  })
+
+  it('forwards ref to div', () => {
+    const ref = { current: null as HTMLDivElement | null }
+    render(<Card ref={ref} />)
+    expect(ref.current).not.toBeNull()
+    expect(ref.current?.tagName).toBe('DIV')
   })
 })
 
