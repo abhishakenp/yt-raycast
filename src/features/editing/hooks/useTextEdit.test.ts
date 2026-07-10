@@ -780,16 +780,23 @@ describe('findTextElement: which elements are editable', () => {
       })
     })
 
-    it('rejects text exceeding 500 chars', () => {
+    it('accepts long-form text (600 chars) — real paragraphs must be editable', () => {
+      withElement('p', (p) => {
+        p.textContent = 'lorem ipsum '.repeat(50)
+        expect(findTextElement(p)).not.toBeNull()
+      })
+    })
+
+    it('rejects pathological text exceeding 5000 chars', () => {
       withElement('button', (btn) => {
-        btn.textContent = 'x'.repeat(501)
+        btn.textContent = 'x'.repeat(5001)
         expect(findTextElement(btn)).toBeNull()
       })
     })
 
-    it('accepts text at exactly 499 chars', () => {
+    it('accepts text just under the 5000-char ceiling', () => {
       withElement('button', (btn) => {
-        btn.textContent = 'x'.repeat(499)
+        btn.textContent = 'x'.repeat(4999)
         expect(findTextElement(btn)).not.toBeNull()
       })
     })
