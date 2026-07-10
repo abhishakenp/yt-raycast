@@ -293,11 +293,17 @@ export function useTextEdit(
         return
       }
 
-      // Check if target is an image or contains an image
+      // Route to image swap when the click lands on an image itself, or on a
+      // container that holds an image but no editable text. A container with
+      // its own text AND a descendant image routes to text editing — the user
+      // clicked the text region; the image is clickable directly.
+      const textEl = findTextElement(target)
       const imgEl =
         target.tagName.toLowerCase() === 'img'
           ? (target as HTMLImageElement)
-          : (target.querySelector('img') as HTMLImageElement | null)
+          : textEl
+            ? null
+            : (target.querySelector('img') as HTMLImageElement | null)
 
       if (imgEl) {
         const currentSrc = imgEl.src
@@ -317,7 +323,6 @@ export function useTextEdit(
 
       finishEdit()
 
-      const textEl = findTextElement(target)
       if (!textEl) return
 
       const originalText = textEl.textContent || ''
@@ -333,7 +338,12 @@ export function useTextEdit(
       // Lock non-text children (SVG icons, images) so the user can't
       // accidentally delete them while editing the text.
       const lockedChildren = lockNonTextChildren(textEl)
-      textEl.focus()
+      // preventScroll: the user just clicked this element, so it is already
+      // in view. Without it, focus() scrolls every scrollable ancestor
+      // (including the nested .genui-preview scroller) to "reveal" the
+      // element, which can yank the page and push the clicked text out of
+      // view — especially inside transformed/nested scroll containers.
+      textEl.focus({ preventScroll: true })
 
       // Place the caret where the user clicked instead of selecting the whole
       // element. Select-all means the first keystroke replaces ALL of the
@@ -349,8 +359,23 @@ export function useTextEdit(
         sel?.addRange(caretRange)
       } else {
         const fallback = document.createRange()
-        fallback.selectNodeContents(textEl)
-        fallback.collapse(false)
+        // For a mixed container (direct text + locked block children), park
+        // the caret at the end of the last direct text node — collapsing to
+        // the end of the whole element would place it after the locked
+        // children, so typing would create a new text node outside every
+        // original run and force the lossy flattened-diff path.
+        const directTextNodes = Array.from(textEl.childNodes).filter(
+          (node): node is Text =>
+            node.nodeType === Node.TEXT_NODE && !!node.nodeValue?.trim(),
+        )
+        const lastDirect = directTextNodes[directTextNodes.length - 1]
+        if (lockedChildren.length > 0 && lastDirect) {
+          fallback.setStart(lastDirect, lastDirect.nodeValue?.length ?? 0)
+          fallback.collapse(true)
+        } else {
+          fallback.selectNodeContents(textEl)
+          fallback.collapse(false)
+        }
         sel?.addRange(fallback)
       }
 
@@ -573,9 +598,65 @@ export function useTextEdit(
 }
 
 // Block-level descendants that mark an element as a multi-block container
-// rather than an editable leaf text block.
+// rather than an editable leaf text block. Also used to lock block children
+// while a mixed container's direct text is being edited.
 const BLOCK_CHILD_SELECTOR =
-  'div,p,ul,ol,section,article,header,footer,nav,main,aside,table,form,h1,h2,h3,h4,h5,h6,li,blockquote,figure'
+  'div,p,ul,ol,section,article,header,footer,nav,main,aside,table,form,h1,h2,h3,h4,h5,h6,li,blockquote,figure,figcaption,pre,dl,dt,dd,details,summary,address,hgroup,fieldset,tr,td,th,caption'
+
+// Elements that can never host a text edit — interactive controls, media,
+// and void/replaced elements. Everything else with real text is editable.
+const NON_TEXT_TAGS = new Set([
+  'input',
+  'textarea',
+  'select',
+  'option',
+  'optgroup',
+  'svg',
+  'path',
+  'img',
+  'picture',
+  'source',
+  'track',
+  'video',
+  'audio',
+  'canvas',
+  'iframe',
+  'object',
+  'embed',
+  'script',
+  'style',
+  'br',
+  'hr',
+])
+
+// Sanity ceiling so a pathological single text run (e.g. inlined JSON) never
+// becomes contentEditable. Generous enough for real long-form paragraphs.
+const MAX_EDITABLE_TEXT_LENGTH = 5000
+
+/** True when `el` has at least one non-whitespace text node as a DIRECT child
+ *  (as opposed to text living only inside descendant elements). */
+export function hasDirectText(el: HTMLElement): boolean {
+  return Array.from(el.childNodes).some(
+    (node) => node.nodeType === Node.TEXT_NODE && node.nodeValue?.trim(),
+  )
+}
+
+/** Core editability predicate shared by findTextElement (walk-up) and
+ *  isEditableTextLeaf (single element). An element is text-editable when it
+ *  isn't an interactive/media element and either
+ *  (a) it's a leaf text block — real text, no block-level children — or
+ *  (b) it's a mixed container with direct text of its own (the block children
+ *      get locked contenteditable=false during the edit, so only the direct
+ *      text and inline runs are mutable). */
+function isEditableTextElement(el: HTMLElement): boolean {
+  const tag = el.tagName.toLowerCase()
+  if (NON_TEXT_TAGS.has(tag)) return false
+  const text = (el.textContent || '').trim()
+  if (!text) return false
+  const hasBlockChild = !!el.querySelector(BLOCK_CHILD_SELECTOR)
+  if (!hasBlockChild) return text.length < MAX_EDITABLE_TEXT_LENGTH
+  return hasDirectText(el)
+}
 
 /** Check if a click event should be ignored because it targets the element
  *  currently being edited. When a `<button>` or `<a>` is contentEditable and
@@ -628,18 +709,23 @@ export function shouldPreventLockedDeletion(
 }
 
 /** Set contenteditable=false on direct element children that don't contain
- *  text content (SVG icons, images, icon wrappers). This prevents the user
- *  from accidentally selecting and deleting non-text content while editing
- *  the text of a button or link that contains an icon.
+ *  text content (SVG icons, images, icon wrappers) and on block-level
+ *  children of a mixed container (only its direct text and inline runs are
+ *  in scope for the edit; block children are separately editable by clicking
+ *  them directly). Prevents the user from accidentally selecting and deleting
+ *  content outside the edit's scope.
  *  Returns the list of locked elements so they can be unlocked in cleanup. */
 export function lockNonTextChildren(el: HTMLElement): HTMLElement[] {
   const locked: HTMLElement[] = []
   for (const child of Array.from(el.childNodes)) {
     if (child.nodeType !== Node.ELEMENT_NODE) continue
     const childEl = child as HTMLElement
-    // Only lock children with no text content — don't lock spans/headings
-    // that contain text the user might want to edit.
-    if (!childEl.textContent?.trim()) {
+    // Don't lock inline spans/strongs with text the user might want to edit.
+    if (
+      !childEl.textContent?.trim() ||
+      (typeof childEl.matches === 'function' &&
+        childEl.matches(BLOCK_CHILD_SELECTOR))
+    ) {
       childEl.setAttribute('contenteditable', 'false')
       locked.push(childEl)
     }
@@ -654,120 +740,25 @@ export function unlockNonTextChildren(elements: HTMLElement[]) {
   }
 }
 
+/** Find the element whose text a click should edit: walk up from the click
+ *  target to the nearest editable text element. Interactive/media elements
+ *  anywhere in the chain abort the search (clicking inside an <input> must
+ *  never text-edit an ancestor). */
 export function findTextElement(el: HTMLElement): HTMLElement | null {
   let current: HTMLElement | null = el
   while (current) {
-    const tag = current.tagName.toLowerCase()
-    // Non-text elements that should never be contentEditable
-    if (
-      [
-        'input',
-        'textarea',
-        'select',
-        'svg',
-        'path',
-        'img',
-        'video',
-        'audio',
-        'script',
-        'style',
-      ].includes(tag)
-    ) {
-      return null
-    }
-
-    const text = (current.textContent || '').trim()
-    if (text.length > 0 && text.length < 500) {
-      if (
-        [
-          'h1',
-          'h2',
-          'h3',
-          'h4',
-          'h5',
-          'h6',
-          'p',
-          'span',
-          'div',
-          'li',
-          'td',
-          'th',
-          'label',
-          'figcaption',
-          'strong',
-          'em',
-          'small',
-          'blockquote',
-          'button',
-          'a',
-        ].includes(tag) &&
-        // Only edit leaf text blocks. Containers whose text spans multiple
-        // block-level children (e.g. a card wrapping <h3>+<p>) flatten to a
-        // run that can't be located in the stored HTML (block tags between the
-        // words) and would be destructive to replace, so skip them.
-        !current.querySelector(BLOCK_CHILD_SELECTOR)
-      ) {
-        return current
-      }
-    }
-
+    if (NON_TEXT_TAGS.has(current.tagName.toLowerCase())) return null
+    if (isEditableTextElement(current)) return current
     current = current.parentElement
   }
   return null
 }
 
-/** Check if an element is an editable text leaf — same criteria as
+/** Check if an element is directly text-editable — same criteria as
  *  findTextElement but without walking up the parent tree. Used by
  *  the toolbar to decide whether to show text-specific controls. */
 export function isEditableTextLeaf(el: HTMLElement): boolean {
-  const tag = el.tagName.toLowerCase()
-  if (
-    [
-      'input',
-      'textarea',
-      'select',
-      'svg',
-      'path',
-      'img',
-      'video',
-      'audio',
-      'script',
-      'style',
-    ].includes(tag)
-  ) {
-    return false
-  }
-  const text = (el.textContent || '').trim()
-  if (text.length === 0 || text.length >= 500) return false
-  if (
-    ![
-      'h1',
-      'h2',
-      'h3',
-      'h4',
-      'h5',
-      'h6',
-      'p',
-      'span',
-      'div',
-      'li',
-      'td',
-      'th',
-      'label',
-      'figcaption',
-      'strong',
-      'em',
-      'small',
-      'blockquote',
-      'button',
-      'a',
-    ].includes(tag)
-  ) {
-    return false
-  }
-  // Only leaf text blocks — containers with block-level children are not
-  // editable text leaves.
-  return !el.querySelector(BLOCK_CHILD_SELECTOR)
+  return isEditableTextElement(el)
 }
 
 function cleanupElement(

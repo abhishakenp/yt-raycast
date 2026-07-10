@@ -1071,3 +1071,52 @@ describe('useTextEdit: alert dialog focus during active edits', () => {
     }
   })
 })
+
+describe('useTextEdit: click activation must not scroll the page', () => {
+  function Harness() {
+    const ref = useRef<HTMLDivElement>(null)
+    useTextEdit(ref, true, vi.fn())
+    return (
+      <div ref={ref}>
+        <h3>Board of Directors</h3>
+      </div>
+    )
+  }
+
+  it('focuses the clicked text element with preventScroll so nested scrollers are not yanked', () => {
+    // Regression: focus() without preventScroll scrolls every scrollable
+    // ancestor (the nested .genui-preview scroller) to "reveal" the element,
+    // which in transformed/nested containers can jump the preview and push
+    // the clicked element out of view (reported on a gov-portal Company
+    // Leadership page: clicking "Board of Directors" scrolled to the top).
+    const focusSpy = vi.spyOn(HTMLElement.prototype, 'focus')
+    try {
+      const { container } = render(<Harness />)
+      const heading = container.querySelector('h3') as HTMLHeadingElement
+
+      act(() => {
+        heading.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 0,
+            clientY: 0,
+          }),
+        )
+      })
+
+      expect(heading.contentEditable).toBe('true')
+      const headingFocusCalls = focusSpy.mock.instances
+        .map((instance, index) => ({ instance, index }))
+        .filter(({ instance }) => instance === heading)
+      expect(headingFocusCalls.length).toBeGreaterThan(0)
+      for (const { index } of headingFocusCalls) {
+        expect(focusSpy.mock.calls[index]?.[0]).toMatchObject({
+          preventScroll: true,
+        })
+      }
+    } finally {
+      focusSpy.mockRestore()
+    }
+  })
+})

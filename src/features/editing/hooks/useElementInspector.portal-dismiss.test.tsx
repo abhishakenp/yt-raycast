@@ -18,10 +18,15 @@ describe('useElementInspector — Radix portal dismiss guard', () => {
   })
 
   const setup = () => {
-    // A preview container with a selectable section.
+    // A preview container with a selectable section. The section wraps its
+    // text in a heading (realistic markup) — a section with bare direct text
+    // would now be text-editable itself and route to useTextEdit instead of
+    // section selection.
     const container = document.createElement('div')
     const section = document.createElement('section')
-    section.textContent = 'Sustainability Community Quality'
+    const heading = document.createElement('h2')
+    heading.textContent = 'Sustainability Community Quality'
+    section.appendChild(heading)
     container.appendChild(section)
     document.body.appendChild(container)
 
