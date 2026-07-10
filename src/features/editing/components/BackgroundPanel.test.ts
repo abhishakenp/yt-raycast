@@ -657,6 +657,69 @@ describe('BackgroundPanel', () => {
     fireEvent.click(getByRole('radio', { name: 'High' }))
     expect(activeElement.style.backgroundImage).toContain('res=high')
   })
+
+  it('frosted glass preset sets a translucent tint and a backdrop blur together', () => {
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({ backgroundColor: 'rgb(0, 0, 0)' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole, getByText } = renderPanel(activeElement)
+
+    fireEvent.click(getByRole('button', { name: 'Frosted glass' }))
+
+    // translucent tint (not a fully opaque fill)
+    expect(activeElement.style.backgroundColor).toMatch(/rgba\(0, 0, 0/)
+    // The Blur readout reflects the seeded preset value. (jsdom's cssstyle drops
+    // the `backdrop-filter` property, so the inline value itself can't be read
+    // here — the property write is the same path the Blur slider uses, verified
+    // to render in a real compositor.)
+    expect(getByText('16px')).toBeTruthy()
+    expect(onModified).toHaveBeenCalled()
+  })
+
+  it('frosted glass tint follows the surface behind a transparent bar (theme-aware)', () => {
+    window.getComputedStyle = vi.fn((el) =>
+      el === activeElement
+        ? makeComputed({ backgroundColor: 'rgba(0, 0, 0, 0)' })
+        : makeComputed({ backgroundColor: 'rgb(20, 30, 40)' }),
+    ) as typeof window.getComputedStyle
+    const { getByRole } = renderPanel(activeElement)
+
+    fireEvent.click(getByRole('button', { name: 'Frosted glass' }))
+
+    // The transparent bar borrows the nearest opaque surface's hue as its tint.
+    expect(activeElement.style.backgroundColor).toMatch(/rgba\(20, 30, 40/)
+  })
+
+  it('warns when a parent will defeat the backdrop blur', () => {
+    const wrapper = document.createElement('div')
+    document.body.appendChild(wrapper)
+    wrapper.appendChild(activeElement)
+    window.getComputedStyle = vi.fn((el) =>
+      el === wrapper
+        ? makeComputed({ overflowX: 'hidden', overflowY: 'hidden' })
+        : makeComputed({ backdropFilter: 'blur(16px)' }),
+    ) as typeof window.getComputedStyle
+
+    const { getByRole } = renderPanel(activeElement)
+
+    const alert = getByRole('alert')
+    expect(alert.textContent).toContain('overflow')
+    expect(alert.textContent).toContain('div')
+    wrapper.remove()
+  })
+
+  it('shows no defeat warning when the blur will actually render', () => {
+    // Blur on the bar itself, but every ancestor leaves the backdrop intact.
+    window.getComputedStyle = vi.fn((el) =>
+      el === activeElement
+        ? makeComputed({ backdropFilter: 'blur(16px)' })
+        : makeComputed(),
+    ) as typeof window.getComputedStyle
+
+    const { queryByRole } = renderPanel(activeElement)
+
+    expect(queryByRole('alert')).toBeNull()
+  })
 })
 
 describe('color + alpha helpers', () => {
@@ -677,5 +740,91 @@ describe('color + alpha helpers', () => {
     expect(toCssColor('#ff0000', 100)).toBe('#ff0000')
     expect(toCssColor('#ff0000', 0)).toBe('transparent')
     expect(toCssColor('#0000ff', 50)).toBe('rgba(0, 0, 255, 0.50)')
+  })
+})
+
+describe('backdrop-defeating ancestor detection', () => {
+  it('flags each property that flattens the backdrop, and passes clean styles', async () => {
+    const { backdropDefeatReason } = await import('./BackgroundPanel')
+    expect(
+      backdropDefeatReason(makeComputed({ transform: 'matrix(1,0,0,1,0,0)' })),
+    ).toBe('transform')
+    expect(backdropDefeatReason(makeComputed({ perspective: '800px' }))).toBe(
+      'perspective',
+    )
+    expect(backdropDefeatReason(makeComputed({ filter: 'blur(2px)' }))).toBe(
+      'filter',
+    )
+    expect(
+      backdropDefeatReason(makeComputed({ backdropFilter: 'blur(4px)' })),
+    ).toBe('backdrop-filter')
+    expect(
+      backdropDefeatReason(makeComputed({ willChange: 'transform' })),
+    ).toBe('will-change')
+    expect(backdropDefeatReason(makeComputed({ contain: 'paint' }))).toBe(
+      'contain',
+    )
+    expect(backdropDefeatReason(makeComputed({ opacity: '0.5' }))).toBe(
+      'opacity',
+    )
+    expect(backdropDefeatReason(makeComputed({ overflowY: 'auto' }))).toBe(
+      'overflow',
+    )
+    // A plain, unclipped, untransformed ancestor does not defeat the blur.
+    expect(
+      backdropDefeatReason(
+        makeComputed({
+          opacity: '1',
+          overflowX: 'visible',
+          overflowY: 'visible',
+        }),
+      ),
+    ).toBeNull()
+  })
+
+  it('returns the nearest defeating ancestor (transform), walking up from the element', async () => {
+    const { findBackdropDefeatingAncestor } = await import('./BackgroundPanel')
+    const wrapper = document.createElement('div')
+    const inner = document.createElement('div')
+    const el = document.createElement('div')
+    inner.appendChild(el)
+    wrapper.appendChild(inner)
+    document.body.appendChild(wrapper)
+
+    const orig = window.getComputedStyle
+    window.getComputedStyle = vi.fn((node) =>
+      node === wrapper
+        ? makeComputed({ transform: 'translateZ(0)' })
+        : makeComputed({ overflowX: 'visible', overflowY: 'visible' }),
+    ) as typeof window.getComputedStyle
+
+    const found = findBackdropDefeatingAncestor(el)
+    expect(found?.element).toBe(wrapper)
+    expect(found?.reason).toBe('transform')
+
+    window.getComputedStyle = orig
+    wrapper.remove()
+  })
+
+  it('returns null when every ancestor leaves the backdrop intact', async () => {
+    const { findBackdropDefeatingAncestor } = await import('./BackgroundPanel')
+    const wrapper = document.createElement('div')
+    const el = document.createElement('div')
+    wrapper.appendChild(el)
+    document.body.appendChild(wrapper)
+
+    const orig = window.getComputedStyle
+    window.getComputedStyle = vi.fn(() =>
+      makeComputed({
+        overflowX: 'visible',
+        overflowY: 'visible',
+        opacity: '1',
+      }),
+    ) as typeof window.getComputedStyle
+
+    expect(findBackdropDefeatingAncestor(el)).toBeNull()
+
+    window.getComputedStyle = orig
+    wrapper.remove()
   })
 })
