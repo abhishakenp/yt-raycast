@@ -52,7 +52,13 @@ import {
 import { useEditController } from '@/features/editing/hooks/useEditController'
 import { useUndoRedo } from '@/features/editing/hooks/useUndoRedo'
 import { useReorderElement } from '@/features/editing/hooks/useReorderElement'
-import { updateLinkInSource } from '@/features/editing/lib/link-source'
+import { firstImageSrc } from '@ship-fast/blocks/multi-image-src'
+import {
+  buildImageReplaceCommand,
+  buildLinkEditCommand,
+  buildStyleApplyCommand,
+  buildTextRewriteCommand,
+} from '@/features/editing/lib/inline-edit-commands'
 import { revertTextPreservingIcons } from '@/features/editing/hooks/useTextEdit'
 const InlineEditToolbar = lazy(() =>
   import('@/features/editing/components/InlineEditToolbar').then((module) => ({
@@ -912,8 +918,12 @@ export function Dashboard({
         scrollEl.scrollTop = saved
         return
       }
-      // Content not ready yet — retry for up to ~500ms (30 frames)
-      if (attempts++ < 30) {
+      // Content not ready yet — retry for up to ~3s (180 frames). Library
+      // capsules that render from Lakebed live queries (gov-portal boards,
+      // tenders, …) reach full height only after their data arrives, which
+      // can easily outlive a 500ms window; giving up early strands the
+      // preview at the top.
+      if (attempts++ < 180) {
         raf = requestAnimationFrame(tryRestore)
       }
     }
@@ -1106,14 +1116,20 @@ export function Dashboard({
     if (previewScrollEl) {
       savedPreviewScrollRef.current = previewScrollEl.scrollTop
     }
-    const result = await editController.applyEdit(
-      'text',
-      label,
-      change.oldText,
-      change.newText,
-      'inline edit',
-      undefined,
-      change.occurrenceIndex,
+    // Same source of truth as the AI's `textRewrite` tool.
+    const result = await editController.applyCommand(
+      buildTextRewriteCommand(
+        {
+          beforeText: change.oldText,
+          afterText: change.newText,
+          targetLabel: label,
+          occurrenceIndex: change.occurrenceIndex,
+        },
+        {
+          sessionId: resolvedSessionId || sessionId,
+          instruction: 'inline edit',
+        },
+      ),
     )
 
     if (result === 'fork_needed') {
@@ -1140,8 +1156,9 @@ export function Dashboard({
     alt: string
   }) => {
     // Optimistic: show the new image immediately (reverted below on failure).
-    change.element.src = change.newSrc
-    const label = `IMG: ${change.alt.slice(0, 20)}…`
+    // A multi-image payload previews its first URL — the carousel renders once
+    // the persisted edit re-applies through imageOverrides.
+    change.element.src = firstImageSrc(change.newSrc)
     // Anchor the swap on the image's `alt` (stable across renders), not its src:
     // the stored preview HTML and the live DOM resolve different /api/pexels
     // queries from the same alt, so src never matches. occurrenceIndex picks the
@@ -1155,16 +1172,25 @@ export function Dashboard({
     if (previewScrollEl) {
       savedPreviewScrollRef.current = previewScrollEl.scrollTop
     }
-    // Fire and forget - the page will reload after successful edit
+    // Fire and forget - the page will reload after successful edit.
+    // Same source of truth as the AI's `imageReplace` tool. `sourceAnchor: alt`
+    // keeps the swap anchored on the image's stable `alt` (builder uses
+    // sourceAnchor as beforeText), preserving the prior matching behaviour.
     editController
-      .applyEdit(
-        'image',
-        label,
-        change.alt,
-        change.newSrc,
-        'inline image swap',
-        undefined,
-        occurrenceIndex,
+      .applyCommand(
+        buildImageReplaceCommand(
+          {
+            src: change.newSrc,
+            alt: change.alt,
+            sourceAnchor: change.alt,
+            occurrenceIndex,
+          },
+          {
+            sessionId: resolvedSessionId || sessionId,
+            selectedTag: 'img',
+            instruction: 'inline image swap',
+          },
+        ),
       )
       .then((result) => {
         if (result === 'fork_needed') {
@@ -1249,29 +1275,35 @@ export function Dashboard({
     if (!resolvedSessionId) return
     const source = generationView?.homeModule?.source
     if (!source) return
-    const result = updateLinkInSource(source, {
-      oldHref: payload.oldHref,
-      newHref: payload.newHref,
-      oldText: payload.oldText,
-      newText: payload.newText,
-      target: payload.target,
-      rel: payload.rel,
-      occurrenceIndex: payload.occurrenceIndex,
-    })
-    if (!result.replaced) return
     // Save scroll position before the edit (see handleTextChange for rationale)
     const previewScrollEl = getPreviewScrollEl()
     if (previewScrollEl) {
       savedPreviewScrollRef.current = previewScrollEl.scrollTop
     }
-    await editController.applyEdit(
-      'ai_rewrite',
-      `link: ${payload.oldHref} → ${payload.newHref}`,
-      undefined,
-      undefined,
-      'replace link href',
-      result.source,
-    )
+    // Same source of truth as the AI's `linkEdit` tool — the builder performs
+    // the `updateLinkInSource` patch itself, so we no longer duplicate it here.
+    try {
+      const command = buildLinkEditCommand(
+        {
+          oldHref: payload.oldHref,
+          href: payload.newHref,
+          label: payload.newText,
+          target: payload.target,
+          rel: payload.rel,
+          occurrenceIndex: payload.occurrenceIndex,
+        },
+        {
+          sessionId: resolvedSessionId || sessionId,
+          currentSource: source,
+          selectedText: payload.oldText,
+        },
+      )
+      await editController.applyCommand(command)
+    } catch (error) {
+      // Builder throws when the link isn't found in source — mirror the old
+      // silent no-op rather than surfacing an error toast.
+      console.error('[Inline Edit] Link edit skipped:', error)
+    }
   }
 
   // Undo/redo restore a previous preview version, which bumps previewVersion
@@ -1343,14 +1375,21 @@ export function Dashboard({
     if (previewScrollEl) {
       savedPreviewScrollRef.current = previewScrollEl.scrollTop
     }
-    const result = await editController.applyEdit(
-      'style',
-      label,
-      payload.sourceAnchor,
-      payload.style,
-      'inline style',
-      undefined,
-      payload.occurrenceIndex,
+    // Same source of truth as the AI's `styleApply` tool: build the command
+    // through the shared semantic builder, then persist via the shared executor.
+    const result = await editController.applyCommand(
+      buildStyleApplyCommand(
+        {
+          sourceAnchor: payload.sourceAnchor,
+          style: payload.style,
+          targetLabel: label,
+          occurrenceIndex: payload.occurrenceIndex,
+        },
+        {
+          sessionId: resolvedSessionId || sessionId,
+          instruction: 'inline style',
+        },
+      ),
     )
     setIsApplyingStyle(false)
 
