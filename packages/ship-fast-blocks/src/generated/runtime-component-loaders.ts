@@ -2281,6 +2281,10 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/illustrator/IllustratorWork.tsx').then(
       (module) => toCapsule(module, 'IllustratorWork'),
     )) satisfies RuntimeComponentLoader,
+  Image: (() =>
+    import('../registry/primitives/image.tsx').then((module) =>
+      toCapsule(module, 'Image'),
+    )) satisfies RuntimeComponentLoader,
   Input: (() =>
     import('../registry/primitives/input.tsx').then((module) =>
       toCapsule(module, 'Input'),

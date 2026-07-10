@@ -565,6 +565,7 @@ export const runtimeComponentNames = [
   'IllustratorStats',
   'IllustratorTestimonials',
   'IllustratorWork',
+  'Image',
   'Input',
   'InputGroup',
   'InputOTP',

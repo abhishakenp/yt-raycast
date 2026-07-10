@@ -13,7 +13,7 @@
     "src/generated/capsule-categories.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 1143,
+  "componentCount": 1144,
   "sectionComponentCount": 1072,
   "components": [
     {
@@ -2275,6 +2275,10 @@
     {
       "name": "IllustratorWork",
       "sourceFile": "src/registry/sections/illustrator/IllustratorWork.tsx"
+    },
+    {
+      "name": "Image",
+      "sourceFile": "src/registry/primitives/image.tsx"
     },
     {
       "name": "Input",

@@ -2058,7 +2058,7 @@
       "description": "Grid of downloadable government formats and documents (bidder forms, vendor manuals, BG formats), each a titled card with a category tag and a download link. Use as a downloads / formats section on a government portal."
     },
     "GovPortalFooter": {
-      "signature": "GovPortalFooter(brand?: string, about?: string, navLinks?: {label: string, target?: string}[], headOffice?: {name: string, addr?: string, email?: string, phone?: string, hours?: string}, plantOffice?: {name: string, addr?: string, email?: string, phone?: string, hours?: string}, className?: string)",
+      "signature": "GovPortalFooter(brand?: string, brandHi?: string, about?: string, aboutHi?: string, navLinks?: {label: string, labelHi?: string, target?: string}[], headOffice?: {name: string, nameHi?: string, addr?: string, addrHi?: string, email?: string, phone?: string, hours?: string, hoursHi?: string}, plantOffice?: {name: string, nameHi?: string, addr?: string, addrHi?: string, email?: string, phone?: string, hours?: string, hoursHi?: string}, className?: string)",
       "description": "Indigo government / PSU portal footer with an about blurb, a navigation column of page links, and two office cards (head office + plant office) each with address, email, phone and working hours. Use as the closing footer on a government or civic portal."
     },
     "GovPortalGrievance": {
@@ -2098,7 +2098,7 @@
       "description": "Row of icon quick-link tiles on a government / PSU portal linking to primary service areas (power generation, business, environment, sustainability), each with an icon, label and short description. Use directly under the hero on a government homepage."
     },
     "GovPortalStats": {
-      "signature": "GovPortalStats(heading?: string, stats?: {value: string, label: string}[], className?: string)",
+      "signature": "GovPortalStats(heading?: string, stats?: {value: string, label: string, valueHi?: string, labelHi?: string}[], className?: string)",
       "description": "Band of headline performance figures on a government / PSU portal (installed capacity, plant load factor, units, uptime), each a large value with a caption, using the shared StatGrid. Use as a KPI strip on a government homepage or performance page."
     },
     "GovPortalTenderBoard": {
@@ -2260,6 +2260,10 @@
     "IllustratorWork": {
       "signature": "IllustratorWork(eyebrow?: string, heading?: string, viewAll?: string, items?: {title: string, meta: string}[], className?: string)",
       "description": "Selected-work project gallery for an illustrator / visual-artist portfolio on a raised card-colored band: a header row pairing an uppercase accent eyebrow + serif heading with a 'view all' arrow link, above a responsive 3-up grid of clickable projects, each a tall 4:5 image that zooms on hover with a serif title and small meta line. Items and the view-all link route through useNavigate. Use to showcase an artist's recent books, editorial spreads, campaigns, and personal projects."
+    },
+    "Image": {
+      "signature": "Image(alt: string, src?: string, w?: number, h?: number, className?: string)",
+      "description": "Standalone image. `alt` describes the subject and drives automatic stock-photo resolution; pass an explicit `src` URL to bypass it. Rounded by default via className."
     },
     "Input": {
       "signature": "Input(placeholder?: string, type?: \"text\" | \"email\" | \"password\" | \"number\" | \"search\" | \"tel\" | \"url\", defaultValue?: string, disabled?: boolean, className?: string)",
