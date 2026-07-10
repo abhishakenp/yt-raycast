@@ -40,7 +40,7 @@ interface MobbinSession {
 let _authCache: MobbinAuth | null = null
 let _refreshPromise: Promise<MobbinAuth | null> | null = null
 let _anonKey = ''
-let _searchableAppsCache = new Map<string, { at: number; apps: any[] }>()
+const _searchableAppsCache = new Map<string, { at: number; apps: any[] }>()
 
 export function authFilePath() {
   return process.env.MOBBIN_AUTH_FILE || DEFAULT_AUTH_FILE

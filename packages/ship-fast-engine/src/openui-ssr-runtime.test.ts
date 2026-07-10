@@ -6,9 +6,8 @@ import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 declare global {
-  // eslint-disable-next-line no-var
   var __renderOpenUIToHTMLType: string | undefined
-  // eslint-disable-next-line no-var
+
   var __renderOpenUIToHTMLResult: string | undefined
 }
 

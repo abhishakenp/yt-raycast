@@ -24,7 +24,11 @@ describe('isInRadixPortal', () => {
     ['[role="option"]', 'role', 'option'],
     ['[role="listbox"]', 'role', 'listbox'],
     ['[role="alertdialog"]', 'role', 'alertdialog'],
-    ['[data-radix-popper-content-wrapper]', 'data-radix-popper-content-wrapper', ''],
+    [
+      '[data-radix-popper-content-wrapper]',
+      'data-radix-popper-content-wrapper',
+      '',
+    ],
     ['[data-radix-select-content]', 'data-radix-select-content', ''],
     ['[data-radix-dialog-content]', 'data-radix-dialog-content', ''],
     ['[data-radix-dialog-overlay]', 'data-radix-dialog-overlay', ''],
