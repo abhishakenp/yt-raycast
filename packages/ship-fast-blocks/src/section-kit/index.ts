@@ -69,6 +69,11 @@ export {
   type PersonCardProps,
 } from './PersonCard.tsx'
 export { Card, surfaceCard, type CardProps } from './Card.tsx'
+export {
+  Container,
+  containerVariants,
+  type ContainerProps,
+} from './Container.tsx'
 export { Eyebrow, eyebrowVariants, type EyebrowProps } from './Eyebrow.tsx'
 export {
   ResponsiveGrid,
