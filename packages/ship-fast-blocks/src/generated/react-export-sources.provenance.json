@@ -13,8 +13,8 @@
     "src/generated/capsule-categories.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 1144,
-  "sectionComponentCount": 1072,
+  "componentCount": 1145,
+  "sectionComponentCount": 1073,
   "components": [
     {
       "name": "AboutHero",
@@ -1895,6 +1895,10 @@
     {
       "name": "FitnessTrainers",
       "sourceFile": "src/registry/sections/fitness/FitnessTrainers.tsx"
+    },
+    {
+      "name": "FlightSimulator",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulator.tsx"
     },
     {
       "name": "FlightSimulatorFeatures",

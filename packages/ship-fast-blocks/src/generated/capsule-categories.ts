@@ -824,6 +824,7 @@ export const capsuleCategories: Record<
     category: 'flight-simulator',
     functionalType: 'Gallery',
   },
+  FlightSimulator: { category: 'flight-simulator', functionalType: 'Generic' },
   FlightSimulatorFooter: {
     category: 'flight-simulator',
     functionalType: 'Footer',
