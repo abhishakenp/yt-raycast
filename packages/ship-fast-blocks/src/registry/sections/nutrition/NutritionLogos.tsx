@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NutritionLogos — press / featured-in social-proof strip for a wellness or
@@ -30,7 +31,7 @@ export const NutritionLogos = defineCapsule({
       <section
         className={cn('border-y border-border bg-card py-10', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wide text-muted-foreground">
             {heading}
           </p>
@@ -47,7 +48,7 @@ export const NutritionLogos = defineCapsule({
               </span>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

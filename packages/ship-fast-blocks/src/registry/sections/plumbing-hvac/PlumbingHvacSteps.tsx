@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PlumbingHvacSteps — a "How it works" band for a plumbing & HVAC trade site. A
@@ -62,7 +63,7 @@ export const PlumbingHvacSteps = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="plumbing-hvac-steps-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2
               id="plumbing-hvac-steps-heading"
@@ -95,7 +96,7 @@ export const PlumbingHvacSteps = defineCapsule({
               </li>
             ))}
           </ol>
-        </div>
+        </Container>
       </section>
     )
   },

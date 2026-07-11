@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MarketplaceAuthors — a "Featured Sellers" section (the Authors role for a
@@ -174,7 +175,7 @@ export const MarketplaceAuthors = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="sellers-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <h2
@@ -253,7 +254,7 @@ export const MarketplaceAuthors = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

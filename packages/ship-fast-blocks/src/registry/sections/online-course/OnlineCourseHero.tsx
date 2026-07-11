@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * OnlineCourseHero — split, two-column hero for an online-course / e-learning
@@ -79,7 +80,7 @@ export const OnlineCourseHero = defineCapsule({
 
     return (
       <section className={cn('py-20 sm:py-28 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1">
@@ -196,7 +197,7 @@ export const OnlineCourseHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

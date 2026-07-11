@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * SaasSteps — a "How it works" band for a B2B SaaS landing page. A centered
@@ -66,7 +67,7 @@ export const SaasSteps = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="saas-steps-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2
               id="saas-steps-heading"
@@ -104,7 +105,7 @@ export const SaasSteps = defineCapsule({
               </li>
             ))}
           </ol>
-        </div>
+        </Container>
       </section>
     )
   },
