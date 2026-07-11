@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * FaqContactCta — a "Still need help?" contact call-to-action band for a
  * help-center / support page. A primary-colored rounded panel centered on a muted
@@ -50,7 +52,7 @@ export const FaqContactCta = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="rounded-2xl bg-primary p-8 text-center sm:p-12 lg:p-16">
             <h2 className="mb-4 text-2xl font-semibold text-primary-foreground sm:text-3xl">
               {heading}
@@ -108,7 +110,7 @@ export const FaqContactCta = defineCapsule({
               </span>
             </p>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

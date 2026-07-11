@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NonprofitLogos — trusted-by partner / funder logo strip for a nonprofit /
  * charity page. A horizontally-bordered band on a card surface with a small
@@ -41,7 +43,7 @@ export const NonprofitLogos = defineCapsule({
       <section
         className={cn('border-y border-border bg-card py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
@@ -59,7 +61,7 @@ export const NonprofitLogos = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -6,6 +6,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsTopics — browse-by-topic / section nav grid for a news outlet. On a card
  * surface: a heading with a "View all" link on the right, then a responsive grid
@@ -118,7 +120,7 @@ export const NewsTopics = defineCapsule({
 
     return (
       <section className={cn('bg-card py-12 lg:py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl font-bold text-foreground lg:text-2xl">
               {heading}
@@ -168,7 +170,7 @@ export const NewsTopics = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

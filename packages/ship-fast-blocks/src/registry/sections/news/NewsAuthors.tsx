@@ -11,6 +11,8 @@ import {
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsAuthors — meet our columnists / contributors grid for a news outlet. On a
  * card surface: a heading with an optional intro, then a responsive grid of
@@ -149,7 +151,7 @@ export const NewsAuthors = defineCapsule({
 
     return (
       <section className={cn('bg-card py-12 lg:py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-10 max-w-2xl">
             <h2 className="text-xl font-bold text-foreground lg:text-2xl">
               {heading}
@@ -219,7 +221,7 @@ export const NewsAuthors = defineCapsule({
               </PersonCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

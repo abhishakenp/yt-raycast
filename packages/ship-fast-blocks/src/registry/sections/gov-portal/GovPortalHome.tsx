@@ -28,6 +28,8 @@ import {
 } from './gov-portal-interactions.tsx'
 
 const HI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९']
+import { Container } from '#/section-kit/Container.tsx'
+
 /** Render ASCII digits in Devanagari so numeric values localise in Hindi. */
 export const toHiNum = (s: string) =>
   s.replace(/[0-9]/g, (d) => HI_DIGITS[Number(d)])
@@ -251,7 +253,7 @@ export const GovPortalQuickLinks = defineCapsule({
 
     return (
       <section className={cn('bg-background py-14', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
@@ -284,7 +286,7 @@ export const GovPortalQuickLinks = defineCapsule({
               )
             })}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },
@@ -361,12 +363,12 @@ export const GovPortalStats = defineCapsule({
 
     return (
       <section className={cn('bg-muted/40 py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
           <StatGrid columns={4} stats={stats} />
-        </div>
+        </Container>
       </section>
     )
   },

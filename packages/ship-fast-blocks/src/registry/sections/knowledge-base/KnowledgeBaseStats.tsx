@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * KnowledgeBaseStats — compact stats band for a help center on a raised card
  * surface with top/bottom borders. A centered 2-up (mobile) / 4-up (desktop)
@@ -41,7 +43,7 @@ export const KnowledgeBaseStats = defineCapsule({
         )}
         aria-label="Help center statistics"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {items.map((s) => (
               <div key={s.label}>
@@ -52,7 +54,7 @@ export const KnowledgeBaseStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

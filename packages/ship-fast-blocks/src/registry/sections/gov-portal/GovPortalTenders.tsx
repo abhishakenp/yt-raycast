@@ -75,6 +75,8 @@ const NoticeRows = ({ rows, lang }: { rows: GovRow[]; lang: GovLang }) => {
   )
 }
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * GovPortalTenderBoard — a tabbed government e-tender board (Tenders /
  * Extension / Corrigendum / Cancellation) with a financial-year shadcn Select
@@ -169,7 +171,7 @@ export const GovPortalTenderBoard = defineCapsule({
 
     return (
       <section className={cn('bg-background py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
@@ -243,7 +245,7 @@ export const GovPortalTenderBoard = defineCapsule({
             )}
           </p>
           <NoticeRows rows={filtered} lang={lang} />
-        </div>
+        </Container>
       </section>
     )
   },

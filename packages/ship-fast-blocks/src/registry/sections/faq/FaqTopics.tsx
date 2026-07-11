@@ -6,6 +6,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * FaqTopics — a "Browse by Topic" category grid for a help-center / knowledge-base
  * page. A left-aligned section heading above a responsive 1/2/3-column grid of
@@ -202,7 +204,7 @@ export const FaqTopics = defineCapsule({
 
     return (
       <section className={cn('bg-muted/40 py-12 sm:py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <h2 className="mb-8 text-lg font-semibold text-foreground">
             {heading}
           </h2>
@@ -236,7 +238,7 @@ export const FaqTopics = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

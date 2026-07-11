@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsStoryGrid — latest stories grid for a news / editorial outlet. On a subtle
  * muted band: a "Latest Stories" heading with a row of filter chips (All / News /
@@ -145,7 +147,7 @@ export const NewsStoryGrid = defineCapsule({
 
     return (
       <section className={cn('bg-muted/40 py-8 lg:py-12', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl font-bold text-foreground lg:text-2xl">
               {heading}
@@ -235,7 +237,7 @@ export const NewsStoryGrid = defineCapsule({
               {loadMore}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

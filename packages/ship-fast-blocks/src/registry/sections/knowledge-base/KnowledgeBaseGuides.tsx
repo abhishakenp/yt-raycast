@@ -6,6 +6,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * KnowledgeBaseGuides — featured step-by-step guides gallery for a help center.
  * A heading + description with a bordered "view all" button on one side, above a
@@ -144,7 +146,7 @@ export const KnowledgeBaseGuides = defineCapsule({
         className={cn('bg-background py-16 sm:py-20', props.className)}
         aria-labelledby="kb-guides-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2
@@ -212,7 +214,7 @@ export const KnowledgeBaseGuides = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

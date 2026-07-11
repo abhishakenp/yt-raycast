@@ -5,6 +5,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * AiProductFeatures — a centered-intro feature grid for a clean, light AI SaaS /
  * product page. A heading + supporting paragraph centered above a responsive
@@ -165,7 +167,7 @@ export const AiProductFeatures = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -187,7 +189,7 @@ export const AiProductFeatures = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NonprofitTestimonials — impact-stories wall for a nonprofit / charity / NGO
  * page. Thin configuration over the shared `TestimonialGrid` composite: a
@@ -66,13 +68,13 @@ export const NonprofitTestimonials = defineCapsule({
 
     return (
       <section className="py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <TestimonialGrid
             heading={heading}
             items={items}
             className={props.className}
           />
-        </div>
+        </Container>
       </section>
     )
   },

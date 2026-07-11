@@ -24,6 +24,8 @@ import {
 
 const str = (row: GovRow, key: string) => String(row[key] ?? '').trim()
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * GovPortalLeadership — a featured MD/Chairman message + board-of-directors
  * grid. Theme-token based; bilingual. Content from Lakebed.
@@ -58,7 +60,7 @@ export const GovPortalLeadership = defineCapsule({
 
     return (
       <section className={cn('bg-background py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
@@ -125,7 +127,7 @@ export const GovPortalLeadership = defineCapsule({
               </div>
             </>
           ) : null}
-        </div>
+        </Container>
       </section>
     )
   },

@@ -6,6 +6,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * KnowledgeBaseCategories — "browse by category" grid for a help center. A
  * centered heading + description above a responsive 1/2/4-up grid of bordered
@@ -214,7 +216,7 @@ export const KnowledgeBaseCategories = defineCapsule({
         className={cn('bg-background py-16 sm:py-20', props.className)}
         aria-labelledby="kb-categories-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 text-center">
             <h2
               id="kb-categories-heading"
@@ -250,7 +252,7 @@ export const KnowledgeBaseCategories = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

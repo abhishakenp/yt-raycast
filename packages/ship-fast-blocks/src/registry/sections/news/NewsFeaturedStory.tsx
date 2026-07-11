@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsFeaturedStory — featured big lead story band for a news / editorial
  * outlet. A single bespoke lead/featured band on a card surface: a top
@@ -129,7 +131,7 @@ export const NewsFeaturedStory = defineCapsule({
 
     return (
       <section className={cn('bg-card py-8 lg:py-12', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           {/* Breaking banner */}
           <div className="mb-8 flex items-center gap-3">
             <span className="rounded bg-destructive px-3 py-1 text-xs font-semibold uppercase tracking-wider text-destructive-foreground">
@@ -234,7 +236,7 @@ export const NewsFeaturedStory = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -6,6 +6,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * FaqFooter — a five-column resource footer for a help-center / SaaS product page.
  * A spanning brand block (logo tile + name, tagline, and small social icon
@@ -119,7 +121,7 @@ export const FaqFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-4-5" gap="lg" className="lg:gap-12">
             <div className="col-span-2 md:col-span-4 lg:col-span-1">
               <button
@@ -189,7 +191,7 @@ export const FaqFooter = defineCapsule({
               </span>
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

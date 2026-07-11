@@ -16,6 +16,8 @@ import {
 
 const str = (row: GovRow, key: string) => String(row[key] ?? '').trim()
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * GovPortalDirectory — a telephone / staff directory table. Theme-token based;
  * bilingual. Content from Lakebed.
@@ -145,14 +147,14 @@ export const GovPortalMedia = defineCapsule({
 
     return (
       <section className={cn('bg-muted/30 py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <GalleryGrid
             heading={heading}
             subheading={props.subheading}
             images={images}
             columns={3}
           />
-        </div>
+        </Container>
       </section>
     )
   },
@@ -193,7 +195,7 @@ export const GovPortalNewsEvents = defineCapsule({
 
     return (
       <section className={cn('bg-background py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
@@ -225,7 +227,7 @@ export const GovPortalNewsEvents = defineCapsule({
               </article>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

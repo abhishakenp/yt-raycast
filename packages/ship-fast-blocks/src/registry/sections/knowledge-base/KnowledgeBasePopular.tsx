@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * KnowledgeBasePopular — popular-articles list beside a sticky-style support
  * sidebar for a help center. A two-thirds column lists the most-viewed articles
@@ -185,7 +187,7 @@ export const KnowledgeBasePopular = defineCapsule({
         )}
         aria-labelledby="kb-popular-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <h2
@@ -285,7 +287,7 @@ export const KnowledgeBasePopular = defineCapsule({
               </Card>
             </aside>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

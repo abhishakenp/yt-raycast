@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NonprofitServices — programs / causes grid for a nonprofit / charity / NGO
  * page. Thin configuration over the shared `FeatureGrid` composite: a centered
@@ -89,7 +91,7 @@ export const NonprofitServices = defineCapsule({
 
     return (
       <section className="py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <FeatureGrid
             heading={heading}
             subheading={subheading}
@@ -97,7 +99,7 @@ export const NonprofitServices = defineCapsule({
             columns={4}
             className={props.className}
           />
-        </div>
+        </Container>
       </section>
     )
   },

@@ -8,6 +8,8 @@ import {
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * AiProductSteps — a numbered onboarding / how-it-works timeline for a clean,
  * light AI SaaS / product page. Sits on a subtle muted band: a centered heading
@@ -64,7 +66,7 @@ export const AiProductSteps = defineCapsule({
 
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -115,7 +117,7 @@ export const AiProductSteps = defineCapsule({
               {cta}
             </SaasPlanActionButton>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },
