@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
@@ -54,7 +55,7 @@ export const InteriorDesignNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-20 items-center justify-between">
             <button
               type="button"
@@ -98,7 +99,7 @@ export const InteriorDesignNavbar = defineCapsule({
               buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
             />
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

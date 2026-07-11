@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   ProductCard,
   ProductCardImage,
@@ -145,7 +146,7 @@ export const EcommerceGallery = defineCapsule({
         aria-label="Featured products"
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">
               {galleryHeading}
@@ -211,7 +212,7 @@ export const EcommerceGallery = defineCapsule({
               </ProductCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

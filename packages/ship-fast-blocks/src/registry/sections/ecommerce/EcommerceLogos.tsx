@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EcommerceLogos — trust/brand strip for a general online store. A slim band
@@ -46,7 +47,7 @@ export const EcommerceLogos = defineCapsule({
         aria-label="Store guarantees"
         className={cn('border-y border-border py-10 sm:py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           {stripEyebrow ? (
             <p className={cn(eyebrowCls, 'mb-8 text-center')}>{stripEyebrow}</p>
           ) : null}
@@ -73,7 +74,7 @@ export const EcommerceLogos = defineCapsule({
               </li>
             ))}
           </ul>
-        </div>
+        </Container>
       </section>
     )
   },

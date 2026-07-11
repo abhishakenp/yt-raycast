@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
@@ -67,7 +68,7 @@ export const EventPlannerNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <nav
             className="flex h-20 items-center justify-between"
             aria-label="Main navigation"
@@ -137,7 +138,7 @@ export const EventPlannerNavbar = defineCapsule({
               )}
             />
           </nav>
-        </div>
+        </Container>
       </header>
     )
   },

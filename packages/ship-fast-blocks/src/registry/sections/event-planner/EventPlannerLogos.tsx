@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventPlannerLogos — understated "trusted by" partner-logo strip for an event
@@ -39,7 +40,7 @@ export const EventPlannerLogos = defineCapsule({
       <section
         className={cn('border-y border-border bg-muted py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm uppercase tracking-widest text-muted-foreground">
             {logosHeading}
           </p>
@@ -55,7 +56,7 @@ export const EventPlannerLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

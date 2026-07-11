@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Container, ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * FintechLogos — trusted-by logo strip for a fintech / neobank landing page. A
@@ -36,7 +36,7 @@ export const FintechLogos = defineCapsule({
       <section
         className={cn('border-y border-border bg-muted py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium text-muted-foreground">
             {label}
           </p>
@@ -59,7 +59,7 @@ export const FintechLogos = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

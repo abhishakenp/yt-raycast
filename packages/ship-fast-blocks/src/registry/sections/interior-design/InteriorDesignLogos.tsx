@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Container, ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * InteriorDesignLogos — understated "trusted by" brand logo strip for an upscale
@@ -40,7 +40,7 @@ export const InteriorDesignLogos = defineCapsule({
       <section
         className={cn('border-y border-border bg-muted py-16', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-10 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
             {heading}
           </p>
@@ -63,7 +63,7 @@ export const InteriorDesignLogos = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

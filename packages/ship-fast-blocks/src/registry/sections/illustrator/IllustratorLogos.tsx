@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * IllustratorLogos — a low-key "trusted by" publications / brands strip on a
@@ -44,7 +45,7 @@ export const IllustratorLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-xs uppercase tracking-wider text-muted-foreground sm:text-sm">
             {heading}
           </p>
@@ -60,7 +61,7 @@ export const IllustratorLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },
