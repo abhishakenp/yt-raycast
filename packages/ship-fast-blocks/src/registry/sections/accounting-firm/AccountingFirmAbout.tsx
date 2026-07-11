@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AccountingFirmAbout — split about band for a CPA / accounting-firm site. A
@@ -68,7 +69,7 @@ export const AccountingFirmAbout = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="order-2 lg:order-1">
               <Image
@@ -123,7 +124,7 @@ export const AccountingFirmAbout = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

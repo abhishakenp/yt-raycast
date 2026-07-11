@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Container, ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * AccountingFirmLogos — slim "trusted by" client logo strip for a CPA /
@@ -44,7 +44,7 @@ export const AccountingFirmLogos = defineCapsule({
       <section
         className={cn('border-b border-border bg-muted py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {heading}
           </p>
@@ -66,7 +66,7 @@ export const AccountingFirmLogos = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },
