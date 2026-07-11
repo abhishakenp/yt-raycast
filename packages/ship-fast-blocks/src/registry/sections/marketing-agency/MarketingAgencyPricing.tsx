@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use to present retainer / service tiers for a marketing agency.
  * Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MarketingAgencyPricing = defineCapsule({
   name: 'MarketingAgencyPricing',
   description:
@@ -35,7 +35,10 @@ export const MarketingAgencyPricing = defineCapsule({
           badge: z.string().optional(),
           /** Features with `included: false` rendered struck/muted. */
           features: z.array(
-            z.object({ label: z.string(), included: z.boolean() }),
+            z.object({
+              label: z.string(),
+              included: z.boolean(),
+            }),
           ),
         }),
       )
@@ -63,12 +66,30 @@ export const MarketingAgencyPricing = defineCapsule({
             cta: 'Get Started',
             featured: false,
             features: [
-              { label: '1 channel (SEO or Paid)', included: true },
-              { label: 'Monthly reporting', included: true },
-              { label: 'Email support', included: true },
-              { label: '$10K monthly ad spend', included: true },
-              { label: 'CRO & landing pages', included: false },
-              { label: 'Dedicated strategist', included: false },
+              {
+                label: '1 channel (SEO or Paid)',
+                included: true,
+              },
+              {
+                label: 'Monthly reporting',
+                included: true,
+              },
+              {
+                label: 'Email support',
+                included: true,
+              },
+              {
+                label: '$10K monthly ad spend',
+                included: true,
+              },
+              {
+                label: 'CRO & landing pages',
+                included: false,
+              },
+              {
+                label: 'Dedicated strategist',
+                included: false,
+              },
             ],
           },
           {
@@ -80,12 +101,30 @@ export const MarketingAgencyPricing = defineCapsule({
             featured: true,
             badge: 'Most Popular',
             features: [
-              { label: '3 channels included', included: true },
-              { label: 'Weekly reporting', included: true },
-              { label: 'Priority support', included: true },
-              { label: '$50K monthly ad spend', included: true },
-              { label: 'CRO & landing pages', included: true },
-              { label: 'Dedicated strategist', included: true },
+              {
+                label: '3 channels included',
+                included: true,
+              },
+              {
+                label: 'Weekly reporting',
+                included: true,
+              },
+              {
+                label: 'Priority support',
+                included: true,
+              },
+              {
+                label: '$50K monthly ad spend',
+                included: true,
+              },
+              {
+                label: 'CRO & landing pages',
+                included: true,
+              },
+              {
+                label: 'Dedicated strategist',
+                included: true,
+              },
             ],
           },
           {
@@ -95,16 +134,33 @@ export const MarketingAgencyPricing = defineCapsule({
             cta: 'Contact Sales',
             featured: false,
             features: [
-              { label: 'All channels included', included: true },
-              { label: 'Real-time dashboard', included: true },
-              { label: '24/7 support', included: true },
-              { label: 'Unlimited ad spend', included: true },
-              { label: 'Full creative team', included: true },
-              { label: 'Quarterly business reviews', included: true },
+              {
+                label: 'All channels included',
+                included: true,
+              },
+              {
+                label: 'Real-time dashboard',
+                included: true,
+              },
+              {
+                label: '24/7 support',
+                included: true,
+              },
+              {
+                label: 'Unlimited ad spend',
+                included: true,
+              },
+              {
+                label: 'Full creative team',
+                included: true,
+              },
+              {
+                label: 'Quarterly business reviews',
+                included: true,
+              },
             ],
           },
         ]
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -119,7 +175,6 @@ export const MarketingAgencyPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     const Cross = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -134,10 +189,9 @@ export const MarketingAgencyPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-3 text-sm font-medium text-muted-foreground">
               {eyebrow}
@@ -248,7 +302,7 @@ export const MarketingAgencyPricing = defineCapsule({
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {note}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * projects for construction firms, contractors, builders, or design-build
  * firms. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ConstructionProjects = defineCapsule({
   name: 'ConstructionProjects',
   description:
@@ -81,7 +81,6 @@ export const ConstructionProjects = defineCapsule({
             tag: 'Residential',
           },
         ]
-
     const ArrowRight = () => (
       <svg
         width="20"
@@ -98,10 +97,9 @@ export const ConstructionProjects = defineCapsule({
         <polyline points="14 5 21 12 14 19" />
       </svg>
     )
-
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -153,7 +151,7 @@ export const ConstructionProjects = defineCapsule({
               <ArrowRight />
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

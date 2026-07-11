@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -16,6 +15,7 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * the sticky site header for marketing / growth agencies, SEO / paid-ads shops,
  * lead-gen consultancies, or B2B SaaS growth firms. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MarketingAgencyNavbar = defineCapsule({
   name: 'MarketingAgencyNavbar',
   description:
@@ -34,7 +34,6 @@ export const MarketingAgencyNavbar = defineCapsule({
       ? props.nav
       : ['Services', 'Case Studies', 'Pricing', 'FAQ', 'Get Started']
     const navCta = nav[nav.length - 1]
-
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -49,7 +48,6 @@ export const MarketingAgencyNavbar = defineCapsule({
         <path d="M2 12l10 5 10-5" />
       </svg>
     )
-
     return (
       <header
         className={cn(
@@ -57,7 +55,7 @@ export const MarketingAgencyNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between">
             <button
               type="button"
@@ -93,12 +91,15 @@ export const MarketingAgencyNavbar = defineCapsule({
               brand={brand}
               nav={nav}
               homeTarget={nav[0]}
-              cta={{ label: navCta, target: navCta }}
+              cta={{
+                label: navCta,
+                target: navCta,
+              }}
               label="Menu"
               buttonClassName="p-2 text-foreground md:hidden"
             />
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

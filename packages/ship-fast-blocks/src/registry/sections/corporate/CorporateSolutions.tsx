@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
@@ -15,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * offerings (cloud infrastructure, security, analytics, transformation, managed
  * services, risk) on SaaS, IT, or consultancy sites.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CorporateSolutions = defineCapsule({
   name: 'CorporateSolutions',
   description:
@@ -26,7 +26,12 @@ export const CorporateSolutions = defineCapsule({
     description: z.string().optional(),
     /** Solution cards: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -70,7 +75,6 @@ export const CorporateSolutions = defineCapsule({
               'Comprehensive risk assessment frameworks, business continuity planning, and disaster recovery with industry-leading RTOs.',
           },
         ]
-
     const solutionIcons: ReactNode[] = [
       // cloud / server
       <svg
@@ -173,7 +177,6 @@ export const CorporateSolutions = defineCapsule({
         <path d="M9 12l2 2 4-4" />
       </svg>,
     ]
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
@@ -190,7 +193,6 @@ export const CorporateSolutions = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-
     const sectionHead = (title: string, desc: string) => (
       <div className="mx-auto mb-16 max-w-3xl text-center">
         <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -199,10 +201,9 @@ export const CorporateSolutions = defineCapsule({
         <p className="text-lg text-muted-foreground">{desc}</p>
       </div>
     )
-
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           {sectionHead(heading, description)}
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
@@ -232,7 +233,7 @@ export const CorporateSolutions = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

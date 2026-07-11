@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * present social proof from customers of a brokerage, trading app, robo-advisor
  * or crypto exchange. Renders fully with no props via six baked-in reviews.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InvestingTestimonials = defineCapsule({
   name: 'InvestingTestimonials',
   description:
@@ -92,7 +92,6 @@ export const InvestingTestimonials = defineCapsule({
               'professional headshot of a man in his thirties with short dark hair and clean shaven face',
           },
         ]
-
     const Star = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
@@ -103,13 +102,12 @@ export const InvestingTestimonials = defineCapsule({
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
-
     return (
       <section
         id="reviews"
         className={cn('bg-muted/50 py-24', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               {heading}
@@ -120,7 +118,9 @@ export const InvestingTestimonials = defineCapsule({
             {items.map((t) => (
               <Card key={t.name} padding="lg" className="text-card-foreground">
                 <div className="mb-4 flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, s) => (
+                  {Array.from({
+                    length: 5,
+                  }).map((_, s) => (
                     <Star key={s} className="size-5 text-chart-4" />
                   ))}
                 </div>
@@ -143,7 +143,7 @@ export const InvestingTestimonials = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

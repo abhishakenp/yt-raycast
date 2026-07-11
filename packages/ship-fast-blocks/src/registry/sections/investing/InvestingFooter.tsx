@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -15,6 +14,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * a brokerage, trading app, robo-advisor or crypto exchange. Renders fully with
  * no props via baked-in "Vestora" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InvestingFooter = defineCapsule({
   name: 'InvestingFooter',
   description:
@@ -28,7 +28,12 @@ export const InvestingFooter = defineCapsule({
     tagline: z.string().optional(),
     /** Footer link columns. */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Copyright line (auto-built from brand + year if omitted). */
     copyright: z.string().optional(),
@@ -52,7 +57,10 @@ export const InvestingFooter = defineCapsule({
             title: 'Product',
             links: ['Features', 'Pricing', 'Mobile App', 'API'],
           },
-          { title: 'Company', links: ['About', 'Careers', 'Press', 'Blog'] },
+          {
+            title: 'Company',
+            links: ['About', 'Careers', 'Press', 'Blog'],
+          },
           {
             title: 'Resources',
             links: [
@@ -76,7 +84,6 @@ export const InvestingFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'LinkedIn', 'Instagram']
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -98,7 +105,6 @@ export const InvestingFooter = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <footer
         className={cn(
@@ -106,7 +112,7 @@ export const InvestingFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
             <div className="col-span-2 md:col-span-4 lg:col-span-1">
               <button
@@ -164,7 +170,7 @@ export const InvestingFooter = defineCapsule({
               </p>
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

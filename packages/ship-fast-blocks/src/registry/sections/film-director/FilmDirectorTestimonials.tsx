@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * artists, and fellow filmmakers for directors, cinematographers, DPs, or
  * production houses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorTestimonials = defineCapsule({
   name: 'FilmDirectorTestimonials',
   description:
@@ -89,10 +89,9 @@ export const FilmDirectorTestimonials = defineCapsule({
               'professional headshot of a female documentary producer with dark hair and natural makeup wearing practical outdoor clothing',
           },
         ]
-
     return (
       <section className={cn('py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-light md:text-4xl">
               {testimonialsHeading}
@@ -121,7 +120,7 @@ export const FilmDirectorTestimonials = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
@@ -11,6 +10,7 @@ import { Image } from '#/lib/img.tsx'
  * grid of cards with star ratings, a quote, and an avatar + name + role footer.
  * Use to build social proof on SaaS, consultancy, or managed services landing pages.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CorporateTestimonials = defineCapsule({
   name: 'CorporateTestimonials',
   description:
@@ -66,7 +66,6 @@ export const CorporateTestimonials = defineCapsule({
               'Professional headshot of a middle-aged male business leader with glasses',
           },
         ]
-
     const Star = () => (
       <svg
         width="20"
@@ -79,10 +78,9 @@ export const CorporateTestimonials = defineCapsule({
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
-
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -98,7 +96,9 @@ export const CorporateTestimonials = defineCapsule({
                 className="bg-muted/50"
               >
                 <div className="mb-6 flex gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {Array.from({
+                    length: 5,
+                  }).map((_, i) => (
                     <Star key={i} />
                   ))}
                 </div>
@@ -120,7 +120,7 @@ export const CorporateTestimonials = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

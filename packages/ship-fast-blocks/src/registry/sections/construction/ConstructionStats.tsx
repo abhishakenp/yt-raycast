@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * or any business showcasing key metrics. Renders fully with no props via
  * baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ConstructionStats = defineCapsule({
   name: 'ConstructionStats',
   description:
@@ -19,7 +19,12 @@ export const ConstructionStats = defineCapsule({
   props: z.object({
     /** Stat items: value + label pairs. */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -27,15 +32,26 @@ export const ConstructionStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '500+', label: 'Projects Completed' },
-          { value: '38', label: 'Years in Business' },
-          { value: '$2.4B', label: 'Total Project Value' },
-          { value: '98%', label: 'Client Satisfaction' },
+          {
+            value: '500+',
+            label: 'Projects Completed',
+          },
+          {
+            value: '38',
+            label: 'Years in Business',
+          },
+          {
+            value: '$2.4B',
+            label: 'Total Project Value',
+          },
+          {
+            value: '98%',
+            label: 'Client Satisfaction',
+          },
         ]
-
     return (
       <section className={cn('bg-muted py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
             {items.map((s) => (
               <div key={s.label} className="text-center">
@@ -48,7 +64,7 @@ export const ConstructionStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

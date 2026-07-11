@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * food-delivery apps, restaurant aggregators, or online-ordering platforms.
  * Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliverySteps = defineCapsule({
   name: 'FoodDeliverySteps',
   description:
@@ -23,7 +23,12 @@ export const FoodDeliverySteps = defineCapsule({
     description: z.string().optional(),
     /** Ordered steps (title + description); numbered automatically. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -51,10 +56,9 @@ export const FoodDeliverySteps = defineCapsule({
               'Watch your order from kitchen prep to doorstep delivery in real-time on our live map.',
           },
         ]
-
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {stepsHeading}
@@ -74,7 +78,7 @@ export const FoodDeliverySteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

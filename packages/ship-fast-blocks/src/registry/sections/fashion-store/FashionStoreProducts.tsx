@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -23,6 +22,7 @@ import {
  * imagery uses the alt-driven Image component. Use to showcase a curated
  * product drop for clothing brands, boutiques, or apparel shops.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FashionStoreProducts = defineCapsule({
   name: 'FashionStoreProducts',
   description:
@@ -141,10 +141,8 @@ export const FashionStoreProducts = defineCapsule({
         product.imageAlt,
       ],
     )
-
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
@@ -161,13 +159,12 @@ export const FashionStoreProducts = defineCapsule({
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
-
     return (
       <section
         aria-label="New arrivals"
         className={cn('py-20 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <p className={cn(eyebrowCls, 'mb-3')}>{productsEyebrow}</p>
             <h2 className="mb-4 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
@@ -243,7 +240,7 @@ export const FashionStoreProducts = defineCapsule({
               <ArrowRight className="ml-2 size-4" />
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

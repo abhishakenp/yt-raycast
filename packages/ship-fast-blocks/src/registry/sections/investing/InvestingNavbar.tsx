@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -16,6 +15,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * robo-advisors, crypto exchanges, wealth-management or any fintech product.
  * Renders fully with no props via baked-in "Vestora" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InvestingNavbar = defineCapsule({
   name: 'InvestingNavbar',
   description:
@@ -39,7 +39,6 @@ export const InvestingNavbar = defineCapsule({
       : ['Features', 'Pricing', 'Markets', 'Reviews', 'FAQ']
     const signIn = props.signIn ?? 'Sign in'
     const getStarted = props.getStarted ?? 'Get started'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -61,7 +60,6 @@ export const InvestingNavbar = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <header
         className={cn(
@@ -69,52 +67,51 @@ export const InvestingNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-          aria-label="Main navigation"
-        >
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8" />}
-                labelClassName="text-xl font-semibold tracking-tight"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-16 items-center justify-between">
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="flex items-center gap-2"
+              >
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8" />}
+                  labelClassName="text-xl font-semibold tracking-tight"
+                />
+              </button>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-4">
                 <button
-                  key={label}
                   type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => go(signIn)}
+                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
-                  {label}
+                  {signIn}
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => go(getStarted)}
+                  className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {getStarted}
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(signIn)}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                {signIn}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(getStarted)}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {getStarted}
-              </button>
-            </div>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -16,6 +15,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * online-ordering platforms, or takeout services. Renders fully with no props
  * via baked-in "nosh" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryFooter = defineCapsule({
   name: 'FoodDeliveryFooter',
   description:
@@ -31,7 +31,12 @@ export const FoodDeliveryFooter = defineCapsule({
     note: z.string().optional(),
     /** Footer link columns. */
     columns: z
-      .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          heading: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Social icon labels (aria-label + navigate target); icon by name. */
     socials: z.array(z.string()).optional(),
@@ -64,7 +69,6 @@ export const FoodDeliveryFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'Instagram']
-
     const PinMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -75,7 +79,6 @@ export const FoodDeliveryFooter = defineCapsule({
         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
       </svg>
     )
-
     const socialPaths: Record<string, string> = {
       Twitter:
         'M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z',
@@ -84,12 +87,11 @@ export const FoodDeliveryFooter = defineCapsule({
     }
     const fallbackSocialPath =
       'M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987H7.898v-2.891h2.54V9.797c0-2.508 1.493-3.891 3.777-3.891 1.094 0 2.238.195 2.238.195v2.461h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.891h-2.33v6.987C18.343 21.128 22 16.991 22 12z'
-
     return (
       <footer
         className={cn('border-t border-border bg-muted py-16', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-4-5" gap="lg" className="lg:gap-12">
             <div className="col-span-2 lg:col-span-2">
               <button
@@ -153,7 +155,7 @@ export const FoodDeliveryFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

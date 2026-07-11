@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * social proof for food-delivery apps, restaurant aggregators, or online-ordering
  * platforms. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryLogos = defineCapsule({
   name: 'FoodDeliveryLogos',
   description:
@@ -37,12 +37,11 @@ export const FoodDeliveryLogos = defineCapsule({
           'Partner restaurant logo - fresh sushi bar',
           'Partner restaurant logo - breakfast cafe',
         ]
-
     return (
       <section
         className={cn('border-y border-border bg-card py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium text-muted-foreground">
             {logosHeading}
           </p>
@@ -58,7 +57,7 @@ export const FoodDeliveryLogos = defineCapsule({
               />
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

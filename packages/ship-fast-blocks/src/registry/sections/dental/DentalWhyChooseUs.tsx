@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * Image component. Use to communicate differentiators (technology, comfort,
  * pricing, family care) for dentists, dental offices, or clinics.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DentalWhyChooseUs = defineCapsule({
   name: 'DentalWhyChooseUs',
   description:
@@ -23,7 +23,12 @@ export const DentalWhyChooseUs = defineCapsule({
     description: z.string().optional(),
     imageAlt: z.string().optional(),
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -60,10 +65,9 @@ export const DentalWhyChooseUs = defineCapsule({
               'From toddlers to grandparents, we create personalized care plans for every age with a gentle, patient-centered approach.',
           },
         ]
-
     return (
       <section className={cn('bg-muted py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div className="order-2 lg:order-1">
               <div className="aspect-[4/5] overflow-hidden rounded-3xl shadow-xl">
@@ -105,7 +109,7 @@ export const DentalWhyChooseUs = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

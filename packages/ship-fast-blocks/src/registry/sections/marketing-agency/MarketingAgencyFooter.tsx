@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -14,6 +13,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * closing footer for a marketing / growth agency, SaaS, or B2B services site.
  * Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MarketingAgencyFooter = defineCapsule({
   name: 'MarketingAgencyFooter',
   description:
@@ -25,7 +25,12 @@ export const MarketingAgencyFooter = defineCapsule({
     homeTarget: z.string().optional(),
     about: z.string().optional(),
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     copyright: z.string().optional(),
     legal: z.array(z.string()).optional(),
@@ -63,7 +68,6 @@ export const MarketingAgencyFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
-
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -78,7 +82,6 @@ export const MarketingAgencyFooter = defineCapsule({
         <path d="M2 12l10 5 10-5" />
       </svg>
     )
-
     return (
       <footer
         className={cn(
@@ -86,7 +89,7 @@ export const MarketingAgencyFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-4">
             <div className="md:col-span-1">
               <button
@@ -142,7 +145,7 @@ export const MarketingAgencyFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

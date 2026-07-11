@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -14,6 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * development, documentary, music videos, and post production for filmmakers,
  * directors, DPs, or video production houses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorServices = defineCapsule({
   name: 'FilmDirectorServices',
   description:
@@ -22,7 +22,12 @@ export const FilmDirectorServices = defineCapsule({
     heading: z.string().optional(),
     description: z.string().optional(),
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -65,7 +70,6 @@ export const FilmDirectorServices = defineCapsule({
               'Color grading, editing supervision, and delivery for broadcast, theatrical, and digital platforms.',
           },
         ]
-
     const serviceIcons: ReactNode[] = [
       <svg
         key="film"
@@ -147,10 +151,9 @@ export const FilmDirectorServices = defineCapsule({
         <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
       </svg>,
     ]
-
     return (
       <section className={cn('py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 max-w-2xl">
             <h2 className="mb-4 text-3xl font-light md:text-4xl">
               {servicesHeading}
@@ -175,7 +178,7 @@ export const FilmDirectorServices = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

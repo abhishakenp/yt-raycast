@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * to tell the brand story and craftsmanship of clothing brands, boutiques,
  * or sustainable apparel labels.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FashionStoreAbout = defineCapsule({
   name: 'FashionStoreAbout',
   description:
@@ -22,7 +22,12 @@ export const FashionStoreAbout = defineCapsule({
     headingLines: z.array(z.string()).optional(),
     paragraphs: z.array(z.string()).optional(),
     stats: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     imageAlts: z.array(z.string()).optional(),
     className: z.string().optional(),
@@ -42,9 +47,18 @@ export const FashionStoreAbout = defineCapsule({
     const aboutStats = props.stats?.length
       ? props.stats
       : [
-          { value: '12', label: 'Countries' },
-          { value: '48hr', label: 'Global Shipping' },
-          { value: '100%', label: 'Sustainable' },
+          {
+            value: '12',
+            label: 'Countries',
+          },
+          {
+            value: '48hr',
+            label: 'Global Shipping',
+          },
+          {
+            value: '100%',
+            label: 'Sustainable',
+          },
         ]
     const aboutImageAlts = props.imageAlts?.length
       ? props.imageAlts
@@ -54,16 +68,14 @@ export const FashionStoreAbout = defineCapsule({
           'Natural fabric rolls in muted earth tones stored in modern fashion studio',
           'Fashion design sketches and fabric samples on clean white desk',
         ]
-
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
-
     return (
       <section
         aria-label="Our philosophy"
         className={cn('py-20 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div>
               <p className={cn(eyebrowCls, 'mb-4')}>{aboutEyebrow}</p>
@@ -141,7 +153,7 @@ export const FashionStoreAbout = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -13,6 +12,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * through useNavigate. Use as the closing footer for electronics stores, gadget
  * shops, consumer-tech retailers, or audio/camera storefronts.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ElectronicsStoreFooter = defineCapsule({
   name: 'ElectronicsStoreFooter',
   description:
@@ -26,11 +26,21 @@ export const ElectronicsStoreFooter = defineCapsule({
     homeTarget: z.string().optional(),
     /** Social icon buttons. */
     socials: z
-      .array(z.object({ label: z.string(), path: z.string() }))
+      .array(
+        z.object({
+          label: z.string(),
+          path: z.string(),
+        }),
+      )
       .optional(),
     /** Footer link columns. */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Legal links in the bottom bar. */
     legal: z.array(z.string()).optional(),
@@ -101,7 +111,6 @@ export const ElectronicsStoreFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
-
     const BoltMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -124,12 +133,11 @@ export const ElectronicsStoreFooter = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <footer
         className={cn('border-t border-border py-12 lg:py-16', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
             <div className="col-span-2 lg:col-span-2">
               <button
@@ -203,7 +211,7 @@ export const ElectronicsStoreFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

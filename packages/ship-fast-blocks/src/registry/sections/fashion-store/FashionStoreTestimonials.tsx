@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * role. Avatars use the alt-driven Image component. Use to build trust with
  * social proof for clothing brands, boutiques, or premium apparel labels.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FashionStoreTestimonials = defineCapsule({
   name: 'FashionStoreTestimonials',
   description:
@@ -63,7 +63,6 @@ export const FashionStoreTestimonials = defineCapsule({
               'Professional headshot of Elena Vasquez, architect and design consultant',
           },
         ]
-
     const StarIcon = () => (
       <svg
         width="16"
@@ -75,7 +74,6 @@ export const FashionStoreTestimonials = defineCapsule({
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
-
     return (
       <section
         aria-label="Customer testimonials"
@@ -84,7 +82,7 @@ export const FashionStoreTestimonials = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-background/60">
               {testimonialsEyebrow}
@@ -101,7 +99,9 @@ export const FashionStoreTestimonials = defineCapsule({
                 className="border-t border-background/20 pt-8"
               >
                 <div className="mb-4 flex items-center gap-1 text-background">
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {Array.from({
+                    length: 5,
+                  }).map((_, i) => (
                     <StarIcon key={i} />
                   ))}
                 </div>
@@ -123,7 +123,7 @@ export const FashionStoreTestimonials = defineCapsule({
               </blockquote>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

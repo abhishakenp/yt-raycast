@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -14,6 +13,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * starting APR, $0 fees, sample monthly payments — on personal-loan, debt-
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LendingRates = defineCapsule({
   name: 'LendingRates',
   description:
@@ -31,7 +31,12 @@ export const LendingRates = defineCapsule({
       )
       .optional(),
     guarantees: z
-      .array(z.object({ title: z.string(), note: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          note: z.string(),
+        }),
+      )
       .optional(),
     tableTitle: z.string().optional(),
     tableHead: z.array(z.string()).optional(),
@@ -124,10 +129,9 @@ export const LendingRates = defineCapsule({
     const tableNote =
       props.tableNote ??
       '* Rates shown are estimates. Your actual rate will be determined after application review. All loans subject to credit approval.'
-
     return (
       <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {ratesHeading}
@@ -217,7 +221,7 @@ export const LendingRates = defineCapsule({
             </div>
             <p className="mt-4 text-xs text-muted-foreground">{tableNote}</p>
           </Card>
-        </div>
+        </Container>
       </section>
     )
   },

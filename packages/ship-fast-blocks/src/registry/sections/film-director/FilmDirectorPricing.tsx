@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * present project-scope packages (concept-to-delivery production services) for
  * filmmakers, directors, DPs, or video production houses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorPricing = defineCapsule({
   name: 'FilmDirectorPricing',
   description:
@@ -96,7 +96,6 @@ export const FilmDirectorPricing = defineCapsule({
             cta: 'Contact for Quote',
           },
         ]
-
     const Check = () => (
       <svg
         viewBox="0 0 24 24"
@@ -109,10 +108,9 @@ export const FilmDirectorPricing = defineCapsule({
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-light md:text-4xl">
               {pricingHeading}
@@ -192,7 +190,7 @@ export const FilmDirectorPricing = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * debt-consolidation services, fintech credit products, or financing brands.
  * Renders fully with no props via baked-in "ClearLoan" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LendingNavbar = defineCapsule({
   name: 'LendingNavbar',
   description:
@@ -41,7 +41,6 @@ export const LendingNavbar = defineCapsule({
     const signIn = props.signIn ?? 'Sign In'
     const cta = props.cta ?? 'Apply Now'
     const ctaTarget = props.ctaTarget ?? 'Check Your Rate'
-
     const Logo = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -56,7 +55,6 @@ export const LendingNavbar = defineCapsule({
         <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     )
-
     return (
       <header
         className={cn(
@@ -64,50 +62,52 @@ export const LendingNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-            >
-              <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-                <Logo className="size-5" />
-              </span>
-              <span className="text-xl font-semibold text-foreground">
-                {brand}
-              </span>
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
+        <Container asChild>
+          <nav>
+            <div className="flex h-16 items-center justify-between">
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="flex items-center gap-2"
+              >
+                <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
+                  <Logo className="size-5" />
+                </span>
+                <span className="text-xl font-semibold text-foreground">
+                  {brand}
+                </span>
+              </button>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-4">
                 <button
-                  key={label}
                   type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => go(signIn)}
+                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
-                  {label}
+                  {signIn}
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => go(ctaTarget)}
+                  className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {cta}
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(signIn)}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                {signIn}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {cta}
-              </button>
-            </div>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

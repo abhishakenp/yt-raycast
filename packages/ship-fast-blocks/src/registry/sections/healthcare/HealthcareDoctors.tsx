@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import {
@@ -21,6 +20,7 @@ import {
  * pediatric / women's-health clinic, hospital or medical group. Renders fully
  * with no props via baked-in board-certified-physician defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const HealthcareDoctors = defineCapsule({
   name: 'HealthcareDoctors',
   description:
@@ -83,13 +83,12 @@ export const HealthcareDoctors = defineCapsule({
               'Professional headshot of Dr. Michael Torres, a male pediatrician in his 30s with a warm smile',
           },
         ]
-
     return (
       <section
         className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="doctors-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground">
               {eyebrow}
@@ -132,7 +131,7 @@ export const HealthcareDoctors = defineCapsule({
               </PersonCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

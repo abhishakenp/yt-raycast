@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * desktop items. Use to present a methodology, onboarding flow, or project
  * roadmap for enterprise software vendors, consultancies, or managed services.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CorporateSteps = defineCapsule({
   name: 'CorporateSteps',
   description:
@@ -22,7 +22,12 @@ export const CorporateSteps = defineCapsule({
     description: z.string().optional(),
     /** Phase cards: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -55,10 +60,9 @@ export const CorporateSteps = defineCapsule({
               'Continuous monitoring and refinement post-deployment. Regular reviews ensure maximum ROI and alignment with evolving needs.',
           },
         ]
-
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -86,7 +90,7 @@ export const CorporateSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

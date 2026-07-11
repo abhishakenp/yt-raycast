@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,6 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * Use beneath a hero to establish credibility on electronics stores, gadget
  * shops, consumer-tech retailers, or audio/camera storefronts.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ElectronicsStoreLogos = defineCapsule({
   name: 'ElectronicsStoreLogos',
   description:
@@ -26,10 +26,9 @@ export const ElectronicsStoreLogos = defineCapsule({
     const brands = props.brands?.length
       ? props.brands
       : ['Apple', 'Sony', 'Samsung', 'Bose', 'Logitech', 'DJI']
-
     return (
       <section className={cn('border-b border-border py-12', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm text-muted-foreground">
             {caption}
           </p>
@@ -40,7 +39,7 @@ export const ElectronicsStoreLogos = defineCapsule({
               </span>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

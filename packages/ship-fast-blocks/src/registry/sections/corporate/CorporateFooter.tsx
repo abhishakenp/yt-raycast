@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -14,6 +13,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * enterprise software vendors, SaaS platforms, consultancies, or any corporate
  * site with extensive navigation.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CorporateFooter = defineCapsule({
   name: 'CorporateFooter',
   description:
@@ -27,11 +27,21 @@ export const CorporateFooter = defineCapsule({
     about: z.string().optional(),
     /** Social icon links: label + SVG path. */
     socials: z
-      .array(z.object({ label: z.string(), path: z.string() }))
+      .array(
+        z.object({
+          label: z.string(),
+          path: z.string(),
+        }),
+      )
       .optional(),
     /** Footer link columns: title + array of labels. */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Full copyright line. */
     copyright: z.string().optional(),
@@ -102,7 +112,6 @@ export const CorporateFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
-
     const LogoMark = ({
       className,
       inverse,
@@ -123,10 +132,9 @@ export const CorporateFooter = defineCapsule({
         {brand.charAt(0).toUpperCase()}
       </span>
     )
-
     return (
       <footer className={cn('bg-foreground py-16 lg:py-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <button
@@ -203,7 +211,7 @@ export const CorporateFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

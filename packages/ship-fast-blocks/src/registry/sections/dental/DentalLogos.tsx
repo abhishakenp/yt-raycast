@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -14,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * hero of a dentist, dental office, or clinic site to signal accepted insurance
  * and build trust.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DentalLogos = defineCapsule({
   name: 'DentalLogos',
   description:
@@ -29,7 +29,6 @@ export const DentalLogos = defineCapsule({
     const logoItems = props.items?.length
       ? props.items
       : ['Delta Dental', 'Cigna', 'Aetna', 'MetLife', 'Guardian', 'Humana']
-
     return (
       <section
         className={cn(
@@ -37,7 +36,7 @@ export const DentalLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {logosLabel}
           </p>
@@ -57,7 +56,7 @@ export const DentalLogos = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

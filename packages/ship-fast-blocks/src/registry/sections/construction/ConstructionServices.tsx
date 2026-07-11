@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * design-build, pre-construction. Renders fully with no props via baked-in
  * defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ConstructionServices = defineCapsule({
   name: 'ConstructionServices',
   description:
@@ -30,7 +30,12 @@ export const ConstructionServices = defineCapsule({
     cta: z.string().optional(),
     /** Service cards: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -76,7 +81,6 @@ export const ConstructionServices = defineCapsule({
               'Site analysis, feasibility studies, permitting, budgeting, and value engineering to set your project up for success.',
           },
         ]
-
     const serviceIcons: ReactNode[] = [
       <svg
         key="building"
@@ -163,7 +167,6 @@ export const ConstructionServices = defineCapsule({
         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>,
     ]
-
     const ChevronRight = () => (
       <svg
         width="16"
@@ -179,10 +182,9 @@ export const ConstructionServices = defineCapsule({
         <polyline points="9 5 16 12 9 19" />
       </svg>
     )
-
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -219,7 +221,7 @@ export const ConstructionServices = defineCapsule({
               </article>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -14,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * columns list link groups (title + links). Every button routes through useNavigate.
  * Tokens-only. Renders fully on zero arguments.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CloudInfraFooter = defineCapsule({
   name: 'CloudInfraFooter',
   description:
@@ -25,7 +25,12 @@ export const CloudInfraFooter = defineCapsule({
     tagline: z.string().optional(),
     /** Link groups: title + array of link labels. */
     groups: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Copyright / footer note line. */
     note: z.string().optional(),
@@ -81,7 +86,6 @@ export const CloudInfraFooter = defineCapsule({
       ? props.socials
       : ['Twitter', 'GitHub', 'Discord']
     const homeTarget = props.homeTarget ?? 'Features'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -103,7 +107,6 @@ export const CloudInfraFooter = defineCapsule({
         </svg>
       </span>
     )
-
     const socialIcons: Record<string, ReactNode> = {
       Twitter: (
         <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
@@ -119,13 +122,12 @@ export const CloudInfraFooter = defineCapsule({
         <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
       ),
     }
-
     return (
       <footer
         className={cn('border-t border-border py-16', props.className)}
         role="contentinfo"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-4-5" gap="lg" className="lg:gap-12">
             <div className="col-span-2 lg:col-span-2">
               <button
@@ -193,7 +195,7 @@ export const CloudInfraFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

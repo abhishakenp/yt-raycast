@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * useNavigate. Use to explain how to get started — create account, fund,
  * trade — on a brokerage or trading-app page. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InvestingSteps = defineCapsule({
   name: 'InvestingSteps',
   description:
@@ -27,7 +27,12 @@ export const InvestingSteps = defineCapsule({
     description: z.string().optional(),
     /** Numbered steps: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     /** Transfer panel headline. */
     transferHeading: z.string().optional(),
@@ -74,7 +79,6 @@ export const InvestingSteps = defineCapsule({
     const transferImageAlt =
       props.transferImageAlt ??
       'laptop showing financial dashboard with charts and account balances'
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -89,10 +93,9 @@ export const InvestingSteps = defineCapsule({
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               {heading}
@@ -154,7 +157,7 @@ export const InvestingSteps = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

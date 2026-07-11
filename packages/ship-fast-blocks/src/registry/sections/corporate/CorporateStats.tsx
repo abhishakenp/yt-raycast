@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -10,6 +9,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * numbers above labels, on a responsive 2/4-column grid. Use to showcase credibility
  * metrics like revenue, client count, uptime, or global presence.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CorporateStats = defineCapsule({
   name: 'CorporateStats',
   description:
@@ -17,7 +17,12 @@ export const CorporateStats = defineCapsule({
   props: z.object({
     /** Stat items: value + label pairs. */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -25,15 +30,26 @@ export const CorporateStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '$2.4B', label: 'Customer cost savings delivered' },
-          { value: '500+', label: 'Enterprise clients worldwide' },
-          { value: '99.99%', label: 'Platform uptime SLA' },
-          { value: '14', label: 'Global office locations' },
+          {
+            value: '$2.4B',
+            label: 'Customer cost savings delivered',
+          },
+          {
+            value: '500+',
+            label: 'Enterprise clients worldwide',
+          },
+          {
+            value: '99.99%',
+            label: 'Platform uptime SLA',
+          },
+          {
+            value: '14',
+            label: 'Global office locations',
+          },
         ]
-
     return (
       <section className={cn('bg-foreground py-20 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
             {items.map((stat) => (
               <div key={stat.label} className="text-center">
@@ -44,7 +60,7 @@ export const CorporateStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

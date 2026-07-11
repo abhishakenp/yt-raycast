@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * social proof for marketing / growth agencies, SaaS, or any B2B landing page.
  * Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MarketingAgencyLogos = defineCapsule({
   name: 'MarketingAgencyLogos',
   description:
@@ -26,12 +26,11 @@ export const MarketingAgencyLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Webflow']
-
     return (
       <section
         className={cn('border-y border-border bg-muted py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm text-muted-foreground">
             {heading}
           </p>
@@ -49,7 +48,7 @@ export const MarketingAgencyLogos = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

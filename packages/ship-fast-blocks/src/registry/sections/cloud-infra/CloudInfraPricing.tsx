@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import {
@@ -18,6 +17,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * border. Below the cards sits an enterprise reserved-capacity panel. Each tier
  * lists features with a check icon. Tokens-only. Renders fully on zero arguments.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CloudInfraPricing = defineCapsule({
   name: 'CloudInfraPricing',
   description:
@@ -107,7 +107,6 @@ export const CloudInfraPricing = defineCapsule({
     const enterpriseItems = props.enterpriseItems?.length
       ? props.enterpriseItems
       : ['1-year: 15% discount', '2-year: 25% discount', '3-year: 40% discount']
-
     useSyncSaasPlans(
       lakebed,
       tiers.map((tier) =>
@@ -119,7 +118,6 @@ export const CloudInfraPricing = defineCapsule({
         }),
       ),
     )
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -134,10 +132,9 @@ export const CloudInfraPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -226,7 +223,7 @@ export const CloudInfraPricing = defineCapsule({
               </div>
             </Card>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

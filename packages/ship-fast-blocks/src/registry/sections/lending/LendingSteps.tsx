@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -14,6 +13,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * onboarding, or fintech landing pages. Renders fully with no props via baked-in
  * defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LendingSteps = defineCapsule({
   name: 'LendingSteps',
   description:
@@ -58,10 +58,9 @@ export const LendingSteps = defineCapsule({
             note: 'Next day delivery',
           },
         ]
-
     return (
       <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {stepsHeading}
@@ -116,7 +115,7 @@ export const LendingSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

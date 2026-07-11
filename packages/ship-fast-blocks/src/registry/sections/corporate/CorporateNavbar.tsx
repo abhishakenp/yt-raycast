@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -16,6 +15,7 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * for enterprise software vendors, SaaS platforms, IT consultancies, or any
  * corporate site that needs gravitas and clear conversion paths.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CorporateNavbar = defineCapsule({
   name: 'CorporateNavbar',
   description:
@@ -42,7 +42,6 @@ export const CorporateNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Request Demo'
     const ctaTarget = props.ctaTarget ?? 'Schedule a Demo'
     const secondaryCta = props.secondaryCta ?? 'Explore Solutions'
-
     const LogoMark = ({
       className,
       inverse,
@@ -63,7 +62,6 @@ export const CorporateNavbar = defineCapsule({
         {brand.charAt(0).toUpperCase()}
       </span>
     )
-
     return (
       <header
         className={cn(
@@ -71,61 +69,63 @@ export const CorporateNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          aria-label="Main navigation"
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-        >
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8 text-sm" />}
-                labelClassName="text-lg font-semibold tracking-tight"
-              />
-            </button>
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-16 items-center justify-between lg:h-20">
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="flex items-center gap-2"
+              >
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8 text-sm" />}
+                  labelClassName="text-lg font-semibold tracking-tight"
+                />
+              </button>
 
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-4">
                 <button
-                  key={label}
                   type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => go(secondaryCta)}
+                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
                 >
-                  {label}
+                  {secondaryCta}
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => go(ctaTarget)}
+                  className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {ctaLabel}
+                </button>
+                <MobileNavDrawer
+                  brand={brand}
+                  nav={nav}
+                  homeTarget={nav[0]}
+                  cta={{
+                    label: ctaLabel,
+                    target: ctaTarget,
+                  }}
+                  buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+                />
+              </div>
             </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              >
-                {secondaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {ctaLabel}
-              </button>
-              <MobileNavDrawer
-                brand={brand}
-                nav={nav}
-                homeTarget={nav[0]}
-                cta={{ label: ctaLabel, target: ctaTarget }}
-                buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              />
-            </div>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

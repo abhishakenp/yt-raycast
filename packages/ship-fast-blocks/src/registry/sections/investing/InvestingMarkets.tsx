@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * market quotes and world indices on a brokerage or trading-app home page.
  * Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
@@ -108,17 +108,31 @@ export const InvestingMarkets = defineCapsule({
     const indices = props.indices?.length
       ? props.indices
       : [
-          { name: 'S&P 500', value: '4,783.45', change: '+0.42%', up: true },
-          { name: 'NASDAQ', value: '15,055.65', change: '+0.68%', up: true },
+          {
+            name: 'S&P 500',
+            value: '4,783.45',
+            change: '+0.42%',
+            up: true,
+          },
+          {
+            name: 'NASDAQ',
+            value: '15,055.65',
+            change: '+0.68%',
+            up: true,
+          },
           {
             name: 'DOW JONES',
             value: '37,545.33',
             change: '-0.15%',
             up: false,
           },
-          { name: 'FTSE 100', value: '7,682.30', change: '+0.23%', up: true },
+          {
+            name: 'FTSE 100',
+            value: '7,682.30',
+            change: '+0.23%',
+            up: true,
+          },
         ]
-
     const symbolTones = [
       'bg-chart-1 text-primary-foreground',
       'bg-destructive text-destructive-foreground',
@@ -127,13 +141,12 @@ export const InvestingMarkets = defineCapsule({
     ]
     const trendUp = 'M0,35 Q20,28 40,22 T80,6'
     const trendDown = 'M0,12 Q20,18 40,24 T80,36'
-
     return (
       <section
         id="markets"
         className={cn('bg-background py-24', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               {heading}
@@ -237,7 +250,7 @@ export const InvestingMarkets = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

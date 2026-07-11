@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -13,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * through useNavigate. Use beneath the hero to establish credibility for SaaS
  * platforms, consultancies, or any B2B offering.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CorporateLogos = defineCapsule({
   name: 'CorporateLogos',
   description:
@@ -30,7 +30,6 @@ export const CorporateLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['AcmeCorp', 'Globex', 'Initech', 'Hooli', 'Massive', 'Soylent']
-
     return (
       <section
         className={cn(
@@ -38,7 +37,7 @@ export const CorporateLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-10 text-center text-sm font-medium text-muted-foreground">
             {heading}
           </p>
@@ -60,7 +59,7 @@ export const CorporateLogos = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

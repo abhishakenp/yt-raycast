@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * social-proof / client-roster band beneath the hero for filmmakers, directors,
  * cinematographers, DPs, or production houses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorLogos = defineCapsule({
   name: 'FilmDirectorLogos',
   description:
@@ -25,12 +25,11 @@ export const FilmDirectorLogos = defineCapsule({
     const logoBrands = props.brands?.length
       ? props.brands
       : ['NIKE', 'APPLE', 'SONY', 'NETFLIX', 'SPOTIFY', 'ADOBE']
-
     return (
       <section
         className={cn('border-y border-border py-16 md:py-24', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-12 text-center text-sm text-muted-foreground">
             {logosLabel}
           </p>
@@ -43,7 +42,7 @@ export const FilmDirectorLogos = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

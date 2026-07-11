@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component. Use to surface social proof for dentists, dental
  * offices, orthodontists, or clinics.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DentalTestimonials = defineCapsule({
   name: 'DentalTestimonials',
   description:
@@ -91,7 +91,6 @@ export const DentalTestimonials = defineCapsule({
               'Portrait of Michael Brooks, professional male patient with grateful expression',
           },
         ]
-
     const Star = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
@@ -102,10 +101,9 @@ export const DentalTestimonials = defineCapsule({
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292z" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
               {testimonialsEyebrow}
@@ -119,7 +117,9 @@ export const DentalTestimonials = defineCapsule({
             {testimonialItems.map((t) => (
               <div key={t.name} className="rounded-2xl bg-card p-8 shadow-sm">
                 <div className="mb-4 flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {Array.from({
+                    length: 5,
+                  }).map((_, i) => (
                     <Star key={i} className="size-5 text-primary" />
                   ))}
                 </div>
@@ -146,7 +146,7 @@ export const DentalTestimonials = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

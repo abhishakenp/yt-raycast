@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -11,6 +10,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * social-proof / scale strip between sections on electronics stores, gadget
  * shops, consumer-tech retailers, or any product catalog.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ElectronicsStoreStats = defineCapsule({
   name: 'ElectronicsStoreStats',
   description:
@@ -18,7 +18,12 @@ export const ElectronicsStoreStats = defineCapsule({
   props: z.object({
     /** Stat cells. */
     stats: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -26,17 +31,28 @@ export const ElectronicsStoreStats = defineCapsule({
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: '50K+', label: 'Happy Customers' },
-          { value: '1,200+', label: 'Products Available' },
-          { value: '4.9', label: 'Average Rating' },
-          { value: '24/7', label: 'Customer Support' },
+          {
+            value: '50K+',
+            label: 'Happy Customers',
+          },
+          {
+            value: '1,200+',
+            label: 'Products Available',
+          },
+          {
+            value: '4.9',
+            label: 'Average Rating',
+          },
+          {
+            value: '24/7',
+            label: 'Customer Support',
+          },
         ]
-
     return (
       <section
         className={cn('border-y border-border py-16 lg:py-20', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
             {stats.map((s) => (
               <div key={s.label} className="text-center">
@@ -47,7 +63,7 @@ export const ElectronicsStoreStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

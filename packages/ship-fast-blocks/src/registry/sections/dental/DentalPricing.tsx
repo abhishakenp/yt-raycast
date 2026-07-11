@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import {
   LocalServiceBookingButton,
@@ -20,6 +19,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * Use to present exam fees, membership tiers, or treatment packages for
  * dentists, dental offices, or clinics.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DentalPricing = defineCapsule({
   name: 'DentalPricing',
   description:
@@ -112,7 +112,6 @@ export const DentalPricing = defineCapsule({
         }),
       ),
     )
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
@@ -127,10 +126,9 @@ export const DentalPricing = defineCapsule({
         />
       </svg>
     )
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
               {pricingEyebrow}
@@ -238,7 +236,7 @@ export const DentalPricing = defineCapsule({
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {pricingNote}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },

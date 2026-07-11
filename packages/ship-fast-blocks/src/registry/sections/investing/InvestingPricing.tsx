@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * tiers for a brokerage, trading app or robo-advisor. Renders fully with no
  * props via Essential / Pro / Elite defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InvestingPricing = defineCapsule({
   name: 'InvestingPricing',
   description:
@@ -36,7 +36,10 @@ export const InvestingPricing = defineCapsule({
           cta: z.string(),
           popular: z.boolean().optional(),
           features: z.array(
-            z.object({ label: z.string(), included: z.boolean() }),
+            z.object({
+              label: z.string(),
+              included: z.boolean(),
+            }),
           ),
         }),
       )
@@ -60,12 +63,30 @@ export const InvestingPricing = defineCapsule({
             period: '/month',
             cta: 'Get started free',
             features: [
-              { label: 'Commission-free trades', included: true },
-              { label: 'Basic charting tools', included: true },
-              { label: 'Stocks & ETFs', included: true },
-              { label: 'Mobile & web access', included: true },
-              { label: 'Advanced charts', included: false },
-              { label: 'Options trading', included: false },
+              {
+                label: 'Commission-free trades',
+                included: true,
+              },
+              {
+                label: 'Basic charting tools',
+                included: true,
+              },
+              {
+                label: 'Stocks & ETFs',
+                included: true,
+              },
+              {
+                label: 'Mobile & web access',
+                included: true,
+              },
+              {
+                label: 'Advanced charts',
+                included: false,
+              },
+              {
+                label: 'Options trading',
+                included: false,
+              },
             ],
           },
           {
@@ -76,12 +97,30 @@ export const InvestingPricing = defineCapsule({
             cta: 'Start Pro trial',
             popular: true,
             features: [
-              { label: 'Everything in Essential', included: true },
-              { label: 'Advanced charting (50+ indicators)', included: true },
-              { label: 'Options & crypto trading', included: true },
-              { label: 'AI-powered insights', included: true },
-              { label: 'Extended hours trading', included: true },
-              { label: 'Priority support', included: false },
+              {
+                label: 'Everything in Essential',
+                included: true,
+              },
+              {
+                label: 'Advanced charting (50+ indicators)',
+                included: true,
+              },
+              {
+                label: 'Options & crypto trading',
+                included: true,
+              },
+              {
+                label: 'AI-powered insights',
+                included: true,
+              },
+              {
+                label: 'Extended hours trading',
+                included: true,
+              },
+              {
+                label: 'Priority support',
+                included: false,
+              },
             ],
           },
           {
@@ -91,16 +130,33 @@ export const InvestingPricing = defineCapsule({
             period: '/month',
             cta: 'Contact sales',
             features: [
-              { label: 'Everything in Pro', included: true },
-              { label: 'Level 2 market data', included: true },
-              { label: 'API access', included: true },
-              { label: 'Priority 24/7 support', included: true },
-              { label: 'Tax-loss harvesting', included: true },
-              { label: 'Dedicated account manager', included: true },
+              {
+                label: 'Everything in Pro',
+                included: true,
+              },
+              {
+                label: 'Level 2 market data',
+                included: true,
+              },
+              {
+                label: 'API access',
+                included: true,
+              },
+              {
+                label: 'Priority 24/7 support',
+                included: true,
+              },
+              {
+                label: 'Tax-loss harvesting',
+                included: true,
+              },
+              {
+                label: 'Dedicated account manager',
+                included: true,
+              },
             ],
           },
         ]
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -115,7 +171,6 @@ export const InvestingPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     const Cross = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -130,13 +185,12 @@ export const InvestingPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
-
     return (
       <section
         id="pricing"
         className={cn('bg-muted/50 py-24', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               {heading}
@@ -239,7 +293,7 @@ export const InvestingPricing = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

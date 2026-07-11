@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * apps, restaurant aggregators, or online-ordering platforms. Renders fully with
  * no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryTestimonials = defineCapsule({
   name: 'FoodDeliveryTestimonials',
   description:
@@ -69,7 +69,6 @@ export const FoodDeliveryTestimonials = defineCapsule({
               'Professional headshot of a smiling middle-aged man with beard and casual attire',
           },
         ]
-
     const StarIcon = () => (
       <svg
         className="size-5 fill-primary text-primary"
@@ -79,10 +78,9 @@ export const FoodDeliveryTestimonials = defineCapsule({
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
       </svg>
     )
-
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {testimonialsHeading}
@@ -100,7 +98,9 @@ export const FoodDeliveryTestimonials = defineCapsule({
                 className="bg-background"
               >
                 <div className="mb-4 flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {Array.from({
+                    length: 5,
+                  }).map((_, i) => (
                     <StarIcon key={i} />
                   ))}
                 </div>
@@ -127,7 +127,7 @@ export const FoodDeliveryTestimonials = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

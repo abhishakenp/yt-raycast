@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,6 +10,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Each item is a clickable button that routes through useNavigate. Token-only
  * colors with subtle opacity. Renders fully on zero arguments.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CloudInfraLogos = defineCapsule({
   name: 'CloudInfraLogos',
   description:
@@ -28,10 +28,9 @@ export const CloudInfraLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Raycast']
-
     return (
       <section className={cn('border-b border-border py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {heading}
           </p>
@@ -49,7 +48,7 @@ export const CloudInfraLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

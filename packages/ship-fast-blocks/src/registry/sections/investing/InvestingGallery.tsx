@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * screens — portfolio view, charts, insights, orders — on a brokerage or
  * trading-app page. Renders fully with no props via six baked-in screens.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InvestingGallery = defineCapsule({
   name: 'InvestingGallery',
   description:
@@ -24,7 +24,12 @@ export const InvestingGallery = defineCapsule({
     description: z.string().optional(),
     /** Showcase cards: title + caption. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -48,11 +53,19 @@ export const InvestingGallery = defineCapsule({
             title: 'Smart insights',
             description: 'AI-powered recommendations',
           },
-          { title: 'Real-time orders', description: 'Live market depth' },
-          { title: 'Social features', description: 'Follow top investors' },
-          { title: 'Automated investing', description: 'Set it and forget it' },
+          {
+            title: 'Real-time orders',
+            description: 'Live market depth',
+          },
+          {
+            title: 'Social features',
+            description: 'Follow top investors',
+          },
+          {
+            title: 'Automated investing',
+            description: 'Set it and forget it',
+          },
         ]
-
     const galleryTints = [
       'from-chart-1/30',
       'from-primary/30',
@@ -61,12 +74,11 @@ export const InvestingGallery = defineCapsule({
       'from-chart-5/30',
       'from-chart-3/30',
     ]
-
     return (
       <section
         className={cn('bg-foreground py-24 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               {heading}
@@ -104,7 +116,7 @@ export const InvestingGallery = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

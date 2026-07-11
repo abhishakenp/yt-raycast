@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,6 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * practice, telehealth or urgent-care clinic to show accepted insurance plans.
  * Renders fully with no props via baked-in major-insurer defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const HealthcareInsurers = defineCapsule({
   name: 'HealthcareInsurers',
   description:
@@ -30,7 +30,6 @@ export const HealthcareInsurers = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['Blue Shield', 'Aetna', 'Cigna', 'UnitedHealth', 'Kaiser', 'Medicare']
-
     return (
       <section
         className={cn(
@@ -39,7 +38,7 @@ export const HealthcareInsurers = defineCapsule({
         )}
         aria-label="Insurance partners"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
@@ -55,7 +54,7 @@ export const HealthcareInsurers = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

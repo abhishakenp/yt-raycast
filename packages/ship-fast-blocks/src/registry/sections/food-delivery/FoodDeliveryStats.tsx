@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -13,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * apps, restaurant aggregators, or online-ordering platforms. Renders fully with
  * no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryStats = defineCapsule({
   name: 'FoodDeliveryStats',
   description:
@@ -20,7 +20,12 @@ export const FoodDeliveryStats = defineCapsule({
   props: z.object({
     /** KPI items (value + label). */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -28,17 +33,28 @@ export const FoodDeliveryStats = defineCapsule({
     const statItems = props.items?.length
       ? props.items
       : [
-          { value: '2M+', label: 'Happy customers' },
-          { value: '500+', label: 'Restaurant partners' },
-          { value: '45', label: 'Cities served' },
-          { value: '15min', label: 'Avg. delivery time' },
+          {
+            value: '2M+',
+            label: 'Happy customers',
+          },
+          {
+            value: '500+',
+            label: 'Restaurant partners',
+          },
+          {
+            value: '45',
+            label: 'Cities served',
+          },
+          {
+            value: '15min',
+            label: 'Avg. delivery time',
+          },
         ]
-
     return (
       <section
         className={cn('bg-foreground py-16 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
             {statItems.map((s) => (
               <div key={s.label}>
@@ -47,7 +63,7 @@ export const FoodDeliveryStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

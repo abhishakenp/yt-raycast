@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,6 +10,7 @@ import { Image } from '#/lib/img.tsx'
  * with a caption overlay using a bottom-up gradient to foreground/80. Images zoom
  * on hover. Tokens-only. Renders fully on zero arguments.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CloudInfraGallery = defineCapsule({
   name: 'CloudInfraGallery',
   description:
@@ -71,10 +71,9 @@ export const CloudInfraGallery = defineCapsule({
             caption: 'CLI, SDKs, and IDE integrations',
           },
         ]
-
     return (
       <section className={cn('py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -101,7 +100,7 @@ export const CloudInfraGallery = defineCapsule({
               </figure>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

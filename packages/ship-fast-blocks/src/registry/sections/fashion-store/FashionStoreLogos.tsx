@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,6 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * muted tone. Use directly under the hero to convey press credibility for
  * clothing brands, boutiques, or any premium retail storefront.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FashionStoreLogos = defineCapsule({
   name: 'FashionStoreLogos',
   description:
@@ -24,16 +24,14 @@ export const FashionStoreLogos = defineCapsule({
     const pressLogos = props.logos?.length
       ? props.logos
       : ['VOGUE', "Harper's Bazaar", 'Elle', 'GQ', 'W Magazine', 'The Cut']
-
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
-
     return (
       <section
         aria-label="Featured press"
         className={cn('border-b border-border py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className={cn(eyebrowCls, 'mb-8 text-center')}>{pressEyebrow}</p>
           <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 lg:gap-16">
             {pressLogos.map((logo) => (
@@ -45,7 +43,7 @@ export const FashionStoreLogos = defineCapsule({
               </span>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

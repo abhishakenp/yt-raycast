@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,6 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * uses the alt-driven Image component. Use to show off the reception, treatment
  * rooms, and waiting area for dentists, dental offices, or clinics.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DentalGallery = defineCapsule({
   name: 'DentalGallery',
   description:
@@ -39,10 +39,9 @@ export const DentalGallery = defineCapsule({
           'Bright clean dental treatment room with advanced technology and ergonomic patient chair',
           'Welcoming dental office waiting area with plants and comfortable modern furniture',
         ]
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
               {galleryEyebrow}
@@ -73,7 +72,7 @@ export const DentalGallery = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

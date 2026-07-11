@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import type { ReactNode } from 'react'
 
@@ -12,6 +11,7 @@ import type { ReactNode } from 'react'
  * electronics stores, gadget shops, consumer-tech retailers, or any product
  * catalog that wants quick reassurance under the hero.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ElectronicsStoreFeatures = defineCapsule({
   name: 'ElectronicsStoreFeatures',
   description:
@@ -19,7 +19,12 @@ export const ElectronicsStoreFeatures = defineCapsule({
   props: z.object({
     /** Benefit cells. */
     features: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -43,7 +48,6 @@ export const ElectronicsStoreFeatures = defineCapsule({
               'Not satisfied? Return any item within 30 days for a full refund, no questions asked.',
           },
         ]
-
     const featureIcons: ReactNode[] = [
       <svg
         key="check"
@@ -85,10 +89,9 @@ export const ElectronicsStoreFeatures = defineCapsule({
         <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>,
     ]
-
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
             {features.map((f, i) => (
               <div key={f.title} className="text-center">
@@ -102,7 +105,7 @@ export const ElectronicsStoreFeatures = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * methodology (discovery, strategy, execution, scale) for marketing / growth
  * agencies, consultancies, or service firms. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MarketingAgencyProcess = defineCapsule({
   name: 'MarketingAgencyProcess',
   description:
@@ -20,7 +20,12 @@ export const MarketingAgencyProcess = defineCapsule({
     heading: z.string().optional(),
     description: z.string().optional(),
     steps: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -54,10 +59,9 @@ export const MarketingAgencyProcess = defineCapsule({
               'Double down on winners, cut losers, and expand to new channels. Monthly strategy reviews and pivoting.',
           },
         ]
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-3 text-sm font-medium text-muted-foreground">
               {eyebrow}
@@ -88,7 +92,7 @@ export const MarketingAgencyProcess = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

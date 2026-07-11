@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,6 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * on hover. Links route through useNavigate. Use as the closing site footer for
  * filmmakers, directors, DPs, or production houses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorFooter = defineCapsule({
   name: 'FilmDirectorFooter',
   description:
@@ -30,12 +30,11 @@ export const FilmDirectorFooter = defineCapsule({
     const footerLinks = props.links?.length
       ? props.links
       : ['Privacy', 'Terms', 'Credits']
-
     return (
       <footer
         className={cn('bg-foreground py-8 text-background/70', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm">
               © {new Date().getFullYear()} {brand}. {footerNote}
@@ -53,7 +52,7 @@ export const FilmDirectorFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

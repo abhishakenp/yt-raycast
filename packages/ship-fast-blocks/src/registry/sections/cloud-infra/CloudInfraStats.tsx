@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,6 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * vertical list of trust badges (each with an icon tile + title + subtitle). Right
  * side: a 2x2 grid of big metric tiles. Tokens-only. Renders fully on zero arguments.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CloudInfraStats = defineCapsule({
   name: 'CloudInfraStats',
   description:
@@ -21,11 +21,21 @@ export const CloudInfraStats = defineCapsule({
     description: z.string().optional(),
     /** Trust badges: title + subtitle. */
     badges: z
-      .array(z.object({ title: z.string(), subtitle: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          subtitle: z.string(),
+        }),
+      )
       .optional(),
     /** Big metric figures: value + label. */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -49,12 +59,23 @@ export const CloudInfraStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '12K+', label: 'Active deployments' },
-          { value: '35', label: 'Global regions' },
-          { value: '50B+', label: 'Requests/month' },
-          { value: '<20ms', label: 'Edge latency' },
+          {
+            value: '12K+',
+            label: 'Active deployments',
+          },
+          {
+            value: '35',
+            label: 'Global regions',
+          },
+          {
+            value: '50B+',
+            label: 'Requests/month',
+          },
+          {
+            value: '<20ms',
+            label: 'Edge latency',
+          },
         ]
-
     const icons: ReactNode[] = [
       <svg
         key="sla"
@@ -83,10 +104,9 @@ export const CloudInfraStats = defineCapsule({
         <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm0 0V5a4 4 0 00-8 0v4h8z" />
       </svg>,
     ]
-
     return (
       <section className={cn('py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div>
               <h2 className="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -127,7 +147,7 @@ export const CloudInfraStats = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

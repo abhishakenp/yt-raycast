@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import {
@@ -22,6 +21,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * we treat" section of a doctors' office, family-medicine, women's-health,
  * pediatric, mental-health or telehealth clinic. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const HealthcareServices = defineCapsule({
   name: 'HealthcareServices',
   description:
@@ -102,7 +102,6 @@ export const HealthcareServices = defineCapsule({
         }),
       ),
     )
-
     const ChevronRight = () => (
       <svg
         width="16"
@@ -118,7 +117,6 @@ export const HealthcareServices = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-
     const serviceIcons: ReactNode[] = [
       <svg
         key="primary"
@@ -205,13 +203,12 @@ export const HealthcareServices = defineCapsule({
         <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
       </svg>,
     ]
-
     return (
       <section
         className={cn('bg-muted py-20 lg:py-28', props.className)}
         aria-labelledby="services-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground">
               {eyebrow}
@@ -258,7 +255,7 @@ export const HealthcareServices = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

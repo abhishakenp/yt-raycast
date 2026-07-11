@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -16,6 +15,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * primary-care practices, telehealth or urgent-care clinics, hospitals or
  * medical groups. Renders fully with no props via baked-in clinic defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const HealthcareFooter = defineCapsule({
   name: 'HealthcareFooter',
   description:
@@ -87,7 +87,6 @@ export const HealthcareFooter = defineCapsule({
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
       : ['Privacy Policy', 'Terms of Service', 'Accessibility']
-
     const HeartMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -110,7 +109,6 @@ export const HealthcareFooter = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <footer
         className={cn(
@@ -119,7 +117,7 @@ export const HealthcareFooter = defineCapsule({
         )}
         role="contentinfo"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div>
               <button
@@ -271,7 +269,7 @@ export const HealthcareFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

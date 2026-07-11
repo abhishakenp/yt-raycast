@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import {
@@ -29,6 +28,7 @@ import {
  * route through useNavigate. Use to spotlight limited-time offers on electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ElectronicsStoreDeals = defineCapsule({
   name: 'ElectronicsStoreDeals',
   description:
@@ -42,7 +42,12 @@ export const ElectronicsStoreDeals = defineCapsule({
     countdownLabel: z.string().optional(),
     /** Countdown tiles. */
     countdown: z
-      .array(z.object({ value: z.string(), unit: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          unit: z.string(),
+        }),
+      )
       .optional(),
     /** Discounted product cards. */
     items: z
@@ -69,9 +74,18 @@ export const ElectronicsStoreDeals = defineCapsule({
     const countdown = props.countdown?.length
       ? props.countdown
       : [
-          { value: '06', unit: 'hrs' },
-          { value: '42', unit: 'min' },
-          { value: '18', unit: 'sec' },
+          {
+            value: '06',
+            unit: 'hrs',
+          },
+          {
+            value: '42',
+            unit: 'min',
+          },
+          {
+            value: '18',
+            unit: 'sec',
+          },
         ]
     const items = props.items?.length
       ? props.items
@@ -136,12 +150,11 @@ export const ElectronicsStoreDeals = defineCapsule({
         product.imageAlt,
       ],
     )
-
     return (
       <section
         className={cn('bg-foreground py-16 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="mb-2 text-3xl font-semibold text-background">
@@ -178,7 +191,10 @@ export const ElectronicsStoreDeals = defineCapsule({
               >
                 <CommerceAddItemButton
                   lakebed={lakebed}
-                  item={{ label: d.title, price: d.price }}
+                  item={{
+                    label: d.title,
+                    price: d.price,
+                  }}
                   pendingChildren={<CommerceMutationSpinner />}
                 >
                   <ProductCardImage className="overflow-visible">
@@ -213,7 +229,7 @@ export const ElectronicsStoreDeals = defineCapsule({
               </ProductCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -15,6 +14,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * service lines (performance marketing, SEO, email, CRO, social, analytics).
  * Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MarketingAgencyServices = defineCapsule({
   name: 'MarketingAgencyServices',
   description:
@@ -96,7 +96,6 @@ export const MarketingAgencyServices = defineCapsule({
             ],
           },
         ]
-
     const serviceIcons: ReactNode[] = [
       <svg
         key="chart"
@@ -178,10 +177,9 @@ export const MarketingAgencyServices = defineCapsule({
         <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-3 text-sm font-medium text-muted-foreground">
               {eyebrow}
@@ -217,7 +215,7 @@ export const MarketingAgencyServices = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

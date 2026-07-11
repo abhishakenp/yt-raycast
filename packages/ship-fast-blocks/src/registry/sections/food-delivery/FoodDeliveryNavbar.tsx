@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -24,6 +23,7 @@ import {
  * restaurant aggregators, online-ordering platforms, or takeout services.
  * Renders fully with no props via baked-in "nosh" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryNavbar = defineCapsule({
   name: 'FoodDeliveryNavbar',
   description:
@@ -51,7 +51,6 @@ export const FoodDeliveryNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? 'Home'
     const signIn = props.signIn ?? 'Sign In'
     const getStarted = props.getStarted ?? 'Get Started'
-
     const PinMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -62,7 +61,6 @@ export const FoodDeliveryNavbar = defineCapsule({
         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
       </svg>
     )
-
     return (
       <header
         className={cn(
@@ -70,7 +68,7 @@ export const FoodDeliveryNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between lg:h-20">
             <button
               type="button"
@@ -122,7 +120,7 @@ export const FoodDeliveryNavbar = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

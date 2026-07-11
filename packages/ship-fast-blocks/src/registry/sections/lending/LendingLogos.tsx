@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,6 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * mentions, partner brands, or trust-signal logos on loan, fintech, SaaS, or any
  * conversion landing page. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LendingLogos = defineCapsule({
   name: 'LendingLogos',
   description:
@@ -29,12 +29,11 @@ export const LendingLogos = defineCapsule({
     const logoNames = props.names?.length
       ? props.names
       : ['TechCrunch', 'Forbes', 'Bloomberg', 'CNBC', 'NerdWallet', 'Bankrate']
-
     return (
       <section
         className={cn('border-y border-border bg-card py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm text-muted-foreground">
             {logosCaption}
           </p>
@@ -58,7 +57,7 @@ export const LendingLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
@@ -21,6 +20,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * link. Use for a self-pay / visit-pricing / membership section of a doctors'
  * office or clinic. Renders fully with no props via baked-in visit-tier defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const HealthcarePricing = defineCapsule({
   name: 'HealthcarePricing',
   description:
@@ -119,7 +119,6 @@ export const HealthcarePricing = defineCapsule({
     const note =
       props.note ?? 'Insurance typically covers 80-100% of visit costs.'
     const noteCta = props.noteCta ?? 'Verify your coverage'
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -136,14 +135,13 @@ export const HealthcarePricing = defineCapsule({
         />
       </svg>
     )
-
     return (
       <section
         id="pricing"
         className={cn('bg-muted py-20 lg:py-28', props.className)}
         aria-labelledby="pricing-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground">
               {eyebrow}
@@ -232,7 +230,7 @@ export const HealthcarePricing = defineCapsule({
               </button>
             </p>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

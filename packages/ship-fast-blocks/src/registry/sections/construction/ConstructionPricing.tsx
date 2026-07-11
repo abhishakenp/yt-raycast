@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,6 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * construction firms, contractors, builders, or remodeling companies.
  * Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ConstructionPricing = defineCapsule({
   name: 'ConstructionPricing',
   description:
@@ -93,7 +93,6 @@ export const ConstructionPricing = defineCapsule({
             ],
           },
         ]
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         width="20"
@@ -110,10 +109,9 @@ export const ConstructionPricing = defineCapsule({
         />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -209,7 +207,7 @@ export const ConstructionPricing = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

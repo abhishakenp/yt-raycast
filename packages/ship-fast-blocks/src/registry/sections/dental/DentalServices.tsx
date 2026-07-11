@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import {
   LocalServiceBookingButton,
@@ -20,6 +19,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * Use as the core services overview for dentists, dental offices,
  * orthodontists, or cosmetic / restorative dental clinics.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DentalServices = defineCapsule({
   name: 'DentalServices',
   description:
@@ -120,7 +120,6 @@ export const DentalServices = defineCapsule({
         }),
       ),
     )
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
@@ -135,7 +134,6 @@ export const DentalServices = defineCapsule({
         />
       </svg>
     )
-
     const serviceIcons: ReactNode[] = [
       // shield check (preventive)
       <svg
@@ -222,10 +220,9 @@ export const DentalServices = defineCapsule({
         <path d="M12 8v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
               {servicesEyebrow}
@@ -266,7 +263,7 @@ export const DentalServices = defineCapsule({
               </LocalServiceBookingButton>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

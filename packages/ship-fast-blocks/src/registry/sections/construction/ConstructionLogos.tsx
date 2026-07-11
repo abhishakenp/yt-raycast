@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * contractors, builders, or any service business showcasing trusted
  * partnerships. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ConstructionLogos = defineCapsule({
   name: 'ConstructionLogos',
   description:
@@ -28,12 +28,11 @@ export const ConstructionLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['Microsoft', 'Amazon', 'Starbucks', 'Boeing', 'Nordstrom', 'Costco']
-
     return (
       <section
         className={cn('border-b border-border bg-card py-10', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {heading}
           </p>
@@ -50,7 +49,7 @@ export const ConstructionLogos = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -14,6 +13,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * bar. Every link, social, phone, and email routes through useNavigate. Use as
  * the closing footer for dentists, dental offices, orthodontists, or clinics.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DentalFooter = defineCapsule({
   name: 'DentalFooter',
   description:
@@ -29,7 +29,14 @@ export const DentalFooter = defineCapsule({
     servicesHeading: z.string().optional(),
     serviceLinks: z.array(z.string()).optional(),
     hoursHeading: z.string().optional(),
-    hours: z.array(z.object({ day: z.string(), time: z.string() })).optional(),
+    hours: z
+      .array(
+        z.object({
+          day: z.string(),
+          time: z.string(),
+        }),
+      )
+      .optional(),
     contactHeading: z.string().optional(),
     address: z.string().optional(),
     phone: z.string().optional(),
@@ -61,10 +68,22 @@ export const DentalFooter = defineCapsule({
     const footerHours = props.hours?.length
       ? props.hours
       : [
-          { day: 'Monday - Thursday', time: '8am - 6pm' },
-          { day: 'Friday', time: '8am - 4pm' },
-          { day: 'Saturday', time: '9am - 2pm' },
-          { day: 'Sunday', time: 'Closed' },
+          {
+            day: 'Monday - Thursday',
+            time: '8am - 6pm',
+          },
+          {
+            day: 'Friday',
+            time: '8am - 4pm',
+          },
+          {
+            day: 'Saturday',
+            time: '9am - 2pm',
+          },
+          {
+            day: 'Sunday',
+            time: 'Closed',
+          },
         ]
     const footerContactHeading = props.contactHeading ?? 'Contact'
     const footerAddress =
@@ -79,7 +98,6 @@ export const DentalFooter = defineCapsule({
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Accessibility']
-
     const ToothMark = () => (
       <svg
         width="24"
@@ -95,7 +113,6 @@ export const DentalFooter = defineCapsule({
         <path d="M14.828 14.828a4 4 0 0 1-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
       </svg>
     )
-
     const LogoBadge = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -107,7 +124,6 @@ export const DentalFooter = defineCapsule({
         <ToothMark />
       </span>
     )
-
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -122,12 +138,11 @@ export const DentalFooter = defineCapsule({
         <path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     )
-
     return (
       <footer
         className={cn('bg-foreground py-16 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             {/* Brand */}
             <div>
@@ -278,7 +293,7 @@ export const DentalFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

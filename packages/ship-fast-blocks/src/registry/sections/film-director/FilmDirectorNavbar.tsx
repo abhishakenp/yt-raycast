@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -16,6 +15,7 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * for filmmakers, directors, cinematographers, DPs, or video production houses
  * wanting a clean, editorial, light-canvas aesthetic.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorNavbar = defineCapsule({
   name: 'FilmDirectorNavbar',
   description:
@@ -33,7 +33,6 @@ export const FilmDirectorNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Work', 'Services', 'About', 'Get in Touch']
-
     return (
       <header
         className={cn(
@@ -41,7 +40,7 @@ export const FilmDirectorNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between md:h-20">
             <button
               type="button"
@@ -78,12 +77,15 @@ export const FilmDirectorNavbar = defineCapsule({
               brand={brand}
               nav={nav}
               homeTarget={nav[0]}
-              cta={{ label: nav[nav.length - 1], target: nav[nav.length - 1] }}
+              cta={{
+                label: nav[nav.length - 1],
+                target: nav[nav.length - 1],
+              }}
               label="Menu"
               buttonClassName="p-2 md:hidden"
             />
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

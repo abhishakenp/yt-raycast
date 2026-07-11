@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component. Use to explain a collaborative production workflow
  * for filmmakers, directors, DPs, or video production houses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorProcess = defineCapsule({
   name: 'FilmDirectorProcess',
   description:
@@ -24,7 +24,12 @@ export const FilmDirectorProcess = defineCapsule({
     description: z.string().optional(),
     imageAlt: z.string().optional(),
     steps: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     quote: z.string().optional(),
     quoteName: z.string().optional(),
@@ -69,10 +74,9 @@ export const FilmDirectorProcess = defineCapsule({
       'Marcus has an incredible eye for detail and a gift for bringing out authentic performances.'
     const processQuoteName = props.quoteName ?? 'Sarah Mitchell'
     const processQuoteRole = props.quoteRole ?? 'Creative Director, Nike Global'
-
     return (
       <section className={cn('py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
               <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
@@ -121,7 +125,7 @@ export const FilmDirectorProcess = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

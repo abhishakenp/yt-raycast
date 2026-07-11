@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component. Use to let shoppers browse by department for
  * clothing brands, boutiques, or apparel and accessories shops.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FashionStoreCollections = defineCapsule({
   name: 'FashionStoreCollections',
   description:
@@ -62,16 +62,14 @@ export const FashionStoreCollections = defineCapsule({
               'Collection of minimalist accessories including belts and bags',
           },
         ]
-
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
-
     return (
       <section
         aria-label="Collection categories"
         className={cn('py-20 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <p className={cn(eyebrowCls, 'mb-3')}>{collectionsEyebrow}</p>
             <h2 className="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
@@ -104,7 +102,7 @@ export const FashionStoreCollections = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

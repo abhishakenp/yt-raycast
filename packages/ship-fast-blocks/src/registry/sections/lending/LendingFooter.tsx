@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,6 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as the closing footer with legal disclosures on personal-loan, debt-
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LendingFooter = defineCapsule({
   name: 'LendingFooter',
   description:
@@ -26,7 +26,12 @@ export const LendingFooter = defineCapsule({
     /** Social link labels rendered as text buttons. */
     socials: z.array(z.string()).optional(),
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     legalLinks: z.array(z.string()).optional(),
     copyright: z.string().optional(),
@@ -80,7 +85,6 @@ export const LendingFooter = defineCapsule({
     const footerDisclosure =
       props.disclosure ??
       'ClearLoan Inc. NMLS ID #1234567. Loans are made by ClearLoan Inc. or lending partners. All loans are subject to credit approval. Your actual rate depends on credit score, loan amount, loan term, credit usage and history. Example: A $15,000 loan with an APR of 10.99% and 48 month term would have monthly payments of $384. The total amount paid would be $18,432. Annual percentage rates (APRs) through ClearLoan range from 6.99% to 24.99%.'
-
     const Logo = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -95,10 +99,9 @@ export const LendingFooter = defineCapsule({
         <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     )
-
     return (
       <footer className={cn('bg-foreground py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-1">
               <button
@@ -169,7 +172,7 @@ export const LendingFooter = defineCapsule({
               {footerDisclosure}
             </p>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * through useNavigate. Use to surface department navigation on electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ElectronicsStoreCategories = defineCapsule({
   name: 'ElectronicsStoreCategories',
   description:
@@ -86,10 +86,9 @@ export const ElectronicsStoreCategories = defineCapsule({
               'Cables, chargers, and tech accessories on white background',
           },
         ]
-
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <h2 className="mb-8 text-2xl font-semibold text-foreground">
             {heading}
           </h2>
@@ -119,7 +118,7 @@ export const ElectronicsStoreCategories = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

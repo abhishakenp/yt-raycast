@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
@@ -15,6 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * auto-invest — or any "everything you need" feature block. Renders fully with
  * no props via six baked-in default features.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InvestingFeatures = defineCapsule({
   name: 'InvestingFeatures',
   description:
@@ -26,7 +26,12 @@ export const InvestingFeatures = defineCapsule({
     description: z.string().optional(),
     /** Feature cards: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -69,7 +74,6 @@ export const InvestingFeatures = defineCapsule({
               'Set up recurring deposits and automatically invest in your preferred assets. Build wealth passively.',
           },
         ]
-
     const featureIcons: ReactNode[] = [
       <svg
         key="chart"
@@ -152,13 +156,12 @@ export const InvestingFeatures = defineCapsule({
       'bg-chart-3/20 text-chart-3',
       'bg-chart-2/15 text-chart-2',
     ]
-
     return (
       <section
         id="features"
         className={cn('bg-muted/50 py-24', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               {heading}
@@ -187,7 +190,7 @@ export const InvestingFeatures = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

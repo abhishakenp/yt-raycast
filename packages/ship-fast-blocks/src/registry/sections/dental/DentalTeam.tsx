@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -22,6 +21,7 @@ import {
  * headshots use the alt-driven Image component. Use to introduce
  * board-certified dentists, orthodontists, or oral surgeons for a clinic site.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DentalTeam = defineCapsule({
   name: 'DentalTeam',
   description:
@@ -81,10 +81,9 @@ export const DentalTeam = defineCapsule({
               'Professional headshot of Dr. James Park, male oral surgeon with confident professional demeanor',
           },
         ]
-
     return (
       <section className={cn('bg-muted py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
               {teamEyebrow}
@@ -140,7 +139,7 @@ export const DentalTeam = defineCapsule({
               </PersonCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

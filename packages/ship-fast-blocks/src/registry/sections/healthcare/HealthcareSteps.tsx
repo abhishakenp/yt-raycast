@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * started" section of a doctors' office, primary-care practice or telehealth
  * clinic. Renders fully with no props via baked-in 3-step booking defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const HealthcareSteps = defineCapsule({
   name: 'HealthcareSteps',
   description:
@@ -25,7 +25,12 @@ export const HealthcareSteps = defineCapsule({
     description: z.string().optional(),
     /** Steps: title + description (numbered automatically). */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -54,14 +59,13 @@ export const HealthcareSteps = defineCapsule({
               'Arrive 10 minutes early (or join your video call). Your physician will review your history, address concerns, and create a personalized care plan.',
           },
         ]
-
     return (
       <section
         id="booking"
         className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="booking-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground">
               {eyebrow}
@@ -96,7 +100,7 @@ export const HealthcareSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

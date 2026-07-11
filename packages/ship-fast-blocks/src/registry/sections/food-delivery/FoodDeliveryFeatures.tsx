@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
@@ -14,6 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * for food-delivery apps, restaurant aggregators, or online-ordering platforms.
  * Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryFeatures = defineCapsule({
   name: 'FoodDeliveryFeatures',
   description:
@@ -25,7 +25,12 @@ export const FoodDeliveryFeatures = defineCapsule({
     description: z.string().optional(),
     /** Feature cards (title + description); icons rotate by index. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -53,7 +58,6 @@ export const FoodDeliveryFeatures = defineCapsule({
               'Reorder your go-to meals in seconds. Your favorite dishes and restaurants are always just one tap away.',
           },
         ]
-
     const featureIcons: ReactNode[] = [
       // clock — real-time tracking
       <svg
@@ -98,10 +102,9 @@ export const FoodDeliveryFeatures = defineCapsule({
         <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>,
     ]
-
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {featuresHeading}
@@ -123,7 +126,7 @@ export const FoodDeliveryFeatures = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

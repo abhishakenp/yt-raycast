@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -17,6 +16,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * uses the alt-driven Image component. Use to present a seasonal editorial
  * lookbook for clothing brands, boutiques, or lifestyle commerce.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FashionStoreLookbook = defineCapsule({
   name: 'FashionStoreLookbook',
   description:
@@ -95,22 +95,19 @@ export const FashionStoreLookbook = defineCapsule({
               'Model in structured blazer and wide trousers, power dressing editorial',
           },
         ]
-
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
-
     const lookbookSpan = (size?: 'feature' | 'wide' | 'small') => {
       if (size === 'feature') return 'col-span-2 row-span-2 aspect-[4/5]'
       if (size === 'wide') return 'col-span-2 aspect-[16/9]'
       return 'aspect-[3/4]'
     }
-
     return (
       <section
         aria-label="Lookbook gallery"
         className={cn('bg-muted py-20 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
             <div>
               <p className={cn(eyebrowCls, 'mb-3')}>{lookbookEyebrow}</p>
@@ -171,7 +168,7 @@ export const FashionStoreLookbook = defineCapsule({
               {lookbookCta}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

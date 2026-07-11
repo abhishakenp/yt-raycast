@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -15,6 +14,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * footer for clothing brands, boutiques, apparel and accessories shops, or any
  * premium minimalist retail storefront.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FashionStoreFooter = defineCapsule({
   name: 'FashionStoreFooter',
   description:
@@ -26,7 +26,12 @@ export const FashionStoreFooter = defineCapsule({
     homeTarget: z.string().optional(),
     tagline: z.string().optional(),
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     socials: z.array(z.string()).optional(),
     copyright: z.string().optional(),
@@ -92,7 +97,6 @@ export const FashionStoreFooter = defineCapsule({
     const footerPayments = props.payments?.length
       ? props.payments
       : ['VISA', 'MC', 'AMEX', 'Pay']
-
     return (
       <footer
         aria-label="Footer"
@@ -101,7 +105,7 @@ export const FashionStoreFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
             {/* Brand column */}
             <div className="col-span-2 md:col-span-4 lg:col-span-1">
@@ -171,7 +175,7 @@ export const FashionStoreFooter = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

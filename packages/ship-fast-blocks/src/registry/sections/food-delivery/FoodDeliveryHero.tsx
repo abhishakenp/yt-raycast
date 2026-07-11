@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
@@ -17,6 +16,7 @@ import { useFoodDeliverySearch } from './food-delivery-interactions.tsx'
  * Use as the opening hero for food-delivery apps, restaurant aggregators,
  * online-ordering platforms, or grocery/takeout services.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryHero = defineCapsule({
   name: 'FoodDeliveryHero',
   description:
@@ -62,10 +62,9 @@ export const FoodDeliveryHero = defineCapsule({
     const badgeTitle = props.badgeTitle ?? 'Order Confirmed'
     const badgeSubtitle = props.badgeSubtitle ?? 'Arriving in 24 min'
     const addressValue = foodSearch.state?.address ?? ''
-
     return (
       <section className={cn('pb-16 pt-32 lg:pb-24 lg:pt-40', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
@@ -158,7 +157,7 @@ export const FoodDeliveryHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

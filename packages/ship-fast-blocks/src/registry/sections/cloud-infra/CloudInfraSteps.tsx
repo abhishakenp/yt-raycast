@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * step 2 shows a checklist; step 3 shows a metrics panel. Tokens-only. Renders
  * fully on zero arguments.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CloudInfraSteps = defineCapsule({
   name: 'CloudInfraSteps',
   description:
@@ -22,7 +22,12 @@ export const CloudInfraSteps = defineCapsule({
     description: z.string().optional(),
     /** Step cards: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     /** CLI install command shown in the first step. */
     code: z.string().optional(),
@@ -53,7 +58,6 @@ export const CloudInfraSteps = defineCapsule({
           },
         ]
     const code = props.code ?? 'curl -sSL https://cloudshift.io/install | sh'
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -68,10 +72,9 @@ export const CloudInfraSteps = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -130,7 +133,7 @@ export const CloudInfraSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

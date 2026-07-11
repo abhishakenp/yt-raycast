@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * through useNavigate. Use to showcase client outcomes for a marketing / growth
  * agency. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MarketingAgencyCases = defineCapsule({
   name: 'MarketingAgencyCases',
   description:
@@ -108,7 +108,6 @@ export const MarketingAgencyCases = defineCapsule({
             labelB: 'Course Sales',
           },
         ]
-
     const tagTones = [
       'bg-chart-1 text-primary-foreground',
       'bg-chart-2 text-primary-foreground',
@@ -117,10 +116,9 @@ export const MarketingAgencyCases = defineCapsule({
       'bg-chart-5 text-primary-foreground',
       'bg-primary text-primary-foreground',
     ]
-
     return (
       <section className={cn('bg-muted py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-3 text-sm font-medium text-muted-foreground">
               {eyebrow}
@@ -185,7 +183,7 @@ export const MarketingAgencyCases = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

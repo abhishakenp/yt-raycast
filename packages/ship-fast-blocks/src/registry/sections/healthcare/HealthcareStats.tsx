@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -13,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * to surface patient count, wait time, satisfaction and years of service.
  * Renders fully with no props via baked-in clinic-metric defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const HealthcareStats = defineCapsule({
   name: 'HealthcareStats',
   description:
@@ -20,7 +20,12 @@ export const HealthcareStats = defineCapsule({
   props: z.object({
     /** Metric figures: value + label. */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -28,18 +33,29 @@ export const HealthcareStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '4,900+', label: 'Active Patients' },
-          { value: '15 min', label: 'Avg. Wait Time' },
-          { value: '98%', label: 'Patient Satisfaction' },
-          { value: '9+', label: 'Years of Service' },
+          {
+            value: '4,900+',
+            label: 'Active Patients',
+          },
+          {
+            value: '15 min',
+            label: 'Avg. Wait Time',
+          },
+          {
+            value: '98%',
+            label: 'Patient Satisfaction',
+          },
+          {
+            value: '9+',
+            label: 'Years of Service',
+          },
         ]
-
     return (
       <section
         className={cn('bg-primary py-16', props.className)}
         aria-label="Clinic statistics"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
             {items.map((s) => (
               <div key={s.label}>
@@ -52,7 +68,7 @@ export const HealthcareStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

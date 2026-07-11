@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -12,6 +11,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * an inline SVG, a title, and a description. Cards lift with a primary border
  * tint on hover. Tokens-only. Renders fully on zero arguments.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CloudInfraFeatures = defineCapsule({
   name: 'CloudInfraFeatures',
   description:
@@ -23,7 +23,12 @@ export const CloudInfraFeatures = defineCapsule({
     description: z.string().optional(),
     /** Feature cards: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -66,7 +71,6 @@ export const CloudInfraFeatures = defineCapsule({
               'Real-time metrics, distributed tracing, and intelligent alerting. Pinpoint issues before users notice.',
           },
         ]
-
     const icons: ReactNode[] = [
       <svg
         key="registry"
@@ -147,10 +151,9 @@ export const CloudInfraFeatures = defineCapsule({
         <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>,
     ]
-
     return (
       <section className={cn('py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -176,7 +179,7 @@ export const CloudInfraFeatures = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

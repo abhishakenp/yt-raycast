@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,6 +14,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * through useNavigate. Use to merchandise curated edits on electronics or gadget
  * storefronts.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ElectronicsStoreGallery = defineCapsule({
   name: 'ElectronicsStoreGallery',
   description:
@@ -69,10 +69,9 @@ export const ElectronicsStoreGallery = defineCapsule({
             imageAlt: 'Gaming laptop with RGB keyboard and gaming peripherals',
           },
         ]
-
     return (
       <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <h2 className="mb-8 text-2xl font-semibold text-foreground">
             {heading}
           </h2>
@@ -109,7 +108,7 @@ export const ElectronicsStoreGallery = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

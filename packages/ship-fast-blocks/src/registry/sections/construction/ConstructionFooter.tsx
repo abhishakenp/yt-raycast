@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -15,6 +14,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * construction firms, contractors, builders, or trades businesses.
  * Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ConstructionFooter = defineCapsule({
   name: 'ConstructionFooter',
   description:
@@ -82,7 +82,6 @@ export const ConstructionFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service', 'Licenses']
     const note = props.note ?? 'All rights reserved.'
     const homeTarget = props.homeTarget ?? 'Services'
-
     const LogoMark = ({
       className,
       tone = 'primary',
@@ -114,10 +113,9 @@ export const ConstructionFooter = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <footer className={cn('bg-background py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div>
               <button
@@ -279,7 +277,7 @@ export const ConstructionFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
@@ -22,6 +21,7 @@ import {
  * showcase restaurant discovery for food-delivery apps, restaurant aggregators,
  * or online-ordering platforms.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryRestaurants = defineCapsule({
   name: 'FoodDeliveryRestaurants',
   description:
@@ -149,7 +149,6 @@ export const FoodDeliveryRestaurants = defineCapsule({
     const selectedRestaurant = restaurantActions.state?.selectedRestaurant ?? ''
     const matchingRestaurants = restaurantItems.filter((restaurant) => {
       if (!activeQuery) return true
-
       const haystack = [
         restaurant.name,
         restaurant.cuisine,
@@ -159,10 +158,8 @@ export const FoodDeliveryRestaurants = defineCapsule({
       ]
         .join(' ')
         .toLowerCase()
-
       return haystack.includes(activeQuery)
     })
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -177,10 +174,9 @@ export const FoodDeliveryRestaurants = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -270,7 +266,7 @@ export const FoodDeliveryRestaurants = defineCapsule({
               </div>
             ) : null}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

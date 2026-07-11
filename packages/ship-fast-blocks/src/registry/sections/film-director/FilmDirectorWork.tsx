@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -18,6 +17,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * as a cinematic portfolio / reel showcase for directors, cinematographers, DPs,
  * or production houses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorWork = defineCapsule({
   name: 'FilmDirectorWork',
   description:
@@ -116,7 +116,6 @@ export const FilmDirectorWork = defineCapsule({
               "intimate close-up still from a narrative film showing an elderly actor's weathered hands holding a vintage pocket watch in soft window light",
           },
         ]
-
     const PlayIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
@@ -131,7 +130,6 @@ export const FilmDirectorWork = defineCapsule({
         />
       </svg>
     )
-
     return (
       <section
         className={cn(
@@ -139,7 +137,7 @@ export const FilmDirectorWork = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="mb-4 text-3xl font-light md:text-4xl">
@@ -213,7 +211,7 @@ export const FilmDirectorWork = defineCapsule({
               {workLoadMore}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

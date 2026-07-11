@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -16,6 +15,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * route through useNavigate. Use to let visitors estimate loan terms on personal-
  * loan, debt-consolidation, or financing pages. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LendingCalculator = defineCapsule({
   name: 'LendingCalculator',
   description:
@@ -35,14 +35,24 @@ export const LendingCalculator = defineCapsule({
     terms: z.array(z.string()).optional(),
     scoreLabel: z.string().optional(),
     scores: z
-      .array(z.object({ tier: z.string(), range: z.string() }))
+      .array(
+        z.object({
+          tier: z.string(),
+          range: z.string(),
+        }),
+      )
       .optional(),
     offerTitle: z.string().optional(),
     paymentLabel: z.string().optional(),
     paymentValue: z.string().optional(),
     paymentNote: z.string().optional(),
     summary: z
-      .array(z.object({ label: z.string(), value: z.string() }))
+      .array(
+        z.object({
+          label: z.string(),
+          value: z.string(),
+        }),
+      )
       .optional(),
     cta: z.string().optional(),
     ctaNote: z.string().optional(),
@@ -80,10 +90,22 @@ export const LendingCalculator = defineCapsule({
     const calcScores = props.scores?.length
       ? props.scores
       : [
-          { tier: 'Excellent', range: '750+' },
-          { tier: 'Good', range: '700-749' },
-          { tier: 'Fair', range: '650-699' },
-          { tier: 'Average', range: '600-649' },
+          {
+            tier: 'Excellent',
+            range: '750+',
+          },
+          {
+            tier: 'Good',
+            range: '700-749',
+          },
+          {
+            tier: 'Fair',
+            range: '650-699',
+          },
+          {
+            tier: 'Average',
+            range: '600-649',
+          },
         ]
     const calcOfferTitle = props.offerTitle ?? 'Estimated Offer'
     const calcPaymentLabel = props.paymentLabel ?? 'Monthly Payment'
@@ -92,21 +114,31 @@ export const LendingCalculator = defineCapsule({
     const calcSummary = props.summary?.length
       ? props.summary
       : [
-          { label: 'Loan Amount', value: '$20,000' },
-          { label: 'Est. APR', value: '8.99%' },
-          { label: 'Origination Fee', value: '$0' },
-          { label: 'Total Interest', value: '$2,944' },
+          {
+            label: 'Loan Amount',
+            value: '$20,000',
+          },
+          {
+            label: 'Est. APR',
+            value: '8.99%',
+          },
+          {
+            label: 'Origination Fee',
+            value: '$0',
+          },
+          {
+            label: 'Total Interest',
+            value: '$2,944',
+          },
         ]
     const calcCta = props.cta ?? 'Get My Real Rate'
     const calcCtaNote =
       props.ctaNote ?? "Checking won't affect your credit score"
-
     const inputCls =
       'w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring'
-
     return (
       <section className={cn('py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {calcHeading}
@@ -267,7 +299,7 @@ export const LendingCalculator = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },
