@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * content sections for kids-education startups, children's e-learning platforms,
  * and family learning apps. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const KidsEducationStats = defineCapsule({
   name: 'KidsEducationStats',
   description:
@@ -19,7 +19,12 @@ export const KidsEducationStats = defineCapsule({
   props: z.object({
     /** Stat figures. */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -27,17 +32,28 @@ export const KidsEducationStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '50K+', label: 'Happy Learners' },
-          { value: '1,200+', label: 'Activities & Games' },
-          { value: '98%', label: 'Parent Satisfaction' },
-          { value: '35+', label: 'Countries Reached' },
+          {
+            value: '50K+',
+            label: 'Happy Learners',
+          },
+          {
+            value: '1,200+',
+            label: 'Activities & Games',
+          },
+          {
+            value: '98%',
+            label: 'Parent Satisfaction',
+          },
+          {
+            value: '35+',
+            label: 'Countries Reached',
+          },
         ]
-
     return (
       <section
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
             {items.map((s, i) => (
               <div key={s.label}>
@@ -55,7 +71,7 @@ export const KidsEducationStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

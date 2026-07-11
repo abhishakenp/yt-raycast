@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -22,6 +21,7 @@ import {
  * Use as the site header for local directories, business-listing marketplaces,
  * find-a-service platforms, review-and-discovery sites, or city guides.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DirectoryNavbar = defineCapsule({
   name: 'DirectoryNavbar',
   description:
@@ -49,7 +49,6 @@ export const DirectoryNavbar = defineCapsule({
     const signIn = props.signIn ?? 'Sign In'
     const listCta = props.listCta ?? 'List Your Business'
     const homeTarget = props.homeTarget ?? nav[0]
-
     const PinLogo = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -65,13 +64,12 @@ export const DirectoryNavbar = defineCapsule({
         <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     )
-
     return (
       <nav
         className={cn('border-b border-border bg-card', props.className)}
         aria-label="Main navigation"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between">
             <button
               type="button"
@@ -123,7 +121,7 @@ export const DirectoryNavbar = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </nav>
     )
   },

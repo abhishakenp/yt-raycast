@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -13,6 +12,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * route through useNavigate. Use as the closing site footer for coding
  * bootcamps, dev academies, or any cohort-based education brand.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const BootcampFooter = defineCapsule({
   name: 'BootcampFooter',
   description:
@@ -68,7 +68,6 @@ export const BootcampFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
     const homeTarget = props.homeTarget ?? 'Curriculum'
-
     return (
       <footer
         className={cn(
@@ -76,7 +75,7 @@ export const BootcampFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
             <div>
               <button
@@ -157,7 +156,7 @@ export const BootcampFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

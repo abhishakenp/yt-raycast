@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
@@ -14,6 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * showcase the core capabilities of a CRM, sales-enablement or B2B SaaS product.
  * Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CrmFeatures = defineCapsule({
   name: 'CrmFeatures',
   description:
@@ -25,7 +25,12 @@ export const CrmFeatures = defineCapsule({
     description: z.string().optional(),
     /** Feature cards. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -68,7 +73,6 @@ export const CrmFeatures = defineCapsule({
               'Update deals, check schedules, and log activities on the go. Native iOS and Android apps with offline mode support.',
           },
         ]
-
     const featureIcons: ReactNode[] = [
       <svg
         key="pipeline"
@@ -149,10 +153,9 @@ export const CrmFeatures = defineCapsule({
         <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
@@ -177,7 +180,7 @@ export const CrmFeatures = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -14,6 +13,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * useNavigate. Use as the closing footer for CRM, sales-pipeline or B2B SaaS
  * products. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CrmFooter = defineCapsule({
   name: 'CrmFooter',
   description:
@@ -25,11 +25,21 @@ export const CrmFooter = defineCapsule({
     description: z.string().optional(),
     /** Link columns. */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Social icon buttons (label drives the navigation target; path is an SVG icon path). */
     socials: z
-      .array(z.object({ label: z.string(), path: z.string() }))
+      .array(
+        z.object({
+          label: z.string(),
+          path: z.string(),
+        }),
+      )
       .optional(),
     /** Copyright line (defaults to an auto year + brand). */
     copyright: z.string().optional(),
@@ -96,7 +106,6 @@ export const CrmFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     const homeTarget = props.homeTarget ?? 'Features'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -111,7 +120,6 @@ export const CrmFooter = defineCapsule({
         <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
       </svg>
     )
-
     return (
       <footer
         className={cn(
@@ -119,7 +127,7 @@ export const CrmFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <button
@@ -193,7 +201,7 @@ export const CrmFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

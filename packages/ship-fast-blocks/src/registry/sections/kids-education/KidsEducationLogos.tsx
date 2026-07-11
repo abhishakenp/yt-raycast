@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -14,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * platforms, tutoring services, and family learning apps. Renders fully with no
  * props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const KidsEducationLogos = defineCapsule({
   name: 'KidsEducationLogos',
   description:
@@ -39,7 +39,6 @@ export const KidsEducationLogos = defineCapsule({
           'EduCore',
           'StarKids',
         ]
-
     return (
       <section
         className={cn(
@@ -47,7 +46,7 @@ export const KidsEducationLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {eyebrow}
           </p>
@@ -75,7 +74,7 @@ export const KidsEducationLogos = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * services, and family learning apps. Renders fully with no props via baked-in
  * defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const KidsEducationSteps = defineCapsule({
   name: 'KidsEducationSteps',
   description:
@@ -68,13 +68,11 @@ export const KidsEducationSteps = defineCapsule({
               'Child proudly showing completed artwork with achievement badges displayed on screen',
           },
         ]
-
     const stepTints = [
       'bg-primary/15 text-primary',
       'bg-secondary/15 text-secondary-foreground',
       'bg-accent/15 text-accent-foreground',
     ]
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -91,10 +89,9 @@ export const KidsEducationSteps = defineCapsule({
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted/40 py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
               {eyebrow}
@@ -141,7 +138,7 @@ export const KidsEducationSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

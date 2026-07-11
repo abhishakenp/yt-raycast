@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -17,6 +16,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 /**
  * CleaningServiceNavbar — sticky, translucent top navigation bar for a home-cleaning / maid-service landing page. A blurred, border-bottomed header pinned to the top with a brand sparkle-mark logo tile + company name on the left, a horizontal row of service-section nav links on the desktop center, and a phone number + pill-shaped "Book Cleaning" CTA on the right. Every brand click, nav link, phone button, and CTA routes through useNavigate. Use as the sticky site header for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CleaningServiceNavbar = defineCapsule({
   name: 'CleaningServiceNavbar',
   description:
@@ -47,7 +47,6 @@ export const CleaningServiceNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Book Cleaning'
     const ctaTarget = props.ctaTarget ?? 'Book Your Cleaning'
     const phone = props.phone ?? '(555) 123-4567'
-
     const SparkleMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -70,7 +69,6 @@ export const CleaningServiceNavbar = defineCapsule({
         </svg>
       </span>
     )
-
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         width="18"
@@ -87,7 +85,6 @@ export const CleaningServiceNavbar = defineCapsule({
         <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     )
-
     return (
       <header
         className={cn(
@@ -95,7 +92,7 @@ export const CleaningServiceNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between lg:h-20">
             <button
               type="button"
@@ -158,7 +155,7 @@ export const CleaningServiceNavbar = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

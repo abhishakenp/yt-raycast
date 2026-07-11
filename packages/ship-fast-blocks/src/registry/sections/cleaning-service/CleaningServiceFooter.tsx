@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -8,6 +7,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 /**
  * CleaningServiceFooter — a multi-column footer for a home-cleaning / maid-service landing page. A dark card-background footer with a 5-column layout: brand sparkle-mark + company name + tagline + social-icon buttons on the left (spanning 2 columns on desktop), followed by link-column groups (Services, Company, Support) and a bottom bar with copyright, location, phone, and email — all routable through useNavigate. Every brand click, footer link, phone, email, and social button routes through useNavigate. Use as the closing site footer for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CleaningServiceFooter = defineCapsule({
   name: 'CleaningServiceFooter',
   description:
@@ -19,7 +19,12 @@ export const CleaningServiceFooter = defineCapsule({
     tagline: z.string().optional(),
     /** Footer column groups: title + array of link labels. */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Copyright line; brand + current year are auto-inserted. */
     copyright: z.string().optional(),
@@ -79,7 +84,6 @@ export const CleaningServiceFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Facebook', 'Twitter', 'Instagram']
-
     const SparkleMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -102,7 +106,6 @@ export const CleaningServiceFooter = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <footer
         className={cn(
@@ -110,7 +113,7 @@ export const CleaningServiceFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5 lg:gap-8">
             <div className="lg:col-span-2">
               <button
@@ -180,7 +183,7 @@ export const CleaningServiceFooter = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

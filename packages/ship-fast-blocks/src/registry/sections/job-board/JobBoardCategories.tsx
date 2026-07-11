@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -15,6 +14,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * boards, hiring marketplaces, talent networks or directory-style products.
  * Renders fully with no props; built-in line icons rotate across the items.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const JobBoardCategories = defineCapsule({
   name: 'JobBoardCategories',
   description:
@@ -26,7 +26,12 @@ export const JobBoardCategories = defineCapsule({
     description: z.string().optional(),
     /** Category tiles: title + job-count caption. */
     items: z
-      .array(z.object({ title: z.string(), count: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          count: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -39,16 +44,39 @@ export const JobBoardCategories = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { title: 'Engineering', count: '2,847 jobs' },
-          { title: 'Design', count: '1,523 jobs' },
-          { title: 'Marketing', count: '982 jobs' },
-          { title: 'Product', count: '756 jobs' },
-          { title: 'Sales', count: '1,134 jobs' },
-          { title: 'Finance', count: '643 jobs' },
-          { title: 'Support', count: '421 jobs' },
-          { title: 'Operations', count: '389 jobs' },
+          {
+            title: 'Engineering',
+            count: '2,847 jobs',
+          },
+          {
+            title: 'Design',
+            count: '1,523 jobs',
+          },
+          {
+            title: 'Marketing',
+            count: '982 jobs',
+          },
+          {
+            title: 'Product',
+            count: '756 jobs',
+          },
+          {
+            title: 'Sales',
+            count: '1,134 jobs',
+          },
+          {
+            title: 'Finance',
+            count: '643 jobs',
+          },
+          {
+            title: 'Support',
+            count: '421 jobs',
+          },
+          {
+            title: 'Operations',
+            count: '389 jobs',
+          },
         ]
-
     const categoryIcons: ReactNode[] = [
       <svg
         key="code"
@@ -169,10 +197,9 @@ export const JobBoardCategories = defineCapsule({
         <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-background py-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground">
               {heading}
@@ -199,7 +226,7 @@ export const JobBoardCategories = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

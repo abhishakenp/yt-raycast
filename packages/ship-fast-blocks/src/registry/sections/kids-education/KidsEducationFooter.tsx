@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -15,6 +14,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * children's e-learning platforms, tutoring services, and family learning apps.
  * Renders fully with no props via baked-in "WonderLearn" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const KidsEducationFooter = defineCapsule({
   name: 'KidsEducationFooter',
   description:
@@ -30,7 +30,12 @@ export const KidsEducationFooter = defineCapsule({
     note: z.string().optional(),
     /** Link-list columns. */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Bottom-bar legal links. */
     legal: z.array(z.string()).optional(),
@@ -68,7 +73,6 @@ export const KidsEducationFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'Facebook', 'Instagram']
-
     const BookMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -91,7 +95,6 @@ export const KidsEducationFooter = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <footer
         className={cn(
@@ -99,7 +102,7 @@ export const KidsEducationFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <button
@@ -170,7 +173,7 @@ export const KidsEducationFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

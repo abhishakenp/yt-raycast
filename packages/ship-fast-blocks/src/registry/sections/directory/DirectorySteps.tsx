@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * links. Use to explain the search-compare-connect flow on local directories,
  * find-a-service platforms, or review-and-discovery sites.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DirectorySteps = defineCapsule({
   name: 'DirectorySteps',
   description:
@@ -22,7 +22,12 @@ export const DirectorySteps = defineCapsule({
     description: z.string().optional(),
     /** Numbered step items (title + description). */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -50,10 +55,9 @@ export const DirectorySteps = defineCapsule({
               'Call directly, book online, or send a message. Get directions and save favorites for quick access.',
           },
         ]
-
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 text-center lg:mb-16">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
               {heading}
@@ -78,7 +82,7 @@ export const DirectorySteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

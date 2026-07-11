@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -19,6 +18,7 @@ import {
  * photos. Use to showcase instructor credibility for bootcamps, academies, or
  * cohort-based education programs.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const BootcampMentors = defineCapsule({
   name: 'BootcampMentors',
   description:
@@ -83,10 +83,9 @@ export const BootcampMentors = defineCapsule({
           'students collaborating on a group programming project',
           'modern tech workspace with developers working at standing desks',
         ]
-
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
               {mentorsEyebrow}
@@ -136,7 +135,7 @@ export const BootcampMentors = defineCapsule({
               />
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

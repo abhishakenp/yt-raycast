@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * hiring marketplaces or recruiting platforms. Static (no links). Renders fully
  * with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const JobBoardSteps = defineCapsule({
   name: 'JobBoardSteps',
   description:
@@ -23,7 +23,12 @@ export const JobBoardSteps = defineCapsule({
     description: z.string().optional(),
     /** Steps: title + description (numbered automatically). */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -50,10 +55,9 @@ export const JobBoardSteps = defineCapsule({
               'Connect directly with hiring managers, interview, and land your next role. Average placement in 14 days.',
           },
         ]
-
     return (
       <section className={cn('bg-muted/40 py-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground">
               {heading}
@@ -81,7 +85,7 @@ export const JobBoardSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * application-to-placement journey for bootcamps, academies, or cohort-based
  * education programs.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const BootcampSteps = defineCapsule({
   name: 'BootcampSteps',
   description:
@@ -25,7 +25,12 @@ export const BootcampSteps = defineCapsule({
     description: z.string().optional(),
     /** Steps: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -59,10 +64,9 @@ export const BootcampSteps = defineCapsule({
               'Work with our career team to land interviews. Average graduate salary: $78,000 — $95,000 first year.',
           },
         ]
-
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
               {stepsEyebrow}
@@ -91,7 +95,7 @@ export const BootcampSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

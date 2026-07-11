@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * insurance carriers, insurtech, brokers, or financial-protection products.
  * Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InsuranceSteps = defineCapsule({
   name: 'InsuranceSteps',
   description:
@@ -25,7 +25,12 @@ export const InsuranceSteps = defineCapsule({
     description: z.string().optional(),
     /** Step cards (numbered automatically). */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -54,7 +59,6 @@ export const InsuranceSteps = defineCapsule({
               'Purchase instantly and download your policy documents immediately. Coverage begins the moment you need it.',
           },
         ]
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -71,10 +75,9 @@ export const InsuranceSteps = defineCapsule({
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary">
               {eyebrow}
@@ -106,7 +109,7 @@ export const InsuranceSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

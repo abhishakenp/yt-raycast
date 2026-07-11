@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * children's e-learning platforms, tutoring services, and family learning apps.
  * Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const KidsEducationPricing = defineCapsule({
   name: 'KidsEducationPricing',
   description:
@@ -101,7 +101,6 @@ export const KidsEducationPricing = defineCapsule({
             cta: 'Contact Sales',
           },
         ]
-
     const CheckMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -118,10 +117,9 @@ export const KidsEducationPricing = defineCapsule({
         />
       </svg>
     )
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
               {eyebrow}
@@ -229,7 +227,7 @@ export const KidsEducationPricing = defineCapsule({
           <div className="mt-12 text-center">
             <p className="text-muted-foreground">{note}</p>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

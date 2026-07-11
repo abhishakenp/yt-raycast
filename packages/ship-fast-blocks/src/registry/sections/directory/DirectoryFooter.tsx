@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -14,6 +13,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * footer for local directories, business-listing marketplaces, find-a-service
  * platforms, or review-and-discovery sites.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DirectoryFooter = defineCapsule({
   name: 'DirectoryFooter',
   description:
@@ -25,7 +25,12 @@ export const DirectoryFooter = defineCapsule({
     note: z.string().optional(),
     /** Link-group columns. */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Legal links in the bottom bar. */
     legal: z.array(z.string()).optional(),
@@ -73,7 +78,6 @@ export const DirectoryFooter = defineCapsule({
     const copyright =
       props.copyright ?? '© 2024 LocalFindr. All rights reserved.'
     const homeTarget = props.homeTarget ?? 'Home'
-
     const PinLogo = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -89,7 +93,6 @@ export const DirectoryFooter = defineCapsule({
         <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     )
-
     return (
       <footer
         className={cn(
@@ -97,7 +100,7 @@ export const DirectoryFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-8 md:grid-cols-4 lg:gap-12">
             <div className="md:col-span-1">
               <button
@@ -151,7 +154,7 @@ export const DirectoryFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

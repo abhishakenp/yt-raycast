@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
@@ -22,6 +21,7 @@ import {
  * Image component. Use to showcase top-rated or handpicked listings on
  * directories, marketplaces, or review-and-discovery sites.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DirectoryFeatured = defineCapsule({
   name: 'DirectoryFeatured',
   description:
@@ -136,10 +136,8 @@ export const DirectoryFeatured = defineCapsule({
       const categoryMatches =
         !activeCategory || haystack.includes(activeCategory)
       const queryMatches = !activeQuery || haystack.includes(activeQuery)
-
       return categoryMatches && queryMatches
     })
-
     const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -150,7 +148,6 @@ export const DirectoryFeatured = defineCapsule({
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
-
     const Clock = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -165,10 +162,9 @@ export const DirectoryFeatured = defineCapsule({
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     )
-
     return (
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="mb-2 text-3xl font-semibold text-foreground sm:text-4xl">
@@ -194,9 +190,7 @@ export const DirectoryFeatured = defineCapsule({
             {matchingItems.length} featured business
             {matchingItems.length === 1 ? '' : 'es'} match the current search
             {directoryListings.state?.selectionCount
-              ? ` · ${directoryListings.state.selectionCount} listing${
-                  directoryListings.state.selectionCount === 1 ? '' : 's'
-                } opened`
+              ? ` · ${directoryListings.state.selectionCount} listing${directoryListings.state.selectionCount === 1 ? '' : 's'} opened`
               : ''}
           </p>
 
@@ -259,7 +253,7 @@ export const DirectoryFeatured = defineCapsule({
               </div>
             ) : null}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

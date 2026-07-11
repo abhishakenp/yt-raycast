@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import {
   SaasMutationSpinner,
@@ -20,6 +19,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * tiered subscription pricing for CRM, sales-pipeline or B2B SaaS products.
  * Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CrmPricing = defineCapsule({
   name: 'CrmPricing',
   description:
@@ -99,7 +99,6 @@ export const CrmPricing = defineCapsule({
             cta: 'Contact sales',
           },
         ]
-
     useSyncSaasPlans(
       lakebed,
       plans.map((plan) =>
@@ -111,7 +110,6 @@ export const CrmPricing = defineCapsule({
         }),
       ),
     )
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -126,7 +124,6 @@ export const CrmPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     const XIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -141,10 +138,9 @@ export const CrmPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
@@ -263,7 +259,7 @@ export const CrmPricing = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

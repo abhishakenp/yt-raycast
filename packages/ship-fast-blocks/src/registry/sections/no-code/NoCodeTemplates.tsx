@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * template marketplace / gallery section for a no-code builder or theme
  * marketplace. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const NoCodeTemplates = defineCapsule({
   name: 'NoCodeTemplates',
   description:
@@ -101,7 +101,6 @@ export const NoCodeTemplates = defineCapsule({
             imageAlt: 'Event registration template with calendar',
           },
         ]
-
     const tagTints = [
       'bg-chart-1 text-background',
       'bg-chart-2 text-background',
@@ -110,7 +109,6 @@ export const NoCodeTemplates = defineCapsule({
       'bg-primary text-primary-foreground',
       'bg-chart-5 text-background',
     ]
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
@@ -128,13 +126,12 @@ export const NoCodeTemplates = defineCapsule({
         <polyline points="14 5 21 12 14 19" />
       </svg>
     )
-
     return (
       <section
         className={cn('bg-background py-24', props.className)}
         aria-labelledby="nc-templates"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-12 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -209,7 +206,7 @@ export const NoCodeTemplates = defineCapsule({
               <ArrowRight className="size-4" />
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

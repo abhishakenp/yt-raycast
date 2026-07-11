@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -64,119 +65,120 @@ export const FurnitureStoreNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-          aria-label="Main navigation"
-        >
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(brand)}
-              className="flex items-center gap-2"
-              aria-label={`${brand} - Return to homepage`}
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8 text-muted-foreground" />}
-                labelClassName="text-xl font-semibold tracking-tight lg:text-2xl"
-              />
-            </button>
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-16 items-center justify-between lg:h-20">
+              <button
+                type="button"
+                onClick={() => go(brand)}
+                className="flex items-center gap-2"
+                aria-label={`${brand} - Return to homepage`}
+              >
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <LogoMark className="size-8 text-muted-foreground" />
+                  }
+                  labelClassName="text-xl font-semibold tracking-tight lg:text-2xl"
+                />
+              </button>
 
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className={cn(
-                    'text-sm font-medium transition-colors',
-                    label.toLowerCase() === 'sale'
-                      ? 'text-destructive hover:text-destructive/80'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className={cn(
+                      'text-sm font-medium transition-colors',
+                      label.toLowerCase() === 'sale'
+                        ? 'text-destructive hover:text-destructive/80'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
 
-            <div className="flex items-center gap-4">
-              <CommerceSearchButton
-                lakebed={lakebed}
-                buttonClassName="rounded-full p-2 transition-colors hover:bg-muted"
-              >
-                <svg
-                  className="size-5 text-muted-foreground"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                <CommerceSearchButton
+                  lakebed={lakebed}
+                  buttonClassName="rounded-full p-2 transition-colors hover:bg-muted"
                 >
-                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </CommerceSearchButton>
-              <CommerceAccountButton
-                lakebed={lakebed}
-                buttonClassName="hidden rounded-full p-2 transition-colors hover:bg-muted sm:flex"
-              >
-                <svg
-                  className="size-5 text-muted-foreground"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+                  <svg
+                    className="size-5 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </CommerceSearchButton>
+                <CommerceAccountButton
+                  lakebed={lakebed}
+                  buttonClassName="hidden rounded-full p-2 transition-colors hover:bg-muted sm:flex"
                 >
-                  <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </CommerceAccountButton>
-              <CommerceCartButton
-                lakebed={lakebed}
-                fallbackCount={initialCartCount}
-                label="Shopping cart"
-                buttonClassName="relative rounded-full p-2 transition-colors hover:bg-muted"
-              >
-                <svg
-                  className="size-5 text-muted-foreground"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+                  <svg
+                    className="size-5 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </CommerceAccountButton>
+                <CommerceCartButton
+                  lakebed={lakebed}
+                  fallbackCount={initialCartCount}
+                  label="Shopping cart"
+                  buttonClassName="relative rounded-full p-2 transition-colors hover:bg-muted"
                 >
-                  <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-              </CommerceCartButton>
-              <CommerceMobileMenu
-                brand={brand}
-                nav={nav}
-                homeTarget={nav[0]}
-                label="Menu"
-                buttonClassName="rounded-full p-2 transition-colors hover:bg-muted md:hidden"
-              >
-                <svg
-                  className="size-5 text-muted-foreground"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+                  <svg
+                    className="size-5 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </CommerceCartButton>
+                <CommerceMobileMenu
+                  brand={brand}
+                  nav={nav}
+                  homeTarget={nav[0]}
+                  label="Menu"
+                  buttonClassName="rounded-full p-2 transition-colors hover:bg-muted md:hidden"
                 >
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </CommerceMobileMenu>
+                  <svg
+                    className="size-5 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </CommerceMobileMenu>
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

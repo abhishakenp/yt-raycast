@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * (active teams, pipeline managed, conversion lift, rating) for CRM,
  * sales-pipeline or B2B SaaS products. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CrmStats = defineCapsule({
   name: 'CrmStats',
   description:
@@ -19,7 +19,12 @@ export const CrmStats = defineCapsule({
   props: z.object({
     /** KPI metrics. */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -27,12 +32,23 @@ export const CrmStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '15,000+', label: 'Active teams' },
-          { value: '$2.4B', label: 'Pipeline managed' },
-          { value: '34%', label: 'Avg. conversion lift' },
-          { value: '4.9/5', label: 'Customer rating' },
+          {
+            value: '15,000+',
+            label: 'Active teams',
+          },
+          {
+            value: '$2.4B',
+            label: 'Pipeline managed',
+          },
+          {
+            value: '34%',
+            label: 'Avg. conversion lift',
+          },
+          {
+            value: '4.9/5',
+            label: 'Customer rating',
+          },
         ]
-
     return (
       <section
         className={cn(
@@ -40,7 +56,7 @@ export const CrmStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg">
             {items.map((s) => (
               <div key={s.label} className="text-center">
@@ -51,7 +67,7 @@ export const CrmStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

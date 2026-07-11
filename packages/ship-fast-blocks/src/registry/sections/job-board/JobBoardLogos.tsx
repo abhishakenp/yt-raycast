@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,6 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * platforms or any marketing page that wants a logo cloud. Renders fully with no
  * props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const JobBoardLogos = defineCapsule({
   name: 'JobBoardLogos',
   description:
@@ -30,7 +30,6 @@ export const JobBoardLogos = defineCapsule({
     const companies = props.companies?.length
       ? props.companies
       : ['Stripe', 'Notion', 'Figma', 'Shopify', 'Webflow', 'Linear']
-
     return (
       <section
         className={cn(
@@ -38,7 +37,7 @@ export const JobBoardLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wide text-muted-foreground">
             {heading}
           </p>
@@ -54,7 +53,7 @@ export const JobBoardLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

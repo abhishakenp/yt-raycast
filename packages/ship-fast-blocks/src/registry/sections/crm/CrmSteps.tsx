@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * explain getting-started / setup / how-it-works flows for CRM, sales-pipeline
  * or B2B SaaS products. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CrmSteps = defineCapsule({
   name: 'CrmSteps',
   description:
@@ -65,10 +65,9 @@ export const CrmSteps = defineCapsule({
               'business professionals shaking hands in modern office meeting room',
           },
         ]
-
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
@@ -102,7 +101,7 @@ export const CrmSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

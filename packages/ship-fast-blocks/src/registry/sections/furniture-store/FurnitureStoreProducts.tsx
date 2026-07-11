@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -32,6 +31,7 @@ import {
  * the product / shop grid for furniture, home-decor, or any retail store. Renders
  * fully with no props via baked-in "Haven & Home" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FurnitureStoreProducts = defineCapsule({
   name: 'FurnitureStoreProducts',
   description:
@@ -131,7 +131,6 @@ export const FurnitureStoreProducts = defineCapsule({
         product.badge,
       ],
     )
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
@@ -148,13 +147,12 @@ export const FurnitureStoreProducts = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-
     return (
       <section
         className={cn('py-16 lg:py-24', props.className)}
         aria-labelledby="furniture-bestsellers-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -254,7 +252,7 @@ export const FurnitureStoreProducts = defineCapsule({
               </ProductCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

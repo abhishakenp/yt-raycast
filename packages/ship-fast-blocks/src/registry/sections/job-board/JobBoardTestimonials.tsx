@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * links); avatars use the alt-driven Image component. Renders fully with no
  * props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const JobBoardTestimonials = defineCapsule({
   name: 'JobBoardTestimonials',
   description:
@@ -68,10 +68,9 @@ export const JobBoardTestimonials = defineCapsule({
               'Professional headshot of a marketing manager with a confident expression',
           },
         ]
-
     return (
       <section className={cn('bg-background py-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground">
               {heading}
@@ -109,7 +108,7 @@ export const JobBoardTestimonials = defineCapsule({
               </figure>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

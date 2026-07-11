@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,6 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for furniture, home-decor, interiors, or any editorial retail brand citing
  * design-magazine press. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FurnitureStorePress = defineCapsule({
   name: 'FurnitureStorePress',
   description:
@@ -29,13 +29,12 @@ export const FurnitureStorePress = defineCapsule({
     const logos = props.logos?.length
       ? props.logos
       : ['ArchDigest', 'DWELL', 'House Beautiful', 'Elle Decor', 'DOMINO']
-
     return (
       <section
         className={cn('border-b border-border py-12', props.className)}
         aria-label="Featured in"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm text-muted-foreground">
             {label}
           </p>
@@ -51,7 +50,7 @@ export const FurnitureStorePress = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
@@ -87,53 +88,52 @@ export const InsuranceNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-          aria-label="Main navigation"
-        >
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(brand)}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<Shield className="size-8" />}
-                labelClassName="text-xl font-semibold text-foreground"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-16 items-center justify-between lg:h-20">
+              <button
+                type="button"
+                onClick={() => go(brand)}
+                className="flex items-center gap-2"
+              >
+                <BrandLogo
+                  brand={brand}
+                  fallback={<Shield className="size-8" />}
+                  labelClassName="text-xl font-semibold text-foreground"
+                />
+              </button>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-4">
                 <button
-                  key={label}
                   type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => go(phone)}
+                  className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
                 >
-                  {label}
+                  <Phone className="size-4" />
+                  {phone}
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => go(ctaLabel)}
+                  className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {ctaLabel}
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(phone)}
-                className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
-              >
-                <Phone className="size-4" />
-                {phone}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(ctaLabel)}
-                className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {ctaLabel}
-              </button>
-            </div>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

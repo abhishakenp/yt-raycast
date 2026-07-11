@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -13,6 +12,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * Use as the core "everything you need" features section for a no-code builder,
  * SaaS, or product landing page. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const NoCodeFeatures = defineCapsule({
   name: 'NoCodeFeatures',
   description:
@@ -26,7 +26,12 @@ export const NoCodeFeatures = defineCapsule({
     description: z.string().optional(),
     /** Feature cards (title + description). */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -70,7 +75,6 @@ export const NoCodeFeatures = defineCapsule({
               'Connect with Stripe, Airtable, Zapier, Make, and more. Automate workflows and add powerful functionality without code.',
           },
         ]
-
     const iconTints = [
       'bg-primary/10 text-primary',
       'bg-secondary text-secondary-foreground',
@@ -172,13 +176,12 @@ export const NoCodeFeatures = defineCapsule({
         <path d="M12 16v5" />
       </svg>,
     ]
-
     return (
       <section
         className={cn('bg-background py-24', props.className)}
         aria-labelledby="nc-features"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -215,7 +218,7 @@ export const NoCodeFeatures = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

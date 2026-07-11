@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * carriers, insurtech, brokers, or financial-protection products. Renders fully
  * with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InsurancePricing = defineCapsule({
   name: 'InsurancePricing',
   description:
@@ -38,7 +38,10 @@ export const InsurancePricing = defineCapsule({
           cta: z.string(),
           popular: z.boolean().optional(),
           features: z.array(
-            z.object({ label: z.string(), included: z.boolean() }),
+            z.object({
+              label: z.string(),
+              included: z.boolean(),
+            }),
           ),
         }),
       )
@@ -64,10 +67,22 @@ export const InsurancePricing = defineCapsule({
             cta: 'Get Started',
             popular: false,
             features: [
-              { label: '$100K liability coverage', included: true },
-              { label: '$500 deductible', included: true },
-              { label: '24/7 claims support', included: true },
-              { label: 'Identity theft protection', included: false },
+              {
+                label: '$100K liability coverage',
+                included: true,
+              },
+              {
+                label: '$500 deductible',
+                included: true,
+              },
+              {
+                label: '24/7 claims support',
+                included: true,
+              },
+              {
+                label: 'Identity theft protection',
+                included: false,
+              },
             ],
           },
           {
@@ -78,11 +93,26 @@ export const InsurancePricing = defineCapsule({
             cta: 'Get Started',
             popular: true,
             features: [
-              { label: '$500K liability coverage', included: true },
-              { label: '$250 deductible', included: true },
-              { label: '24/7 claims support', included: true },
-              { label: 'Identity theft protection', included: true },
-              { label: 'Personal umbrella policy', included: true },
+              {
+                label: '$500K liability coverage',
+                included: true,
+              },
+              {
+                label: '$250 deductible',
+                included: true,
+              },
+              {
+                label: '24/7 claims support',
+                included: true,
+              },
+              {
+                label: 'Identity theft protection',
+                included: true,
+              },
+              {
+                label: 'Personal umbrella policy',
+                included: true,
+              },
             ],
           },
           {
@@ -93,15 +123,29 @@ export const InsurancePricing = defineCapsule({
             cta: 'Contact Sales',
             popular: false,
             features: [
-              { label: '$1M liability coverage', included: true },
-              { label: '$100 deductible', included: true },
-              { label: 'Priority claims processing', included: true },
-              { label: 'Full identity restoration', included: true },
-              { label: 'Dedicated agent', included: true },
+              {
+                label: '$1M liability coverage',
+                included: true,
+              },
+              {
+                label: '$100 deductible',
+                included: true,
+              },
+              {
+                label: 'Priority claims processing',
+                included: true,
+              },
+              {
+                label: 'Full identity restoration',
+                included: true,
+              },
+              {
+                label: 'Dedicated agent',
+                included: true,
+              },
             ],
           },
         ]
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -118,7 +162,6 @@ export const InsurancePricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     const Cross = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -135,10 +178,9 @@ export const InsurancePricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary">
               {eyebrow}
@@ -216,7 +258,7 @@ export const InsurancePricing = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

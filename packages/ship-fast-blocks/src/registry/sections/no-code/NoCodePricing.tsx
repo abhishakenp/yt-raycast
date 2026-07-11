@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { useState } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import {
   SaasMutationSpinner,
@@ -21,6 +20,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * useNavigate. Use as the pricing section for a no-code builder, SaaS, or any
  * subscription product. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const NoCodePricing = defineCapsule({
   name: 'NoCodePricing',
   description:
@@ -114,7 +114,6 @@ export const NoCodePricing = defineCapsule({
           },
         ]
     const isYearly = billing === 'yearly'
-
     useSyncSaasPlans(
       lakebed,
       plans.map((plan) =>
@@ -126,7 +125,6 @@ export const NoCodePricing = defineCapsule({
         }),
       ),
     )
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         width="20"
@@ -143,13 +141,12 @@ export const NoCodePricing = defineCapsule({
         <polyline points="20 6 9 17 4 12" />
       </svg>
     )
-
     return (
       <section
         className={cn('bg-muted/40 py-24', props.className)}
         aria-labelledby="nc-pricing"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-12 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -300,7 +297,7 @@ export const NoCodePricing = defineCapsule({
               )
             })}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

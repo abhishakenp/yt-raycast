@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * bullet list of key skills. Cards subtly highlight on hover. Use to present a
  * bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const BootcampCurriculum = defineCapsule({
   name: 'BootcampCurriculum',
   description:
@@ -112,7 +112,6 @@ export const BootcampCurriculum = defineCapsule({
             ],
           },
         ]
-
     const moduleIcons: ReactNode[] = [
       <svg
         key="code"
@@ -205,10 +204,9 @@ export const BootcampCurriculum = defineCapsule({
         />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
               {curriculumEyebrow}
@@ -240,7 +238,7 @@ export const BootcampCurriculum = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

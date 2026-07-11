@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -16,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as the closing site footer for insurance carriers, insurtech, brokers,
  * or financial-protection products. Renders fully with no props via defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InsuranceFooter = defineCapsule({
   name: 'InsuranceFooter',
   description:
@@ -27,7 +27,12 @@ export const InsuranceFooter = defineCapsule({
     tagline: z.string().optional(),
     /** Link columns (title + link labels). */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Contact column title. */
     contactTitle: z.string().optional(),
@@ -108,7 +113,6 @@ export const InsuranceFooter = defineCapsule({
           'Norton Secured SSL certificate badge',
         ]
     const homeTarget = props.homeTarget ?? brand
-
     const Shield = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -131,7 +135,6 @@ export const InsuranceFooter = defineCapsule({
         </svg>
       </span>
     )
-
     const Phone = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -148,12 +151,11 @@ export const InsuranceFooter = defineCapsule({
         <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     )
-
     return (
       <footer
         className={cn('bg-foreground py-16 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-6 lg:gap-12">
             <div className="col-span-2">
               <button
@@ -277,7 +279,7 @@ export const InsuranceFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

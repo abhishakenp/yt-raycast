@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * showcase customer love for CRM, sales-pipeline or B2B SaaS products. Renders
  * fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CrmTestimonials = defineCapsule({
   name: 'CrmTestimonials',
   description:
@@ -92,7 +92,6 @@ export const CrmTestimonials = defineCapsule({
               'professional headshot of a female operations manager with red hair and friendly expression',
           },
         ]
-
     const Star = () => (
       <svg
         className="size-5 text-chart-4"
@@ -103,10 +102,9 @@ export const CrmTestimonials = defineCapsule({
         <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
       </svg>
     )
-
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
@@ -122,7 +120,9 @@ export const CrmTestimonials = defineCapsule({
                 className="bg-muted/50"
               >
                 <div className="mb-4 flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, si) => (
+                  {Array.from({
+                    length: 5,
+                  }).map((_, si) => (
                     <Star key={si} />
                   ))}
                 </div>
@@ -145,7 +145,7 @@ export const CrmTestimonials = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

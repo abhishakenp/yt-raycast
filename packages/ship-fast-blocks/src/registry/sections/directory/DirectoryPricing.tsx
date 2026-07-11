@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { directoryLakebed } from './directory-lakebed.ts'
 import {
@@ -19,6 +18,7 @@ import {
  * actions. Use as the listing/subscription pricing section on local directories,
  * marketplaces, or find-a-service platforms.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DirectoryPricing = defineCapsule({
   name: 'DirectoryPricing',
   description:
@@ -105,7 +105,6 @@ export const DirectoryPricing = defineCapsule({
             badge: '',
           },
         ]
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -120,7 +119,6 @@ export const DirectoryPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     const Cross = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -135,10 +133,9 @@ export const DirectoryPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
-
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 text-center lg:mb-16">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
               {heading}
@@ -254,7 +251,7 @@ export const DirectoryPricing = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

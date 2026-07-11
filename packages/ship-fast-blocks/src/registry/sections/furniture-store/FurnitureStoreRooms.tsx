@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * present room/category inspiration for furniture, home-decor, or interiors
  * brands. Renders fully with no props via baked-in "Haven & Home" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FurnitureStoreRooms = defineCapsule({
   name: 'FurnitureStoreRooms',
   description:
@@ -25,7 +25,12 @@ export const FurnitureStoreRooms = defineCapsule({
     heading: z.string().optional(),
     viewAll: z.string().optional(),
     items: z
-      .array(z.object({ name: z.string(), count: z.string() }))
+      .array(
+        z.object({
+          name: z.string(),
+          count: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -37,14 +42,31 @@ export const FurnitureStoreRooms = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { name: 'Living Room', count: '234 products' },
-          { name: 'Kitchen & Dining', count: '189 products' },
-          { name: 'Bedroom', count: '156 products' },
-          { name: 'Bathroom', count: '87 products' },
-          { name: 'Home Office', count: '124 products' },
-          { name: 'Outdoor', count: '67 products' },
+          {
+            name: 'Living Room',
+            count: '234 products',
+          },
+          {
+            name: 'Kitchen & Dining',
+            count: '189 products',
+          },
+          {
+            name: 'Bedroom',
+            count: '156 products',
+          },
+          {
+            name: 'Bathroom',
+            count: '87 products',
+          },
+          {
+            name: 'Home Office',
+            count: '124 products',
+          },
+          {
+            name: 'Outdoor',
+            count: '67 products',
+          },
         ]
-
     const roomImageAlts: Record<string, string> = {
       'Living Room':
         'Cozy living room with tan leather sofa, woven rug, and warm wood accents',
@@ -59,7 +81,6 @@ export const FurnitureStoreRooms = defineCapsule({
       Outdoor:
         'Outdoor patio with teak furniture, neutral cushions, and string lights at dusk',
     }
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
@@ -76,13 +97,12 @@ export const FurnitureStoreRooms = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-
     return (
       <section
         className={cn('bg-muted py-16 lg:py-24', props.className)}
         aria-labelledby="furniture-rooms-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -136,7 +156,7 @@ export const FurnitureStoreRooms = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

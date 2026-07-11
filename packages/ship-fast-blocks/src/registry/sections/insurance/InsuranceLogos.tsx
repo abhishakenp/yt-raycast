@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -11,6 +10,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * bottomed band. Use right under the hero to establish credibility with press
  * mentions or partner brands. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const InsuranceLogos = defineCapsule({
   name: 'InsuranceLogos',
   description:
@@ -27,10 +27,9 @@ export const InsuranceLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['Forbes', 'Bloomberg', 'TechCrunch', 'WSJ', 'Inc. 5000', 'NerdWallet']
-
     return (
       <section className={cn('border-b border-border py-12', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
@@ -47,7 +46,7 @@ export const InsuranceLogos = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

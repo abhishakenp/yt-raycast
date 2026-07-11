@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,6 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * the hero to build credibility for bootcamps, dev academies, or vocational
  * programs by showing where graduates are placed.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const BootcampLogos = defineCapsule({
   name: 'BootcampLogos',
   description:
@@ -30,7 +30,6 @@ export const BootcampLogos = defineCapsule({
     const logoItems = props.items?.length
       ? props.items
       : ['GitHub', 'Google', 'Stripe', 'Airbnb', 'Shopify', 'Spotify']
-
     return (
       <section
         className={cn(
@@ -38,7 +37,7 @@ export const BootcampLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm text-muted-foreground">
             {logosLabel}
           </p>
@@ -60,7 +59,7 @@ export const BootcampLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

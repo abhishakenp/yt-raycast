@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import {
@@ -83,62 +84,61 @@ export const JobBoardNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-          aria-label="Main navigation"
-        >
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-2 text-foreground"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<BriefcaseMark className="size-8" />}
-                labelClassName="text-xl font-semibold tracking-tight"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <JobBoardSearchButton
-                lakebed={lakebed}
-                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              />
-              <JobBoardAccountButton
-                lakebed={lakebed}
-                label={signIn}
-                buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
-              />
-              <JobBoardActionButton
-                lakebed={lakebed}
-                action={cta}
-                source="navbar"
-                pendingChildren={<JobBoardMutationSpinner />}
-                className="hidden min-h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-16 items-center justify-between">
+              <button
+                type="button"
+                onClick={() => go(homeTarget)}
+                className="flex items-center gap-2 text-foreground"
               >
-                {cta}
-              </JobBoardActionButton>
-              <JobBoardMobileMenu
-                brand={brand}
-                homeTarget={homeTarget}
-                nav={nav}
-                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-              />
+                <BrandLogo
+                  brand={brand}
+                  fallback={<BriefcaseMark className="size-8" />}
+                  labelClassName="text-xl font-semibold tracking-tight"
+                />
+              </button>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <JobBoardSearchButton
+                  lakebed={lakebed}
+                  buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                />
+                <JobBoardAccountButton
+                  lakebed={lakebed}
+                  label={signIn}
+                  buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+                />
+                <JobBoardActionButton
+                  lakebed={lakebed}
+                  action={cta}
+                  source="navbar"
+                  pendingChildren={<JobBoardMutationSpinner />}
+                  className="hidden min-h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+                >
+                  {cta}
+                </JobBoardActionButton>
+                <JobBoardMobileMenu
+                  brand={brand}
+                  homeTarget={homeTarget}
+                  nav={nav}
+                  buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+                />
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

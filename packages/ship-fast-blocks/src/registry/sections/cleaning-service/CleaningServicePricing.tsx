@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -15,6 +14,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 /**
  * CleaningServicePricing — a 3-tier transparent pricing table for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of pricing cards: the middle "Most Popular" plan is elevated, highlighted with the primary brand color and a badge pill; side plans sit on card surfaces with secondary CTAs. A footnote row with a phone-icon link sits below the grid. Every CTA and the footnote link route through useNavigate. Use for service-pricing / plan-selection blocks for residential cleaning companies, maid services, or any local home-service business. Renders fully with no props via three baked-in default plans.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CleaningServicePricing = defineCapsule({
   name: 'CleaningServicePricing',
   description:
@@ -113,7 +113,6 @@ export const CleaningServicePricing = defineCapsule({
         }),
       ),
     )
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         width="20"
@@ -130,7 +129,6 @@ export const CleaningServicePricing = defineCapsule({
         />
       </svg>
     )
-
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         width="18"
@@ -147,10 +145,9 @@ export const CleaningServicePricing = defineCapsule({
         <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
@@ -257,7 +254,7 @@ export const CleaningServicePricing = defineCapsule({
               {footnoteCta}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

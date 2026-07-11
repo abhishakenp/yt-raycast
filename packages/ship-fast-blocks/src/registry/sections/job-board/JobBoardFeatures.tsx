@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * hiring marketplaces or recruiting platforms. Static (no links). Renders fully
  * with no props; built-in line icons rotate across the items.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const JobBoardFeatures = defineCapsule({
   name: 'JobBoardFeatures',
   description:
@@ -24,7 +24,12 @@ export const JobBoardFeatures = defineCapsule({
     description: z.string().optional(),
     /** Feature cards: title + description. */
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -52,7 +57,6 @@ export const JobBoardFeatures = defineCapsule({
               'Get notified instantly when jobs matching your skills are posted. Be among the first applicants and increase your chances.',
           },
         ]
-
     const featureIcons: ReactNode[] = [
       <svg
         key="check"
@@ -96,10 +100,9 @@ export const JobBoardFeatures = defineCapsule({
         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-muted/40 py-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground">
               {heading}
@@ -123,7 +126,7 @@ export const JobBoardFeatures = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

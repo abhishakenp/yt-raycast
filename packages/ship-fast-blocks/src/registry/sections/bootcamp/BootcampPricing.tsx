@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the pricing table for bootcamps, academies, or vocational
  * programs offering multiple payment options.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const BootcampPricing = defineCapsule({
   name: 'BootcampPricing',
   description:
@@ -99,7 +99,6 @@ export const BootcampPricing = defineCapsule({
       props.footnote ??
       'Scholarships available for underrepresented groups in tech.'
     const pricingFootnoteCta = props.footnoteCta ?? 'Learn more →'
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -114,10 +113,9 @@ export const BootcampPricing = defineCapsule({
         />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
               {pricingEyebrow}
@@ -188,7 +186,7 @@ export const BootcampPricing = defineCapsule({
               {pricingFootnoteCta}
             </button>
           </p>
-        </div>
+        </Container>
       </section>
     )
   },

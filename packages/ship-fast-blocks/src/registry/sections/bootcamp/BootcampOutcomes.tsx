@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * outcomes validation section for bootcamps, academies, or vocational programs
  * that want to showcase placement rate and earning potential.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const BootcampOutcomes = defineCapsule({
   name: 'BootcampOutcomes',
   description:
@@ -24,12 +24,21 @@ export const BootcampOutcomes = defineCapsule({
     description: z.string().optional(),
     /** Metric figures: value + label. */
     stats: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     /** Salary progress bars: value, label, percentage width (0-100). */
     bars: z
       .array(
-        z.object({ value: z.string(), label: z.string(), pct: z.number() }),
+        z.object({
+          value: z.string(),
+          label: z.string(),
+          pct: z.number(),
+        }),
       )
       .optional(),
     className: z.string().optional(),
@@ -43,22 +52,45 @@ export const BootcampOutcomes = defineCapsule({
     const outcomeStats = props.stats?.length
       ? props.stats
       : [
-          { value: '89%', label: 'Job placement rate within 6 months' },
-          { value: '$85k', label: 'Average starting salary' },
-          { value: '2,400+', label: 'Graduates placed since 2019' },
-          { value: '4.9/5', label: 'Student satisfaction rating' },
+          {
+            value: '89%',
+            label: 'Job placement rate within 6 months',
+          },
+          {
+            value: '$85k',
+            label: 'Average starting salary',
+          },
+          {
+            value: '2,400+',
+            label: 'Graduates placed since 2019',
+          },
+          {
+            value: '4.9/5',
+            label: 'Student satisfaction rating',
+          },
         ]
     const outcomeBars = props.bars?.length
       ? props.bars
       : [
-          { value: '$52k', label: 'Average student income before', pct: 55 },
-          { value: '$85k', label: 'Average graduate salary after', pct: 85 },
-          { value: '$33k+', label: 'Average salary increase', pct: 63 },
+          {
+            value: '$52k',
+            label: 'Average student income before',
+            pct: 55,
+          },
+          {
+            value: '$85k',
+            label: 'Average graduate salary after',
+            pct: 85,
+          },
+          {
+            value: '$33k+',
+            label: 'Average salary increase',
+            pct: 63,
+          },
         ]
-
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
               {outcomesEyebrow}
@@ -88,13 +120,15 @@ export const BootcampOutcomes = defineCapsule({
                 <div className="h-2 overflow-hidden rounded-full bg-border">
                   <div
                     className="h-full rounded-full bg-primary"
-                    style={{ width: `${bar.pct}%` }}
+                    style={{
+                      width: `${bar.pct}%`,
+                    }}
                   />
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import {
   LocalServiceBookingButton,
@@ -14,6 +13,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 /**
  * CleaningServiceServices — a 6-up cleaning-services capabilities grid for a home-cleaning / maid-service landing page. A centered section heading + lead paragraph above a responsive 1/2/3-column grid of clickable service cards; each card has a rounded icon tile (cycling through inline line-icons), a title, a description, and a from-price line. Cards gain a border highlight and lift shadow on hover, and each routes through useNavigate on click. Use for "what we do" / services blocks for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via six baked-in default services.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CleaningServiceServices = defineCapsule({
   name: 'CleaningServiceServices',
   description:
@@ -91,7 +91,6 @@ export const CleaningServiceServices = defineCapsule({
         }),
       ),
     )
-
     const serviceIcons: ReactNode[] = [
       <svg
         key="home"
@@ -178,10 +177,9 @@ export const CleaningServiceServices = defineCapsule({
         <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
@@ -212,7 +210,7 @@ export const CleaningServiceServices = defineCapsule({
               </LocalServiceBookingButton>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

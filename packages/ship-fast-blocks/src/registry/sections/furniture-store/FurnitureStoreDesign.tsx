@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * home-decor, or interiors brands. Renders fully with no props via baked-in
  * "Haven & Home" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FurnitureStoreDesign = defineCapsule({
   name: 'FurnitureStoreDesign',
   description:
@@ -27,7 +27,12 @@ export const FurnitureStoreDesign = defineCapsule({
     cta: z.string().optional(),
     imageAlt: z.string().optional(),
     steps: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     statLabel: z.string().optional(),
     statValue: z.string().optional(),
@@ -67,7 +72,6 @@ export const FurnitureStoreDesign = defineCapsule({
     const statLabel = props.statLabel ?? 'Designer consultations'
     const statValue = props.statValue ?? '12,000+'
     const statCaption = props.statCaption ?? 'Completed this year'
-
     const ArrowLong = ({ className }: { className?: string }) => (
       <svg
         width="16"
@@ -84,7 +88,6 @@ export const FurnitureStoreDesign = defineCapsule({
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
-
     return (
       <section
         className={cn(
@@ -93,7 +96,7 @@ export const FurnitureStoreDesign = defineCapsule({
         )}
         aria-labelledby="furniture-design-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div>
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary-foreground/70">
@@ -154,7 +157,7 @@ export const FurnitureStoreDesign = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

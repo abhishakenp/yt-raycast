@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { directoryLakebed } from './directory-lakebed.ts'
 import { useDirectorySearch } from './directory-interactions.tsx'
@@ -18,6 +17,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * clears it. Use to let users browse listing categories on local directories,
  * marketplaces, or city guides.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DirectoryCategories = defineCapsule({
   name: 'DirectoryCategories',
   description:
@@ -31,7 +31,12 @@ export const DirectoryCategories = defineCapsule({
     viewAll: z.string().optional(),
     /** Category tiles (title + listing count). */
     items: z
-      .array(z.object({ title: z.string(), count: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          count: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -46,16 +51,39 @@ export const DirectoryCategories = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { title: 'Restaurants', count: '2,340 listings' },
-          { title: 'Home Services', count: '1,850 listings' },
-          { title: 'Beauty & Spas', count: '980 listings' },
-          { title: 'Health & Medical', count: '1,240 listings' },
-          { title: 'Real Estate', count: '670 listings' },
-          { title: 'Automotive', count: '890 listings' },
-          { title: 'Education', count: '520 listings' },
-          { title: 'Retail', count: '2,100 listings' },
+          {
+            title: 'Restaurants',
+            count: '2,340 listings',
+          },
+          {
+            title: 'Home Services',
+            count: '1,850 listings',
+          },
+          {
+            title: 'Beauty & Spas',
+            count: '980 listings',
+          },
+          {
+            title: 'Health & Medical',
+            count: '1,240 listings',
+          },
+          {
+            title: 'Real Estate',
+            count: '670 listings',
+          },
+          {
+            title: 'Automotive',
+            count: '890 listings',
+          },
+          {
+            title: 'Education',
+            count: '520 listings',
+          },
+          {
+            title: 'Retail',
+            count: '2,100 listings',
+          },
         ]
-
     const ChevronRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -70,7 +98,6 @@ export const DirectoryCategories = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-
     const categoryIcons: ReactNode[] = [
       <svg
         key="book"
@@ -169,7 +196,6 @@ export const DirectoryCategories = defineCapsule({
         <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
       </svg>,
     ]
-
     const categoryTints = [
       'bg-chart-1/15 text-chart-1',
       'bg-chart-2/15 text-chart-2',
@@ -180,10 +206,9 @@ export const DirectoryCategories = defineCapsule({
       'bg-accent text-accent-foreground',
       'bg-secondary text-secondary-foreground',
     ]
-
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 text-center lg:mb-16">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
               {heading}
@@ -240,7 +265,7 @@ export const DirectoryCategories = defineCapsule({
               <ChevronRight className="size-4" />
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

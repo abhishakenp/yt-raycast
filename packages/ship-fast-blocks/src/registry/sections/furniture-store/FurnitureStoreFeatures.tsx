@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * showcase store guarantees, perks, or why-choose-us value props for furniture,
  * home-decor, interiors, or any warm retail brand. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FurnitureStoreFeatures = defineCapsule({
   name: 'FurnitureStoreFeatures',
   description:
@@ -21,7 +21,12 @@ export const FurnitureStoreFeatures = defineCapsule({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -52,7 +57,6 @@ export const FurnitureStoreFeatures = defineCapsule({
               'Not the perfect fit? Return or exchange within 30 days, no questions asked.',
           },
         ]
-
     const featureIcons: ReactNode[] = [
       <svg
         key="check"
@@ -107,13 +111,12 @@ export const FurnitureStoreFeatures = defineCapsule({
         <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>,
     ]
-
     return (
       <section
         className={cn('py-16 lg:py-24', props.className)}
         aria-labelledby="furniture-features-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 text-center lg:mb-16">
             <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -138,7 +141,7 @@ export const FurnitureStoreFeatures = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * beneath the hero of local directories, listing marketplaces, or
  * review-and-discovery sites to convey scale and trust.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const DirectoryStats = defineCapsule({
   name: 'DirectoryStats',
   description:
@@ -19,7 +19,12 @@ export const DirectoryStats = defineCapsule({
   props: z.object({
     /** Stat tiles (big value + label). */
     stats: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -27,17 +32,28 @@ export const DirectoryStats = defineCapsule({
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: '12,450+', label: 'Local Businesses' },
-          { value: '48,200+', label: 'Verified Reviews' },
-          { value: '156', label: 'Cities Covered' },
-          { value: '4.8', label: 'Average Rating' },
+          {
+            value: '12,450+',
+            label: 'Local Businesses',
+          },
+          {
+            value: '48,200+',
+            label: 'Verified Reviews',
+          },
+          {
+            value: '156',
+            label: 'Cities Covered',
+          },
+          {
+            value: '4.8',
+            label: 'Average Rating',
+          },
         ]
-
     return (
       <section
         className={cn('border-y border-border bg-muted py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {stats.map((s) => (
               <div key={s.label}>
@@ -48,7 +64,7 @@ export const DirectoryStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

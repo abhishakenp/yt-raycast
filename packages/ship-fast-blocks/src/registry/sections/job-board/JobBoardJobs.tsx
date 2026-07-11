@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { useState } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card, FilterChip } from '#/section-kit/index.ts'
@@ -25,6 +24,7 @@ import {
  * on job boards, hiring marketplaces or talent networks. Renders fully with no
  * props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const JobBoardJobs = defineCapsule({
   name: 'JobBoardJobs',
   description:
@@ -156,12 +156,10 @@ export const JobBoardJobs = defineCapsule({
       const filterMatches =
         activeFilter === 'All Jobs' ||
         haystack.includes(activeFilter.toLowerCase())
-
       return locationMatches && queryMatches && filterMatches
     }
     const matchingItems = items.filter(matchesSearch)
     const visibleItems = matchingItems.slice(0, visibleCount)
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -179,10 +177,9 @@ export const JobBoardJobs = defineCapsule({
         <polyline points="12 5 19 12 12 19" />
       </svg>
     )
-
     return (
       <section className={cn('bg-background py-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="mb-2 text-3xl font-semibold tracking-tight text-foreground">
@@ -233,9 +230,7 @@ export const JobBoardJobs = defineCapsule({
             {matchingItems.length} matching job
             {matchingItems.length === 1 ? '' : 's'}
             {jobActions.applicationCount
-              ? ` · ${jobActions.applicationCount} application${
-                  jobActions.applicationCount === 1 ? '' : 's'
-                } started`
+              ? ` · ${jobActions.applicationCount} application${jobActions.applicationCount === 1 ? '' : 's'} started`
               : ''}
           </p>
 
@@ -243,7 +238,6 @@ export const JobBoardJobs = defineCapsule({
             {visibleItems.map((job) => {
               const applied = appliedRoles.has(job.role)
               const pending = pendingRole === job.role
-
               return (
                 <Card
                   key={job.role}
@@ -303,7 +297,10 @@ export const JobBoardJobs = defineCapsule({
                         onClick={() => {
                           setPendingRole(job.role)
                           void jobActions
-                            .apply({ company: job.company, role: job.role })
+                            .apply({
+                              company: job.company,
+                              role: job.role,
+                            })
                             .then(
                               () => setPendingRole(''),
                               () => setPendingRole(''),
@@ -345,7 +342,7 @@ export const JobBoardJobs = defineCapsule({
               {jobActions.loadMorePending ? 'Loading' : loadMore}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

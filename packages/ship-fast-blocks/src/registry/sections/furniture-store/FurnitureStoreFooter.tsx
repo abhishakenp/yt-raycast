@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -16,6 +15,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * brands, or any warm boutique-retail site. Renders fully with no props via
  * baked-in "Haven & Home" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FurnitureStoreFooter = defineCapsule({
   name: 'FurnitureStoreFooter',
   description:
@@ -26,7 +26,12 @@ export const FurnitureStoreFooter = defineCapsule({
     about: z.string().optional(),
     address: z.array(z.string()).optional(),
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     copyright: z.string().optional(),
     legal: z.array(z.string()).optional(),
@@ -90,7 +95,6 @@ export const FurnitureStoreFooter = defineCapsule({
           'Accessibility',
           'Do Not Sell My Info',
         ]
-
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -101,7 +105,6 @@ export const FurnitureStoreFooter = defineCapsule({
         <path d="M12 2L2 9v11h8v-7h4v7h8V9L12 2z" />
       </svg>
     )
-
     return (
       <footer
         className={cn(
@@ -110,7 +113,7 @@ export const FurnitureStoreFooter = defineCapsule({
         )}
         aria-label="Footer"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-12">
             <div className="lg:col-span-2">
               <button
@@ -177,7 +180,7 @@ export const FurnitureStoreFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

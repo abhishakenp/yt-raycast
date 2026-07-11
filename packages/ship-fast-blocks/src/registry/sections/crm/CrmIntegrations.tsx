@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -13,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * useNavigate. Use to advertise the ecosystem / app marketplace of a CRM,
  * sales-pipeline or B2B SaaS product. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const CrmIntegrations = defineCapsule({
   name: 'CrmIntegrations',
   description:
@@ -24,7 +24,12 @@ export const CrmIntegrations = defineCapsule({
     description: z.string().optional(),
     /** Integration tiles. */
     items: z
-      .array(z.object({ name: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          name: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -37,23 +42,58 @@ export const CrmIntegrations = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { name: 'Gmail', label: 'Email sync' },
-          { name: 'Slack', label: 'Notifications' },
-          { name: 'Calendly', label: 'Scheduling' },
-          { name: 'Stripe', label: 'Payments' },
-          { name: 'Zapier', label: 'Automation' },
-          { name: 'QuickBooks', label: 'Accounting' },
-          { name: 'LinkedIn', label: 'Prospecting' },
-          { name: 'Microsoft', label: 'Office 365' },
-          { name: 'HubSpot', label: 'Marketing' },
-          { name: 'Zoom', label: 'Video calls' },
-          { name: 'Zendesk', label: 'Support' },
-          { name: '+190 more', label: 'View all' },
+          {
+            name: 'Gmail',
+            label: 'Email sync',
+          },
+          {
+            name: 'Slack',
+            label: 'Notifications',
+          },
+          {
+            name: 'Calendly',
+            label: 'Scheduling',
+          },
+          {
+            name: 'Stripe',
+            label: 'Payments',
+          },
+          {
+            name: 'Zapier',
+            label: 'Automation',
+          },
+          {
+            name: 'QuickBooks',
+            label: 'Accounting',
+          },
+          {
+            name: 'LinkedIn',
+            label: 'Prospecting',
+          },
+          {
+            name: 'Microsoft',
+            label: 'Office 365',
+          },
+          {
+            name: 'HubSpot',
+            label: 'Marketing',
+          },
+          {
+            name: 'Zoom',
+            label: 'Video calls',
+          },
+          {
+            name: 'Zendesk',
+            label: 'Support',
+          },
+          {
+            name: '+190 more',
+            label: 'View all',
+          },
         ]
-
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
@@ -94,7 +134,7 @@ export const CrmIntegrations = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

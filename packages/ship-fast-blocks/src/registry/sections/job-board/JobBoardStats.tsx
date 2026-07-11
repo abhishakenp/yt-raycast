@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * marketplaces or recruiting platforms (active listings, companies hiring,
  * placements, time-to-hire). Static (no links). Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const JobBoardStats = defineCapsule({
   name: 'JobBoardStats',
   description:
@@ -19,7 +19,12 @@ export const JobBoardStats = defineCapsule({
   props: z.object({
     /** Stat figures: value + label. */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -27,17 +32,28 @@ export const JobBoardStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '12k+', label: 'Active job listings' },
-          { value: '3.2k', label: 'Companies hiring' },
-          { value: '48k', label: 'Successful placements' },
-          { value: '14 days', label: 'Average time to hire' },
+          {
+            value: '12k+',
+            label: 'Active job listings',
+          },
+          {
+            value: '3.2k',
+            label: 'Companies hiring',
+          },
+          {
+            value: '48k',
+            label: 'Successful placements',
+          },
+          {
+            value: '14 days',
+            label: 'Average time to hire',
+          },
         ]
-
     return (
       <section
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
             {items.map((s) => (
               <div key={s.label} className="text-center">
@@ -48,7 +64,7 @@ export const JobBoardStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

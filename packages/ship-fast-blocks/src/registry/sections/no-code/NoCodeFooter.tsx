@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -14,6 +13,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * route through useNavigate. Use as the closing site footer for a no-code
  * builder, SaaS, or product landing page. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const NoCodeFooter = defineCapsule({
   name: 'NoCodeFooter',
   description:
@@ -25,7 +25,12 @@ export const NoCodeFooter = defineCapsule({
     description: z.string().optional(),
     /** Link columns (title + links). */
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Social network labels (rendered as round initial buttons). */
     socials: z.array(z.string()).optional(),
@@ -81,7 +86,6 @@ export const NoCodeFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookies']
     const homeTarget = props.homeTarget ?? 'Features'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -104,13 +108,12 @@ export const NoCodeFooter = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <footer
         className={cn('border-t border-border bg-card py-16', props.className)}
         role="contentinfo"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
             <div className="col-span-2 lg:col-span-2">
               <button
@@ -179,7 +182,7 @@ export const NoCodeFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

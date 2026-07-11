@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -11,6 +10,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * meant to sit just below a hero. Use as the logo / "trusted by" strip on any
  * SaaS, no-code builder, or product landing page. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const NoCodeLogos = defineCapsule({
   name: 'NoCodeLogos',
   description:
@@ -27,13 +27,12 @@ export const NoCodeLogos = defineCapsule({
     const names = props.names?.length
       ? props.names
       : ['stripe', 'notion', 'linear', 'vercel', 'shopify', 'slack']
-
     return (
       <section
         className={cn('border-y border-border bg-card py-12', props.className)}
         aria-label="Trusted by companies"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
@@ -51,7 +50,7 @@ export const NoCodeLogos = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

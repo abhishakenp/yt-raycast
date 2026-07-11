@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,6 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * sit between content sections. Use as the KPI / metrics band on a no-code
  * builder, SaaS, or product landing page. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const NoCodeStats = defineCapsule({
   name: 'NoCodeStats',
   description:
@@ -17,7 +17,12 @@ export const NoCodeStats = defineCapsule({
   props: z.object({
     /** Stat items (value + label). */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -25,12 +30,23 @@ export const NoCodeStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '50K+', label: 'Apps created' },
-          { value: '200+', label: 'Templates available' },
-          { value: '99.9%', label: 'Uptime guaranteed' },
-          { value: '<1s', label: 'Average load time' },
+          {
+            value: '50K+',
+            label: 'Apps created',
+          },
+          {
+            value: '200+',
+            label: 'Templates available',
+          },
+          {
+            value: '99.9%',
+            label: 'Uptime guaranteed',
+          },
+          {
+            value: '<1s',
+            label: 'Average load time',
+          },
         ]
-
     return (
       <section
         className={cn(
@@ -39,7 +55,7 @@ export const NoCodeStats = defineCapsule({
         )}
         aria-label="Company statistics"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
             {items.map((s) => (
               <div key={s.label} className="text-center">
@@ -50,7 +66,7 @@ export const NoCodeStats = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

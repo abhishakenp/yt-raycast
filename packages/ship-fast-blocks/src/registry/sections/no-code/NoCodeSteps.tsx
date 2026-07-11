@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -14,6 +13,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * flow on a no-code builder, SaaS, or product landing page. Renders fully with
  * no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const NoCodeSteps = defineCapsule({
   name: 'NoCodeSteps',
   description:
@@ -67,13 +67,12 @@ export const NoCodeSteps = defineCapsule({
               'Live analytics dashboard showing app performance metrics',
           },
         ]
-
     return (
       <section
         className={cn('bg-muted/40 py-24', props.className)}
         aria-labelledby="nc-steps"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -120,7 +119,7 @@ export const NoCodeSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

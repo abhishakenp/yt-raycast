@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -14,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * kids-education startups, children's e-learning platforms, camps, and family
  * learning apps. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const KidsEducationGallery = defineCapsule({
   name: 'KidsEducationGallery',
   description:
@@ -27,7 +27,12 @@ export const KidsEducationGallery = defineCapsule({
     description: z.string().optional(),
     /** Gallery tiles. */
     items: z
-      .array(z.object({ caption: z.string(), imageAlt: z.string() }))
+      .array(
+        z.object({
+          caption: z.string(),
+          imageAlt: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -81,10 +86,9 @@ export const KidsEducationGallery = defineCapsule({
               'Children outdoors on a nature walk exploring and collecting leaves',
           },
         ]
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
               {eyebrow}
@@ -118,7 +122,7 @@ export const KidsEducationGallery = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },
