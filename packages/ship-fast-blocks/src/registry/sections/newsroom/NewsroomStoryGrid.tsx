@@ -7,6 +7,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsroomStoryGrid — a dense editorial "Latest Stories" grid for a digital
  * newsroom or online magazine. A section header row pairs a serif heading with a
@@ -150,7 +152,7 @@ export const NewsroomStoryGrid = defineCapsule({
         className={cn('bg-background py-16 lg:py-24', props.className)}
         aria-labelledby="newsroom-grid-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex items-end justify-between gap-4">
             <h2
               id="newsroom-grid-heading"
@@ -212,7 +214,7 @@ export const NewsroomStoryGrid = defineCapsule({
               </article>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

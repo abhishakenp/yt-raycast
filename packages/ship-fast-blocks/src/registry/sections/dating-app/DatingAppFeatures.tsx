@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * DatingAppFeatures — a 6-up feature grid for a dating / matchmaking app. A
  * centered heading + supporting paragraph above a responsive 1/2/3-column grid of
@@ -150,7 +152,7 @@ export const DatingAppFeatures = defineCapsule({
 
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {featuresHeading}
@@ -175,7 +177,7 @@ export const DatingAppFeatures = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

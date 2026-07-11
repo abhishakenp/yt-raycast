@@ -6,6 +6,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ArchitectureFirmWork — selected-work / project gallery for an
  * architecture-studio / design-practice page. A heading row (eyebrow + light
@@ -101,7 +103,7 @@ export const ArchitectureFirmWork = defineCapsule({
         aria-labelledby="architecture-firm-work-heading"
         className={cn('py-24 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between">
             <div>
               <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
@@ -152,7 +154,7 @@ export const ArchitectureFirmWork = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

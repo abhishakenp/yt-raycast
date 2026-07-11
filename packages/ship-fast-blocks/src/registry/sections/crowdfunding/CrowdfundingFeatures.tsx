@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CrowdfundingFeatures — a 6-up product FEATURES grid for a crowdfunding /
  * campaign landing page. On a card surface: a centered uppercase eyebrow +
@@ -80,7 +82,7 @@ export const CrowdfundingFeatures = defineCapsule({
 
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-primary">
               {featuresEyebrow}
@@ -115,7 +117,7 @@ export const CrowdfundingFeatures = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

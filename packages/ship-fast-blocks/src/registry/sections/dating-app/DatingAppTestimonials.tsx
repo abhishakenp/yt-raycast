@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * DatingAppTestimonials — a 3-up "love stories" testimonial grid for a dating /
  * matchmaking app. A centered heading + supporting paragraph above a responsive
@@ -78,7 +80,7 @@ export const DatingAppTestimonials = defineCapsule({
 
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {testimonialsHeading}
@@ -111,7 +113,7 @@ export const DatingAppTestimonials = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

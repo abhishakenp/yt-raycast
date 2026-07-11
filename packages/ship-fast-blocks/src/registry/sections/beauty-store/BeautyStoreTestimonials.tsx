@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BeautyStoreTestimonials — a 3-up customer testimonials band for a beauty /
  * skincare / cosmetics storefront on a soft primary-tinted background. Centered
@@ -80,7 +82,7 @@ export const BeautyStoreTestimonials = defineCapsule({
 
     return (
       <section className={cn('bg-primary/10 py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
               {eyebrow}
@@ -117,7 +119,7 @@ export const BeautyStoreTestimonials = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

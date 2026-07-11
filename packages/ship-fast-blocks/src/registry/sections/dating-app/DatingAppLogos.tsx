@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * DatingAppLogos — a low-contrast "Featured in" press-logo strip for a dating /
  * matchmaking landing page. A subtle muted band bordered top and bottom: a small
@@ -45,7 +47,7 @@ export const DatingAppLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wide text-muted-foreground">
             {logosLabel}
           </p>
@@ -69,7 +71,7 @@ export const DatingAppLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CrowdfundingPress — a compact "Featured in" press-logo strip for a
  * crowdfunding / campaign landing page. A border-y card band with a small
@@ -33,7 +35,7 @@ export const CrowdfundingPress = defineCapsule({
       <section
         className={cn('border-y border-border bg-card py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {pressHeading}
           </p>
@@ -49,7 +51,7 @@ export const CrowdfundingPress = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * DatingAppSteps — a 4-step "How it works" numbered timeline for a dating /
  * matchmaking app. Sits on a soft muted band: a centered heading + supporting
@@ -56,7 +58,7 @@ export const DatingAppSteps = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {stepsHeading}
@@ -84,7 +86,7 @@ export const DatingAppSteps = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

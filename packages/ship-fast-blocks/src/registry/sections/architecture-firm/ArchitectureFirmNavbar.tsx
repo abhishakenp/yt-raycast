@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
@@ -43,38 +44,37 @@ export const ArchitectureFirmNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          aria-label="Main navigation"
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-        >
-          <div className="flex h-20 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="text-xl font-light tracking-tight text-foreground"
-            >
-              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-            </button>
-            <div className="hidden items-center space-x-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-20 items-center justify-between">
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="text-xl font-light tracking-tight text-foreground"
+              >
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+              </button>
+              <div className="hidden items-center space-x-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <MobileNavDrawer
+                brand={brand}
+                nav={nav}
+                homeTarget={nav[0]}
+                buttonClassName="p-2 md:hidden"
+              />
             </div>
-            <MobileNavDrawer
-              brand={brand}
-              nav={nav}
-              homeTarget={nav[0]}
-              buttonClassName="p-2 md:hidden"
-            />
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

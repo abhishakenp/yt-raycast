@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ArchitectureFirmTestimonials — client testimonials grid for an
  * architecture-studio / design-practice page. On a subtle card surface: a
@@ -86,7 +88,7 @@ export const ArchitectureFirmTestimonials = defineCapsule({
         aria-labelledby="architecture-firm-testimonials-heading"
         className={cn('bg-card py-24 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -122,7 +124,7 @@ export const ArchitectureFirmTestimonials = defineCapsule({
               </blockquote>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

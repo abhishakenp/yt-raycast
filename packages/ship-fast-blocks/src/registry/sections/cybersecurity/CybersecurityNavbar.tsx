@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   SaasAccountButton,
@@ -76,78 +77,77 @@ export const CybersecurityNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-          aria-label="Main navigation"
-        >
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<ShieldMark className="size-8 text-foreground" />}
-                labelClassName="text-xl font-bold tracking-tight"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-16 items-center justify-between">
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="flex items-center gap-2"
+              >
+                <BrandLogo
+                  brand={brand}
+                  fallback={<ShieldMark className="size-8 text-foreground" />}
+                  labelClassName="text-xl font-bold tracking-tight"
+                />
+              </button>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-4">
+                <SaasIntentBadge lakebed={lakebed} />
+                <SaasSearchButton
+                  lakebed={lakebed}
+                  buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+                />
+                <SaasAccountButton
+                  lakebed={lakebed}
+                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+                />
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={contactLabel}
+                  plan={contactLabel}
+                  source="navbar-contact"
+                  pendingChildren={<SaasMutationSpinner className="size-4" />}
+                  className="hidden items-center justify-center gap-2 text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-70 lg:inline-flex"
                 >
-                  {label}
-                </button>
-              ))}
+                  {contactLabel}
+                </SaasPlanActionButton>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={ctaTarget}
+                  plan={ctaTarget}
+                  source="navbar"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Scheduling
+                    </>
+                  }
+                  className="hidden items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+                >
+                  {ctaLabel}
+                </SaasPlanActionButton>
+                <SaasMobileMenu
+                  brand={brand}
+                  nav={nav}
+                  homeTarget={nav[0]}
+                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <SaasIntentBadge lakebed={lakebed} />
-              <SaasSearchButton
-                lakebed={lakebed}
-                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              />
-              <SaasAccountButton
-                lakebed={lakebed}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-              />
-              <SaasPlanActionButton
-                lakebed={lakebed}
-                intentLabel={contactLabel}
-                plan={contactLabel}
-                source="navbar-contact"
-                pendingChildren={<SaasMutationSpinner className="size-4" />}
-                className="hidden items-center justify-center gap-2 text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-70 lg:inline-flex"
-              >
-                {contactLabel}
-              </SaasPlanActionButton>
-              <SaasPlanActionButton
-                lakebed={lakebed}
-                intentLabel={ctaTarget}
-                plan={ctaTarget}
-                source="navbar"
-                pendingChildren={
-                  <>
-                    <SaasMutationSpinner className="size-4" />
-                    Scheduling
-                  </>
-                }
-                className="hidden items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
-              >
-                {ctaLabel}
-              </SaasPlanActionButton>
-              <SaasMobileMenu
-                brand={brand}
-                nav={nav}
-                homeTarget={nav[0]}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              />
-            </div>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

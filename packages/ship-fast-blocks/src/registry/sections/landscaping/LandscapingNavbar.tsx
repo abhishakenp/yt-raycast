@@ -6,6 +6,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * LandscapingNavbar — sticky, translucent top navigation bar for a landscaping /
  * outdoor-design company. A backdrop-blurred, border-bottomed header pinned to
@@ -68,7 +70,7 @@ export const LandscapingNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between lg:h-20">
             <button
               type="button"
@@ -108,7 +110,7 @@ export const LandscapingNavbar = defineCapsule({
               buttonClassName="p-2 text-muted-foreground md:hidden"
             />
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsroomTopics — an editorial "Browse by section" block for a digital
  * newsroom / magazine. A serif heading + supporting subheading above a
@@ -113,7 +115,7 @@ export const NewsroomTopics = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="newsroom-topics-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-14 max-w-3xl text-center">
             <h2
               id="newsroom-topics-heading"
@@ -159,7 +161,7 @@ export const NewsroomTopics = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

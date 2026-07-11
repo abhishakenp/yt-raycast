@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
@@ -62,44 +63,43 @@ export const MembershipClubNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-          aria-label="Main navigation"
-        >
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-              aria-label={`${brand} Home`}
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8 text-foreground" />}
-                labelClassName="text-xl font-light tracking-tight text-foreground"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-16 items-center justify-between lg:h-20">
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="flex items-center gap-2"
+                aria-label={`${brand} Home`}
+              >
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8 text-foreground" />}
+                  labelClassName="text-xl font-light tracking-tight text-foreground"
+                />
+              </button>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => go(ctaTarget)}
+                className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {cta}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => go(ctaTarget)}
-              className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {cta}
-            </button>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

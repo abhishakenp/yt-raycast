@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * DatingAppDownloadCta — a bold app-download CTA band for a dating / matchmaking
  * app. A dark foreground-surfaced two-column band: on the left a big heading, a
@@ -87,7 +89,7 @@ export const DatingAppDownloadCta = defineCapsule({
       <section
         className={cn('bg-foreground py-24 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
               <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
@@ -196,7 +198,7 @@ export const DatingAppDownloadCta = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

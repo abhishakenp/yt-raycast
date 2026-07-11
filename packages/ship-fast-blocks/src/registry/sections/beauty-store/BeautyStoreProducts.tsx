@@ -19,6 +19,8 @@ import {
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BeautyStoreProducts — shoppable bestsellers product grid for a beauty / skincare /
  * cosmetics e-commerce landing page. A section eyebrow + heading on the left with a
@@ -187,7 +189,7 @@ export const BeautyStoreProducts = defineCapsule({
 
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
@@ -270,7 +272,7 @@ export const BeautyStoreProducts = defineCapsule({
               </ProductCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

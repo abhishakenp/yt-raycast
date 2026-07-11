@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ArchitectureFirmProcess — numbered process / how-we-work section for an
  * architecture-studio / design-practice page. A centered eyebrow + light
@@ -57,7 +59,7 @@ export const ArchitectureFirmProcess = defineCapsule({
         aria-labelledby="architecture-firm-process-heading"
         className={cn('py-24 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -87,7 +89,7 @@ export const ArchitectureFirmProcess = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

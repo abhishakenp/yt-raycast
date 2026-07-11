@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BeautyStoreLogos — trusted-by beauty-brand logo strip for a cosmetics / skincare
  * storefront. A centered uppercase eyebrow above a responsive grid of clickable
@@ -40,7 +42,7 @@ export const BeautyStoreLogos = defineCapsule({
 
     return (
       <section className={cn('border-b border-border py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-10 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {heading}
           </p>
@@ -62,7 +64,7 @@ export const BeautyStoreLogos = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

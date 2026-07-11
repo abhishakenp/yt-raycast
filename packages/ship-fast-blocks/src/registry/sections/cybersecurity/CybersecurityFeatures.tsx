@@ -6,6 +6,8 @@ import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CybersecurityFeatures — security-capability grid. A light section with a
  * centered heading + supporting paragraph above a responsive 2-to-3 column grid
@@ -137,7 +139,7 @@ export const CybersecurityFeatures = defineCapsule({
 
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-muted-foreground">{description}</p>
@@ -176,7 +178,7 @@ export const CybersecurityFeatures = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

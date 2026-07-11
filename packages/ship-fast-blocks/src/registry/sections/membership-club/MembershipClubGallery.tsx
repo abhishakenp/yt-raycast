@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * MembershipClubGallery — masonry-style photo gallery of gatherings for a private
  * membership club / exclusive community page. A left-aligned eyebrow + thin heading
@@ -45,7 +47,7 @@ export const MembershipClubGallery = defineCapsule({
         className={cn('w-full bg-card py-20 lg:py-32', props.className)}
         aria-label="Photo gallery of events and spaces"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 max-w-3xl lg:mb-16">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -69,7 +71,7 @@ export const MembershipClubGallery = defineCapsule({
               />
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

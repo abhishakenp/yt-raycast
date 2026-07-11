@@ -7,6 +7,8 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { PublicationSubscribeForm } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsroomFooter — refined editorial footer for a digital newsroom or online
  * magazine. A large serif wordmark and a one-line tagline sit above a wide
@@ -95,7 +97,7 @@ export const NewsroomFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex flex-col gap-10 border-b border-border pb-12 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-md">
               <button
@@ -185,7 +187,7 @@ export const NewsroomFooter = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

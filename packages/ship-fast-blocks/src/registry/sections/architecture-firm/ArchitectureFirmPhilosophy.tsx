@@ -5,6 +5,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ArchitectureFirmPhilosophy — split approach / philosophy section for an
  * architecture-studio / design-practice page. On a subtle card surface: a
@@ -126,7 +128,7 @@ export const ArchitectureFirmPhilosophy = defineCapsule({
         aria-labelledby="architecture-firm-philosophy-heading"
         className={cn('bg-card py-24 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-24">
             <div>
               <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
@@ -176,7 +178,7 @@ export const ArchitectureFirmPhilosophy = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

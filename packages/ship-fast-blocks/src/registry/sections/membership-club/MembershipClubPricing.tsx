@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * MembershipClubPricing — 3-tier membership pricing block for a private membership
  * club / exclusive community page. A centered eyebrow + thin heading + supporting
@@ -127,7 +129,7 @@ export const MembershipClubPricing = defineCapsule({
         className={cn('w-full bg-background py-20 lg:py-32', props.className)}
         aria-labelledby="pricing-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -255,7 +257,7 @@ export const MembershipClubPricing = defineCapsule({
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {footnote}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },

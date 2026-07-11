@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BeautyStoreGallery — a behind-the-scenes mosaic image gallery for a beauty /
  * skincare storefront. Centered eyebrow, heading, and short paragraph above a
@@ -50,7 +52,7 @@ export const BeautyStoreGallery = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
               {eyebrow}
@@ -96,7 +98,7 @@ export const BeautyStoreGallery = defineCapsule({
               ),
             )}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

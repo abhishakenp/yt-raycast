@@ -7,6 +7,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsroomFeaturedStory — editorial "Editor's Pick" featured long-read band for
  * a digital newsroom or magazine. A two-column split: a large feature
@@ -84,7 +86,7 @@ export const NewsroomFeaturedStory = defineCapsule({
         aria-labelledby="newsroom-featured-story-heading"
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
             <div className="order-2 lg:order-1">
               <Image
@@ -139,7 +141,7 @@ export const NewsroomFeaturedStory = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

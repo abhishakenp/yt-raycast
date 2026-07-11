@@ -12,6 +12,8 @@ import {
 } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsroomNavbar — refined editorial masthead bar for a digital newsroom or
  * online magazine. A sticky, press-feeling header in three tiers: a thin top
@@ -97,7 +99,7 @@ export const NewsroomNavbar = defineCapsule({
         </div>
 
         {/* Masthead row: search · serif wordmark · subscribe + sign in */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid h-20 grid-cols-[1fr_auto_1fr] items-center gap-4">
             <div className="flex items-center justify-start">
               <PublicationMobileMenu
@@ -148,11 +150,11 @@ export const NewsroomNavbar = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
 
         {/* Section nav: dense, bordered editorial rail */}
         <div className="border-t border-border bg-background">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Container>
             <nav className="flex items-center gap-1 overflow-x-auto py-2 sm:justify-center sm:gap-2">
               {sections.map((label, i) => (
                 <button
@@ -170,7 +172,7 @@ export const NewsroomNavbar = defineCapsule({
                 </button>
               ))}
             </nav>
-          </div>
+          </Container>
         </div>
       </header>
     )

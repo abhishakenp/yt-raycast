@@ -13,6 +13,8 @@ import {
   CommerceSearchButton,
 } from '../commerce/commerce-interactions.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BeautyStoreNavbar — sticky translucent top navigation bar for a beauty / skincare /
  * cosmetics e-commerce storefront. A blurred, border-bottomed header pinned to the top
@@ -107,7 +109,7 @@ export const BeautyStoreNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-20 items-center justify-between">
             <button
               type="button"
@@ -173,7 +175,7 @@ export const BeautyStoreNavbar = defineCapsule({
               </CommerceMobileMenu>
             </div>
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

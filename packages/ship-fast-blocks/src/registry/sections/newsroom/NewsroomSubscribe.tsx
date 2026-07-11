@@ -9,6 +9,8 @@ import {
 } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsroomSubscribe — editorial subscription / membership band for a digital
  * newsroom or magazine. A bold centered intro with a serif heading and a
@@ -127,7 +129,7 @@ export const NewsroomSubscribe = defineCapsule({
 
     return (
       <section className={cn('bg-background py-20 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-12 max-w-3xl text-center">
             <h2 className="mb-4 font-serif text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
               {heading}
@@ -256,7 +258,7 @@ export const NewsroomSubscribe = defineCapsule({
           <p className="mt-10 text-center text-sm text-muted-foreground">
             {footnote}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -11,6 +11,8 @@ import {
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * NewsroomAuthors — editorial "meet our columnists" block for a digital
  * newsroom or magazine. A serif heading + supporting lede above a responsive
@@ -121,7 +123,7 @@ export const NewsroomAuthors = defineCapsule({
 
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 font-serif text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
@@ -186,7 +188,7 @@ export const NewsroomAuthors = defineCapsule({
               </PersonCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

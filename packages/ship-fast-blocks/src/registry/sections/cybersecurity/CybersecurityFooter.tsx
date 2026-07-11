@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CybersecurityFooter — dark, full-bleed 5-column mega-footer. A brand-surface
  * footer: a wide brand column (shield logo + name, tagline, and social links)
@@ -113,7 +115,7 @@ export const CybersecurityFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
             <div className="col-span-2 md:col-span-4 lg:col-span-1">
               <button
@@ -180,7 +182,7 @@ export const CybersecurityFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

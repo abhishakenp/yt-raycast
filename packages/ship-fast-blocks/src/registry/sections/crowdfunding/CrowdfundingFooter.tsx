@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CrowdfundingFooter — a 4-column closing footer for a crowdfunding / campaign
  * landing page. A bg-foreground footer with a decorative leaf/sparkle brand
@@ -99,7 +101,7 @@ export const CrowdfundingFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-4">
             <div>
               <div className="mb-4 flex items-center gap-2">
@@ -167,7 +169,7 @@ export const CrowdfundingFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

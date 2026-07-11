@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * MembershipClubStats — community stats band for a private membership club /
  * exclusive community page. A bordered, muted-surface band holding a responsive
@@ -39,7 +41,7 @@ export const MembershipClubStats = defineCapsule({
         )}
         aria-label="Community statistics"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
             {stats.map((s) => (
               <div key={s.label} className="text-center">
@@ -52,7 +54,7 @@ export const MembershipClubStats = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

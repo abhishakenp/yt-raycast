@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * MembershipClubTestimonials — 6-up member-testimonials grid for a private
  * membership club / exclusive community page. A centered eyebrow + thin heading
@@ -94,7 +96,7 @@ export const MembershipClubTestimonials = defineCapsule({
         className={cn('w-full bg-card py-20 lg:py-32', props.className)}
         aria-labelledby="testimonials-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -128,7 +130,7 @@ export const MembershipClubTestimonials = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

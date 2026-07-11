@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ArchitectureFirmLogos — "Featured in" publication strip for an
  * architecture-studio / design-practice page. A quiet bordered band on a subtle
@@ -42,7 +44,7 @@ export const ArchitectureFirmLogos = defineCapsule({
         aria-label="Featured publications"
         className={cn('border-y border-border bg-card py-16', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-10 text-center text-xs uppercase tracking-widest text-muted-foreground">
             {label}
           </p>
@@ -56,7 +58,7 @@ export const ArchitectureFirmLogos = defineCapsule({
               </span>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

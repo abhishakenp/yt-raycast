@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * LandscapingFooter — a slim, calm closing footer for a landscaping / outdoor-
  * design company on the card surface. A bordered-top band: a left brand column
@@ -61,7 +63,7 @@ export const LandscapingFooter = defineCapsule({
       <footer
         className={cn('border-t border-border bg-card py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row md:items-start">
             <div className="max-w-sm text-center md:text-left">
               <button
@@ -95,7 +97,7 @@ export const LandscapingFooter = defineCapsule({
           <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} {brand}. {note}
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BeautyStoreBenefits — a four-up "why choose us" benefits grid for a beauty /
  * skincare / cosmetics storefront. Centered section heading and intro paragraph above
@@ -114,7 +116,7 @@ export const BeautyStoreBenefits = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl">
               {heading}
@@ -136,7 +138,7 @@ export const BeautyStoreBenefits = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

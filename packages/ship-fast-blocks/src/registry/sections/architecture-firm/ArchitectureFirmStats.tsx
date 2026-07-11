@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ArchitectureFirmStats — inverted statistics band for an architecture-studio /
  * design-practice page. A full-width dark band (foreground surface, background
@@ -40,7 +42,7 @@ export const ArchitectureFirmStats = defineCapsule({
         aria-label="Studio statistics"
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {items.map((s) => (
               <div key={s.label}>
@@ -51,7 +53,7 @@ export const ArchitectureFirmStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

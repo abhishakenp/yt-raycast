@@ -6,6 +6,8 @@ import { Image } from '#/lib/img.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BeautyStoreNewsletter — a dark newsletter CTA band for a beauty / skincare /
  * cosmetics storefront. A wide rounded-foreground card with a background image,
@@ -54,7 +56,7 @@ export const BeautyStoreNewsletter = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="relative overflow-hidden rounded-xl bg-foreground">
             <div aria-hidden="true" className="absolute inset-0 opacity-20">
               <Image
@@ -89,7 +91,7 @@ export const BeautyStoreNewsletter = defineCapsule({
               <p className="mt-4 text-sm text-background/60">{note}</p>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },
