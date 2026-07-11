@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BakeryLogos — "Featured in" press / media logo strip for an artisan-bakery
  * site, on a bordered card band. A centered uppercase label above a wrapping,
@@ -41,7 +43,7 @@ export const BakeryLogos = defineCapsule({
       <section
         className={cn('border-b border-border bg-card py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
@@ -57,7 +59,7 @@ export const BakeryLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

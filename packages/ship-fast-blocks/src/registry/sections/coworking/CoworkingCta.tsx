@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CoworkingCta — luminous closing band for a coworking or shared-workspace
  * page. A full-bleed rounded panel on a deep primary gradient, framed by
@@ -70,7 +72,7 @@ export const CoworkingCta = defineCapsule({
           aria-hidden="true"
           className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"
         />
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary via-primary to-primary/85 shadow-[0_40px_120px_-30px] shadow-primary/50 ring-1 ring-primary/40">
             {/* Inner light: blueprint grid, faint rings. */}
             <GridField
@@ -119,7 +121,7 @@ export const CoworkingCta = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

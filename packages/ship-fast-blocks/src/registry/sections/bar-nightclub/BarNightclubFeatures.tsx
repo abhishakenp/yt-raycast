@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BarNightclubFeatures — 3-up centered features strip for a cocktail-bar /
  * nightclub page. A responsive row of equal columns, each with a thin
@@ -92,7 +94,7 @@ export const BarNightclubFeatures = defineCapsule({
 
     return (
       <section className={cn('py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid gap-12 md:grid-cols-3 lg:gap-16">
             {items.map((f, i) => (
               <div key={f.title} className="text-center">
@@ -106,7 +108,7 @@ export const BarNightclubFeatures = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

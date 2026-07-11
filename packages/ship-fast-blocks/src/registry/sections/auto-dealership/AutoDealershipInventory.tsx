@@ -12,6 +12,8 @@ import {
 } from './auto-dealership-interactions.tsx'
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * AutoDealershipInventory — featured-inventory card grid for an auto dealership
  * / used-car page. A centered heading + lead over a responsive 3-up grid of
@@ -132,7 +134,7 @@ export const AutoDealershipInventory = defineCapsule({
 
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               {heading}
@@ -214,7 +216,7 @@ export const AutoDealershipInventory = defineCapsule({
               {viewAll}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

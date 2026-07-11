@@ -14,6 +14,8 @@ import {
 } from './auto-dealership-interactions.tsx'
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * AutoDealershipNavbar — sticky, blurred top navigation bar for an auto
  * dealership / used-car site. A border-bottomed header pinned to the top with a
@@ -57,77 +59,76 @@ export const AutoDealershipNavbar = defineCapsule({
           props.className,
         )}
       >
-        <nav
-          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-          aria-label="Main navigation"
-        >
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2 text-xl font-semibold tracking-tight lg:text-2xl"
-            >
-              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        <Container asChild>
+          <nav aria-label="Main navigation">
+            <div className="flex h-16 items-center justify-between lg:h-20">
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="flex items-center gap-2 text-xl font-semibold tracking-tight lg:text-2xl"
+              >
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+              </button>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-4">
+                <AutoLeadBadge lakebed={lakebed} />
+                <AutoSearchButton
+                  lakebed={lakebed}
+                  buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+                />
+                <AutoAccountButton
+                  lakebed={lakebed}
+                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+                />
+                <AutoLeadActionButton
+                  lakebed={lakebed}
+                  action="call"
+                  label={phone}
+                  intentKey="navbar-phone"
+                  source="navbar"
+                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
-                  {label}
-                </button>
-              ))}
+                  {phone}
+                </AutoLeadActionButton>
+                <AutoLeadActionButton
+                  lakebed={lakebed}
+                  action="test_drive"
+                  label={cta}
+                  intentKey="navbar-test-drive"
+                  source="navbar"
+                  pendingChildren={
+                    <>
+                      <AutoMutationSpinner />
+                      Sending
+                    </>
+                  }
+                  className="hidden items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+                >
+                  {cta}
+                </AutoLeadActionButton>
+                <AutoMobileMenu
+                  brand={brand}
+                  ctaLabel={cta}
+                  homeTarget={nav[0]}
+                  lakebed={lakebed}
+                  nav={nav}
+                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <AutoLeadBadge lakebed={lakebed} />
-              <AutoSearchButton
-                lakebed={lakebed}
-                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              />
-              <AutoAccountButton
-                lakebed={lakebed}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-              />
-              <AutoLeadActionButton
-                lakebed={lakebed}
-                action="call"
-                label={phone}
-                intentKey="navbar-phone"
-                source="navbar"
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                {phone}
-              </AutoLeadActionButton>
-              <AutoLeadActionButton
-                lakebed={lakebed}
-                action="test_drive"
-                label={cta}
-                intentKey="navbar-test-drive"
-                source="navbar"
-                pendingChildren={
-                  <>
-                    <AutoMutationSpinner />
-                    Sending
-                  </>
-                }
-                className="hidden items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
-              >
-                {cta}
-              </AutoLeadActionButton>
-              <AutoMobileMenu
-                brand={brand}
-                ctaLabel={cta}
-                homeTarget={nav[0]}
-                lakebed={lakebed}
-                nav={nav}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              />
-            </div>
-          </div>
-        </nav>
+          </nav>
+        </Container>
       </header>
     )
   },

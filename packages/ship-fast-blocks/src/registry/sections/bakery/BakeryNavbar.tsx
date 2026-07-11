@@ -12,6 +12,8 @@ import {
   CommerceSearchButton,
 } from '../commerce/commerce-interactions.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BakeryNavbar — sticky, blurred top navigation bar for an artisan-bakery /
  * craft-bread shop site. A border-bottomed, backdrop-blurred header pinned to
@@ -106,7 +108,7 @@ export const BakeryNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between lg:h-20">
             <button
               type="button"
@@ -163,7 +165,7 @@ export const BakeryNavbar = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

@@ -5,6 +5,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ConsultingServices — 6-up services / capabilities grid with icon tiles for a
  * management-consulting firm page. A centered section heading and lead paragraph
@@ -159,7 +161,7 @@ export const ConsultingServices = defineCapsule({
 
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               {heading}
@@ -186,7 +188,7 @@ export const ConsultingServices = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

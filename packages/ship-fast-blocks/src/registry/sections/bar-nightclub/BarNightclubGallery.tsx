@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BarNightclubGallery — masonry-style photo gallery for a cocktail-bar /
  * nightclub page. A split header (eyebrow + light-weight heading on the left, a
@@ -49,7 +51,7 @@ export const BarNightclubGallery = defineCapsule({
       <section
         className={cn('border-t border-border py-24 lg:py-32', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
@@ -85,7 +87,7 @@ export const BarNightclubGallery = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

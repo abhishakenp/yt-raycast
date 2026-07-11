@@ -6,6 +6,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CoworkingPricing — calm, dimensional membership pricing for a coworking or
  * shared-workspace page. A centered header (eyebrow chip + display heading +
@@ -123,7 +125,7 @@ export const CoworkingPricing = defineCapsule({
           mask="radial-gradient(ellipse 90% 75% at 50% 30%, black 25%, transparent 80%)"
         />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container className="relative">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
@@ -276,7 +278,7 @@ export const CoworkingPricing = defineCapsule({
               ),
             )}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

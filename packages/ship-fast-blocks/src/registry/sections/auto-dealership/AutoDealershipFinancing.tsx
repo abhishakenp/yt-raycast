@@ -10,6 +10,8 @@ import {
 } from './auto-dealership-interactions.tsx'
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * AutoDealershipFinancing — financing / pre-approval section for an auto
  * dealership page. Two-column layout: a large rounded finance photo on one side
@@ -81,7 +83,7 @@ export const AutoDealershipFinancing = defineCapsule({
 
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="order-2 lg:order-1">
               <Image
@@ -152,7 +154,7 @@ export const AutoDealershipFinancing = defineCapsule({
               </AutoLeadActionButton>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ConsultingLogos — trusted-by client-logo strip for a management-consulting
  * firm landing page. A centered uppercase heading above a responsive grid of
@@ -39,7 +41,7 @@ export const ConsultingLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-10 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {heading}
           </p>
@@ -55,7 +57,7 @@ export const ConsultingLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

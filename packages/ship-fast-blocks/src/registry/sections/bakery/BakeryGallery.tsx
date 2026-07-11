@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BakeryGallery — masonry photo gallery for an artisan-bakery page, on a soft
  * muted band. A centered heading + lead paragraph above a 2/4-column grid of
@@ -48,7 +50,7 @@ export const BakeryGallery = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground lg:text-4xl">
               {heading}
@@ -81,7 +83,7 @@ export const BakeryGallery = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

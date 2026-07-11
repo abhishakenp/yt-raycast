@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CryptoNavbar — glassy sticky top navigation bar for a crypto / DeFi
  * infrastructure landing page. A backdrop-blurred, border-bottomed header
@@ -72,7 +74,7 @@ export const CryptoNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between">
             <button
               type="button"
@@ -118,7 +120,7 @@ export const CryptoNavbar = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
+        </Container>
       </nav>
     )
   },

@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * AutoDealershipFeatures — "why buy from us" trust band for an auto dealership
  * page on a soft muted surface. Two-column layout: the left column has a
@@ -149,7 +151,7 @@ export const AutoDealershipFeatures = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <div className="space-y-4">
@@ -201,7 +203,7 @@ export const AutoDealershipFeatures = defineCapsule({
               </Card>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

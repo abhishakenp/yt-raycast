@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * AutoDealershipStats — bold full-bleed stats band for an auto dealership site.
  * A solid primary-colored section with a responsive 2-up / 4-up grid of large
@@ -40,7 +42,7 @@ export const AutoDealershipStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid
             cols="2-lg-4"
             gap="lg"
@@ -55,7 +57,7 @@ export const AutoDealershipStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

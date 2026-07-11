@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * CoworkingTestimonials — quiet editorial member-quote wall for a coworking
  * or shared-workspace page. A centered header (eyebrow chip + display
@@ -117,7 +119,7 @@ export const CoworkingTestimonials = defineCapsule({
           mask="radial-gradient(ellipse 90% 70% at 50% 25%, black 25%, transparent 78%)"
         />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container className="relative">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
@@ -216,7 +218,7 @@ export const CoworkingTestimonials = defineCapsule({
               )
             })}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

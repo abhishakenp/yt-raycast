@@ -12,6 +12,8 @@ import {
   CommerceSearchButton,
 } from '../commerce/commerce-interactions.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * BarNightclubNavbar — fixed, translucent top navigation bar for a moody
  * cocktail-bar / nightclub site. A backdrop-blurred, hairline border-bottomed
@@ -61,7 +63,7 @@ export const BarNightclubNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between lg:h-20">
             <button
               type="button"
@@ -111,7 +113,7 @@ export const BarNightclubNavbar = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </header>
     )
   },
