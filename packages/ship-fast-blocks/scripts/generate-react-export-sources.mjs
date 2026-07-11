@@ -120,7 +120,9 @@ const flushWrites = async () => {
 }
 
 const walk = (dir, files = []) => {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  )) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
       walk(path, files)
@@ -132,7 +134,9 @@ const walk = (dir, files = []) => {
 }
 
 const walkSourceFiles = (dir, files = []) => {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  )) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
       walkSourceFiles(path, files)
