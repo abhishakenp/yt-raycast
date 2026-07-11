@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * directly under the hero of a mobile-app, SaaS or consumer-product landing
  * page. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MobileAppLogos = defineCapsule({
   name: 'MobileAppLogos',
   description:
@@ -25,13 +25,12 @@ export const MobileAppLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['TechCrunch', 'Product Hunt', 'Wired', 'The Verge', 'Fast Company']
-
     return (
       <section
         className={cn('border-b border-border py-12', props.className)}
         aria-label="Featured in"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
@@ -45,7 +44,7 @@ export const MobileAppLogos = defineCapsule({
               </span>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,6 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * CTA button, plus a centered footnote underneath. CTAs route through useNavigate.
  * Use for membership tiers / plans on gyms, fitness studios, yoga or boxing studios.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessPricing = defineCapsule({
   name: 'FitnessPricing',
   description:
@@ -30,7 +30,10 @@ export const FitnessPricing = defineCapsule({
           cta: z.string(),
           popular: z.boolean().optional(),
           features: z.array(
-            z.object({ label: z.string(), included: z.boolean() }),
+            z.object({
+              label: z.string(),
+              included: z.boolean(),
+            }),
           ),
         }),
       )
@@ -57,11 +60,26 @@ export const FitnessPricing = defineCapsule({
             cta: 'Choose Base',
             popular: false,
             features: [
-              { label: 'Full gym floor access', included: true },
-              { label: 'Locker rooms & amenities', included: true },
-              { label: 'App access for booking', included: true },
-              { label: 'Group classes', included: false },
-              { label: 'Personal training', included: false },
+              {
+                label: 'Full gym floor access',
+                included: true,
+              },
+              {
+                label: 'Locker rooms & amenities',
+                included: true,
+              },
+              {
+                label: 'App access for booking',
+                included: true,
+              },
+              {
+                label: 'Group classes',
+                included: false,
+              },
+              {
+                label: 'Personal training',
+                included: false,
+              },
             ],
           },
           {
@@ -72,11 +90,26 @@ export const FitnessPricing = defineCapsule({
             cta: 'Choose Unlimited',
             popular: true,
             features: [
-              { label: 'Everything in Base Access', included: true },
-              { label: 'Unlimited group classes', included: true },
-              { label: 'Priority booking (7 days)', included: true },
-              { label: 'Guest passes (2/month)', included: true },
-              { label: 'Personal training', included: false },
+              {
+                label: 'Everything in Base Access',
+                included: true,
+              },
+              {
+                label: 'Unlimited group classes',
+                included: true,
+              },
+              {
+                label: 'Priority booking (7 days)',
+                included: true,
+              },
+              {
+                label: 'Guest passes (2/month)',
+                included: true,
+              },
+              {
+                label: 'Personal training',
+                included: false,
+              },
             ],
           },
           {
@@ -87,15 +120,29 @@ export const FitnessPricing = defineCapsule({
             cta: 'Choose Elite',
             popular: false,
             features: [
-              { label: 'Everything in Unlimited', included: true },
-              { label: '4 personal training sessions', included: true },
-              { label: 'Quarterly fitness assessment', included: true },
-              { label: 'Nutrition consultation', included: true },
-              { label: 'Guest passes (4/month)', included: true },
+              {
+                label: 'Everything in Unlimited',
+                included: true,
+              },
+              {
+                label: '4 personal training sessions',
+                included: true,
+              },
+              {
+                label: 'Quarterly fitness assessment',
+                included: true,
+              },
+              {
+                label: 'Nutrition consultation',
+                included: true,
+              },
+              {
+                label: 'Guest passes (4/month)',
+                included: true,
+              },
             ],
           },
         ]
-
     const CheckIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -112,7 +159,6 @@ export const FitnessPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     const CrossIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -129,10 +175,9 @@ export const FitnessPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
-
     return (
       <section className={cn('py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
               {pricingHeading}
@@ -258,7 +303,7 @@ export const FitnessPricing = defineCapsule({
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {pricingFootnote}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },

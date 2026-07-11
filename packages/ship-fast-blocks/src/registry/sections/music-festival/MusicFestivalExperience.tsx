@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -15,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * music value on music festivals, arts festivals, camping/desert events, or any
  * multi-day immersive event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalExperience = defineCapsule({
   name: 'MusicFestivalExperience',
   description:
@@ -28,7 +28,12 @@ export const MusicFestivalExperience = defineCapsule({
     description: z.string().optional(),
     /** Icon feature list (title + description). */
     features: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     /** Alt texts for the four collage photos. */
     imageAlts: z.array(z.string()).optional(),
@@ -72,7 +77,6 @@ export const MusicFestivalExperience = defineCapsule({
           'Food truck serving gourmet tacos at an outdoor festival',
           'Group yoga session at sunrise in desert festival setting',
         ]
-
     const featureIcons: ReactNode[] = [
       <svg
         key="bulb"
@@ -131,14 +135,12 @@ export const MusicFestivalExperience = defineCapsule({
         <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>,
     ]
-
     const collageCls = [
       'h-64 object-cover rounded-xl',
       'h-64 object-cover rounded-xl mt-8',
       'h-64 object-cover rounded-xl',
       'h-64 object-cover rounded-xl -mt-8',
     ]
-
     return (
       <section
         className={cn(
@@ -146,7 +148,7 @@ export const MusicFestivalExperience = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
@@ -185,7 +187,7 @@ export const MusicFestivalExperience = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully on zero args. Use to publish a weekly timetable on gyms, fitness
  * studios, yoga / pilates / boxing / spin studios, or class-booking sites.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessSchedule = defineCapsule({
   name: 'FitnessSchedule',
   description:
@@ -129,10 +129,9 @@ export const FitnessSchedule = defineCapsule({
       'bg-muted-foreground/60',
       'bg-foreground/85',
     ]
-
     return (
       <section className={cn('bg-card py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
               {scheduleHeading}
@@ -195,7 +194,7 @@ export const FitnessSchedule = defineCapsule({
               </span>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

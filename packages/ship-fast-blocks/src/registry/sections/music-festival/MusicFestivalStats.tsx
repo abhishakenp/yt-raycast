@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * sections on music festivals, arts festivals, concert series, or any
  * multi-day live event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalStats = defineCapsule({
   name: 'MusicFestivalStats',
   description:
@@ -19,7 +19,12 @@ export const MusicFestivalStats = defineCapsule({
   props: z.object({
     /** Stat items (value + label). */
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -27,17 +32,28 @@ export const MusicFestivalStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '80+', label: 'Artists Performing' },
-          { value: '4', label: 'Unique Stages' },
-          { value: '25K', label: 'Music Lovers' },
-          { value: '3', label: 'Unforgettable Days' },
+          {
+            value: '80+',
+            label: 'Artists Performing',
+          },
+          {
+            value: '4',
+            label: 'Unique Stages',
+          },
+          {
+            value: '25K',
+            label: 'Music Lovers',
+          },
+          {
+            value: '3',
+            label: 'Unforgettable Days',
+          },
         ]
-
     return (
       <section
         className={cn('bg-foreground py-16 text-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {items.map((s) => (
               <div key={s.label}>
@@ -46,7 +62,7 @@ export const MusicFestivalStats = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

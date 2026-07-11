@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * prototype/low-volume/production pricing on machine-shop or contract-
  * manufacturer pages. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ManufacturingPricing = defineCapsule({
   name: 'ManufacturingPricing',
   description:
@@ -90,7 +90,6 @@ export const ManufacturingPricing = defineCapsule({
             cta: 'Contact Sales',
           },
         ]
-
     const Check = () => (
       <svg
         width="16"
@@ -107,10 +106,9 @@ export const ManufacturingPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -209,7 +207,7 @@ export const ManufacturingPricing = defineCapsule({
               )
             })}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

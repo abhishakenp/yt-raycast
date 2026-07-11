@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -23,6 +22,7 @@ import {
  * forwarders, shipping carriers, courier or cargo/transport companies. Renders
  * fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LogisticsHero = defineCapsule({
   name: 'LogisticsHero',
   description:
@@ -102,12 +102,9 @@ export const LogisticsHero = defineCapsule({
       'Aerial view of a large commercial shipping port with colorful cargo containers and cranes at sunset'
     const badgeValue = props.badgeValue ?? '98.7% on-time'
     const badgeLabel = props.badgeLabel ?? 'Delivery rate in 2024'
-
     useSyncShipmentCatalog(lakebed, shipments)
-
     const trackingIdValue = tracking.state?.trackingId ?? ''
     const shipment = tracking.state?.shipment
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={cn('size-5 shrink-0', className)}
@@ -122,10 +119,9 @@ export const LogisticsHero = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     return (
       <section className={cn('bg-muted/50 py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <div className="space-y-4">
@@ -269,7 +265,7 @@ export const LogisticsHero = defineCapsule({
               </Card>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -17,6 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * attorney, consulting or professional-services pages. Renders fully with no
  * props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LawFirmPracticeAreas = defineCapsule({
   name: 'LawFirmPracticeAreas',
   description:
@@ -27,7 +27,12 @@ export const LawFirmPracticeAreas = defineCapsule({
     description: z.string().optional(),
     linkLabel: z.string().optional(),
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -73,7 +78,6 @@ export const LawFirmPracticeAreas = defineCapsule({
               'Tax planning, IRS dispute resolution, trust and estate administration, wealth transfer strategies, and charitable planning for high-net-worth individuals.',
           },
         ]
-
     const practiceIcons: ReactNode[] = [
       <svg
         key="building"
@@ -160,10 +164,9 @@ export const LawFirmPracticeAreas = defineCapsule({
         <path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-background py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-20 max-w-3xl text-center">
             <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -200,7 +203,7 @@ export const LawFirmPracticeAreas = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

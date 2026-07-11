@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,6 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * the alt-driven Image component. Use to showcase classes, programs or services on
  * gyms, fitness studios, CrossFit boxes, yoga / pilates / boxing / spin studios.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessClasses = defineCapsule({
   name: 'FitnessClasses',
   description:
@@ -93,7 +93,6 @@ export const FitnessClasses = defineCapsule({
             intensity: 'High intensity',
           },
         ]
-
     const ClockIcon = () => (
       <svg
         width="16"
@@ -109,7 +108,6 @@ export const FitnessClasses = defineCapsule({
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     )
-
     const BoltIcon = () => (
       <svg
         width="16"
@@ -125,10 +123,9 @@ export const FitnessClasses = defineCapsule({
         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
     )
-
     return (
       <section className={cn('py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
               {classesHeading}
@@ -168,7 +165,7 @@ export const FitnessClasses = defineCapsule({
               </article>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

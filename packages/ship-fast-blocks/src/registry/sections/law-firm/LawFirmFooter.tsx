@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -18,6 +17,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * professional-services sites. Renders fully with no props via baked-in
  * "Reinhart & Associates" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LawFirmFooter = defineCapsule({
   name: 'LawFirmFooter',
   description:
@@ -85,13 +85,11 @@ export const LawFirmFooter = defineCapsule({
       ? props.legalLinks
       : ['Privacy Policy', 'Terms of Service', 'Attorney Advertising']
     const homeTarget = props.homeTarget ?? 'Practice Areas'
-
     const brandInitial =
       brand
         .replace(/[^A-Za-z]/g, '')
         .charAt(0)
         .toUpperCase() || 'R'
-
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -108,7 +106,6 @@ export const LawFirmFooter = defineCapsule({
         <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     )
-
     const MailIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -125,7 +122,6 @@ export const LawFirmFooter = defineCapsule({
         <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     )
-
     const MapPinIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -143,7 +139,6 @@ export const LawFirmFooter = defineCapsule({
         <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     )
-
     const ClockIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -160,7 +155,6 @@ export const LawFirmFooter = defineCapsule({
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     )
-
     return (
       <footer
         className={cn(
@@ -168,7 +162,7 @@ export const LawFirmFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div>
               <button
@@ -291,7 +285,7 @@ export const LawFirmFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

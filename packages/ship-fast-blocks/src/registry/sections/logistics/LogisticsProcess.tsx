@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -15,6 +14,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * quote-to-delivery / booking process for logistics, freight-forwarding, shipping,
  * courier or cargo/transport companies. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LogisticsProcess = defineCapsule({
   name: 'LogisticsProcess',
   description:
@@ -23,7 +23,12 @@ export const LogisticsProcess = defineCapsule({
     heading: z.string().optional(),
     description: z.string().optional(),
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     imageAlt: z.string().optional(),
     badgeLabel: z.string().optional(),
@@ -64,10 +69,9 @@ export const LogisticsProcess = defineCapsule({
       'A professional logistics worker in a warehouse scanning a package barcode with a handheld device'
     const badgeLabel = props.badgeLabel ?? 'Average booking time'
     const badgeValue = props.badgeValue ?? '3 min'
-
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
               <h2 className="mb-6 text-3xl font-semibold tracking-tight lg:text-4xl">
@@ -134,7 +138,7 @@ export const LogisticsProcess = defineCapsule({
               </Card>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * habit tracker, fitness / wellness app, productivity or to-do app, or any
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MobileAppHowItWorks = defineCapsule({
   name: 'MobileAppHowItWorks',
   description:
@@ -61,13 +61,12 @@ export const MobileAppHowItWorks = defineCapsule({
               'Smartphone showing habit tracking completion screen with checkmarks and progress statistics',
           },
         ]
-
     return (
       <section
         className={cn('bg-muted/50 py-20 lg:py-32', props.className)}
         aria-labelledby="mobileapp-steps-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center lg:mb-20">
             <h2
               id="mobileapp-steps-heading"
@@ -97,7 +96,7 @@ export const MobileAppHowItWorks = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

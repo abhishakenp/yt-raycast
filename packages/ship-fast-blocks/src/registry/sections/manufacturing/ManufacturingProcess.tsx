@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -14,6 +13,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * machine-shop, fabricator or contract-manufacturer pages. Renders fully with no
  * props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ManufacturingProcess = defineCapsule({
   name: 'ManufacturingProcess',
   description:
@@ -23,10 +23,20 @@ export const ManufacturingProcess = defineCapsule({
     heading: z.string().optional(),
     description: z.string().optional(),
     steps: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     stats: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -68,14 +78,22 @@ export const ManufacturingProcess = defineCapsule({
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: '24hr', label: 'Standard Quote Turnaround' },
-          { value: '2-3 Days', label: 'Prototype Lead Time' },
-          { value: '2-4 Weeks', label: 'Production Lead Time' },
+          {
+            value: '24hr',
+            label: 'Standard Quote Turnaround',
+          },
+          {
+            value: '2-3 Days',
+            label: 'Prototype Lead Time',
+          },
+          {
+            value: '2-4 Weeks',
+            label: 'Production Lead Time',
+          },
         ]
-
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -119,7 +137,7 @@ export const ManufacturingProcess = defineCapsule({
               ))}
             </div>
           </Card>
-        </div>
+        </Container>
       </section>
     )
   },

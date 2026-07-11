@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -22,6 +21,7 @@ import {
  * swap pages. Use as the sticky site header for gyms, fitness studios, CrossFit
  * boxes, yoga / pilates / boxing / spin studios or personal-training businesses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessNavbar = defineCapsule({
   name: 'FitnessNavbar',
   description:
@@ -42,7 +42,6 @@ export const FitnessNavbar = defineCapsule({
       ? props.nav
       : ['Classes', 'Trainers', 'Schedule', 'Membership', 'Start Trial']
     const navPrimary = nav[nav.length - 1] ?? 'Start Trial'
-
     return (
       <nav
         className={cn(
@@ -50,7 +49,7 @@ export const FitnessNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between">
             <button
               type="button"
@@ -114,7 +113,7 @@ export const FitnessNavbar = defineCapsule({
               }
             />
           </div>
-        </div>
+        </Container>
       </nav>
     )
   },

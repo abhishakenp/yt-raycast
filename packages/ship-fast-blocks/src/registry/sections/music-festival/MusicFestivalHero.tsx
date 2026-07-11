@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -17,6 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * festivals, arts festivals, concert series, camping/desert events, or any
  * multi-day ticketed live event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalHero = defineCapsule({
   name: 'MusicFestivalHero',
   description:
@@ -38,7 +38,12 @@ export const MusicFestivalHero = defineCapsule({
     imageAlt: z.string().optional(),
     /** Inline KPI strip beneath the hero copy. */
     stats: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     /** Floating early-bird price card label (countdown). */
     countdownLabel: z.string().optional(),
@@ -66,15 +71,23 @@ export const MusicFestivalHero = defineCapsule({
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: '80+', label: 'Artists' },
-          { value: '4', label: 'Stages' },
-          { value: '25K', label: 'Attendees' },
+          {
+            value: '80+',
+            label: 'Artists',
+          },
+          {
+            value: '4',
+            label: 'Stages',
+          },
+          {
+            value: '25K',
+            label: 'Attendees',
+          },
         ]
     const countdownLabel = props.countdownLabel ?? 'Early Bird Ends In'
     const countdownValue = props.countdownValue ?? '47 days'
     const priceLabel = props.priceLabel ?? 'Starting at'
     const priceValue = props.priceValue ?? '$249'
-
     const ArrowRight = () => (
       <svg
         width="20"
@@ -90,7 +103,6 @@ export const MusicFestivalHero = defineCapsule({
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
-
     return (
       <section
         className={cn(
@@ -98,7 +110,7 @@ export const MusicFestivalHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div>
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
@@ -163,7 +175,7 @@ export const MusicFestivalHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

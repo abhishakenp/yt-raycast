@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -14,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * atmosphere and social proof on music festivals, arts festivals, concert
  * series, or any recurring multi-day event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalGallery = defineCapsule({
   name: 'MusicFestivalGallery',
   description:
@@ -45,7 +45,6 @@ export const MusicFestivalGallery = defineCapsule({
           'Person on friends shoulders watching a sunset performance at a festival',
           'Neon art installation with people walking through at a night festival',
         ]
-
     return (
       <section
         className={cn(
@@ -53,7 +52,7 @@ export const MusicFestivalGallery = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-background/50">
               {eyebrow}
@@ -81,7 +80,7 @@ export const MusicFestivalGallery = defineCapsule({
               />
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

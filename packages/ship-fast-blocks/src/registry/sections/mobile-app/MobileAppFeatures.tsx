@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -16,6 +15,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * any consumer app landing page. Renders fully with no props via baked-in
  * defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MobileAppFeatures = defineCapsule({
   name: 'MobileAppFeatures',
   description:
@@ -24,7 +24,12 @@ export const MobileAppFeatures = defineCapsule({
     heading: z.string().optional(),
     description: z.string().optional(),
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -67,7 +72,6 @@ export const MobileAppFeatures = defineCapsule({
               'Track habits right from your home screen with beautiful iOS and Android widgets.',
           },
         ]
-
     const featureIcons: ReactNode[] = [
       <svg
         key="clock"
@@ -148,13 +152,12 @@ export const MobileAppFeatures = defineCapsule({
         <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>,
     ]
-
     return (
       <section
         className={cn('py-20 lg:py-32', props.className)}
         aria-labelledby="mobileapp-features-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center lg:mb-20">
             <h2
               id="mobileapp-features-heading"
@@ -177,7 +180,7 @@ export const MobileAppFeatures = defineCapsule({
               </div>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

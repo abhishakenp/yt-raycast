@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -15,6 +14,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * shop, fabricator or contract-manufacturer pages. Renders fully with no props
  * via baked-in "Vertex Manufacturing" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ManufacturingFooter = defineCapsule({
   name: 'ManufacturingFooter',
   description:
@@ -74,13 +74,11 @@ export const ManufacturingFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Solutions. All rights reserved.`
-
     const brandInitials = brand
       .split(/\s+/)
       .slice(0, 2)
       .map((w) => w.charAt(0).toUpperCase())
       .join('')
-
     const socialIcon = (name: string) => {
       if (name === 'Twitter') {
         return (
@@ -107,7 +105,6 @@ export const ManufacturingFooter = defineCapsule({
         </svg>
       )
     }
-
     return (
       <footer
         className={cn(
@@ -116,7 +113,7 @@ export const ManufacturingFooter = defineCapsule({
         )}
       >
         <h2 className="sr-only">Footer</h2>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div>
               <button
@@ -232,7 +229,7 @@ export const ManufacturingFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

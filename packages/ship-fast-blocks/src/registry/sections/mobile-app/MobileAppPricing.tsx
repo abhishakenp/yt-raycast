@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import {
   SaasMutationSpinner,
@@ -22,6 +21,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * landing page. Renders fully with no props via baked-in Free / Pro / Teams
  * defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MobileAppPricing = defineCapsule({
   name: 'MobileAppPricing',
   description:
@@ -39,7 +39,12 @@ export const MobileAppPricing = defineCapsule({
           cta: z.string(),
           featured: z.boolean().optional(),
           features: z
-            .array(z.object({ label: z.string(), included: z.boolean() }))
+            .array(
+              z.object({
+                label: z.string(),
+                included: z.boolean(),
+              }),
+            )
             .optional(),
         }),
       )
@@ -63,11 +68,26 @@ export const MobileAppPricing = defineCapsule({
             cta: 'Get Started Free',
             featured: false,
             features: [
-              { label: 'Up to 3 habits', included: true },
-              { label: 'Basic reminders', included: true },
-              { label: '7-day streak history', included: true },
-              { label: 'Accountability groups', included: false },
-              { label: 'Advanced insights', included: false },
+              {
+                label: 'Up to 3 habits',
+                included: true,
+              },
+              {
+                label: 'Basic reminders',
+                included: true,
+              },
+              {
+                label: '7-day streak history',
+                included: true,
+              },
+              {
+                label: 'Accountability groups',
+                included: false,
+              },
+              {
+                label: 'Advanced insights',
+                included: false,
+              },
             ],
           },
           {
@@ -78,11 +98,26 @@ export const MobileAppPricing = defineCapsule({
             cta: 'Start 14-Day Free Trial',
             featured: true,
             features: [
-              { label: 'Unlimited habits', included: true },
-              { label: 'Smart AI reminders', included: true },
-              { label: 'Unlimited history', included: true },
-              { label: 'Accountability groups', included: true },
-              { label: 'Advanced insights & export', included: true },
+              {
+                label: 'Unlimited habits',
+                included: true,
+              },
+              {
+                label: 'Smart AI reminders',
+                included: true,
+              },
+              {
+                label: 'Unlimited history',
+                included: true,
+              },
+              {
+                label: 'Accountability groups',
+                included: true,
+              },
+              {
+                label: 'Advanced insights & export',
+                included: true,
+              },
             ],
           },
           {
@@ -93,15 +128,29 @@ export const MobileAppPricing = defineCapsule({
             cta: 'Contact Sales',
             featured: false,
             features: [
-              { label: 'Everything in Pro', included: true },
-              { label: 'Team challenges', included: true },
-              { label: 'Admin dashboard', included: true },
-              { label: 'SSO integration', included: true },
-              { label: 'Priority support', included: true },
+              {
+                label: 'Everything in Pro',
+                included: true,
+              },
+              {
+                label: 'Team challenges',
+                included: true,
+              },
+              {
+                label: 'Admin dashboard',
+                included: true,
+              },
+              {
+                label: 'SSO integration',
+                included: true,
+              },
+              {
+                label: 'Priority support',
+                included: true,
+              },
             ],
           },
         ]
-
     useSyncSaasPlans(
       lakebed,
       tiers.map((tier) =>
@@ -113,7 +162,6 @@ export const MobileAppPricing = defineCapsule({
         }),
       ),
     )
-
     const CheckIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -128,7 +176,6 @@ export const MobileAppPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     const CrossIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -143,13 +190,12 @@ export const MobileAppPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
-
     return (
       <section
         className={cn('py-20 lg:py-32', props.className)}
         aria-labelledby="mobileapp-pricing-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center lg:mb-20">
             <h2
               id="mobileapp-pricing-heading"
@@ -253,7 +299,7 @@ export const MobileAppPricing = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

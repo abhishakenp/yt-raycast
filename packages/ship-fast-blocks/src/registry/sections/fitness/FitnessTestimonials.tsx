@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,6 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * Image component. Use for member stories / reviews / social proof on gyms, fitness
  * studios, yoga / pilates / boxing / spin studios or personal-training businesses.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessTestimonials = defineCapsule({
   name: 'FitnessTestimonials',
   description:
@@ -64,7 +64,6 @@ export const FitnessTestimonials = defineCapsule({
               'headshot of Michelle Torres a smiling woman with curly brown hair member testimonial',
           },
         ]
-
     const StarIcon = () => (
       <svg
         width="16"
@@ -76,10 +75,9 @@ export const FitnessTestimonials = defineCapsule({
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
-
     return (
       <section className={cn('bg-card py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
               {testimonialsHeading}
@@ -91,7 +89,9 @@ export const FitnessTestimonials = defineCapsule({
             {testimonialItems.map((t) => (
               <article key={t.name} className="rounded-lg bg-muted p-8">
                 <div className="mb-4 flex items-center gap-1 text-primary">
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {Array.from({
+                    length: 5,
+                  }).map((_, i) => (
                     <StarIcon key={i} />
                   ))}
                 </div>
@@ -115,7 +115,7 @@ export const FitnessTestimonials = defineCapsule({
               </article>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

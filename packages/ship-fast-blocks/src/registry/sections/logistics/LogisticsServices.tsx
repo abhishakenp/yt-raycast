@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -16,6 +15,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * for logistics, freight-forwarding, shipping, courier or cargo/transport
  * companies. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LogisticsServices = defineCapsule({
   name: 'LogisticsServices',
   description:
@@ -79,7 +79,6 @@ export const LogisticsServices = defineCapsule({
             price: 'From $12.50/delivery',
           },
         ]
-
     const serviceIcons: ReactNode[] = [
       <svg
         key="air"
@@ -170,10 +169,9 @@ export const LogisticsServices = defineCapsule({
       'bg-chart-4/15 text-chart-4',
       'bg-destructive/10 text-destructive',
     ]
-
     return (
       <section className={cn('bg-muted/50 py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl">
               {heading}
@@ -209,7 +207,7 @@ export const LogisticsServices = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

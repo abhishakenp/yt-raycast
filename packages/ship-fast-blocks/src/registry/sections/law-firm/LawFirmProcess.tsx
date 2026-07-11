@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -15,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * attorney, consulting or professional-services pages. Renders fully with no
  * props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LawFirmProcess = defineCapsule({
   name: 'LawFirmProcess',
   description:
@@ -25,7 +25,12 @@ export const LawFirmProcess = defineCapsule({
     description: z.string().optional(),
     imageAlt: z.string().optional(),
     steps: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -57,10 +62,9 @@ export const LawFirmProcess = defineCapsule({
               'We implement the agreed strategy with precision, keeping you informed at every stage. Our goal is always the most favorable outcome in the shortest time frame possible.',
           },
         ]
-
     return (
       <section className={cn('bg-card py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
               <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
@@ -100,7 +104,7 @@ export const LawFirmProcess = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

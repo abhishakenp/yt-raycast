@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * showcase performers on music festivals, arts festivals, concert series, or
  * any multi-day live-music event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalLineup = defineCapsule({
   name: 'MusicFestivalLineup',
   description:
@@ -43,7 +43,12 @@ export const MusicFestivalLineup = defineCapsule({
     featuredLabel: z.string().optional(),
     /** Featured artists (name + genre). */
     featured: z
-      .array(z.object({ name: z.string(), genre: z.string() }))
+      .array(
+        z.object({
+          name: z.string(),
+          genre: z.string(),
+        }),
+      )
       .optional(),
     /** "More artists" button label. */
     more: z.string().optional(),
@@ -86,24 +91,59 @@ export const MusicFestivalLineup = defineCapsule({
     const featured = props.featured?.length
       ? props.featured
       : [
-          { name: 'Bon Iver', genre: 'Folk' },
-          { name: 'Khruangbin', genre: 'Psychedelic' },
-          { name: 'Rosalia', genre: 'Flamenco Pop' },
-          { name: 'Fred Again..', genre: 'Electronic' },
-          { name: 'Big Thief', genre: 'Indie Folk' },
-          { name: 'Four Tet', genre: 'Electronic' },
-          { name: 'FKA Twigs', genre: 'Art Pop' },
-          { name: 'Parcels', genre: 'Disco' },
-          { name: 'Caroline Polachek', genre: 'Art Pop' },
-          { name: 'Jungle', genre: 'Neo-Soul' },
-          { name: 'Beach House', genre: 'Dream Pop' },
-          { name: 'Bicep', genre: 'Electronic' },
+          {
+            name: 'Bon Iver',
+            genre: 'Folk',
+          },
+          {
+            name: 'Khruangbin',
+            genre: 'Psychedelic',
+          },
+          {
+            name: 'Rosalia',
+            genre: 'Flamenco Pop',
+          },
+          {
+            name: 'Fred Again..',
+            genre: 'Electronic',
+          },
+          {
+            name: 'Big Thief',
+            genre: 'Indie Folk',
+          },
+          {
+            name: 'Four Tet',
+            genre: 'Electronic',
+          },
+          {
+            name: 'FKA Twigs',
+            genre: 'Art Pop',
+          },
+          {
+            name: 'Parcels',
+            genre: 'Disco',
+          },
+          {
+            name: 'Caroline Polachek',
+            genre: 'Art Pop',
+          },
+          {
+            name: 'Jungle',
+            genre: 'Neo-Soul',
+          },
+          {
+            name: 'Beach House',
+            genre: 'Dream Pop',
+          },
+          {
+            name: 'Bicep',
+            genre: 'Electronic',
+          },
         ]
     const more = props.more ?? '+ 64 More Artists'
-
     return (
       <section className={cn('py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
               {eyebrow}
@@ -191,7 +231,7 @@ export const MusicFestivalLineup = defineCapsule({
               </svg>
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import {
@@ -17,6 +16,7 @@ import {
  * use the alt-driven Image component. Use to introduce coaches, instructors or
  * personal trainers on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessTrainers = defineCapsule({
   name: 'FitnessTrainers',
   description:
@@ -73,10 +73,9 @@ export const FitnessTrainers = defineCapsule({
               'professional headshot of Sofia Martinez a fit Latina female pilates instructor with warm smile and athletic build',
           },
         ]
-
     return (
       <section className={cn('py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
               {trainersHeading}
@@ -107,7 +106,7 @@ export const FitnessTrainers = defineCapsule({
               </PersonCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

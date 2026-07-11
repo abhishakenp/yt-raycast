@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,6 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * args. Use directly under the hero on gyms, fitness studios or wellness clubs to
  * build credibility with recognizable brand or partner names.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessLogos = defineCapsule({
   name: 'FitnessLogos',
   description:
@@ -24,12 +24,11 @@ export const FitnessLogos = defineCapsule({
     const logoItems = props.items?.length
       ? props.items
       : ['Nike', 'Equinox', 'Lululemon', 'WHOOP', 'Rogue', 'Concept2']
-
     return (
       <section
         className={cn('border-y border-border bg-card py-12', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-xs uppercase tracking-wider text-muted-foreground">
             {logosLabel}
           </p>
@@ -43,7 +42,7 @@ export const FitnessLogos = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -12,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * alt-driven Image component. Use to show off the gym floor, studios, locker rooms
  * and recovery areas on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessGallery = defineCapsule({
   name: 'FitnessGallery',
   description:
@@ -39,10 +39,9 @@ export const FitnessGallery = defineCapsule({
           'yoga studio with wooden floors large mirrors and peaceful natural lighting',
           'recovery area with foam rollers stretching mats and mobility equipment',
         ]
-
     return (
       <section className={cn('bg-card py-20 md:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
               {galleryHeading}
@@ -62,7 +61,7 @@ export const FitnessGallery = defineCapsule({
               />
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

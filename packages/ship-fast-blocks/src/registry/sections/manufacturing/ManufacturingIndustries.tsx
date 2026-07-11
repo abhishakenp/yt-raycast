@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -16,6 +15,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * semiconductor, industrial) on machine-shop or fabricator pages. Renders fully
  * with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ManufacturingIndustries = defineCapsule({
   name: 'ManufacturingIndustries',
   description:
@@ -94,7 +94,6 @@ export const ManufacturingIndustries = defineCapsule({
             tag: '24/7 Production',
           },
         ]
-
     const indIcons: ReactNode[] = [
       <svg
         key="n0"
@@ -219,10 +218,9 @@ export const ManufacturingIndustries = defineCapsule({
       'bg-primary/10 text-primary',
       'bg-chart-2/10 text-chart-2',
     ]
-
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 max-w-3xl">
             <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -255,7 +253,7 @@ export const ManufacturingIndustries = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

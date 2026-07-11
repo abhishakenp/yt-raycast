@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * infrastructure for logistics, freight-forwarding, shipping, courier, warehousing
  * or cargo/transport companies. Renders fully with no props via alt-driven images.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LogisticsGallery = defineCapsule({
   name: 'LogisticsGallery',
   description:
@@ -38,10 +38,9 @@ export const LogisticsGallery = defineCapsule({
           'Workers in safety vests coordinating logistics operations at a busy freight terminal',
           'Aerial view of a massive container port with cranes and stacked shipping containers',
         ]
-
     return (
       <section className={cn('bg-muted/50 py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl">
               {heading}
@@ -65,7 +64,7 @@ export const LogisticsGallery = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

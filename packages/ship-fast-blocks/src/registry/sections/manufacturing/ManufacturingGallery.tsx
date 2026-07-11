@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * machined parts on machine-shop or fabricator pages. Renders fully with no
  * props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ManufacturingGallery = defineCapsule({
   name: 'ManufacturingGallery',
   description:
@@ -24,7 +24,12 @@ export const ManufacturingGallery = defineCapsule({
     heading: z.string().optional(),
     description: z.string().optional(),
     items: z
-      .array(z.object({ title: z.string(), spec: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          spec: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -63,10 +68,9 @@ export const ManufacturingGallery = defineCapsule({
             spec: 'Hardened Steel • AGMA Class 10 • WEDM',
           },
         ]
-
     return (
       <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <span className="text-sm font-medium uppercase tracking-wider text-background/60">
@@ -102,7 +106,7 @@ export const ManufacturingGallery = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

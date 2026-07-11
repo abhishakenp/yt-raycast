@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * consumer-product landing page. Renders fully with no props via baked-in
  * defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MobileAppStats = defineCapsule({
   name: 'MobileAppStats',
   description:
@@ -20,7 +20,12 @@ export const MobileAppStats = defineCapsule({
     heading: z.string().optional(),
     description: z.string().optional(),
     items: z
-      .array(z.object({ value: z.string(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.string(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -32,12 +37,23 @@ export const MobileAppStats = defineCapsule({
     const items = props.items?.length
       ? props.items
       : [
-          { value: '50,000+', label: 'Active users building habits' },
-          { value: '2.8M', label: 'Habits completed monthly' },
-          { value: '87%', label: 'Users report lasting change' },
-          { value: '4.9', label: 'App Store rating (12K reviews)' },
+          {
+            value: '50,000+',
+            label: 'Active users building habits',
+          },
+          {
+            value: '2.8M',
+            label: 'Habits completed monthly',
+          },
+          {
+            value: '87%',
+            label: 'Users report lasting change',
+          },
+          {
+            value: '4.9',
+            label: 'App Store rating (12K reviews)',
+          },
         ]
-
     return (
       <section
         className={cn(
@@ -46,7 +62,7 @@ export const MobileAppStats = defineCapsule({
         )}
         aria-labelledby="mobileapp-stats-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2
               id="mobileapp-stats-heading"
@@ -66,7 +82,7 @@ export const MobileAppStats = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

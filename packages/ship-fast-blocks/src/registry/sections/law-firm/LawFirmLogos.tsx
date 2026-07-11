@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
@@ -15,6 +14,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * credibility with recognizable client names. Renders fully with no props via
  * baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LawFirmLogos = defineCapsule({
   name: 'LawFirmLogos',
   description:
@@ -30,12 +30,11 @@ export const LawFirmLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['MORGAN', 'CITADEL', 'VENTURE', 'APEX', 'MERIDIAN', 'CONSOL']
-
     return (
       <section
         className={cn('border-y border-border bg-card py-16', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-10 text-center text-sm uppercase tracking-widest text-muted-foreground">
             {heading}
           </p>
@@ -55,7 +54,7 @@ export const LawFirmLogos = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

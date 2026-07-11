@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * floating member-quote card on the right. CTAs route through useNavigate. Use as
  * the top hero for gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessHero = defineCapsule({
   name: 'FitnessHero',
   description:
@@ -49,7 +49,6 @@ export const FitnessHero = defineCapsule({
       'athletic woman performing barbell back squat in modern gym with natural lighting'
     const heroQuote = props.quote ?? "Best fitness decision I've made"
     const heroQuoteAuthor = props.quoteAuthor ?? 'Sarah Chen, member since 2022'
-
     const CheckIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -66,7 +65,6 @@ export const FitnessHero = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     return (
       <section
         className={cn(
@@ -74,7 +72,7 @@ export const FitnessHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="space-y-8">
               <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
@@ -140,7 +138,7 @@ export const FitnessHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

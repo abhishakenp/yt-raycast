@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -14,6 +13,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * festivals, arts festivals, concert series, camping/desert events, or any
  * multi-day ticketed event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalFooter = defineCapsule({
   name: 'MusicFestivalFooter',
   description:
@@ -25,7 +25,12 @@ export const MusicFestivalFooter = defineCapsule({
     about: z.string().optional(),
     /** Link columns (heading + links). */
     columns: z
-      .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          heading: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     /** Social column heading. */
     socialLabel: z.string().optional(),
@@ -65,10 +70,9 @@ export const MusicFestivalFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service']
-
     return (
       <footer className={cn('border-t border-border py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-4">
             <div>
               <h3 className="mb-4 text-xl font-bold">
@@ -130,7 +134,7 @@ export const MusicFestivalFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

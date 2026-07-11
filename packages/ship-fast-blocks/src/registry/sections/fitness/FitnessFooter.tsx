@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -13,6 +12,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * Use as the closing footer on gyms, fitness studios, yoga / pilates / boxing / spin
  * studios, wellness clubs or class-booking sites.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const FitnessFooter = defineCapsule({
   name: 'FitnessFooter',
   description:
@@ -22,7 +22,12 @@ export const FitnessFooter = defineCapsule({
     brand: z.string().optional(),
     tagline: z.string().optional(),
     columns: z
-      .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          heading: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     copyright: z.string().optional(),
     legal: z.array(z.string()).optional(),
@@ -62,7 +67,6 @@ export const FitnessFooter = defineCapsule({
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
-
     return (
       <footer
         className={cn(
@@ -70,7 +74,7 @@ export const FitnessFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-8 md:grid-cols-4">
             <div>
               <div className="mb-4 flex items-center gap-2">
@@ -129,7 +133,7 @@ export const FitnessFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

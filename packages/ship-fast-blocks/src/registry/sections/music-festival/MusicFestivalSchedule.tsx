@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,6 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use to lay out the daily program on music festivals, arts
  * festivals, concert series, or any multi-day live event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalSchedule = defineCapsule({
   name: 'MusicFestivalSchedule',
   description:
@@ -64,7 +64,11 @@ export const MusicFestivalSchedule = defineCapsule({
                 detail: 'Welcome to the desert',
                 time: '2:00 PM',
               },
-              { title: 'Khruangbin', detail: 'Sunset Stage', time: '6:30 PM' },
+              {
+                title: 'Khruangbin',
+                detail: 'Sunset Stage',
+                time: '6:30 PM',
+              },
               {
                 title: 'Fred Again..',
                 detail: 'Electronic Oasis',
@@ -98,8 +102,16 @@ export const MusicFestivalSchedule = defineCapsule({
                 detail: 'Sunset Stage',
                 time: '5:30 PM',
               },
-              { title: 'Rosalia', detail: 'Main Stage', time: '7:30 PM' },
-              { title: 'Tame Impala', detail: 'Main Stage', time: '9:30 PM' },
+              {
+                title: 'Rosalia',
+                detail: 'Main Stage',
+                time: '7:30 PM',
+              },
+              {
+                title: 'Tame Impala',
+                detail: 'Main Stage',
+                time: '9:30 PM',
+              },
               {
                 title: 'Bicep DJ Set',
                 detail: 'Electronic Oasis',
@@ -118,7 +130,11 @@ export const MusicFestivalSchedule = defineCapsule({
                 detail: 'Wellness Oasis',
                 time: '9:00 AM',
               },
-              { title: 'Big Thief', detail: 'Sunset Stage', time: '4:30 PM' },
+              {
+                title: 'Big Thief',
+                detail: 'Sunset Stage',
+                time: '4:30 PM',
+              },
               {
                 title: 'Four Tet',
                 detail: 'Electronic Oasis',
@@ -138,10 +154,9 @@ export const MusicFestivalSchedule = defineCapsule({
             cta: 'View Full Sunday Schedule',
           },
         ]
-
     return (
       <section className={cn('py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
               {eyebrow}
@@ -194,7 +209,7 @@ export const MusicFestivalSchedule = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

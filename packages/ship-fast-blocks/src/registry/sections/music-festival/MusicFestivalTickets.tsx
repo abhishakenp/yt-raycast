@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use to sell passes on music festivals, arts festivals, concert
  * series, or any multi-day ticketed event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalTickets = defineCapsule({
   name: 'MusicFestivalTickets',
   description:
@@ -44,7 +44,12 @@ export const MusicFestivalTickets = defineCapsule({
     addOnsLabel: z.string().optional(),
     /** Add-on options (name + price). */
     addOns: z
-      .array(z.object({ name: z.string(), price: z.string() }))
+      .array(
+        z.object({
+          name: z.string(),
+          price: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -106,11 +111,19 @@ export const MusicFestivalTickets = defineCapsule({
     const addOns = props.addOns?.length
       ? props.addOns
       : [
-          { name: 'Car Camping', price: '+ $75/vehicle' },
-          { name: 'RV Camping', price: '+ $250/spot' },
-          { name: 'Glamping Tent', price: '+ $599 (2-person)' },
+          {
+            name: 'Car Camping',
+            price: '+ $75/vehicle',
+          },
+          {
+            name: 'RV Camping',
+            price: '+ $250/spot',
+          },
+          {
+            name: 'Glamping Tent',
+            price: '+ $599 (2-person)',
+          },
         ]
-
     const Check = () => (
       <svg
         width="20"
@@ -127,10 +140,9 @@ export const MusicFestivalTickets = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     return (
       <section className={cn('py-24 lg:py-32', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
               {eyebrow}
@@ -204,7 +216,7 @@ export const MusicFestivalTickets = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

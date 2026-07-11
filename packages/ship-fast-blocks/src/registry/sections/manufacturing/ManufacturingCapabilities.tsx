@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
@@ -15,6 +14,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * machining, sheet metal, grinding, wire EDM, finishing, inspection) on machine-
  * shop or fabricator pages. Renders fully with no props via baked-in defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const ManufacturingCapabilities = defineCapsule({
   name: 'ManufacturingCapabilities',
   description:
@@ -24,7 +24,12 @@ export const ManufacturingCapabilities = defineCapsule({
     heading: z.string().optional(),
     description: z.string().optional(),
     items: z
-      .array(z.object({ title: z.string(), description: z.string() }))
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        }),
+      )
       .optional(),
     className: z.string().optional(),
   }),
@@ -68,7 +73,6 @@ export const ManufacturingCapabilities = defineCapsule({
               'CMM inspection (Bridge and Arm), optical comparators, surface roughness testers, and certified calibration lab. FAIR, PPAP, and full material certifications provided with every order.',
           },
         ]
-
     const capIcons: ReactNode[] = [
       <svg
         key="i0"
@@ -156,10 +160,9 @@ export const ManufacturingCapabilities = defineCapsule({
         <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
       </svg>,
     ]
-
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -187,7 +190,7 @@ export const ManufacturingCapabilities = defineCapsule({
               </article>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

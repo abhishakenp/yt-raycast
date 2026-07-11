@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -17,6 +16,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * carriers, courier, warehousing or cargo/transport companies. Renders fully with
  * no props via baked-in "SwiftFreight" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LogisticsFooter = defineCapsule({
   name: 'LogisticsFooter',
   description:
@@ -82,7 +82,6 @@ export const LogisticsFooter = defineCapsule({
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -104,10 +103,9 @@ export const LogisticsFooter = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <footer className={cn('border-t border-border py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-1">
               <button
@@ -253,7 +251,7 @@ export const LogisticsFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

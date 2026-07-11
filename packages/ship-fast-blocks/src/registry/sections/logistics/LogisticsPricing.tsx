@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * tiers (Standard / Priority / Express) for logistics, freight-forwarding,
  * shipping, courier or cargo/transport companies. Renders fully with no props.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LogisticsPricing = defineCapsule({
   name: 'LogisticsPricing',
   description:
@@ -95,7 +95,6 @@ export const LogisticsPricing = defineCapsule({
             cta: 'Contact sales',
           },
         ]
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={cn('size-5 shrink-0', className)}
@@ -110,10 +109,9 @@ export const LogisticsPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl">
               {heading}
@@ -221,7 +219,7 @@ export const LogisticsPricing = defineCapsule({
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {footnote}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },

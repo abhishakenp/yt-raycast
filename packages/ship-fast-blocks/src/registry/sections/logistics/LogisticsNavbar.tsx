@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -18,6 +17,7 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * warehousing, customs-brokerage or cargo/transport companies. Renders fully with
  * no props via baked-in "SwiftFreight" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const LogisticsNavbar = defineCapsule({
   name: 'LogisticsNavbar',
   description:
@@ -44,7 +44,6 @@ export const LogisticsNavbar = defineCapsule({
     const cta = props.cta ?? 'Get a Quote'
     const ctaTarget = props.ctaTarget ?? cta
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -66,7 +65,6 @@ export const LogisticsNavbar = defineCapsule({
         </svg>
       </span>
     )
-
     return (
       <header
         className={cn(
@@ -74,7 +72,7 @@ export const LogisticsNavbar = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between lg:h-20">
             <button
               type="button"
@@ -113,12 +111,15 @@ export const LogisticsNavbar = defineCapsule({
                 brand={brand}
                 nav={nav}
                 homeTarget={homeTarget}
-                cta={{ label: cta, target: ctaTarget }}
+                cta={{
+                  label: cta,
+                  target: ctaTarget,
+                }}
                 buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
               />
             </div>
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

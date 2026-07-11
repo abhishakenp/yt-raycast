@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
@@ -17,6 +16,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * consumer app landing page. Renders fully with no props via baked-in
  * "DailyFlow" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MobileAppFooter = defineCapsule({
   name: 'MobileAppFooter',
   description:
@@ -30,7 +30,12 @@ export const MobileAppFooter = defineCapsule({
     /** Social icon labels (each must be Twitter, Instagram, or LinkedIn). */
     socials: z.array(z.string()).optional(),
     columns: z
-      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .array(
+        z.object({
+          title: z.string(),
+          links: z.array(z.string()),
+        }),
+      )
       .optional(),
     note: z.string().optional(),
     madeIn: z.string().optional(),
@@ -66,7 +71,6 @@ export const MobileAppFooter = defineCapsule({
       props.note ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
     const madeIn = props.madeIn ?? 'Made with care in San Francisco'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 32 32"
@@ -84,13 +88,12 @@ export const MobileAppFooter = defineCapsule({
         />
       </svg>
     )
-
     return (
       <footer
         className={cn('border-t border-border py-12 lg:py-16', props.className)}
         aria-label="Footer"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
             <div className="col-span-2 lg:col-span-2">
               <button
@@ -171,7 +174,7 @@ export const MobileAppFooter = defineCapsule({
             <p className="text-sm text-muted-foreground">{note}</p>
             <p className="text-sm text-muted-foreground">{madeIn}</p>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },

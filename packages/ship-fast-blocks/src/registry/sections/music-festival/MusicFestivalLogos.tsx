@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,6 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * music festivals, arts festivals, concert series, or any sponsored multi-day
  * event to lend credibility.
  */
+import { Container } from '#/section-kit/Container.tsx'
 export const MusicFestivalLogos = defineCapsule({
   name: 'MusicFestivalLogos',
   description:
@@ -29,10 +29,9 @@ export const MusicFestivalLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['PITCHFORK', 'SPOTIFY', 'SONOS', 'RED BULL', 'BEATS', 'VANS']
-
     return (
       <section className={cn('border-y border-border py-16', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm text-foreground/50">{label}</p>
           <div className="flex flex-wrap items-center justify-center gap-12 lg:gap-20">
             {items.map((logo) => (
@@ -46,7 +45,7 @@ export const MusicFestivalLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },
