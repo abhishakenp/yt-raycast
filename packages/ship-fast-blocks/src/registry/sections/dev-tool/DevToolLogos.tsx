@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * DevToolLogos — a slim "trusted by" social-proof logo strip for a developer
@@ -33,7 +34,7 @@ export const DevToolLogos = defineCapsule({
         className={cn('border-b border-border py-12', props.className)}
         aria-label="Trusted companies"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
@@ -49,7 +50,7 @@ export const DevToolLogos = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

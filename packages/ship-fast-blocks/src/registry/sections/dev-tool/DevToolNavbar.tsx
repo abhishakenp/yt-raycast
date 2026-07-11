@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   SaasAccountButton,
@@ -86,7 +87,7 @@ export const DevToolNavbar = defineCapsule({
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="flex h-16 items-center justify-between">
             <button
               type="button"
@@ -144,7 +145,7 @@ export const DevToolNavbar = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </header>
     )
   },

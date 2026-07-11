@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -82,7 +83,7 @@ export const DevToolTestimonials = defineCapsule({
         className={cn('py-20 lg:py-28', props.className)}
         aria-labelledby="testimonials-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2
               id="testimonials-heading"
@@ -122,7 +123,7 @@ export const DevToolTestimonials = defineCapsule({
               </Card>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

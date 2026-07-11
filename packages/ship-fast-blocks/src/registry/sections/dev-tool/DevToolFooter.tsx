@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
@@ -116,7 +117,7 @@ export const DevToolFooter = defineCapsule({
         className={cn('border-t border-border py-16', props.className)}
         role="contentinfo"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <button
@@ -190,7 +191,7 @@ export const DevToolFooter = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     )
   },
