@@ -16,6 +16,8 @@ import type { ThemeStyles } from '../../genui/theme-presets'
 import { observeGeneratedMobileNavs } from './generated-mobile-nav'
 import { useTextEdit } from '@/features/editing/hooks/useTextEdit'
 import { useElementInspector } from '@/features/editing/hooks/useElementInspector'
+import { useCapsulePropResolver } from '@/features/editing/hooks/useCapsulePropResolver'
+import type { CapsuleTextChange } from '@/features/editing/hooks/useCapsulePropResolver'
 import {
   getElementPath,
   type InspectorSelection,
@@ -267,12 +269,7 @@ const DirectPreview = forwardRef<
     previewToolMode?: PreviewToolMode
     onPreviewSelect?: (selection: PreviewSelection) => void
     editMode?: boolean
-    onTextChange?: (change: {
-      oldText: string
-      newText: string
-      element: HTMLElement
-      occurrenceIndex: number
-    }) => void
+    onTextChange?: (change: CapsuleTextChange) => void
     onImageChange?: (change: {
       oldSrc: string
       newSrc: string
@@ -326,6 +323,11 @@ const DirectPreview = forwardRef<
     const [portalContainer, setPortalContainer] =
       useState<HTMLDivElement | null>(null)
 
+    // Capsule prop resolver — tracks the active capsule and resolves which
+    // prop a text edit targets. Static preview paths without a Lakebed session
+    // resolve to null capsule data and fall back to text overrides.
+    const capsuleResolver = useCapsulePropResolver()
+
     const setRootRef = useCallback(
       (node: HTMLDivElement | null) => {
         if (internalRef.current === node) return
@@ -342,12 +344,40 @@ const DirectPreview = forwardRef<
       [ref],
     )
 
+    // Wrap onElementActivate to track the active capsule for prop resolution.
+    const handleElementActivate = useCallback(
+      (element: HTMLElement, rect: DOMRect) => {
+        capsuleResolver.setActiveElement(element)
+        onElementActivate?.(element, rect)
+      },
+      [capsuleResolver, onElementActivate],
+    )
+
+    // Wrap onTextChange to resolve capsule prop context. When the edited text
+    // matches a capsule prop value, the change carries a `capsuleProp` field
+    // so the parent can route the edit through Lakebed instead of text overrides.
+    const handleTextChange = useCallback(
+      (change: {
+        oldText: string
+        newText: string
+        element: HTMLElement
+        occurrenceIndex: number
+      }) => {
+        const propContext = capsuleResolver.resolveProp(change.element)
+        onTextChange?.({
+          ...change,
+          ...(propContext ? { capsuleProp: propContext } : {}),
+        })
+      },
+      [capsuleResolver, onTextChange],
+    )
+
     const { commitEdit, cancelEdit } = useTextEdit(
       internalRef,
       editMode,
-      onTextChange || (() => {}),
+      handleTextChange,
       onImageChange,
-      onElementActivate,
+      handleElementActivate,
     )
 
     // Expose commitEdit and cancelEdit to the parent so the toolbar's

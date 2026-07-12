@@ -4,6 +4,7 @@ import type {
   PreviewToolMode,
 } from '@/components/GenUI/DirectPreview'
 import type { InspectorSelection } from '@/features/editing/element-path'
+import type { CapsuleTextChange } from '@/features/editing/hooks/useCapsulePropResolver'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
@@ -47,12 +48,7 @@ type GeneratedModulePreviewProps = {
   previewToolMode?: PreviewToolMode
   onPreviewSelect?: (selection: PreviewSelection) => void
   editMode?: boolean
-  onTextChange?: (change: {
-    oldText: string
-    newText: string
-    element: HTMLElement
-    occurrenceIndex: number
-  }) => void
+  onTextChange?: (change: CapsuleTextChange) => void
   onImageChange?: (change: {
     oldSrc: string
     newSrc: string

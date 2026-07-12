@@ -32,6 +32,8 @@ import { toast } from 'sonner'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
+import type { CapsuleTextChange } from '@/features/editing/hooks/useCapsulePropResolver'
+import { buildPropPatch } from '@ship-fast/blocks/capsules'
 import {
   buildInspectorSelection,
   type InspectorSelection,
@@ -548,10 +550,12 @@ export function Dashboard({
   const liveGenerationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
   }) as DashboardGenerationView | null | undefined
-  const [fallbackGenerationView, setFallbackGenerationView] =
-    useState<DashboardGenerationView>()
+  const [fallbackGenerationView, setFallbackGenerationView] = useState<
+    DashboardGenerationView | undefined
+  >(() => readCachedGenerationView(sessionId))
   const generationView =
-    liveGenerationView === undefined
+    liveGenerationView === undefined ||
+    (liveGenerationView === null && fallbackGenerationView !== undefined)
       ? fallbackGenerationView
       : liveGenerationView
   const resolvedSessionId = generationView?.session.sessionId
@@ -606,6 +610,8 @@ export function Dashboard({
     api.sessions.setPreferredLanguage,
   )
   const setBrandLogoMutation = useMutation(api.sessions.setBrandLogo)
+  // Lakebed merge mutation for capsule prop edits (inline text → structured data).
+  const mergeLakebedData = useMutation(api.lakebed.mergeSessionData)
   const editController = useEditController(resolvedSessionId || sessionId)
   const undoRedo = useUndoRedo(editController)
   const reorder = useReorderElement({
@@ -617,7 +623,7 @@ export function Dashboard({
   })
 
   useEffect(() => {
-    if (liveGenerationView !== undefined) {
+    if (liveGenerationView !== undefined && liveGenerationView !== null) {
       setFallbackGenerationView(undefined)
       return
     }
@@ -1100,12 +1106,54 @@ export function Dashboard({
     }
   }
 
-  const handleTextChange = async (change: {
-    oldText: string
-    newText: string
-    element: HTMLElement
-    occurrenceIndex: number
-  }) => {
+  const handleTextChange = async (change: CapsuleTextChange) => {
+    // ─── Capsule-aware path: route to Lakebed structured data ──────────────
+    // When the edited text matches a capsule prop, persist via Lakebed merge
+    // instead of the generic text-override path. This keeps the capsule's
+    // structured data in sync with inline edits and re-renders in realtime.
+    if (change.capsuleProp) {
+      const ctx = change.capsuleProp
+      try {
+        // Fetch current capsule data to build a correct patch for collection items.
+        // For scalars, we can patch directly. For collections, we need the current
+        // items array to avoid clobbering siblings.
+        const currentState = await mergeLakebedData({
+          sessionId: (resolvedSessionId || sessionId) as Id<'sessions'>,
+          capsule: ctx.lakebedKey,
+          ...(activeAnonymousOwnerSecret
+            ? { anonymousOwnerSecret: activeAnonymousOwnerSecret }
+            : {}),
+          patch: {},
+        })
+        const currentData = (
+          currentState &&
+          typeof currentState === 'object' &&
+          !Array.isArray(currentState)
+            ? currentState
+            : {}
+        ) as Record<string, unknown>
+        const patch = buildPropPatch(ctx, change.newText, currentData)
+        await mergeLakebedData({
+          sessionId: (resolvedSessionId || sessionId) as Id<'sessions'>,
+          capsule: ctx.lakebedKey,
+          ...(activeAnonymousOwnerSecret
+            ? { anonymousOwnerSecret: activeAnonymousOwnerSecret }
+            : {}),
+          patch,
+        })
+      } catch (error) {
+        console.error('[Inline Edit] Lakebed capsule edit failed:', error)
+        // Fall back to text override path
+        await handleTextChangeFallback(change)
+      }
+      return
+    }
+
+    await handleTextChangeFallback(change)
+  }
+
+  /** Original text-override path — persists via Convex createEdit. */
+  const handleTextChangeFallback = async (change: CapsuleTextChange) => {
     const tag = change.element.tagName.toLowerCase()
     const text = change.element.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
@@ -2564,6 +2612,7 @@ export function Dashboard({
           onImageSelect={handleImageSelect}
           onSelectParent={handleSelectParent}
           sessionId={sessionId}
+          anonymousOwnerSecret={activeAnonymousOwnerSecret}
           onSectionEdit={handleSectionEditSubmit}
           isSectionSubmitting={isSectionEditing}
           sectionError={sectionEditError}

@@ -4,6 +4,7 @@ import {
   useLayoutEffect,
   useRef,
   useCallback,
+  useMemo,
 } from 'react'
 import {
   useFloating,
@@ -38,6 +39,7 @@ import {
   ClipboardPaste,
   PanelTop,
   SquareArrowUp,
+  Boxes,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
@@ -69,6 +71,8 @@ import { StyleControlsPanel } from './StyleControlsPanel'
 import { TypographyControlsPanel } from './TypographyControlsPanel'
 import { LinkEditPopover } from './LinkEditPopover'
 import { ImageSwapPanel } from './ImageSwapPanel'
+import { CapsuleContextPanel } from './CapsuleContextPanel'
+import { CapsuleInlineControls } from './CapsuleInlineControls'
 
 interface InlineEditToolbarProps {
   isOpen: boolean
@@ -115,6 +119,8 @@ interface InlineEditToolbarProps {
    *  root to edit the whole-app background. */
   onSelectParent?: (element: HTMLElement) => void
   sessionId?: string
+  /** Anonymous owner secret for lakebed session mutations. */
+  anonymousOwnerSecret?: string
   /** Section AI edit */
   onSectionEdit?: (prompt: string) => void
   isSectionSubmitting?: boolean
@@ -354,6 +360,7 @@ export function InlineEditToolbar({
   onSelectParentSection,
   onSelectParent,
   sessionId,
+  anonymousOwnerSecret,
   onSectionEdit,
   isSectionSubmitting = false,
   sectionError,
@@ -369,14 +376,28 @@ export function InlineEditToolbar({
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>(
     'left',
   )
-  // Which extended panel is open: 'style' | 'typography' | 'link' | 'ai' | 'image' | null
+  // Which extended panel is open: 'style' | 'typography' | 'link' | 'ai' | 'image' | 'capsule' | 'capsule-inline' | null
   const [activePanel, setActivePanel] = useState<
-    'style' | 'typography' | 'link' | 'ai' | 'image' | null
+    | 'style'
+    | 'typography'
+    | 'link'
+    | 'ai'
+    | 'image'
+    | 'capsule'
+    | 'capsule-inline'
+    | null
   >(null)
   // Keep the last panel mounted during collapse animation so it can animate
   // out instead of vanishing instantly.
   const [displayPanel, setDisplayPanel] = useState<
-    'style' | 'typography' | 'link' | 'ai' | 'image' | null
+    | 'style'
+    | 'typography'
+    | 'link'
+    | 'ai'
+    | 'image'
+    | 'capsule'
+    | 'capsule-inline'
+    | null
   >(null)
   useEffect(() => {
     if (activePanel) {
@@ -465,7 +486,16 @@ export function InlineEditToolbar({
   }, [activeElement, pendingImageSrc])
 
   const setActivePanelWithCleanup = useCallback(
-    (nextPanel: 'style' | 'typography' | 'link' | 'ai' | 'image' | null) => {
+    (
+      nextPanel:
+        | 'style'
+        | 'typography'
+        | 'link'
+        | 'ai'
+        | 'image'
+        | 'capsule'
+        | null,
+    ) => {
       if (activePanel === 'link' && nextPanel !== 'link') {
         restoreRememberedLinkAttrs()
       }
@@ -743,7 +773,20 @@ export function InlineEditToolbar({
     pendingImageSrcRef.current = null
     imagePreviewClearedRef.current = false
     setPendingImageSrc(null)
-    setActivePanel(null)
+    // Auto-open the capsule inline controls panel when the new element is
+    // inside a capsule (and capsule editing is available). This surfaces
+    // variant switchers + collection controls without requiring the user to
+    // click the "Capsule controls" button.
+    const capsuleEl = activeElement.closest('[data-openui-component]')
+    const cName = capsuleEl?.getAttribute('data-openui-component') ?? undefined
+    const cVar = capsuleEl?.getAttribute('data-openui-var') ?? undefined
+    const canCapsule =
+      !!cName &&
+      !!cVar &&
+      !!sessionId &&
+      cName !== 'Stack' &&
+      !/(Navbar|Footer)$/.test(cName)
+    setActivePanel(canCapsule ? 'capsule-inline' : null)
 
     const computed = window.getComputedStyle(activeElement)
     // Parse the computed font-size into numeric value + unit. The browser
@@ -1108,12 +1151,61 @@ export function InlineEditToolbar({
     markUserModified()
   }
 
-  if (!isOpen || !anchorRect || !activeElement) return null
-
-  const tag = activeElement.tagName.toLowerCase()
+  const tag = activeElement?.tagName.toLowerCase() ?? ''
   const isLinkElement = tag === 'a'
   const isImageElement = tag === 'img'
   const canSectionEdit = typeof onSectionEdit === 'function'
+  // Capsule context: resolve capsule name + statementId from data attrs.
+  // Walk up the DOM from the active element to find the nearest capsule
+  // ancestor (the active element is often a text leaf inside the capsule).
+  // The Stack capsule is the page root — not a content section, so skip it.
+  const capsuleElement =
+    activeElement?.closest<HTMLElement>('[data-openui-component]') ?? null
+  const capsuleName =
+    capsuleElement?.getAttribute('data-openui-component') ?? undefined
+  const capsuleStatementId =
+    capsuleElement?.getAttribute('data-openui-var') ?? undefined
+  const canCapsuleEdit =
+    !!capsuleName &&
+    !!capsuleStatementId &&
+    !!sessionId &&
+    capsuleName !== 'Stack' &&
+    !/(Navbar|Footer)$/.test(capsuleName)
+  // Detect which collection item the active element is inside (if any).
+  // Walk up from the active element to find an ancestor that is one of
+  // several repeated siblings inside the capsule (e.g. a card in a grid).
+  // The index is the position among same-tag siblings within the repeating
+  // parent. This is a heuristic — it works for typical capsule layouts where
+  // collection items are rendered as repeated card-like elements.
+  const activeCollectionItem = useMemo(() => {
+    if (!activeElement || !canCapsuleEdit || !capsuleElement) return null
+    let current: HTMLElement | null = activeElement
+    while (current && current !== capsuleElement) {
+      const parent: HTMLElement | null = current.parentElement
+      if (parent && parent !== capsuleElement) {
+        const currentTag = current.tagName
+        const siblings = Array.from(parent.children).filter(
+          (c: Element) => c.tagName === currentTag,
+        )
+        if (siblings.length > 1) {
+          const index = siblings.indexOf(current)
+          if (index >= 0) {
+            return { collectionKey: '__auto__', index }
+          }
+        }
+      }
+      current = parent
+    }
+    return null
+  }, [canCapsuleEdit, capsuleElement, activeElement])
+
+  if (!isOpen || !anchorRect || !activeElement) return null
+
+  // Short label for the capsule (e.g. "CoworkingHero" → "Hero").
+  // Shown as a badge in the toolbar so the user knows which capsule they're editing.
+  const capsuleShortLabel = capsuleName
+    ? capsuleName.replace(/^Coworking|^SaaS|^Blog|^Portfolio|^Startup/, '')
+    : undefined
   // Use the same logic as findTextElement — if the element can be
   // contentEditable text, it gets the full text toolbar.
   const isTextElement = isEditableTextLeaf(activeElement)
@@ -1156,6 +1248,14 @@ export function InlineEditToolbar({
             data-inline-toolbar-scroll="true"
             className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
+            {canCapsuleEdit && capsuleShortLabel && (
+              <span
+                className="shrink-0 rounded bg-cyan-300/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cyan-200"
+                title={`Editing ${capsuleName} (${capsuleStatementId})`}
+              >
+                {capsuleShortLabel}
+              </span>
+            )}
             {selectableParent && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1742,6 +1842,34 @@ export function InlineEditToolbar({
                 </AlertDialogContent>
               </AlertDialog>
 
+              {canCapsuleEdit && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActivePanelWithCleanup(
+                          activePanel === 'capsule' ? null : 'capsule',
+                        )
+                      }
+                      disabled={isApplying || isForking}
+                      className={cn(
+                        'grid size-7 place-items-center rounded transition-colors',
+                        activePanel === 'capsule'
+                          ? 'bg-cyan-300/20 text-cyan-100'
+                          : 'text-white/60 hover:bg-white/5 hover:text-white',
+                        'disabled:opacity-50 disabled:cursor-not-allowed',
+                      )}
+                      aria-label="Capsule controls"
+                      aria-expanded={activePanel === 'capsule'}
+                    >
+                      <Boxes className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Manage section content</TooltipContent>
+                </Tooltip>
+              )}
+
               {canSectionEdit && (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -1932,6 +2060,40 @@ export function InlineEditToolbar({
                       (activeElement as HTMLImageElement).naturalHeight
                     }
                     sessionId={sessionId}
+                  />
+                )}
+              {displayPanel === 'capsule-inline' &&
+                canCapsuleEdit &&
+                capsuleName &&
+                capsuleStatementId &&
+                sessionId && (
+                  <CapsuleInlineControls
+                    key={`${capsuleName}:${capsuleStatementId}`}
+                    capsuleName={capsuleName}
+                    statementId={capsuleStatementId}
+                    sessionId={sessionId}
+                    anonymousOwnerSecret={anonymousOwnerSecret}
+                    activeCollectionItem={
+                      activeCollectionItem
+                        ? {
+                            collectionKey: activeCollectionItem.collectionKey,
+                            index: activeCollectionItem.index,
+                          }
+                        : null
+                    }
+                  />
+                )}
+              {displayPanel === 'capsule' &&
+                canCapsuleEdit &&
+                capsuleName &&
+                capsuleStatementId &&
+                sessionId && (
+                  <CapsuleContextPanel
+                    key={`${capsuleName}:${capsuleStatementId}`}
+                    capsuleName={capsuleName}
+                    statementId={capsuleStatementId}
+                    sessionId={sessionId}
+                    anonymousOwnerSecret={anonymousOwnerSecret}
                   />
                 )}
             </div>
