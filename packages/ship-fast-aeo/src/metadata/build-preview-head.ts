@@ -24,6 +24,15 @@ export function buildPreviewSeoHead(
     typeof looseBase.tagline === 'string' ? looseBase.tagline : undefined
   const userPrompt =
     typeof looseBase.userPrompt === 'string' ? looseBase.userPrompt : undefined
+  // The AI-decided site title (stored as projectName by the OpenUI phase).
+  // Only used when it's a descriptive title distinct from the bare brand name,
+  // so legacy specs where projectName === brand still get the "- Preview" suffix.
+  const aiTitle =
+    typeof base.projectName === 'string' &&
+    base.projectName.trim() &&
+    base.projectName.trim() !== brand
+      ? base.projectName.trim()
+      : undefined
   const enriched = enrichSiteSpecAeo(
     {
       ...base,
@@ -33,7 +42,7 @@ export function buildPreviewSeoHead(
         : [
             {
               route: '/',
-              title: brand,
+              title: aiTitle || brand,
               description: seoDescription || tagline || `${brand} preview`,
             } as SitePageLike,
           ],
@@ -45,7 +54,7 @@ export function buildPreviewSeoHead(
     enriched.pages?.find((page) => (page.route || '/') === '/') ||
     ({
       route: '/',
-      title: brand,
+      title: aiTitle || brand,
       description: enriched.seo?.description,
     } as SitePageLike)
 
@@ -53,7 +62,7 @@ export function buildPreviewSeoHead(
     ...homePage,
     seo: {
       ...(homePage.seo || {}),
-      title: homePage.seo?.title || `${brand} - Preview`,
+      title: homePage.seo?.title || aiTitle || `${brand} - Preview`,
     },
   })
 

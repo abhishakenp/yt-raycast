@@ -75,6 +75,7 @@ export type ComparisonRowLike = {
 }
 
 export type SiteSpecLike = {
+  brand?: string
   projectName?: string
   siteType?: string
   seo?: Record<string, unknown>
