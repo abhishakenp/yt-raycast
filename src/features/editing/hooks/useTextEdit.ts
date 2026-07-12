@@ -550,6 +550,28 @@ export function useTextEdit(
       if (!sel) return
       // Handle both collapsed and non-collapsed selections
       const range = sel.getRangeAt(0)
+      const isDirectFill =
+        e.inputType === 'insertText' &&
+        !e.isComposing &&
+        typeof e.data === 'string' &&
+        e.data.length > 1 &&
+        sel.isCollapsed &&
+        active.originalNodes.length === 1 &&
+        active.lockedChildren.length === 0 &&
+        active.element.textContent === active.originalText
+
+      if (isDirectFill) {
+        e.preventDefault()
+        const textNode = active.originalNodes[0].node
+        textNode.nodeValue = e.data
+        const nextRange = document.createRange()
+        nextRange.setStart(textNode, e.data.length)
+        nextRange.collapse(true)
+        sel.removeAllRanges()
+        sel.addRange(nextRange)
+        return
+      }
+
       if (sel.isCollapsed) {
         if (
           shouldPreventLockedDeletion(

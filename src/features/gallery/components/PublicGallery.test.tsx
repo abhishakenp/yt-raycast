@@ -156,6 +156,32 @@ describe('GalleryGrid', () => {
     expect(galleryMocks.deleteMine).not.toHaveBeenCalled()
   })
 
+  it.each([
+    [59_999, 'Generated in 1m'],
+    [3_599_999, 'Generated in 1h 0m'],
+  ])(
+    'rolls %i milliseconds into a valid gallery duration label',
+    (elapsed, expectedLabel) => {
+      const gallery: GalleryPayload = {
+        ...emptyGallery,
+        items: [
+          {
+            elapsed,
+            prompt: 'Release timing boundary',
+            sessionId: `duration-${elapsed}`,
+          },
+        ],
+        total: 1,
+      }
+
+      render(<GalleryGrid gallery={gallery} />)
+
+      expect(
+        document.querySelector(`[aria-label="${expectedLabel}"]`),
+      ).not.toBeNull()
+    },
+  )
+
   it('coalesces identical public gallery requests across duplicate consumers', async () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,

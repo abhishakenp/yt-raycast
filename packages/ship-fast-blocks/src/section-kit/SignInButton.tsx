@@ -2,8 +2,8 @@ import { useState } from 'react'
 
 import { useAuth, signInWithGoogle, signOut } from '@ship-fast/lakebed/react'
 
+import { Button } from '#/components/ui/button.tsx'
 import { cn } from '#/lib/utils.ts'
-import { kitActionClasses } from '#/section-kit/types.ts'
 
 /**
  * A REAL working sign-in button wired to the site's Shoo/lakebed auth.
@@ -34,18 +34,21 @@ export function SignInButton(props: {
   }
 
   if (!signedIn) {
+    const buttonVariant =
+      props.variant === 'outline' || props.variant === 'ghost'
+        ? props.variant
+        : 'shiny'
+
     return (
-      <button
+      <Button
         type="button"
+        variant={buttonVariant}
+        size="sm"
         disabled={auth.isLoading}
         onClick={() => {
           void signInWithGoogle({ returnTo: currentRoute() })
         }}
-        className={cn(
-          kitActionClasses(props.variant ?? 'primary'),
-          'gap-2 disabled:cursor-not-allowed disabled:opacity-60',
-          props.className,
-        )}
+        className={cn('gap-2', props.className)}
       >
         <svg
           aria-hidden="true"
@@ -72,7 +75,7 @@ export function SignInButton(props: {
           />
         </svg>
         {props.label ?? 'Sign in'}
-      </button>
+      </Button>
     )
   }
 

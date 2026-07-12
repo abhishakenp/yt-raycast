@@ -1,6 +1,6 @@
 'use client'
 
-import { type ReactElement } from 'react'
+import { type ReactElement, useEffect, useState } from 'react'
 import { Palette, Check, Sun, Moon } from 'lucide-react'
 
 import {
@@ -63,6 +63,11 @@ export default function ThemePicker({
   popoverClassName,
 }: ThemePickerProps) {
   const mode = isDark ? 'dark' : 'light'
+  const [activeTheme, setActiveTheme] = useState(value ?? '')
+
+  useEffect(() => {
+    setActiveTheme(value ?? '')
+  }, [value])
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -95,7 +100,7 @@ export default function ThemePicker({
             {isDark ? 'Light mode' : 'Dark mode'}
           </button>
         </div>
-        <Command>
+        <Command value={activeTheme} onValueChange={setActiveTheme}>
           <CommandInput placeholder="Search themes…" />
           <CommandList>
             <ScrollArea className="max-h-[360px]">

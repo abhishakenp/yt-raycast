@@ -878,6 +878,78 @@ describe('useTextEdit: translated text replacement', () => {
 
     container.remove()
   })
+
+  it('treats a direct browser fill as a full Unicode replacement and persists it after remount', () => {
+    const originalText = 'स्वीट क्रम्ब बेकरी'
+    const replacementText = 'स्वीट क्रम्ब बेकरी रिलीज़'
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+
+    const heading = document.createElement('h1')
+    heading.textContent = originalText
+    container.appendChild(heading)
+
+    const onTextChange = vi.fn()
+    const { result, unmount } = renderHook(() => {
+      const ref = useRef(container)
+      return useTextEdit(ref, true, onTextChange)
+    })
+
+    act(() => {
+      heading.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 0,
+          clientY: 0,
+        }),
+      )
+    })
+
+    const textNode = heading.firstChild as Text
+    const interiorCaretOffset = 'स्वीट क्र'.length
+    const range = document.createRange()
+    range.setStart(textNode, interiorCaretOffset)
+    range.collapse(true)
+    const selection = window.getSelection()!
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    act(() => {
+      const fillInput = new InputEvent('beforeinput', {
+        bubbles: true,
+        cancelable: true,
+        data: replacementText,
+        inputType: 'insertText',
+      })
+      heading.dispatchEvent(fillInput)
+      if (!fillInput.defaultPrevented) {
+        document.execCommand('insertText', false, replacementText)
+      }
+    })
+    act(() => {
+      result.current.commitEdit()
+    })
+
+    const persistedText = onTextChange.mock.calls[0]?.[0]?.newText as
+      | string
+      | undefined
+    unmount()
+    container.remove()
+
+    const reloaded = document.createElement('h1')
+    reloaded.textContent = persistedText ?? ''
+
+    expect({
+      emitted: persistedText,
+      live: heading.textContent,
+      reloaded: reloaded.textContent,
+    }).toEqual({
+      emitted: replacementText,
+      live: replacementText,
+      reloaded: replacementText,
+    })
+  })
 })
 
 describe('useTextEdit: alert dialog focus during active edits', () => {

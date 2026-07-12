@@ -25,6 +25,14 @@ type CommandSearchContextValue = {
   setOpen: (open: boolean) => void
 }
 
+const assignRef = <T,>(ref: React.ForwardedRef<T>, value: T | null) => {
+  if (typeof ref === 'function') {
+    ref(value)
+  } else if (ref) {
+    ref.current = value
+  }
+}
+
 const CommandSearchContext =
   React.createContext<CommandSearchContextValue | null>(null)
 
@@ -118,9 +126,25 @@ CommandSearchContent.displayName = 'CommandSearchContent'
 const CommandSearchInput = React.forwardRef<
   React.ComponentRef<typeof CommandInput>,
   React.ComponentProps<typeof CommandInput>
->(({ className, ...props }, ref) => (
-  <CommandInput ref={ref} className={className} {...props} />
-))
+>(({ className, 'aria-label': ariaLabel = 'Search', ...props }, ref) => {
+  const setInputRef = React.useCallback(
+    (node: React.ComponentRef<typeof CommandInput> | null) => {
+      node?.setAttribute('role', 'textbox')
+      node?.removeAttribute('aria-labelledby')
+      assignRef(ref, node)
+    },
+    [ref],
+  )
+
+  return (
+    <CommandInput
+      ref={setInputRef}
+      aria-label={ariaLabel}
+      className={className}
+      {...props}
+    />
+  )
+})
 CommandSearchInput.displayName = 'CommandSearchInput'
 
 const CommandSearchList = React.forwardRef<
