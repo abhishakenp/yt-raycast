@@ -1209,7 +1209,14 @@ export function InlineEditToolbar({
   // collection items are rendered as repeated card-like elements.
   const activeCollectionItem = useMemo(() => {
     if (!activeElement || !canCapsuleEdit || !capsuleElement) return null
+    // Walk from activeElement up to capsuleElement, collecting all levels
+    // that have multiple same-tag siblings. Return the level with the MOST
+    // siblings — that's the level where siblings represent different
+    // collection items (e.g. 4 ARTICLEs in a grid), not sub-elements
+    // within one item (e.g. 2 DIVs inside one article).
     let current: HTMLElement | null = activeElement
+    let bestMatch: { collectionKey: string; index: number } | null = null
+    let bestSiblingCount = 1
     while (current && current !== capsuleElement) {
       const parent: HTMLElement | null = current.parentElement
       if (parent && parent !== capsuleElement) {
@@ -1217,16 +1224,17 @@ export function InlineEditToolbar({
         const siblings = Array.from(parent.children).filter(
           (c: Element) => c.tagName === currentTag,
         )
-        if (siblings.length > 1) {
+        if (siblings.length > bestSiblingCount) {
           const index = siblings.indexOf(current)
           if (index >= 0) {
-            return { collectionKey: '__auto__', index }
+            bestSiblingCount = siblings.length
+            bestMatch = { collectionKey: '__auto__', index }
           }
         }
       }
       current = parent
     }
-    return null
+    return bestMatch
   }, [canCapsuleEdit, capsuleElement, activeElement])
 
   if (!isOpen || !anchorRect || !activeElement) return null
