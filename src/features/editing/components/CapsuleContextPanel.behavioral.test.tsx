@@ -219,8 +219,8 @@ describe('CapsuleContextPanel', () => {
 
     fireEvent.click(screen.getByText('Test photo'))
 
-    expect(screen.getByText('Alt')).toBeTruthy()
-    expect(screen.getByText('Caption')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Alt')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Caption')).toBeTruthy()
   })
 
   it('remove button calls removeItem', async () => {
@@ -357,13 +357,14 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     // Click on the item label to expand
     fireEvent.click(screen.getByText('Basic'))
 
-    // All field labels should be visible
-    expect(screen.getByText('Name')).toBeTruthy()
-    expect(screen.getByText('Price')).toBeTruthy()
-    expect(screen.getByText('Period')).toBeTruthy()
-    expect(screen.getByText('Features')).toBeTruthy()
-    expect(screen.getByText('Cta')).toBeTruthy()
-    expect(screen.getByText('CtaTarget')).toBeTruthy()
+    // All field inputs should be visible (placeholder-based labels)
+    expect(screen.getByPlaceholderText('Name')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Price')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Period')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Features (one per line)')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Cta')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Cta Target')).toBeTruthy()
+    // Highlighted is a boolean → renders as checkbox with text label
     expect(screen.getByText('Highlighted')).toBeTruthy()
   })
 
@@ -382,11 +383,11 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
     // Expand
     fireEvent.click(screen.getByText('Test'))
-    expect(screen.getByText('Alt')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Alt')).toBeTruthy()
 
     // Collapse
     fireEvent.click(screen.getByText('Test'))
-    expect(screen.queryByText('Alt')).toBeNull()
+    expect(screen.queryByPlaceholderText('Alt')).toBeNull()
   })
 
   // ── Field editing ─────────────────────────────────────────────────────────
@@ -408,9 +409,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     fireEvent.click(screen.getByText('Old alt'))
 
     // Find the Alt input and change it
-    const altInput = screen.getByRole('textbox', {
-      name: 'Alt',
-    }) as HTMLInputElement
+    const altInput = screen.getByPlaceholderText('Alt') as HTMLInputElement
     expect(altInput.value).toBe('Old alt')
 
     await act(async () => {
@@ -441,9 +440,9 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     // Expand
     fireEvent.click(screen.getByText('Alice'))
 
-    const ratingInput = screen.getByRole('spinbutton', {
-      name: 'Rating',
-    }) as HTMLInputElement
+    const ratingInput = screen.getByPlaceholderText(
+      'Rating',
+    ) as HTMLInputElement
     expect(ratingInput.value).toBe('5')
 
     await act(async () => {
@@ -622,14 +621,14 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
       }),
     )
 
-    const eyebrowInput = screen.getByRole('textbox', {
-      name: 'Eyebrow',
-    }) as HTMLInputElement
+    const eyebrowInput = screen.getByPlaceholderText(
+      'Eyebrow',
+    ) as HTMLInputElement
     expect(eyebrowInput.value).toBe('Flexible Workspaces')
 
-    const headingLeadInput = screen.getByRole('textbox', {
-      name: 'HeadingLead',
-    }) as HTMLInputElement
+    const headingLeadInput = screen.getByPlaceholderText(
+      'Heading Lead',
+    ) as HTMLInputElement
     expect(headingLeadInput.value).toBe('Work')
   })
 
@@ -646,9 +645,9 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
       }),
     )
 
-    const eyebrowInput = screen.getByRole('textbox', {
-      name: 'Eyebrow',
-    }) as HTMLInputElement
+    const eyebrowInput = screen.getByPlaceholderText(
+      'Eyebrow',
+    ) as HTMLInputElement
 
     await act(async () => {
       fireEvent.change(eyebrowInput, { target: { value: 'New text' } })
