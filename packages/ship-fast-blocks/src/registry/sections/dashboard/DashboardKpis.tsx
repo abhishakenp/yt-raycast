@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
@@ -130,92 +131,96 @@ export const DashboardKpis = defineCapsule({
     }
 
     return (
-      <ResponsiveGrid cols="1-2-4" gap="sm" className={props.className}>
-        {kpis.map((kpi) => {
-          const tone = kpi.tone ?? 'primary'
-          const up = kpi.trendUp ?? true
-          return (
-            <Card
-              key={kpi.label}
-              aria-label={`${kpi.label}: ${kpi.value}`}
-              padding="sm"
-              className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)]"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {kpi.label}
-                  </p>
-                  <p className="mt-1 text-2xl font-bold text-foreground">
-                    {kpi.value}
-                  </p>
-                  <div className="mt-2 flex items-center gap-1">
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <ResponsiveGrid cols="1-2-4" gap="sm">
+            {kpis.map((kpi) => {
+              const tone = kpi.tone ?? 'primary'
+              const up = kpi.trendUp ?? true
+              return (
+                <Card
+                  key={kpi.label}
+                  aria-label={`${kpi.label}: ${kpi.value}`}
+                  padding="sm"
+                  className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)]"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {kpi.label}
+                      </p>
+                      <p className="mt-1 text-2xl font-bold text-foreground">
+                        {kpi.value}
+                      </p>
+                      <div className="mt-2 flex items-center gap-1">
+                        <span
+                          className={cn(
+                            'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold',
+                            up
+                              ? 'bg-chart-1/10 text-chart-1'
+                              : 'bg-destructive/10 text-destructive',
+                          )}
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                            className="mr-0.5"
+                          >
+                            {up ? (
+                              <>
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                                <polyline points="17 6 23 6 23 12" />
+                              </>
+                            ) : (
+                              <>
+                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                                <polyline points="17 18 23 18 23 12" />
+                              </>
+                            )}
+                          </svg>
+                          {kpi.delta}
+                        </span>
+                        {kpi.deltaNote ? (
+                          <span className="text-xs text-muted-foreground">
+                            {kpi.deltaNote}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
                     <span
                       className={cn(
-                        'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold',
-                        up
-                          ? 'bg-chart-1/10 text-chart-1'
-                          : 'bg-destructive/10 text-destructive',
+                        'grid size-10 place-items-center rounded-lg',
+                        kpiTones[tone],
                       )}
                     >
                       <svg
-                        width="12"
-                        height="12"
+                        width="20"
+                        height="20"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2.5"
+                        strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         aria-hidden="true"
-                        className="mr-0.5"
                       >
-                        {up ? (
-                          <>
-                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                            <polyline points="17 6 23 6 23 12" />
-                          </>
-                        ) : (
-                          <>
-                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
-                            <polyline points="17 18 23 18 23 12" />
-                          </>
-                        )}
+                        {kpiIcons[tone]}
                       </svg>
-                      {kpi.delta}
                     </span>
-                    {kpi.deltaNote ? (
-                      <span className="text-xs text-muted-foreground">
-                        {kpi.deltaNote}
-                      </span>
-                    ) : null}
                   </div>
-                </div>
-                <span
-                  className={cn(
-                    'grid size-10 place-items-center rounded-lg',
-                    kpiTones[tone],
-                  )}
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    {kpiIcons[tone]}
-                  </svg>
-                </span>
-              </div>
-            </Card>
-          )
-        })}
-      </ResponsiveGrid>
+                </Card>
+              )
+            })}
+          </ResponsiveGrid>
+        </Container>
+      </section>
     )
   },
 })

@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
@@ -69,16 +71,19 @@ export const VacationRentalTestimonials = defineCapsule({
         ]
 
     return (
-      <TestimonialGrid
-        heading={props.heading ?? 'Loved by guests'}
-        subheading={
-          props.subheading ??
-          "Hundreds of five-star stays — here's what recent guests had to say."
-        }
-        items={items}
-        columns={props.columns ?? 3}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <TestimonialGrid
+            heading={props.heading ?? 'Loved by guests'}
+            subheading={
+              props.subheading ??
+              "Hundreds of five-star stays — here's what recent guests had to say."
+            }
+            items={items}
+            columns={props.columns ?? 3}
+          />
+        </Container>
+      </section>
     )
   },
 })

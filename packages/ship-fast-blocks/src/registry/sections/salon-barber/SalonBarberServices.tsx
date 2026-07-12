@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
@@ -121,13 +123,16 @@ export const SalonBarberServices = defineCapsule({
     }))
 
     return (
-      <FeatureGrid
-        heading={props.heading ?? 'Our Services'}
-        subheading={props.subheading ?? 'What we do best'}
-        features={features}
-        columns={4}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <FeatureGrid
+            heading={props.heading ?? 'Our Services'}
+            subheading={props.subheading ?? 'What we do best'}
+            features={features}
+            columns={4}
+          />
+        </Container>
+      </section>
     )
   },
 })

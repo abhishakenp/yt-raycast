@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
@@ -88,12 +90,15 @@ export const NutritionPricing = defineCapsule({
         ]
 
     return (
-      <PricingGrid
-        heading={heading}
-        subheading={subheading}
-        tiers={tiers}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <PricingGrid
+            heading={heading}
+            subheading={subheading}
+            tiers={tiers}
+          />
+        </Container>
+      </section>
     )
   },
 })

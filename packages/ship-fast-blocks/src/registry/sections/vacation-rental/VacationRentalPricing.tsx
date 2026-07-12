@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
@@ -85,15 +87,18 @@ export const VacationRentalPricing = defineCapsule({
         ]
 
     return (
-      <PricingGrid
-        heading={props.heading ?? 'Stay your way'}
-        subheading={
-          props.subheading ??
-          'Flexible rates for a weekend escape, a full week by the water, or a long, slow month away.'
-        }
-        tiers={tiers}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <PricingGrid
+            heading={props.heading ?? 'Stay your way'}
+            subheading={
+              props.subheading ??
+              'Flexible rates for a weekend escape, a full week by the water, or a long, slow month away.'
+            }
+            tiers={tiers}
+          />
+        </Container>
+      </section>
     )
   },
 })

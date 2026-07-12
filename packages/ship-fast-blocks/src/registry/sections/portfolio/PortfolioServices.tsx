@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
@@ -66,23 +68,26 @@ export const PortfolioServices = defineCapsule({
     const icons = ['✦', '▷', '◈', '❖', '⌘', '✸']
 
     return (
-      <FeatureGrid
-        heading={props.heading ?? 'What I do'}
-        subheading={
-          props.subheading ??
-          'A focused set of services for brands and studios that care about craft — from the first concept to the final frame.'
-        }
-        features={services.map((s, i) => ({
-          title: s.title,
-          description: s.description,
-          icon: (
-            <span aria-hidden="true" className="text-xl leading-none">
-              {icons[i % icons.length]}
-            </span>
-          ),
-        }))}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <FeatureGrid
+            heading={props.heading ?? 'What I do'}
+            subheading={
+              props.subheading ??
+              'A focused set of services for brands and studios that care about craft — from the first concept to the final frame.'
+            }
+            features={services.map((s, i) => ({
+              title: s.title,
+              description: s.description,
+              icon: (
+                <span aria-hidden="true" className="text-xl leading-none">
+                  {icons[i % icons.length]}
+                </span>
+              ),
+            }))}
+          />
+        </Container>
+      </section>
     )
   },
 })

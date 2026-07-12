@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
@@ -164,19 +166,22 @@ export const BlogTopics = defineCapsule({
     ]
 
     return (
-      <FeatureGrid
-        heading={props.heading ?? 'Explore topics'}
-        subheading={
-          props.subheading ?? 'Dive into the subjects we write about most.'
-        }
-        columns={props.columns ?? 4}
-        features={topics.map((t, i) => ({
-          title: t.title,
-          description: t.description,
-          icon: icons[i % icons.length],
-        }))}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <FeatureGrid
+            heading={props.heading ?? 'Explore topics'}
+            subheading={
+              props.subheading ?? 'Dive into the subjects we write about most.'
+            }
+            columns={props.columns ?? 4}
+            features={topics.map((t, i) => ({
+              title: t.title,
+              description: t.description,
+              icon: icons[i % icons.length],
+            }))}
+          />
+        </Container>
+      </section>
     )
   },
 })

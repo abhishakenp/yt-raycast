@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
@@ -65,16 +67,19 @@ export const VideoStreamingGallery = defineCapsule({
           },
         ]
     return (
-      <GalleryGrid
-        heading={props.heading ?? 'Trending now'}
-        subheading={
-          props.description ??
-          "The titles everyone's streaming this week — originals, blockbusters, and fresh arrivals added all the time."
-        }
-        images={images}
-        columns={4}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <GalleryGrid
+            heading={props.heading ?? 'Trending now'}
+            subheading={
+              props.description ??
+              "The titles everyone's streaming this week — originals, blockbusters, and fresh arrivals added all the time."
+            }
+            images={images}
+            columns={4}
+          />
+        </Container>
+      </section>
     )
   },
 })

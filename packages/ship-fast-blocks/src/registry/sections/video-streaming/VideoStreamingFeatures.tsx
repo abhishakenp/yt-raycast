@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
@@ -123,17 +125,20 @@ export const VideoStreamingFeatures = defineCapsule({
         ]
 
     return (
-      <FeatureGrid
-        heading={heading}
-        subheading={subheading}
-        columns={4}
-        features={features.map((f, i) => ({
-          title: f.title,
-          description: f.description,
-          icon: <FeatureIcon glyph={ICONS[i % ICONS.length]} />,
-        }))}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <FeatureGrid
+            heading={heading}
+            subheading={subheading}
+            columns={4}
+            features={features.map((f, i) => ({
+              title: f.title,
+              description: f.description,
+              icon: <FeatureIcon glyph={ICONS[i % ICONS.length]} />,
+            }))}
+          />
+        </Container>
+      </section>
     )
   },
 })

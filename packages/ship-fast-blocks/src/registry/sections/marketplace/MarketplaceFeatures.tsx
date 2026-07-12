@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
@@ -212,16 +214,19 @@ export const MarketplaceFeatures = defineCapsule({
       : defaults
 
     return (
-      <FeatureGrid
-        heading={props.heading ?? 'Browse by Category'}
-        subheading={
-          props.subheading ??
-          'Explore a curated collection across major categories with over 50,000 unique products from verified sellers.'
-        }
-        features={features}
-        columns={props.columns ?? 4}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <FeatureGrid
+            heading={props.heading ?? 'Browse by Category'}
+            subheading={
+              props.subheading ??
+              'Explore a curated collection across major categories with over 50,000 unique products from verified sellers.'
+            }
+            features={features}
+            columns={props.columns ?? 4}
+          />
+        </Container>
+      </section>
     )
   },
 })

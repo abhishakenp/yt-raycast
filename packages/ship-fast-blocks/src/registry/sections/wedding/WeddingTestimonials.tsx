@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
@@ -45,17 +47,20 @@ export const WeddingTestimonials = defineCapsule({
         ]
 
     return (
-      <TestimonialGrid
-        heading={props.heading ?? 'Well wishes'}
-        subheading="Notes from our favorite people"
-        items={wishes.map((w) => ({
-          quote: w.quote,
-          name: w.name,
-          role: w.relation,
-        }))}
-        columns={3}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <TestimonialGrid
+            heading={props.heading ?? 'Well wishes'}
+            subheading="Notes from our favorite people"
+            items={wishes.map((w) => ({
+              quote: w.quote,
+              name: w.name,
+              role: w.relation,
+            }))}
+            columns={3}
+          />
+        </Container>
+      </section>
     )
   },
 })

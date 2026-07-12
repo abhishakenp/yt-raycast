@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
@@ -215,178 +216,182 @@ export const DashboardChartActivity = defineCapsule({
     )
 
     return (
-      <ResponsiveGrid cols="1-lg-3" gap="md" className={props.className}>
-        {/* Revenue chart */}
-        <Card padding="sm" className="p-5 lg:col-span-2">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-foreground">
-                {chartTitle}
-              </h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {chartSubtitle}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {chartRanges.map((range) => {
-                const active = activeRange === range
-                return (
-                  <button
-                    key={range}
-                    type="button"
-                    onClick={() => setActiveRange(range)}
-                    className={cn(
-                      'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
-                      active
-                        ? 'border-primary/20 bg-primary/10 text-primary'
-                        : 'border-border bg-card text-muted-foreground hover:bg-muted',
-                    )}
-                  >
-                    {range}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          <div className="relative h-64">
-            <svg
-              viewBox={`0 0 ${chartW} ${chartH}`}
-              preserveAspectRatio="none"
-              className="size-full"
-              role="img"
-              aria-label={`${chartTitle} chart`}
-            >
-              <defs>
-                <linearGradient
-                  id="dashboard-revenue-fill"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor="var(--color-primary)"
-                    stopOpacity="0.25"
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="var(--color-primary)"
-                    stopOpacity="0"
-                  />
-                </linearGradient>
-              </defs>
-              {gridLines.map((y, i) => (
-                <line
-                  key={i}
-                  x1={padX}
-                  y1={y}
-                  x2={chartW - padX}
-                  y2={y}
-                  className="stroke-border"
-                  strokeWidth="1"
-                  strokeOpacity="0.5"
-                />
-              ))}
-              <path d={areaPath} fill="url(#dashboard-revenue-fill)" />
-              <path
-                d={linePath}
-                fill="none"
-                stroke="var(--color-primary)"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-              />
-              {points.map((p, i) =>
-                i === points.length - 1 ? (
-                  <circle
-                    key={i}
-                    cx={p.x}
-                    cy={p.y}
-                    r="4"
-                    fill="var(--color-primary)"
-                    stroke="var(--color-card)"
-                    strokeWidth="2"
-                  />
-                ) : null,
-              )}
-            </svg>
-            <div className="pointer-events-none mt-1 flex justify-between px-1 text-[0.6875rem] text-muted-foreground">
-              {chartLabels.map((label) => (
-                <span key={label}>{label}</span>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        {/* Recent activity */}
-        <Card padding="sm" className="p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-foreground">
-              {activityTitle}
-            </h2>
-            <button
-              type="button"
-              onClick={() => go(activityViewAll)}
-              className="text-xs font-medium text-primary hover:text-primary/80"
-            >
-              {activityViewAll}
-            </button>
-          </div>
-          <div className="space-y-4">
-            {activityItems.map((item, i) => {
-              const tone = activityTones[item.tone ?? 'primary']
-              const emph = item.emphasis
-              let before = item.text
-              let bold = ''
-              let after = ''
-              if (emph && item.text.includes(emph)) {
-                const idx = item.text.indexOf(emph)
-                before = item.text.slice(0, idx)
-                bold = emph
-                after = item.text.slice(idx + emph.length)
-              }
-              return (
-                <div key={i} className="flex gap-3">
-                  <span
-                    className={cn(
-                      'mt-0.5 grid size-8 shrink-0 place-items-center rounded-full',
-                      tone.wrap,
-                    )}
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      {tone.icon}
-                    </svg>
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm text-foreground">
-                      {before}
-                      {bold ? (
-                        <span className="font-semibold">{bold}</span>
-                      ) : null}
-                      {after}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {item.time}
-                    </p>
-                  </div>
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <ResponsiveGrid cols="1-lg-3" gap="md">
+            {/* Revenue chart */}
+            <Card padding="sm" className="p-5 lg:col-span-2">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">
+                    {chartTitle}
+                  </h2>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {chartSubtitle}
+                  </p>
                 </div>
-              )
-            })}
-          </div>
-        </Card>
-      </ResponsiveGrid>
+                <div className="flex gap-2">
+                  {chartRanges.map((range) => {
+                    const active = activeRange === range
+                    return (
+                      <button
+                        key={range}
+                        type="button"
+                        onClick={() => setActiveRange(range)}
+                        className={cn(
+                          'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
+                          active
+                            ? 'border-primary/20 bg-primary/10 text-primary'
+                            : 'border-border bg-card text-muted-foreground hover:bg-muted',
+                        )}
+                      >
+                        {range}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="relative h-64">
+                <svg
+                  viewBox={`0 0 ${chartW} ${chartH}`}
+                  preserveAspectRatio="none"
+                  className="size-full"
+                  role="img"
+                  aria-label={`${chartTitle} chart`}
+                >
+                  <defs>
+                    <linearGradient
+                      id="dashboard-revenue-fill"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="var(--color-primary)"
+                        stopOpacity="0.25"
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="var(--color-primary)"
+                        stopOpacity="0"
+                      />
+                    </linearGradient>
+                  </defs>
+                  {gridLines.map((y, i) => (
+                    <line
+                      key={i}
+                      x1={padX}
+                      y1={y}
+                      x2={chartW - padX}
+                      y2={y}
+                      className="stroke-border"
+                      strokeWidth="1"
+                      strokeOpacity="0.5"
+                    />
+                  ))}
+                  <path d={areaPath} fill="url(#dashboard-revenue-fill)" />
+                  <path
+                    d={linePath}
+                    fill="none"
+                    stroke="var(--color-primary)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {points.map((p, i) =>
+                    i === points.length - 1 ? (
+                      <circle
+                        key={i}
+                        cx={p.x}
+                        cy={p.y}
+                        r="4"
+                        fill="var(--color-primary)"
+                        stroke="var(--color-card)"
+                        strokeWidth="2"
+                      />
+                    ) : null,
+                  )}
+                </svg>
+                <div className="pointer-events-none mt-1 flex justify-between px-1 text-[0.6875rem] text-muted-foreground">
+                  {chartLabels.map((label) => (
+                    <span key={label}>{label}</span>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Recent activity */}
+            <Card padding="sm" className="p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-base font-semibold text-foreground">
+                  {activityTitle}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => go(activityViewAll)}
+                  className="text-xs font-medium text-primary hover:text-primary/80"
+                >
+                  {activityViewAll}
+                </button>
+              </div>
+              <div className="space-y-4">
+                {activityItems.map((item, i) => {
+                  const tone = activityTones[item.tone ?? 'primary']
+                  const emph = item.emphasis
+                  let before = item.text
+                  let bold = ''
+                  let after = ''
+                  if (emph && item.text.includes(emph)) {
+                    const idx = item.text.indexOf(emph)
+                    before = item.text.slice(0, idx)
+                    bold = emph
+                    after = item.text.slice(idx + emph.length)
+                  }
+                  return (
+                    <div key={i} className="flex gap-3">
+                      <span
+                        className={cn(
+                          'mt-0.5 grid size-8 shrink-0 place-items-center rounded-full',
+                          tone.wrap,
+                        )}
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          {tone.icon}
+                        </svg>
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm text-foreground">
+                          {before}
+                          {bold ? (
+                            <span className="font-semibold">{bold}</span>
+                          ) : null}
+                          {after}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {item.time}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Card>
+          </ResponsiveGrid>
+        </Container>
+      </section>
     )
   },
 })

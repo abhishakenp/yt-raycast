@@ -1,4 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
@@ -50,13 +52,16 @@ export const WeddingGallery = defineCapsule({
           },
         ]
     return (
-      <GalleryGrid
-        heading={props.heading ?? 'Our moments'}
-        subheading={props.description ?? 'Engagement & beyond'}
-        images={images}
-        columns={3}
-        className={props.className}
-      />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <GalleryGrid
+            heading={props.heading ?? 'Our moments'}
+            subheading={props.description ?? 'Engagement & beyond'}
+            images={images}
+            columns={3}
+          />
+        </Container>
+      </section>
     )
   },
 })
