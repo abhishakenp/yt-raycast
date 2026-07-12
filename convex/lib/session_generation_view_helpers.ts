@@ -1,6 +1,7 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
+import { canReadPrivateSession } from './session_access_helpers'
 import { serializeSession } from './session_serialization_helpers'
 
 type GenerationViewCtx = Pick<QueryCtx, 'db'>
@@ -46,7 +47,9 @@ export const loadGenerationView = async (
 
   const session = await ctx.db.get(sessionId)
 
-  if (session === null) return null
+  if (session === null || !(await canReadPrivateSession(ctx, session))) {
+    return null
+  }
 
   const [tasks, events, homeModule, siteSpec, latestPreview, aiCapsules] =
     await Promise.all([

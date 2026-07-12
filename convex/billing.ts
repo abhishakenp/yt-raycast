@@ -1,10 +1,11 @@
 import { ConvexError, v } from 'convex/values'
 
+import type { Doc } from './_generated/dataModel'
 import { internalMutation, mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import { qualifyReferralOnPayment } from './lib/referral_qualification'
 
-const activeSubscriptionStatuses = new Set([
+const activeSubscriptionStatuses = new Set<Doc<'subscriptions'>['status']>([
   'active',
   'trialing',
   'authenticated',
@@ -28,15 +29,25 @@ const getActiveSubscription = async (
   ctx: QueryCtx | MutationCtx,
   userId: string,
 ) => {
-  const subscriptions = await ctx.db
-    .query('subscriptions')
-    .withIndex('by_userId', (index) => index.eq('userId', userId))
-    .take(20)
+  const candidates = await Promise.all(
+    [...activeSubscriptionStatuses].map((status) =>
+      ctx.db
+        .query('subscriptions')
+        .withIndex('by_userId_status', (index) =>
+          index.eq('userId', userId).eq('status', status),
+        )
+        .order('desc')
+        .first(),
+    ),
+  )
 
-  return (
-    subscriptions.find((subscription) =>
-      activeSubscriptionStatuses.has(subscription.status),
-    ) ?? null
+  return candidates.reduce<Doc<'subscriptions'> | null>(
+    (latest, candidate) =>
+      candidate !== null &&
+      (latest === null || candidate.updatedAt > latest.updatedAt)
+        ? candidate
+        : latest,
+    null,
   )
 }
 

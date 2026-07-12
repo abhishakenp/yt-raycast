@@ -12,8 +12,10 @@ import {
   mutation,
   query,
   type MutationCtx,
+  type QueryCtx,
 } from './_generated/server'
 import {
+  canReadPrivateSession,
   claimAnonymousSession,
   claimAnonymousSessionsByClientId,
   deleteOwnedSessions,
@@ -191,6 +193,14 @@ const editedSessionExportDebouncer = new Debouncer(debouncerComponent, {
   delay: 10_000,
   mode: 'sliding',
 })
+
+const canReadSessionById = async (
+  ctx: Pick<QueryCtx, 'auth' | 'db'>,
+  sessionId: Id<'sessions'>,
+): Promise<boolean> => {
+  const session = await ctx.db.get(sessionId)
+  return session !== null && (await canReadPrivateSession(ctx, session))
+}
 
 const scheduleEditedSessionExportAutomation = async (
   ctx: MutationCtx,
@@ -674,7 +684,9 @@ export const listEdits = query({
   args: lookupArgs,
   handler: async (ctx, args) => {
     const sessionId = ctx.db.normalizeId('sessions', args.lookup)
-    return sessionId === null ? [] : listSessionEdits(ctx, sessionId)
+    return sessionId !== null && (await canReadSessionById(ctx, sessionId))
+      ? listSessionEdits(ctx, sessionId)
+      : []
   },
 })
 
@@ -682,7 +694,9 @@ export const listPreviewHistory = query({
   args: lookupArgs,
   handler: async (ctx, args) => {
     const sessionId = ctx.db.normalizeId('sessions', args.lookup)
-    return sessionId === null ? [] : listSessionPreviewHistory(ctx, sessionId)
+    return sessionId !== null && (await canReadSessionById(ctx, sessionId))
+      ? listSessionPreviewHistory(ctx, sessionId)
+      : []
   },
 })
 
@@ -932,7 +946,10 @@ export const sendTelegramNotification = internalAction({
 
 export const listAiCapsules = query({
   args: sessionIdArgs,
-  handler: (ctx, args) => listSessionAiCapsules(ctx, args.sessionId),
+  handler: async (ctx, args) =>
+    (await canReadSessionById(ctx, args.sessionId))
+      ? listSessionAiCapsules(ctx, args.sessionId)
+      : [],
 })
 
 export const upsertAiCapsule = internalMutation({

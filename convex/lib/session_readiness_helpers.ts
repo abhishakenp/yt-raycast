@@ -1,5 +1,6 @@
 import type { Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
+import { canReadPrivateSession } from './session_access_helpers'
 import { serializeSession } from './session_serialization_helpers'
 
 type SessionReadinessCtx = Pick<QueryCtx, 'db'>
@@ -14,7 +15,9 @@ export const loadSessionReadiness = async (
 
   const session = await ctx.db.get(sessionId)
 
-  if (session === null) return null
+  if (session === null || !(await canReadPrivateSession(ctx, session))) {
+    return null
+  }
 
   const [tasks, preview, siteSpec, openUiModule] = await Promise.all([
     ctx.db

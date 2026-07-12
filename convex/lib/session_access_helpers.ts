@@ -1,7 +1,7 @@
 import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
-import type { MutationCtx } from '../_generated/server'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
 import {
   areExportPaywallsDisabled,
   isAuthDisabled,
@@ -28,6 +28,8 @@ type AuthCtx = {
     getUserIdentity: () => Promise<AuthIdentity | null>
   }
 }
+
+type OptionalAuthCtx = AuthCtx | Pick<QueryCtx, 'db'>
 
 export type DeleteOwnedSessionsInput = {
   anonymousClientId?: string
@@ -117,6 +119,20 @@ export const assertCanReadOwnedSession = async (
     })()
 }
 
+export const canReadPrivateSession = async (
+  ctx: OptionalAuthCtx,
+  session: {
+    isPrivate?: boolean
+    userId?: string
+    anonOwnerSecretHash?: string
+  },
+  anonymousOwnerSecret?: string,
+): Promise<boolean> => {
+  if (session.isPrivate !== true || isAuthDisabled()) return true
+  if (!('auth' in ctx)) return false
+  return isSessionOwner(ctx, session, anonymousOwnerSecret)
+}
+
 export const assertCanReadPrivateSession = async (
   ctx: AuthCtx,
   session: {
@@ -126,8 +142,12 @@ export const assertCanReadPrivateSession = async (
   },
   anonymousOwnerSecret?: string,
 ) => {
-  if (session.isPrivate !== true) return
-  await assertCanReadOwnedSession(ctx, session, anonymousOwnerSecret)
+  if (await canReadPrivateSession(ctx, session, anonymousOwnerSecret)) return
+
+  throw new ConvexError({
+    code: 'FORBIDDEN',
+    message: 'You do not own this session',
+  })
 }
 
 export const assertCanMutateSession = async (
