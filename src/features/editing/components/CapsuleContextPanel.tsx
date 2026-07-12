@@ -24,16 +24,6 @@ import {
   AlertDialogTrigger,
 } from '#/components/ui/alert-dialog'
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '#/components/ui/dialog'
-import {
   Sortable,
   SortableContent,
   SortableItem,
@@ -268,21 +258,28 @@ const BentoCollection = ({
   ) => Promise<void>
 }) => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
-  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [draftItem, setDraftItem] = useState<Record<string, unknown> | null>(
+    null,
+  )
   const itemArray = Array.isArray(items) ? items : []
   const label = titleCase(collectionKey)
 
   const titleField = findTitleField(itemFields)
   const subtitleField = findSubtitleField(itemFields)
 
-  const handleAdd = useCallback(
-    (newItem: Record<string, unknown>) => {
-      void onAdd(collectionKey, newItem)
-      setAddDialogOpen(false)
-      setExpandedIndex(itemArray.length)
-    },
-    [collectionKey, onAdd, itemArray.length],
-  )
+  const startAdd = useCallback(() => {
+    setDraftItem(createDefaultItem({ key: collectionKey, itemFields }))
+    setExpandedIndex(null)
+  }, [collectionKey, itemFields])
+
+  const saveDraft = useCallback(() => {
+    if (!draftItem) return
+    void onAdd(collectionKey, draftItem)
+    setDraftItem(null)
+    setExpandedIndex(itemArray.length)
+  }, [draftItem, collectionKey, onAdd, itemArray.length])
+
+  const cancelDraft = useCallback(() => setDraftItem(null), [])
 
   // Build sortable values — use index as id since items may not have unique ids
   const sortableItems = itemArray.map((_, i) => i)
@@ -294,17 +291,20 @@ const BentoCollection = ({
         <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
           {label} <span className="text-white/20">({itemArray.length})</span>
         </span>
-        <AddItemDialog
-          collectionKey={collectionKey}
-          itemFields={itemFields}
-          label={label}
-          open={addDialogOpen}
-          onOpenChange={setAddDialogOpen}
-          onAdd={handleAdd}
-        />
+        <Button
+          type="button"
+          variant="outline"
+          size="xs"
+          onClick={startAdd}
+          disabled={draftItem !== null}
+          className="h-6 gap-1 px-2 text-[11px]"
+        >
+          <Plus className="size-3" />
+          Add
+        </Button>
       </div>
 
-      {itemArray.length === 0 && (
+      {itemArray.length === 0 && draftItem === null && (
         <p className="py-1.5 text-center text-[11px] text-white/20">
           No items yet
         </p>
@@ -392,179 +392,49 @@ const BentoCollection = ({
           <SortableOverlay />
         </Sortable>
       )}
-    </div>
-  )
-}
 
-// ─── Add item dialog with form ──────────────────────────────────────────────
-
-const AddItemDialog = ({
-  collectionKey,
-  itemFields,
-  label,
-  open,
-  onOpenChange,
-  onAdd,
-}: {
-  collectionKey: string
-  itemFields: CollectionField[]
-  label: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onAdd: (item: Record<string, unknown>) => void
-}) => {
-  const defaultItem = useMemo(
-    () => createDefaultItem({ key: collectionKey, itemFields }),
-    [collectionKey, itemFields],
-  )
-  const [formData, setFormData] = useState<Record<string, unknown>>(defaultItem)
-
-  // Reset form when dialog opens
-  const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen) {
-      setFormData(createDefaultItem({ key: collectionKey, itemFields }))
-    }
-    onOpenChange(newOpen)
-  }
-
-  const handleSubmit = () => {
-    onAdd(formData)
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="xs"
-          className="h-6 gap-1 px-2 text-[11px]"
-        >
-          <Plus className="size-3" />
-          Add
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add {label}</DialogTitle>
-          <DialogDescription>
-            Fill in the fields below, then click Add to create the item.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid max-h-[50vh] grid-cols-2 gap-2 overflow-y-auto py-2">
-          {itemFields.map((field) => (
-            <FormField
-              key={field.key}
-              field={field}
-              value={formData[field.key]}
-              onChange={(value) =>
-                setFormData((prev) => ({ ...prev, [field.key]: value }))
-              }
-            />
-          ))}
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline" size="sm">
+      {/* Inline draft — appears at bottom when Add is clicked */}
+      {draftItem !== null && (
+        <div className="rounded-md border border-cyan-300/40 bg-cyan-300/5">
+          <div className="flex items-center gap-1 px-1.5 py-1">
+            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-cyan-300/60">
+              New {label}
+            </span>
+            <div className="flex-1" />
+            <button
+              type="button"
+              onClick={cancelDraft}
+              className="rounded px-1.5 py-0.5 text-[10px] font-medium text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+            >
               Cancel
+            </button>
+            <Button
+              type="button"
+              variant="default"
+              size="xs"
+              onClick={saveDraft}
+              className="h-5 gap-1 px-2 text-[10px]"
+            >
+              <Plus className="size-2.5" />
+              Save
             </Button>
-          </DialogClose>
-          <Button size="sm" onClick={handleSubmit}>
-            <Plus className="size-3.5" />
-            Add {label}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-// ─── Form field (for Add dialog) ────────────────────────────────────────────
-
-const FormField = ({
-  field,
-  value,
-  onChange,
-}: {
-  field: CollectionField
-  value: unknown
-  onChange: (value: unknown) => void
-}) => {
-  const placeholder = titleCase(field.key)
-  const isWide = field.type === 'array-string' || LONG_TEXT_KEYS.has(field.key)
-
-  if (field.type === 'boolean') {
-    return (
-      <label className="col-span-2 flex items-center gap-2 text-xs text-white/70">
-        <input
-          type="checkbox"
-          checked={value === true}
-          onChange={(e) => onChange(e.target.checked)}
-          className="size-3.5 accent-cyan-300"
-        />
-        {placeholder}
-      </label>
-    )
-  }
-
-  if (field.type === 'array-string') {
-    const text = Array.isArray(value)
-      ? (value as string[]).join('\n')
-      : typeof value === 'string'
-        ? value
-        : ''
-    return (
-      <div className={cn('flex flex-col gap-0.5', isWide && 'col-span-2')}>
-        <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
-          {placeholder}
-        </label>
-        <textarea
-          value={text}
-          onChange={(e) =>
-            onChange(
-              e.target.value.split('\n').filter((line) => line.trim() !== ''),
-            )
-          }
-          rows={3}
-          placeholder={`${placeholder} (one per line)`}
-          className="w-full resize-none rounded-md border border-white/10 bg-black/20 px-2 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
-        />
-      </div>
-    )
-  }
-
-  if (field.type === 'number') {
-    return (
-      <div className="flex flex-col gap-0.5">
-        <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
-          {placeholder}
-        </label>
-        <input
-          type="number"
-          value={typeof value === 'number' ? value : ''}
-          onChange={(e) => {
-            const n = Number(e.target.value)
-            onChange(Number.isFinite(n) ? n : 0)
-          }}
-          placeholder={placeholder}
-          className="w-full rounded-md border border-white/10 bg-black/20 px-2 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
-        />
-      </div>
-    )
-  }
-
-  return (
-    <div className={cn('flex flex-col gap-0.5', isWide && 'col-span-2')}>
-      <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
-        {placeholder}
-      </label>
-      <input
-        type="text"
-        value={typeof value === 'string' ? value : ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-md border border-white/10 bg-black/20 px-2 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
-      />
+          </div>
+          <div className="grid grid-cols-2 gap-1 border-t border-cyan-300/20 p-1.5">
+            {itemFields.map((field) => (
+              <FieldInput
+                key={field.key}
+                field={field}
+                value={draftItem[field.key]}
+                onChange={(newValue) =>
+                  setDraftItem((prev) =>
+                    prev ? { ...prev, [field.key]: newValue } : prev,
+                  )
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

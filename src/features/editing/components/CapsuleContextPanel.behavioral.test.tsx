@@ -127,16 +127,16 @@ describe('CapsuleContextPanel', () => {
       }),
     )
 
-    // Click Add button — opens a dialog form
+    // Click Add button — shows inline draft form
     const addBtn = screen.getAllByRole('button', { name: /Add/ })[0]!
     await act(async () => {
       fireEvent.click(addBtn)
     })
 
-    // Dialog should be open — click the submit button "Add Images"
-    const submitBtn = screen.getByRole('button', { name: /Add Images/ })
+    // Click Save in the inline draft
+    const saveBtn = screen.getByRole('button', { name: /Save/ })
     await act(async () => {
-      fireEvent.click(submitBtn)
+      fireEvent.click(saveBtn)
     })
 
     expect(mockActions.addItem).toHaveBeenCalledWith('images', {
