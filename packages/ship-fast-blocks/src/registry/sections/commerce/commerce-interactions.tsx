@@ -551,6 +551,10 @@ export function CommerceMobileMenu({
     setOpen(false)
     go(target)
   }
+  const homeNavigationTarget = homeTarget ?? nav[0]
+  const mobileNavItems = nav.filter(
+    (item) => item.trim().toLowerCase() !== 'home',
+  )
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -572,12 +576,12 @@ export function CommerceMobileMenu({
         <div className="flex flex-col gap-1 px-3 py-4">
           <button
             type="button"
-            onClick={() => navigate(homeTarget ?? nav[0])}
+            onClick={() => navigate(homeNavigationTarget)}
             className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
             Home
           </button>
-          {nav.map((item) => (
+          {mobileNavItems.map((item) => (
             <button
               key={item}
               type="button"
