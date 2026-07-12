@@ -11,6 +11,7 @@ import type { ReactNode } from 'react'
 import {
   useMutation as useConvexMutation,
   useQuery as useConvexQuery,
+  useConvex,
 } from 'convex/react'
 
 import { api } from '../../../convex/_generated/api.js'
@@ -114,7 +115,11 @@ export type LakebedKeyedMutationFunction<TMutation> = {
   ): Promise<MutationResult<TMutation> | undefined>
 }
 
-const lakebedApi = api.lakebed
+const lakebedApi = api.lakebed ?? {
+  getSessionState: 'lakebed:getSessionState' as const,
+  mergeSessionData: 'lakebed:mergeSessionData' as const,
+  replaceSessionData: 'lakebed:replaceSessionData' as const,
+}
 const LakebedSessionContext = createContext<LakebedSessionContextValue | null>(
   null,
 )
@@ -325,12 +330,53 @@ export function useSessionState<TData extends JsonRecord = JsonRecord>(
     : { auth: state.auth, canWrite: state.canWrite === true, data: state.data }
 }
 
+/**
+ * Safe wrapper around `useConvexQuery` that returns `undefined` when there is no
+ * `ConvexProvider` in the React tree instead of throwing. Used by
+ * `useOptionalSessionState` so previews/static paths can render without a Convex
+ * client.
+ */
+function useOptionalConvexQuery(query: unknown, args: unknown): unknown {
+  // `useConvex` is just `useContext(ConvexContext)` — returns `undefined` when
+  // no provider is mounted, never throws. In test environments where
+  // `convex/react` is mocked without `useConvex`, the import is `undefined`;
+  // we guard for that too.
+  const convex = typeof useConvex === 'function' ? useConvex() : undefined
+  const [result, setResult] = useState<unknown>(undefined)
+  const argsKey = typeof args === 'string' ? args : JSON.stringify(args)
+
+  useEffect(() => {
+    if (!convex || args === 'skip' || !query) {
+      setResult(undefined)
+      return
+    }
+    const watch = (
+      convex as {
+        watchQuery: (
+          q: unknown,
+          a: unknown,
+        ) => {
+          localResult: unknown
+          onUpdate: (cb: () => void) => () => void
+        }
+      }
+    ).watchQuery(query, args)
+    const unsub = watch.onUpdate(() => {
+      setResult(watch.localResult)
+    })
+    setResult(watch.localResult)
+    return unsub
+  }, [convex, query, argsKey])
+
+  return result
+}
+
 export function useOptionalSessionState<TData extends JsonRecord = JsonRecord>(
   capsule: string,
 ): { auth: LakebedAuthContext | null; canWrite: boolean; data: TData | null } {
   const session = useOptionalLakebedSession()
-  const state = useConvexQuery(
-    lakebedApi.getSessionState,
+  const state = useOptionalConvexQuery(
+    lakebedApi?.getSessionState,
     session ? lakebedSessionArgs({ ...session, capsule }) : 'skip',
   ) as { auth: LakebedAuthContext; canWrite?: boolean; data: TData } | undefined
 
