@@ -1,12 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
-import {
-  Plus,
-  Trash2,
-  ChevronUp,
-  ChevronDown,
-  Boxes,
-  GripVertical,
-} from 'lucide-react'
+import { Plus, Trash2, Boxes } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { allCapsules } from '@ship-fast/blocks'
 import {
@@ -18,6 +11,25 @@ import {
 } from '@ship-fast/blocks/capsules'
 import { useSectionCapsuleActions } from '../hooks/useSectionCapsuleActions'
 import { cn } from '#/lib/utils'
+import { Button } from '#/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '#/components/ui/alert-dialog'
+import {
+  Sortable,
+  SortableContent,
+  SortableItem,
+  SortableItemHandle,
+  SortableOverlay,
+} from '#/components/ui/sortable'
 
 interface CapsuleContextPanelProps {
   capsuleName: string
@@ -64,7 +76,6 @@ const titleCase = (s: string) =>
     .replace(/([A-Z])/g, ' $1')
     .trim()
 
-// Heuristic: fields that usually hold long text → span 2 columns
 const LONG_TEXT_KEYS = new Set([
   'description',
   'subheading',
@@ -108,7 +119,6 @@ const CapsuleContextPanelInner = ({
 
   return (
     <div className="grid w-full grid-cols-3 gap-1.5 p-3">
-      {/* Variants — full width pill bar */}
       {variants.map((variant) => (
         <BentoVariant
           key={variant.key}
@@ -119,7 +129,6 @@ const CapsuleContextPanelInner = ({
         />
       ))}
 
-      {/* Collections — full width, items in inner grid */}
       {collections.map((collection) => (
         <BentoCollection
           key={collection.key}
@@ -133,7 +142,6 @@ const CapsuleContextPanelInner = ({
         />
       ))}
 
-      {/* Scalars — sized by type + likely content length */}
       {scalars.map((scalar) => (
         <BentoScalar
           key={scalar.key}
@@ -203,7 +211,7 @@ const BentoCollection = ({
   items: unknown
   onAdd: (key: string, item: Record<string, unknown>) => Promise<void>
   onRemove: (key: string, index: number) => Promise<void>
-  onReorder: (key: string, from: number, to: number) => Promise<void>
+  onReorder: (key: string, fromIndex: number, toIndex: number) => Promise<void>
   onEdit: (
     key: string,
     index: number,
@@ -227,8 +235,9 @@ const BentoCollection = ({
     (f) => f.key === 'price' || f.key === 'description' || f.key === 'caption',
   )?.key
 
-  // How many columns for the item grid — 3 if many items, 2 otherwise
-  const itemCols = itemArray.length > 4 ? 'grid-cols-3' : 'grid-cols-2'
+  // Build sortable values — use index as id since items may not have unique ids
+  const sortableItems = itemArray.map((_, i) => i)
+  const getItemValue = (i: number) => String(i)
 
   return (
     <div className="col-span-3 flex flex-col gap-1.5 rounded-md border border-white/8 bg-white/[0.03] p-2.5">
@@ -236,14 +245,16 @@ const BentoCollection = ({
         <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
           {label} <span className="text-white/20">({itemArray.length})</span>
         </span>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
           onClick={handleAdd}
-          className="flex items-center gap-0.5 rounded bg-cyan-300/10 px-1.5 py-0.5 text-[11px] font-medium text-cyan-300 transition-colors hover:bg-cyan-300/20"
+          className="h-6 gap-1 px-2 text-[11px] text-cyan-300 hover:bg-cyan-300/10 hover:text-cyan-200"
         >
           <Plus className="size-3" />
           Add
-        </button>
+        </Button>
       </div>
 
       {itemArray.length === 0 && (
@@ -253,101 +264,148 @@ const BentoCollection = ({
       )}
 
       {itemArray.length > 0 && (
-        <div className={cn('grid gap-1', itemCols)}>
-          {itemArray.map((item, index) => {
-            const isExpanded = expandedIndex === index
-            const itemRecord = isPlainObject(item) ? item : {}
-            const title = titleField
-              ? String(itemRecord[titleField] || `${label} ${index + 1}`)
-              : `${label} ${index + 1}`
-            const subtitle = subtitleField
-              ? String(itemRecord[subtitleField] || '')
-              : ''
-            return (
-              <div
-                key={index}
-                className={cn(
-                  'rounded border transition-all',
-                  isExpanded
-                    ? 'border-cyan-300/30 bg-cyan-300/5'
-                    : 'border-white/8 bg-black/15 hover:border-white/15',
-                )}
-              >
-                {/* Card header */}
-                <button
-                  type="button"
-                  onClick={() => setExpandedIndex(isExpanded ? null : index)}
-                  className="flex w-full items-center gap-1 px-1.5 py-1 text-left"
-                >
-                  <GripVertical className="size-2.5 shrink-0 text-white/20" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[11px] font-medium text-white/75">
-                      {title}
+        <Sortable
+          value={sortableItems}
+          getItemValue={getItemValue}
+          onMove={(event) => {
+            void onReorder(collectionKey, event.activeIndex, event.overIndex)
+          }}
+          orientation="vertical"
+        >
+          <SortableContent className="flex flex-col gap-1">
+            {itemArray.map((item, index) => {
+              const isExpanded = expandedIndex === index
+              const itemRecord = isPlainObject(item) ? item : {}
+              const title = titleField
+                ? String(itemRecord[titleField] || `${label} ${index + 1}`)
+                : `${label} ${index + 1}`
+              const subtitle = subtitleField
+                ? String(itemRecord[subtitleField] || '')
+                : ''
+              return (
+                <SortableItem key={index} value={String(index)} asChild>
+                  <div
+                    className={cn(
+                      'group rounded-md border transition-all',
+                      isExpanded
+                        ? 'border-cyan-300/30 bg-cyan-300/5'
+                        : 'border-white/8 bg-black/15 hover:border-white/15',
+                    )}
+                  >
+                    <div className="flex items-center gap-1 px-1.5 py-1">
+                      <SortableItemHandle
+                        className="grid size-5 shrink-0 place-items-center rounded text-white/25 transition-colors hover:bg-white/10 hover:text-white/60"
+                        aria-label={`Drag ${label} ${index + 1}`}
+                      >
+                        <GripIcon />
+                      </SortableItemHandle>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedIndex(isExpanded ? null : index)
+                        }
+                        className="min-w-0 flex-1 truncate text-left text-[11px] font-medium text-white/75 hover:text-white"
+                      >
+                        {title}
+                        {subtitle && (
+                          <span className="ml-1.5 text-[10px] text-white/30">
+                            {subtitle}
+                          </span>
+                        )}
+                      </button>
+                      <DeleteWithConfirm
+                        itemLabel={`${label} ${index + 1}`}
+                        onConfirm={() => void onRemove(collectionKey, index)}
+                      />
                     </div>
-                    {subtitle && (
-                      <div className="truncate text-[10px] text-white/30">
-                        {subtitle}
+
+                    {isExpanded && (
+                      <div className="grid grid-cols-2 gap-1 border-t border-white/8 p-1.5">
+                        {itemFields.map((field) => (
+                          <FieldInput
+                            key={field.key}
+                            field={field}
+                            value={itemRecord[field.key]}
+                            onChange={(newValue) =>
+                              void onEdit(collectionKey, index, {
+                                [field.key]: newValue,
+                              })
+                            }
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
-                </button>
-
-                {/* Card toolbar */}
-                <div className="flex items-center gap-0.5 border-t border-white/5 px-1 py-0.5">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void onReorder(collectionKey, index, index - 1)
-                    }
-                    disabled={index === 0}
-                    className="grid size-4 place-items-center rounded text-white/30 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-20"
-                  >
-                    <ChevronUp className="size-2.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void onReorder(collectionKey, index, index + 1)
-                    }
-                    disabled={index === itemArray.length - 1}
-                    className="grid size-4 place-items-center rounded text-white/30 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-20"
-                  >
-                    <ChevronDown className="size-2.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void onRemove(collectionKey, index)}
-                    className="ml-auto grid size-4 place-items-center rounded text-red-400/50 transition-colors hover:bg-red-500/15 hover:text-red-300"
-                  >
-                    <Trash2 className="size-2.5" />
-                  </button>
-                </div>
-
-                {/* Expanded fields */}
-                {isExpanded && (
-                  <div className="grid grid-cols-2 gap-1 border-t border-white/8 p-1.5">
-                    {itemFields.map((field) => (
-                      <FieldInput
-                        key={field.key}
-                        field={field}
-                        value={itemRecord[field.key]}
-                        onChange={(newValue) =>
-                          void onEdit(collectionKey, index, {
-                            [field.key]: newValue,
-                          })
-                        }
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+                </SortableItem>
+              )
+            })}
+          </SortableContent>
+          <SortableOverlay />
+        </Sortable>
       )}
     </div>
   )
 }
+
+// ─── Delete with confirmation dialog ────────────────────────────────────────
+
+const DeleteWithConfirm = ({
+  itemLabel,
+  onConfirm,
+}: {
+  itemLabel: string
+  onConfirm: () => void
+}) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <button
+        type="button"
+        className="grid size-5 shrink-0 place-items-center rounded text-red-400/50 transition-colors hover:bg-red-500/15 hover:text-red-300"
+        title={`Remove ${itemLabel}`}
+      >
+        <Trash2 className="size-3" />
+      </button>
+    </AlertDialogTrigger>
+    <AlertDialogContent size="sm">
+      <AlertDialogHeader>
+        <AlertDialogTitle>Remove {itemLabel}?</AlertDialogTitle>
+        <AlertDialogDescription>
+          This will permanently remove this item from the collection. This
+          action cannot be undone.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction variant="destructive" onClick={onConfirm}>
+          Remove
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+)
+
+// ─── Grip icon (drag handle) ─────────────────────────────────────────────────
+
+const GripIcon = () => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="9" cy="6" r="1" />
+    <circle cx="9" cy="12" r="1" />
+    <circle cx="9" cy="18" r="1" />
+    <circle cx="15" cy="6" r="1" />
+    <circle cx="15" cy="12" r="1" />
+    <circle cx="15" cy="18" r="1" />
+  </svg>
+)
 
 // ─── Field input (inside collection items) ──────────────────────────────────
 
@@ -475,7 +533,6 @@ const BentoScalar = ({
     )
   }
 
-  // string — long text spans 3 cols, short text spans 2
   return (
     <input
       type="text"
