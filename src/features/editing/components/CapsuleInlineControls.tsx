@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { allCapsules } from '@ship-fast/blocks'
@@ -12,6 +12,13 @@ import {
 import { useSectionCapsuleActions } from '../hooks/useSectionCapsuleActions'
 import { cn } from '#/lib/utils'
 import { Button } from '#/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -219,6 +226,10 @@ const InlineCollectionControls = ({
   const itemArray = Array.isArray(items) ? items : []
   const label = collectionKey.charAt(0).toUpperCase() + collectionKey.slice(1)
   const titleField = findTitleField(itemFields)
+  const [manualIndex, setManualIndex] = useState<number | null>(null)
+
+  // When DOM-derived activeIndex changes, reset manual override
+  const effectiveIndex = manualIndex ?? activeIndex
 
   const handleAdd = () => {
     const defaultItem = createDefaultItem({ key: collectionKey, itemFields })
@@ -226,12 +237,23 @@ const InlineCollectionControls = ({
   }
 
   const activeItem =
-    activeIndex !== null && activeIndex >= 0 && activeIndex < itemArray.length
-      ? itemArray[activeIndex]
+    effectiveIndex !== null &&
+    effectiveIndex >= 0 &&
+    effectiveIndex < itemArray.length
+      ? itemArray[effectiveIndex]
       : null
   const activeTitle = activeItem
-    ? extractItemTitle(activeItem, titleField, `${label} ${activeIndex! + 1}`)
+    ? extractItemTitle(
+        activeItem,
+        titleField,
+        `${label} ${effectiveIndex! + 1}`,
+      )
     : ''
+
+  const hasActiveItem =
+    effectiveIndex !== null &&
+    effectiveIndex >= 0 &&
+    effectiveIndex < itemArray.length
 
   return (
     <div className="flex shrink-0 items-center gap-1.5">
@@ -249,70 +271,99 @@ const InlineCollectionControls = ({
         <Plus className="size-3" />
         Add
       </Button>
-      {activeIndex !== null &&
-        activeIndex >= 0 &&
-        activeIndex < itemArray.length && (
-          <>
-            <div className="h-3 w-px bg-white/10" />
-            <span
-              className="max-w-[120px] truncate text-[10px] font-medium text-white/50"
-              title={activeTitle}
-            >
-              {activeTitle}
-            </span>
-            <button
-              type="button"
-              onClick={() =>
-                void onReorder(collectionKey, activeIndex, activeIndex - 1)
-              }
-              disabled={activeIndex === 0}
-              className="grid size-5 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
-              title="Move up"
-            >
-              <ChevronUp className="size-3" />
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                void onReorder(collectionKey, activeIndex, activeIndex + 1)
-              }
-              disabled={activeIndex === itemArray.length - 1}
-              className="grid size-5 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
-              title="Move down"
-            >
-              <ChevronDown className="size-3" />
-            </button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button
-                  type="button"
-                  className="grid size-5 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
-                  title="Remove item"
-                >
-                  <Trash2 className="size-3" />
-                </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent size="sm">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Remove {activeTitle}?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently remove this item. This action cannot
-                    be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    variant="destructive"
-                    onClick={() => void onRemove(collectionKey, activeIndex)}
+      {itemArray.length > 0 && (
+        <>
+          <div className="h-3 w-px bg-white/10" />
+          <Select
+            value={hasActiveItem ? String(effectiveIndex) : undefined}
+            onValueChange={(val) => setManualIndex(Number(val))}
+          >
+            <SelectTrigger className="h-6 w-[140px] gap-1 rounded-md border-white/10 bg-black/20 px-2 text-[11px] text-white/70">
+              <SelectValue placeholder="Pick item…" />
+            </SelectTrigger>
+            <SelectContent>
+              {itemArray.map((item, i) => {
+                const title = extractItemTitle(
+                  item,
+                  titleField,
+                  `${label} ${i + 1}`,
+                )
+                return (
+                  <SelectItem key={i} value={String(i)}>
+                    {title}
+                  </SelectItem>
+                )
+              })}
+            </SelectContent>
+          </Select>
+          {hasActiveItem && (
+            <>
+              <button
+                type="button"
+                onClick={() =>
+                  void onReorder(
+                    collectionKey,
+                    effectiveIndex!,
+                    effectiveIndex! - 1,
+                  )
+                }
+                disabled={effectiveIndex === 0}
+                className="grid size-5 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+                title="Move up"
+              >
+                <ChevronUp className="size-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  void onReorder(
+                    collectionKey,
+                    effectiveIndex!,
+                    effectiveIndex! + 1,
+                  )
+                }
+                disabled={effectiveIndex === itemArray.length - 1}
+                className="grid size-5 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+                title="Move down"
+              >
+                <ChevronDown className="size-3" />
+              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="grid size-5 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                    title="Remove item"
                   >
-                    Remove
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
-        )}
+                    <Trash2 className="size-3" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent size="sm">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove {activeTitle}?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently remove this item. This action cannot
+                      be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={() => {
+                        void onRemove(collectionKey, effectiveIndex!)
+                        setManualIndex(null)
+                      }}
+                    >
+                      Remove
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
+          )}
+        </>
+      )}
     </div>
   )
 }
