@@ -298,8 +298,10 @@ const InlineCollectionControls = ({
           </Select>
           {hasActiveItem && (
             <>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-xs"
                 onClick={() =>
                   void onReorder(
                     collectionKey,
@@ -308,13 +310,15 @@ const InlineCollectionControls = ({
                   )
                 }
                 disabled={effectiveIndex === 0}
-                className="grid size-5 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+                className="text-white/40 hover:text-white"
                 title="Move up"
               >
                 <ChevronUp className="size-3" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-xs"
                 onClick={() =>
                   void onReorder(
                     collectionKey,
@@ -323,20 +327,22 @@ const InlineCollectionControls = ({
                   )
                 }
                 disabled={effectiveIndex === itemArray.length - 1}
-                className="grid size-5 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+                className="text-white/40 hover:text-white"
                 title="Move down"
               >
                 <ChevronDown className="size-3" />
-              </button>
+              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <button
+                  <Button
                     type="button"
-                    className="grid size-5 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                    variant="ghost"
+                    size="icon-xs"
+                    className="text-red-400 hover:bg-red-500/20 hover:text-red-300"
                     title="Remove item"
                   >
                     <Trash2 className="size-3" />
-                  </button>
+                  </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent size="sm">
                   <AlertDialogHeader>

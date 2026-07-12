@@ -407,24 +407,28 @@ const BentoCollection = ({
                           </span>
                         )}
                       </button>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-xs"
                         onClick={() => handleReorder(index, index - 1)}
                         disabled={index === 0}
-                        className="grid size-5 shrink-0 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+                        className="text-white/40 hover:text-white"
                         title="Move up"
                       >
                         <ChevronUp className="size-3" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-xs"
                         onClick={() => handleReorder(index, index + 1)}
                         disabled={index === itemArray.length - 1}
-                        className="grid size-5 shrink-0 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+                        className="text-white/40 hover:text-white"
                         title="Move down"
                       >
                         <ChevronDown className="size-3" />
-                      </button>
+                      </Button>
                       <DeleteWithConfirm
                         itemLabel={title}
                         onConfirm={() => void onRemove(collectionKey, index)}
@@ -544,13 +548,15 @@ const DeleteWithConfirm = ({
 }) => (
   <AlertDialog>
     <AlertDialogTrigger asChild>
-      <button
+      <Button
         type="button"
-        className="grid size-5 shrink-0 place-items-center rounded text-red-400/50 transition-colors hover:bg-red-500/15 hover:text-red-300"
+        variant="ghost"
+        size="icon-xs"
+        className="shrink-0 text-red-400/50 hover:bg-red-500/15 hover:text-red-300"
         title={`Remove ${itemLabel}`}
       >
         <Trash2 className="size-3" />
-      </button>
+      </Button>
     </AlertDialogTrigger>
     <AlertDialogContent size="sm">
       <AlertDialogHeader>
