@@ -1,8 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { useStateField } from '@openuidev/react-lang'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { RoutesContext } from '#/lib/use-navigate.tsx'
+import { PreviewUrlBridgeContext } from '#/lib/preview-url-bridge.tsx'
+
+const slugifyRoute = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'page'
 
 // System-owned multi-page switcher. The orchestrator emits exactly one of these as `root`.
 // routes[i] is the nav label; pages[i] is the page node for that route. Renders only the
@@ -26,9 +34,36 @@ export const PageSwitch = defineCapsule({
     const [pendingSectionId, setPendingSectionId] = useState<string | null>(
       null,
     )
+    const urlBridge = useContext(PreviewUrlBridgeContext)
     useEffect(() => {
       if (page.value && page.value !== currentPage) setCurrentPage(page.value)
     }, [currentPage, page.value])
+    // Sync from the host URL router (preview dashboard). When the URL path
+    // changes (e.g. browser back/forward), match the slug to a route label
+    // and update the active page. Skipped when no bridge is provided
+    // (exported/deployed site — each page is a real route there).
+    useEffect(() => {
+      if (urlBridge.navigateToPage === null) return
+      const targetSlug = urlBridge.pageFromUrl
+      if (targetSlug === null) {
+        if (routes[0] && currentPage !== routes[0]) {
+          setCurrentPage(routes[0])
+          page.setValue(routes[0])
+        }
+        return
+      }
+      const matched = routes.find((route) => slugifyRoute(route) === targetSlug)
+      if (matched && matched !== currentPage) {
+        setCurrentPage(matched)
+        page.setValue(matched)
+      }
+    }, [
+      urlBridge.pageFromUrl,
+      urlBridge.navigateToPage,
+      routes,
+      currentPage,
+      page,
+    ])
 
     let idx = routes.indexOf(currentPage)
     if (idx < 0) idx = 0

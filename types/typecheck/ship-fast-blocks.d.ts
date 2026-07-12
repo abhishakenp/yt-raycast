@@ -39,6 +39,11 @@ declare module '@ship-fast/blocks' {
   export type OpenUIMedusaContextValue = any
   export const OpenUISanityContext: Context<any>
   export const OpenUIMedusaContext: Context<any>
+  export const PreviewUrlBridgeContext: Context<PreviewUrlBridgeValue>
+  export type PreviewUrlBridgeValue = {
+    navigateToPage: ((pageSlug: string | null) => void) | null
+    pageFromUrl: string | null
+  }
 }
 
 declare module '@ship-fast/blocks/runtime' {
@@ -73,6 +78,11 @@ declare module '@ship-fast/blocks/runtime' {
   export type OpenUIMedusaContextValue = any
   export const OpenUISanityContext: Context<any>
   export const OpenUIMedusaContext: Context<any>
+  export const PreviewUrlBridgeContext: Context<PreviewUrlBridgeValue>
+  export type PreviewUrlBridgeValue = {
+    navigateToPage: ((pageSlug: string | null) => void) | null
+    pageFromUrl: string | null
+  }
   export function extractOpenUIRuntimeComponentNames(source: string): string[]
   export type AiCapsuleRecord = {
     capsuleName: string
