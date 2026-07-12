@@ -824,7 +824,9 @@ export const duplicatedPreactPackagesFromMetafile = (
 ): Record<string, string[]> => {
   const byPackage: Record<string, string[]> = {}
   for (const input of Object.keys(metafile.inputs)) {
-    const match = input.match(/(^|\/)(preact(?:\/(?:hooks|compat|jsx-runtime))?)\//)
+    const match = input.match(
+      /(^|\/)(preact(?:\/(?:hooks|compat|jsx-runtime))?)\//,
+    )
     if (!match) continue
     const pkg = match[2]
     ;(byPackage[pkg] ??= []).push(input)
@@ -859,14 +861,7 @@ export const buildLakebedAnonymousDeployRequest = async (
     sourceFilesBytes: sourceFiles.reduce((sum, file) => sum + file.bytes, 0),
   })
   options.log?.('anonymous-request:diagnostics:start')
-  // Async server handlers ARE supported by the anonymous runtime (verified live:
-  // an async `endpoint` handler that awaits `req.json()` deploys and runs). The
-  // `allowAsync:false` default is just an over-conservative source lint; the
-  // `lakebed` CLI itself deploys async handlers. Our authorized `/__lakebed/sync`
-  // endpoint must `await req.json()` to read the posted catalog, so allow it.
-  const diagnostics = forbiddenSourceDiagnostics(sourceFiles, {
-    allowAsync: true,
-  })
+  const diagnostics = forbiddenSourceDiagnostics(sourceFiles)
   const { diagnostics: schemaDiagnostics, schema } = serializeSchema(app.schema)
   const { diagnostics: endpointDiagnostics, endpoints } = serializeEndpoints(
     app.endpoints,
