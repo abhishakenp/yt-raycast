@@ -43,6 +43,7 @@ interface CapsuleInlineControlsProps {
   anonymousOwnerSecret?: string
   activeCollectionItem?: { collectionKey: string; index: number } | null
   handleRef?: React.MutableRefObject<CapsuleInlineHandle | null>
+  capsuleElement?: HTMLElement | null
 }
 
 export const CapsuleInlineControls = ({
@@ -52,6 +53,7 @@ export const CapsuleInlineControls = ({
   anonymousOwnerSecret,
   activeCollectionItem,
   handleRef,
+  capsuleElement,
 }: CapsuleInlineControlsProps) => (
   <LakebedSessionProvider
     sessionId={sessionId}
@@ -62,6 +64,7 @@ export const CapsuleInlineControls = ({
       statementId={statementId}
       activeCollectionItem={activeCollectionItem}
       handleRef={handleRef}
+      capsuleElement={capsuleElement}
     />
   </LakebedSessionProvider>
 )
@@ -108,11 +111,13 @@ const CapsuleInlineControlsInner = ({
   statementId,
   activeCollectionItem,
   handleRef,
+  capsuleElement,
 }: {
   capsuleName: string
   statementId: string
   activeCollectionItem?: { collectionKey: string; index: number } | null
   handleRef?: React.MutableRefObject<CapsuleInlineHandle | null>
+  capsuleElement?: HTMLElement | null
 }) => {
   const actions = useSectionCapsuleActions(capsuleName, statementId)
   const schemaInfo = useMemo(
@@ -130,29 +135,45 @@ const CapsuleInlineControlsInner = ({
   const actionsRef = useRef(actions)
   actionsRef.current = actions
 
+  // Store original DOM children for each collection key so we can revert on discard
+  const originalDomRef = useRef<
+    Record<string, { parent: HTMLElement; children: HTMLElement[] }>
+  >({})
+
+  const capsuleElementRef = useRef(capsuleElement)
+  capsuleElementRef.current = capsuleElement
+
   const commit = useCallback(async () => {
     const orders = pendingOrdersRef.current
     const act = actionsRef.current
     for (const [key, order] of Object.entries(orders)) {
-      // Find what moved: compare order to identity [0,1,2,...]
       const identity = order.map((_, i) => i)
       if (order.join(',') === identity.join(',')) continue
-      // Send the full reorder as a single merge
       const rawItems = Array.isArray(act.sectionData?.[key])
         ? (act.sectionData![key] as unknown[])
         : []
       const reordered = order
         .map((i) => rawItems[i])
         .filter((x) => x !== undefined)
-      await act.mergeData({ [key]: reordered } as Partial<
-        Record<string, unknown>
-      >)
+      await act.mergeData({
+        [key]: reordered,
+      } as Partial<Record<string, unknown>>)
     }
     setPendingOrders({})
+    originalDomRef.current = {}
   }, [])
 
   const discard = useCallback(() => {
+    // Revert DOM to original order
+    for (const [, saved] of Object.entries(originalDomRef.current)) {
+      const { parent, children } = saved
+      // Remove all current children
+      while (parent.firstChild) parent.removeChild(parent.firstChild)
+      // Re-append in original order
+      for (const child of children) parent.appendChild(child)
+    }
     setPendingOrders({})
+    originalDomRef.current = {}
   }, [])
 
   // Register commit/discard on the handle ref
@@ -164,6 +185,55 @@ const CapsuleInlineControlsInner = ({
       }
     }
   }, [handleRef, commit, discard])
+
+  // Find the grid container in the capsule element for a given collection key.
+  // The grid is the element with the most same-tag children (e.g. 5 ARTICLEs).
+  const findGridContainer = useCallback(
+    (_collectionKey: string): HTMLElement | null => {
+      if (!capsuleElementRef.current) return null
+      // Find the element with the most same-tag direct children
+      let best: HTMLElement | null = null
+      let bestCount = 1
+      const all = capsuleElementRef.current.querySelectorAll('*')
+      for (const el of Array.from(all)) {
+        const htmlEl = el as HTMLElement
+        const children = Array.from(htmlEl.children)
+        if (children.length <= bestCount) continue
+        // Check if children are all the same tag (like ARTICLE)
+        const tags = new Set(children.map((c) => c.tagName))
+        if (tags.size === 1) {
+          best = htmlEl
+          bestCount = children.length
+        }
+      }
+      return best
+    },
+    [],
+  )
+
+  // Apply reorder to DOM for live preview
+  const applyReorderToDom = useCallback(
+    (collectionKey: string, order: number[]) => {
+      const grid = findGridContainer(collectionKey)
+      if (!grid) return
+
+      // Save original DOM order on first reorder
+      if (!originalDomRef.current[collectionKey]) {
+        originalDomRef.current[collectionKey] = {
+          parent: grid,
+          children: Array.from(grid.children) as HTMLElement[],
+        }
+      }
+
+      const saved = originalDomRef.current[collectionKey]
+      const children = saved.children
+      // Re-append in new order
+      for (const idx of order) {
+        if (children[idx]) grid.appendChild(children[idx])
+      }
+    },
+    [findGridContainer],
+  )
 
   if (!schemaInfo) return null
   if (!actions.canEdit) {
@@ -199,9 +269,10 @@ const CapsuleInlineControlsInner = ({
           activeCollectionItem?.collectionKey === collection.key ||
           (activeCollectionItem?.collectionKey === '__auto__' &&
             schemaInfo.collections.length === 1)
+        // Auto-select first item when section is active but no specific item
         const activeIndex = isActiveCollection
-          ? (activeCollectionItem?.index ?? null)
-          : null
+          ? (activeCollectionItem?.index ?? 0)
+          : 0
         const pendingOrder = pendingOrders[collection.key] ?? null
         return (
           <InlineCollectionControls
@@ -211,9 +282,13 @@ const CapsuleInlineControlsInner = ({
             items={actions.sectionData?.[collection.key]}
             activeIndex={activeIndex}
             pendingOrder={pendingOrder}
-            onReorderLocal={(order) =>
-              setPendingOrders((prev) => ({ ...prev, [collection.key]: order }))
-            }
+            onReorderLocal={(order) => {
+              setPendingOrders((prev) => ({
+                ...prev,
+                [collection.key]: order,
+              }))
+              applyReorderToDom(collection.key, order)
+            }}
             onAdd={actions.addItem}
             onRemove={actions.removeItem}
           />

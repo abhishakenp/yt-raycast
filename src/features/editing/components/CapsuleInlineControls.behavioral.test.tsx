@@ -309,7 +309,7 @@ describe('CapsuleInlineControls', () => {
     )
   })
 
-  it('does not show item controls when no activeCollectionItem', () => {
+  it('auto-selects first item when no activeCollectionItem', () => {
     mockActions.sectionData = {
       features: [{ title: 'Hot Desks', description: 'Pick any desk' }],
     }
@@ -323,9 +323,10 @@ describe('CapsuleInlineControls', () => {
       }),
     )
 
-    expect(screen.queryByText('Item 1')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Move up' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Remove item' })).toBeNull()
+    // First item should be auto-selected — buttons should be present
+    expect(screen.getByRole('button', { name: 'Move down' })).toBeTruthy()
+    // Move up disabled since it's the first (and only) item
+    expect(screen.getByRole('button', { name: 'Remove item' })).toBeTruthy()
   })
 
   // ─── Edge cases ─────────────────────────────────────────────────────────
