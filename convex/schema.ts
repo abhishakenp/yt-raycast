@@ -279,6 +279,7 @@ export default defineSchema({
     fileCount: v.optional(v.number()),
     byteLength: v.optional(v.number()),
     hash: v.optional(v.string()),
+    generatorRevision: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -604,4 +605,14 @@ export default defineSchema({
   })
     .index('by_cacheKey', ['cacheKey'])
     .index('by_locale', ['locale']),
+
+  translationCacheClaims: defineTable({
+    cacheKey: v.string(),
+    locale: v.string(),
+    sourceText: v.string(),
+    owner: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_cacheKey', ['cacheKey']),
 })

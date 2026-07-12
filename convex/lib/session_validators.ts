@@ -170,6 +170,7 @@ export const exportArtifactBuildArgs = {
   target: exportTarget,
   previewVersion: v.number(),
   autoDeployPublic: v.optional(v.boolean()),
+  generatorRevision: v.optional(v.string()),
 }
 
 export const exportArtifactStalledArgs = {

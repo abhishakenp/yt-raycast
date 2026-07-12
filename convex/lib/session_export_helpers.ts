@@ -21,9 +21,19 @@ import { isUnsafePublicPreviewHtml } from './openui_error_html'
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 export type ExportArtifactStatus = 'queued' | 'building' | 'ready' | 'failed'
 const exportTargets: ExportTarget[] = ['html', 'react', 'next', 'lakebed']
+const exportGeneratorRevisions: Record<ExportTarget, string> = {
+  html: 'html-export-v2',
+  react: 'react-export-v2',
+  next: 'next-export-v2',
+  lakebed: 'lakebed-export-v2',
+}
 const exportArtifactBuildStallMs = 2 * 60 * 1000
 const stalledExportArtifactMessage =
   'Export build stalled before completion. Click to retry.'
+
+export function exportGeneratorRevision(target: ExportTarget): string {
+  return exportGeneratorRevisions[target]
+}
 
 function readAppliedThemeName(session: Doc<'sessions'>): string | undefined {
   return typeof session.themeOverride === 'string'
@@ -107,6 +117,7 @@ export type EnsureExportArtifactBuildInput = {
   target: ExportTarget
   anonymousOwnerSecret?: string
   buildExportArtifact: ExportArtifactBuildReference
+  generatorRevision?: string
 }
 
 export type ExportArtifactBuildInput = {
@@ -114,6 +125,7 @@ export type ExportArtifactBuildInput = {
   target: ExportTarget
   previewVersion: number
   autoDeployPublic?: boolean
+  generatorRevision?: string
 }
 
 export type ExportArtifactStalledInput = {
@@ -199,15 +211,16 @@ function readOpenUISourceFromSiteSpec(
     if (typeof candidate !== 'string' || !candidate.trim()) continue
 
     try {
-      const parsed = JSON.parse(candidate) as unknown
+      const parsed: unknown = JSON.parse(candidate)
       if (
         parsed !== null &&
         typeof parsed === 'object' &&
         'pages' in parsed &&
         parsed.pages !== null &&
-        typeof parsed.pages === 'object'
+        typeof parsed.pages === 'object' &&
+        'home' in parsed.pages
       ) {
-        const home = (parsed.pages as Record<string, unknown>).home
+        const home = parsed.pages.home
         if (typeof home === 'string' && isLikelyOpenUISource(home)) return home
       }
     } catch {
@@ -360,7 +373,7 @@ function toExportPayload(exportRecord: Doc<'exports'>) {
   return {
     exportId: exportRecord._id,
     target: exportRecord.target,
-    status: paymentBypassed ? ('ready' as const) : exportRecord.status,
+    status: paymentBypassed ? 'ready' : exportRecord.status,
     fileCount: exportRecord.fileCount,
     previewVersion: exportRecord.previewVersion,
     requiresPayment: paymentBypassed ? false : exportRecord.requiresPayment,
@@ -390,6 +403,7 @@ function toArtifactPayload(artifact: Doc<'exportArtifacts'> | null) {
     fileCount: artifact.fileCount,
     byteLength: artifact.byteLength,
     hash: artifact.hash,
+    generatorRevision: artifact.generatorRevision,
     errorMessage: stalled
       ? stalledExportArtifactMessage
       : artifact.errorMessage,
@@ -538,8 +552,10 @@ export async function queueSessionExportArtifactBuild(
     buildExportArtifact: ExportArtifactBuildReference
     delayMs?: number
     force?: boolean
+    generatorRevision?: string
   },
 ) {
+  const generatorRevision = args.generatorRevision?.trim() || undefined
   const existing = await ctx.db
     .query('exportArtifacts')
     .withIndex('by_sessionId_target_previewVersion', (index) =>
@@ -550,7 +566,12 @@ export async function queueSessionExportArtifactBuild(
     )
     .first()
 
-  if (existing?.status === 'ready' && args.force !== true) {
+  if (
+    existing?.status === 'ready' &&
+    args.force !== true &&
+    (generatorRevision === undefined ||
+      existing.generatorRevision === generatorRevision)
+  ) {
     return toArtifactPayload(existing)
   }
 
@@ -560,26 +581,31 @@ export async function queueSessionExportArtifactBuild(
         target: args.target,
         previewVersion: args.previewVersion,
         status: 'queued',
+        ...(generatorRevision === undefined ? {} : { generatorRevision }),
         createdAt: args.now,
         updatedAt: args.now,
       })
     : await ctx.db.patch(existing._id, {
         status: 'queued',
+        ...(generatorRevision === undefined ? {} : { generatorRevision }),
         errorMessage: undefined,
         updatedAt: args.now,
       })
 
+  const autoDeployPublic = args.target === 'lakebed' && args.isPrivate === false
   await ctx.scheduler.runAfter(args.delayMs ?? 0, args.buildExportArtifact, {
     sessionId: args.sessionId,
     target: args.target,
     previewVersion: args.previewVersion,
-    autoDeployPublic: args.target === 'lakebed' && args.isPrivate === false,
+    ...(args.force === true || autoDeployPublic ? { autoDeployPublic } : {}),
+    ...(generatorRevision === undefined ? {} : { generatorRevision }),
   })
 
   return {
     target: args.target,
     status: 'queued',
     previewVersion: args.previewVersion,
+    ...(generatorRevision === undefined ? {} : { generatorRevision }),
     updatedAt: args.now,
   }
 }
@@ -600,12 +626,15 @@ export async function markExportArtifactBuilding(
 
   if (existing?.status === 'ready') return toArtifactPayload(existing)
 
-  const status = 'building' as const
+  const status = 'building'
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
     previewVersion: args.previewVersion,
     status,
+    ...(args.generatorRevision === undefined
+      ? {}
+      : { generatorRevision: args.generatorRevision }),
     errorMessage: undefined,
     updatedAt: now,
   }
@@ -686,7 +715,7 @@ export async function recordExportArtifactReady(
     args.target,
     args.previewVersion,
   )
-  const status = 'ready' as const
+  const status = 'ready'
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
@@ -699,6 +728,9 @@ export async function recordExportArtifactReady(
     fileCount: args.fileCount,
     byteLength: args.byteLength,
     hash: args.hash,
+    ...(args.generatorRevision === undefined
+      ? {}
+      : { generatorRevision: args.generatorRevision }),
     errorMessage: undefined,
     updatedAt: now,
   }
@@ -733,12 +765,15 @@ export async function recordExportArtifactFailure(
     args.target,
     args.previewVersion,
   )
-  const status = 'failed' as const
+  const status = 'failed'
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
     previewVersion: args.previewVersion,
     status,
+    ...(args.generatorRevision === undefined
+      ? {}
+      : { generatorRevision: args.generatorRevision }),
     errorMessage: args.errorMessage,
     updatedAt: now,
   }
@@ -916,9 +951,9 @@ export async function createSessionExport(
     existingExport?.status === 'ready' &&
     existingExport.requiresPayment === false &&
     existingExport.previewVersion === preview.version
-  const existingExportStatus = 'ready' as const
-  const existingExportRequiresPayment = false as const
-  const existingExportEntitlement = 'existing' as const
+  const existingExportStatus = 'ready'
+  const existingExportRequiresPayment = false
+  const existingExportEntitlement = 'existing'
   const entitlement = alreadyReadyForCurrentPreview
     ? {
         status: existingExportStatus,
@@ -1110,6 +1145,7 @@ export async function ensureExportArtifactBuild(
     now,
     buildExportArtifact: args.buildExportArtifact,
     force: false,
+    generatorRevision: args.generatorRevision,
   })
 }
 
