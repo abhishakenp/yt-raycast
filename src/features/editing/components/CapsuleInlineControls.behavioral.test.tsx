@@ -12,6 +12,7 @@ const mockActions = vi.hoisted(() => ({
   reorderItem: vi.fn(async () => {}),
   editItem: vi.fn(async () => {}),
   setProp: vi.fn(async () => {}),
+  mergeData: vi.fn(async () => {}),
 }))
 
 vi.mock('../hooks/useSectionCapsuleActions', () => ({
@@ -42,6 +43,7 @@ describe('CapsuleInlineControls', () => {
     mockActions.reorderItem.mockClear()
     mockActions.editItem.mockClear()
     mockActions.setProp.mockClear()
+    mockActions.mergeData.mockClear()
   })
 
   afterEach(() => {
@@ -184,7 +186,7 @@ describe('CapsuleInlineControls', () => {
     expect(screen.getByRole('button', { name: 'Remove item' })).toBeTruthy()
   })
 
-  it('calls reorderItem when Move up is clicked', () => {
+  it('buffers reorder locally when Move up is clicked (no immediate backend call)', () => {
     mockActions.sectionData = {
       features: [
         { title: 'Hot Desks', description: 'Pick any desk' },
@@ -203,10 +205,11 @@ describe('CapsuleInlineControls', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Move up' }))
-    expect(mockActions.reorderItem).toHaveBeenCalledWith('features', 1, 0)
+    // reorderItem should NOT be called immediately — it's buffered
+    expect(mockActions.reorderItem).not.toHaveBeenCalled()
   })
 
-  it('calls reorderItem when Move down is clicked', () => {
+  it('buffers reorder locally when Move down is clicked (no immediate backend call)', () => {
     mockActions.sectionData = {
       features: [
         { title: 'Hot Desks', description: 'Pick any desk' },
@@ -225,7 +228,7 @@ describe('CapsuleInlineControls', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Move down' }))
-    expect(mockActions.reorderItem).toHaveBeenCalledWith('features', 0, 1)
+    expect(mockActions.reorderItem).not.toHaveBeenCalled()
   })
 
   it('calls removeItem when Remove item is clicked', async () => {
