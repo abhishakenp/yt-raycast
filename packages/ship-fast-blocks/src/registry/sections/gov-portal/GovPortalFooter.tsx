@@ -4,6 +4,7 @@ import { MailIcon, MapPinIcon, PhoneIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo } from '#/section-kit/Logo.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
   pickLang,
@@ -148,10 +149,12 @@ export const GovPortalFooter = defineCapsule({
       >
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           <div className="lg:col-span-1">
-            <h2 className="mb-3 text-base font-bold uppercase tracking-tight">
-              {brand}
-            </h2>
-            <p className="text-sm text-primary-foreground/70">{about}</p>
+            <Logo
+              brand={brand}
+              className="size-8"
+              labelClassName="text-base font-bold uppercase tracking-tight text-primary-foreground"
+            />
+            <p className="mt-3 text-sm text-primary-foreground/70">{about}</p>
           </div>
           <nav aria-label="Footer">
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground/90">

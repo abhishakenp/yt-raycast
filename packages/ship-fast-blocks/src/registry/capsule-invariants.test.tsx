@@ -75,6 +75,35 @@ describe('registry capsule invariants', () => {
       },
     )
     Element.prototype.scrollIntoView = vi.fn()
+    // embla-carousel (used by GovPortalHero) calls window.matchMedia and
+    // uses IntersectionObserver at activation time; jsdom provides neither.
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    )
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class IntersectionObserver {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+        takeRecords() {
+          return []
+        }
+        root = null
+        rootMargin = ''
+        thresholds = []
+      },
+    )
   })
 
   afterEach(() => {
