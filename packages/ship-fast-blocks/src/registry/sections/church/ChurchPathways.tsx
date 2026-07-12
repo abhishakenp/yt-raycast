@@ -89,7 +89,7 @@ export const ChurchPathways = defineCapsule({
     )
 
     return (
-      <section className={cn('py-24 lg:py-32', props.className)}>
+      <section className={cn('py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mb-20 max-w-3xl">
             <h2 className="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl">

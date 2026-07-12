@@ -154,7 +154,7 @@ export const MobileAppFeatures = defineCapsule({
     ]
     return (
       <section
-        className={cn('py-20 lg:py-32', props.className)}
+        className={cn('py-20 lg:py-28', props.className)}
         aria-labelledby="mobileapp-features-heading"
       >
         <Container>

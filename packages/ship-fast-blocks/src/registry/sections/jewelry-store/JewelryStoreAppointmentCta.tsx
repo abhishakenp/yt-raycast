@@ -54,7 +54,7 @@ export const JewelryStoreAppointmentCta = defineCapsule({
     return (
       <section
         className={cn(
-          'relative overflow-hidden bg-muted py-32',
+          'relative overflow-hidden bg-muted py-20 lg:py-28',
           props.className,
         )}
       >

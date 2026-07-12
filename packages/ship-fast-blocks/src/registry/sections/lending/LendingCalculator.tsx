@@ -137,7 +137,7 @@ export const LendingCalculator = defineCapsule({
     const inputCls =
       'w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring'
     return (
-      <section className={cn('py-24 lg:py-32', props.className)}>
+      <section className={cn('py-24 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

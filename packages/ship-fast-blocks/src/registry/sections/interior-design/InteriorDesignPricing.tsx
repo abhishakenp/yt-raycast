@@ -75,7 +75,7 @@ export const InteriorDesignPricing = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground px-4 py-20 text-background sm:px-6 md:py-32 lg:px-8',
+          'bg-foreground px-4 py-20 text-background sm:px-6 md:py-28 lg:px-8',
           props.className,
         )}
       >

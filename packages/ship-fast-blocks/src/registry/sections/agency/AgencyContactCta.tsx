@@ -75,7 +75,7 @@ export const AgencyContactCta = defineCapsule({
     return (
       <section
         className={cn(
-          'relative overflow-hidden py-24 sm:py-32',
+          'relative overflow-hidden py-24 lg:py-28',
           props.className,
         )}
       >

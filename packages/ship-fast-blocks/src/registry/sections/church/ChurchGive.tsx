@@ -126,7 +126,7 @@ export const ChurchGive = defineCapsule({
     ]
 
     return (
-      <section className={cn('py-24 lg:py-32', props.className)}>
+      <section className={cn('py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>

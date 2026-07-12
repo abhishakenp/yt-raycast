@@ -67,7 +67,7 @@ export const FashionStoreCollections = defineCapsule({
     return (
       <section
         aria-label="Collection categories"
-        className={cn('py-20 lg:py-32', props.className)}
+        className={cn('py-20 lg:py-28', props.className)}
       >
         <Container>
           <div className="mb-16 text-center">

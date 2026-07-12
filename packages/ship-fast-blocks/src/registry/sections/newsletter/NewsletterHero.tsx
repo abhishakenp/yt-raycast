@@ -57,7 +57,7 @@ export const NewsletterHero = defineCapsule({
     return (
       <section
         className={cn(
-          'pb-12 pt-16 md:pb-16 md:pt-24 lg:pb-24 lg:pt-32',
+          'pb-12 pt-16 md:pb-16 md:pt-24 lg:pb-24 lg:pt-28',
           props.className,
         )}
       >

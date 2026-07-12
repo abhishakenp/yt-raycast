@@ -107,7 +107,7 @@ export const MobileAppHero = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted/50 pb-20 pt-32 lg:pb-32 lg:pt-40',
+          'bg-muted/50 pt-20 pb-20 lg:pt-28 lg:pb-28',
           props.className,
         )}
         aria-labelledby="mobileapp-hero-heading"

@@ -63,7 +63,7 @@ export const MobileAppHowItWorks = defineCapsule({
         ]
     return (
       <section
-        className={cn('bg-muted/50 py-20 lg:py-32', props.className)}
+        className={cn('bg-muted/50 py-20 lg:py-28', props.className)}
         aria-labelledby="mobileapp-steps-heading"
       >
         <Container>

@@ -114,7 +114,7 @@ export const BootcampPricing = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-muted/40 py-20 lg:py-32', props.className)}>
+      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">

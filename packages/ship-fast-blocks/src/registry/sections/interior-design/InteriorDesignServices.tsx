@@ -98,7 +98,7 @@ export const InteriorDesignServices = defineCapsule({
 
     return (
       <section
-        className={cn('px-4 py-20 sm:px-6 md:py-32 lg:px-8', props.className)}
+        className={cn('px-4 py-20 sm:px-6 md:py-28 lg:px-8', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="mb-16 max-w-2xl md:mb-24">

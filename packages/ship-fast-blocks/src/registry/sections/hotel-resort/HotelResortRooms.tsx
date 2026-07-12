@@ -106,7 +106,7 @@ export const HotelResortRooms = defineCapsule({
     useSyncHotelRooms(lakebed, catalogRooms)
 
     return (
-      <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
+      <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mb-16 max-w-2xl">
             <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">

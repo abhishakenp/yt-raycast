@@ -60,7 +60,7 @@ export const WeddingAbout = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background py-20 text-foreground lg:py-32',
+          'bg-background py-20 text-foreground lg:py-28',
           props.className,
         )}
       >

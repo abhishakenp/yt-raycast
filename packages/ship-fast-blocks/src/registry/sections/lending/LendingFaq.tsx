@@ -60,7 +60,7 @@ export const LendingFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('py-24 lg:py-32', props.className)}>
+      <section className={cn('py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

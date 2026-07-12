@@ -80,7 +80,7 @@ export const InteriorDesignTestimonials = defineCapsule({
 
     return (
       <section
-        className={cn('px-4 py-20 sm:px-6 md:py-32 lg:px-8', props.className)}
+        className={cn('px-4 py-20 sm:px-6 md:py-28 lg:px-8', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto mb-16 max-w-2xl text-center md:mb-24">

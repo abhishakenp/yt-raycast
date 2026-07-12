@@ -125,7 +125,7 @@ export const LawFirmAttorneys = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-background py-24 lg:py-32', props.className)}>
+      <section className={cn('bg-background py-24 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-20 max-w-3xl text-center">
             <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">

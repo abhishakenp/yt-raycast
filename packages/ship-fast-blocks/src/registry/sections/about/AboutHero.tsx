@@ -65,7 +65,7 @@ export const AboutHero = defineCapsule({
     return (
       <section
         className={cn(
-          'relative overflow-hidden py-20 sm:py-24 lg:py-32',
+          'relative overflow-hidden py-20 sm:py-24 lg:py-28',
           props.className,
         )}
       >

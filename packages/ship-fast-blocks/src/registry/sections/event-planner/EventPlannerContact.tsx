@@ -78,7 +78,7 @@ export const EventPlannerContact = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-primary px-4 py-20 sm:px-6 lg:px-8 lg:py-32',
+          'bg-primary px-4 py-20 sm:px-6 lg:px-8 lg:py-28',
           props.className,
         )}
       >

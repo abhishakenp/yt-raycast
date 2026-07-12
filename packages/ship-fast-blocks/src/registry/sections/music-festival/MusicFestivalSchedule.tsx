@@ -155,7 +155,7 @@ export const MusicFestivalSchedule = defineCapsule({
           },
         ]
     return (
-      <section className={cn('py-24 lg:py-32', props.className)}>
+      <section className={cn('py-24 lg:py-28', props.className)}>
         <Container>
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">

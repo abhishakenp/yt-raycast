@@ -59,7 +59,7 @@ export const EventPlannerProcess = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted px-4 py-20 sm:px-6 lg:px-8 lg:py-32',
+          'bg-muted px-4 py-20 sm:px-6 lg:px-8 lg:py-28',
           props.className,
         )}
       >

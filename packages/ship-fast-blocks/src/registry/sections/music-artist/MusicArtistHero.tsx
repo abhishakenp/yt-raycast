@@ -69,7 +69,7 @@ export const MusicArtistHero = defineCapsule({
     return (
       <section
         className={cn(
-          'px-6 pb-20 pt-32 lg:px-8 lg:pb-32 lg:pt-48',
+          'px-6 pt-20 pb-20 lg:px-8 lg:pt-28 lg:pb-28',
           props.className,
         )}
       >

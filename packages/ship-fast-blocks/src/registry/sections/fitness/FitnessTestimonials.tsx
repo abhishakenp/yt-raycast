@@ -76,7 +76,7 @@ export const FitnessTestimonials = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-card py-20 md:py-32', props.className)}>
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">

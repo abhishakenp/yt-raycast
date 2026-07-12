@@ -126,7 +126,7 @@ export const ArchitectureFirmPhilosophy = defineCapsule({
     return (
       <section
         aria-labelledby="architecture-firm-philosophy-heading"
-        className={cn('bg-card py-24 lg:py-32', props.className)}
+        className={cn('bg-card py-24 lg:py-28', props.className)}
       >
         <Container>
           <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-24">

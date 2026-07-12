@@ -98,7 +98,7 @@ export const CryptoTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'border-y border-border bg-card py-20 lg:py-32',
+          'border-y border-border bg-card py-20 lg:py-28',
           props.className,
         )}
       >

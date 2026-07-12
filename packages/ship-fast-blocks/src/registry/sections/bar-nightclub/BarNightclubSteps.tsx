@@ -60,7 +60,7 @@ export const BarNightclubSteps = defineCapsule({
 
     return (
       <section
-        className={cn('border-t border-border py-24 lg:py-32', props.className)}
+        className={cn('border-t border-border py-24 lg:py-28', props.className)}
       >
         <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">

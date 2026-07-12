@@ -138,7 +138,7 @@ export const LawFirmContact = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-primary py-24 text-primary-foreground lg:py-32',
+          'bg-primary py-24 text-primary-foreground lg:py-28',
           props.className,
         )}
       >

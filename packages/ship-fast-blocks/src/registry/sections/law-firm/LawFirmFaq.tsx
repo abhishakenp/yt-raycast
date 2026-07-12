@@ -59,7 +59,7 @@ export const LawFirmFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-24 lg:py-32', props.className)}>
+      <section className={cn('bg-background py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">

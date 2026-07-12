@@ -75,7 +75,7 @@ export const FilmDirectorProcess = defineCapsule({
     const processQuoteName = props.quoteName ?? 'Sarah Mitchell'
     const processQuoteRole = props.quoteRole ?? 'Creative Director, Nike Global'
     return (
-      <section className={cn('py-20 md:py-32', props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>

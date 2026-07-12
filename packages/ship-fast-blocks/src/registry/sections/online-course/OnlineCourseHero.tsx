@@ -79,7 +79,7 @@ export const OnlineCourseHero = defineCapsule({
     )
 
     return (
-      <section className={cn('py-20 sm:py-28 lg:py-32', props.className)}>
+      <section className={cn('py-20 sm:py-28 lg:py-28', props.className)}>
         <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">

@@ -202,7 +202,7 @@ export const CorporateSolutions = defineCapsule({
       </div>
     )
     return (
-      <section className={cn('bg-background py-20 lg:py-32', props.className)}>
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
           {sectionHead(heading, description)}
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">

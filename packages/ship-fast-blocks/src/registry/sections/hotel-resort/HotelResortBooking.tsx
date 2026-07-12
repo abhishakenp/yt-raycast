@@ -97,7 +97,7 @@ export const HotelResortBooking = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground py-24 text-background lg:py-32',
+          'bg-foreground py-24 text-background lg:py-28',
           props.className,
         )}
       >

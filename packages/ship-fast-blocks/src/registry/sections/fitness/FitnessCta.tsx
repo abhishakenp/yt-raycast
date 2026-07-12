@@ -45,7 +45,7 @@ export const FitnessCta = defineCapsule({
     const ctaHours = props.hours ?? 'Mon–Fri: 5:30am–10pm, Sat–Sun: 7am–8pm'
 
     return (
-      <section className={cn('bg-primary py-20 md:py-32', props.className)}>
+      <section className={cn('bg-primary py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-semibold text-primary-foreground md:text-4xl lg:text-5xl">
             {ctaHeading}

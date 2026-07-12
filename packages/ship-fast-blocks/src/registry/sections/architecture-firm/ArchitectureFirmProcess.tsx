@@ -57,7 +57,7 @@ export const ArchitectureFirmProcess = defineCapsule({
     return (
       <section
         aria-labelledby="architecture-firm-process-heading"
-        className={cn('py-24 lg:py-32', props.className)}
+        className={cn('py-24 lg:py-28', props.className)}
       >
         <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">

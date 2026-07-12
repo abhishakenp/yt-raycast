@@ -58,7 +58,7 @@ export const ChurchHero = defineCapsule({
     return (
       <section
         className={cn(
-          'relative overflow-hidden pb-20 pt-32 lg:pb-32 lg:pt-48',
+          'relative overflow-hidden pt-20 pb-20 lg:pt-28 lg:pb-28',
           props.className,
         )}
       >

@@ -65,7 +65,7 @@ export const IllustratorAbout = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted/50 px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
+          'bg-muted/50 px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
           props.className,
         )}
       >

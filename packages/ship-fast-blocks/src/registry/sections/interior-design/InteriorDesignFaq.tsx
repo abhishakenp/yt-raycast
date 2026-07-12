@@ -61,7 +61,7 @@ export const InteriorDesignFaq = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted px-4 py-20 sm:px-6 md:py-32 lg:px-8',
+          'bg-muted px-4 py-20 sm:px-6 md:py-28 lg:px-8',
           props.className,
         )}
       >

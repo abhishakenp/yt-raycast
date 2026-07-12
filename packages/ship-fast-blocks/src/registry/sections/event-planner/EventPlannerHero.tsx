@@ -74,7 +74,7 @@ export const EventPlannerHero = defineCapsule({
     return (
       <section
         className={cn(
-          'px-4 pb-20 pt-32 sm:px-6 lg:px-8 lg:pb-32 lg:pt-48',
+          'px-4 pt-20 pb-20 sm:px-6 lg:px-8 lg:pt-28 lg:pb-28',
           props.className,
         )}
       >

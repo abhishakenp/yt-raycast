@@ -40,7 +40,7 @@ export const CorporateContactCta = defineCapsule({
       props.note ?? 'Average response time: Under 2 hours during business hours'
 
     return (
-      <section className={cn('bg-foreground py-20 lg:py-32', props.className)}>
+      <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-semibold tracking-tight text-background sm:text-4xl lg:text-5xl">
             {heading}

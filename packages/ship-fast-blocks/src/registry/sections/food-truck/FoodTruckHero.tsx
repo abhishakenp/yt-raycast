@@ -97,7 +97,7 @@ export const FoodTruckHero = defineCapsule({
 
     return (
       <section
-        className={cn('px-6 pb-20 pt-32 md:pb-32 md:pt-40', props.className)}
+        className={cn('px-6 pt-20 pb-20 lg:pt-28 lg:pb-28', props.className)}
       >
         <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2">
           <div className="space-y-6">

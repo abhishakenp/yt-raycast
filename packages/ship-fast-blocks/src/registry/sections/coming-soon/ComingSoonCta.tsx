@@ -54,7 +54,7 @@ export const ComingSoonCta = defineCapsule({
     return (
       <section
         className={cn(
-          'w-full px-4 py-24 sm:px-6 sm:py-32 lg:px-8 xl:px-12',
+          'w-full px-4 py-24 sm:px-6 lg:py-28 lg:px-8 xl:px-12',
           props.className,
         )}
       >

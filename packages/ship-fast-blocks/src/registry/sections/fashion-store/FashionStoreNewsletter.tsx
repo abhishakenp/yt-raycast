@@ -46,7 +46,7 @@ export const FashionStoreNewsletter = defineCapsule({
     return (
       <section
         aria-label="Newsletter signup"
-        className={cn('py-20 lg:py-32', props.className)}
+        className={cn('py-20 lg:py-28', props.className)}
       >
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <p className={cn(eyebrowCls, 'mb-4')}>{nlEyebrow}</p>

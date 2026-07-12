@@ -49,7 +49,7 @@ export const BarNightclubGallery = defineCapsule({
 
     return (
       <section
-        className={cn('border-t border-border py-24 lg:py-32', props.className)}
+        className={cn('border-t border-border py-24 lg:py-28', props.className)}
       >
         <Container>
           <div className="mb-16 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">

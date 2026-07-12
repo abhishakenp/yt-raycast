@@ -153,7 +153,7 @@ export const FintechFeatures = defineCapsule({
     ]
 
     return (
-      <section className={cn('py-20 lg:py-32', props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">

@@ -63,7 +63,7 @@ export const CryptoContactCta = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground py-20 text-background lg:py-32',
+          'bg-foreground py-20 text-background lg:py-28',
           props.className,
         )}
       >

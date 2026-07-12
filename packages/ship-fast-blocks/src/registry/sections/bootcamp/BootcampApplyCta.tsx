@@ -76,7 +76,7 @@ export const BootcampApplyCta = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-primary py-20 lg:py-32', props.className)}>
+      <section className={cn('bg-primary py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl">
             {applyHeading}

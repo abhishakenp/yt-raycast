@@ -45,7 +45,7 @@ export const IllustratorContactCta = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
+          'bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
           props.className,
         )}
       >

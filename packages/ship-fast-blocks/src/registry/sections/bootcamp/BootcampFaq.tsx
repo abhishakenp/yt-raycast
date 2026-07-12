@@ -79,7 +79,7 @@ export const BootcampFaq = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-background py-20 lg:py-32', props.className)}>
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">

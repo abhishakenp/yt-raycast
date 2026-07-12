@@ -63,7 +63,7 @@ export const FoodDeliveryHero = defineCapsule({
     const badgeSubtitle = props.badgeSubtitle ?? 'Arriving in 24 min'
     const addressValue = foodSearch.state?.address ?? ''
     return (
-      <section className={cn('pb-16 pt-32 lg:pb-24 lg:pt-40', props.className)}>
+      <section className={cn('pb-16 pt-20 lg:pb-24 lg:pt-28', props.className)}>
         <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">

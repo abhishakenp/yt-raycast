@@ -44,7 +44,7 @@ export const MembershipClubCta = defineCapsule({
     return (
       <section
         className={cn(
-          'w-full bg-primary py-20 text-primary-foreground lg:py-32',
+          'w-full bg-primary py-20 text-primary-foreground lg:py-28',
           props.className,
         )}
         aria-labelledby="cta-heading"

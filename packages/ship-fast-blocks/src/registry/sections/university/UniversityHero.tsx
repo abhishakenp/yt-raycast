@@ -42,7 +42,7 @@ export const UniversityHero = defineCapsule({
     return (
       <section
         className={cn(
-          'relative isolate flex min-h-[640px] items-center overflow-hidden bg-foreground py-28 text-background sm:py-32',
+          'relative isolate flex min-h-[640px] items-center overflow-hidden bg-foreground py-20 text-background lg:py-28',
           props.className,
         )}
       >

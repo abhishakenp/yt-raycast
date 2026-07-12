@@ -128,7 +128,7 @@ export const NewsletterIssues = defineCapsule({
     )
 
     return (
-      <section className={cn('py-16 md:py-24 lg:py-32', props.className)}>
+      <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-12 max-w-2xl text-center md:mb-16">
             <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">

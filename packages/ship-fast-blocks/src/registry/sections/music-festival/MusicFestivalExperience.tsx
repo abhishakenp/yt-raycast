@@ -144,7 +144,7 @@ export const MusicFestivalExperience = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-card py-24 text-card-foreground lg:py-32',
+          'bg-card py-24 text-card-foreground lg:py-28',
           props.className,
         )}
       >

@@ -86,7 +86,7 @@ export const ArchitectureFirmTestimonials = defineCapsule({
     return (
       <section
         aria-labelledby="architecture-firm-testimonials-heading"
-        className={cn('bg-card py-24 lg:py-32', props.className)}
+        className={cn('bg-card py-24 lg:py-28', props.className)}
       >
         <Container>
           <div className="mb-16 text-center">

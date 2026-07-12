@@ -90,7 +90,7 @@ export const LawFirmHero = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-background py-24 lg:py-32', props.className)}>
+      <section className={cn('bg-background py-24 lg:py-28', props.className)}>
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>

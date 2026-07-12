@@ -118,7 +118,7 @@ export const NewsletterPricing = defineCapsule({
     return (
       <section
         className={cn(
-          'border-y border-border bg-muted/40 py-16 md:py-24 lg:py-32',
+          'border-y border-border bg-muted/40 py-16 md:py-24 lg:py-28',
           props.className,
         )}
       >

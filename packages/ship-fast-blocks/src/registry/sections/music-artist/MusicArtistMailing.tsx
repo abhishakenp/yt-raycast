@@ -45,7 +45,7 @@ export const MusicArtistMailing = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground px-6 py-20 text-background lg:px-8 lg:py-32',
+          'bg-foreground px-6 py-20 text-background lg:px-8 lg:py-28',
           props.className,
         )}
       >

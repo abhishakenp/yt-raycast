@@ -120,7 +120,7 @@ export const MusicArtistMusic = defineCapsule({
     )
 
     return (
-      <section className={cn('px-6 py-20 lg:px-8 lg:py-32', props.className)}>
+      <section className={cn('px-6 py-20 lg:px-8 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center lg:mb-24">
             <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">

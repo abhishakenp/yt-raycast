@@ -55,7 +55,7 @@ export const FilmDirectorContactCta = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground py-20 text-background md:py-32',
+          'bg-foreground py-20 text-background lg:py-28',
           props.className,
         )}
       >

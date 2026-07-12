@@ -91,7 +91,7 @@ export const InteriorDesignContactCta = defineCapsule({
 
     return (
       <section
-        className={cn('px-4 py-20 sm:px-6 md:py-32 lg:px-8', props.className)}
+        className={cn('px-4 py-20 sm:px-6 md:py-28 lg:px-8', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">

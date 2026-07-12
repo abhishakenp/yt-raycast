@@ -105,7 +105,7 @@ export const CoworkingTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'relative isolate overflow-hidden bg-background py-24 sm:py-32',
+          'relative isolate overflow-hidden bg-background py-24 lg:py-28',
           props.className,
         )}
       >

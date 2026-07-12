@@ -102,7 +102,7 @@ export const IllustratorHero = defineCapsule({
     return (
       <section
         className={cn(
-          'relative px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-36 lg:pt-32',
+          'relative px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-28 lg:pt-28',
           props.className,
         )}
       >

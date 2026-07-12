@@ -54,7 +54,7 @@ export const AgencyTestimonial = defineCapsule({
     return (
       <section
         className={cn(
-          'border-y border-border bg-muted/30 py-24 sm:py-32',
+          'border-y border-border bg-muted/30 py-24 lg:py-28',
           props.className,
         )}
       >

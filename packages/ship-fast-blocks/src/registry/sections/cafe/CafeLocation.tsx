@@ -177,7 +177,7 @@ export const CafeLocation = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-card py-20 lg:py-32', props.className)}>
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">

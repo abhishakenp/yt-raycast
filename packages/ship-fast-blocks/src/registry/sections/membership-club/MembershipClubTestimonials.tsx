@@ -93,7 +93,7 @@ export const MembershipClubTestimonials = defineCapsule({
 
     return (
       <section
-        className={cn('w-full bg-card py-20 lg:py-32', props.className)}
+        className={cn('w-full bg-card py-20 lg:py-28', props.className)}
         aria-labelledby="testimonials-heading"
       >
         <Container>
