@@ -1,0 +1,117 @@
+diff --git a/dist/component/_generated/component.d.ts b/dist/component/_generated/component.d.ts
+index ff6869e14073d66695af53ffd9fd25ce7e78871b..2160497495bcb1a54f01823c69531a63521d62a3 100644
+--- a/dist/component/_generated/component.d.ts
++++ b/dist/component/_generated/component.d.ts
+@@ -20,25 +20,32 @@ import type { FunctionReference } from "convex/server";
+  */
+ export type ComponentApi<Name extends string | undefined = string | undefined> = {
+     lib: {
+-        add: FunctionReference<"mutation", "internal", {
+-            targetId: string;
+-            text: string;
+-            userId: string;
+-        }, string, Name>;
+-        list: FunctionReference<"query", "internal", {
+-            limit?: number;
+-            targetId: string;
+-        }, Array<{
+-            _creationTime: number;
+-            _id: string;
+-            targetId: string;
+-            text: string;
+-            userId: string;
+-        }>, Name>;
+-        translate: FunctionReference<"action", "internal", {
+-            baseUrl: string;
+-            commentId: string;
+-        }, string, Name>;
++        cancel: FunctionReference<"mutation", "internal", {
++            key: string;
++            namespace: string;
++        }, boolean, Name>;
++        schedule: FunctionReference<"mutation", "internal", {
++            delay: number;
++            functionArgs: unknown;
++            functionHandle: string;
++            functionPath: string;
++            key: string;
++            mode: "eager" | "fixed" | "sliding";
++            namespace: string;
++        }, {
++            executed: boolean;
++            scheduledFor: number;
++        }, Name>;
++        status: FunctionReference<"query", "internal", {
++            key: string;
++            namespace: string;
++        }, {
++            hasTrailingCall: boolean;
++            mode: "eager" | "fixed" | "sliding";
++            pending: boolean;
++            retriggerCount: number;
++            scheduledFor: number;
++        } | null, Name>;
+     };
+ };
+ //# sourceMappingURL=component.d.ts.map
+diff --git a/src/component/_generated/component.ts b/src/component/_generated/component.ts
+index 2e0fdfbd512d14ad4e89e3e04149c474a57d7d27..b46b407cd483bc2955bf2ccd6abd49c9d9e04ce8 100644
+--- a/src/component/_generated/component.ts
++++ b/src/component/_generated/component.ts
+@@ -24,31 +24,39 @@ import type { FunctionReference } from "convex/server";
+ export type ComponentApi<Name extends string | undefined = string | undefined> =
+   {
+     lib: {
+-      add: FunctionReference<
++      cancel: FunctionReference<
+         "mutation",
+         "internal",
+-        { targetId: string; text: string; userId: string },
+-        string,
++        { key: string; namespace: string },
++        boolean,
+         Name
+       >;
+-      list: FunctionReference<
+-        "query",
++      schedule: FunctionReference<
++        "mutation",
+         "internal",
+-        { limit?: number; targetId: string },
+-        Array<{
+-          _creationTime: number;
+-          _id: string;
+-          targetId: string;
+-          text: string;
+-          userId: string;
+-        }>,
++        {
++          delay: number;
++          functionArgs: unknown;
++          functionHandle: string;
++          functionPath: string;
++          key: string;
++          mode: "eager" | "fixed" | "sliding";
++          namespace: string;
++        },
++        { executed: boolean; scheduledFor: number },
+         Name
+       >;
+-      translate: FunctionReference<
+-        "action",
++      status: FunctionReference<
++        "query",
+         "internal",
+-        { baseUrl: string; commentId: string },
+-        string,
++        { key: string; namespace: string },
++        {
++          hasTrailingCall: boolean;
++          mode: "eager" | "fixed" | "sliding";
++          pending: boolean;
++          retriggerCount: number;
++          scheduledFor: number;
++        } | null,
+         Name
+       >;
+     };

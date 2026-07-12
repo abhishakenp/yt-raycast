@@ -208,5 +208,8 @@
       "esbuild",
       "lightningcss"
     ]
+  },
+  "patchedDependencies": {
+    "@ikhrustalev/convex-debouncer@0.1.2": "patches/@ikhrustalev%2Fconvex-debouncer@0.1.2.patch"
   }
 }

@@ -193,6 +193,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "@ikhrustalev/convex-debouncer@0.1.2": "patches/@ikhrustalev%2Fconvex-debouncer@0.1.2.patch",
+  },
   "packages": {
     "@ag-ui/core": ["@ag-ui/core@0.0.45", "", { "dependencies": { "rxjs": "7.8.1", "zod": "^3.22.4" } }, "sha512-Ccsarxb23TChONOWXDbNBqp1fIbOSMht8g7w6AsSYBTtdOwZ7h7AkjNkr3LSdVv+RbT30JMdSLtieJE0YepNPg=="],
 
