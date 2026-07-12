@@ -1,4 +1,5 @@
 import { buildHtmlExport } from './html-export-builder'
+import { picsumUrl } from '../../../lib/image-query'
 
 export interface HtmlExportFilesOptions {
   includeBadge?: boolean
@@ -75,6 +76,36 @@ const ensureLlmsDiscoveryLink = (html: string): string => {
   if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${link}</head>`)
   return `${link}\n${html}`
 }
+
+const internalImageUrlPattern =
+  /(?:https?:\/\/[^\s"'(),<>]+)?\/api\/(?:pexels|images?)(?:\?[^\s"'(),<>]*)?/gi
+
+const portableImageUrl = (value: string): string => {
+  const decoded = decodeBasicEntities(value)
+  let parsed: URL
+  try {
+    parsed = new URL(decoded, 'https://export.invalid')
+  } catch {
+    return value
+  }
+
+  const query =
+    parsed.searchParams.get('query') ??
+    parsed.searchParams.get('alt') ??
+    parsed.searchParams.get('seed') ??
+    'generated image'
+  const width = Number.parseInt(parsed.searchParams.get('w') ?? '', 10)
+  const height = Number.parseInt(parsed.searchParams.get('h') ?? '', 10)
+
+  return picsumUrl(
+    parsed.searchParams.get('seed') ?? query,
+    Number.isFinite(width) ? width : 800,
+    Number.isFinite(height) ? height : 600,
+  )
+}
+
+const materializePortableImageUrls = (html: string): string =>
+  html.replace(internalImageUrlPattern, portableImageUrl)
 
 export const createRobotsTxt = (siteUrl: string): string =>
   `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`
@@ -173,18 +204,20 @@ export function createHtmlExportFiles(
   options: HtmlExportFilesOptions = {},
 ): Record<string, string> {
   const siteUrl = normalizeSiteUrl(options.siteUrl)
-  const exportHtml = ensureLlmsDiscoveryLink(
-    buildHtmlExport(previewHtml, {
-      includeBadge: options.includeBadge,
-      canonicalUrl: createCanonicalUrl(siteUrl),
-    }),
+  const exportHtml = materializePortableImageUrls(
+    ensureLlmsDiscoveryLink(
+      buildHtmlExport(previewHtml, {
+        includeBadge: options.includeBadge,
+        canonicalUrl: createCanonicalUrl(siteUrl),
+      }),
+    ),
   )
   const metadataSiteUrl = siteUrl ?? 'https://example.com'
   const metadata = extractExportMetadata(exportHtml)
 
   return {
     'index.html': exportHtml,
-    'README.md': `# Ship Fast export
+    'README.md': `# Static site export
 
 ${shipFastReadmeLine}
 `,
@@ -201,11 +234,13 @@ export function createReactExportFiles(
   options: HtmlExportFilesOptions = {},
 ): Record<string, string> {
   const siteUrl = normalizeSiteUrl(options.siteUrl)
-  const exportHtml = ensureLlmsDiscoveryLink(
-    buildHtmlExport(previewHtml, {
-      includeBadge: options.includeBadge,
-      canonicalUrl: createCanonicalUrl(siteUrl),
-    }),
+  const exportHtml = materializePortableImageUrls(
+    ensureLlmsDiscoveryLink(
+      buildHtmlExport(previewHtml, {
+        includeBadge: options.includeBadge,
+        canonicalUrl: createCanonicalUrl(siteUrl),
+      }),
+    ),
   )
   const metadataSiteUrl = siteUrl ?? 'https://example.com'
   const metadata = extractExportMetadata(exportHtml)
@@ -214,16 +249,16 @@ export function createReactExportFiles(
     'package.json': createPackageJson(sessionId, target),
     'vite.config.js': createViteConfig(),
     'index.html': exportHtml,
-    'README.md': `# Ship Fast React export
+    'README.md': `# React site export
 
 ${shipFastReadmeLine}
 
 ## Development
 
 \`\`\`bash
-npm install
-npm run dev
-npm run build
+bun install
+bun run dev
+bun run build
 \`\`\`
 `,
     'robots.txt': createRobotsTxt(metadataSiteUrl),
@@ -239,11 +274,13 @@ export function createNextExportFiles(
   options: HtmlExportFilesOptions = {},
 ): Record<string, string> {
   const siteUrl = normalizeSiteUrl(options.siteUrl)
-  const exportHtml = ensureLlmsDiscoveryLink(
-    buildHtmlExport(previewHtml, {
-      includeBadge: options.includeBadge,
-      canonicalUrl: createCanonicalUrl(siteUrl),
-    }),
+  const exportHtml = materializePortableImageUrls(
+    ensureLlmsDiscoveryLink(
+      buildHtmlExport(previewHtml, {
+        includeBadge: options.includeBadge,
+        canonicalUrl: createCanonicalUrl(siteUrl),
+      }),
+    ),
   )
   const metadataSiteUrl = siteUrl ?? 'https://example.com'
   const metadata = extractExportMetadata(exportHtml)
@@ -270,17 +307,17 @@ export function createNextExportFiles(
     </html>
   )
 }`,
-    'README.md': `# Ship Fast Next.js export
+    'README.md': `# Next.js site export
 
 ${shipFastReadmeLine}
 
 ## Development
 
 \`\`\`bash
-npm install
-npm run dev
-npm run build
-npm start
+bun install
+bun run dev
+bun run build
+bun start
 \`\`\`
 `,
     'robots.txt': createRobotsTxt(metadataSiteUrl),
