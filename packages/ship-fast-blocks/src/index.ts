@@ -17,6 +17,11 @@ export {
 export { ImageContextProvider, type ImageContext } from './lib/img.tsx'
 export { buildImageSearchQuery } from './lib/image-search-query.ts'
 export {
+  matchElementToProp,
+  buildPropPatch,
+  type CapsulePropContext,
+} from './capsules/prop-text-matcher.ts'
+export {
   BrandLogoProvider,
   Logo,
   getBrandLogoImageSrc,

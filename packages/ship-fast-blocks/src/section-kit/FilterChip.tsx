@@ -80,4 +80,3 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
 FilterChip.displayName = 'FilterChip'
 
 export { FilterChip, chipVariants }
-export type { FilterChipProps }

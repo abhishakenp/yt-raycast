@@ -65,4 +65,3 @@ const Eyebrow = React.forwardRef<HTMLSpanElement, EyebrowProps>(
 Eyebrow.displayName = 'Eyebrow'
 
 export { Eyebrow }
-export type { EyebrowProps }
