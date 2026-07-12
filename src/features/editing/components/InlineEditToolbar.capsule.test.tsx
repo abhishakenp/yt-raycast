@@ -615,14 +615,14 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
-      // Click Add — opens dialog form
+      // Click Add — shows inline draft form
       const addBtn = screen.getAllByRole('button', { name: /Add/ })[0]
       fireEvent.click(addBtn!)
 
-      // Click submit button in dialog "Add Images"
-      const submitBtn = screen.getByRole('button', { name: /Add Images/ })
+      // Click Save in the inline draft
+      const saveBtn = screen.getByRole('button', { name: /Save/ })
       await act(async () => {
-        fireEvent.click(submitBtn)
+        fireEvent.click(saveBtn)
       })
 
       expect(mockActions.addItem).toHaveBeenCalledWith('images', {
