@@ -1,6 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -67,18 +69,24 @@ export const EcommerceTestimonials = defineCapsule({
         ]
 
     return (
-      <TestimonialGrid
-        heading={heading}
-        subheading={subheading}
-        items={reviews.map((r) => ({
-          quote: r.quote,
-          name: r.name,
-          rating: r.rating,
-          role: 'Verified Buyer',
-          avatarAlt: r.avatarAlt,
-        }))}
-        className={props.className}
-      />
+      <section
+        aria-label="Customer reviews"
+        className={cn('bg-background py-20 lg:py-28', props.className)}
+      >
+        <Container>
+          <TestimonialGrid
+            heading={heading}
+            subheading={subheading}
+            items={reviews.map((r) => ({
+              quote: r.quote,
+              name: r.name,
+              rating: r.rating,
+              role: 'Verified Buyer',
+              avatarAlt: r.avatarAlt,
+            }))}
+          />
+        </Container>
+      </section>
     )
   },
 })

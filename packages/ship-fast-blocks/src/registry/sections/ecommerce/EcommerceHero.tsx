@@ -81,9 +81,9 @@ export const EcommerceHero = defineCapsule({
     return (
       <section
         aria-label="Hero"
-        className={cn('bg-background pt-16 lg:pt-20', props.className)}
+        className={cn('bg-background', props.className)}
       >
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:py-24">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:py-16">
           <div className="text-center lg:text-left">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
               {heroEyebrow}

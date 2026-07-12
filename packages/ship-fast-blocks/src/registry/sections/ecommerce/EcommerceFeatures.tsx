@@ -2,6 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -128,17 +130,23 @@ export const EcommerceFeatures = defineCapsule({
         ]
 
     return (
-      <FeatureGrid
-        heading={heading}
-        subheading={subheading}
-        columns={4}
-        features={features.map((f, i) => ({
-          title: f.title,
-          description: f.description,
-          icon: ICONS[i % ICONS.length],
-        }))}
-        className={props.className}
-      />
+      <section
+        aria-label="Store benefits"
+        className={cn('bg-background py-20 lg:py-28', props.className)}
+      >
+        <Container>
+          <FeatureGrid
+            heading={heading}
+            subheading={subheading}
+            columns={4}
+            features={features.map((f, i) => ({
+              title: f.title,
+              description: f.description,
+              icon: ICONS[i % ICONS.length],
+            }))}
+          />
+        </Container>
+      </section>
     )
   },
 })
