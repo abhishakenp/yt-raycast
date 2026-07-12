@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog.tsx'
 
-const COMMAND_UNSELECTED_VALUE = '__ship-fast-command-unselected__'
+const COMMAND_UNSELECTED_VALUE = '__command-unselected__'
 
 function Command({
   className,
