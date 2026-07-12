@@ -750,6 +750,7 @@ export const capsuleCategories: Record<
   FitnessStats: { category: 'fitness', functionalType: 'Stats' },
   FitnessTestimonials: { category: 'fitness', functionalType: 'Testimonials' },
   FitnessTrainers: { category: 'fitness', functionalType: 'Generic' },
+  FlightSimulator: { category: 'flight-simulator', functionalType: 'Generic' },
   FlightSimulatorFeatures: {
     category: 'flight-simulator',
     functionalType: 'Features',

@@ -92,6 +92,27 @@ export const flightSimulatorProps = zod.object({
 
 export type FlightSimulatorProps = zod.infer<typeof flightSimulatorProps>
 
+type FlightHudInput = {
+  altitude: number
+  headingRadians: number
+  speedUnits: number
+  thrusting: boolean
+  boosting: boolean
+}
+
+export const getFlightHudReadout = ({
+  altitude,
+  headingRadians,
+  speedUnits,
+  thrusting,
+  boosting,
+}: FlightHudInput) => ({
+  altitude: altitude.toFixed(1),
+  heading: String(Math.round(((headingRadians * 180) / Math.PI + 360) % 360)),
+  speed: (speedUnits * 3.6).toFixed(0),
+  throttle: String(boosting ? 300 : thrusting ? 100 : 0),
+})
+
 /**
  * FlightSimulator — a single-player Three.js flight sim.
  * All multiplayer (WebSocket, other-players tracking) has been removed.
@@ -101,6 +122,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const showHud = cfg.hud ?? true
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -190,6 +212,8 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
 
         const speedEl = document.getElementById('fs-speed')
         const altEl = document.getElementById('fs-altitude')
+        const headingEl = document.getElementById('fs-heading')
+        const throttleEl = document.getElementById('fs-throttle')
 
         // --- Terrain ---
         function getTerrainHeight(worldX: number, worldZ: number) {
@@ -1507,10 +1531,21 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
         }
 
         function updateInfoPanel() {
-          if (speedEl)
-            speedEl.textContent = (playerVelocity.length() * 3.6).toFixed(0)
-          if (altEl && playerAircraft)
-            altEl.textContent = playerAircraft.position.y.toFixed(1)
+          if (!playerAircraft) return
+          const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(
+            playerAircraft.quaternion,
+          )
+          const readout = getFlightHudReadout({
+            altitude: playerAircraft.position.y,
+            headingRadians: Math.atan2(forward.x, -forward.z),
+            speedUnits: playerVelocity.length(),
+            thrusting: controls.forward === 1,
+            boosting: controls.boost === 1,
+          })
+          if (speedEl) speedEl.textContent = readout.speed
+          if (altEl) altEl.textContent = readout.altitude
+          if (headingEl) headingEl.textContent = readout.heading
+          if (throttleEl) throttleEl.textContent = readout.throttle
         }
 
         // --- Start ---
@@ -1543,7 +1578,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
   return (
     <div
       ref={containerRef}
-      className="relative h-screen w-full overflow-hidden bg-background"
+      className={`relative h-screen w-full overflow-hidden bg-background ${cfg.className ?? ''}`}
     >
       {/* Loading overlay */}
       {loading && (
@@ -1562,11 +1597,17 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
         </div>
       )}
       {/* HUD */}
-      <div className="pointer-events-none absolute top-2 left-2 z-10 rounded bg-background/50 p-1.5 font-mono text-xs text-foreground">
-        Speed: <span id="fs-speed">0</span> km/h
-        <br />
-        Altitude: <span id="fs-altitude">0</span> m
-      </div>
+      {showHud && (
+        <div className="pointer-events-none absolute top-2 left-2 z-10 rounded bg-background/50 p-1.5 font-mono text-xs text-foreground">
+          Speed: <span id="fs-speed">0</span> km/h
+          <br />
+          Altitude: <span id="fs-altitude">0.0</span> m
+          <br />
+          Heading: <span id="fs-heading">0</span>°
+          <br />
+          Throttle: <span id="fs-throttle">0</span>%
+        </div>
+      )}
     </div>
   )
 }

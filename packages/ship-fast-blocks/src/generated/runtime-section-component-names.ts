@@ -445,6 +445,7 @@ export const runtimeSectionComponentNames = [
   'FitnessStats',
   'FitnessTestimonials',
   'FitnessTrainers',
+  'FlightSimulator',
   'FlightSimulatorFeatures',
   'FlightSimulatorFooter',
   'FlightSimulatorGallery',

@@ -470,6 +470,7 @@ export const runtimeComponentNames = [
   'FitnessStats',
   'FitnessTestimonials',
   'FitnessTrainers',
+  'FlightSimulator',
   'FlightSimulatorFeatures',
   'FlightSimulatorFooter',
   'FlightSimulatorGallery',

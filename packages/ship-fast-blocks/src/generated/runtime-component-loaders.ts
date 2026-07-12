@@ -1901,6 +1901,10 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/fitness/FitnessTrainers.tsx').then((module) =>
       toCapsule(module, 'FitnessTrainers'),
     )) satisfies RuntimeComponentLoader,
+  FlightSimulator: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulator.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulator'),
+    )) satisfies RuntimeComponentLoader,
   FlightSimulatorFeatures: (() =>
     import('../registry/sections/flight-simulator/FlightSimulatorFeatures.tsx').then(
       (module) => toCapsule(module, 'FlightSimulatorFeatures'),

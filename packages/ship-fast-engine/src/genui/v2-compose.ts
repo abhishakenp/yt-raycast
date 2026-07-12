@@ -1833,6 +1833,22 @@ const WEBSITE_TERMS =
   /\b(website|site|landing|homepage|page|blog|publication|newsletter|store|shop|restaurant|cafe|portfolio|agency|service|services|saas|startup|product|brand|company|marketing|vape|hotel|venue|event|clinic|studio|firm)\b/i
 const TOOL_ONLY_TERMS =
   /\b(calculator|tracker|timer|counter|todo|kanban|game|quiz|converter|simulator|editor|dashboard|admin|form builder|chatbot)\b/i
+const FLIGHT_SIMULATOR_TERMS =
+  /\b(flight\s+sim(?:ulator)?|aviation\s+sim(?:ulator)?|pilot(?:ing)?\s+(?:a|the)?\s*(?:plane|aircraft)|fly(?:ing)?\s+(?:a|the)?\s*(?:plane|aircraft)|aircraft\s+(?:game|simulator))\b/i
+const PLAYABLE_FLIGHT_TERMS =
+  /\b(playable|game|gameplay|pilot|flying?|third-person|controls?|hud)\b/i
+const FLIGHT_MARKETING_TERMS =
+  /\b(marketing\s+(?:site|website|page)|landing\s+page|website\s+for)\b/i
+
+/** Route playable aviation simulations to the dedicated runtime capsule. */
+export function isFlightSimulatorGamePrompt(prompt: string): boolean {
+  const text = prompt.trim()
+  return (
+    FLIGHT_SIMULATOR_TERMS.test(text) &&
+    PLAYABLE_FLIGHT_TERMS.test(text) &&
+    !FLIGHT_MARKETING_TERMS.test(text)
+  )
+}
 
 export function shouldConsiderFreeFormAppMode(prompt: string): boolean {
   const text = prompt.trim()
@@ -1947,6 +1963,31 @@ export async function runV2ComposedGeneration(input: {
   const locale = input.preferredLanguage || 'en'
   const theme = pick(rng, THEME_CATALOG).name
   const emit = (e: V2Event) => input.onEvent?.(e)
+
+  // A flight simulator is a real-time Three.js runtime, not a composition of
+  // generic form/state primitives. Select the registered whole-page capsule by
+  // game intent so the output remains deterministic and immediately playable.
+  if (!input.familyOverride && isFlightSimulatorGamePrompt(input.prompt)) {
+    const source = 'root = FlightSimulator()'
+    emit({ type: 'status', message: 'Preparing your flight simulator' })
+    emit({ type: 'theme', name: theme })
+    emit({ type: 'locale', code: locale })
+    input.onSource?.(source)
+    emit({ type: 'source', text: source })
+    emit({ type: 'done' })
+    return {
+      source,
+      theme,
+      locale,
+      brand,
+      category: 'game',
+      family: 'FlightSimulator',
+      artifacts: [],
+      routes: [],
+      pages: [],
+      navTargets: {},
+    }
+  }
 
   // ROUTE — a self-contained interactive app/tool/widget (not a marketing
   // website) is generated FREE-FORM from the generic primitives, so the engine

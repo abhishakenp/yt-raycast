@@ -23,6 +23,7 @@ import { getComponentSignature } from './openui-signature.ts'
 import {
   FAMILIES,
   classifyFamilies,
+  isFlightSimulatorGamePrompt,
   shouldConsiderFreeFormAppMode,
   resolveFamily,
   composePage,
@@ -138,6 +139,20 @@ describe('generation mode guard', () => {
     expect(shouldConsiderFreeFormAppMode('todo app')).toBe(true)
     expect(shouldConsiderFreeFormAppMode('mortgage calculator')).toBe(true)
   })
+
+  it('recognizes flight-simulator gameplay intent without matching unrelated games', () => {
+    expect(
+      isFlightSimulatorGamePrompt(
+        'A playable 3D flight simulator: pilot a small plane over an open world',
+      ),
+    ).toBe(true)
+    expect(isFlightSimulatorGamePrompt('a playable arcade puzzle game')).toBe(
+      false,
+    )
+    expect(
+      isFlightSimulatorGamePrompt('a marketing site for aviation software'),
+    ).toBe(false)
+  })
 })
 
 describe('composePage (valid by construction, no fallback)', () => {
@@ -232,6 +247,23 @@ describe('composePage (valid by construction, no fallback)', () => {
 
 describe('runV2ComposedGeneration', () => {
   beforeEach(() => mocks.generateText.mockReset())
+
+  it('selects the deterministic whole-page flight simulator capsule', async () => {
+    const result = await runV2ComposedGeneration({
+      prompt:
+        'A playable 3D flight simulator game built with Three.js. Pilot a small plane in third-person over a huge open world.',
+      modelId: 'm',
+      sessionSeed: 'flight-simulator',
+      signal,
+    })
+
+    expect(result.source).toBe('root = FlightSimulator()')
+    expect(result.category).toBe('game')
+    expect(result.family).toBe('FlightSimulator')
+    expect(result.routes).toEqual([])
+    expect(result.pages).toEqual([])
+    expect(mocks.generateText).not.toHaveBeenCalled()
+  })
 
   it('produces a valid multi-page site with theme, brand and a PageSwitch root', async () => {
     mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
