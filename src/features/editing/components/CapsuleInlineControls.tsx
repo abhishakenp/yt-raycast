@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { allCapsules } from '@ship-fast/blocks'
@@ -31,12 +31,18 @@ import {
   AlertDialogTrigger,
 } from '#/components/ui/alert-dialog'
 
+export type CapsuleInlineHandle = {
+  commit: () => Promise<void>
+  discard: () => void
+}
+
 interface CapsuleInlineControlsProps {
   capsuleName: string
   statementId: string
   sessionId: string
   anonymousOwnerSecret?: string
   activeCollectionItem?: { collectionKey: string; index: number } | null
+  handleRef?: React.MutableRefObject<CapsuleInlineHandle | null>
 }
 
 export const CapsuleInlineControls = ({
@@ -45,6 +51,7 @@ export const CapsuleInlineControls = ({
   sessionId,
   anonymousOwnerSecret,
   activeCollectionItem,
+  handleRef,
 }: CapsuleInlineControlsProps) => (
   <LakebedSessionProvider
     sessionId={sessionId}
@@ -54,6 +61,7 @@ export const CapsuleInlineControls = ({
       capsuleName={capsuleName}
       statementId={statementId}
       activeCollectionItem={activeCollectionItem}
+      handleRef={handleRef}
     />
   </LakebedSessionProvider>
 )
@@ -99,16 +107,63 @@ const CapsuleInlineControlsInner = ({
   capsuleName,
   statementId,
   activeCollectionItem,
+  handleRef,
 }: {
   capsuleName: string
   statementId: string
   activeCollectionItem?: { collectionKey: string; index: number } | null
+  handleRef?: React.MutableRefObject<CapsuleInlineHandle | null>
 }) => {
   const actions = useSectionCapsuleActions(capsuleName, statementId)
   const schemaInfo = useMemo(
     () => lookupCapsuleSchema(capsuleName),
     [capsuleName],
   )
+
+  // ── Buffered reorders: keyed by collectionKey → ordered array of raw indices
+  const [pendingOrders, setPendingOrders] = useState<Record<string, number[]>>(
+    {},
+  )
+  const pendingOrdersRef = useRef(pendingOrders)
+  pendingOrdersRef.current = pendingOrders
+
+  const actionsRef = useRef(actions)
+  actionsRef.current = actions
+
+  const commit = useCallback(async () => {
+    const orders = pendingOrdersRef.current
+    const act = actionsRef.current
+    for (const [key, order] of Object.entries(orders)) {
+      // Find what moved: compare order to identity [0,1,2,...]
+      const identity = order.map((_, i) => i)
+      if (order.join(',') === identity.join(',')) continue
+      // Send the full reorder as a single merge
+      const rawItems = Array.isArray(act.sectionData?.[key])
+        ? (act.sectionData![key] as unknown[])
+        : []
+      const reordered = order
+        .map((i) => rawItems[i])
+        .filter((x) => x !== undefined)
+      await act.mergeData({ [key]: reordered } as Partial<
+        Record<string, unknown>
+      >)
+    }
+    setPendingOrders({})
+  }, [])
+
+  const discard = useCallback(() => {
+    setPendingOrders({})
+  }, [])
+
+  // Register commit/discard on the handle ref
+  useEffect(() => {
+    if (handleRef) {
+      handleRef.current = { commit, discard }
+      return () => {
+        handleRef.current = null
+      }
+    }
+  }, [handleRef, commit, discard])
 
   if (!schemaInfo) return null
   if (!actions.canEdit) {
@@ -147,6 +202,7 @@ const CapsuleInlineControlsInner = ({
         const activeIndex = isActiveCollection
           ? (activeCollectionItem?.index ?? null)
           : null
+        const pendingOrder = pendingOrders[collection.key] ?? null
         return (
           <InlineCollectionControls
             key={collection.key}
@@ -154,9 +210,12 @@ const CapsuleInlineControlsInner = ({
             itemFields={collection.itemFields}
             items={actions.sectionData?.[collection.key]}
             activeIndex={activeIndex}
+            pendingOrder={pendingOrder}
+            onReorderLocal={(order) =>
+              setPendingOrders((prev) => ({ ...prev, [collection.key]: order }))
+            }
             onAdd={actions.addItem}
             onRemove={actions.removeItem}
-            onReorder={actions.reorderItem}
           />
         )
       })}
@@ -211,49 +270,75 @@ const InlineCollectionControls = ({
   itemFields,
   items,
   activeIndex,
+  pendingOrder,
+  onReorderLocal,
   onAdd,
   onRemove,
-  onReorder,
 }: {
   collectionKey: string
   itemFields: CollectionField[]
   items: unknown
   activeIndex: number | null
+  pendingOrder: number[] | null
+  onReorderLocal: (order: number[]) => void
   onAdd: (key: string, item: Record<string, unknown>) => Promise<void>
   onRemove: (key: string, index: number) => Promise<void>
-  onReorder: (key: string, from: number, to: number) => Promise<void>
 }) => {
-  const itemArray = Array.isArray(items) ? items : []
+  const rawItems = Array.isArray(items) ? items : []
   const label = collectionKey.charAt(0).toUpperCase() + collectionKey.slice(1)
   const titleField = findTitleField(itemFields)
-  const [manualIndex, setManualIndex] = useState<number | null>(null)
 
-  // When DOM-derived activeIndex changes, reset manual override
-  const effectiveIndex = manualIndex ?? activeIndex
+  // Current display order: pendingOrder if set, otherwise identity
+  const currentOrder = pendingOrder ?? rawItems.map((_, i) => i)
+  const itemArray = currentOrder
+    .map((i) => rawItems[i])
+    .filter((x) => x !== undefined)
+
+  // Track selected item by raw index (stable identity).
+  // Initialize from activeIndex so the Select is controlled from the start.
+  const [selectedRawIndex, setSelectedRawIndex] = useState<number | null>(
+    () => {
+      if (activeIndex !== null && activeIndex >= 0) {
+        return currentOrder[activeIndex] ?? activeIndex
+      }
+      return null
+    },
+  )
+
+  // When DOM-derived activeIndex changes, update selection to match
+  useEffect(() => {
+    if (activeIndex !== null && activeIndex >= 0) {
+      const raw = currentOrder[activeIndex] ?? activeIndex
+      setSelectedRawIndex(raw)
+    }
+  }, [activeIndex]) // intentionally not depending on currentOrder
+
+  // Find the display position of the selected raw index
+  const effectiveIndex =
+    selectedRawIndex !== null ? currentOrder.indexOf(selectedRawIndex) : -1
+
+  const hasActiveItem = effectiveIndex >= 0 && effectiveIndex < itemArray.length
+
+  const activeItem = hasActiveItem ? itemArray[effectiveIndex] : null
+  const activeTitle = activeItem
+    ? extractItemTitle(activeItem, titleField, `${label} ${effectiveIndex + 1}`)
+    : ''
 
   const handleAdd = () => {
     const defaultItem = createDefaultItem({ key: collectionKey, itemFields })
     void onAdd(collectionKey, defaultItem)
   }
 
-  const activeItem =
-    effectiveIndex !== null &&
-    effectiveIndex >= 0 &&
-    effectiveIndex < itemArray.length
-      ? itemArray[effectiveIndex]
-      : null
-  const activeTitle = activeItem
-    ? extractItemTitle(
-        activeItem,
-        titleField,
-        `${label} ${effectiveIndex! + 1}`,
-      )
-    : ''
-
-  const hasActiveItem =
-    effectiveIndex !== null &&
-    effectiveIndex >= 0 &&
-    effectiveIndex < itemArray.length
+  const doReorder = useCallback(
+    (fromDisplay: number, toDisplay: number) => {
+      if (toDisplay < 0 || toDisplay >= currentOrder.length) return
+      const nextOrder = [...currentOrder]
+      const [moved] = nextOrder.splice(fromDisplay, 1)
+      nextOrder.splice(toDisplay, 0, moved)
+      onReorderLocal(nextOrder)
+    },
+    [currentOrder, onReorderLocal],
+  )
 
   return (
     <div className="flex shrink-0 items-center gap-1.5">
@@ -275,21 +360,22 @@ const InlineCollectionControls = ({
         <>
           <div className="h-3 w-px bg-white/10" />
           <Select
-            value={hasActiveItem ? String(effectiveIndex) : undefined}
-            onValueChange={(val) => setManualIndex(Number(val))}
+            value={hasActiveItem ? String(selectedRawIndex) : ''}
+            onValueChange={(val) => setSelectedRawIndex(Number(val))}
           >
             <SelectTrigger className="h-6 w-[140px] gap-1 rounded-md border-white/10 bg-black/20 px-2 text-[11px] text-white/70">
               <SelectValue placeholder="Pick item…" />
             </SelectTrigger>
             <SelectContent>
-              {itemArray.map((item, i) => {
+              {itemArray.map((item, displayIdx) => {
+                const rawIdx = currentOrder[displayIdx]
                 const title = extractItemTitle(
                   item,
                   titleField,
-                  `${label} ${i + 1}`,
+                  `${label} ${displayIdx + 1}`,
                 )
                 return (
-                  <SelectItem key={i} value={String(i)}>
+                  <SelectItem key={rawIdx} value={String(rawIdx)}>
                     {title}
                   </SelectItem>
                 )
@@ -302,13 +388,7 @@ const InlineCollectionControls = ({
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                onClick={() =>
-                  void onReorder(
-                    collectionKey,
-                    effectiveIndex!,
-                    effectiveIndex! - 1,
-                  )
-                }
+                onClick={() => doReorder(effectiveIndex, effectiveIndex - 1)}
                 disabled={effectiveIndex === 0}
                 className="text-white/40 hover:text-white"
                 title="Move up"
@@ -319,13 +399,7 @@ const InlineCollectionControls = ({
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                onClick={() =>
-                  void onReorder(
-                    collectionKey,
-                    effectiveIndex!,
-                    effectiveIndex! + 1,
-                  )
-                }
+                onClick={() => doReorder(effectiveIndex, effectiveIndex + 1)}
                 disabled={effectiveIndex === itemArray.length - 1}
                 className="text-white/40 hover:text-white"
                 title="Move down"
@@ -357,8 +431,8 @@ const InlineCollectionControls = ({
                     <AlertDialogAction
                       variant="destructive"
                       onClick={() => {
-                        void onRemove(collectionKey, effectiveIndex!)
-                        setManualIndex(null)
+                        void onRemove(collectionKey, selectedRawIndex!)
+                        setSelectedRawIndex(null)
                       }}
                     >
                       Remove

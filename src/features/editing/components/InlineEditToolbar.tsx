@@ -77,7 +77,10 @@ import { TypographyControlsPanel } from './TypographyControlsPanel'
 import { LinkEditPopover } from './LinkEditPopover'
 import { ImageSwapPanel } from './ImageSwapPanel'
 import { CapsuleContextPanel } from './CapsuleContextPanel'
-import { CapsuleInlineControls } from './CapsuleInlineControls'
+import {
+  CapsuleInlineControls,
+  type CapsuleInlineHandle,
+} from './CapsuleInlineControls'
 
 interface InlineEditToolbarProps {
   isOpen: boolean
@@ -454,6 +457,7 @@ export function InlineEditToolbar({
   const activeImageElementRef = useRef<HTMLElement | null>(null)
   const pendingImageSrcRef = useRef<string | null>(null)
   const imagePreviewClearedRef = useRef(false)
+  const capsuleInlineRef = useRef<CapsuleInlineHandle | null>(null)
   const [pendingImageSrc, setPendingImageSrc] = useState<string | null>(null)
   const originalLinkAttrsRef = useRef<{
     element: HTMLAnchorElement
@@ -930,6 +934,8 @@ export function InlineEditToolbar({
 
   const closeWithoutSaving = useCallback(() => {
     if (isApplying || isForking) return
+    // Discard buffered capsule reorders
+    capsuleInlineRef.current?.discard()
     restoreRememberedLinkAttrs()
     if (activeElement) {
       const isActiveImage = activeElement.tagName.toLowerCase() === 'img'
@@ -1047,6 +1053,7 @@ export function InlineEditToolbar({
         imagePreviewClearedRef.current = false
         setPendingImageSrc(null)
         originalImageSrcRef.current = null
+        void capsuleInlineRef.current?.commit()
         onClose()
         return
       }
@@ -1054,6 +1061,9 @@ export function InlineEditToolbar({
       // Always commit text changes first — the user may have typed text
       // and clicked Apply without modifying any style controls.
       onCommitText?.()
+
+      // Commit buffered capsule reorders
+      void capsuleInlineRef.current?.commit()
 
       // Only save style if the user actually modified a style control.
       if (!userModifiedRef.current) {
@@ -2083,6 +2093,7 @@ export function InlineEditToolbar({
                     statementId={capsuleStatementId}
                     sessionId={sessionId}
                     anonymousOwnerSecret={anonymousOwnerSecret}
+                    handleRef={capsuleInlineRef}
                     activeCollectionItem={
                       activeCollectionItem
                         ? {

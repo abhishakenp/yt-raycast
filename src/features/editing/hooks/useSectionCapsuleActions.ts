@@ -18,6 +18,7 @@ export type SectionCapsuleActions = {
     patch: JsonRecord,
   ) => Promise<void>
   setProp: (key: string, value: unknown) => Promise<void>
+  mergeData: (patch: Partial<JsonRecord>) => Promise<JsonRecord>
 }
 
 const isJsonRecord = (value: unknown): value is JsonRecord =>
@@ -115,5 +116,6 @@ export const useSectionCapsuleActions = (
     reorderItem,
     editItem,
     setProp,
+    mergeData,
   }
 }
