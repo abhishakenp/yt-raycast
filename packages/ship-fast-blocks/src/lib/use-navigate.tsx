@@ -6,6 +6,7 @@ import {
 } from 'react'
 import { useStateField } from '@openuidev/react-lang'
 import { signInWithGoogle, signOut } from '@ship-fast/lakebed/react'
+import { PreviewUrlBridgeContext } from './preview-url-bridge.tsx'
 
 export type RouteTarget = {
   type: 'page' | 'section'
@@ -137,9 +138,17 @@ export function resolveRouteTarget(
   )
 }
 
+const slugifyRoute = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'page'
+
 export function useNavigate() {
   const routing = useContext(RoutesContext)
   const page = useStateField<string>('page')
+  const urlBridge = useContext(PreviewUrlBridgeContext)
   return (target?: string) => {
     const rawTarget = (target ?? '').trim()
     const t = rawTarget.toLowerCase()
@@ -185,9 +194,19 @@ export function useNavigate() {
     )
     routing.setCurrentPage(nextPage)
     page.setValue(nextPage)
+    // Push the page slug to the host URL router so the browser URL reflects
+    // the active page (mirrors the deployed site's URL structure).
+    // Home page (routes[0]) → null → base URL, matching both export builders
+    // where index 0 maps to '/'. Other pages → slugifyRoute(label).
+    const isHome = nextPage === routing.routes[0]
+    urlBridge.navigateToPage?.(isHome ? null : slugifyRoute(nextPage))
     if (resolved.type === 'section' && resolved.sectionId) {
       if (typeof window !== 'undefined')
-        window.history.replaceState(null, '', `#${resolved.sectionId}`)
+        window.history.replaceState(
+          null,
+          '',
+          `${window.location.pathname}${window.location.search}#${resolved.sectionId}`,
+        )
     } else if (typeof window !== 'undefined') {
       if (window.location.hash) {
         window.history.replaceState(

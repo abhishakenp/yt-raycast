@@ -17,6 +17,10 @@ export {
   type BrandLogoSelection,
 } from './section-kit/Logo.tsx'
 export { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+export {
+  PreviewUrlBridgeContext,
+  type PreviewUrlBridgeValue,
+} from './lib/preview-url-bridge.tsx'
 
 export {
   IntegrationProvider,

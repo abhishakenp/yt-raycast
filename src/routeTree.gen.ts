@@ -38,6 +38,7 @@ import { Route as PreviewSlugSitemapDotxmlRouteImport } from './routes/preview.$
 import { Route as PreviewSlugRobotsDottxtRouteImport } from './routes/preview.$slug.robots[.]txt'
 import { Route as PreviewSlugLlmsDottxtRouteImport } from './routes/preview.$slug.llms[.]txt'
 import { Route as GenerateSessionIdAdminRouteImport } from './routes/generate.$sessionId.admin'
+import { Route as GenerateSessionIdSplatRouteImport } from './routes/generate.$sessionId.$'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
 import { Route as ApiSessionsRecentRouteImport } from './routes/api/sessions.recent'
@@ -222,6 +223,11 @@ const PreviewSlugLlmsDottxtRoute = PreviewSlugLlmsDottxtRouteImport.update({
 const GenerateSessionIdAdminRoute = GenerateSessionIdAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => GenerateSessionIdRoute,
+} as any)
+const GenerateSessionIdSplatRoute = GenerateSessionIdSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => GenerateSessionIdRoute,
 } as any)
 const ExportSessionIdTargetRoute = ExportSessionIdTargetRouteImport.update({
@@ -483,6 +489,7 @@ export interface FileRoutesByFullPath {
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
@@ -553,6 +560,7 @@ export interface FileRoutesByTo {
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
@@ -624,6 +632,7 @@ export interface FileRoutesById {
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
@@ -696,6 +705,7 @@ export interface FileRouteTypes {
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
@@ -766,6 +776,7 @@ export interface FileRouteTypes {
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
@@ -836,6 +847,7 @@ export interface FileRouteTypes {
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
@@ -1123,6 +1135,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GenerateSessionIdAdminRouteImport
       parentRoute: typeof GenerateSessionIdRoute
     }
+    '/generate/$sessionId/$': {
+      id: '/generate/$sessionId/$'
+      path: '/$'
+      fullPath: '/generate/$sessionId/$'
+      preLoaderRoute: typeof GenerateSessionIdSplatRouteImport
+      parentRoute: typeof GenerateSessionIdRoute
+    }
     '/export/$sessionId/$target': {
       id: '/export/$sessionId/$target'
       path: '/export/$sessionId/$target'
@@ -1400,10 +1419,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface GenerateSessionIdRouteChildren {
+  GenerateSessionIdSplatRoute: typeof GenerateSessionIdSplatRoute
   GenerateSessionIdAdminRoute: typeof GenerateSessionIdAdminRoute
 }
 
 const GenerateSessionIdRouteChildren: GenerateSessionIdRouteChildren = {
+  GenerateSessionIdSplatRoute: GenerateSessionIdSplatRoute,
   GenerateSessionIdAdminRoute: GenerateSessionIdAdminRoute,
 }
 
