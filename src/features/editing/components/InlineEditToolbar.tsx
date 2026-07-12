@@ -66,6 +66,11 @@ import {
   TooltipTrigger,
 } from '#/components/ui/tooltip'
 import { firstImageSrc } from '@ship-fast/blocks/multi-image-src'
+import {
+  introspectCapsuleSchema,
+  hasContextInfo,
+} from '@ship-fast/blocks/capsules'
+import { allCapsules } from '@ship-fast/blocks'
 import { isEditableTextLeaf } from '../hooks/useTextEdit'
 import { StyleControlsPanel } from './StyleControlsPanel'
 import { TypographyControlsPanel } from './TypographyControlsPanel'
@@ -130,6 +135,19 @@ interface InlineEditToolbarProps {
 // Module-level clipboard for style copy/paste. Persists across element
 // selections so a style copied from one element can be pasted onto another.
 let copiedStyle: string | null = null
+
+// Check if a capsule has editable schema (variants, collections, or scalars).
+// Used to hide the "Capsule controls" button when the panel would be empty.
+const capsuleSchemaCache = new Map<string, boolean>()
+const capsuleHasContext = (capsuleName: string): boolean => {
+  const cached = capsuleSchemaCache.get(capsuleName)
+  if (cached !== undefined) return cached
+  const capsule = allCapsules.find((c) => c.client.name === capsuleName)
+  const schema = capsule?.client.props
+  const has = schema ? hasContextInfo(introspectCapsuleSchema(schema)) : false
+  capsuleSchemaCache.set(capsuleName, has)
+  return has
+}
 
 function parsePixelValue(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null
@@ -785,7 +803,8 @@ export function InlineEditToolbar({
       !!cVar &&
       !!sessionId &&
       cName !== 'Stack' &&
-      !/(Navbar|Footer)$/.test(cName)
+      !/(Navbar|Footer)$/.test(cName) &&
+      capsuleHasContext(cName)
     setActivePanel(canCapsule ? 'capsule-inline' : null)
 
     const computed = window.getComputedStyle(activeElement)
@@ -1170,7 +1189,8 @@ export function InlineEditToolbar({
     !!capsuleStatementId &&
     !!sessionId &&
     capsuleName !== 'Stack' &&
-    !/(Navbar|Footer)$/.test(capsuleName)
+    !/(Navbar|Footer)$/.test(capsuleName) &&
+    capsuleHasContext(capsuleName)
   // Detect which collection item the active element is inside (if any).
   // Walk up from the active element to find an ancestor that is one of
   // several repeated siblings inside the capsule (e.g. a card in a grid).
@@ -1939,7 +1959,10 @@ export function InlineEditToolbar({
         >
           <div className="overflow-hidden w-full">
             <div
-              className="max-h-[min(60vh,420px)] w-[32.5rem] max-w-full overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent"
+              className={cn(
+                'max-h-[min(60vh,420px)] max-w-full overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent',
+                activePanel === 'capsule' ? 'w-[40rem]' : 'w-[32.5rem]',
+              )}
               data-inline-edit-wrapper="true"
             >
               {displayPanel === 'style' && (

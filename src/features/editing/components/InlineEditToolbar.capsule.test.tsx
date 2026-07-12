@@ -578,22 +578,20 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
 
-      // Scalar field labels should be present
-      expect(screen.getByText('Eyebrow')).toBeTruthy()
-      expect(screen.getByText('HeadingLead')).toBeTruthy()
+      // Scalar field inputs should be present (placeholder-based labels)
+      expect(screen.getByPlaceholderText('Eyebrow')).toBeTruthy()
+      expect(screen.getByPlaceholderText('Heading Lead')).toBeTruthy()
     })
 
-    it('renders nothing for unknown capsule name', () => {
+    it('hides Capsule controls button for unknown capsule name', () => {
       mockActions.sectionData = {}
       const section = makeCapsuleSectionEl('NonExistentCapsule', 'home_x')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
-      fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
-
-      // Panel should render but have no capsule fields
-      expect(screen.queryByText('columns')).toBeNull()
-      expect(screen.queryByText(/Images/)).toBeNull()
-      expect(screen.queryByText(/Tiers/)).toBeNull()
+      // Button should not appear — capsuleHasContext returns false
+      expect(
+        screen.queryByRole('button', { name: 'Capsule controls' }),
+      ).toBeNull()
     })
   })
 

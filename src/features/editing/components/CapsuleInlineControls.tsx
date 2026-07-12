@@ -17,23 +17,9 @@ interface CapsuleInlineControlsProps {
   statementId: string
   sessionId: string
   anonymousOwnerSecret?: string
-  /**
-   * When provided, the component highlights the collection item the user
-   * is currently editing and offers remove/reorder controls for that item.
-   * Format: `{ collectionKey, index }`.
-   */
   activeCollectionItem?: { collectionKey: string; index: number } | null
 }
 
-/**
- * Compact inline controls for the capsule currently selected in the toolbar.
- * Shows variant switchers (e.g. "2 | 3 | 4 columns") and collection
- * add/remove/reorder buttons in a horizontal layout suitable for the
- * toolbar's expandable panel.
- *
- * Wraps itself in `LakebedSessionProvider` (the toolbar lives outside the
- * preview's provider).
- */
 export const CapsuleInlineControls = ({
   capsuleName,
   statementId,
@@ -53,8 +39,6 @@ export const CapsuleInlineControls = ({
   </LakebedSessionProvider>
 )
 
-// ─── Schema lookup ──────────────────────────────────────────────────────────
-
 const lookupCapsuleSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
   const capsule = allCapsules.find((c) => c.client.name === capsuleName)
   if (!capsule) return null
@@ -63,8 +47,6 @@ const lookupCapsuleSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
   const info = introspectCapsuleSchema(propsSchema)
   return hasContextInfo(info) ? info : null
 }
-
-// ─── Inner component ────────────────────────────────────────────────────────
 
 const CapsuleInlineControlsInner = ({
   capsuleName,
@@ -95,8 +77,7 @@ const CapsuleInlineControlsInner = ({
   if (!hasVariants && !hasCollections) return null
 
   return (
-    <div className="flex w-full flex-col gap-2.5 px-3 py-2">
-      {/* Variant switchers — inline toggle buttons */}
+    <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2">
       {schemaInfo.variants.map((variant) => (
         <InlineVariantSwitcher
           key={variant.key}
@@ -107,7 +88,10 @@ const CapsuleInlineControlsInner = ({
         />
       ))}
 
-      {/* Collection controls — add/remove/reorder */}
+      {schemaInfo.variants.length > 0 && schemaInfo.collections.length > 0 && (
+        <div className="h-4 w-px shrink-0 bg-white/10" />
+      )}
+
       {schemaInfo.collections.map((collection) => {
         const isActiveCollection =
           activeCollectionItem?.collectionKey === collection.key ||
@@ -133,7 +117,7 @@ const CapsuleInlineControlsInner = ({
   )
 }
 
-// ─── Inline variant switcher ────────────────────────────────────────────────
+// ─── Inline variant switcher — flow row of pills ────────────────────────────
 
 const InlineVariantSwitcher = ({
   variantKey,
@@ -146,11 +130,11 @@ const InlineVariantSwitcher = ({
   currentValue: unknown
   onSet: (key: string, value: unknown) => Promise<void>
 }) => (
-  <div className="flex items-center gap-2">
-    <span className="shrink-0 text-xs font-medium text-white/50">
+  <div className="flex shrink-0 items-center gap-1.5">
+    <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
       {variantKey}
     </span>
-    <div className="flex flex-wrap gap-1">
+    <div className="flex gap-0.5 rounded-md bg-white/5 p-0.5">
       {options.map((option) => {
         const isActive = currentValue === option.value
         return (
@@ -159,10 +143,10 @@ const InlineVariantSwitcher = ({
             type="button"
             onClick={() => void onSet(variantKey, option.value)}
             className={cn(
-              'rounded px-2 py-0.5 text-xs font-medium transition-colors',
+              'rounded px-2 py-0.5 text-xs font-semibold transition-all',
               isActive
                 ? 'bg-cyan-300/20 text-cyan-100'
-                : 'text-white/50 hover:bg-white/5 hover:text-white',
+                : 'text-white/45 hover:text-white',
             )}
           >
             {option.label}
@@ -173,7 +157,7 @@ const InlineVariantSwitcher = ({
   </div>
 )
 
-// ─── Inline collection controls ─────────────────────────────────────────────
+// ─── Inline collection controls — compact flow row ──────────────────────────
 
 const InlineCollectionControls = ({
   collectionKey,
@@ -196,22 +180,19 @@ const InlineCollectionControls = ({
   const label = collectionKey.charAt(0).toUpperCase() + collectionKey.slice(1)
 
   const handleAdd = () => {
-    const defaultItem = createDefaultItem({
-      key: collectionKey,
-      itemFields,
-    })
+    const defaultItem = createDefaultItem({ key: collectionKey, itemFields })
     void onAdd(collectionKey, defaultItem)
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="shrink-0 text-xs font-medium text-white/50">
-        {label} ({itemArray.length})
+    <div className="flex shrink-0 items-center gap-1.5">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
+        {label} <span className="text-white/25">({itemArray.length})</span>
       </span>
       <button
         type="button"
         onClick={handleAdd}
-        className="flex items-center gap-0.5 rounded px-1.5 py-0.5 text-xs text-cyan-300 transition-colors hover:bg-cyan-300/10"
+        className="flex items-center gap-0.5 rounded-md bg-cyan-300/10 px-1.5 py-0.5 text-xs font-medium text-cyan-300 transition-colors hover:bg-cyan-300/20"
         title={`Add ${label}`}
       >
         <Plus className="size-3" />
@@ -222,8 +203,8 @@ const InlineCollectionControls = ({
         activeIndex < itemArray.length && (
           <>
             <div className="h-3 w-px bg-white/10" />
-            <span className="text-xs text-white/40">
-              Item {activeIndex + 1}
+            <span className="text-[10px] font-medium text-white/40">
+              #{activeIndex + 1}
             </span>
             <button
               type="button"

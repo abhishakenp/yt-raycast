@@ -134,7 +134,7 @@ describe('CapsuleInlineControls', () => {
       }),
     )
 
-    expect(screen.getByText(/Features.*2/)).toBeTruthy()
+    expect(screen.getByText('Features')).toBeTruthy()
     expect(screen.getByRole('button', { name: /Add/ })).toBeTruthy()
   })
 
@@ -177,7 +177,7 @@ describe('CapsuleInlineControls', () => {
       }),
     )
 
-    expect(screen.getByText('Item 2')).toBeTruthy()
+    expect(screen.getByText('#2')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Move up' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Move down' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Remove item' })).toBeTruthy()
@@ -383,8 +383,8 @@ describe('CapsuleInlineControls', () => {
       }),
     )
 
-    expect(screen.getByText(/Tiers.*2/)).toBeTruthy()
-    expect(screen.getByText('Item 1')).toBeTruthy()
+    expect(screen.getByText('Tiers')).toBeTruthy()
+    expect(screen.getByText('#1')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Remove item' })).toBeTruthy()
   })
 })

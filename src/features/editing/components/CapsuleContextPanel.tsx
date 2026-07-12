@@ -1,5 +1,12 @@
 import { useState, useMemo, useCallback } from 'react'
-import { Plus, Trash2, ChevronUp, ChevronDown, Boxes } from 'lucide-react'
+import {
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  Boxes,
+  GripVertical,
+} from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { allCapsules } from '@ship-fast/blocks'
 import {
@@ -19,10 +26,6 @@ interface CapsuleContextPanelProps {
   anonymousOwnerSecret?: string
 }
 
-/**
- * Wrapper that provides a LakebedSessionProvider context (the toolbar lives
- * outside the preview's provider) and renders the inner panel.
- */
 export const CapsuleContextPanel = ({
   capsuleName,
   statementId,
@@ -40,7 +43,7 @@ export const CapsuleContextPanel = ({
   </LakebedSessionProvider>
 )
 
-// ─── Schema lookup ──────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 const isPlainObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -53,6 +56,27 @@ const lookupCapsuleSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
   const info = introspectCapsuleSchema(propsSchema)
   return hasContextInfo(info) ? info : null
 }
+
+const titleCase = (s: string) =>
+  s.charAt(0).toUpperCase() +
+  s
+    .slice(1)
+    .replace(/([A-Z])/g, ' $1')
+    .trim()
+
+// Heuristic: fields that usually hold long text → span 2 columns
+const LONG_TEXT_KEYS = new Set([
+  'description',
+  'subheading',
+  'heading',
+  'bio',
+  'content',
+  'body',
+  'text',
+  'quote',
+  'blurb',
+  'tagline',
+])
 
 // ─── Inner panel ────────────────────────────────────────────────────────────
 
@@ -72,16 +96,21 @@ const CapsuleContextPanelInner = ({
   if (!schemaInfo) return null
   if (!actions.canEdit) {
     return (
-      <div className="px-3 py-2 text-xs text-white/40">
+      <div className="px-4 py-3 text-xs text-white/40">
         Loading section data…
       </div>
     )
   }
 
+  const { variants, collections, scalars } = schemaInfo
+  if (variants.length === 0 && collections.length === 0 && scalars.length === 0)
+    return null
+
   return (
-    <div className="flex w-full flex-col gap-3 px-3 py-2">
-      {schemaInfo.variants.map((variant) => (
-        <VariantSwitcher
+    <div className="grid w-full grid-cols-3 gap-1.5 p-3">
+      {/* Variants — full width pill bar */}
+      {variants.map((variant) => (
+        <BentoVariant
           key={variant.key}
           variantKey={variant.key}
           options={variant.options}
@@ -89,8 +118,10 @@ const CapsuleContextPanelInner = ({
           onSet={actions.setProp}
         />
       ))}
-      {schemaInfo.collections.map((collection) => (
-        <CollectionEditor
+
+      {/* Collections — full width, items in inner grid */}
+      {collections.map((collection) => (
+        <BentoCollection
           key={collection.key}
           collectionKey={collection.key}
           itemFields={collection.itemFields}
@@ -101,8 +132,10 @@ const CapsuleContextPanelInner = ({
           onEdit={actions.editItem}
         />
       ))}
-      {schemaInfo.scalars.map((scalar) => (
-        <ScalarInput
+
+      {/* Scalars — sized by type + likely content length */}
+      {scalars.map((scalar) => (
+        <BentoScalar
           key={scalar.key}
           scalarKey={scalar.key}
           type={scalar.type}
@@ -114,9 +147,9 @@ const CapsuleContextPanelInner = ({
   )
 }
 
-// ─── Variant switcher ───────────────────────────────────────────────────────
+// ─── Variant ────────────────────────────────────────────────────────────────
 
-const VariantSwitcher = ({
+const BentoVariant = ({
   variantKey,
   options,
   currentValue,
@@ -127,9 +160,11 @@ const VariantSwitcher = ({
   currentValue: unknown
   onSet: (key: string, value: unknown) => Promise<void>
 }) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-xs font-medium text-white/60">{variantKey}</label>
-    <div className="flex flex-wrap gap-1">
+  <div className="col-span-3 flex items-center gap-2 rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5">
+    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-white/35">
+      {variantKey}
+    </span>
+    <div className="flex gap-0.5 rounded-md bg-black/20 p-0.5">
       {options.map((option) => {
         const isActive = currentValue === option.value
         return (
@@ -138,10 +173,10 @@ const VariantSwitcher = ({
             type="button"
             onClick={() => void onSet(variantKey, option.value)}
             className={cn(
-              'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+              'rounded px-2.5 py-0.5 text-xs font-semibold transition-all',
               isActive
                 ? 'bg-cyan-300/20 text-cyan-100'
-                : 'text-white/60 hover:bg-white/5 hover:text-white',
+                : 'text-white/40 hover:text-white',
             )}
           >
             {option.label}
@@ -152,9 +187,9 @@ const VariantSwitcher = ({
   </div>
 )
 
-// ─── Collection editor ──────────────────────────────────────────────────────
+// ─── Collection ─────────────────────────────────────────────────────────────
 
-const CollectionEditor = ({
+const BentoCollection = ({
   collectionKey,
   itemFields,
   items,
@@ -177,107 +212,146 @@ const CollectionEditor = ({
 }) => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
   const itemArray = Array.isArray(items) ? items : []
-  const label = collectionKey.charAt(0).toUpperCase() + collectionKey.slice(1)
+  const label = titleCase(collectionKey)
 
   const handleAdd = useCallback(() => {
-    const defaultItem = createDefaultItem({
-      key: collectionKey,
-      itemFields,
-    })
+    const defaultItem = createDefaultItem({ key: collectionKey, itemFields })
     void onAdd(collectionKey, defaultItem)
     setExpandedIndex(itemArray.length)
   }, [collectionKey, itemFields, onAdd, itemArray.length])
 
+  const titleField = itemFields.find(
+    (f) => f.key === 'name' || f.key === 'title' || f.key === 'alt',
+  )?.key
+  const subtitleField = itemFields.find(
+    (f) => f.key === 'price' || f.key === 'description' || f.key === 'caption',
+  )?.key
+
+  // How many columns for the item grid — 3 if many items, 2 otherwise
+  const itemCols = itemArray.length > 4 ? 'grid-cols-3' : 'grid-cols-2'
+
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="col-span-3 flex flex-col gap-1.5 rounded-md border border-white/8 bg-white/[0.03] p-2.5">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-medium text-white/60">
-          {label} ({itemArray.length})
-        </label>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
+          {label} <span className="text-white/20">({itemArray.length})</span>
+        </span>
         <button
           type="button"
           onClick={handleAdd}
-          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-cyan-300 transition-colors hover:bg-cyan-300/10"
+          className="flex items-center gap-0.5 rounded bg-cyan-300/10 px-1.5 py-0.5 text-[11px] font-medium text-cyan-300 transition-colors hover:bg-cyan-300/20"
         >
           <Plus className="size-3" />
           Add
         </button>
       </div>
+
       {itemArray.length === 0 && (
-        <p className="text-xs text-white/30">No items yet.</p>
+        <p className="py-1.5 text-center text-[11px] text-white/20">
+          No items yet
+        </p>
       )}
-      {itemArray.map((item, index) => {
-        const isExpanded = expandedIndex === index
-        const itemRecord = isPlainObject(item) ? item : {}
-        return (
-          <div
-            key={index}
-            className="rounded border border-white/10 bg-white/5"
-          >
-            <div className="flex items-center gap-1 px-2 py-1">
-              <button
-                type="button"
-                onClick={() => setExpandedIndex(isExpanded ? null : index)}
-                className="flex-1 truncate text-left text-xs text-white/70 hover:text-white"
-              >
-                {String(
-                  itemRecord.name ||
-                    itemRecord.title ||
-                    itemRecord.alt ||
-                    itemRecord.quote ||
-                    `${collectionKey} ${index + 1}`,
+
+      {itemArray.length > 0 && (
+        <div className={cn('grid gap-1', itemCols)}>
+          {itemArray.map((item, index) => {
+            const isExpanded = expandedIndex === index
+            const itemRecord = isPlainObject(item) ? item : {}
+            const title = titleField
+              ? String(itemRecord[titleField] || `${label} ${index + 1}`)
+              : `${label} ${index + 1}`
+            const subtitle = subtitleField
+              ? String(itemRecord[subtitleField] || '')
+              : ''
+            return (
+              <div
+                key={index}
+                className={cn(
+                  'rounded border transition-all',
+                  isExpanded
+                    ? 'border-cyan-300/30 bg-cyan-300/5'
+                    : 'border-white/8 bg-black/15 hover:border-white/15',
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={() => void onReorder(collectionKey, index, index - 1)}
-                disabled={index === 0}
-                className="grid size-5 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
               >
-                <ChevronUp className="size-3" />
-              </button>
-              <button
-                type="button"
-                onClick={() => void onReorder(collectionKey, index, index + 1)}
-                disabled={index === itemArray.length - 1}
-                className="grid size-5 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
-              >
-                <ChevronDown className="size-3" />
-              </button>
-              <button
-                type="button"
-                onClick={() => void onRemove(collectionKey, index)}
-                className="grid size-5 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
-              >
-                <Trash2 className="size-3" />
-              </button>
-            </div>
-            {isExpanded && (
-              <div className="flex flex-col gap-1.5 border-t border-white/10 px-2 py-1.5">
-                {itemFields.map((field) => (
-                  <CollectionFieldInput
-                    key={field.key}
-                    field={field}
-                    value={itemRecord[field.key]}
-                    onChange={(newValue) =>
-                      void onEdit(collectionKey, index, {
-                        [field.key]: newValue,
-                      })
+                {/* Card header */}
+                <button
+                  type="button"
+                  onClick={() => setExpandedIndex(isExpanded ? null : index)}
+                  className="flex w-full items-center gap-1 px-1.5 py-1 text-left"
+                >
+                  <GripVertical className="size-2.5 shrink-0 text-white/20" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[11px] font-medium text-white/75">
+                      {title}
+                    </div>
+                    {subtitle && (
+                      <div className="truncate text-[10px] text-white/30">
+                        {subtitle}
+                      </div>
+                    )}
+                  </div>
+                </button>
+
+                {/* Card toolbar */}
+                <div className="flex items-center gap-0.5 border-t border-white/5 px-1 py-0.5">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void onReorder(collectionKey, index, index - 1)
                     }
-                  />
-                ))}
+                    disabled={index === 0}
+                    className="grid size-4 place-items-center rounded text-white/30 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-20"
+                  >
+                    <ChevronUp className="size-2.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void onReorder(collectionKey, index, index + 1)
+                    }
+                    disabled={index === itemArray.length - 1}
+                    className="grid size-4 place-items-center rounded text-white/30 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-20"
+                  >
+                    <ChevronDown className="size-2.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void onRemove(collectionKey, index)}
+                    className="ml-auto grid size-4 place-items-center rounded text-red-400/50 transition-colors hover:bg-red-500/15 hover:text-red-300"
+                  >
+                    <Trash2 className="size-2.5" />
+                  </button>
+                </div>
+
+                {/* Expanded fields */}
+                {isExpanded && (
+                  <div className="grid grid-cols-2 gap-1 border-t border-white/8 p-1.5">
+                    {itemFields.map((field) => (
+                      <FieldInput
+                        key={field.key}
+                        field={field}
+                        value={itemRecord[field.key]}
+                        onChange={(newValue) =>
+                          void onEdit(collectionKey, index, {
+                            [field.key]: newValue,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )
-      })}
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── Collection field input ─────────────────────────────────────────────────
+// ─── Field input (inside collection items) ──────────────────────────────────
 
-const CollectionFieldInput = ({
+const FieldInput = ({
   field,
   value,
   onChange,
@@ -286,18 +360,19 @@ const CollectionFieldInput = ({
   value: unknown
   onChange: (value: unknown) => void
 }) => {
-  const label = field.key.charAt(0).toUpperCase() + field.key.slice(1)
+  const isWide = field.type === 'array-string' || LONG_TEXT_KEYS.has(field.key)
+  const placeholder = titleCase(field.key)
 
   if (field.type === 'boolean') {
     return (
-      <label className="flex items-center gap-2 text-xs text-white/60">
+      <label className="col-span-2 flex items-center gap-1.5 text-[11px] text-white/55">
         <input
           type="checkbox"
           checked={value === true}
           onChange={(e) => onChange(e.target.checked)}
-          className="size-3.5 accent-cyan-300"
+          className="size-3 accent-cyan-300"
         />
-        {label}
+        {placeholder}
       </label>
     )
   }
@@ -309,57 +384,55 @@ const CollectionFieldInput = ({
         ? value
         : ''
     return (
-      <label className="flex flex-col gap-0.5">
-        <span className="text-xs text-white/50">{label}</span>
-        <textarea
-          value={text}
-          onChange={(e) =>
-            onChange(
-              e.target.value.split('\n').filter((line) => line.trim() !== ''),
-            )
-          }
-          rows={2}
-          className="w-full resize-none rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:border-cyan-300/50"
-          placeholder="One per line"
-        />
-      </label>
+      <textarea
+        value={text}
+        onChange={(e) =>
+          onChange(
+            e.target.value.split('\n').filter((line) => line.trim() !== ''),
+          )
+        }
+        rows={2}
+        placeholder={`${placeholder} (one per line)`}
+        className={cn(
+          'w-full resize-none rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40',
+          isWide && 'col-span-2',
+        )}
+      />
     )
   }
 
   if (field.type === 'number') {
     return (
-      <label className="flex flex-col gap-0.5">
-        <span className="text-xs text-white/50">{label}</span>
-        <input
-          type="number"
-          value={typeof value === 'number' ? value : ''}
-          onChange={(e) => {
-            const n = Number(e.target.value)
-            onChange(Number.isFinite(n) ? n : 0)
-          }}
-          className="w-full rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:border-cyan-300/50"
-        />
-      </label>
+      <input
+        type="number"
+        value={typeof value === 'number' ? value : ''}
+        onChange={(e) => {
+          const n = Number(e.target.value)
+          onChange(Number.isFinite(n) ? n : 0)
+        }}
+        placeholder={placeholder}
+        className="w-full rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
+      />
     )
   }
 
-  // string (default)
   return (
-    <label className="flex flex-col gap-0.5">
-      <span className="text-xs text-white/50">{label}</span>
-      <input
-        type="text"
-        value={typeof value === 'string' ? value : ''}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:border-cyan-300/50"
-      />
-    </label>
+    <input
+      type="text"
+      value={typeof value === 'string' ? value : ''}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={cn(
+        'w-full rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40',
+        isWide && 'col-span-2',
+      )}
+    />
   )
 }
 
-// ─── Scalar input ───────────────────────────────────────────────────────────
+// ─── Scalar ─────────────────────────────────────────────────────────────────
 
-const ScalarInput = ({
+const BentoScalar = ({
   scalarKey,
   type,
   currentValue,
@@ -370,51 +443,52 @@ const ScalarInput = ({
   currentValue: unknown
   onSet: (key: string, value: unknown) => Promise<void>
 }) => {
-  const label = scalarKey.charAt(0).toUpperCase() + scalarKey.slice(1)
+  const placeholder = titleCase(scalarKey)
+  const isLong = LONG_TEXT_KEYS.has(scalarKey)
 
   if (type === 'boolean') {
     return (
-      <label className="flex items-center gap-2 text-xs text-white/60">
+      <label className="col-span-3 flex items-center gap-2 rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5 text-xs text-white/60">
         <input
           type="checkbox"
           checked={currentValue === true}
           onChange={(e) => void onSet(scalarKey, e.target.checked)}
           className="size-3.5 accent-cyan-300"
         />
-        {label}
+        {placeholder}
       </label>
     )
   }
 
   if (type === 'number') {
     return (
-      <label className="flex flex-col gap-0.5">
-        <span className="text-xs text-white/50">{label}</span>
-        <input
-          type="number"
-          value={typeof currentValue === 'number' ? currentValue : ''}
-          onChange={(e) => {
-            const n = Number(e.target.value)
-            void onSet(scalarKey, Number.isFinite(n) ? n : 0)
-          }}
-          className="w-full rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:border-cyan-300/50"
-        />
-      </label>
+      <input
+        type="number"
+        value={typeof currentValue === 'number' ? currentValue : ''}
+        onChange={(e) => {
+          const n = Number(e.target.value)
+          void onSet(scalarKey, Number.isFinite(n) ? n : 0)
+        }}
+        placeholder={placeholder}
+        className="col-span-1 w-full rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/30 focus:border-cyan-300/40"
+      />
     )
   }
 
+  // string — long text spans 3 cols, short text spans 2
   return (
-    <label className="flex flex-col gap-0.5">
-      <span className="text-xs text-white/50">{label}</span>
-      <input
-        type="text"
-        value={typeof currentValue === 'string' ? currentValue : ''}
-        onChange={(e) => void onSet(scalarKey, e.target.value)}
-        className="w-full rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white outline-none focus:border-cyan-300/50"
-      />
-    </label>
+    <input
+      type="text"
+      value={typeof currentValue === 'string' ? currentValue : ''}
+      onChange={(e) => void onSet(scalarKey, e.target.value)}
+      placeholder={placeholder}
+      className={cn(
+        'w-full rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/30 focus:border-cyan-300/40',
+        isLong ? 'col-span-3' : 'col-span-2',
+      )}
+    />
   )
 }
 
-// ─── Icon export for toolbar button ─────────────────────────────────────────
+// ─── Icon export ────────────────────────────────────────────────────────────
 export { Boxes as CapsuleControlsIcon }
