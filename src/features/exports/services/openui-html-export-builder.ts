@@ -128,12 +128,11 @@ const isHtmlLikeSource = (source: string): boolean => /<[^>]+>/.test(source)
 const extractBodyMarkup = (html: string): string => {
   const trimmed = html.trim()
   const body = trimmed.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)
-  const bodyMarkup = (body?.[1] ?? trimmed).trim()
-  const root = bodyMarkup.match(
-    /^<div\b(?=[^>]*\bid=(["'])openui-root\1)[^>]*>([\s\S]*)<\/div>$/i,
-  )
-  return (root?.[2] ?? bodyMarkup).trim()
+  return (body?.[1] ?? trimmed).trim()
 }
+
+const stripPreviewSourceMetadata = (html: string): string =>
+  html.replace(/\sdata-tsd-source=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
 
 const parseSiteSpec = (
   siteSpecJson: string | undefined,
@@ -254,6 +253,161 @@ const buildThemeStyle = (
     .join(' ')
 }
 
+const buildThemeStylesheet = (styles: ThemeStyles | null): string => {
+  if (!styles) return ''
+  return `
+    :root, [data-theme="light"] { ${buildThemeStyle(styles, false)} }
+    .dark, [data-theme="dark"] { ${buildThemeStyle(styles, true)} }
+    .-translate-x-full { --tw-translate-x: -100%; translate: -100% var(--tw-translate-y, 0); }
+    .duration-700 { transition-duration: 700ms; }
+    .transition-transform { transition-property: transform, translate, scale, rotate; }
+    .ease-\\[cubic-bezier\\(0\\.22\\,1\\,0\\.36\\,1\\)\\] { transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+    .group\\/shiny:hover .group-hover\\/shiny\\:translate-x-full { --tw-translate-x: 100%; translate: 100% var(--tw-translate-y, 0); }
+  `
+}
+
+const themeValues = (
+  styles: ThemeStyles | null,
+  isDark: boolean,
+): Record<string, string> => {
+  if (!styles) return {}
+  const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
+  return Object.fromEntries(
+    themeVarKeys.flatMap((key) => {
+      const value = merged[key]
+      return value == null ? [] : [[`--${key}`, String(value)]]
+    }),
+  )
+}
+
+const buildThemeRuntime = (
+  styles: ThemeStyles | null,
+  initialDark: boolean,
+  rootId: 'openui-root' | 'site-root',
+): string => `
+(function () {
+  var lightTheme = ${stringifyJs(themeValues(styles, false))};
+  var darkTheme = ${stringifyJs(themeValues(styles, true))};
+  var root = document.getElementById(${JSON.stringify(rootId)});
+  function applyTheme(isDark) {
+    var values = isDark ? darkTheme : lightTheme;
+    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+    if (!root) return;
+    root.classList.toggle('dark', isDark);
+    root.dataset.theme = isDark ? 'dark' : 'light';
+    root.style.colorScheme = isDark ? 'dark' : 'light';
+    Object.keys(values).forEach(function (property) {
+      root.style.setProperty(property, values[property]);
+    });
+  }
+  applyTheme(${initialDark ? 'true' : 'false'});
+  if (typeof window.matchMedia !== 'function') return;
+  var colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  function onColorSchemeChange(event) { applyTheme(Boolean(event.matches)); }
+  if (typeof colorScheme.addEventListener === 'function') {
+    colorScheme.addEventListener('change', onColorSchemeChange);
+  } else if (typeof colorScheme.addListener === 'function') {
+    colorScheme.addListener(onColorSchemeChange);
+  }
+})();`
+
+const buildInteractionRuntime = (): string => `
+(function () {
+  var cartStorageKey = 'static-site-cart-v1';
+  var authStorageKey = 'static-site-auth-v1';
+  var newsletterStorageKey = 'static-site-newsletter-v1';
+  function readCart() {
+    try {
+      var value = JSON.parse(window.localStorage.getItem(cartStorageKey) || '[]');
+      return Array.isArray(value) ? value : [];
+    } catch {
+      return [];
+    }
+  }
+  var cart = readCart();
+  function saveCart() {
+    try { window.localStorage.setItem(cartStorageKey, JSON.stringify(cart)); } catch {}
+  }
+  function renderCart() {
+    document.querySelectorAll('[data-cart-count], button[aria-label="Cart"] span').forEach(function (node) {
+      node.textContent = String(cart.length);
+    });
+    var container = document.querySelector('[data-cart-items]');
+    if (!container) return;
+    container.replaceChildren();
+    cart.forEach(function (item) {
+      var row = document.createElement('div');
+      row.setAttribute('data-cart-item', item.key || item.label || 'item');
+      row.textContent = [item.label, item.price].filter(Boolean).join(' — ');
+      container.appendChild(row);
+    });
+  }
+  function productFrom(button) {
+    var article = button.closest('[data-item-key], article');
+    var ariaLabel = button.getAttribute('aria-label') || '';
+    var heading = article ? article.querySelector('h1,h2,h3,h4') : null;
+    var label = button.getAttribute('data-item-label') ||
+      (heading ? String(heading.textContent || '').trim() : '') ||
+      ariaLabel.replace(/^add to cart\\s*/i, '').trim() ||
+      'Item';
+    return {
+      key: button.getAttribute('data-item-key') || (article ? article.getAttribute('data-item-key') : '') || label,
+      label: label,
+      price: button.getAttribute('data-item-price') || ''
+    };
+  }
+  function isAddToCart(button) {
+    var contract = button.getAttribute('data-contract') || '';
+    var ariaLabel = button.getAttribute('aria-label') || '';
+    return contract === 'add-cart' || contract === 'add-cart-shop' || /^add to cart\\b/i.test(ariaLabel);
+  }
+  function openCart(button) {
+    var dialog = document.querySelector('#cart-dialog, [data-contract="cart-dialog"]');
+    if (!dialog) return false;
+    renderCart();
+    dialog.hidden = false;
+    dialog.setAttribute('aria-hidden', 'false');
+    button.setAttribute('aria-expanded', 'true');
+    return true;
+  }
+  document.addEventListener('click', function (event) {
+    var target = event.target instanceof Element ? event.target.closest('button') : null;
+    if (!target) return;
+    if (isAddToCart(target)) {
+      event.preventDefault();
+      cart.push(productFrom(target));
+      saveCart();
+      renderCart();
+      target.setAttribute('aria-busy', 'false');
+      return;
+    }
+    if (target.matches('[data-contract="cart-open"], button[aria-haspopup="dialog"], button[aria-label="Cart"]')) {
+      if (openCart(target)) event.preventDefault();
+      return;
+    }
+    if (target.matches('[data-contract="sign-in"], [data-slot="account-dropdown-unauthenticated"]')) {
+      event.preventDefault();
+      target.setAttribute('data-auth-state', 'signed-in');
+      target.setAttribute('aria-pressed', 'true');
+      try { window.localStorage.setItem(authStorageKey, 'signed-in'); } catch {}
+    }
+  });
+  document.addEventListener('submit', function (event) {
+    var form = event.target instanceof HTMLFormElement ? event.target : null;
+    if (!form) return;
+    event.preventDefault();
+    var email = String(new FormData(form).get('email') || '').trim();
+    var output = form.querySelector('output,[aria-live]');
+    if (output) output.textContent = email ? 'Subscribed' : 'Email required';
+    form.setAttribute('data-submit-state', email ? 'submitted' : 'invalid');
+    if (email) {
+      try { window.localStorage.setItem(newsletterStorageKey, email); } catch {}
+    }
+  });
+  renderCart();
+})();`
+
 const buildThemeFontLinks = (styles: ThemeStyles | null): string => {
   if (!styles) return ''
   const systemFontRe =
@@ -299,6 +453,7 @@ const escapeAttribute = escapeHtml
 const buildRouteScript = (
   routes: string[],
   targetMap: Record<string, string>,
+  pageAttribute: 'data-export-page' | 'data-sf-export-page',
 ): string => `
 (function () {
   var routes = ${stringifyJs(routes)};
@@ -341,7 +496,7 @@ const buildRouteScript = (
   function show(index) {
     if (index < 0 || index >= routes.length) return;
     current = index;
-    document.querySelectorAll('[data-sf-export-page]').forEach(function (page, pageIndex) {
+    document.querySelectorAll('[${pageAttribute}]').forEach(function (page, pageIndex) {
       page.hidden = pageIndex !== current;
     });
   }
@@ -437,7 +592,7 @@ const buildRouteScript = (
     var header = document.createElement('div');
     header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--border,rgba(0,0,0,.12));padding:1rem 1.25rem;';
     var title = document.createElement('div');
-    title.textContent = trigger.closest('header')?.querySelector('[data-openui-component]')?.getAttribute('data-openui-component') || window.__SHIP_FAST_EXPORT__?.projectName || 'Navigation';
+    title.textContent = window.__STATIC_SITE__?.projectName || 'Navigation';
     title.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;';
     var close = makeButton('×', '');
     close.setAttribute('aria-label', 'Close menu');
@@ -578,7 +733,7 @@ export async function parseOpenUIForHtmlExport(
       )
     : [result.root]
   const siteSpec = parseSiteSpec(siteSpecJson)
-  const targetMap =
+  const parsedTargetMap =
     rawTargetMap &&
     typeof rawTargetMap === 'object' &&
     !Array.isArray(rawTargetMap)
@@ -589,6 +744,24 @@ export async function parseOpenUIForHtmlExport(
           ),
         )
       : {}
+  const localizedRouteByCanonicalName = new Map<string, string>()
+  for (const route of routes) {
+    const target = parsedTargetMap[route]
+    const canonicalPage = target?.split('#')[0]?.trim()
+    if (canonicalPage) {
+      localizedRouteByCanonicalName.set(canonicalPage.toLowerCase(), route)
+    }
+  }
+  const targetMap = Object.fromEntries(
+    Object.entries(parsedTargetMap).map(([label, target]) => {
+      const hashIndex = target.indexOf('#')
+      const page = (hashIndex < 0 ? target : target.slice(0, hashIndex)).trim()
+      const section = hashIndex < 0 ? '' : target.slice(hashIndex)
+      const localizedPage =
+        localizedRouteByCanonicalName.get(page.toLowerCase()) ?? page
+      return [label, `${localizedPage}${section}`]
+    }),
+  )
 
   return {
     root: result.root,
@@ -643,7 +816,9 @@ const buildStandaloneHtmlDocument = async (
   const themeStyles =
     resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
   const themeStyle = buildThemeStyle(themeStyles, isDark)
-  const themeFontLinks = buildThemeFontLinks(themeStyles)
+  const themeStylesheet = buildThemeStylesheet(themeStyles)
+  const themeFontLinks =
+    input.includeBadge === false ? '' : buildThemeFontLinks(themeStyles)
   const { cssVars } = (await renderOpenUIToHTMLWithTheme(
     input.source,
     undefined,
@@ -656,9 +831,20 @@ const buildStandaloneHtmlDocument = async (
   const pagesMarkup = await rewritePreviewImageUrls(
     await buildPagesMarkup(parsed, locale, input.selectedBrandLogo),
   )
-  const bodyMarkup = isUsablePreviewHtml(input.previewHtml)
-    ? await rewritePreviewImageUrls(extractBodyMarkup(input.previewHtml))
-    : pagesMarkup
+  const hasPreviewMarkup = isUsablePreviewHtml(input.previewHtml)
+  const previewMarkup = hasPreviewMarkup
+    ? stripPreviewSourceMetadata(
+        await rewritePreviewImageUrls(extractBodyMarkup(input.previewHtml)),
+      )
+    : ''
+  const generatedPagesMarkup = stripPreviewSourceMetadata(pagesMarkup)
+    .replaceAll('data-sf-export-page', 'data-export-page')
+    .replace(/\sdata-openui-[\w-]+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+  const bodyMarkup = hasPreviewMarkup ? previewMarkup : generatedPagesMarkup
+  const rootMarkup = hasPreviewMarkup
+    ? bodyMarkup
+    : `<div id="site-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</div>`
+  const rootId = hasPreviewMarkup ? 'openui-root' : 'site-root'
   const genui = readGenUIExportMetadata(siteSpec)
   const seoBundle = buildExportSeoBundle(
     enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
@@ -691,17 +877,19 @@ const buildStandaloneHtmlDocument = async (
   ${themeFontLinks}
   <style>
 ${css}
-    :root { ${themeStyle} }
-    #openui-root { ${cssVars || ''} ${themeStyle} }
+    ${themeStylesheet}
+    #${rootId} { ${cssVars || ''} ${themeStyle} }
     html, body { min-height: 100%; margin: 0; background: var(--background); color: var(--foreground); }
   </style>
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</div>
+  ${rootMarkup}
   <script>
-    window.__SHIP_FAST_EXPORT__ = ${stringifyJs({ routes: parsed.routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light', genui })};
+    window.__STATIC_SITE__ = ${stringifyJs({ routes: parsed.routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};
     ${buildInlineAdminBootstrap(genui, input.target)}
-    ${buildRouteScript(parsed.routes, parsed.targetMap)}
+    ${buildThemeRuntime(themeStyles, isDark, rootId)}
+    ${buildRouteScript(parsed.routes, parsed.targetMap, hasPreviewMarkup ? 'data-sf-export-page' : 'data-export-page')}
+    ${buildInteractionRuntime()}
   </script>
 </body>
 </html>`,
