@@ -75,6 +75,11 @@ vi.mock('@ship-fast/lakebed/react', () => ({
   LakebedSessionProvider: ({ children }: { children: ReactNode }) => (
     <>{children}</>
   ),
+  useOptionalSessionState: () => ({
+    auth: null,
+    canWrite: false,
+    data: null,
+  }),
 }))
 
 vi.mock('@/features/session/services/anonymous-owner-secret', () => ({

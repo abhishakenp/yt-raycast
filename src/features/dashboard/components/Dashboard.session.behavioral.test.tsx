@@ -1179,6 +1179,78 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     }
   })
 
+  it('restores a cached ready preview when the Convex realtime query is still loading', async () => {
+    getConvexState().generationView = undefined
+    window.localStorage.setItem(
+      'ship-fast:ready-session-preview:v1:cached-ready-session',
+      JSON.stringify({
+        sessionId: 'cached-ready-session',
+        status: 'preview_ready',
+        prompt: 'Build a cached dashboard preview',
+        preferredLanguage: 'en',
+        homeModule: {
+          moduleKey: 'home',
+          source:
+            '<!doctype html><html><body><h1>Cached Ready</h1></body></html>',
+          status: 'succeeded',
+          updatedAt: Date.now(),
+        },
+        previewVersion: 3,
+        tasks: [
+          {
+            id: 'homepage',
+            title: 'Generate homepage',
+            status: 'succeeded',
+            order: 0,
+          },
+        ],
+        createdAt: Date.now(),
+      }),
+    )
+
+    render(<Dashboard sessionId="cached-ready-session" />)
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('intro-loader')).toBeNull()
+      expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
+    })
+    expect(screen.getByTestId('gmp-source').textContent).toContain(
+      'Cached Ready',
+    )
+  })
+
+  it('restores a cached ready preview when live lookup is unavailable but cache is valid', async () => {
+    getConvexState().generationView = null
+    window.localStorage.setItem(
+      'ship-fast:ready-session-preview:v1:cached-null-session',
+      JSON.stringify({
+        sessionId: 'cached-null-session',
+        status: 'preview_ready',
+        prompt: 'Build a cached fallback preview',
+        preferredLanguage: 'en',
+        homeModule: {
+          moduleKey: 'home',
+          source:
+            '<!doctype html><html><body><h1>Cached Null Ready</h1></body></html>',
+          status: 'succeeded',
+          updatedAt: Date.now(),
+        },
+        previewVersion: 4,
+        createdAt: Date.now(),
+      }),
+    )
+
+    render(<Dashboard sessionId="cached-null-session" />)
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('intro-loader')).toBeNull()
+      expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
+    })
+    expect(screen.getByTestId('gmp-source').textContent).toContain(
+      'Cached Null Ready',
+    )
+  })
+
   it('renders when the Convex realtime query emits a renderable preview', () => {
     getConvexState().generationView = undefined
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn() })

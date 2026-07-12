@@ -325,6 +325,20 @@ export function useSessionState<TData extends JsonRecord = JsonRecord>(
     : { auth: state.auth, canWrite: state.canWrite === true, data: state.data }
 }
 
+export function useOptionalSessionState<TData extends JsonRecord = JsonRecord>(
+  capsule: string,
+): { auth: LakebedAuthContext | null; canWrite: boolean; data: TData | null } {
+  const session = useOptionalLakebedSession()
+  const state = useConvexQuery(
+    lakebedApi.getSessionState,
+    session ? lakebedSessionArgs({ ...session, capsule }) : 'skip',
+  ) as { auth: LakebedAuthContext; canWrite?: boolean; data: TData } | undefined
+
+  return state === undefined
+    ? { auth: null, canWrite: false, data: null }
+    : { auth: state.auth, canWrite: state.canWrite === true, data: state.data }
+}
+
 export function useSessionData<TData extends JsonRecord = JsonRecord>(
   capsule: string,
 ): TData | null {
