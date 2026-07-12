@@ -74,7 +74,13 @@ const superagentReply = (user: string): string => {
       },
     ]),
   )
-  return JSON.stringify({ brand: 'Test Brand', family, sections })
+  return JSON.stringify({
+    brand: 'Test Brand',
+    family,
+    title: 'Test Brand — AI Decided Title',
+    navLabels: { home: 'Home', pricing: 'Plans', about: 'Our Story' },
+    sections,
+  })
 }
 
 const signal = new AbortController().signal
@@ -512,6 +518,132 @@ describe('runV2ComposedGeneration', () => {
       compositions.add(signature)
     }
     expect(compositions.size).toBeGreaterThan(1) // composition differs across seeds
+  })
+
+  it('returns the LLM-decided title in the result', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    const result = await runV2ComposedGeneration({
+      prompt: 'a crm for small sales teams',
+      modelId: 'm',
+      sessionSeed: 'title-test',
+      signal,
+    })
+    expect(result.title).toBe('Test Brand — AI Decided Title')
+  })
+
+  it('uses AI navLabels for page labels instead of hardcoded defaults', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    const result = await runV2ComposedGeneration({
+      prompt: 'a crm with pricing and about pages',
+      modelId: 'm',
+      sessionSeed: 'navlabels-test',
+      familyOverride: 'Crm',
+      signal,
+    })
+    // The mock superagentReply provides navLabels: { home: 'Home', pricing: 'Plans', about: 'Our Story' }
+    // If a pricing page is planned, its label should be 'Plans' (AI), not 'Pricing' (hardcoded).
+    // If an about page is planned, its label should be 'Our Story' (AI), not 'About' (hardcoded).
+    const pricingPage = result.pages.find((p) => p.id === 'pricing')
+    if (pricingPage) {
+      expect(pricingPage.label).toBe('Plans')
+      expect(result.routes).toContain('Plans')
+    }
+    const aboutPage = result.pages.find((p) => p.id === 'about')
+    if (aboutPage) {
+      expect(aboutPage.label).toBe('Our Story')
+      expect(result.routes).toContain('Our Story')
+    }
+  })
+
+  it('falls back to hardcoded labels when AI does not provide navLabels', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) {
+        const family =
+          (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
+        const keys = [...user.matchAll(/^\s+([a-z0-9]+):\s/gm)].map((m) => m[1])
+        const sections = Object.fromEntries(
+          [...new Set(keys)].map((k) => [
+            k,
+            { heading: `H ${k}`, subheading: 'S', items: [{ title: 'A' }] },
+          ]),
+        )
+        // No title, no navLabels — simulate older LLM that doesn't return them
+        return JSON.stringify({ brand: 'No Labels Brand', family, sections })
+      }
+      return richProps(user)
+    })
+    const result = await runV2ComposedGeneration({
+      prompt: 'a crm',
+      modelId: 'm',
+      sessionSeed: 'no-navlabels',
+      familyOverride: 'Crm',
+      signal,
+    })
+    expect(result.title).toBeUndefined()
+    // Home page should fall back to hardcoded 'Home'
+    expect(result.routes).toContain('Home')
+    // Pricing page (if planned) should fall back to hardcoded 'Pricing'
+    const pricingPage = result.pages.find((p) => p.id === 'pricing')
+    if (pricingPage) expect(pricingPage.label).toBe('Pricing')
+  })
+
+  it('includes title and navLabels in cached ComposedContent', async () => {
+    const capturedContent: Record<string, unknown>[] = []
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    await runV2ComposedGeneration({
+      prompt: 'a crm',
+      modelId: 'm',
+      sessionSeed: 'cache-test',
+      familyOverride: 'Crm',
+      signal,
+      onContent: (content) => capturedContent.push(content),
+    })
+    expect(capturedContent.length).toBeGreaterThan(0)
+    expect(capturedContent[0].title).toBe('Test Brand — AI Decided Title')
+    expect(capturedContent[0].navLabels).toEqual({
+      home: 'Home',
+      pricing: 'Plans',
+      about: 'Our Story',
+    })
+  })
+
+  it('asks the superagent for title and navLabels in the prompt', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    await runV2ComposedGeneration({
+      prompt: 'a crm',
+      modelId: 'm',
+      sessionSeed: 'prompt-check',
+      familyOverride: 'Crm',
+      signal,
+    })
+    const superagentCall = mocks.generateText.mock.calls.find((call) =>
+      /Candidate verticals/.test(String(call[2])),
+    )
+    expect(superagentCall).toBeTruthy()
+    const systemPrompt = String(superagentCall![1])
+    const userPrompt = String(superagentCall![2])
+    // System prompt must instruct the LLM to return title and navLabels
+    expect(systemPrompt).toMatch(/site title/i)
+    expect(systemPrompt).toMatch(/navLabels/i)
+    // User prompt must list possible page role ids
+    expect(userPrompt).toMatch(/page role ids/i)
   })
 })
 

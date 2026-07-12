@@ -587,7 +587,7 @@ export function shortlistFamilies(prompt: string, k = 3): string[] {
 }
 
 function superagentSystem(locale?: string): string {
-  return `You are a website superagent. You are given a build request and several CANDIDATE verticals, each with its homepage section components and prop signatures. Do ALL in one step: (1) extract the brand/business/person name from the build request (the proper noun the site is FOR — e.g. "Acme Cafe", "Kaveri Silks", "Dr. Pepper"; if none, infer a short plausible brand from the vertical/topic, e.g. "Coffee House" for a coffee shop; NEVER use the verb "generate"/"build"/"create" or generic words like "website"/"app" as the brand), (2) choose the single best-fitting vertical for the request, (3) author rich, realistic, on-topic homepage content as JSON props for THAT chosen vertical's sections (match each section's signature field shapes; arrays get several distinct entries). Do NOT set brand or nav in the section props (the engine injects them). Output ONLY a JSON object: {"brand":"<extracted brand name>","family":"<ChosenVertical>","sections":{"<sectionKeyLowercase>":{...props...}}}. No prose, no markdown fences.
+  return `You are a website superagent. You are given a build request and several CANDIDATE verticals, each with its homepage section components and prop signatures. Do ALL in one step: (1) extract the brand/business/person name from the build request (the proper noun the site is FOR — e.g. "Acme Cafe", "Kaveri Silks", "Dr. Pepper"; if none, infer a short plausible brand from the vertical/topic, e.g. "Coffee House" for a coffee shop; NEVER use the verb "generate"/"build"/"create" or generic words like "website"/"app" as the brand), (2) choose the single best-fitting vertical for the request, (3) decide a concise, descriptive site title for the <title> tag — include the brand and what the site is about (e.g. "Kaveri Silks — Premium Sarees & Traditional Wear"), NOT just the brand name, (4) suggest navigation labels for the site's pages as a navLabels object mapping page role ids to display labels in the site's content language (only include roles relevant to the chosen vertical; "home" is always the first), (5) author rich, realistic, on-topic homepage content as JSON props for THAT chosen vertical's sections (match each section's signature field shapes; arrays get several distinct entries). Do NOT set brand or nav in the section props (the engine injects them). Output ONLY a JSON object: {"brand":"<extracted brand name>","family":"<ChosenVertical>","title":"<descriptive site title>","navLabels":{"home":"<label>",...},"sections":{"<sectionKeyLowercase>":{...props...}}}. No prose, no markdown fences.
 
 CRITICAL — IMAGE ALT TEXT MUST ALWAYS BE IN ENGLISH. Alt text is used as the stock-photo search query. When the brief contains non-English concepts, TRANSLATE them to their closest English visual equivalent (e.g. "sarikk" → "silk saree", "onam" → "harvest festival", "mithai" → "Indian sweets"). Never transliterate. Never use file paths or non-English script as alt text.${localeDirective(locale)}`
 }
@@ -605,8 +605,11 @@ Brand (heuristic guess, may be wrong — verify against the build request and co
 Candidate verticals and their homepage sections (sectionKey: signature):
 ${blocks}
 
-Choose ONE vertical that best fits the build request, extract the real brand name from the request, then return:
-{"brand":"<the real brand name extracted from the request>","family":"<one of the candidate vertical names>","sections":{ "<sectionKey>": { ...rich props matching that section's signature... } }}
+Possible page role ids for navLabels (only label the ones relevant to your chosen vertical):
+${PAGE_ROLE_IDS.join(', ')}
+
+Choose ONE vertical that best fits the build request, extract the real brand name from the request, decide a descriptive site title, suggest nav labels for relevant page roles, then return:
+{"brand":"<the real brand name extracted from the request>","family":"<one of the candidate vertical names>","title":"<descriptive site title>","navLabels":{"home":"<label>","pricing":"<label>",...},"sections":{ "<sectionKey>": { ...rich props matching that section's signature... } }}
 Fill every section of the chosen vertical with distinct, on-topic content.`
 }
 
@@ -615,6 +618,10 @@ export type FirstPassHome = {
   propsByKey: Record<string, Record<string, unknown>>
   /** LLM-extracted brand name (empty string if the model didn't return one). */
   brand?: string
+  /** LLM-decided descriptive site title for the <title> tag. */
+  title?: string
+  /** LLM-suggested nav labels mapping page role id → display label. */
+  navLabels?: Record<string, string>
 }
 
 /**
@@ -649,6 +656,8 @@ export async function composeHomeFirstPass(input: {
   ): Promise<{
     family?: string
     brand?: string
+    title?: string
+    navLabels?: Record<string, string>
     props: Record<string, Record<string, unknown>>
   }> => {
     const sys = strict
@@ -673,6 +682,18 @@ export async function composeHomeFirstPass(input: {
     const family = typeof parsed.family === 'string' ? parsed.family : undefined
     const brand =
       typeof parsed.brand === 'string' ? parsed.brand.trim() : undefined
+    const title =
+      typeof parsed.title === 'string' ? parsed.title.trim() : undefined
+    const navLabels =
+      parsed.navLabels &&
+      typeof parsed.navLabels === 'object' &&
+      !Array.isArray(parsed.navLabels)
+        ? Object.fromEntries(
+            Object.entries(parsed.navLabels)
+              .filter(([, v]) => typeof v === 'string' && v.trim())
+              .map(([k, v]) => [k, String(v).trim()]),
+          )
+        : undefined
     // Tolerant: props live under "sections", else any top-level object value (the
     // model sometimes flattens). Normalize keys to lowercase section roles.
     const rawSections =
@@ -681,11 +702,18 @@ export async function composeHomeFirstPass(input: {
         : parsed
     const props: Record<string, Record<string, unknown>> = {}
     for (const [key, value] of Object.entries(rawSections)) {
-      if (key === 'family' || key === 'sections' || key === 'brand') continue
+      if (
+        key === 'family' ||
+        key === 'sections' ||
+        key === 'brand' ||
+        key === 'title' ||
+        key === 'navLabels'
+      )
+        continue
       if (value && typeof value === 'object' && !Array.isArray(value))
         props[key.toLowerCase()] = value as Record<string, unknown>
     }
-    return { family, brand, props }
+    return { family, brand, title, navLabels, props }
   }
 
   let out = await ask(false)
@@ -712,6 +740,11 @@ export async function composeHomeFirstPass(input: {
     family: chosen,
     propsByKey: out.props,
     brand: out.brand && out.brand.length >= 2 ? out.brand : undefined,
+    title: out.title && out.title.length >= 2 ? out.title : undefined,
+    navLabels:
+      out.navLabels && Object.keys(out.navLabels).length > 0
+        ? out.navLabels
+        : undefined,
   }
 }
 
@@ -933,6 +966,8 @@ export type V2Result = {
   theme: string | null
   locale: string
   brand: string
+  /** LLM-decided descriptive site title for the <title> tag. */
+  title?: string
   category: string
   family: string
   artifacts: GeneratedArtifact[]
@@ -1383,11 +1418,18 @@ const SECONDARY_ROLES: {
   },
 ]
 
+/** All possible page role ids the engine can plan (used for AI nav label generation). */
+const PAGE_ROLE_IDS = ['home', ...SECONDARY_ROLES.map((r) => r.id)]
+
 /** Pick the homepage + 2-3 secondary pages this family can actually compose. */
-function planPages(family: Family, seed: string): PagePlan[] {
+function planPages(
+  family: Family,
+  seed: string,
+  navLabels?: Record<string, string>,
+): PagePlan[] {
   const home: PagePlan = {
     id: 'home',
-    label: 'Home',
+    label: navLabels?.home || 'Home',
     sections: family.sections,
   }
   const rng = makeSeededRng(`${seed}:pages`)
@@ -1395,7 +1437,7 @@ function planPages(family: Family, seed: string): PagePlan[] {
   const candidates = SECONDARY_ROLES.filter((r) => has.has(r.need)).map(
     (r) => ({
       id: r.id,
-      label: r.label,
+      label: navLabels?.[r.id] || r.label,
       sections: family.sections.filter((s) => r.want.includes(s)),
     }),
   )
@@ -1780,6 +1822,10 @@ export type ComposedContent = {
   pageProps: Record<string, Record<string, Record<string, unknown>>>
   /** LLM-extracted brand name (cached so cache hits reuse it). */
   brand?: string
+  /** LLM-decided descriptive site title (cached so cache hits reuse it). */
+  title?: string
+  /** LLM-suggested nav labels mapping page role id → display label. */
+  navLabels?: Record<string, string>
 }
 
 // ---- free-form app generation (no vertical family) ----
@@ -1960,6 +2006,8 @@ export async function runV2ComposedGeneration(input: {
   // superagent call) takes priority because only the LLM can understand
   // context like "Acme inspired" (not literally "Acme") or non-Latin scripts.
   let brand = brandFromPrompt(input.prompt)
+  let title: string | undefined
+  let navLabels: Record<string, string> | undefined
   const locale = input.preferredLanguage || 'en'
   const theme = pick(rng, THEME_CATALOG).name
   const emit = (e: V2Event) => input.onEvent?.(e)
@@ -2045,6 +2093,10 @@ export async function runV2ComposedGeneration(input: {
     family = FAMILIES.get(cached.family)!
     // Reuse the LLM-extracted brand from the cache if present.
     if (cached.brand && cached.brand.length >= 2) brand = cached.brand
+    // Reuse the LLM-decided title and nav labels from the cache if present.
+    if (cached.title && cached.title.length >= 2) title = cached.title
+    if (cached.navLabels && Object.keys(cached.navLabels).length > 0)
+      navLabels = cached.navLabels
   } else {
     emit({ type: 'status', message: 'Designing your homepage' })
     const firstPass = await composeHomeFirstPass({
@@ -2059,9 +2111,13 @@ export async function runV2ComposedGeneration(input: {
     pageProps.home = firstPass.propsByKey
     // LLM-extracted brand takes priority over the heuristic guess.
     if (firstPass.brand && firstPass.brand.length >= 2) brand = firstPass.brand
+    // LLM-decided title and nav labels take priority over heuristics.
+    if (firstPass.title && firstPass.title.length >= 2) title = firstPass.title
+    if (firstPass.navLabels && Object.keys(firstPass.navLabels).length > 0)
+      navLabels = firstPass.navLabels
   }
 
-  const pages = planPages(family, seed)
+  const pages = planPages(family, seed, navLabels)
   const nav = pages.map((p) => p.label)
   emit({ type: 'theme', name: theme })
   emit({ type: 'locale', code: locale })
@@ -2133,7 +2189,7 @@ export async function runV2ComposedGeneration(input: {
     }),
   )
 
-  input.onContent?.({ family: family.name, pageProps, brand })
+  input.onContent?.({ family: family.name, pageProps, brand, title, navLabels })
   const source = renderSource()
   const navTargets = buildRouteTargetMap({ pages, pageProps })
   const pagePlans: V2PagePlan[] = pages.map((p) => {
@@ -2151,6 +2207,7 @@ export async function runV2ComposedGeneration(input: {
     theme,
     locale,
     brand,
+    title,
     category: family.name,
     family: family.name,
     artifacts: [buildFullstackManifest(family)],

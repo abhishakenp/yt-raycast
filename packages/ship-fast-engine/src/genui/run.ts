@@ -18,6 +18,8 @@ export interface OrchestratorResult {
   locale: string
   /** Brand string used across the composed pages. */
   brand: string
+  /** LLM-decided descriptive site title for the <title> tag. */
+  title?: string
   /** Vertical family the engine composed (Cafe, LawFirm, Newsroom, …). */
   category?: string
   /** Fullstack/admin sidecar artifacts (manifest, …). */
@@ -77,6 +79,7 @@ export async function runHomepageOrchestrator(p: {
     theme: result.theme,
     locale: result.locale,
     brand: result.brand,
+    title: result.title,
     category: result.category,
     artifacts: result.artifacts,
   }

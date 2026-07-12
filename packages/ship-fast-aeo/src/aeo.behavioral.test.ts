@@ -179,6 +179,44 @@ describe('AEO behavioral', () => {
       expect(markup).toContain('rel="canonical"')
       expect(markup).toContain('https://acme.test')
     })
+
+    it('uses the AI-decided descriptive title (projectName ≠ brand) as the <title> without "- Preview" suffix', () => {
+      const markup = buildPreviewSeoHead(
+        {
+          projectName: 'Kaveri Silks — Premium Sarees & Traditional Wear',
+          brand: 'Kaveri Silks',
+          seo: {
+            siteName: 'Kaveri Silks',
+            siteUrl: 'https://kaverisilks.test',
+          },
+        },
+        'Kaveri Silks',
+        'Premium sarees',
+      )
+      const { document: doc } = parseHTML(
+        `<!doctype html><head>${markup}</head>`,
+      )
+      // The AI title should be used verbatim — no "- Preview" appended
+      expect(doc.querySelector('title')?.textContent).toBe(
+        'Kaveri Silks — Premium Sarees & Traditional Wear',
+      )
+      expect(markup).not.toContain('- Preview')
+    })
+
+    it('still appends "- Preview" when projectName equals brand (legacy behavior)', () => {
+      const markup = buildPreviewSeoHead(
+        {
+          projectName: 'Acme',
+          seo: { siteName: 'Acme', siteUrl: 'https://acme.test' },
+        },
+        'Acme',
+        'Acme makes widgets',
+      )
+      const { document: doc } = parseHTML(
+        `<!doctype html><head>${markup}</head>`,
+      )
+      expect(doc.querySelector('title')?.textContent).toBe('Acme - Preview')
+    })
   })
 
   describe('buildNextMetadata', () => {

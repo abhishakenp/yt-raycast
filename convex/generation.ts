@@ -14,9 +14,15 @@ import {
   type CompleteGenerationActionResult,
 } from './lib/session_generation_action_helpers'
 
-const internalFunctions = internal as any
+const internalFunctions = internal
 
 export const DEFAULT_GENERATION_TIMEOUT_MS = 90_000
+
+type StartGenerationResult =
+  | null
+  | { status: 'skipped'; reason: string }
+  | { status: 'failed'; message: string }
+  | { status: 'completed' }
 
 type GenUIEvent =
   | { type: 'status'; message: string }
@@ -181,6 +187,7 @@ const buildGenerationSiteSpecMetadata = (
   session: Doc<'sessions'>,
   result: {
     brand: string
+    title?: string
     theme: string | null
     locale: string
     source: string
@@ -192,6 +199,7 @@ const buildGenerationSiteSpecMetadata = (
 
   return {
     brand: result.brand,
+    projectName: result.title,
     theme: result.theme ?? 'modern-minimal',
     locale: result.locale,
     designReferenceUrls: session.designReferenceUrls ?? [],
@@ -294,7 +302,7 @@ export const startGeneration = internalAction({
     sessionId: v.id('sessions'),
     anonymousOwnerSecret: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<StartGenerationResult> => {
     const startedAt = Date.now()
 
     try {

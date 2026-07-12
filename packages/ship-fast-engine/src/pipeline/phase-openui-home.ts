@@ -160,6 +160,9 @@ export async function generateAndWriteOpenUIHome(p: {
   // The AI-picked theme name drives the preview palette (renderers/index.ts reads
   // it back from the site spec and applies the matching designed preset).
   const theme = result.theme || specThemeName || 'modern-minimal'
+  // The LLM-decided descriptive site title (e.g. "Kaveri Silks — Premium Sarees")
+  // takes priority over the heuristic titleFromPrompt. Falls back to brandSoFar.
+  const title = result.title || brandSoFar
   // Deterministic override: an explicit language keyword in the prompt ("hinglish",
   // "roman hindi", "tamil english mix", …) is authoritative over the small planner
   // LLM's guess, which is unreliable at picking the variant codes.
@@ -170,6 +173,7 @@ export async function generateAndWriteOpenUIHome(p: {
     promptLocale || forcedLocale || result.locale || localeName || 'en'
   const project = {
     brand,
+    projectName: title,
     tagline,
     theme,
     locale,
@@ -180,7 +184,7 @@ export async function generateAndWriteOpenUIHome(p: {
   // Finalize: persist the complete program + shell (for reload), then close the
   // stream so the client locks in the final, fully-merged source.
   writeFileSync(join(p.workspace, HOME_OPENUI_FILE), source)
-  upsertManifest(p.workspace, route, 'Home', HOME_OPENUI_FILE)
+  upsertManifest(p.workspace, route, title, HOME_OPENUI_FILE)
   saveSiteSpec(p.workspace, project)
   await renderPreviewToWorkspace(project, p.workspace)
 
@@ -238,7 +242,7 @@ export async function generateAndWriteOpenUIHome(p: {
   ctx?.broadcast?.({ type: 'preview_reload', at: Date.now() })
   p.sessionCtx?.signalOpenuiReady?.()
   log(
-    `  genui: ${source.length} chars, theme=${theme}, locale=${locale} in ${(ms / 1000).toFixed(1)}s`,
+    `  genui: ${source.length} chars, theme=${theme}, locale=${locale}, title=${title} in ${(ms / 1000).toFixed(1)}s`,
   )
 
   return {

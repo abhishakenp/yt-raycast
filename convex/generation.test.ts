@@ -522,6 +522,85 @@ describe('convex generation action', () => {
     expect(JSON.stringify(mutations)).not.toContain('ship-fast-openui-source')
   })
 
+  it('threads the AI-decided title into the v1 site spec as projectName', async () => {
+    const session = {
+      _id: 'session-v1-title',
+      _creationTime: 1,
+      status: 'queued',
+      prompt: DB_OBSERVED_GENERATION.prompt,
+      preferredLanguage: DB_OBSERVED_GENERATION.preferredLanguage,
+      engineVersion: 'v1',
+      previewVersion: 0,
+    }
+    const mutations: Array<{ args: Record<string, unknown> }> = []
+    const aiTitle = `${DB_OBSERVED_GENERATION.brand} — Boutique Classes in San Francisco`
+
+    generationMocks.runHomepageOrchestrator.mockImplementationOnce(
+      async (input: {
+        prompt: string
+        preferredLanguage?: string
+        onSource?: (source: string) => void
+        onEvent?: (event: { type: 'status'; message: string }) => void
+      }) => {
+        input.onEvent?.({
+          type: 'status',
+          message: `Drafting ${DB_OBSERVED_GENERATION.brand}`,
+        })
+        input.onSource?.(DB_OBSERVED_GENERATION.source)
+
+        return {
+          artifacts: [],
+          brand: DB_OBSERVED_GENERATION.brand,
+          title: aiTitle,
+          category: 'yogastudio',
+          locale: DB_OBSERVED_GENERATION.preferredLanguage,
+          source: DB_OBSERVED_GENERATION.source,
+          theme: 'solar-dusk',
+        }
+      },
+    )
+
+    const ctx = {
+      runQuery: vi.fn(async () => session),
+      runMutation: vi.fn(
+        async (_ref: unknown, args: Record<string, unknown>) => {
+          mutations.push({ args })
+          if ('eventType' in args) return null
+          if ('html' in args) return null
+          return { started: true }
+        },
+      ),
+    }
+
+    await withGroqApiKey(async () => {
+      await expect(
+        (
+          startGeneration as unknown as {
+            _handler: (
+              ctx: Record<string, unknown>,
+              args: { sessionId: string; anonymousOwnerSecret?: string },
+            ) => Promise<unknown>
+          }
+        )._handler(ctx, {
+          sessionId: 'session-v1-title',
+          anonymousOwnerSecret: 'owner-secret',
+        }),
+      ).resolves.toEqual({ status: 'completed' })
+    })
+
+    const persistedSiteSpecJson = mutations
+      .map((call) => call.args)
+      .find(
+        (args): args is { siteSpecJson: string } =>
+          typeof args.siteSpecJson === 'string',
+      )?.siteSpecJson
+
+    expect(persistedSiteSpecJson).toBeDefined()
+    const persistedSpec = JSON.parse(persistedSiteSpecJson as string)
+    expect(persistedSpec.projectName).toBe(aiTitle)
+    expect(persistedSpec.brand).toBe(DB_OBSERVED_GENERATION.brand)
+  })
+
   it('fails legacy sessions when the orchestrator produces no OpenUI source', async () => {
     const session = {
       _id: 'session-v1-empty',
