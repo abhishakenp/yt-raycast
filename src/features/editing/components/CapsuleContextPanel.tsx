@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Plus, Trash2, Boxes } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { allCapsules } from '@ship-fast/blocks'
@@ -261,8 +261,24 @@ const BentoCollection = ({
   const [draftItem, setDraftItem] = useState<Record<string, unknown> | null>(
     null,
   )
-  const itemArray = Array.isArray(items) ? items : []
+  const rawItems = Array.isArray(items) ? items : []
+  const [localOrder, setLocalOrder] = useState<number[] | null>(null)
   const label = titleCase(collectionKey)
+
+  // When rawItems length changes (add/remove from backend), reset local order
+  const rawLen = rawItems.length
+  const prevRawLen = useRef(rawLen)
+  useEffect(() => {
+    if (prevRawLen.current !== rawLen) {
+      setLocalOrder(null)
+      prevRawLen.current = rawLen
+    }
+  }, [rawLen])
+
+  // Apply local order if present, otherwise use raw items as-is
+  const itemArray = localOrder
+    ? localOrder.map((i) => rawItems[i]).filter((x) => x !== undefined)
+    : rawItems
 
   const titleField = findTitleField(itemFields)
   const subtitleField = findSubtitleField(itemFields)
@@ -280,6 +296,20 @@ const BentoCollection = ({
   }, [draftItem, collectionKey, onAdd, itemArray.length])
 
   const cancelDraft = useCallback(() => setDraftItem(null), [])
+
+  const handleReorder = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      // Optimistic: update local order immediately
+      const currentOrder = localOrder ?? rawItems.map((_, i) => i)
+      const nextOrder = [...currentOrder]
+      const [moved] = nextOrder.splice(fromIndex, 1)
+      nextOrder.splice(toIndex, 0, moved)
+      setLocalOrder(nextOrder)
+      // Backend sync
+      void onReorder(collectionKey, fromIndex, toIndex)
+    },
+    [localOrder, rawItems, onReorder, collectionKey],
+  )
 
   // Build sortable values — use index as id since items may not have unique ids
   const sortableItems = itemArray.map((_, i) => i)
@@ -315,7 +345,7 @@ const BentoCollection = ({
           value={sortableItems}
           getItemValue={getItemValue}
           onMove={(event) => {
-            void onReorder(collectionKey, event.activeIndex, event.overIndex)
+            handleReorder(event.activeIndex, event.overIndex)
           }}
           orientation="vertical"
         >
@@ -511,7 +541,7 @@ const FieldInput = ({
   onChange: (value: unknown) => void
 }) => {
   const isWide = field.type === 'array-string' || LONG_TEXT_KEYS.has(field.key)
-  const placeholder = titleCase(field.key)
+  const labelText = titleCase(field.key)
 
   if (field.type === 'boolean') {
     return (
@@ -522,7 +552,7 @@ const FieldInput = ({
           onChange={(e) => onChange(e.target.checked)}
           className="size-3 accent-cyan-300"
         />
-        {placeholder}
+        {labelText}
       </label>
     )
   }
@@ -534,49 +564,58 @@ const FieldInput = ({
         ? value
         : ''
     return (
-      <textarea
-        value={text}
-        onChange={(e) =>
-          onChange(
-            e.target.value.split('\n').filter((line) => line.trim() !== ''),
-          )
-        }
-        rows={2}
-        placeholder={`${placeholder} (one per line)`}
-        className={cn(
-          'w-full resize-none rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40',
-          isWide && 'col-span-2',
-        )}
-      />
+      <div className={cn('flex flex-col gap-0.5', isWide && 'col-span-2')}>
+        <label className="text-[9px] font-medium uppercase tracking-wider text-white/40">
+          {labelText}
+        </label>
+        <textarea
+          value={text}
+          onChange={(e) =>
+            onChange(
+              e.target.value.split('\n').filter((line) => line.trim() !== ''),
+            )
+          }
+          rows={2}
+          placeholder={`${labelText} (one per line)`}
+          className="w-full resize-none rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
+        />
+      </div>
     )
   }
 
   if (field.type === 'number') {
     return (
-      <input
-        type="number"
-        value={typeof value === 'number' ? value : ''}
-        onChange={(e) => {
-          const n = Number(e.target.value)
-          onChange(Number.isFinite(n) ? n : 0)
-        }}
-        placeholder={placeholder}
-        className="w-full rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
-      />
+      <div className="flex flex-col gap-0.5">
+        <label className="text-[9px] font-medium uppercase tracking-wider text-white/40">
+          {labelText}
+        </label>
+        <input
+          type="number"
+          value={typeof value === 'number' ? value : ''}
+          onChange={(e) => {
+            const n = Number(e.target.value)
+            onChange(Number.isFinite(n) ? n : 0)
+          }}
+          placeholder={labelText}
+          className="w-full rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
+        />
+      </div>
     )
   }
 
   return (
-    <input
-      type="text"
-      value={typeof value === 'string' ? value : ''}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={cn(
-        'w-full rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40',
-        isWide && 'col-span-2',
-      )}
-    />
+    <div className={cn('flex flex-col gap-0.5', isWide && 'col-span-2')}>
+      <label className="text-[9px] font-medium uppercase tracking-wider text-white/40">
+        {labelText}
+      </label>
+      <input
+        type="text"
+        value={typeof value === 'string' ? value : ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={labelText}
+        className="w-full rounded border border-white/10 bg-black/20 px-1.5 py-1 text-[11px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
+      />
+    </div>
   )
 }
 
