@@ -109,7 +109,7 @@ export const NoCodeTemplates = defineCapsule({
       'bg-primary text-primary-foreground',
       'bg-chart-5 text-background',
     ]
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         width="16"
         height="16"

@@ -106,16 +106,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -158,7 +158,7 @@ if (typeof document === 'undefined') {
 }
 
 if (typeof window !== 'undefined') {
-  const defineWindowGlobal = (name: string, value: unknown) => {
+  const defineWindowGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
@@ -212,15 +212,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -274,7 +271,7 @@ function createHotelLakebedStub({
       intents: state.intents,
     }
   }
-  const syncRooms = (input: TestRoomInput) => {
+  const syncRooms = (input) => {
     state = {
       ...state,
       rooms: input.rooms.map((room, index) => ({
@@ -288,7 +285,7 @@ function createHotelLakebedStub({
       })),
     }
   }
-  const recordBooking = (input: TestBookingInput) => {
+  const recordBooking = (input) => {
     state = {
       ...state,
       intents: [

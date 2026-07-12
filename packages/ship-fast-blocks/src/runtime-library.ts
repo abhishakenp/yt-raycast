@@ -21,8 +21,9 @@ const capsuleCache = new Map<RuntimeComponentName, Promise<ShipFastCapsule>>()
 const libraryCache = new Map<string, Promise<Library>>()
 const runtimeComponentNameSet = new Set<string>(runtimeComponentNames)
 
-const isRuntimeComponentName = (name: string): name is RuntimeComponentName =>
-  runtimeComponentNameSet.has(name)
+function isRuntimeComponentName(name: string): name is RuntimeComponentName {
+  return runtimeComponentNameSet.has(name)
+}
 
 export function extractOpenUIRuntimeComponentNames(
   response: string | null | undefined,
@@ -86,8 +87,11 @@ export function getOpenUIRuntimeLibraryCacheKey(
  * modified — interception happens here, at name→component resolution, the single
  * seam react-lang exposes.
  */
-const isRealtimeEditableSection = (name: string): boolean =>
-  runtimeSectionComponentNameSet.has(name) && !/(Navbar|Footer)$/.test(name)
+function isRealtimeEditableSection(name: string): boolean {
+  return (
+    runtimeSectionComponentNameSet.has(name) && !/(Navbar|Footer)$/.test(name)
+  )
+}
 
 function withRealtimeSection(
   name: string,
@@ -191,7 +195,7 @@ export function loadAiCapsule(
   return cached
 }
 
-const createAiCapsulePropsSchema = (propNames: string[]) => {
+function createAiCapsulePropsSchema(propNames: string[]) {
   const shape = {
     [aiCapsuleOpenUIPropsArg]: z.record(z.string(), z.unknown()).optional(),
     ...Object.fromEntries(

@@ -71,7 +71,7 @@ export const MusicArtistPress = defineCapsule({
           },
         ]
 
-    const StarIcon = ({ filled }: { filled: boolean }) => (
+    const StarIcon = ({ filled }) => (
       <svg
         className={cn(
           'size-4',

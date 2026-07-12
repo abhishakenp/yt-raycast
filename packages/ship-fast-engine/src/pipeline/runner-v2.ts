@@ -35,14 +35,18 @@ const resolvePexelsImageHintsTyped = resolvePexelsImageHints as unknown as (
   }>
 } | null>
 
-const log = (sessionCtx: any) => (msg: string) => {
-  console.log(msg)
-  sessionCtx?.broadcast?.({ type: 'log', message: msg })
+function log(sessionCtx: any) {
+  return (msg) => {
+    console.log(msg)
+    sessionCtx?.broadcast?.({ type: 'log', message: msg })
+  }
 }
 
-const status = (sessionCtx: any) => (message: string, phase: string) => {
-  console.log(`  [${phase}] ${message}`)
-  sessionCtx?.broadcast?.({ type: 'status', message, phase })
+function status(sessionCtx: any) {
+  return (message, phase) => {
+    console.log(`  [${phase}] ${message}`)
+    sessionCtx?.broadcast?.({ type: 'status', message, phase })
+  }
 }
 
 export async function runAllV2(
@@ -106,7 +110,7 @@ export async function runAllV2(
     const siteSpec = loadSiteSpec(workspace)
     const [brandProfile, imageHints] = await Promise.all([
       enrichBrandProfileTyped(languageMode.prompt, workspace, _log).catch(
-        (error: unknown) => {
+        (error) => {
           _log(
             `  brand-profile: skipped (${(error as Error)?.message ?? String(error)})`,
           )
@@ -120,7 +124,7 @@ export async function runAllV2(
           siteSpec: siteSpec ?? undefined,
         },
         {
-          onProgress: (partial: unknown) => {
+          onProgress: (partial) => {
             const payload =
               partial && typeof partial === 'object'
                 ? (partial as Record<string, unknown>)
@@ -128,7 +132,7 @@ export async function runAllV2(
             sessionCtx?.broadcast?.({ type: 'media_hints', ...payload })
           },
         },
-      ).catch((error: unknown) => {
+      ).catch((error) => {
         _log(
           `  image-hints: skipped (${(error as Error)?.message ?? String(error)})`,
         )

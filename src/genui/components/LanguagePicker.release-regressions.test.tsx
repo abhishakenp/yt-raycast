@@ -8,7 +8,7 @@ import {
 } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const customLanguages = vi.hoisted(() => [] as unknown[])
+const customLanguages = vi.hoisted<Array<unknown>>(() => [])
 
 vi.mock('convex/react', () => ({
   useAction: () => vi.fn(),

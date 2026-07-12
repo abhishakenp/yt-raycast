@@ -54,8 +54,8 @@ const sendOperationalNotification =
     MutationCtx['scheduler']['runAfter']
   >[1]
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a site',
@@ -64,25 +64,22 @@ const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
     userId: 'user_1',
     anonymousClientIdHash: 'anon_hash',
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
-const ctxFor = (session: Doc<'sessions'> | null) => {
+function ctxFor(session: Doc<'sessions'> | null) {
   const inserted: InsertedRecord[] = []
   const scheduled: ScheduledRecord[] = []
   const ctx = {
     db: {
-      get: async (id: Id<'sessions'>) => (id === sessionId ? session : null),
-      insert: async (table: string, value: Record<string, unknown>) => {
+      get: async (id) => (id === sessionId ? session : null),
+      insert: async (table, value) => {
         inserted.push({ table, value })
         return `${table}_id`
       },
     },
     scheduler: {
-      runAfter: async (
-        delay: number,
-        _functionReference: typeof sendOperationalNotification,
-        args: OperationalNotificationPayload,
-      ) => {
+      runAfter: async (delay, _functionReference, args) => {
         scheduled.push({ delay, args })
       },
     },

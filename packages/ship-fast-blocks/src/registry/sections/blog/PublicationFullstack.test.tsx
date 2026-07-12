@@ -93,16 +93,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
   class TestResizeObserver {
     disconnect() {}
     observe() {}
@@ -191,7 +191,7 @@ function createPublicationLakebedStub() {
     for (const listener of listeners) listener()
   }
 
-  const runMutation = async (name: string, input: TestMutationInput) => {
+  const runMutation = async (name, input) => {
     if (name === 'subscribe' && 'email' in input) {
       const email = input.email.trim().toLowerCase()
       const existing = subscribers.find(
@@ -284,7 +284,7 @@ function createPublicationLakebedStub() {
       searches,
       subscribers,
     }),
-    useQuery: (name: string) => {
+    useQuery: (name) => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -315,12 +315,12 @@ function createPublicationLakebedStub() {
 
       return null
     },
-    useMutation: (name: string) => {
+    useMutation: (name) => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
       const run = useCallback(
-        async (input: TestMutationInput) => {
+        async (input) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
 
@@ -338,7 +338,7 @@ function createPublicationLakebedStub() {
       const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input: TestMutationInput) => run(input), {
+          Object.assign((input) => run(input), {
             isPending: false,
             lastError: initialLastError,
             pendingCount: 0,

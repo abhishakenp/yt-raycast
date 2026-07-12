@@ -57,7 +57,7 @@ export const LandscapingHero = defineCapsule({
           'Headshot of a smiling older male customer with glasses',
         ]
 
-    const StarIcon = ({ className }: { className?: string }) => (
+    const StarIcon = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

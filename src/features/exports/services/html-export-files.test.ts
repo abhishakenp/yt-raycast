@@ -15,7 +15,9 @@ const expectShipFastReadme = (readme = '') => {
   expect(readme).not.toContain('Target:')
 }
 
-const parseHtmlDocument = (html: string) => parseHTML(html).document
+function parseHtmlDocument(html: string) {
+  return parseHTML(html).document
+}
 
 describe('createHtmlExportFiles', () => {
   it('includes SEO and answer-engine metadata files derived from HTML', () => {

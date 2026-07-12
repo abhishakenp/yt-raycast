@@ -48,7 +48,7 @@ type FoodRestaurantCatalogItem = NonNullable<
   ReturnType<typeof foodDeliveryLakebed.queries.restaurantCatalog>
 >[number]
 
-export const foodDeliveryRestaurant = ({
+export function foodDeliveryRestaurant({
   category,
   cuisine,
   delivery,
@@ -56,15 +56,17 @@ export const foodDeliveryRestaurant = ({
   name,
   rating,
   time,
-}: FoodDeliveryCatalogInput): FoodDeliveryCatalogInput => ({
-  category: category ?? '',
-  cuisine: cuisine ?? '',
-  delivery: delivery ?? '',
-  imageAlt: imageAlt ?? '',
-  name,
-  rating: rating ?? '',
-  time: time ?? '',
-})
+}: FoodDeliveryCatalogInput): FoodDeliveryCatalogInput {
+  return {
+    category: category ?? '',
+    cuisine: cuisine ?? '',
+    delivery: delivery ?? '',
+    imageAlt: imageAlt ?? '',
+    name,
+    rating: rating ?? '',
+    time: time ?? '',
+  }
+}
 
 export function FoodDeliveryMutationSpinner({
   className,
@@ -145,7 +147,7 @@ export function useFoodDeliverySearch(lakebed: FoodDeliveryLakebed) {
   const setFoodSearch = lakebed.useMutation('setFoodSearch')
 
   const submitSearch = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (setFoodSearch.isPending) return
 
@@ -160,7 +162,7 @@ export function useFoodDeliverySearch(lakebed: FoodDeliveryLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input: FoodDeliverySearchInput) => {
+    (input) => {
       if (setFoodSearch.isPending) return
       void setFoodSearch(input)
     },
@@ -180,7 +182,7 @@ export function useFoodDeliveryRestaurants(lakebed: FoodDeliveryLakebed) {
   const selectRestaurant = lakebed.useMutation('selectRestaurant')
 
   const select = useCallback(
-    async (input: FoodDeliveryRestaurantInput) => {
+    async (input) => {
       if (selectRestaurant.isPending) return
       await selectRestaurant(input)
     },
@@ -298,7 +300,7 @@ export function FoodDeliveryMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?: string) => {
+  const navigate = (target?) => {
     setOpen(false)
     go(target)
   }

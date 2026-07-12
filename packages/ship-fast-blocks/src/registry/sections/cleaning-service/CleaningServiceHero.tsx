@@ -76,7 +76,7 @@ export const CleaningServiceHero = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         width="20"
         height="20"

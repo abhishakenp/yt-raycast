@@ -8,16 +8,17 @@ type ReferralConvexClient = Pick<
   'query' | 'mutation' | 'setAuth'
 >
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const getBearerToken = (request: Request): string | null => {
+function getBearerToken(request: Request): string | null {
   const match = (request.headers.get('authorization') ?? '').match(
     /^Bearer\s+(.+)$/i,
   )
@@ -25,10 +26,10 @@ const getBearerToken = (request: Request): string | null => {
 }
 
 /** GET /api/referrals/status — ensure the user's code exists and return state. */
-export const createReferralStatusApiResponse = async (
+export async function createReferralStatusApiResponse(
   request: Request,
   clientOverride?: ReferralConvexClient,
-): Promise<Response> => {
+): Promise<Response> {
   const token = getBearerToken(request)
   if (token === null) {
     return json({ error: 'Sign in to view referrals.' }, { status: 401 })
@@ -46,10 +47,10 @@ export const createReferralStatusApiResponse = async (
 }
 
 /** POST /api/referrals/record — attribute the signed-in user to a ref code. */
-export const createReferralRecordApiResponse = async (
+export async function createReferralRecordApiResponse(
   request: Request,
   clientOverride?: ReferralConvexClient,
-): Promise<Response> => {
+): Promise<Response> {
   const token = getBearerToken(request)
   if (token === null) {
     return json({ error: 'Sign in to record a referral.' }, { status: 401 })

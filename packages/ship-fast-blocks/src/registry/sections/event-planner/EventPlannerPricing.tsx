@@ -94,7 +94,7 @@ export const EventPlannerPricing = defineCapsule({
           },
         ]
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         fill="none"

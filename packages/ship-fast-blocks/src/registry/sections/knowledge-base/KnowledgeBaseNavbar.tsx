@@ -41,7 +41,7 @@ export const KnowledgeBaseNavbar = defineCapsule({
     const searchLabel = props.searchLabel ?? 'Search'
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Categories'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',
@@ -64,7 +64,7 @@ export const KnowledgeBaseNavbar = defineCapsule({
       </span>
     )
 
-    const SearchIcon = ({ className }: { className?: string }) => (
+    const SearchIcon = ({ className }) => (
       <svg
         className={className}
         width="20"

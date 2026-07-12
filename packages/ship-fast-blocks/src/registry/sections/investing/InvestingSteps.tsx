@@ -79,7 +79,7 @@ export const InvestingSteps = defineCapsule({
     const transferImageAlt =
       props.transferImageAlt ??
       'laptop showing financial dashboard with charts and account balances'
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

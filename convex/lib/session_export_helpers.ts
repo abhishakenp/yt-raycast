@@ -25,16 +25,19 @@ const exportArtifactBuildStallMs = 2 * 60 * 1000
 const stalledExportArtifactMessage =
   'Export build stalled before completion. Click to retry.'
 
-const readAppliedThemeName = (session: Doc<'sessions'>): string | undefined =>
-  typeof session.themeOverride === 'string'
+function readAppliedThemeName(session: Doc<'sessions'>): string | undefined {
+  return typeof session.themeOverride === 'string'
     ? session.themeOverride
     : session.genuiTheme
+}
 
-const readAppliedIsDark = (session: Doc<'sessions'>): boolean =>
-  session.themeMode !== 'light'
+function readAppliedIsDark(session: Doc<'sessions'>): boolean {
+  return session.themeMode !== 'light'
+}
 
-const readAppliedLocale = (session: Doc<'sessions'>): string =>
-  session.preferredLanguage || 'en'
+function readAppliedLocale(session: Doc<'sessions'>): string {
+  return session.preferredLanguage || 'en'
+}
 
 export type ExportEntitlement =
   | {
@@ -54,9 +57,11 @@ type ExportPaywallEnv = {
   DISABLE_PAYWALL?: string
 }
 
-export const areExportPaywallsDisabled = (
+export function areExportPaywallsDisabled(
   env: ExportPaywallEnv = process.env,
-): boolean => (env.DISABLE_PAYWALL ?? '').trim().toLowerCase() === 'true'
+): boolean {
+  return (env.DISABLE_PAYWALL ?? '').trim().toLowerCase() === 'true'
+}
 
 type AuthDisabledEnv = {
   VITE_DISABLE_CLERK?: string
@@ -68,8 +73,9 @@ type AuthDisabledEnv = {
  * feature (exports, GitHub push, session mutation) without signing in.
  * Mirrors the client-side `isClerkDisabled` check in `clerk-runtime.ts`.
  */
-export const isAuthDisabled = (env: AuthDisabledEnv = process.env): boolean =>
-  (env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+export function isAuthDisabled(env: AuthDisabledEnv = process.env): boolean {
+  return (env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+}
 
 export type CreateSessionExportInput = {
   sessionId: Id<'sessions'>
@@ -144,7 +150,7 @@ const activeExportSubscriptionStatuses = new Set([
   'authenticated',
 ])
 
-export const exportTargetFileCount = (target: ExportTarget): number => {
+export function exportTargetFileCount(target: ExportTarget): number {
   switch (target) {
     case 'html':
       return 5
@@ -156,17 +162,20 @@ export const exportTargetFileCount = (target: ExportTarget): number => {
   }
 }
 
-const exportArtifactPath = (target: ExportTarget, previewVersion: number) =>
-  target === 'html'
+function exportArtifactPath(target: ExportTarget, previewVersion: number) {
+  return target === 'html'
     ? `preview-${previewVersion}.html`
     : `preview-${previewVersion}.${target}.zip`
+}
 
-export const exportDownloadUrl = (
+export function exportDownloadUrl(
   sessionId: Id<'sessions'>,
   target: ExportTarget,
-) => `/api/sessions/${sessionId}/download/${target}`
+) {
+  return `/api/sessions/${sessionId}/download/${target}`
+}
 
-const isLikelyOpenUISource = (source: string | undefined): boolean => {
+function isLikelyOpenUISource(source: string | undefined): boolean {
   if (source === undefined) return false
   const trimmed = source.trim()
   if (!trimmed) return false
@@ -176,14 +185,14 @@ const isLikelyOpenUISource = (source: string | undefined): boolean => {
   return /(?:^|\n)\s*root\s*=/.test(trimmed)
 }
 
-const isHtmlDocumentSource = (source: string): boolean => {
+function isHtmlDocumentSource(source: string): boolean {
   const trimmed = source.trim()
   return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
 }
 
-const readOpenUISourceFromSiteSpec = (
+function readOpenUISourceFromSiteSpec(
   siteSpec: Doc<'siteSpecs'> | null,
-): string | undefined => {
+): string | undefined {
   const candidates = [siteSpec?.specJson, siteSpec?.spec]
 
   for (const candidate of candidates) {
@@ -209,28 +218,31 @@ const readOpenUISourceFromSiteSpec = (
   return undefined
 }
 
-const resolveExportOpenUISource = (
+function resolveExportOpenUISource(
   preview: Doc<'previews'> | null,
   homeModule: Doc<'generatedModules'> | null,
   siteSpec: Doc<'siteSpecs'> | null,
-): string =>
-  preview && preview.openUiSource && isLikelyOpenUISource(preview.openUiSource)
+): string {
+  return preview &&
+    preview.openUiSource &&
+    isLikelyOpenUISource(preview.openUiSource)
     ? preview.openUiSource
     : (readOpenUISourceFromSiteSpec(siteSpec) ??
-      (homeModule &&
-      homeModule.source &&
-      isLikelyOpenUISource(homeModule.source)
-        ? homeModule.source
-        : undefined) ??
-      preview?.html ??
-      '')
+        (homeModule &&
+        homeModule.source &&
+        isLikelyOpenUISource(homeModule.source)
+          ? homeModule.source
+          : undefined) ??
+        preview?.html ??
+        '')
+}
 
-const isTextEditAlreadyMaterialized = (
+function isTextEditAlreadyMaterialized(
   source: string,
   beforeText: string,
   afterText: string,
   occurrenceIndex: number | undefined,
-): boolean => {
+): boolean {
   if (!beforeText || !afterText.includes(beforeText)) return false
 
   const beforeOffsets: number[] = []
@@ -263,7 +275,7 @@ const isTextEditAlreadyMaterialized = (
 }
 
 /** Apply edit overrides to source before export. */
-export const applyEditsToSource = (
+export function applyEditsToSource(
   source: string,
   edits:
     | Array<{
@@ -273,7 +285,7 @@ export const applyEditsToSource = (
         occurrenceIndex?: number
       }>
     | undefined,
-): string => {
+): string {
   if (!edits || edits.length === 0) return source
 
   let result = source
@@ -324,11 +336,11 @@ export const applyEditsToSource = (
   return result
 }
 
-export const loadExportRecord = async (
+export async function loadExportRecord(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
   target: ExportTarget,
-) => {
+) {
   const exportRecord = await ctx.db
     .query('exports')
     .withIndex('by_sessionId_target', (index) =>
@@ -339,7 +351,7 @@ export const loadExportRecord = async (
   return exportRecord === null ? null : toExportPayload(exportRecord)
 }
 
-const toExportPayload = (exportRecord: Doc<'exports'>) => {
+function toExportPayload(exportRecord: Doc<'exports'>) {
   const paymentBypassed =
     areExportPaywallsDisabled() &&
     (exportRecord.status === 'payment_required' ||
@@ -358,11 +370,14 @@ const toExportPayload = (exportRecord: Doc<'exports'>) => {
   }
 }
 
-const isStalledExportArtifact = (artifact: Doc<'exportArtifacts'>) =>
-  artifact.status === 'building' &&
-  Date.now() - artifact.updatedAt > exportArtifactBuildStallMs
+function isStalledExportArtifact(artifact: Doc<'exportArtifacts'>) {
+  return (
+    artifact.status === 'building' &&
+    Date.now() - artifact.updatedAt > exportArtifactBuildStallMs
+  )
+}
 
-const toArtifactPayload = (artifact: Doc<'exportArtifacts'> | null) => {
+function toArtifactPayload(artifact: Doc<'exportArtifacts'> | null) {
   if (artifact === null) return null
   const stalled = isStalledExportArtifact(artifact)
   return {
@@ -383,12 +398,12 @@ const toArtifactPayload = (artifact: Doc<'exportArtifacts'> | null) => {
   }
 }
 
-const loadExportArtifactRecord = async (
+async function loadExportArtifactRecord(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
   target: ExportTarget,
   previewVersion?: number,
-) => {
+) {
   const query =
     previewVersion === undefined
       ? ctx.db
@@ -408,10 +423,10 @@ const loadExportArtifactRecord = async (
   return await query.order('desc').first()
 }
 
-export const loadSessionExportTargets = async (
+export async function loadSessionExportTargets(
   ctx: QueryCtx,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const session = await ctx.db.get(sessionId)
   const previewReady = session?.status === 'preview_ready'
   const currentPreviewVersion = session?.previewVersion
@@ -483,7 +498,7 @@ export const loadSessionExportTargets = async (
   }
 }
 
-export const queueSessionExportArtifactBuilds = async (
+export async function queueSessionExportArtifactBuilds(
   ctx: Pick<MutationCtx, 'db' | 'scheduler'>,
   args: {
     sessionId: Id<'sessions'>
@@ -493,7 +508,7 @@ export const queueSessionExportArtifactBuilds = async (
     buildExportArtifact: ExportArtifactBuildReference
     delayMs?: number
   },
-) => {
+) {
   const delayMs = args.delayMs ?? 0
 
   await Promise.all(
@@ -512,7 +527,7 @@ export const queueSessionExportArtifactBuilds = async (
   )
 }
 
-export const queueSessionExportArtifactBuild = async (
+export async function queueSessionExportArtifactBuild(
   ctx: Pick<MutationCtx, 'db' | 'scheduler'>,
   args: {
     sessionId: Id<'sessions'>
@@ -524,7 +539,7 @@ export const queueSessionExportArtifactBuild = async (
     delayMs?: number
     force?: boolean
   },
-) => {
+) {
   const existing = await ctx.db
     .query('exportArtifacts')
     .withIndex('by_sessionId_target_previewVersion', (index) =>
@@ -569,12 +584,12 @@ export const queueSessionExportArtifactBuild = async (
   }
 }
 
-export const markExportArtifactBuilding = async (
+export async function markExportArtifactBuilding(
   ctx: MutationCtx,
   args: ExportArtifactBuildInput & {
     stallExportArtifactBuild?: ExportArtifactStalledReference
   },
-) => {
+) {
   const now = Date.now()
   const existing = await loadExportArtifactRecord(
     ctx,
@@ -633,10 +648,10 @@ export const markExportArtifactBuilding = async (
   }
 }
 
-export const recordExportArtifactStalled = async (
+export async function recordExportArtifactStalled(
   ctx: MutationCtx,
   args: ExportArtifactStalledInput,
-) => {
+) {
   const existing = await loadExportArtifactRecord(
     ctx,
     args.sessionId,
@@ -660,10 +675,10 @@ export const recordExportArtifactStalled = async (
   })
 }
 
-export const recordExportArtifactReady = async (
+export async function recordExportArtifactReady(
   ctx: MutationCtx,
   args: ExportArtifactReadyInput,
-) => {
+) {
   const now = Date.now()
   const existing = await loadExportArtifactRecord(
     ctx,
@@ -707,10 +722,10 @@ export const recordExportArtifactReady = async (
   return { artifactId, target: args.target, status }
 }
 
-export const recordExportArtifactFailure = async (
+export async function recordExportArtifactFailure(
   ctx: MutationCtx,
   args: ExportArtifactFailureInput,
-) => {
+) {
   const now = Date.now()
   const existing = await loadExportArtifactRecord(
     ctx,
@@ -746,11 +761,11 @@ export const recordExportArtifactFailure = async (
   return { target: args.target, status }
 }
 
-export const getExportEntitlement = async (
+export async function getExportEntitlement(
   ctx: Pick<MutationCtx, 'db'>,
   userId: string | undefined,
   sessionId: Id<'sessions'>,
-): Promise<ExportEntitlement> => {
+): Promise<ExportEntitlement> {
   if (areExportPaywallsDisabled()) {
     return {
       status: 'ready',
@@ -823,10 +838,10 @@ export const getExportEntitlement = async (
   }
 }
 
-export const createSessionExport = async (
+export async function createSessionExport(
   ctx: MutationCtx,
   args: CreateSessionExportInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -978,10 +993,10 @@ export const createSessionExport = async (
   }
 }
 
-export const recordGitHubExportRepository = async (
+export async function recordGitHubExportRepository(
   ctx: MutationCtx,
   args: RecordGitHubExportRepositoryInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   session !== null ||
     (() => {
@@ -1022,10 +1037,10 @@ export const recordGitHubExportRepository = async (
   }
 }
 
-export const ensureExportArtifactBuild = async (
+export async function ensureExportArtifactBuild(
   ctx: MutationCtx,
   args: EnsureExportArtifactBuildInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -1098,10 +1113,10 @@ export const ensureExportArtifactBuild = async (
   })
 }
 
-export const prepareExportArtifactBuild = async (
+export async function prepareExportArtifactBuild(
   ctx: QueryCtx,
   args: ExportArtifactBuildInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   session !== null ||
@@ -1212,10 +1227,10 @@ export const prepareExportArtifactBuild = async (
   return prepared
 }
 
-export const loadOwnedExportBuildInput = async (
+export async function loadOwnedExportBuildInput(
   ctx: QueryCtx,
   args: OwnedExportDownloadInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   session !== null ||
@@ -1253,10 +1268,10 @@ export const loadOwnedExportBuildInput = async (
   })
 }
 
-export const loadOwnedExportArtifactDownload = async (
+export async function loadOwnedExportArtifactDownload(
   ctx: QueryCtx,
   args: OwnedExportDownloadInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   session !== null ||
@@ -1318,10 +1333,10 @@ export const loadOwnedExportArtifactDownload = async (
   }
 }
 
-export const loadOwnedExportForGitHubPush = async (
+export async function loadOwnedExportForGitHubPush(
   ctx: QueryCtx,
   args: OwnedExportForGitHubPushInput,
-) => {
+) {
   if (!isAuthDisabled()) {
     const userId = await getUserId(ctx)
 

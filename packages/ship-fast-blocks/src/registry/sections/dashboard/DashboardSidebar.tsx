@@ -101,7 +101,7 @@ export const DashboardSidebar = defineCapsule({
     const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
     // ── Brand mark — indigo tile + orbit glyph (decorative brand asset). ──
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm',
@@ -185,9 +185,9 @@ export const DashboardSidebar = defineCapsule({
       ),
     }
 
-    const navIcon = (label: string): ReactNode => icons[label] ?? icons.Settings
+    const navIcon = (label) => icons[label] ?? icons.Settings
 
-    const NavButton = ({ label }: { label: string }) => {
+    const NavButton = ({ label }) => {
       const active = activeNav === label
       const badgeText = label === badgeLabel && badgeCount ? badgeCount : ''
       return (

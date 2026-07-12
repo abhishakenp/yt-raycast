@@ -77,7 +77,7 @@ export const CybersecurityFeatures = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

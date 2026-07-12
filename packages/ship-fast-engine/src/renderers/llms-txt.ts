@@ -31,7 +31,7 @@ export function renderShipFastLlmsTxt({
   includeInstitutional?: boolean
 }) {
   const base = normalizeSiteUrl(siteUrl || '')
-  const link = (path: string, name: string, note: string) =>
+  const link = (path, name, note) =>
     llmsLine(name, base ? joinUrl(base, path) : path, note)
 
   const lines = [
@@ -82,9 +82,7 @@ export function renderGeneratedSiteLlmsTxt(
     'Site'
   const siteUrl = normalizeSiteUrl(String(siteSpec?.seo?.siteUrl || ''))
   const desc = String(siteSpec?.seo?.description || '').trim()
-  const pages = (siteSpec?.pages || []).filter(
-    (p: SitePageLike) => p?.seo?.noIndex !== true,
-  )
+  const pages = (siteSpec?.pages || []).filter((p) => p?.seo?.noIndex !== true)
 
   const header = [`# ${siteName}`]
   if (desc) header.push(`> ${desc}`)

@@ -30,21 +30,23 @@ const ICONS: ReactNode[] = [
   </>,
 ]
 
-const FeatureIcon = ({ glyph }: { glyph: ReactNode }) => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    {glyph}
-  </svg>
-)
+function FeatureIcon({ glyph }: { glyph: ReactNode }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {glyph}
+    </svg>
+  )
+}
 
 const DEFAULT_FEATURES: { title: string; description: string }[] = [
   {

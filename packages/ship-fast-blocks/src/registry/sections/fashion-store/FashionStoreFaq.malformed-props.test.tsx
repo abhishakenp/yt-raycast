@@ -46,7 +46,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
   }),
 }))
 
-const renderCapsule = <P,>(component: CapsuleRenderer<P>, props: P) => {
+function renderCapsule(component: CapsuleRenderer<P>, props: P) {
   const Component = component
   return render(<Component props={props} statementId="faq-malformed-test" />)
 }

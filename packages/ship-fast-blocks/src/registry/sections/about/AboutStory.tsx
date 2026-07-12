@@ -57,7 +57,7 @@ export const AboutStory = defineCapsule({
         ]
     const quote = props.quote ?? "We don't chase trends. We chase outcomes."
 
-    const SmallIcon = ({ children }: { children: ReactNode }) => (
+    const SmallIcon = ({ children }) => (
       <svg
         width="14"
         height="14"

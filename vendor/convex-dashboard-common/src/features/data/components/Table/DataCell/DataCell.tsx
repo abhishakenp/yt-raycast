@@ -4,12 +4,12 @@ import classNames from 'classnames'
 import React, { memo, useRef, useState, useEffect } from 'react'
 import { areEqual } from 'react-window'
 
-const useClickAway = (
+function useClickAway(
   ref: React.RefObject<HTMLElement | null>,
   callback: () => void,
-) => {
+) {
   useEffect(() => {
-    const handleClick = (event: MouseEvent) => {
+    const handleClick = (event) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
         callback()
       }
@@ -420,13 +420,12 @@ function DataCellImpl({
   )
 }
 
-const clickHandler =
-  (
-    isEditable: boolean,
-    cellRef: React.MutableRefObject<HTMLDivElement | null>,
-    editValue: () => void,
-  ) =>
-  () => {
+function clickHandler(
+  isEditable: boolean,
+  cellRef: React.MutableRefObject<HTMLDivElement | null>,
+  editValue: () => void,
+) {
+  return () => {
     if (isEditable) {
       editValue()
       return
@@ -435,6 +434,7 @@ const clickHandler =
     const selection = window.getSelection()
     selection?.selectAllChildren(cellRef.current!)
   }
+}
 
 function DocumentPreview({ id }: { id: string | Value }) {
   // Safely convert id to string if it's not already

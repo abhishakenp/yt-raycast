@@ -52,16 +52,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -113,7 +113,7 @@ function createCommerceLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const findItem = (input: { id?: string; label?: string }) =>
+  const findItem = (input) =>
     state.items.find(
       (item) =>
         (input.id && item.id === input.id) ||
@@ -136,7 +136,7 @@ function createCommerceLakebedStub() {
         userId: 'guest:local',
       },
     }),
-    useQuery: (name: string) => {
+    useQuery: (name) => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -151,14 +151,14 @@ function createCommerceLakebedStub() {
       if (name === 'cartSummary') return summary()
       return null
     },
-    useMutation: (name: string) => {
+    useMutation: (name) => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => {
         setLastError(null)
       }, [])
       const runMutation = useCallback(
-        async (input?: any) => {
+        async (input) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
 
@@ -219,7 +219,7 @@ function createCommerceLakebedStub() {
         [name],
       )
       const mutation = useMemo(() => {
-        const callable = ((input?: any) => runMutation(input)) as ReturnType<
+        const callable = ((input) => runMutation(input)) as ReturnType<
           TestLakebed['useMutation']
         >
         callable.isPending = false

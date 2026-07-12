@@ -50,7 +50,7 @@ export const CryptoNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Launch App'
     const ctaTarget = props.ctaTarget ?? 'Start Building'
 
-    const BoltIcon = ({ className }: { className?: string }) => (
+    const BoltIcon = ({ className }) => (
       <svg
         className={className}
         fill="none"

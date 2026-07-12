@@ -4,62 +4,70 @@ import { z } from 'zod/v4'
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /** Inline icon set — currentColor → theme token, adventurous line art. */
-const CityIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M3 21h18M5 21V7l5-3v17M14 21V11l5-2v12M9 9h.01M9 13h.01M9 17h.01" />
-  </svg>
-)
-const FoodIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M7 2v7a3 3 0 0 0 6 0V2M10 9v13M18 2c-1.5 0-3 2-3 5s1 4 3 4v11" />
-  </svg>
-)
-const AdventureIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="m3 20 6-12 4 7 2-3 6 8H3ZM9 8 6.5 13" />
-  </svg>
-)
-const CultureIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M3 21h18M5 21V10l7-4 7 4v11M9 21v-6h6v6M4 10h16" />
-  </svg>
-)
+function CityIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M3 21h18M5 21V7l5-3v17M14 21V11l5-2v12M9 9h.01M9 13h.01M9 17h.01" />
+    </svg>
+  )
+}
+function FoodIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M7 2v7a3 3 0 0 0 6 0V2M10 9v13M18 2c-1.5 0-3 2-3 5s1 4 3 4v11" />
+    </svg>
+  )
+}
+function AdventureIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="m3 20 6-12 4 7 2-3 6 8H3ZM9 8 6.5 13" />
+    </svg>
+  )
+}
+function CultureIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M3 21h18M5 21V10l7-4 7 4v11M9 21v-6h6v6M4 10h16" />
+    </svg>
+  )
+}
 
 /**
  * TourExperiencesServices — tour-category showcase for an adventure / guided-tour

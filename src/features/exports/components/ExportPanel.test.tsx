@@ -41,7 +41,7 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
   useOptionalAuth: () => authState,
 }))
 
-const setExportTargets = (targets: MockExportTarget[]) => {
+function setExportTargets(targets: MockExportTarget[]) {
   exportTargetsState.value = { targets }
 }
 
@@ -62,9 +62,9 @@ const installLocalStorage = () => {
   const values = new Map<string, string>()
   const storage = {
     clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    removeItem: vi.fn((key: string) => values.delete(key)),
-    setItem: vi.fn((key: string, value: string) => {
+    getItem: vi.fn((key) => values.get(key) ?? null),
+    removeItem: vi.fn((key) => values.delete(key)),
+    setItem: vi.fn((key, value) => {
       values.set(key, value)
     }),
   }
@@ -146,7 +146,7 @@ describe('ExportPanel', () => {
       configurable: true,
       value: vi.fn(),
     })
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       const path = String(url)
       if (path.endsWith('/export')) {
         return Response.json({
@@ -216,7 +216,7 @@ describe('ExportPanel', () => {
       configurable: true,
       value: vi.fn(),
     })
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       const path = String(url)
       if (path.endsWith('/export')) {
         return Response.json({ ok: true, downloadUrl: '/download/html' })
@@ -300,7 +300,7 @@ describe('ExportPanel', () => {
     const clickMock = vi
       .spyOn(HTMLAnchorElement.prototype, 'click')
       .mockImplementation(() => {})
-    const createObjectUrl = vi.fn((_blob: Blob) => 'blob:craft-beer-lakebed')
+    const createObjectUrl = vi.fn((_blob) => 'blob:craft-beer-lakebed')
     const revokeObjectUrl = vi.fn()
     Object.defineProperty(window.URL, 'createObjectURL', {
       configurable: true,

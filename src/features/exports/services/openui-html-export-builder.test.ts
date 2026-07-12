@@ -4,18 +4,20 @@ import { describe, expect, it } from 'vitest'
 import { buildOpenUIHtmlExport } from './openui-html-export-builder'
 import type { OpenUIExportInput } from './openui-export-types'
 
-const baseInput = (
-  overrides: Partial<OpenUIExportInput>,
-): OpenUIExportInput => ({
-  source: '',
-  sessionId: 'export-test-session',
-  target: 'html',
-  ...overrides,
-})
+function baseInput(overrides: Partial<OpenUIExportInput>): OpenUIExportInput {
+  return {
+    source: '',
+    sessionId: 'export-test-session',
+    target: 'html',
+    ...overrides,
+  }
+}
 
-const parseDoc = (html: string) => parseHTML(html).document
+function parseDoc(html: string) {
+  return parseHTML(html).document
+}
 
-const findBadge = (html: string) => {
+function findBadge(html: string) {
   const doc = parseDoc(html)
   return doc.querySelector('[data-ship-fast-export-badge]')
 }

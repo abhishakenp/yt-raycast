@@ -32,8 +32,9 @@ import { renderOpenUIToHTML } from '@ship-fast/engine/openui-ssr.js'
 
 const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
 
-const loadFixture = (name: string): string =>
-  readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+function loadFixture(name: string): string {
+  return readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+}
 
 const siteSpecJson = JSON.stringify({
   projectName: 'Localization/CMS/Commerce Contract',

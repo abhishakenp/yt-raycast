@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { createWebhookApiResponse } from './webhook-api-response'
 
-const sign = async (secret: string, payload: string): Promise<string> => {
+async function sign(secret: string, payload: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),

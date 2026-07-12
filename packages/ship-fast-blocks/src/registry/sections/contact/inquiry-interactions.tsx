@@ -27,7 +27,7 @@ import {
 
 export type InquiryLakebed = LakebedClientRuntime<typeof inquiryLakebed>
 
-const fieldsFromForm = (form: HTMLFormElement) => {
+function fieldsFromForm(form: HTMLFormElement) {
   const formData = new FormData(form)
   const fields: Record<string, string> = {}
 
@@ -62,7 +62,7 @@ export function useInquirySubmission({
   const count = summary?.count ?? 0
 
   const submitForm = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (submitInquiry.isPending) return
 
@@ -281,7 +281,7 @@ export function InquiryMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?: string) => {
+    (target?) => {
       setOpen(false)
       go(target)
     },

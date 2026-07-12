@@ -14,22 +14,24 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * organizations. Renders fully with no props via baked-in "Roots of Hope"
  * defaults.
  */
-const SproutMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M12 22V12" />
-    <path d="M12 12C12 8 9 5 4 5c0 5 3 8 8 8z" />
-    <path d="M12 11c0-4 3-7 8-7 0 5-3 8-8 8" />
-  </svg>
-)
+function SproutMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 22V12" />
+      <path d="M12 12C12 8 9 5 4 5c0 5 3 8 8 8z" />
+      <path d="M12 11c0-4 3-7 8-7 0 5-3 8-8 8" />
+    </svg>
+  )
+}
 
 export const NonprofitNavbar = defineCapsule({
   name: 'NonprofitNavbar',

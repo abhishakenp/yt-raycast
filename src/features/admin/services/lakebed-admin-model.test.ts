@@ -73,9 +73,7 @@ const publicationSchema: CapsuleSchemaRegistry = {
   },
 }
 
-const expectTable = (
-  table: LakebedAdminTable | undefined,
-): LakebedAdminTable => {
+function expectTable(table: LakebedAdminTable | undefined): LakebedAdminTable {
   expect(table).toBeDefined()
   if (!table) throw new Error('Expected admin table to be defined')
   return table

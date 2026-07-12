@@ -15,7 +15,7 @@ const galleryHeaders = {
   'Cache-Control': 'public, max-age=20, stale-while-revalidate=120',
 }
 
-export const parseGalleryPagination = (query: Record<string, string> = {}) => {
+export function parseGalleryPagination(query: Record<string, string> = {}) {
   let valid = true
 
   const limitRaw = parseInt(String(query.limit ?? ''), 10)
@@ -53,16 +53,18 @@ export const parseGalleryPagination = (query: Record<string, string> = {}) => {
   return { limit, page, valid }
 }
 
-const emptyGalleryPayload = (page: number, limit: number) => ({
-  items: [],
-  page,
-  limit,
-  total: 0,
-  totalPages: 1,
-  hasNext: false,
-  hasPrev: false,
-  availableCategories: [],
-})
+function emptyGalleryPayload(page: number, limit: number) {
+  return {
+    items: [],
+    page,
+    limit,
+    total: 0,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+    availableCategories: [],
+  }
+}
 
 type GalleryApiItem = {
   sessionId?: unknown
@@ -77,20 +79,23 @@ type GalleryApiItem = {
   [key: string]: unknown
 }
 
-const readString = (value: unknown): string | undefined =>
-  typeof value === 'string' && value.trim().length > 0
+function readString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0
     ? value.trim()
     : undefined
+}
 
-const readGalleryThemeName = (item: GalleryApiItem): string | undefined =>
-  readString(item.themeOverride) ?? readString(item.genuiTheme)
+function readGalleryThemeName(item: GalleryApiItem): string | undefined {
+  return readString(item.themeOverride) ?? readString(item.genuiTheme)
+}
 
-const readGalleryIsDark = (item: GalleryApiItem): boolean =>
-  item.themeMode !== 'light'
+function readGalleryIsDark(item: GalleryApiItem): boolean {
+  return item.themeMode !== 'light'
+}
 
-const readSelectedBrandLogo = (
+function readSelectedBrandLogo(
   item: GalleryApiItem,
-): BrandLogoSelection | null => {
+): BrandLogoSelection | null {
   const logo = item.selectedBrandLogo
   if (logo === null || typeof logo !== 'object') return null
   const name = readString((logo as Record<string, unknown>).name)
@@ -107,9 +112,9 @@ const readSelectedBrandLogo = (
   }
 }
 
-const renderGalleryItemStaticHtml = async (
+async function renderGalleryItemStaticHtml(
   item: GalleryApiItem,
-): Promise<GalleryApiItem | null> => {
+): Promise<GalleryApiItem | null> {
   const html = readString(item.html)
   const moduleSource = readString(item.moduleSource)
   const unsafeHtml = isUnsafePublicPreviewHtml(html)
@@ -147,10 +152,10 @@ const renderGalleryItemStaticHtml = async (
   }
 }
 
-export const createGalleryApiResponse = async (
+export async function createGalleryApiResponse(
   request: Request,
   clientOverride?: GalleryConvexClient,
-) => {
+) {
   const url = new URL(request.url)
   const { limit, page, valid } = parseGalleryPagination(
     Object.fromEntries(url.searchParams),

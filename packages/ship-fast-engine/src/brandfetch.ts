@@ -2,10 +2,10 @@ import { writeFile } from './pipeline/workspace'
 
 const DEFAULT_TIMEOUT_MS = 6000
 
-const withTimeout = async (
+async function withTimeout(
   promise: (signal: AbortSignal) => Promise<any>,
   timeoutMs = DEFAULT_TIMEOUT_MS,
-) => {
+) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -15,7 +15,7 @@ const withTimeout = async (
   }
 }
 
-const safeJson = async (res: Response) => {
+async function safeJson(res: Response) {
   try {
     return await res.json()
   } catch {
@@ -34,8 +34,9 @@ const getBrandfetchHeaders = () => {
   }
 }
 
-const toStringValue = (value: unknown): string =>
-  value == null ? '' : String(value).trim()
+function toStringValue(value: unknown): string {
+  return value == null ? '' : String(value).trim()
+}
 
 const escapeXmlForSvg = (value = '') =>
   String(value)
@@ -45,7 +46,7 @@ const escapeXmlForSvg = (value = '') =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
 
-const sniffDownloadedAsset = (buf: Buffer) => {
+function sniffDownloadedAsset(buf: Buffer) {
   if (!buf || buf.length < 4) return ''
   if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47)
     return 'png'
@@ -82,7 +83,7 @@ const fallbackSvgFromLabel = (label = 'Brand') => {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 56" role="img"><text x="12" y="38" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="22" fill="#0f172a">${t}</text></svg>`
 }
 
-const pickLargestLogo = (logos: any[] = []) => {
+function pickLargestLogo(logos: any[] = []) {
   const flat: { src: string; type: string; width: number; height: number }[] =
     []
   for (const entry of logos || []) {
@@ -98,12 +99,7 @@ const pickLargestLogo = (logos: any[] = []) => {
       flat.push({ src, type, width, height })
     }
   }
-  const score = (item: {
-    src: string
-    type: string
-    width: number
-    height: number
-  }) => {
+  const score = (item) => {
     const isSvg = /svg/i.test(item.type) || /\.svg(\?|#|$)/i.test(item.src)
     const area = Math.max(1, item.width || 0) * Math.max(1, item.height || 0)
     return (isSvg ? 10_000_000_000 : 0) + area
@@ -112,11 +108,11 @@ const pickLargestLogo = (logos: any[] = []) => {
   return flat[0] || null
 }
 
-export const materializeBrandfetchLogoToWorkspace = async (
+export async function materializeBrandfetchLogoToWorkspace(
   workspace: string,
   logo: any,
   { timeoutMs = 14_000 } = {},
-) => {
+) {
   if (!logo || logo.kind !== 'remote' || !logo.src) return logo
   if (String(logo.provider || '').toLowerCase() !== 'brandfetch') return logo
 
@@ -209,11 +205,11 @@ export const materializeBrandfetchLogoToWorkspace = async (
   }
 }
 
-export const brandfetchSearch = async ({
+export async function brandfetchSearch({
   query,
   limit = 1,
   timeoutMs = DEFAULT_TIMEOUT_MS,
-}: { query?: string; limit?: number; timeoutMs?: number } = {}) => {
+}: { query?: string; limit?: number; timeoutMs?: number } = {}) {
   const q = toStringValue(query)
   if (!q) return { ok: false, status: 400, error: 'Missing query.' }
 
@@ -225,7 +221,7 @@ export const brandfetchSearch = async ({
     String(Math.max(1, Math.min(5, Number(limit) || 1))),
   )
 
-  return withTimeout(async (signal: AbortSignal) => {
+  return withTimeout(async (signal) => {
     const res = await fetch(url.toString(), {
       method: 'GET',
       headers: getBrandfetchHeaders(),
@@ -249,17 +245,17 @@ export const brandfetchSearch = async ({
   }, timeoutMs)
 }
 
-export const brandfetchBrandByDomain = async ({
+export async function brandfetchBrandByDomain({
   domain,
   timeoutMs = DEFAULT_TIMEOUT_MS,
-}: { domain?: string; timeoutMs?: number } = {}) => {
+}: { domain?: string; timeoutMs?: number } = {}) {
   const d = toStringValue(domain)
     .replace(/^https?:\/\//i, '')
     .replace(/\/.*$/, '')
   if (!d) return { ok: false, status: 400, error: 'Missing domain.' }
 
   const url = `https://api.brandfetch.io/v2/brands/domain/${encodeURIComponent(d)}`
-  return withTimeout(async (signal: AbortSignal) => {
+  return withTimeout(async (signal) => {
     const res = await fetch(url, {
       method: 'GET',
       headers: getBrandfetchHeaders(),
@@ -283,33 +279,25 @@ export const brandfetchBrandByDomain = async ({
   }, timeoutMs)
 }
 
-const normalizePalette = (data: any) => {
+function normalizePalette(data: any) {
   const colors = Array.isArray(data?.colors) ? data.colors : []
   const primary =
-    colors.find(
-      (c: any) => String(c?.type || '').toLowerCase() === 'primary',
-    ) ||
-    colors.find(
-      (c: any) => String(c?.role || '').toLowerCase() === 'primary',
-    ) ||
+    colors.find((c) => String(c?.type || '').toLowerCase() === 'primary') ||
+    colors.find((c) => String(c?.role || '').toLowerCase() === 'primary') ||
     colors[0] ||
     null
   const secondary =
-    colors.find(
-      (c: any) => String(c?.type || '').toLowerCase() === 'secondary',
-    ) ||
-    colors.find(
-      (c: any) => String(c?.role || '').toLowerCase() === 'secondary',
-    ) ||
+    colors.find((c) => String(c?.type || '').toLowerCase() === 'secondary') ||
+    colors.find((c) => String(c?.role || '').toLowerCase() === 'secondary') ||
     colors[1] ||
     null
   const accent =
-    colors.find((c: any) => String(c?.type || '').toLowerCase() === 'accent') ||
-    colors.find((c: any) => String(c?.role || '').toLowerCase() === 'accent') ||
+    colors.find((c) => String(c?.type || '').toLowerCase() === 'accent') ||
+    colors.find((c) => String(c?.role || '').toLowerCase() === 'accent') ||
     colors[2] ||
     null
 
-  const toHex = (c: any): string => {
+  const toHex = (c) => {
     const h = toStringValue(c?.hex || c?.value || c?.color || '')
     return /^#[0-9a-f]{6}$/i.test(h) ? h : ''
   }
@@ -322,13 +310,13 @@ const normalizePalette = (data: any) => {
   return { ok, palette: out }
 }
 
-export const resolveBrandfetchBrandProfile = async ({
+export async function resolveBrandfetchBrandProfile({
   query,
   timeoutMs = DEFAULT_TIMEOUT_MS,
 }: {
   query?: string
   timeoutMs?: number
-} = {}) => {
+} = {}) {
   const search = await brandfetchSearch({ query, limit: 1, timeoutMs })
   if (!search.ok)
     return {

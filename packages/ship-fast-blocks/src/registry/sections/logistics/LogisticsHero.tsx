@@ -105,7 +105,7 @@ export const LogisticsHero = defineCapsule({
     useSyncShipmentCatalog(lakebed, shipments)
     const trackingIdValue = tracking.state?.trackingId ?? ''
     const shipment = tracking.state?.shipment
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={cn('size-5 shrink-0', className)}
         viewBox="0 0 24 24"

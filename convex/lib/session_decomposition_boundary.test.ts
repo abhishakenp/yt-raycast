@@ -26,10 +26,10 @@ afterEach(async () => {
   }
 })
 
-const createReadySession = async (
+async function createReadySession(
   t: ReturnType<typeof sessionBoundaryConvexTest>,
   prompt = 'Boundary test session',
-) => {
+) {
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',

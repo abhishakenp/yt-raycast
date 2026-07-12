@@ -19,28 +19,27 @@ const homeModuleId = 'section_edit_home' as Id<'generatedModules'>
 const previewId = 'section_edit_preview' as Id<'previews'>
 
 const indexHelper = {
-  eq: (_field: string, _value: unknown) => indexHelper,
+  eq: (_field, _value) => indexHelper,
 }
 
-const chainFor = (rows: Row[]) => ({
-  withIndex: (
-    _indexName: string,
-    _applyIndex: (index: typeof indexHelper) => typeof indexHelper,
-  ) => chainFor(rows),
-  order: (direction: 'asc' | 'desc') =>
-    chainFor(
-      [...rows].sort((left, right) => {
-        const leftVersion = Number(left.version ?? 0)
-        const rightVersion = Number(right.version ?? 0)
-        return direction === 'desc'
-          ? rightVersion - leftVersion
-          : leftVersion - rightVersion
-      }),
-    ),
-  first: async () => rows[0] ?? null,
-  unique: async () => rows[0] ?? null,
-  collect: async () => rows,
-})
+function chainFor(rows: Row[]) {
+  return {
+    withIndex: (_indexName, _applyIndex) => chainFor(rows),
+    order: (direction) =>
+      chainFor(
+        [...rows].sort((left, right) => {
+          const leftVersion = Number(left.version ?? 0)
+          const rightVersion = Number(right.version ?? 0)
+          return direction === 'desc'
+            ? rightVersion - leftVersion
+            : leftVersion - rightVersion
+        }),
+      ),
+    first: async () => rows[0] ?? null,
+    unique: async () => rows[0] ?? null,
+    collect: async () => rows,
+  }
+}
 
 const mutationCtxFor = async () => {
   process.env.DISABLE_PAYWALL = 'false'
@@ -94,12 +93,12 @@ const mutationCtxFor = async () => {
       getUserIdentity: async () => null,
     },
     db: {
-      get: async (id: string) => (id === sessionId ? session : null),
-      insert: async (table: TableName, value: Row) => {
+      get: async (id) => (id === sessionId ? session : null),
+      insert: async (table, value) => {
         rows[table].push(value)
         return `${table}_${rows[table].length}`
       },
-      patch: async (id: string, value: Row) => {
+      patch: async (id, value) => {
         patches.push({ id, value })
         for (const tableRows of Object.values(rows)) {
           const row = tableRows.find((candidate) => candidate._id === id)
@@ -107,7 +106,7 @@ const mutationCtxFor = async () => {
         }
         if (id === sessionId) Object.assign(session, value)
       },
-      query: (table: TableName) => chainFor(rows[table]),
+      query: (table) => chainFor(rows[table]),
     },
   } as unknown as MutationCtx
 

@@ -36,7 +36,7 @@ export function SearchIndexFilterEditor({
 
   // Handle changes to the filter's enabled state
   const handleEnabledChange = useCallback(
-    (event: React.SyntheticEvent<HTMLInputElement>) => {
+    (event) => {
       const enabled = (event.target as HTMLInputElement).checked
 
       onChange({ ...filter, enabled }, idx)
@@ -46,7 +46,7 @@ export function SearchIndexFilterEditor({
 
   // Handle changes to the filter's value
   const handleValueChange = useCallback(
-    (value?: Value) => {
+    (value?) => {
       onChange(
         {
           ...filter,
@@ -60,7 +60,7 @@ export function SearchIndexFilterEditor({
 
   // Handle date change for _creationTime
   const handleDateChange = useCallback(
-    (date: Date) => {
+    (date) => {
       const timestamp = date.getTime()
       onChange({ ...filter, value: timestamp }, idx)
     },
@@ -69,14 +69,14 @@ export function SearchIndexFilterEditor({
 
   // Handle errors from ObjectEditor
   const handleError = useCallback(
-    (newErrors: string[]) => {
+    (newErrors) => {
       onError(idx, newErrors)
     },
     [idx, onError],
   )
 
   // Helper to get timestamp value or default to current time
-  const getTimestampValue = (value: any): Date => {
+  const getTimestampValue = (value) => {
     if (typeof value === 'number') {
       return new Date(value)
     }

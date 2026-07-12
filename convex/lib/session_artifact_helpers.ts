@@ -7,12 +7,12 @@ type OperationalNotificationReference = Parameters<
   MutationCtx['scheduler']['runAfter']
 >[1]
 
-export const upsertSiteSpec = async (
+export async function upsertSiteSpec(
   ctx: Pick<MutationCtx, 'db'>,
   sessionId: Id<'sessions'>,
   specJson: string | undefined,
   now: number,
-) => {
+) {
   if (specJson === undefined) return
 
   const existingSpec = await ctx.db
@@ -33,12 +33,12 @@ export const upsertSiteSpec = async (
       })
 }
 
-export const upsertHomeGeneratedModule = async (
+export async function upsertHomeGeneratedModule(
   ctx: Pick<MutationCtx, 'db'>,
   sessionId: Id<'sessions'>,
   source: string | undefined,
   now: number,
-) => {
+) {
   if (source === undefined) return
 
   const existingModule = await ctx.db
@@ -64,7 +64,7 @@ export const upsertHomeGeneratedModule = async (
       })
 }
 
-export const cloneCachedGeneratedArtifacts = async (
+export async function cloneCachedGeneratedArtifacts(
   ctx: Pick<MutationCtx, 'db' | 'scheduler'>,
   args: {
     cachedSession: Doc<'sessions'>
@@ -74,7 +74,7 @@ export const cloneCachedGeneratedArtifacts = async (
     now: number
     sendOperationalNotification: OperationalNotificationReference
   },
-): Promise<boolean> => {
+): Promise<boolean> {
   const latestPreview = await ctx.db
     .query('previews')
     .withIndex('by_sessionId_version', (index) =>

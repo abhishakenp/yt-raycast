@@ -272,7 +272,7 @@ describe('image hints media hydration', () => {
     process.env.UNSPLASH_ACCESS_KEY = 'unsplash-test-key'
     vi.resetModules()
 
-    const fetchMock = vi.fn(async (input: URL | string, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (input, init?) => {
       const url = new URL(String(input))
       if (url.hostname === 'api.pexels.com' && url.pathname === '/v1/search') {
         expect(init?.headers).toEqual({ Authorization: 'pexels-test-key' })

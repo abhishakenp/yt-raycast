@@ -38,7 +38,7 @@ export const KnowledgeBaseSupportCta = defineCapsule({
       props.note ??
       'Average response time: Under 2 hours for email, Instant for live chat'
 
-    const ChatIcon = ({ className }: { className?: string }) => (
+    const ChatIcon = ({ className }) => (
       <svg
         className={className}
         width="20"
@@ -55,7 +55,7 @@ export const KnowledgeBaseSupportCta = defineCapsule({
       </svg>
     )
 
-    const MailIcon = ({ className }: { className?: string }) => (
+    const MailIcon = ({ className }) => (
       <svg
         className={className}
         width="20"

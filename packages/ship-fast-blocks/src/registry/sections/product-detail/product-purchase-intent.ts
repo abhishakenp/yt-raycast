@@ -3,7 +3,7 @@ const purchaseIntent =
 const nonCartAddIntent = /\b(?:favorite|favourite|save|wishlist)\b/i
 const cartContainerIntent = /\badd\s+(?:to\s+)?(?:bag|basket|cart)\b/i
 
-export const isProductPurchaseIntent = (label: string): boolean => {
+export function isProductPurchaseIntent(label: string): boolean {
   const trimmed = label.trim()
   if (!trimmed) return false
   if (cartContainerIntent.test(trimmed)) return true

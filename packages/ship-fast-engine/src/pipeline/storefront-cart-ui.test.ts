@@ -32,9 +32,13 @@ const themedStorefrontHtml = `<!doctype html>
   </body>
 </html>`
 
-const injectedStyle = (html: string) =>
-  html.match(/<style id="sf-storefront-cart-style">([\s\S]*?)<\/style>/)?.[1] ??
-  ''
+function injectedStyle(html: string) {
+  return (
+    html.match(
+      /<style id="sf-storefront-cart-style">([\s\S]*?)<\/style>/,
+    )?.[1] ?? ''
+  )
+}
 
 describe('storefront cart UI injection', () => {
   it('injects a cart drawer that inherits generated theme tokens', () => {
@@ -64,20 +68,18 @@ describe('storefront cart UI injection', () => {
     })
     const runtimeErrors: unknown[] = []
     const virtualConsole = new VirtualConsole()
-    virtualConsole.on('jsdomError', (error: unknown) =>
-      runtimeErrors.push(error),
-    )
+    virtualConsole.on('jsdomError', (error) => runtimeErrors.push(error))
 
     const dom = new JSDOM(html, {
       beforeParse(window: any) {
-        window.requestAnimationFrame = (callback: (time: number) => void) => {
+        window.requestAnimationFrame = (callback) => {
           callback(0)
           return 0
         }
-        window.addEventListener('error', (event: ErrorEvent) => {
+        window.addEventListener('error', (event) => {
           runtimeErrors.push(event.error || event.message)
         })
-        window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+        window.fetch = async (input, init?) => {
           const url = String(input)
           if (url.endsWith('/config')) {
             return new Response(JSON.stringify({ enabled: true }))

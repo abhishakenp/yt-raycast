@@ -80,7 +80,7 @@ export const MentalHealthFooter = defineCapsule({
       `© ${new Date().getFullYear()} ${brand} Therapy, LLC. All rights reserved.`
     const license = props.license ?? 'Licensed in Oregon • HIPAA Compliant'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         className={className}
         fill="none"
@@ -97,7 +97,7 @@ export const MentalHealthFooter = defineCapsule({
       </svg>
     )
 
-    const Phone = ({ className }: { className?: string }) => (
+    const Phone = ({ className }) => (
       <svg
         className={className}
         fill="none"

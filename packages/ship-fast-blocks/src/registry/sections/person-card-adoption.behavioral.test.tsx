@@ -27,10 +27,11 @@ const { BlogPostAuthors } = await import('./blog-post/BlogPostAuthors.tsx')
 
 afterEach(cleanup)
 
-const cards = (root: HTMLElement) =>
-  Array.from(root.querySelectorAll('[data-slot="person-card"]'))
+function cards(root: HTMLElement) {
+  return Array.from(root.querySelectorAll('[data-slot="person-card"]'))
+}
 
-const firstCard = (root: HTMLElement) => {
+function firstCard(root: HTMLElement) {
   const el = cards(root)[0]
   if (!el) throw new Error('no person-card rendered')
   return el

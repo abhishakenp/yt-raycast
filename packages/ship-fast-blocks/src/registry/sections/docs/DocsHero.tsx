@@ -193,12 +193,7 @@ export const DocsHero = defineCapsule({
     }> = catalog.length ? catalog : articles
     const queryValue = docsSearch.state?.query ?? ''
     const activeQuery = queryValue.toLowerCase()
-    const matchesQuery = (article: {
-      title: string
-      slug: string
-      category: string
-      content: string
-    }) => {
+    const matchesQuery = (article) => {
       const haystack = [
         article.title,
         article.slug,

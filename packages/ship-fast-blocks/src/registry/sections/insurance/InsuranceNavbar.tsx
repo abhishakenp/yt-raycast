@@ -41,7 +41,7 @@ export const InsuranceNavbar = defineCapsule({
     const phone = props.phone ?? '1-800-555-0199'
     const ctaLabel = props.ctaLabel ?? 'Get a Quote'
 
-    const Shield = ({ className }: { className?: string }) => (
+    const Shield = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',
@@ -64,7 +64,7 @@ export const InsuranceNavbar = defineCapsule({
       </span>
     )
 
-    const Phone = ({ className }: { className?: string }) => (
+    const Phone = ({ className }) => (
       <svg
         className={className}
         width="20"

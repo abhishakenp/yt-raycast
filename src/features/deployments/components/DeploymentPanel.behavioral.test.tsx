@@ -59,14 +59,14 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('convex/react', () => ({
-  useMutation: (ref: unknown) => {
+  useMutation: (ref) => {
     if (ref === convexState.refs.publishPreview)
       return convexState.publishPreview
     if (ref === convexState.refs.ensureArtifact)
       return convexState.ensureExportArtifact
     throw new Error(`useMutation: unknown ref ${String(ref)}`)
   },
-  useQuery: (ref: unknown) => {
+  useQuery: (ref) => {
     if (ref === convexState.refs.getExportTargets)
       return convexState.exportTargets
     if (ref === convexState.refs.getDeploymentStatus)
@@ -75,14 +75,11 @@ vi.mock('convex/react', () => ({
   },
 }))
 
-const setExportTargets = (
-  targets: MockDeploymentTarget[],
-  isPrivate = false,
-) => {
+function setExportTargets(targets: MockDeploymentTarget[], isPrivate = false) {
   convexState.exportTargets = { isPrivate, targets }
 }
 
-const setDeploymentStatus = (status: MockDeploymentStatus | null) => {
+function setDeploymentStatus(status: MockDeploymentStatus | null) {
   convexState.deploymentStatus = status
 }
 
@@ -90,9 +87,9 @@ const installLocalStorage = () => {
   const values = new Map<string, string>()
   const storage = {
     clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    removeItem: vi.fn((key: string) => values.delete(key)),
-    setItem: vi.fn((key: string, value: string) => {
+    getItem: vi.fn((key) => values.get(key) ?? null),
+    removeItem: vi.fn((key) => values.delete(key)),
+    setItem: vi.fn((key, value) => {
       values.set(key, value)
     }),
   }
@@ -103,8 +100,9 @@ const installLocalStorage = () => {
   vi.stubGlobal('localStorage', storage)
 }
 
-const lakebedJsonResponse = (url: string) =>
-  vi.fn(async () => Response.json({ url }))
+function lakebedJsonResponse(url: string) {
+  return vi.fn(async () => Response.json({ url }))
+}
 
 describe('DeploymentPanel (behavioral)', () => {
   beforeEach(() => {

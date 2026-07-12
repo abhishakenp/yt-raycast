@@ -158,7 +158,7 @@ function DataRowLoaded({ index, style, data }: DataRowProps) {
   // Context menu trigger for the checkbox cell
   const checkboxRef = useRef<HTMLLabelElement | null>(null)
   const contextMenuCallback = useCallback(
-    (position: Target) => onOpenContextMenu(position, _id, null),
+    (position) => onOpenContextMenu(position, _id, null),
     [onOpenContextMenu, _id],
   )
   useContextMenuTrigger(checkboxRef, contextMenuCallback, onCloseContextMenu)
@@ -249,9 +249,10 @@ function DataRowLoaded({ index, style, data }: DataRowProps) {
 
 // The goal here is to floor the width of the column to the nearest pixel to avoid
 // sub-pixel rendering issues in the browser.
-export const columnWidthToString = (width?: string | number) =>
-  width
+export function columnWidthToString(width?: string | number) {
+  return width
     ? `${Math.floor(
         typeof width === 'string' ? Number(width.replace('px', '')) : width,
       ).toString()}px`
     : `0px`
+}

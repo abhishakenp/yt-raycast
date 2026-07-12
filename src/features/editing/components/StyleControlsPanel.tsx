@@ -153,14 +153,14 @@ export function StyleControlsPanel({
     onModified?.()
   }
 
-  const applyLiveStyle = (prop: string, value: string) => {
+  const applyLiveStyle = (prop, value) => {
     if (activeElement) {
       activeElement.style.setProperty(prop, value)
       markModified()
     }
   }
 
-  const setPaddingValue = (side: keyof typeof padding, value: string) => {
+  const setPaddingValue = (side, value) => {
     const next = paddingLinked
       ? { top: value, right: value, bottom: value, left: value }
       : { ...padding, [side]: value }
@@ -171,7 +171,7 @@ export function StyleControlsPanel({
     )
   }
 
-  const setPaddingUnitValue = (unit: string) => {
+  const setPaddingUnitValue = (unit) => {
     setPaddingUnit(unit)
     applyLiveStyle(
       'padding',
@@ -179,7 +179,7 @@ export function StyleControlsPanel({
     )
   }
 
-  const setMarginValue = (side: keyof typeof margin, value: string) => {
+  const setMarginValue = (side, value) => {
     const next = marginLinked
       ? { top: value, right: value, bottom: value, left: value }
       : { ...margin, [side]: value }
@@ -190,7 +190,7 @@ export function StyleControlsPanel({
     )
   }
 
-  const setMarginUnitValue = (unit: string) => {
+  const setMarginUnitValue = (unit) => {
     setMarginUnit(unit)
     applyLiveStyle(
       'margin',
@@ -198,22 +198,22 @@ export function StyleControlsPanel({
     )
   }
 
-  const setBorderWidthUnitValue = (unit: string) => {
+  const setBorderWidthUnitValue = (unit) => {
     setBorderWidthUnit(unit)
     applyLiveStyle('border-width', `${borderWidth}${unit}`)
   }
 
-  const setBorderRadiusUnitValue = (unit: string) => {
+  const setBorderRadiusUnitValue = (unit) => {
     setBorderRadiusUnit(unit)
     applyLiveStyle('border-radius', `${borderRadius}${unit}`)
   }
 
-  const setWidthUnitValue = (unit: string) => {
+  const setWidthUnitValue = (unit) => {
     setWidthUnit(unit)
     applyLiveStyle('width', formatDimensionValue(width, unit))
   }
 
-  const setHeightUnitValue = (unit: string) => {
+  const setHeightUnitValue = (unit) => {
     setHeightUnit(unit)
     applyLiveStyle('height', formatDimensionValue(height, unit))
   }

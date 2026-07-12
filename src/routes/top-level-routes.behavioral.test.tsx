@@ -16,11 +16,11 @@ const routeParamMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
-  getRouteApi: (path: string) => ({
+  createFileRoute: (path) => (options) => ({ options, path }),
+  getRouteApi: (path) => ({
     useParams: () => routeParamMocks.paramsByPath[path] ?? {},
   }),
-  lazyRouteComponent: (_importer: unknown, exportName: string) => {
+  lazyRouteComponent: (_importer, exportName) => {
     const LazyRouteComponent = () => (
       <div data-testid="lazy-route">{exportName}</div>
     )
@@ -57,13 +57,7 @@ vi.mock('@/features/referrals/components/ReferralDashboard', () => ({
 }))
 
 vi.mock('@/features/dashboard/components/Dashboard', () => ({
-  Dashboard: ({
-    initialAdminView,
-    sessionId,
-  }: {
-    initialAdminView?: boolean
-    sessionId: string
-  }) => (
+  Dashboard: ({ initialAdminView, sessionId }) => (
     <section
       data-admin={initialAdminView === true ? 'true' : 'false'}
       data-testid="dashboard-route"
@@ -97,7 +91,7 @@ type RouteWithHandlers = {
   }
 }
 
-const importRoute = async (path: string): Promise<RouteWithHandlers> => {
+async function importRoute(path: string): Promise<RouteWithHandlers> {
   const mod = await import(path)
   return mod.Route as unknown as RouteWithHandlers
 }

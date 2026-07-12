@@ -67,8 +67,11 @@ const anonymousClerk: OptionalClerk = {
 
 export const openSignInEventName = 'ship-fast:open-sign-in'
 
-const getClerk = (): ClerkGlobal | undefined =>
-  typeof window === 'undefined' ? undefined : (window as ClerkWindow).Clerk
+function getClerk(): ClerkGlobal | undefined {
+  return typeof window === 'undefined'
+    ? undefined
+    : (window as ClerkWindow).Clerk
+}
 
 const readClerkSnapshot = () => {
   const clerk = getClerk()
@@ -79,14 +82,14 @@ const readClerkSnapshot = () => {
   }
 }
 
-const isMissingJwtTemplateError = (error: unknown): boolean => {
+function isMissingJwtTemplateError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error)
   return /No JWT template exists with name/i.test(message)
 }
 
-const getOptionalToken = async (
+async function getOptionalToken(
   options?: ClerkTokenOptions,
-): Promise<string | null> => {
+): Promise<string | null> {
   const session = getClerk()?.session
   if (typeof session?.getToken !== 'function') return null
 
@@ -98,7 +101,7 @@ const getOptionalToken = async (
   }
 }
 
-export const requestClerkSignIn = (): void => {
+export function requestClerkSignIn(): void {
   if (!isClerkConfigured || typeof window === 'undefined') return
 
   const clerk = getClerk()
@@ -110,7 +113,7 @@ export const requestClerkSignIn = (): void => {
   window.dispatchEvent(new CustomEvent(openSignInEventName))
 }
 
-const requestClerkUserProfile = (): void => {
+function requestClerkUserProfile(): void {
   if (!isClerkConfigured) return
 
   const clerk = getClerk()
@@ -167,7 +170,7 @@ const useClerkSnapshot = () => {
 }
 
 /** Anonymous routes must not import Clerk React hooks until sign-in is explicit. */
-export const useOptionalAuth = (): OptionalAuth => {
+export function useOptionalAuth(): OptionalAuth {
   const snapshot = useClerkSnapshot()
 
   return useMemo(
@@ -183,7 +186,7 @@ export const useOptionalAuth = (): OptionalAuth => {
   )
 }
 
-export const useOptionalClerk = (): OptionalClerk => {
+export function useOptionalClerk(): OptionalClerk {
   const snapshot = useClerkSnapshot()
 
   return useMemo(

@@ -55,7 +55,7 @@ export const FilmDirectorHero = defineCapsule({
           { value: '14', label: 'Industry Awards' },
         ]
 
-    const PlayIcon = ({ className }: { className?: string }) => (
+    const PlayIcon = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

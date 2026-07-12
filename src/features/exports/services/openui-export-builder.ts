@@ -114,30 +114,34 @@ const forbiddenExportTokens = [
   'data-tsd-source',
 ] as const
 
-const toProjectSlug = (value: string): string =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60) || 'ship-fast-export'
+function toProjectSlug(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'ship-fast-export'
+  )
+}
 
-const toIdentifier = (value: string): string =>
-  value.replace(/[^A-Za-z0-9_$]/g, '_').replace(/^[^A-Za-z_$]/, '_$&')
+function toIdentifier(value: string): string {
+  return value.replace(/[^A-Za-z0-9_$]/g, '_').replace(/^[^A-Za-z_$]/, '_$&')
+}
 
-const isHtmlDocumentSource = (source: string): boolean => {
+function isHtmlDocumentSource(source: string): boolean {
   const trimmed = source.trim()
   return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
 }
 
-const isHtmlLikeSource = (source: string): boolean => {
+function isHtmlLikeSource(source: string): boolean {
   const trimmed = source.trim()
   return (
     isHtmlDocumentSource(trimmed) || /^<[a-z][\w:-]*(?:\s|>|\/>)/i.test(trimmed)
   )
 }
 
-const readHtmlTitle = (html: string): string | undefined => {
+function readHtmlTitle(html: string): string | undefined {
   const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
   const title = match?.[1]
     ?.replace(/<[^>]+>/g, '')
@@ -146,7 +150,7 @@ const readHtmlTitle = (html: string): string | undefined => {
   return title || undefined
 }
 
-const readHtmlAttribute = (tag: string, name: string): string | null => {
+function readHtmlAttribute(tag: string, name: string): string | null {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const quoted = tag.match(
     new RegExp(`${escaped}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i'),
@@ -157,10 +161,10 @@ const readHtmlAttribute = (tag: string, name: string): string | null => {
   return unquoted?.[1]?.trim() || null
 }
 
-const normalizePreviewImageSource = async (
+async function normalizePreviewImageSource(
   src: string,
   alt: string,
-): Promise<string> => {
+): Promise<string> {
   const resolved = await resolvePreviewImageUrl(src, alt)
   if (resolved) return resolved
 
@@ -175,9 +179,9 @@ const normalizePreviewImageSource = async (
   return src
 }
 
-const extractImageSources = async (
+async function extractImageSources(
   html: string | undefined,
-): Promise<ImageSource[]> => {
+): Promise<ImageSource[]> {
   if (!html) return []
   const byAlt = new Map<string, string>()
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
@@ -196,7 +200,7 @@ const extractImageSources = async (
   return [...byAlt].map(([alt, src]) => ({ alt, src }))
 }
 
-const extractStyleOverrides = (html: string | undefined): StyleOverride[] => {
+function extractStyleOverrides(html: string | undefined): StyleOverride[] {
   if (!html) return []
   const classCounts = new Map<string, number>()
   const overrides: StyleOverride[] = []
@@ -213,9 +217,9 @@ const extractStyleOverrides = (html: string | undefined): StyleOverride[] => {
   return overrides
 }
 
-const parseSiteSpec = (
+function parseSiteSpec(
   siteSpecJson: string | undefined,
-): Record<string, unknown> => {
+): Record<string, unknown> {
   if (!siteSpecJson) return {}
   try {
     const parsed = JSON.parse(siteSpecJson) as unknown
@@ -227,10 +231,10 @@ const parseSiteSpec = (
   }
 }
 
-const readProjectName = (
+function readProjectName(
   siteSpec: Record<string, unknown>,
   fallback: string,
-): string => {
+): string {
   const candidates = [
     siteSpec.projectName,
     siteSpec.brand,
@@ -243,10 +247,10 @@ const readProjectName = (
   return match?.trim() || fallback
 }
 
-const readThemeName = (
+function readThemeName(
   siteSpec: Record<string, unknown>,
   requestedThemeName?: string,
-): string | undefined => {
+): string | undefined {
   if (requestedThemeName) return requestedThemeName
   const theme = siteSpec.themeName ?? siteSpec.genuiTheme ?? siteSpec.theme
   return typeof theme === 'string' ? theme : undefined
@@ -299,10 +303,7 @@ const themeVarKeys = [
   'spacing',
 ] as const
 
-const buildThemeStyle = (
-  styles: ThemeStyles | null,
-  isDark: boolean,
-): string => {
+function buildThemeStyle(styles: ThemeStyles | null, isDark: boolean): string {
   if (!styles) return ''
   const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
   return themeVarKeys
@@ -314,7 +315,7 @@ const buildThemeStyle = (
     .join(' ')
 }
 
-const buildTailwindThemeStyle = (styles: ThemeStyles | null): string => {
+function buildTailwindThemeStyle(styles: ThemeStyles | null): string {
   if (!styles) return ''
   const merged = { ...styles.light, ...styles.dark }
   const declarations = themeVarKeys
@@ -342,7 +343,7 @@ const buildTailwindThemeStyle = (styles: ThemeStyles | null): string => {
   return declarations
 }
 
-const assertNoOpenUIInternals = (files: Record<string, string>): void => {
+function assertNoOpenUIInternals(files: Record<string, string>): void {
   for (const [name, content] of Object.entries(files)) {
     for (const token of forbiddenExportTokens) {
       if (name.includes(token) || content.includes(token)) {
@@ -352,18 +353,21 @@ const assertNoOpenUIInternals = (files: Record<string, string>): void => {
   }
 }
 
-const slugifyRoute = (value: string): string =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'page'
+function slugifyRoute(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'page'
+  )
+}
 
-const uniqueRoutePath = (
+function uniqueRoutePath(
   label: string,
   index: number,
   used: Set<string>,
-): string => {
+): string {
   if (index === 0) {
     used.add('/')
     return '/'
@@ -379,7 +383,7 @@ const uniqueRoutePath = (
   return path
 }
 
-const readPublicPackageName = (specifier: string): string | null => {
+function readPublicPackageName(specifier: string): string | null {
   if (
     specifier.startsWith('.') ||
     specifier.startsWith('@/') ||
@@ -393,23 +397,26 @@ const readPublicPackageName = (specifier: string): string | null => {
   return specifier.split('/')[0] ?? null
 }
 
-const stripTsExtension = (value: string): string =>
-  value.replace(/\.(?:tsx?|jsx?)$/, '')
+function stripTsExtension(value: string): string {
+  return value.replace(/\.(?:tsx?|jsx?)$/, '')
+}
 
-const toPosixPath = (value: string): string => value.replaceAll('\\', '/')
+function toPosixPath(value: string): string {
+  return value.replaceAll('\\', '/')
+}
 
-const relativeImportPath = (fromFile: string, toFile: string): string => {
+function relativeImportPath(fromFile: string, toFile: string): string {
   let path = toPosixPath(relative(dirname(fromFile), toFile))
   if (!path.startsWith('.')) path = `./${path}`
   return stripTsExtension(path)
 }
 
-const blockAliasSourcePath = (moduleName: string): string | null => {
+function blockAliasSourcePath(moduleName: string): string | null {
   if (!moduleName.startsWith('#/')) return null
   return resolveBlockSourceManifestPath(`src/${moduleName.slice(2)}`)
 }
 
-const exportedBlockSourceOutPath = (sourcePath: string): string => {
+function exportedBlockSourceOutPath(sourcePath: string): string {
   if (sourcePath === 'src/lib/utils.ts') return 'src/lib/cn.ts'
   if (sourcePath === 'src/lib/img.tsx') return 'src/lib/image.tsx'
   if (sourcePath.startsWith('src/components/')) return sourcePath
@@ -425,23 +432,25 @@ const exportedBlockSourceOutPath = (sourcePath: string): string => {
   throw new Error(`Unsupported block dependency source path: ${sourcePath}`)
 }
 
-const sourceFileScriptKind = (sourcePath: string): ts.ScriptKind => {
+function sourceFileScriptKind(sourcePath: string): ts.ScriptKind {
   if (sourcePath.endsWith('.tsx')) return ts.ScriptKind.TSX
   if (sourcePath.endsWith('.jsx')) return ts.ScriptKind.JSX
   if (sourcePath.endsWith('.js')) return ts.ScriptKind.JS
   return ts.ScriptKind.TS
 }
 
-const shouldTransformSourceImports = (sourcePath: string): boolean =>
-  /\.(tsx?|jsx?)$/.test(sourcePath)
+function shouldTransformSourceImports(sourcePath: string): boolean {
+  return /\.(tsx?|jsx?)$/.test(sourcePath)
+}
 
-const normalizeRouteTarget = (value: string): string =>
-  value.trim().toLowerCase()
+function normalizeRouteTarget(value: string): string {
+  return value.trim().toLowerCase()
+}
 
-const resolveMappedRouteTarget = (
+function resolveMappedRouteTarget(
   target: string,
   routes: ExportRoute[],
-): string | null => {
+): string | null {
   const [pageLabel, sectionId] = target.split('#')
   const exact = routes.find(
     (route) =>
@@ -452,11 +461,11 @@ const resolveMappedRouteTarget = (
   return sectionId ? `${exact.path}#${sectionId}` : exact.path
 }
 
-const resolveRouteTarget = (
+function resolveRouteTarget(
   target: string,
   routes: ExportRoute[],
   sourceTargetMap: Record<string, string>,
-): string | null => {
+): string | null {
   const normalized = normalizeRouteTarget(target)
   const mapped = sourceTargetMap[target] ?? sourceTargetMap[normalized]
   if (mapped) return resolveMappedRouteTarget(mapped, routes)
@@ -466,7 +475,7 @@ const resolveRouteTarget = (
   )
   if (exact) return exact.path
 
-  const find = (pattern: RegExp) =>
+  const find = (pattern) =>
     routes.find((route) => pattern.test(normalizeRouteTarget(route.label)))
   const byKeyword =
     (/shop|store|product|buy|cart|order|browse|collection/.test(normalized) &&
@@ -493,12 +502,12 @@ const resolveRouteTarget = (
 const navigationKeyPattern =
   /(^|_|\b)(nav|cta|link|links|href|route|routes|action|button|buttons|primary|secondary|submit|phone|email|legal)(\b|_|$)/i
 
-const collectNavigationStrings = (
+function collectNavigationStrings(
   value: unknown,
   values = new Set<string>(),
   navigationContext = false,
   key = '',
-): Set<string> => {
+): Set<string> {
   const nextNavigationContext =
     navigationContext || navigationKeyPattern.test(key)
   if (typeof value === 'string') {
@@ -518,10 +527,10 @@ const collectNavigationStrings = (
   return values
 }
 
-const buildRouteTargetMap = (
+function buildRouteTargetMap(
   routes: ExportRoute[],
   sourceTargetMap: Record<string, string>,
-): Record<string, string> => {
+): Record<string, string> {
   const targets = new Set<string>()
   for (const route of routes) {
     targets.add(route.label)
@@ -541,7 +550,7 @@ const buildRouteTargetMap = (
   )
 }
 
-const walkRegistryFiles = (dir: string, files: string[] = []): string[] => {
+function walkRegistryFiles(dir: string, files: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
@@ -559,13 +568,14 @@ let manifestSourceIndex: Record<
 > | null = null
 let componentSourceIndex: Map<string, ReactExportSourceEntry> | null = null
 
-export const isExportableComponentFactory = (expression: string): boolean =>
-  expression === 'defineCapsule'
+export function isExportableComponentFactory(expression: string): boolean {
+  return expression === 'defineCapsule'
+}
 
-const getManifestSourceIndex = (): Record<
+function getManifestSourceIndex(): Record<
   string,
   ReactExportSourceEntry | undefined
-> => {
+> {
   if (manifestSourceIndex) return manifestSourceIndex
   if (reactExportSourcesEncoding !== 'br+base64') {
     throw new Error(
@@ -582,7 +592,7 @@ const getManifestSourceIndex = (): Record<
   return manifestSourceIndex
 }
 
-const getComponentSourceIndex = (): Map<string, ReactExportSourceEntry> => {
+function getComponentSourceIndex(): Map<string, ReactExportSourceEntry> {
   if (componentSourceIndex) return componentSourceIndex
   const index = new Map<string, ReactExportSourceEntry>()
   for (const [name, entry] of Object.entries(getManifestSourceIndex())) {
@@ -636,20 +646,21 @@ const getComponentSourceIndex = (): Map<string, ReactExportSourceEntry> => {
   return index
 }
 
-const printNode = (node: ts.Node, sourceFile: ts.SourceFile): string =>
-  ts
+function printNode(node: ts.Node, sourceFile: ts.SourceFile): string {
+  return ts
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
     .printNode(ts.EmitHint.Unspecified, node, sourceFile)
+}
 
-const propertyNameText = (name: ts.PropertyName, sourceFile: ts.SourceFile) => {
+function propertyNameText(name: ts.PropertyName, sourceFile: ts.SourceFile) {
   if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text
   return name.getText(sourceFile)
 }
 
-const stringPropertyValue = (
+function stringPropertyValue(
   object: ts.ObjectLiteralExpression,
   name: string,
-): string | null => {
+): string | null {
   const property = object.properties.find(
     (item): item is ts.PropertyAssignment =>
       ts.isPropertyAssignment(item) &&
@@ -663,14 +674,14 @@ const stringPropertyValue = (
     : null
 }
 
-const bindingIdentifierNames = (name: ts.BindingName): string[] => {
+function bindingIdentifierNames(name: ts.BindingName): string[] {
   if (ts.isIdentifier(name)) return [name.text]
   return name.elements.flatMap((element) =>
     ts.isOmittedExpression(element) ? [] : bindingIdentifierNames(element.name),
   )
 }
 
-const topLevelDeclarationNames = (statement: ts.Statement): string[] => {
+function topLevelDeclarationNames(statement: ts.Statement): string[] {
   if (ts.isVariableStatement(statement)) {
     return statement.declarationList.declarations.flatMap((declaration) =>
       bindingIdentifierNames(declaration.name),
@@ -689,9 +700,9 @@ const topLevelDeclarationNames = (statement: ts.Statement): string[] => {
   return []
 }
 
-const collectIdentifierTexts = (node: ts.Node): Set<string> => {
+function collectIdentifierTexts(node: ts.Node): Set<string> {
   const identifiers = new Set<string>()
-  const visit = (current: ts.Node) => {
+  const visit = (current) => {
     if (ts.isIdentifier(current)) identifiers.add(current.text)
     ts.forEachChild(current, visit)
   }
@@ -699,11 +710,11 @@ const collectIdentifierTexts = (node: ts.Node): Set<string> => {
   return identifiers
 }
 
-const collectComponentPreludeSources = (
+function collectComponentPreludeSources(
   sourceFile: ts.SourceFile,
   targetStatement: ts.Statement,
   componentSource: ts.Node,
-): string[] => {
+): string[] {
   const declarationByName = new Map<string, ts.Statement>()
   for (const statement of sourceFile.statements) {
     if (
@@ -740,10 +751,10 @@ const collectComponentPreludeSources = (
     .map((statement) => printNode(statement, sourceFile))
 }
 
-const replaceRanges = (
+function replaceRanges(
   source: string,
   ranges: Array<{ start: number; end: number; text: string }>,
-): string => {
+): string {
   let next = source
   for (const range of ranges.sort((a, b) => b.start - a.start)) {
     next = `${next.slice(0, range.start)}${range.text}${next.slice(range.end)}`
@@ -751,20 +762,21 @@ const replaceRanges = (
   return next
 }
 
-const rewriteImportModule = (
+function rewriteImportModule(
   statement: ts.ImportDeclaration | ts.ExportDeclaration,
   sourceFile: ts.SourceFile,
   moduleName: string,
   nextModuleName: string,
-): string =>
-  statement
+): string {
+  return statement
     .getText(sourceFile)
     .replace(
       new RegExp(`(['"])${escapeRegExp(moduleName)}\\1`),
-      (_match, quote: string) => `${quote}${nextModuleName}${quote}`,
+      (_match, quote) => `${quote}${nextModuleName}${quote}`,
     )
+}
 
-const prependImports = (source: string, imports: string[]): string => {
+function prependImports(source: string, imports: string[]): string {
   const importText = imports.join('\n')
   if (!importText) return source.trimStart()
 
@@ -777,7 +789,7 @@ const prependImports = (source: string, imports: string[]): string => {
   return `${importText}\n${body}`
 }
 
-const ensureReactNodeImport = (imports: string[], source: string): string[] => {
+function ensureReactNodeImport(imports: string[], source: string): string[] {
   if (!/\bReactNode\b/.test(source)) return imports
   if (
     imports.some(
@@ -792,11 +804,11 @@ const ensureReactNodeImport = (imports: string[], source: string): string[] => {
   return [`import type { ReactNode } from 'react'`, ...imports]
 }
 
-const removeImportDeclarations = (
+function removeImportDeclarations(
   source: string,
   sourceFile: ts.SourceFile,
-): string =>
-  replaceRanges(
+): string {
+  return replaceRanges(
     source,
     sourceFile.statements
       .filter(
@@ -811,14 +823,15 @@ const removeImportDeclarations = (
         text: '',
       })),
   )
+}
 
-const transformComponentImports = (
+function transformComponentImports(
   sourceFile: ts.SourceFile,
   componentName: string,
   stack: ExportStack,
   generatedFilePath: string,
   sourcePath?: string,
-): ImportTransformResult => {
+): ImportTransformResult {
   const imports: string[] = []
   const dependencies = new Set<string>()
   const blockSources = new Set<string>()
@@ -969,9 +982,11 @@ const transformComponentImports = (
   return { imports: [...new Set(imports)], dependencies, blockSources }
 }
 
-const unwrapZodCall = (
-  expression: ts.Expression,
-): { expression: ts.Expression; optional: boolean; nullable: boolean } => {
+function unwrapZodCall(expression: ts.Expression): {
+  expression: ts.Expression
+  optional: boolean
+  nullable: boolean
+} {
   let current = expression
   let optional = false
   let nullable = false
@@ -1013,7 +1028,7 @@ const unwrapZodCall = (
   return { expression: current, optional, nullable }
 }
 
-const zodBaseCallName = (expression: ts.Expression): string | null => {
+function zodBaseCallName(expression: ts.Expression): string | null {
   if (!ts.isCallExpression(expression)) return null
   const callee = expression.expression
   if (!ts.isPropertyAccessExpression(callee)) return null
@@ -1023,7 +1038,7 @@ const zodBaseCallName = (expression: ts.Expression): string | null => {
     : null
 }
 
-const renderPropertyName = (name: ts.PropertyName): string | null => {
+function renderPropertyName(name: ts.PropertyName): string | null {
   if (ts.isIdentifier(name)) return name.text
   if (ts.isStringLiteral(name) || ts.isNumericLiteral(name)) {
     return JSON.stringify(name.text)
@@ -1031,11 +1046,11 @@ const renderPropertyName = (name: ts.PropertyName): string | null => {
   return null
 }
 
-const renderZodType = (
+function renderZodType(
   expression: ts.Expression,
   sourceFile: ts.SourceFile,
   depth = 0,
-): string => {
+): string {
   const unwrapped = unwrapZodCall(expression)
   const baseExpression = unwrapped.expression
   const baseName = zodBaseCallName(baseExpression)
@@ -1108,18 +1123,18 @@ const renderZodType = (
   return unwrapped.nullable ? `${rendered} | null` : rendered
 }
 
-const renderPropsType = (
+function renderPropsType(
   componentName: string,
   propsSchema: ts.Expression,
   sourceFile: ts.SourceFile,
-): string => {
+): string {
   const type = renderZodType(propsSchema, sourceFile)
   return type.startsWith('{\n')
     ? `export type ${componentName}Props = ${type}`
     : `export type ${componentName}Props = ${type}`
 }
 
-const findDefineComponentParts = (
+function findDefineComponentParts(
   componentName: string,
   entry: ReactExportSourceEntry,
 ): {
@@ -1128,7 +1143,7 @@ const findDefineComponentParts = (
   preludeSources: string[]
   body: string
   isExpressionBody: boolean
-} => {
+} {
   const sourceFile = ts.createSourceFile(
     entry.file,
     entry.source,
@@ -1202,13 +1217,13 @@ const findDefineComponentParts = (
   throw new Error(`Component source not found for ${componentName}`)
 }
 
-const findComponentLakebedProperty = (
+function findComponentLakebedProperty(
   componentName: string,
   entry: ReactExportSourceEntry,
 ): {
   lakebed: ts.ObjectLiteralExpression
   sourceFile: ts.SourceFile
-} | null => {
+} | null {
   const sourceFile = ts.createSourceFile(
     entry.file,
     entry.source,
@@ -1252,10 +1267,10 @@ const findComponentLakebedProperty = (
   return null
 }
 
-const readLakebedEndpointDefinitions = (
+function readLakebedEndpointDefinitions(
   componentName: string,
   entry: ReactExportSourceEntry,
-): LakebedEndpointDefinition[] => {
+): LakebedEndpointDefinition[] {
   const found = findComponentLakebedProperty(componentName, entry)
   if (!found) return []
   const endpointsProperty = found.lakebed.properties.find(
@@ -1297,11 +1312,11 @@ const readLakebedEndpointDefinitions = (
     )
 }
 
-const sourceEndpointName = (
+function sourceEndpointName(
   method: string,
   path: string,
   index: number,
-): string => {
+): string {
   const slug =
     path.split(/[?#]/)[0]?.split('/').filter(Boolean).join('_') || 'root'
   return `${method.toLowerCase()}_${slug}_${index + 1}`.replace(
@@ -1310,9 +1325,9 @@ const sourceEndpointName = (
   )
 }
 
-const readSourceEndpointDefinitions = (
+function readSourceEndpointDefinitions(
   source: string,
-): LakebedEndpointDefinition[] => {
+): LakebedEndpointDefinition[] {
   const sourceFile = ts.createSourceFile(
     'openui-source.ts',
     source,
@@ -1322,7 +1337,7 @@ const readSourceEndpointDefinitions = (
   )
   const endpoints: LakebedEndpointDefinition[] = []
 
-  const visit = (node: ts.Node) => {
+  const visit = (node) => {
     if (
       ts.isCallExpression(node) &&
       node.expression.getText(sourceFile) === 'endpoint'
@@ -1356,13 +1371,15 @@ const readSourceEndpointDefinitions = (
 const navigationVarPattern =
   /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*useNavigate\(\)/g
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
-const isStringLiteralSource = (value: string): boolean =>
-  /^(['"`])[\s\S]*\1$/.test(value.trim())
+function isStringLiteralSource(value: string): boolean {
+  return /^(['"`])[\s\S]*\1$/.test(value.trim())
+}
 
-const parseStringLiteralSource = (value: string): string | null => {
+function parseStringLiteralSource(value: string): string | null {
   try {
     const parsed = Function(`"use strict"; return (${value});`)() as unknown
     return typeof parsed === 'string' ? parsed : null
@@ -1371,10 +1388,10 @@ const parseStringLiteralSource = (value: string): string | null => {
   }
 }
 
-const renderNavigationArgument = (
+function renderNavigationArgument(
   argument: string,
   routeTargets: Record<string, string>,
-): string => {
+): string {
   const trimmed = argument.trim()
   if (isStringLiteralSource(trimmed)) {
     const literal = parseStringLiteralSource(trimmed)
@@ -1383,11 +1400,11 @@ const renderNavigationArgument = (
   return `routePaths[String(${trimmed})]`
 }
 
-const rewriteNavigationCalls = (
+function rewriteNavigationCalls(
   body: string,
   stack: ExportStack,
   routeTargets: Record<string, string>,
-): { body: string; usesNavigation: boolean } => {
+): { body: string; usesNavigation: boolean } {
   const navigationVars = [...body.matchAll(navigationVarPattern)]
     .map((match) => match[1])
     .filter(Boolean)
@@ -1403,7 +1420,7 @@ const rewriteNavigationCalls = (
       `\\b${escapeRegExp(name)}\\(([^()\\n]+)\\)`,
       'g',
     )
-    nextBody = nextBody.replace(callPattern, (_match, argument: string) => {
+    nextBody = nextBody.replace(callPattern, (_match, argument) => {
       const destination = renderNavigationArgument(argument, routeTargets)
       return stack === 'react'
         ? `${name}(${destination})`
@@ -1414,11 +1431,11 @@ const rewriteNavigationCalls = (
   return { body: nextBody, usesNavigation: true }
 }
 
-const renderTranslatedQuery = (
+function renderTranslatedQuery(
   variableName: string,
   queryName: string,
   fallback?: string,
-) => {
+) {
   const actionName = queryActionName(queryName)
   const defaultValue = fallback ? `(${fallback.trim()})` : `[]`
   return `const { data: ${variableName} = ${defaultValue} } = useQuery({
@@ -1427,7 +1444,7 @@ const renderTranslatedQuery = (
   });`
 }
 
-const invalidationKeysForMutation = (mutationName: string): string[] => {
+function invalidationKeysForMutation(mutationName: string): string[] {
   const exact: Record<string, string[]> = {
     addItem: ['cartSummary', 'productCatalog'],
     clearCart: ['cartSummary', 'productCatalog'],
@@ -1453,21 +1470,19 @@ const invalidationKeysForMutation = (mutationName: string): string[] => {
   return []
 }
 
-const renderInvalidations = (
+function renderInvalidations(
   mutationName: string,
   queryClientName: string,
-): string =>
-  invalidationKeysForMutation(mutationName)
+): string {
+  return invalidationKeysForMutation(mutationName)
     .map(
       (key) =>
         `void ${queryClientName}.invalidateQueries({ queryKey: [${JSON.stringify(key)}] })`,
     )
     .join('\n      ')
+}
 
-const renderTranslatedMutation = (
-  variableName: string,
-  mutationName: string,
-) => {
+function renderTranslatedMutation(variableName: string, mutationName: string) {
   const actionName = mutationActionName(mutationName)
   const queryClientName = `${variableName}QueryClient`
   const mutationStateName = `${variableName}Mutation`
@@ -1485,13 +1500,13 @@ const renderTranslatedMutation = (
   )`
 }
 
-const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
+function translateLakebedRuntimeCalls(body: string, dataKeys: DataKeys) {
   const usesSignIn = /\blakebed\.signInWithGoogle\(\)/.test(body)
   const usesSignOut = /\blakebed\.signOut\(\)/.test(body)
 
   let nextBody = body.replace(
     /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useQuery\(([^;\n]+)\)(\s*\?\?\s*[^;\n]+)?;?/g,
-    (_match, variableName: string, queryName: string, fallback?: string) => {
+    (_match, variableName, queryName, fallback?) => {
       dataKeys.queries.add(queryName.trim().replace(/['"]/g, ''))
       return renderTranslatedQuery(
         variableName,
@@ -1503,7 +1518,7 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
 
   nextBody = nextBody.replace(
     /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useMutation\(([^;\n]+)\);?/g,
-    (_match, variableName: string, mutationName: string) => {
+    (_match, variableName, mutationName) => {
       const cleanName = mutationName.trim().replace(/['"]/g, '')
       dataKeys.mutations.add(cleanName)
       return renderTranslatedMutation(variableName, cleanName)
@@ -1514,7 +1529,7 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
   // e.g. lakebed.useQuery('productCatalog') → useQuery({ queryKey: ['productCatalog'], queryFn: ... })
   nextBody = nextBody.replace(
     /\blakebed\.useQuery\(\s*['"]([^'"]+)['"]\s*\)/g,
-    (_match, queryName: string) => {
+    (_match, queryName) => {
       dataKeys.queries.add(queryName)
       const actionName = queryActionName(queryName)
       return `useQuery({ queryKey: [${JSON.stringify(queryName)}], queryFn: ${actionName} })`
@@ -1524,7 +1539,7 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
   // Translate inline lakebed.useMutation('name') (not assigned to const)
   nextBody = nextBody.replace(
     /\blakebed\.useMutation\(\s*['"]([^'"]+)['"]\s*\)/g,
-    (_match, mutationName: string) => {
+    (_match, mutationName) => {
       dataKeys.mutations.add(mutationName)
       const actionName = mutationActionName(mutationName)
       const invalidations = renderInvalidations(mutationName, 'queryClient')
@@ -1538,7 +1553,7 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
   // Also handle multi-line calls where `lakebed` and `'name'` are on separate lines
   nextBody = nextBody.replace(
     /\buseKeyedLakebedMutation\(\s*lakebed\s*,\s*['"]([^'"]+)['"]\s*[\s\S]*?\)/g,
-    (_match, mutationName: string) => {
+    (_match, mutationName) => {
       dataKeys.mutations.add(mutationName)
       const actionName = mutationActionName(mutationName)
       const invalidationKeys = invalidationKeysForMutation(mutationName).map(
@@ -1551,7 +1566,7 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
   // Translate lakebed.useAuth() → useShooAuth() + adaptShooIdentity
   nextBody = nextBody.replace(
     /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useAuth\(\);?/g,
-    (_match, variableName: string) => {
+    (_match, variableName) => {
       dataKeys.usesAuth = true
       return `const { identity: shooIdentity, signIn, clearIdentity } = useShooAuth()\n  const ${variableName} = adaptShooIdentity(shooIdentity)`
     },
@@ -1594,9 +1609,12 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
   }
 }
 
-const sourceUsesLakebedRuntime = (source: string): boolean =>
-  /\blakebed\b/.test(source) ||
-  /@ship-fast\/lakebed\/(?:react|server)/.test(source)
+function sourceUsesLakebedRuntime(source: string): boolean {
+  return (
+    /\blakebed\b/.test(source) ||
+    /@ship-fast\/lakebed\/(?:react|server)/.test(source)
+  )
+}
 
 /**
  * Translate lakebed runtime calls in block source files for Next.js/React
@@ -1604,12 +1622,12 @@ const sourceUsesLakebedRuntime = (source: string): boolean =>
  * `useQuery()`, removes lakebed type imports, and adds React Query imports.
  * Also collects query/mutation names into dataKeys.
  */
-const translateBlockSourceLakebed = (
+function translateBlockSourceLakebed(
   source: string,
   stack: ExportStack,
   dataKeys: DataKeys,
   outPath: string,
-): { source: string; skip: boolean } => {
+): { source: string; skip: boolean } {
   // Process lakebed definition files: keep types and utility functions,
   // but remove the createLakebedDefinition call and its imports
   const isLakebedDefFile =
@@ -1925,12 +1943,12 @@ const translateBlockSourceLakebed = (
   return { source: body, skip: false }
 }
 
-const extractComponent = (
+function extractComponent(
   componentName: string,
   stack: ExportStack,
   routeTargets: Record<string, string>,
   dataKeys: DataKeys,
-): ExtractedComponent => {
+): ExtractedComponent {
   const entry = getComponentSourceIndex().get(componentName)
   if (!entry)
     throw new Error(
@@ -2137,12 +2155,12 @@ ${rewrittenNavigation.body
   }
 }
 
-const collectBlockSourceFiles = (
+function collectBlockSourceFiles(
   sourcePaths: Iterable<string>,
   stack: ExportStack,
   dataKeys?: DataKeys,
   routeTargets?: Record<string, string>,
-): { files: Record<string, string>; dependencies: Set<string> } => {
+): { files: Record<string, string>; dependencies: Set<string> } {
   const pending = [...new Set(sourcePaths)]
   const seen = new Set<string>()
   const files: Record<string, string> = {}
@@ -2232,7 +2250,7 @@ type ExportSchemaNode = {
 
 let exportSchemaDefs: Record<string, ExportSchemaNode> | null = null
 
-const getExportSchemaDefs = (): Record<string, ExportSchemaNode> => {
+function getExportSchemaDefs(): Record<string, ExportSchemaNode> {
   if (exportSchemaDefs) return exportSchemaDefs
   try {
     const schema = library.toJSONSchema() as Record<string, unknown>
@@ -2246,19 +2264,19 @@ const getExportSchemaDefs = (): Record<string, ExportSchemaNode> => {
   return exportSchemaDefs
 }
 
-const resolveExportSchemaNode = (
+function resolveExportSchemaNode(
   schema: ExportSchemaNode | undefined,
-): ExportSchemaNode | undefined => {
+): ExportSchemaNode | undefined {
   const reference = schema?.$ref
   if (!reference) return schema
   const name = reference.split('/').at(-1)
   return name ? (getExportSchemaDefs()[name] ?? schema) : schema
 }
 
-const schemaAcceptsValue = (
+function schemaAcceptsValue(
   schema: ExportSchemaNode | undefined,
   value: unknown,
-): boolean => {
+): boolean {
   const resolved = resolveExportSchemaNode(schema)
   if (!resolved?.type) return true
   if (resolved.type === 'array') return Array.isArray(value)
@@ -2268,10 +2286,10 @@ const schemaAcceptsValue = (
   return typeof value === resolved.type
 }
 
-const normalizeValueForExportSchema = (
+function normalizeValueForExportSchema(
   value: unknown,
   schema: ExportSchemaNode | undefined,
-): unknown => {
+): unknown {
   const resolved = resolveExportSchemaNode(schema)
   if (Array.isArray(value)) {
     return value.map((item) =>
@@ -2334,7 +2352,7 @@ const normalizeValueForExportSchema = (
   return normalized
 }
 
-const normalizeNodePropsForExport = (value: unknown): void => {
+function normalizeNodePropsForExport(value: unknown): void {
   if (Array.isArray(value)) {
     value.forEach(normalizeNodePropsForExport)
     return
@@ -2356,7 +2374,7 @@ const normalizeNodePropsForExport = (value: unknown): void => {
   }
 }
 
-const componentRole = (value: unknown): string => {
+function componentRole(value: unknown): string {
   if (!isOpenUIElementNode(value)) return 'section'
   const words = value.typeName.match(
     /[A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z]?[a-z]+|\d+/g,
@@ -2364,11 +2382,11 @@ const componentRole = (value: unknown): string => {
   return slugifyRoute(words?.at(-1) ?? value.typeName).replaceAll('-', '_')
 }
 
-const canonicalizeRouteStructure = (
+function canonicalizeRouteStructure(
   value: unknown,
   routeName: string,
   usedAnchors = new Map<string, number>(),
-): void => {
+): void {
   if (Array.isArray(value)) {
     value.forEach((item) =>
       canonicalizeRouteStructure(item, routeName, usedAnchors),
@@ -2396,18 +2414,18 @@ const canonicalizeRouteStructure = (
   }
 }
 
-const semanticRouteName = (
+function semanticRouteName(
   parsed: ParsedOpenUIProgram,
   label: string,
   index: number,
-): string => {
+): string {
   const mapped = parsed.targetMap[label]?.split('#')[0]?.trim()
   if (mapped && /[A-Za-z0-9]/.test(mapped)) return mapped
   if (/[A-Za-z0-9]/.test(label)) return label
   return index === 0 ? 'Home' : `Page ${index + 1}`
 }
 
-const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
+function buildRoutes(parsed: ParsedOpenUIProgram): ExportRoute[] {
   const usedPaths = new Set<string>()
   const usedNames = new Set<string>()
   // Only create routes for pages that have corresponding route labels.
@@ -2452,14 +2470,17 @@ const routeRenderPrimitives = new Set([
   'Text',
 ])
 
-const isOpenUIElementNode = (value: unknown): value is ElementNode =>
-  value !== null &&
-  typeof value === 'object' &&
-  !Array.isArray(value) &&
-  'type' in value &&
-  value.type === 'element' &&
-  'typeName' in value &&
-  typeof value.typeName === 'string'
+function isOpenUIElementNode(value: unknown): value is ElementNode {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    'type' in value &&
+    value.type === 'element' &&
+    'typeName' in value &&
+    typeof value.typeName === 'string'
+  )
+}
 
 // ─── JSON-LD extraction from the OpenUI element tree ───────────
 //
@@ -2470,15 +2491,18 @@ const isOpenUIElementNode = (value: unknown): value is ElementNode =>
 // An array of objects with {name, price} → Products. {question, answer} →
 // FAQ. {quote, rating} → Reviews. {title, author, date} → Articles.
 
-const isStr = (v: unknown): v is string =>
-  typeof v === 'string' && v.trim().length > 0
-const isObj = (v: unknown): v is Record<string, unknown> =>
-  v !== null && typeof v === 'object' && !Array.isArray(v)
+function isStr(v: unknown): v is string {
+  return typeof v === 'string' && v.trim().length > 0
+}
+function isObj(v: unknown): v is Record<string, unknown> {
+  return v !== null && typeof v === 'object' && !Array.isArray(v)
+}
 
-const str = (o: Record<string, unknown>, k: string): string | undefined =>
-  isStr(o[k]) ? o[k] : undefined
+function str(o: Record<string, unknown>, k: string): string | undefined {
+  return isStr(o[k]) ? o[k] : undefined
+}
 
-const num = (o: Record<string, unknown>, k: string): number | undefined => {
+function num(o: Record<string, unknown>, k: string): number | undefined {
   const v = o[k]
   return typeof v === 'number'
     ? v
@@ -2487,7 +2511,7 @@ const num = (o: Record<string, unknown>, k: string): number | undefined => {
       : undefined
 }
 
-const cleanPrice = (v: unknown): string | undefined => {
+function cleanPrice(v: unknown): string | undefined {
   if (!isStr(v)) return undefined
   const d = v.replace(/[^0-9.]/g, '')
   return d || undefined
@@ -2513,7 +2537,7 @@ type Entity =
   | { kind: 'Question'; question: string; answer: string }
   | { kind: 'Article'; data: Record<string, unknown> }
 
-const classifyItem = (o: Record<string, unknown>): Entity | null => {
+function classifyItem(o: Record<string, unknown>): Entity | null {
   // Product: has a name/title AND a price (or oldPrice)
   const pname = str(o, 'name') ?? str(o, 'title')
   const price = cleanPrice(o.price) ?? cleanPrice(o.oldPrice)
@@ -2587,10 +2611,10 @@ const classifyItem = (o: Record<string, unknown>): Entity | null => {
  * Scans ALL array props on ALL elements, classifies items by shape.
  * Also checks scalar props for featured product signals (name+price).
  */
-const extractJsonLdFromRoute = (
+function extractJsonLdFromRoute(
   routeNode: ElementNode,
   orgName: string,
-): Record<string, unknown>[] => {
+): Record<string, unknown>[] {
   const products: Record<string, unknown>[] = []
   const reviews: Record<string, unknown>[] = []
   const questions: Array<{ question: string; answer: string }> = []
@@ -2724,10 +2748,10 @@ const extractJsonLdFromRoute = (
  * Build a map of route path → JSON-LD entries by walking the actual
  * OpenUI element tree for each route page.
  */
-export const buildRouteJsonLd = (
+export function buildRouteJsonLd(
   routes: ExportRoute[],
   orgName: string,
-): Map<string, Record<string, unknown>[]> => {
+): Map<string, Record<string, unknown>[]> {
   const map = new Map<string, Record<string, unknown>[]>()
   for (const route of routes) {
     if (!route.node) continue
@@ -2743,12 +2767,10 @@ export const buildRouteJsonLd = (
  * objects with name + price is a product collection. This replaces the
  * runtime `collectionItems()` walker that was in store.ts.
  */
-const extractCollections = (
-  routes: ExportRoute[],
-): {
+function extractCollections(routes: ExportRoute[]): {
   products: Array<Record<string, unknown>>
   restaurants: Array<Record<string, unknown>>
-} => {
+} {
   const products: Array<Record<string, unknown>> = []
   const restaurants: Array<Record<string, unknown>> = []
   const seenProductNames = new Set<string>()
@@ -2850,7 +2872,7 @@ type ComponentSchemaDef = {
 
 let componentSchemaDefs: Record<string, ComponentSchemaDef> | null = null
 
-const getComponentSchemaDefs = (): Record<string, ComponentSchemaDef> => {
+function getComponentSchemaDefs(): Record<string, ComponentSchemaDef> {
   if (componentSchemaDefs) return componentSchemaDefs
   try {
     const schema = library.toJSONSchema() as Record<string, unknown>
@@ -2866,17 +2888,20 @@ const getComponentSchemaDefs = (): Record<string, ComponentSchemaDef> => {
   }
 }
 
-const isObjectLikeSchema = (def: {
+function isObjectLikeSchema(def: {
   type?: string
   properties?: unknown
   items?: unknown
   $ref?: unknown
-}): boolean =>
-  def.type === 'object' ||
-  def.type === 'array' ||
-  Boolean(def.properties) ||
-  Boolean(def.items) ||
-  Boolean(def.$ref)
+}): boolean {
+  return (
+    def.type === 'object' ||
+    def.type === 'array' ||
+    Boolean(def.properties) ||
+    Boolean(def.items) ||
+    Boolean(def.$ref)
+  )
+}
 
 // The OpenUI parser maps positional arguments to a component's declared prop
 // slots in order. When a component is called with a single object literal
@@ -2885,7 +2910,7 @@ const isObjectLikeSchema = (def: {
 // as the props bag. Detect that mis-assignment — the sole prop slot expects a
 // scalar but received a non-array object whose keys are all valid prop names
 // of the component — and unwrap it so the object becomes the component props.
-export const unwrapSingleObjectArgProps = (node: unknown): void => {
+export function unwrapSingleObjectArgProps(node: unknown): void {
   if (!isOpenUIElementNode(node)) return
   const props = node.props
   if (props && typeof props === 'object' && !Array.isArray(props)) {
@@ -2923,10 +2948,10 @@ export const unwrapSingleObjectArgProps = (node: unknown): void => {
   }
 }
 
-const collectNodeComponentNames = (
+function collectNodeComponentNames(
   value: unknown,
   names = new Set<string>(),
-): Set<string> => {
+): Set<string> {
   if (Array.isArray(value)) {
     for (const item of value) collectNodeComponentNames(item, names)
     return names
@@ -2942,13 +2967,15 @@ const collectNodeComponentNames = (
   return names
 }
 
-const collectRouteComponentNames = (routes: ExportRoute[]): string[] => [
-  ...new Set(
-    routes.flatMap((route) => [...collectNodeComponentNames(route.node)]),
-  ),
-]
+function collectRouteComponentNames(routes: ExportRoute[]): string[] {
+  return [
+    ...new Set(
+      routes.flatMap((route) => [...collectNodeComponentNames(route.node)]),
+    ),
+  ]
+}
 
-const routeGapClass = (value: unknown): string => {
+function routeGapClass(value: unknown): string {
   if (value === 'none') return 'gap-0'
   if (value === 'xs') return 'gap-1'
   if (value === 'sm') return 'gap-2'
@@ -2957,7 +2984,7 @@ const routeGapClass = (value: unknown): string => {
   return 'gap-4'
 }
 
-const routeAlignClass = (value: unknown): string => {
+function routeAlignClass(value: unknown): string {
   if (value === 'start') return 'items-start'
   if (value === 'center') return 'items-center'
   if (value === 'end') return 'items-end'
@@ -2965,7 +2992,7 @@ const routeAlignClass = (value: unknown): string => {
   return ''
 }
 
-const routeJustifyClass = (value: unknown): string => {
+function routeJustifyClass(value: unknown): string {
   if (value === 'start') return 'justify-start'
   if (value === 'center') return 'justify-center'
   if (value === 'end') return 'justify-end'
@@ -2974,14 +3001,14 @@ const routeJustifyClass = (value: unknown): string => {
   return ''
 }
 
-const routeHeadingClass = (level: unknown): string => {
+function routeHeadingClass(level: unknown): string {
   if (level === '1') return 'text-4xl font-bold tracking-tight md:text-5xl'
   if (level === '3') return 'text-2xl font-semibold'
   if (level === '4') return 'text-lg font-semibold'
   return 'text-3xl font-semibold tracking-tight'
 }
 
-const routeSpacerClass = (size: unknown): string => {
+function routeSpacerClass(size: unknown): string {
   if (size === 'xs') return 'h-2'
   if (size === 'sm') return 'h-4'
   if (size === 'lg') return 'h-16'
@@ -2989,7 +3016,7 @@ const routeSpacerClass = (size: unknown): string => {
   return 'h-8'
 }
 
-const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
+function routeGridClass(cols: unknown, gap: unknown, className: unknown) {
   const colsClass =
     cols === '1'
       ? 'grid-cols-1'
@@ -3009,8 +3036,8 @@ const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
     .join(' ')
 }
 
-const routeStackClass = (props: Record<string, unknown>) =>
-  [
+function routeStackClass(props: Record<string, unknown>) {
+  return [
     'flex',
     props.direction === 'row' ? 'flex-row' : 'flex-col',
     routeGapClass(props.gap),
@@ -3023,20 +3050,22 @@ const routeStackClass = (props: Record<string, unknown>) =>
       (item): item is string => typeof item === 'string' && item.length > 0,
     )
     .join(' ')
+}
 
-const jsxAttribute = (name: string, value: unknown): string =>
-  typeof value === 'string' && value.length > 0
+function jsxAttribute(name: string, value: unknown): string {
+  return typeof value === 'string' && value.length > 0
     ? ` ${name}=${JSON.stringify(value)}`
     : ''
+}
 
-const renderRouteNodeChildren = (value: unknown): string => {
+function renderRouteNodeChildren(value: unknown): string {
   if (Array.isArray(value)) {
     return value.map((item) => renderRouteNode(item)).join('\n')
   }
   return renderRouteNode(value)
 }
 
-const renderRouteNode = (value: unknown): string => {
+function renderRouteNode(value: unknown): string {
   if (!isOpenUIElementNode(value)) return ''
 
   const props = value.props ?? {}
@@ -3103,10 +3132,10 @@ ${renderRouteNodeChildren(props.children)}
   return `<${value.typeName} {...${JSON.stringify(props)}} />`
 }
 
-const renderRouteComponentSource = (
+function renderRouteComponentSource(
   route: ExportRoute,
   nestedComponentNames: string[],
-): string => {
+): string {
   const known = new Set(nestedComponentNames)
   const used = [...collectNodeComponentNames(route.node)].filter((name) =>
     known.has(name),
@@ -3155,20 +3184,21 @@ const dependencyVersions: Record<string, string> = {
   'framer-motion': '12.40.0',
 }
 
-const toDependencyRecord = (names: Iterable<string>): Record<string, string> =>
-  Object.fromEntries(
+function toDependencyRecord(names: Iterable<string>): Record<string, string> {
+  return Object.fromEntries(
     [...names]
       .sort()
       .map((name) => [name, dependencyVersions[name] ?? 'latest']),
   )
+}
 
-const resolveDependencyVersions = (
+function resolveDependencyVersions(
   packages: Iterable<string>,
   target: 'react' | 'next',
 ): {
   dependencies: Record<string, string>
   devDependencies: Record<string, string>
-} => {
+} {
   const names = new Set(packages)
   const devNames = new Set<string>([
     '@types/react',
@@ -3198,7 +3228,7 @@ const resolveDependencyVersions = (
   }
 }
 
-const renderThemeCss = (input: OpenUIExportInput): string => {
+function renderThemeCss(input: OpenUIExportInput): string {
   const siteSpec = parseSiteSpec(input.siteSpecJson)
   const themeName = readThemeName(siteSpec, input.themeName)
   const isDark = input.isDark ?? true
@@ -3232,15 +3262,17 @@ body {
 `
 }
 
-const renderLibCn = (): string => `import { clsx, type ClassValue } from 'clsx'
+function renderLibCn(): string {
+  return `import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 `
+}
 
-const renderImageHelper = (imageSources: ImageSource[]): string => {
+function renderImageHelper(imageSources: ImageSource[]): string {
   return `import type { ImgHTMLAttributes } from 'react'
 
 const previewImageSources: Array<{ alt: string; src: string }> = ${JSON.stringify(imageSources, null, 2)}
@@ -3305,7 +3337,7 @@ export function Image({
 `
 }
 
-const renderStyleOverridesCss = (styleOverrides: StyleOverride[]): string => {
+function renderStyleOverridesCss(styleOverrides: StyleOverride[]): string {
   if (styleOverrides.length === 0) return ''
   const rules = styleOverrides
     .map((override) => {
@@ -3331,7 +3363,7 @@ const renderStyleOverridesCss = (styleOverrides: StyleOverride[]): string => {
     : ''
 }
 
-const endpointRouteFilePath = (path: string): string => {
+function endpointRouteFilePath(path: string): string {
   const cleaned = path.split(/[?#]/)[0]?.trim() || '/'
   const segments = cleaned
     .split('/')
@@ -3353,17 +3385,18 @@ const endpointRouteFilePath = (path: string): string => {
   return `app/${segments.length > 0 ? segments.join('/') : 'api'}/route.ts`
 }
 
-const endpointConstName = (
+function endpointConstName(
   endpointDefinition: LakebedEndpointDefinition,
   index: number,
-) =>
-  `${toIdentifier(endpointDefinition.componentName)}${toIdentifier(
+) {
+  return `${toIdentifier(endpointDefinition.componentName)}${toIdentifier(
     endpointDefinition.name,
   )}Endpoint${index + 1}`
+}
 
-export const renderNextEndpointRouteFiles = (
+export function renderNextEndpointRouteFiles(
   endpoints: LakebedEndpointDefinition[],
-): Record<string, string> => {
+): Record<string, string> {
   const byRoute = new Map<string, LakebedEndpointDefinition[]>()
   for (const endpointDefinition of endpoints) {
     const routePath = endpointRouteFilePath(endpointDefinition.path)
@@ -3426,10 +3459,10 @@ ${handlers}
 }
 
 /** Enrich siteSpecJson with projectName so SEO resolvers can use it as fallback title. */
-export const enrichSiteSpecJson = (
+export function enrichSiteSpecJson(
   siteSpecJson: string | undefined,
   projectName: string,
-): string | undefined => {
+): string | undefined {
   if (!siteSpecJson) {
     return JSON.stringify({ projectName })
   }
@@ -3446,9 +3479,10 @@ export const enrichSiteSpecJson = (
 }
 
 /** Extract siteUrl and orgName from siteSpecJson for JSON-LD entity extraction. */
-const extractSiteMeta = (
-  siteSpecJson: string | undefined,
-): { siteUrl: string; orgName: string } => {
+function extractSiteMeta(siteSpecJson: string | undefined): {
+  siteUrl: string
+  orgName: string
+} {
   try {
     if (!siteSpecJson) return { siteUrl: '', orgName: '' }
     const spec = JSON.parse(siteSpecJson) as Record<string, unknown>
@@ -3555,12 +3589,12 @@ export function parseOpenUIForExport(
   }
 }
 
-const renderReactPackageJson = (
+function renderReactPackageJson(
   projectName: string,
   dependencies: Record<string, string>,
   devDependencies: Record<string, string>,
-): string =>
-  JSON.stringify(
+): string {
+  return JSON.stringify(
     {
       name: toProjectSlug(projectName),
       private: true,
@@ -3578,13 +3612,14 @@ const renderReactPackageJson = (
     null,
     2,
   )
+}
 
-const renderNextPackageJson = (
+function renderNextPackageJson(
   projectName: string,
   dependencies: Record<string, string>,
   devDependencies: Record<string, string>,
-): string =>
-  JSON.stringify(
+): string {
+  return JSON.stringify(
     {
       name: toProjectSlug(projectName),
       private: true,
@@ -3601,12 +3636,13 @@ const renderNextPackageJson = (
     null,
     2,
   )
+}
 
-const renderBunLock = (
+function renderBunLock(
   projectName: string,
   dependencies: Record<string, string>,
   devDependencies: Record<string, string>,
-): string => {
+): string {
   const workspace = {
     name: toProjectSlug(projectName),
     dependencies,
@@ -3634,8 +3670,8 @@ const renderBunLock = (
   }
 }
 
-const renderViteConfig =
-  (): string => `import tailwindcss from '@tailwindcss/vite'
+function renderViteConfig(): string {
+  return `import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
@@ -3643,8 +3679,10 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
 })
 `
+}
 
-const renderNextPostcssConfig = (): string => `const config = {
+function renderNextPostcssConfig(): string {
+  return `const config = {
   plugins: {
     '@tailwindcss/postcss': {},
   },
@@ -3652,11 +3690,9 @@ const renderNextPostcssConfig = (): string => `const config = {
 
 export default config
 `
+}
 
-const renderReadme = (
-  projectName: string,
-  target: 'react' | 'next',
-): string => {
+function renderReadme(projectName: string, target: 'react' | 'next'): string {
   const commands =
     target === 'react'
       ? ['bun install', 'bun dev', 'bun run build', 'bun run preview']
@@ -3672,9 +3708,7 @@ ${commands.join('\n')}
 `
 }
 
-const renderTsConfig = (
-  jsx: 'react-jsx' | 'preserve' = 'react-jsx',
-): string => {
+function renderTsConfig(jsx: 'react-jsx' | 'preserve' = 'react-jsx'): string {
   const include =
     jsx === 'preserve'
       ? [
@@ -3714,19 +3748,23 @@ const renderTsConfig = (
   )
 }
 
-const renderNextEnv = (): string => `/// <reference types="next" />
+function renderNextEnv(): string {
+  return `/// <reference types="next" />
 /// <reference types="next/image-types/global" />
 
 // This file is generated by Next.js conventions for TypeScript projects.
 `
+}
 
-const renderViteEnv = (): string => `/// <reference types="vite/client" />
+function renderViteEnv(): string {
+  return `/// <reference types="vite/client" />
 `
+}
 
-const renderRouteData = (
+function renderRouteData(
   routes: ExportRoute[],
   componentNames: string[],
-): string => {
+): string {
   const serializedRoutes = routes.map((route) => ({
     label: route.label,
     path: route.path,
@@ -3776,7 +3814,7 @@ export const routes = ${JSON.stringify(serializedRoutes, null, 2)} satisfies Sit
  * src hardcoded. No runtime DOM manipulation, no MutationObserver,
  * no context provider — just a pure component that renders the logo.
  */
-const renderExportLogoComponent = (input: OpenUIExportInput): string => {
+function renderExportLogoComponent(input: OpenUIExportInput): string {
   const selection = input.selectedBrandLogo
   const icon = typeof selection?.icon === 'string' ? selection.icon.trim() : ''
   const logo = typeof selection?.logo === 'string' ? selection.logo.trim() : ''
@@ -3866,7 +3904,7 @@ export function Logo({
 `
 }
 
-const renderReactApp = (routes: ExportRoute[]): string => {
+function renderReactApp(routes: ExportRoute[]): string {
   const imports = routes
     .map(
       (route) =>
@@ -3903,7 +3941,7 @@ export default function App() {
 }`
 }
 
-const renderReactMain = (usesLakebed: boolean, usesAuth: boolean): string => {
+function renderReactMain(usesLakebed: boolean, usesAuth: boolean): string {
   const providerImports = usesLakebed
     ? `import { QueryProvider } from './lib/query-provider'\n${usesAuth ? `import { AuthProvider } from './lib/auth'\n` : ''}`
     : ''
@@ -3927,11 +3965,11 @@ createRoot(root).render(
 `
 }
 
-const renderNextRoutePage = (
+function renderNextRoutePage(
   componentName: string,
   componentImportPath: string,
   routeSeo: ExportRouteSeo | null,
-): string => {
+): string {
   const metadataExport = routeSeo
     ? `${renderNextMetadataExport(routeSeo)}\n\n`
     : ''
@@ -3953,11 +3991,13 @@ ${metadataExport}${viewportExport}export default function Page() {
 }`
 }
 
-const asClientComponent = (source: string): string => `'use client'
+function asClientComponent(source: string): string {
+  return `'use client'
 
 ${source}`
+}
 
-const zipFiles = (files: Record<string, string>): Uint8Array => {
+function zipFiles(files: Record<string, string>): Uint8Array {
   assertNoOpenUIInternals(files)
   return zipSync(
     Object.fromEntries(
@@ -3967,46 +4007,50 @@ const zipFiles = (files: Record<string, string>): Uint8Array => {
   )
 }
 
-const zipRawFiles = (files: Record<string, string>): Uint8Array =>
-  zipSync(
+function zipRawFiles(files: Record<string, string>): Uint8Array {
+  return zipSync(
     Object.fromEntries(
       Object.entries(files).map(([name, content]) => [name, strToU8(content)]),
     ),
     { level: 9 },
   )
+}
 
-const collectExportComponents = (
+function collectExportComponents(
   routes: ExportRoute[],
   stack: ExportStack,
   routeTargets: Record<string, string>,
   dataKeys: DataKeys,
-): ExtractedComponent[] => {
+): ExtractedComponent[] {
   const names = collectRouteComponentNames(routes)
   return names.map((name) =>
     extractComponent(name, stack, routeTargets, dataKeys),
   )
 }
 
-const collectLakebedEndpoints = (
+function collectLakebedEndpoints(
   componentNames: string[],
-): LakebedEndpointDefinition[] =>
-  componentNames.flatMap((name) => {
+): LakebedEndpointDefinition[] {
+  return componentNames.flatMap((name) => {
     const entry = getComponentSourceIndex().get(name)
     return entry ? readLakebedEndpointDefinitions(name, entry) : []
   })
+}
 
-const collectNextEndpoints = (
+function collectNextEndpoints(
   componentNames: string[],
   source: string,
-): LakebedEndpointDefinition[] => [
-  ...collectLakebedEndpoints(componentNames),
-  ...readSourceEndpointDefinitions(source),
-]
+): LakebedEndpointDefinition[] {
+  return [
+    ...collectLakebedEndpoints(componentNames),
+    ...readSourceEndpointDefinitions(source),
+  ]
+}
 
-const buildReactExport = async (
+async function buildReactExport(
   input: OpenUIExportInput,
   parsed: ParsedOpenUIProgram,
-): Promise<BuiltExport> => {
+): Promise<BuiltExport> {
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
   const dataKeys = createDataKeys()
@@ -4124,10 +4168,10 @@ const buildReactExport = async (
   }
 }
 
-const buildNextExport = async (
+async function buildNextExport(
   input: OpenUIExportInput,
   parsed: ParsedOpenUIProgram,
-): Promise<BuiltExport> => {
+): Promise<BuiltExport> {
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
   const dataKeys = createDataKeys()
@@ -4294,7 +4338,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
   }
 }
 
-const buildRawHtmlExport = (input: OpenUIExportInput): BuiltExport => {
+function buildRawHtmlExport(input: OpenUIExportInput): BuiltExport {
   const html = input.source.trim()
   const spec = parseSiteSpec(input.siteSpecJson)
   const projectName =
@@ -4370,5 +4414,6 @@ export async function buildOpenUIExport(
     : await buildNextExport(input, parsed)
 }
 
-export const decodeExportBody = (body: string | Uint8Array): string =>
-  typeof body === 'string' ? body : textDecoder.decode(body)
+export function decodeExportBody(body: string | Uint8Array): string {
+  return typeof body === 'string' ? body : textDecoder.decode(body)
+}

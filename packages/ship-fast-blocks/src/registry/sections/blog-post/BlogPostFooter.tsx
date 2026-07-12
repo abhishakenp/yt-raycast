@@ -12,22 +12,24 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * voice. Use as the site-wide footer for a blog, magazine, journal, or any
  * editorial publication. Renders fully with no props via baked-in defaults.
  */
-const FeatherMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
-    <path d="M16 8 2 22" />
-    <path d="M17.5 15H9" />
-  </svg>
-)
+function FeatherMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+      <path d="M16 8 2 22" />
+      <path d="M17.5 15H9" />
+    </svg>
+  )
+}
 
 export const BlogPostFooter = defineCapsule({
   name: 'BlogPostFooter',

@@ -73,7 +73,7 @@ export const KidsEducationSteps = defineCapsule({
       'bg-secondary/15 text-secondary-foreground',
       'bg-accent/15 text-accent-foreground',
     ]
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="20"

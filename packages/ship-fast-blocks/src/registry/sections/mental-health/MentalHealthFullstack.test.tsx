@@ -109,32 +109,38 @@ const { MentalHealthServices } = await import('./MentalHealthServices.tsx')
 const { MentalHealthPricing } = await import('./MentalHealthPricing.tsx')
 const { MentalHealthContactCta } = await import('./MentalHealthContactCta.tsx')
 
-const toService = (service: TestServiceInput, index: number): TestService => ({
-  createdAt: timestamp,
-  id: `service-${index + 1}`,
-  name: service.name,
-  price: service.price ?? '',
-  summary: service.summary ?? '',
-  updatedAt: timestamp,
-})
+function toService(service: TestServiceInput, index: number): TestService {
+  return {
+    createdAt: timestamp,
+    id: `service-${index + 1}`,
+    name: service.name,
+    price: service.price ?? '',
+    summary: service.summary ?? '',
+    updatedAt: timestamp,
+  }
+}
 
-const toPublicService = ({
+function toPublicService({
   name,
   price,
   summary,
-}: TestService): TestServiceInput => ({ name, price, summary })
+}: TestService): TestServiceInput {
+  return { name, price, summary }
+}
 
-const toPublicBooking = ({
+function toPublicBooking({
   label,
   service,
   source,
   type,
-}: TestBooking): TestBookingInput & { type: string } => ({
-  label,
-  service,
-  source,
-  type,
-})
+}: TestBooking): TestBookingInput & { type: string } {
+  return {
+    label,
+    service,
+    source,
+    type,
+  }
+}
 
 function useTestMutation<TMutation>({
   lastError,
@@ -152,15 +158,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -215,7 +218,7 @@ function createMentalHealthLakebedStub({
       total: state.bookings.length,
     }
   }
-  const recordBooking = (input: TestBookingInput) => {
+  const recordBooking = (input) => {
     state = {
       ...state,
       bookings: [
@@ -232,7 +235,7 @@ function createMentalHealthLakebedStub({
       ],
     }
   }
-  const syncServices = (services: TestServiceInput[]) => {
+  const syncServices = (services) => {
     const nextServices = [...state.services]
 
     services.forEach((service) => {

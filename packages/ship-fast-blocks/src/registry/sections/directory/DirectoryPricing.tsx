@@ -105,7 +105,7 @@ export const DirectoryPricing = defineCapsule({
             badge: '',
           },
         ]
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         fill="none"
@@ -119,7 +119,7 @@ export const DirectoryPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-    const Cross = ({ className }: { className?: string }) => (
+    const Cross = ({ className }) => (
       <svg
         className={className}
         fill="none"

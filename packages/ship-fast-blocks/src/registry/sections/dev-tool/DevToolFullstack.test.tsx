@@ -80,16 +80,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -158,39 +158,40 @@ const { DevToolPricing } = await import('./DevToolPricing.tsx')
 const { DevToolHero } = await import('./DevToolHero.tsx')
 const { DevToolContactCta } = await import('./DevToolContactCta.tsx')
 
-const testPlan = (plan: TestPlanInput, index: number): TestPlan => ({
-  createdAt: timestamp,
-  id: `plan-${index + 1}`,
-  name: plan.name,
-  period: plan.period ?? '',
-  price: plan.price ?? '',
-  summary: plan.summary ?? '',
-  updatedAt: timestamp,
-})
+function testPlan(plan: TestPlanInput, index: number): TestPlan {
+  return {
+    createdAt: timestamp,
+    id: `plan-${index + 1}`,
+    name: plan.name,
+    period: plan.period ?? '',
+    price: plan.price ?? '',
+    summary: plan.summary ?? '',
+    updatedAt: timestamp,
+  }
+}
 
-const publicPlan = ({
-  name,
-  period,
-  price,
-  summary,
-}: TestPlan): TestPlanInput => ({
-  name,
-  period,
-  price,
-  summary,
-})
+function publicPlan({ name, period, price, summary }: TestPlan): TestPlanInput {
+  return {
+    name,
+    period,
+    price,
+    summary,
+  }
+}
 
-const publicIntent = ({
+function publicIntent({
   label,
   plan,
   source,
   type,
-}: TestIntent): TestIntentInput & { type: string } => ({
-  label,
-  plan,
-  source,
-  type,
-})
+}: TestIntent): TestIntentInput & { type: string } {
+  return {
+    label,
+    plan,
+    source,
+    type,
+  }
+}
 
 function useTestMutation<TMutation>({
   lastError,
@@ -208,15 +209,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -271,13 +269,7 @@ function createDevToolLakebedStub({
       total: state.intents.length,
     }
   }
-  const recordIntent = ({
-    input,
-    type,
-  }: {
-    input: TestIntentInput
-    type: 'demo' | 'trial'
-  }) => {
+  const recordIntent = ({ input, type }) => {
     state = {
       ...state,
       intents: [

@@ -13,13 +13,16 @@ export type BuildCreateSessionPayloadInput = {
   engineVersion?: 'v1' | 'v2' | 'v3'
 }
 
-const toHex = (bytes: Uint8Array): string =>
-  Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+function toHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
+    '',
+  )
+}
 
-export const createAnonymousClientId = (
+export function createAnonymousClientId(
   storage: Pick<Storage, 'getItem' | 'setItem'>,
   getRandomValues?: SessionCreateRandomBytes,
-): string => {
+): string {
   const existing = storage.getItem('ship-fast-anon-client-id')
   if (existing) return existing
   const next = `anon_${createSessionWorkspaceKey(getRandomValues).replace(/^workspace_/, '')}`
@@ -27,18 +30,18 @@ export const createAnonymousClientId = (
   return next
 }
 
-export const createSessionWorkspaceKey = (
+export function createSessionWorkspaceKey(
   getRandomValues: SessionCreateRandomBytes = (bytes) => {
     crypto.getRandomValues(bytes as Parameters<Crypto['getRandomValues']>[0])
     return bytes
   },
-): string => {
+): string {
   const bytes = new Uint8Array(16)
   getRandomValues(bytes)
   return `workspace_${toHex(bytes)}`
 }
 
-export const buildCreateSessionPayload = ({
+export function buildCreateSessionPayload({
   prompt,
   preferredLanguage,
   isPrivate,
@@ -49,7 +52,7 @@ export const buildCreateSessionPayload = ({
   designReferenceNotes = '',
   cloneUrl = '',
   engineVersion,
-}: BuildCreateSessionPayloadInput) => {
+}: BuildCreateSessionPayloadInput) {
   const refs = designReferenceUrls
     .map((url) => url.trim())
     .filter(Boolean)

@@ -53,7 +53,7 @@ export const JobBoardNavbar = defineCapsule({
     const cta = props.cta ?? 'Post a Job'
     const homeTarget = props.homeTarget ?? nav[0]
 
-    const BriefcaseMark = ({ className }: { className?: string }) => (
+    const BriefcaseMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

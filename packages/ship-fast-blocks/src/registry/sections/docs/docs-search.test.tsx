@@ -34,16 +34,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({
-    alt,
-    className,
-  }: {
-    alt: string
-    className?: string
-    h?: number
-    loading?: string
-    w?: number
-  }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }) => <img alt={alt} className={className} />,
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -64,16 +55,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -161,9 +152,9 @@ function createDocsLakebedStub() {
     searches,
   })
   const nextRow = <TRow extends Record<string, unknown>>(
-    prefix: string,
-    value: TRow,
-    index: number,
+    prefix,
+    value,
+    index,
   ) => ({
     ...value,
     createdAt: now,
@@ -205,7 +196,7 @@ function createDocsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: DocsSearchInput) => {
+      const runMutation = useCallback(async (input) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -237,15 +228,12 @@ function createDocsLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: DocsSearchInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -260,62 +248,56 @@ function createDocsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: { articles: DocsCatalogInput[] }) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const existingBySlug = new Map(
-              articles.map((article) => [article.slug.toLowerCase(), article]),
-            )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const existingBySlug = new Map(
+            articles.map((article) => [article.slug.toLowerCase(), article]),
+          )
 
-            for (const article of input.articles) {
-              const slug = article.slug.trim()
-              if (!slug) continue
+          for (const article of input.articles) {
+            const slug = article.slug.trim()
+            if (!slug) continue
 
-              const next = {
-                category: article.category?.trim() ?? '',
-                content: article.content?.trim() ?? '',
-                slug,
-                title: article.title?.trim() ?? '',
-              }
-              const current = existingBySlug.get(slug.toLowerCase())
-
-              if (current) {
-                articles = articles.map((candidate) =>
-                  candidate.id === current.id
-                    ? { ...current, ...next, updatedAt: now }
-                    : candidate,
-                )
-              } else {
-                articles = [
-                  ...articles,
-                  nextRow('article', next, articles.length + 1),
-                ]
-              }
+            const next = {
+              category: article.category?.trim() ?? '',
+              content: article.content?.trim() ?? '',
+              slug,
+              title: article.title?.trim() ?? '',
             }
-            notify()
-            return articles
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
+            const current = existingBySlug.get(slug.toLowerCase())
+
+            if (current) {
+              articles = articles.map((candidate) =>
+                candidate.id === current.id
+                  ? { ...current, ...next, updatedAt: now }
+                  : candidate,
+              )
+            } else {
+              articles = [
+                ...articles,
+                nextRow('article', next, articles.length + 1),
+              ]
+            }
           }
-        },
-        [],
-      )
+          notify()
+          return articles
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: { articles: DocsCatalogInput[] }) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 

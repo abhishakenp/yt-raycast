@@ -163,22 +163,25 @@ const GENERIC_ALT = new Set([
   'graphics',
 ])
 
-const tokenize = (value: string): string[] =>
-  value
-    .toLowerCase()
-    // Strip non-ASCII (non-English script like Malayalam/Tamil Unicode) —
-    // Pexels/Unsplash index in English; non-ASCII tokens break search.
-    .replace(/[^\x20-\x7E]/g, ' ')
-    .replace(/[^a-z0-9\s-]/g, ' ')
-    .split(/\s+/)
-    .filter((token) => token.length > 2)
+function tokenize(value: string): string[] {
+  return (
+    value
+      .toLowerCase()
+      // Strip non-ASCII (non-English script like Malayalam/Tamil Unicode) —
+      // Pexels/Unsplash index in English; non-ASCII tokens break search.
+      .replace(/[^\x20-\x7E]/g, ' ')
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter((token) => token.length > 2)
+  )
+}
 
 /**
  * Distil up to `max` salient subject tokens from the prompt + brand, in the
  * order they appear (prompts lead with the domain: "a website for a dental
  * clinic in Mumbai" → "dental clinic mumbai").
  */
-export const extractDomainHint = (context: ImageContext, max = 3): string => {
+export function extractDomainHint(context: ImageContext, max = 3): string {
   const source = `${context.brandContext ?? ''} ${context.prompt ?? ''}`
   const seen = new Set<string>()
   const tokens: string[] = []
@@ -191,7 +194,7 @@ export const extractDomainHint = (context: ImageContext, max = 3): string => {
   return tokens.join(' ')
 }
 
-const isGenericAlt = (alt: string): boolean => {
+function isGenericAlt(alt: string): boolean {
   const meaningful = tokenize(alt).filter((t) => !DOMAIN_STOP.has(t))
   if (meaningful.length <= 1) return true
   const generic = meaningful.filter((t) => GENERIC_ALT.has(t)).length
@@ -205,11 +208,11 @@ const isGenericAlt = (alt: string): boolean => {
  * With no usable context this returns `baseQuery` unchanged — so non-generated
  * usages are entirely backward compatible.
  */
-export const buildImageSearchQuery = (
+export function buildImageSearchQuery(
   alt: string,
   baseQuery: string,
   context?: ImageContext,
-): string => {
+): string {
   const base = baseQuery.trim()
   if (!context || (!context.prompt && !context.brandContext)) return base
 

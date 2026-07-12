@@ -16,11 +16,11 @@ type SignInModalHostProps = {
   clerkMounted?: boolean
 }
 
-export const SignInModalHost = ({
+export function SignInModalHost({
   requestId,
   clerkMounted = false,
-}: SignInModalHostProps) =>
-  requestId > 0 ? (
+}: SignInModalHostProps) {
+  return requestId > 0 ? (
     <Suspense fallback={null}>
       <LazyHomepageAuthControls
         key={requestId}
@@ -30,3 +30,4 @@ export const SignInModalHost = ({
       />
     </Suspense>
   ) : null
+}

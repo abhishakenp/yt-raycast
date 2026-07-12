@@ -12,17 +12,19 @@ export type KnowledgeBaseLakebed = LakebedClientRuntime<
   typeof knowledgeBaseLakebed
 >
 
-export const kbArticleItem = ({
+export function kbArticleItem({
   category,
   content,
   slug,
   title,
-}: KnowledgeBaseArticleInput): KnowledgeBaseArticleInput => ({
-  category: category ?? '',
-  content: content ?? '',
-  slug,
-  title,
-})
+}: KnowledgeBaseArticleInput): KnowledgeBaseArticleInput {
+  return {
+    category: category ?? '',
+    content: content ?? '',
+    slug,
+    title,
+  }
+}
 
 export function useSyncKbCatalog(
   lakebed: KnowledgeBaseLakebed,
@@ -51,7 +53,7 @@ export function useKbSearch(lakebed: KnowledgeBaseLakebed) {
   const setKbSearch = lakebed.useMutation('setKbSearch')
 
   const submitSearch = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (setKbSearch.isPending) return
 
@@ -67,7 +69,7 @@ export function useKbSearch(lakebed: KnowledgeBaseLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input: KnowledgeBaseSearchInput) => {
+    (input) => {
       if (setKbSearch.isPending) return
       void setKbSearch(input)
     },

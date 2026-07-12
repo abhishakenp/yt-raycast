@@ -72,7 +72,7 @@ export const SaasBento = defineCapsule({
           },
         ]
 
-    const spanClass = (span?: 'wide' | 'tall') =>
+    const spanClass = (span?) =>
       span === 'wide'
         ? 'md:col-span-4'
         : span === 'tall'

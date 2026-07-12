@@ -143,7 +143,7 @@ export const FitnessPricing = defineCapsule({
             ],
           },
         ]
-    const CheckIcon = ({ className }: { className?: string }) => (
+    const CheckIcon = ({ className }) => (
       <svg
         className={className}
         width="16"
@@ -159,7 +159,7 @@ export const FitnessPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-    const CrossIcon = ({ className }: { className?: string }) => (
+    const CrossIcon = ({ className }) => (
       <svg
         className={className}
         width="16"

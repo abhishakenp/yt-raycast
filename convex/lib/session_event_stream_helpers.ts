@@ -13,13 +13,14 @@ export type SessionEventStreamArgs = {
   anonymousOwnerSecret?: string
 }
 
-export const clampEventStreamLimit = (limit: number | undefined): number =>
-  Math.max(1, Math.min(limit ?? 100, 250))
+export function clampEventStreamLimit(limit: number | undefined): number {
+  return Math.max(1, Math.min(limit ?? 100, 250))
+}
 
-export const loadSessionEventStream = async (
+export async function loadSessionEventStream(
   ctx: EventStreamCtx,
   args: SessionEventStreamArgs,
-) => {
+) {
   const sessionId: Id<'sessions'> | null =
     args.sessionId ??
     (args.lookup === undefined

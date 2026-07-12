@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer'
+import { createHash } from 'node:crypto'
 import { dirname, join, relative } from 'node:path'
 import { brotliDecompressSync } from 'node:zlib'
 import { zipSync, strToU8 } from 'fflate'
@@ -65,6 +66,7 @@ type ContentSection = {
 }
 
 type LakebedDefinition = {
+  helpers: Record<string, string>
   schemaSource: string | null
   numericFieldNames: string[]
   queries: Record<string, string>
@@ -127,34 +129,38 @@ let vendorSourceFileIndex: Record<string, string | undefined> | null = null
 const lakebedImageResolveConcurrency = 8
 const lakebedImageFetchTimeoutMs = 2_500
 
-const toPosixPath = (value: string): string => value.replaceAll('\\', '/')
+function toPosixPath(value: string): string {
+  return value.replaceAll('\\', '/')
+}
 
-const sourcePathCandidates = (base: string): string[] => [
-  base,
-  `${base}.ts`,
-  `${base}.tsx`,
-  `${base}.js`,
-  `${base}.jsx`,
-  `${base}.mjs`,
-  `${base}.cjs`,
-  `${base}.json`,
-  `${base}.css`,
-  join(base, 'index.ts'),
-  join(base, 'index.tsx'),
-  join(base, 'index.js'),
-  join(base, 'index.jsx'),
-  join(base, 'index.mjs'),
-  join(base, 'index.cjs'),
-  join(base, 'package.json'),
-]
+function sourcePathCandidates(base: string): string[] {
+  return [
+    base,
+    `${base}.ts`,
+    `${base}.tsx`,
+    `${base}.js`,
+    `${base}.jsx`,
+    `${base}.mjs`,
+    `${base}.cjs`,
+    `${base}.json`,
+    `${base}.css`,
+    join(base, 'index.ts'),
+    join(base, 'index.tsx'),
+    join(base, 'index.js'),
+    join(base, 'index.jsx'),
+    join(base, 'index.mjs'),
+    join(base, 'index.cjs'),
+    join(base, 'package.json'),
+  ]
+}
 
-const relativeImportPath = (fromFile: string, toFile: string): string => {
+function relativeImportPath(fromFile: string, toFile: string): string {
   let path = toPosixPath(relative(dirname(fromFile), toFile))
   if (!path.startsWith('.')) path = `./${path}`
   return path
 }
 
-const readPublicPackageName = (specifier: string): string | null => {
+function readPublicPackageName(specifier: string): string | null {
   if (specifier.startsWith('.') || specifier.startsWith('/')) return null
   if (specifier.startsWith('@')) {
     const [scope, name] = specifier.split('/')
@@ -163,38 +169,43 @@ const readPublicPackageName = (specifier: string): string | null => {
   return specifier.split('/')[0] ?? null
 }
 
-const toProjectSlug = (value: string): string =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60) || 'lakebed-export'
+function toProjectSlug(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'lakebed-export'
+  )
+}
 
-const toIdentifier = (value: string): string =>
-  value.replace(/[^A-Za-z0-9_$]/g, '_').replace(/^[^A-Za-z_$]/, '_$&')
+function toIdentifier(value: string): string {
+  return value.replace(/[^A-Za-z0-9_$]/g, '_').replace(/^[^A-Za-z_$]/, '_$&')
+}
 
-const isHtmlDocumentSource = (source: string): boolean => {
+function isHtmlDocumentSource(source: string): boolean {
   const trimmed = source.trim()
   return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
 }
 
-const isHtmlLikeSource = (source: string): boolean => {
+function isHtmlLikeSource(source: string): boolean {
   const trimmed = source.trim()
   return (
     isHtmlDocumentSource(trimmed) || /^<[a-z][\w:-]*(?:\s|>|\/>)/i.test(trimmed)
   )
 }
 
-const decodeHtmlAttribute = (value: string): string =>
-  value
+function decodeHtmlAttribute(value: string): string {
+  return value
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+}
 
-const readHtmlAttribute = (tag: string, name: string): string | null => {
+function readHtmlAttribute(tag: string, name: string): string | null {
   const match = tag.match(
     new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i'),
   )
@@ -215,7 +226,7 @@ type PexelsResponse = {
   photos?: PexelsPhoto[]
 }
 
-const readServerEnv = (...keys: string[]): string => {
+function readServerEnv(...keys: string[]): string {
   if (typeof process === 'undefined') return ''
   for (const key of keys) {
     const value = process.env[key]?.trim()
@@ -224,11 +235,11 @@ const readServerEnv = (...keys: string[]): string => {
   return ''
 }
 
-const choosePexelsPhotoUrl = (
+function choosePexelsPhotoUrl(
   photo: PexelsPhoto | undefined,
   w: number,
   h: number,
-): string | null => {
+): string | null {
   if (!photo?.src) return null
   if (w > 1200 || h > 1200) {
     return (
@@ -266,11 +277,11 @@ const choosePexelsPhotoUrl = (
   )
 }
 
-const resolvePexelsImageForLakebed = async (
+async function resolvePexelsImageForLakebed(
   alt: string,
   w: number,
   h: number,
-): Promise<string | null> => {
+): Promise<string | null> {
   const pexelsApiKey = readServerEnv('PEXELS_API_KEY', 'VITE_PEXELS_API_KEY')
   if (!pexelsApiKey) return null
   const searchUrl = new URL('https://api.pexels.com/v1/search')
@@ -292,11 +303,11 @@ const resolvePexelsImageForLakebed = async (
   }
 }
 
-const mapWithConcurrency = async <TItem, TResult>(
+async function mapWithConcurrency(
   items: TItem[],
   limit: number,
   mapper: (item: TItem) => Promise<TResult>,
-): Promise<TResult[]> => {
+): Promise<TResult[]> {
   const results: TResult[] = []
   let nextIndex = 0
   const workerCount = Math.min(limit, items.length)
@@ -313,7 +324,7 @@ const mapWithConcurrency = async <TItem, TResult>(
   return results
 }
 
-const lakebedImageDimensionsForAlt = (alt: string): ImageDimensions => {
+function lakebedImageDimensionsForAlt(alt: string): ImageDimensions {
   if (
     /\b(avatar|headshot|portrait)\b/i.test(alt) ||
     /\bwith (her|his|their)\b/i.test(alt)
@@ -324,10 +335,10 @@ const lakebedImageDimensionsForAlt = (alt: string): ImageDimensions => {
   return { height: 800, width: 1200 }
 }
 
-const normalizeRemoteImageUrlForLakebed = (
+function normalizeRemoteImageUrlForLakebed(
   src: string,
   dimensions: ImageDimensions,
-): string => {
+): string {
   try {
     const url = new URL(src)
     if (url.hostname === 'images.pexels.com') {
@@ -345,12 +356,14 @@ const normalizeRemoteImageUrlForLakebed = (
   return src
 }
 
-const fallbackLakebedImageUrlFor = (
+function fallbackLakebedImageUrlFor(
   alt: string,
   dimensions: ImageDimensions,
-): string => picsumUrl(slugifyAlt(alt), dimensions.width, dimensions.height)
+): string {
+  return picsumUrl(slugifyAlt(alt), dimensions.width, dimensions.height)
+}
 
-const isLikelyImageAltKey = (key: string): boolean => {
+function isLikelyImageAltKey(key: string): boolean {
   const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, '')
   if (normalized === 'alt') return true
   if (normalized.endsWith('imagealt') || normalized.endsWith('imagealts'))
@@ -368,7 +381,7 @@ const isLikelyImageAltKey = (key: string): boolean => {
   return false
 }
 
-const isLikelyImageSrcKey = (key: string): boolean => {
+function isLikelyImageSrcKey(key: string): boolean {
   const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, '')
   if (normalized === 'src') return true
   if (normalized.endsWith('imagesrc') || normalized.endsWith('imagesrcs'))
@@ -386,23 +399,26 @@ const isLikelyImageSrcKey = (key: string): boolean => {
   return false
 }
 
-const isResolvableImageSrc = (value: string): boolean =>
-  /^(https?:)?\/\//i.test(value) ||
-  value.startsWith('/') ||
-  value.startsWith('data:image/')
+function isResolvableImageSrc(value: string): boolean {
+  return (
+    /^(https?:)?\/\//i.test(value) ||
+    value.startsWith('/') ||
+    value.startsWith('data:image/')
+  )
+}
 
-const readStringField = (
+function readStringField(
   value: Record<string, unknown>,
   key: string,
-): string | null => {
+): string | null {
   const field = value[key]
   return typeof field === 'string' && field.trim() ? field.trim() : null
 }
 
-const collectDerivedImageAltCandidates = (
+function collectDerivedImageAltCandidates(
   value: Record<string, unknown>,
   into: Set<string>,
-): void => {
+): void {
   const name = readStringField(value, 'name')
   const tag = readStringField(value, 'tag')
   if (
@@ -417,11 +433,11 @@ const collectDerivedImageAltCandidates = (
   }
 }
 
-const addRouteImageReference = (
+function addRouteImageReference(
   references: Map<string, RouteImageReference>,
   alt: string,
   src?: string,
-): void => {
+): void {
   const normalizedAlt = alt.trim()
   if (!normalizedAlt) return
   const normalizedSrc =
@@ -434,11 +450,11 @@ const addRouteImageReference = (
   }
 }
 
-const collectImageReferences = (
+function collectImageReferences(
   value: unknown,
   into: Map<string, RouteImageReference>,
   key = '',
-): void => {
+): void {
   if (typeof value === 'string') {
     if (isLikelyImageAltKey(key) && !/^https?:\/\//i.test(value)) {
       addRouteImageReference(into, value)
@@ -482,23 +498,23 @@ const collectImageReferences = (
   }
 }
 
-const collectRouteImageReferences = (
+function collectRouteImageReferences(
   routes: LakebedRoute[],
-): RouteImageReference[] => {
+): RouteImageReference[] {
   const references = new Map<string, RouteImageReference>()
   for (const route of routes) collectImageReferences(route.props, references)
   return [...references.values()].slice(0, 80)
 }
 
-export const collectRouteImageAlts = (routes: LakebedRoute[]): string[] => {
+export function collectRouteImageAlts(routes: LakebedRoute[]): string[] {
   return collectRouteImageReferences(routes).map((reference) => reference.alt)
 }
 
-const normalizePreviewImageSource = async (
+async function normalizePreviewImageSource(
   alt: string,
   src: string,
   options: PreviewImageUrlResolutionOptions = {},
-): Promise<string> => {
+): Promise<string> {
   const dimensions = lakebedImageDimensionsForAlt(alt)
   const resolved = await resolvePreviewImageUrl(src, {
     fallbackAlt: alt,
@@ -519,16 +535,19 @@ const normalizePreviewImageSource = async (
   return src
 }
 
-const isGeneratedPreviewImageSource = (src: string): boolean =>
-  src.startsWith('/api/') ||
-  /^https?:\/\/[^/]+\/api\//i.test(src) ||
-  /^https:\/\/images\.pexels\.com\//i.test(src) ||
-  /^https:\/\/images\.unsplash\.com\//i.test(src) ||
-  /source\.unsplash\.com/i.test(src)
+function isGeneratedPreviewImageSource(src: string): boolean {
+  return (
+    src.startsWith('/api/') ||
+    /^https?:\/\/[^/]+\/api\//i.test(src) ||
+    /^https:\/\/images\.pexels\.com\//i.test(src) ||
+    /^https:\/\/images\.unsplash\.com\//i.test(src) ||
+    /source\.unsplash\.com/i.test(src)
+  )
+}
 
-const parseSiteSpecBrandContext = (
+function parseSiteSpecBrandContext(
   siteSpecJson: string | undefined,
-): string | undefined => {
+): string | undefined {
   if (!siteSpecJson) return undefined
   try {
     const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
@@ -544,11 +563,38 @@ const parseSiteSpecBrandContext = (
   }
 }
 
-const buildRuntimeGeneratedImageSrc = (
+type PortableCommerceConfig = {
+  backendUrl: string
+  storefrontUrl: string
+}
+
+function readPortableCommerceConfig(
+  siteSpecJson: string | undefined,
+): PortableCommerceConfig | null {
+  if (!siteSpecJson) return null
+  try {
+    const parsed = JSON.parse(siteSpecJson) as {
+      commerce?: { backendUrl?: unknown; storefrontUrl?: unknown }
+    }
+    const backendUrl =
+      typeof parsed.commerce?.backendUrl === 'string'
+        ? parsed.commerce.backendUrl.trim()
+        : ''
+    const storefrontUrl =
+      typeof parsed.commerce?.storefrontUrl === 'string'
+        ? parsed.commerce.storefrontUrl.trim()
+        : ''
+    return backendUrl || storefrontUrl ? { backendUrl, storefrontUrl } : null
+  } catch {
+    return null
+  }
+}
+
+function buildRuntimeGeneratedImageSrc(
   alt: string,
   src: string,
   input: Pick<OpenUIExportInput, 'prompt' | 'siteSpecJson'> | undefined,
-): string | undefined => {
+): string | undefined {
   if (!isGeneratedPreviewImageSource(src)) return undefined
   const existing = new URL(src, 'https://ship-fast.local')
   if (existing.pathname !== '/api/pexels') return undefined
@@ -568,28 +614,29 @@ const buildRuntimeGeneratedImageSrc = (
   return `/api/pexels?${params.toString()}`
 }
 
-const asciiTokens = (value: string): string[] =>
-  value
+function asciiTokens(value: string): string[] {
+  return value
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter((token) => token.length >= 4)
+}
 
-const hasMeaningfulTokenOverlap = (left: string, right: string): boolean => {
+function hasMeaningfulTokenOverlap(left: string, right: string): boolean {
   const rightTokens = new Set(asciiTokens(right))
   return asciiTokens(left).some((token) => rightTokens.has(token))
 }
 
-const hasNonAscii = (value: string): boolean => {
+function hasNonAscii(value: string): boolean {
   for (const char of value) {
     if (char.charCodeAt(0) > 127) return true
   }
   return false
 }
 
-const shouldPairGeneratedPreviewImagesByOrder = (
+function shouldPairGeneratedPreviewImagesByOrder(
   routeAlts: string[],
   generatedPreviewSources: ResolvedExtractedImageSource[],
-): boolean => {
+): boolean {
   if (generatedPreviewSources.length < routeAlts.length) return false
   if (routeAlts.some(hasNonAscii)) return true
   return routeAlts.some((routeAlt) =>
@@ -599,7 +646,7 @@ const shouldPairGeneratedPreviewImagesByOrder = (
   )
 }
 
-const extractImageSources = (html: string | undefined): ImageSource[] => {
+function extractImageSources(html: string | undefined): ImageSource[] {
   if (!html) return []
   const byAlt = new Map<string, string>()
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
@@ -618,11 +665,11 @@ const extractImageSources = (html: string | undefined): ImageSource[] => {
   return [...byAlt].map(([alt, src]) => ({ alt, src }))
 }
 
-const resolveExtractedImageSources = async (
+async function resolveExtractedImageSources(
   html: string | undefined,
   input?: Pick<OpenUIExportInput, 'prompt' | 'siteSpecJson'>,
-): Promise<ResolvedExtractedImageSource[]> =>
-  await Promise.all(
+): Promise<ResolvedExtractedImageSource[]> {
+  return await Promise.all(
     extractImageSources(html).map(async ({ alt, src }) => ({
       alt,
       originalSrc: src,
@@ -631,8 +678,9 @@ const resolveExtractedImageSources = async (
       }),
     })),
   )
+}
 
-const extractStyleOverrides = (html: string | undefined): StyleOverride[] => {
+function extractStyleOverrides(html: string | undefined): StyleOverride[] {
   if (!html) return []
   const classCounts = new Map<string, number>()
   const overrides: StyleOverride[] = []
@@ -649,11 +697,11 @@ const extractStyleOverrides = (html: string | undefined): StyleOverride[] => {
   return overrides
 }
 
-export const resolveLakebedImageSources = async (
+export async function resolveLakebedImageSources(
   routes: LakebedRoute[],
   previewHtml: string | undefined,
   input?: Pick<OpenUIExportInput, 'prompt' | 'siteSpecJson'>,
-): Promise<ImageSource[]> => {
+): Promise<ImageSource[]> {
   const extractedSources = await resolveExtractedImageSources(
     previewHtml,
     input,
@@ -726,7 +774,7 @@ export const resolveLakebedImageSources = async (
   return [...byAlt.values()]
 }
 
-const readHtmlTitle = (html: string): string | undefined => {
+function readHtmlTitle(html: string): string | undefined {
   const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
   const title = match?.[1]
     ?.replace(/<[^>]+>/g, '')
@@ -735,9 +783,9 @@ const readHtmlTitle = (html: string): string | undefined => {
   return title || undefined
 }
 
-const parseSiteSpec = (
+function parseSiteSpec(
   siteSpecJson: string | undefined,
-): Record<string, unknown> => {
+): Record<string, unknown> {
   if (!siteSpecJson) return {}
   try {
     const parsed = JSON.parse(siteSpecJson) as unknown
@@ -749,9 +797,9 @@ const parseSiteSpec = (
   }
 }
 
-const readGenUIExportMetadata = (
+function readGenUIExportMetadata(
   siteSpecJson: string | undefined,
-): Record<string, unknown> | null => {
+): Record<string, unknown> | null {
   const siteSpec = parseSiteSpec(siteSpecJson)
   const genui = siteSpec.genui
   return genui !== null && typeof genui === 'object' && !Array.isArray(genui)
@@ -759,16 +807,16 @@ const readGenUIExportMetadata = (
     : null
 }
 
-const readAdminPolicy = (
+function readAdminPolicy(
   genui: Record<string, unknown>,
-): Record<string, unknown> => {
+): Record<string, unknown> {
   const policy = genui.adminPolicy
   return policy !== null && typeof policy === 'object' && !Array.isArray(policy)
     ? (policy as Record<string, unknown>)
     : {}
 }
 
-const readAdminEmails = (genui: Record<string, unknown>): string[] => {
+function readAdminEmails(genui: Record<string, unknown>): string[] {
   const policy = readAdminPolicy(genui)
   const values = Array.isArray(policy.adminEmails)
     ? policy.adminEmails
@@ -787,9 +835,9 @@ const readAdminEmails = (genui: Record<string, unknown>): string[] => {
   ]
 }
 
-const readAdminRoutes = (
+function readAdminRoutes(
   genui: Record<string, unknown>,
-): Array<{ label: string; path: string }> => {
+): Array<{ label: string; path: string }> {
   const manifest = genui.openuiManifest
   const pages =
     manifest !== null &&
@@ -816,9 +864,9 @@ const readAdminRoutes = (
   return routes.length > 0 ? routes : [{ label: 'Admin', path: '/admin' }]
 }
 
-const readLakebedAdminAccessConfig = (
+function readLakebedAdminAccessConfig(
   siteSpecJson: string | undefined,
-): LakebedAdminAccessConfig | null => {
+): LakebedAdminAccessConfig | null {
   const genui = readGenUIExportMetadata(siteSpecJson)
   if (genui === null) return null
   const emails = readAdminEmails(genui)
@@ -829,10 +877,10 @@ const readLakebedAdminAccessConfig = (
   }
 }
 
-const readProjectName = (
+function readProjectName(
   siteSpecJson: string | undefined,
   fallback: string,
-): string => {
+): string {
   const siteSpec = parseSiteSpec(siteSpecJson)
   const candidates = [
     siteSpec.projectName,
@@ -846,10 +894,10 @@ const readProjectName = (
   return match?.trim() || fallback
 }
 
-const readThemeName = (
+function readThemeName(
   siteSpecJson: string | undefined,
   requestedThemeName?: string,
-): string | undefined => {
+): string | undefined {
   if (requestedThemeName) return requestedThemeName
   const siteSpec = parseSiteSpec(siteSpecJson)
   const theme = siteSpec.themeName ?? siteSpec.genuiTheme ?? siteSpec.theme
@@ -979,10 +1027,10 @@ const lakebedColorKeys = [
   'sidebar-ring',
 ] as const
 
-export const buildLakebedThemeCss = (
+export function buildLakebedThemeCss(
   styles: ThemeStyles | null,
   isDark: boolean,
-): string => {
+): string {
   void isDark
   // Ship BOTH palettes: the light vars on `:root` and the dark vars on `.dark`
   // so a single `document.documentElement.classList.toggle('dark')` repaints the
@@ -993,7 +1041,7 @@ export const buildLakebedThemeCss = (
   const darkVars = styles
     ? { ...styles.light, ...styles.dark }
     : defaultLakebedThemeVars
-  const declarationsFor = (vars: Record<string, string>): string =>
+  const declarationsFor = (vars) =>
     themeVarKeys
       .map((key) => {
         const value = vars[key] ?? defaultLakebedThemeVars[key]
@@ -1075,10 +1123,10 @@ body {
  * The `--color-*` values reference the `:root` CSS variables (e.g.
  * `var(--background)`) so runtime theme switching still works.
  */
-const buildLakebedTailwindThemeCss = (
+function buildLakebedTailwindThemeCss(
   styles: ThemeStyles | null,
   isDark: boolean,
-): string => {
+): string {
   const selected = styles
     ? { ...styles.light, ...(isDark ? styles.dark : {}) }
     : defaultLakebedThemeVars
@@ -1106,18 +1154,21 @@ ${radiusDeclaration}
 }`
 }
 
-const slugifyRoute = (value: string): string =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'page'
+function slugifyRoute(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'page'
+  )
+}
 
-const uniqueRoutePath = (
+function uniqueRoutePath(
   label: string,
   index: number,
   used: Set<string>,
-): string => {
+): string {
   if (index === 0) {
     used.add('/')
     return '/'
@@ -1133,10 +1184,10 @@ const uniqueRoutePath = (
   return path
 }
 
-const getManifestSourceIndex = (): Record<
+function getManifestSourceIndex(): Record<
   string,
   ReactExportSourceEntry | undefined
-> => {
+> {
   if (manifestSourceIndex) return manifestSourceIndex
   if (reactExportSourcesEncoding !== 'br+base64') {
     throw new Error(
@@ -1151,7 +1202,7 @@ const getManifestSourceIndex = (): Record<
   return manifestSourceIndex
 }
 
-const getVendorSourceFileIndex = (): Record<string, string | undefined> => {
+function getVendorSourceFileIndex(): Record<string, string | undefined> {
   if (vendorSourceFileIndex) return vendorSourceFileIndex
   if (vendorSourceFilesEncoding !== 'br+base64') {
     throw new Error(
@@ -1166,27 +1217,29 @@ const getVendorSourceFileIndex = (): Record<string, string | undefined> => {
   return vendorSourceFileIndex
 }
 
-const printNode = (node: ts.Node, sourceFile: ts.SourceFile): string =>
-  ts
+function printNode(node: ts.Node, sourceFile: ts.SourceFile): string {
+  return ts
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
     .printNode(ts.EmitHint.Unspecified, node, sourceFile)
+}
 
-export const isExportableFactory = (expression: string): boolean =>
-  expression === 'defineCapsule'
+export function isExportableFactory(expression: string): boolean {
+  return expression === 'defineCapsule'
+}
 
-const propertyNameText = (name: ts.PropertyName, sourceFile: ts.SourceFile) => {
+function propertyNameText(name: ts.PropertyName, sourceFile: ts.SourceFile) {
   if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text
   return name.getText(sourceFile)
 }
 
-const bindingIdentifierNames = (name: ts.BindingName): string[] => {
+function bindingIdentifierNames(name: ts.BindingName): string[] {
   if (ts.isIdentifier(name)) return [name.text]
   return name.elements.flatMap((element) =>
     ts.isOmittedExpression(element) ? [] : bindingIdentifierNames(element.name),
   )
 }
 
-const topLevelDeclarationNames = (statement: ts.Statement): string[] => {
+function topLevelDeclarationNames(statement: ts.Statement): string[] {
   if (ts.isVariableStatement(statement)) {
     return statement.declarationList.declarations.flatMap((declaration) =>
       bindingIdentifierNames(declaration.name),
@@ -1215,9 +1268,9 @@ const topLevelDeclarationNames = (statement: ts.Statement): string[] => {
 // stripped as build-time-only → `z is not defined` → blank render. Skipping
 // TypeNode subtrees keeps dependency resolution aligned with what actually
 // survives compilation.
-const collectValueIdentifierTexts = (node: ts.Node) => {
+function collectValueIdentifierTexts(node: ts.Node) {
   const identifiers = new Set<string>()
-  const visit = (current: ts.Node) => {
+  const visit = (current) => {
     if (ts.isTypeNode(current)) return
     if (ts.isIdentifier(current)) {
       identifiers.add(current.text)
@@ -1233,59 +1286,198 @@ const collectValueIdentifierTexts = (node: ts.Node) => {
 // neither bound in the module nor listed here is a dropped/stripped import.
 const CLIENT_RUNTIME_GLOBALS = new Set<string>([
   // ECMAScript
-  'globalThis', 'undefined', 'NaN', 'Infinity', 'Object', 'Array', 'String',
-  'Number', 'Boolean', 'Symbol', 'BigInt', 'Math', 'JSON', 'Date', 'RegExp',
-  'Function', 'Promise', 'Map', 'Set', 'WeakMap', 'WeakSet', 'WeakRef', 'Proxy',
-  'Reflect', 'Error', 'EvalError', 'RangeError', 'ReferenceError', 'SyntaxError',
-  'TypeError', 'URIError', 'AggregateError', 'parseInt', 'parseFloat', 'isNaN',
-  'isFinite', 'encodeURI', 'encodeURIComponent', 'decodeURI',
-  'decodeURIComponent', 'escape', 'unescape', 'Intl', 'ArrayBuffer',
-  'SharedArrayBuffer', 'DataView', 'Atomics', 'Int8Array', 'Uint8Array',
-  'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array',
-  'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array',
-  'structuredClone', 'queueMicrotask', 'eval',
+  'globalThis',
+  'undefined',
+  'NaN',
+  'Infinity',
+  'Object',
+  'Array',
+  'String',
+  'Number',
+  'Boolean',
+  'Symbol',
+  'BigInt',
+  'Math',
+  'JSON',
+  'Date',
+  'RegExp',
+  'Function',
+  'Promise',
+  'Map',
+  'Set',
+  'WeakMap',
+  'WeakSet',
+  'WeakRef',
+  'Proxy',
+  'Reflect',
+  'Error',
+  'EvalError',
+  'RangeError',
+  'ReferenceError',
+  'SyntaxError',
+  'TypeError',
+  'URIError',
+  'AggregateError',
+  'parseInt',
+  'parseFloat',
+  'isNaN',
+  'isFinite',
+  'encodeURI',
+  'encodeURIComponent',
+  'decodeURI',
+  'decodeURIComponent',
+  'escape',
+  'unescape',
+  'Intl',
+  'ArrayBuffer',
+  'SharedArrayBuffer',
+  'DataView',
+  'Atomics',
+  'Int8Array',
+  'Uint8Array',
+  'Uint8ClampedArray',
+  'Int16Array',
+  'Uint16Array',
+  'Int32Array',
+  'Uint32Array',
+  'Float32Array',
+  'Float64Array',
+  'BigInt64Array',
+  'BigUint64Array',
+  'structuredClone',
+  'queueMicrotask',
+  'eval',
   // Console / timers / scheduling
-  'console', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
-  'requestAnimationFrame', 'cancelAnimationFrame', 'requestIdleCallback',
-  'cancelIdleCallback', 'performance', 'queueMicrotask',
+  'console',
+  'setTimeout',
+  'clearTimeout',
+  'setInterval',
+  'clearInterval',
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+  'requestIdleCallback',
+  'cancelIdleCallback',
+  'performance',
+  'queueMicrotask',
   // DOM / BOM
-  'window', 'self', 'top', 'parent', 'frames', 'document', 'navigator',
-  'location', 'history', 'screen', 'localStorage', 'sessionStorage', 'alert',
-  'confirm', 'prompt', 'getComputedStyle', 'matchMedia', 'getSelection',
-  'scrollTo', 'scrollBy', 'scrollX', 'scrollY', 'innerWidth', 'innerHeight',
-  'devicePixelRatio', 'customElements', 'crypto', 'caches',
+  'window',
+  'self',
+  'top',
+  'parent',
+  'frames',
+  'document',
+  'navigator',
+  'location',
+  'history',
+  'screen',
+  'localStorage',
+  'sessionStorage',
+  'alert',
+  'confirm',
+  'prompt',
+  'getComputedStyle',
+  'matchMedia',
+  'getSelection',
+  'scrollTo',
+  'scrollBy',
+  'scrollX',
+  'scrollY',
+  'innerWidth',
+  'innerHeight',
+  'devicePixelRatio',
+  'customElements',
+  'crypto',
+  'caches',
   // Fetch / network / encoding
-  'fetch', 'XMLHttpRequest', 'URL', 'URLSearchParams', 'Headers', 'Request',
-  'Response', 'FormData', 'Blob', 'File', 'FileReader', 'WebSocket',
-  'EventSource', 'AbortController', 'AbortSignal', 'TextEncoder', 'TextDecoder',
-  'atob', 'btoa', 'BroadcastChannel', 'MessageChannel', 'Worker',
+  'fetch',
+  'XMLHttpRequest',
+  'URL',
+  'URLSearchParams',
+  'Headers',
+  'Request',
+  'Response',
+  'FormData',
+  'Blob',
+  'File',
+  'FileReader',
+  'WebSocket',
+  'EventSource',
+  'AbortController',
+  'AbortSignal',
+  'TextEncoder',
+  'TextDecoder',
+  'atob',
+  'btoa',
+  'BroadcastChannel',
+  'MessageChannel',
+  'Worker',
   // DOM constructors / observers / events
-  'Node', 'Element', 'HTMLElement', 'DocumentFragment', 'Text', 'Comment',
-  'ShadowRoot', 'Event', 'CustomEvent', 'EventTarget', 'KeyboardEvent',
-  'MouseEvent', 'PointerEvent', 'TouchEvent', 'FocusEvent', 'InputEvent',
-  'DragEvent', 'WheelEvent', 'ClipboardEvent', 'SubmitEvent', 'PopStateEvent',
-  'HashChangeEvent', 'MessageEvent', 'StorageEvent', 'ProgressEvent',
-  'CloseEvent', 'ErrorEvent', 'PromiseRejectionEvent', 'AnimationEvent',
-  'TransitionEvent', 'PageTransitionEvent', 'BeforeUnloadEvent', 'UIEvent',
-  'CompositionEvent', 'MediaQueryListEvent', 'MutationObserver',
-  'ResizeObserver', 'IntersectionObserver', 'PerformanceObserver', 'DOMParser',
-  'XMLSerializer', 'Image', 'Audio', 'Option', 'CSS', 'DOMException',
-  'HTMLInputElement', 'HTMLElement', 'FontFace',
+  'Node',
+  'Element',
+  'HTMLElement',
+  'DocumentFragment',
+  'Text',
+  'Comment',
+  'ShadowRoot',
+  'Event',
+  'CustomEvent',
+  'EventTarget',
+  'KeyboardEvent',
+  'MouseEvent',
+  'PointerEvent',
+  'TouchEvent',
+  'FocusEvent',
+  'InputEvent',
+  'DragEvent',
+  'WheelEvent',
+  'ClipboardEvent',
+  'SubmitEvent',
+  'PopStateEvent',
+  'HashChangeEvent',
+  'MessageEvent',
+  'StorageEvent',
+  'ProgressEvent',
+  'CloseEvent',
+  'ErrorEvent',
+  'PromiseRejectionEvent',
+  'AnimationEvent',
+  'TransitionEvent',
+  'PageTransitionEvent',
+  'BeforeUnloadEvent',
+  'UIEvent',
+  'CompositionEvent',
+  'MediaQueryListEvent',
+  'MutationObserver',
+  'ResizeObserver',
+  'IntersectionObserver',
+  'PerformanceObserver',
+  'DOMParser',
+  'XMLSerializer',
+  'Image',
+  'Audio',
+  'Option',
+  'CSS',
+  'DOMException',
+  'HTMLInputElement',
+  'HTMLElement',
+  'FontFace',
   // Preact / JSX runtime helpers that may appear un-imported in generated code
   'Fragment',
   // Node-ish (defensive; should not appear in client code)
-  'process', 'Buffer',
+  'process',
+  'Buffer',
 ])
 
 // Identifiers that must be skipped when collecting *references* because they
 // are member names, property keys, JSX attribute names, or binding targets —
 // not free-variable uses. Misclassifying these would flag `.map`, `className`,
 // object keys etc. as undefined.
-const isReferenceIdentifier = (node: ts.Identifier): boolean => {
+function isReferenceIdentifier(node: ts.Identifier): boolean {
   const parent = node.parent
   if (!parent) return true
   // `obj.name` — the member, not a reference to a variable named `name`.
-  if (ts.isPropertyAccessExpression(parent) && parent.name === node) return false
+  if (ts.isPropertyAccessExpression(parent) && parent.name === node)
+    return false
   // `{ key: value }` object-literal key (non-computed).
   if (ts.isPropertyAssignment(parent) && parent.name === node) return false
   // Method / accessor / property member names in objects and classes.
@@ -1334,13 +1526,13 @@ const isReferenceIdentifier = (node: ts.Identifier): boolean => {
 // treating a name bound in any scope as "available" cannot produce a false
 // positive (only, at worst, a missed leak), while the goal — catching an
 // import that was dropped so the name is bound in NO scope — is preserved.
-const collectAllBoundNames = (sourceFile: ts.SourceFile): Set<string> => {
+function collectAllBoundNames(sourceFile: ts.SourceFile): Set<string> {
   const bound = new Set<string>()
-  const add = (name: ts.BindingName | undefined) => {
+  const add = (name) => {
     if (!name) return
     for (const text of bindingIdentifierNames(name)) bound.add(text)
   }
-  const visit = (node: ts.Node) => {
+  const visit = (node) => {
     if (ts.isImportClause(node)) {
       if (node.name) bound.add(node.name.text)
       const named = node.namedBindings
@@ -1381,10 +1573,10 @@ const collectAllBoundNames = (sourceFile: ts.SourceFile): Set<string> => {
 // runtime globals — i.e. imports that were stripped or dropped during rewrite.
 // This is the general form of the `z is not defined` / `useEmblaCarousel is not
 // defined` blank-render bugs: any such name blank-renders the deploy.
-export const findUnboundClientReferences = (
+export function findUnboundClientReferences(
   moduleSource: string,
   fileName: string,
-): string[] => {
+): string[] {
   const sourceFile = ts.createSourceFile(
     fileName,
     moduleSource,
@@ -1394,7 +1586,7 @@ export const findUnboundClientReferences = (
   )
   const bound = collectAllBoundNames(sourceFile)
   const unbound = new Set<string>()
-  const visit = (node: ts.Node) => {
+  const visit = (node) => {
     if (ts.isTypeNode(node)) return
     if (
       ts.isIdentifier(node) &&
@@ -1410,11 +1602,11 @@ export const findUnboundClientReferences = (
   return [...unbound]
 }
 
-const collectClientComponentPreludeSources = (
+function collectClientComponentPreludeSources(
   sourceFile: ts.SourceFile,
   targetStatement: ts.Statement,
   componentSource: ts.Node,
-) => {
+) {
   const declarationByName = new Map<string, ts.Statement>()
   for (const statement of sourceFile.statements) {
     if (
@@ -1455,10 +1647,67 @@ const collectClientComponentPreludeSources = (
     )
 }
 
-const objectRecord = (
+function collectServerHelperSources(
+  sourceFile: ts.SourceFile,
+  operationSources: string[],
+): Record<string, string> {
+  const declarationByName = new Map<string, ts.Statement>()
+  for (const statement of sourceFile.statements) {
+    if (
+      ts.isImportDeclaration(statement) ||
+      ts.isExportDeclaration(statement)
+    ) {
+      continue
+    }
+    for (const name of topLevelDeclarationNames(statement)) {
+      declarationByName.set(name, statement)
+    }
+  }
+
+  const operationFile = ts.createSourceFile(
+    'server-operations.ts',
+    `const operations = [${operationSources.map((source) => `(${source})`).join(',')}];`,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const requiredNames = new Set<string>()
+  const queuedNames = [...collectValueIdentifierTexts(operationFile)]
+  for (const name of queuedNames) {
+    if (requiredNames.has(name)) continue
+    const statement = declarationByName.get(name)
+    if (!statement) continue
+    requiredNames.add(name)
+    for (const identifier of collectValueIdentifierTexts(statement)) {
+      if (!requiredNames.has(identifier)) queuedNames.push(identifier)
+    }
+  }
+
+  const helpers: Record<string, string> = {}
+  for (const statement of sourceFile.statements) {
+    const names = topLevelDeclarationNames(statement).filter((name) =>
+      requiredNames.has(name),
+    )
+    if (names.length === 0) continue
+    const transpiled = ts
+      .transpileModule(printNode(statement, sourceFile), {
+        compilerOptions: {
+          module: ts.ModuleKind.ESNext,
+          target: ts.ScriptTarget.ES2022,
+        },
+      })
+      .outputText.replace(/^["']use strict["'];?\s*/, '')
+      .trim()
+    if (/\bcreateLakebedDefinition\s*\(/.test(transpiled)) continue
+    for (const name of names) helpers[name] = transpiled
+  }
+  return helpers
+}
+
+function objectRecord(
   object: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
-): Record<string, string> => {
+): Record<string, string> {
   if (!object || !ts.isObjectLiteralExpression(object)) return {}
   return Object.fromEntries(
     object.properties
@@ -1472,10 +1721,10 @@ const objectRecord = (
   )
 }
 
-const stringPropertyValue = (
+function stringPropertyValue(
   object: ts.ObjectLiteralExpression,
   name: string,
-): string | null => {
+): string | null {
   const property = object.properties.find(
     (item): item is ts.PropertyAssignment =>
       ts.isPropertyAssignment(item) &&
@@ -1489,10 +1738,10 @@ const stringPropertyValue = (
     : null
 }
 
-const readEndpointRecord = (
+function readEndpointRecord(
   object: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
-): Record<string, LakebedEndpointDefinition> => {
+): Record<string, LakebedEndpointDefinition> {
   if (!object || !ts.isObjectLiteralExpression(object)) return {}
   return Object.fromEntries(
     object.properties
@@ -1520,32 +1769,42 @@ const readEndpointRecord = (
   )
 }
 
-const readNumericSchemaFields = (
+function readNumericSchemaFields(
   schema: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
-): string[] => {
+): string[] {
   if (!schema || !ts.isObjectLiteralExpression(schema)) return []
   const fields = new Set<string>()
 
   for (const tableProperty of schema.properties) {
     if (!ts.isPropertyAssignment(tableProperty)) continue
-    const tableCall = tableProperty.initializer
-    if (
-      !ts.isCallExpression(tableCall) ||
-      tableCall.expression.getText(sourceFile) !== 'table'
-    ) {
-      continue
-    }
+    const initializer = unwrapExpression(tableProperty.initializer)
+    const directTableCall =
+      ts.isCallExpression(initializer) &&
+      initializer.expression.getText(sourceFile) === 'table'
+        ? initializer
+        : null
+    const spreadTableCall = ts.isObjectLiteralExpression(initializer)
+      ? initializer.properties
+          .filter(ts.isSpreadAssignment)
+          .map((property) => property.expression)
+          .find(
+            (expression): expression is ts.CallExpression =>
+              ts.isCallExpression(expression) &&
+              expression.expression.getText(sourceFile) === 'table',
+          )
+      : undefined
+    const rawTableCall = directTableCall ?? spreadTableCall
+    if (!rawTableCall) continue
+    const tableCall = inlineTableCallArg(rawTableCall, sourceFile)
 
     const tableShape = tableCall.arguments[0]
     if (!tableShape || !ts.isObjectLiteralExpression(tableShape)) continue
 
     for (const fieldProperty of tableShape.properties) {
       if (!ts.isPropertyAssignment(fieldProperty)) continue
-      const fieldInitializer = fieldProperty.initializer
       if (
-        ts.isCallExpression(fieldInitializer) &&
-        fieldInitializer.expression.getText(sourceFile) === 'number'
+        /^number\s*\(/.test(printNode(fieldProperty.initializer, sourceFile))
       ) {
         fields.add(propertyNameText(fieldProperty.name, sourceFile))
       }
@@ -1555,13 +1814,16 @@ const readNumericSchemaFields = (
   return [...fields]
 }
 
-const normalizeLakebedSchemaSource = (source: string | null): string | null =>
-  source
-    ?.replace(
-      /\bnumber\s*\(\s*\)\s*\.default\s*\(\s*([-+]?\d+(?:\.\d+)?)\s*\)/g,
-      (_match, defaultValue: string) => `string().default('${defaultValue}')`,
-    )
-    .replace(/\bnumber\s*\(\s*\)/g, 'string()') ?? null
+function normalizeLakebedSchemaSource(source: string | null): string | null {
+  return (
+    source
+      ?.replace(
+        /\bnumber\s*\(\s*\)\s*\.default\s*\(\s*([-+]?\d+(?:\.\d+)?)\s*\)/g,
+        (_match, defaultValue) => `string().default('${defaultValue}')`,
+      )
+      .replace(/\bnumber\s*\(\s*\)/g, 'string()') ?? null
+  )
+}
 
 // Inline a `table(helper())` argument to `table({ ...fields })` by resolving a
 // shared field helper (e.g. `const noticeFields = () => ({...})`) to its
@@ -1569,10 +1831,10 @@ const normalizeLakebedSchemaSource = (source: string | null): string | null =>
 // read the helper call and SILENTLY DROPS the table from the schema — so
 // `ctx.db.<table>` is undefined at runtime and any query reading it throws,
 // which cascades every section back to its prop-fallback sample.
-const inlineTableCallArg = (
+function inlineTableCallArg(
   tableCall: ts.CallExpression,
   sourceFile: ts.SourceFile,
-): ts.Expression => {
+): ts.Expression {
   const arg = tableCall.arguments[0]
   if (!arg || !ts.isCallExpression(arg) || !ts.isIdentifier(arg.expression)) {
     return tableCall
@@ -1605,10 +1867,10 @@ const inlineTableCallArg = (
   ])
 }
 
-const lakebedSchemaSource = (
+function lakebedSchemaSource(
   schema: ts.ObjectLiteralExpression,
   sourceFile: ts.SourceFile,
-): string => {
+): string {
   const properties = schema.properties
     .filter(ts.isPropertyAssignment)
     .map((property) => {
@@ -1633,7 +1895,7 @@ const lakebedSchemaSource = (
   return `{\n${properties.map((property) => `  ${property}`).join(',\n')}\n}`
 }
 
-const unwrapExpression = (expression: ts.Expression): ts.Expression => {
+function unwrapExpression(expression: ts.Expression): ts.Expression {
   if (
     ts.isAsExpression(expression) ||
     ts.isSatisfiesExpression(expression) ||
@@ -1644,10 +1906,10 @@ const unwrapExpression = (expression: ts.Expression): ts.Expression => {
   return expression
 }
 
-const findVariableInitializer = (
+function findVariableInitializer(
   sourceFile: ts.SourceFile,
   name: string,
-): ts.Expression | null => {
+): ts.Expression | null {
   for (const statement of sourceFile.statements) {
     if (!ts.isVariableStatement(statement)) continue
     for (const declaration of statement.declarationList.declarations) {
@@ -1665,10 +1927,10 @@ const findVariableInitializer = (
   return null
 }
 
-const resolveSchemaObject = (
+function resolveSchemaObject(
   schema: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
-): ts.ObjectLiteralExpression | null => {
+): ts.ObjectLiteralExpression | null {
   if (!schema) return null
   const expression = unwrapExpression(schema)
   if (ts.isObjectLiteralExpression(expression)) return expression
@@ -1702,10 +1964,10 @@ type LakebedObjectSource = {
   sourceFile: ts.SourceFile
 }
 
-const importedLakebedName = (
+function importedLakebedName(
   sourceFile: ts.SourceFile,
   localName: string,
-): { moduleName: string; importedName: string } | null => {
+): { moduleName: string; importedName: string } | null {
   for (const statement of sourceFile.statements) {
     if (!ts.isImportDeclaration(statement)) continue
     const specifier = statement.moduleSpecifier
@@ -1727,11 +1989,11 @@ const importedLakebedName = (
   return null
 }
 
-const readImportedLakebedObject = (
+function readImportedLakebedObject(
   sourceFile: ts.SourceFile,
   entry: ReactExportSourceEntry,
   localName: string,
-): LakebedObjectSource | null => {
+): LakebedObjectSource | null {
   const imported = importedLakebedName(sourceFile, localName)
   if (!imported || !imported.moduleName.startsWith('.')) return null
   const sourcePath = resolveRelativeBlockSourcePath(
@@ -1756,11 +2018,11 @@ const readImportedLakebedObject = (
     : null
 }
 
-const resolveLakebedObject = (
+function resolveLakebedObject(
   lakebed: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   entry: ReactExportSourceEntry,
-): LakebedObjectSource | null => {
+): LakebedObjectSource | null {
   if (!lakebed) return null
   const expression = unwrapExpression(lakebed)
   if (ts.isObjectLiteralExpression(expression)) {
@@ -1771,10 +2033,10 @@ const resolveLakebedObject = (
     : null
 }
 
-export const readLakebedDefinition = (
+export function readLakebedDefinition(
   componentName: string,
   entry: ReactExportSourceEntry,
-): LakebedDefinition | null => {
+): LakebedDefinition | null {
   const sourceFile = ts.createSourceFile(
     entry.file,
     entry.source,
@@ -1814,7 +2076,7 @@ export const readLakebedDefinition = (
       const lakebedSource = resolveLakebedObject(lakebed, sourceFile, entry)
       if (!lakebedSource) return null
 
-      const prop = (name: string) =>
+      const prop = (name) =>
         lakebedSource.object.properties.find(
           (property): property is ts.PropertyAssignment =>
             ts.isPropertyAssignment(property) &&
@@ -1826,7 +2088,21 @@ export const readLakebedDefinition = (
         prop('schema'),
         lakebedSource.sourceFile,
       )
+      const queries = objectRecord(prop('queries'), lakebedSource.sourceFile)
+      const mutations = objectRecord(
+        prop('mutations'),
+        lakebedSource.sourceFile,
+      )
+      const endpoints = readEndpointRecord(
+        prop('endpoints'),
+        lakebedSource.sourceFile,
+      )
       return {
+        helpers: collectServerHelperSources(lakebedSource.sourceFile, [
+          ...Object.values(queries),
+          ...Object.values(mutations),
+          ...Object.values(endpoints).map((endpoint) => endpoint.source),
+        ]),
         schemaSource: normalizeLakebedSchemaSource(
           schema ? lakebedSchemaSource(schema, lakebedSource.sourceFile) : null,
         ),
@@ -1834,12 +2110,9 @@ export const readLakebedDefinition = (
           schema ?? undefined,
           lakebedSource.sourceFile,
         ),
-        queries: objectRecord(prop('queries'), lakebedSource.sourceFile),
-        mutations: objectRecord(prop('mutations'), lakebedSource.sourceFile),
-        endpoints: readEndpointRecord(
-          prop('endpoints'),
-          lakebedSource.sourceFile,
-        ),
+        queries,
+        mutations,
+        endpoints,
       }
     }
   }
@@ -1847,19 +2120,20 @@ export const readLakebedDefinition = (
   return null
 }
 
-const normalizeClientComponentSource = (source: string): string =>
-  source
+function normalizeClientComponentSource(source: string): string {
+  return source
     .replace(/\bReactNode\b/g, 'ComponentChildren')
     .replace(/\bReact\./g, '')
+}
 
-const transformClientComponentImports = (
+function transformClientComponentImports(
   sourceFile: ts.SourceFile,
   outPath: string,
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
   seenBlockFiles: Set<string>,
   sourcePath?: string,
-): { imports: string[]; vendorFiles: Set<string> } => {
+): { imports: string[]; vendorFiles: Set<string> } {
   const imports: string[] = [
     'import type { ComponentChildren } from "preact"',
     'import type { LakebedAdapter } from "../lib/lakebed"',
@@ -1934,13 +2208,13 @@ const transformClientComponentImports = (
   }
 }
 
-const readClientComponentDefinition = (
+function readClientComponentDefinition(
   componentName: string,
   entry: ReactExportSourceEntry,
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
   seenBlockFiles: Set<string>,
-): ClientComponentDefinition | null => {
+): ClientComponentDefinition | null {
   const sourceFile = ts.createSourceFile(
     entry.file,
     entry.source,
@@ -2006,7 +2280,7 @@ const readClientComponentDefinition = (
   return null
 }
 
-const collectDefinitions = (componentNames: string[]): LakebedDefinition[] => {
+function collectDefinitions(componentNames: string[]): LakebedDefinition[] {
   const manifest = getManifestSourceIndex()
   return componentNames
     .map((componentName) => {
@@ -2018,12 +2292,12 @@ const collectDefinitions = (componentNames: string[]): LakebedDefinition[] => {
     )
 }
 
-const collectClientComponents = (
+function collectClientComponents(
   componentNames: string[],
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
   seenBlockFiles: Set<string>,
-): ClientComponentDefinition[] => {
+): ClientComponentDefinition[] {
   const manifest = getManifestSourceIndex()
   return componentNames
     .map((componentName) => {
@@ -2044,9 +2318,9 @@ const collectClientComponents = (
     )
 }
 
-const buildRoutes = (
+function buildRoutes(
   parsed: ReturnType<typeof parseOpenUIForExport>,
-): LakebedRoute[] => {
+): LakebedRoute[] {
   const usedPaths = new Set<string>()
   const usedNames = new Set<string>()
   return parsed.pages.map((page, index) => {
@@ -2076,7 +2350,7 @@ type ComponentSchemaDef = {
 
 let componentSchemaDefs: Record<string, ComponentSchemaDef> | null = null
 
-const getComponentSchemaDefs = (): Record<string, ComponentSchemaDef> => {
+function getComponentSchemaDefs(): Record<string, ComponentSchemaDef> {
   if (componentSchemaDefs) return componentSchemaDefs
   try {
     const schema = library.toJSONSchema() as Record<string, unknown>
@@ -2092,17 +2366,20 @@ const getComponentSchemaDefs = (): Record<string, ComponentSchemaDef> => {
   }
 }
 
-const isObjectLikeSchema = (def: {
+function isObjectLikeSchema(def: {
   type?: string
   properties?: unknown
   items?: unknown
   $ref?: unknown
-}): boolean =>
-  def.type === 'object' ||
-  def.type === 'array' ||
-  Boolean(def.properties) ||
-  Boolean(def.items) ||
-  Boolean(def.$ref)
+}): boolean {
+  return (
+    def.type === 'object' ||
+    def.type === 'array' ||
+    Boolean(def.properties) ||
+    Boolean(def.items) ||
+    Boolean(def.$ref)
+  )
+}
 
 // The OpenUI parser maps positional arguments to a component's declared prop
 // slots in order. When a component is called with a single object literal
@@ -2112,7 +2389,7 @@ const isObjectLikeSchema = (def: {
 // sole prop slot expects a scalar but received a non-array object whose keys
 // are all valid prop names of the component — and unwrap it so the object
 // becomes the component props.
-const unwrapSingleObjectArgProps = (node: unknown): void => {
+function unwrapSingleObjectArgProps(node: unknown): void {
   if (!isOpenUIElementNode(node)) return
   const props = node.props
   if (props && typeof props === 'object' && !Array.isArray(props)) {
@@ -2162,19 +2439,22 @@ const routeRenderPrimitives = new Set([
   'Text',
 ])
 
-const isOpenUIElementNode = (value: unknown): value is ElementNode =>
-  value !== null &&
-  typeof value === 'object' &&
-  !Array.isArray(value) &&
-  'type' in value &&
-  value.type === 'element' &&
-  'typeName' in value &&
-  typeof value.typeName === 'string'
+function isOpenUIElementNode(value: unknown): value is ElementNode {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    'type' in value &&
+    value.type === 'element' &&
+    'typeName' in value &&
+    typeof value.typeName === 'string'
+  )
+}
 
-const collectNodeComponentNames = (
+function collectNodeComponentNames(
   value: unknown,
   names = new Set<string>(),
-): Set<string> => {
+): Set<string> {
   if (Array.isArray(value)) {
     for (const item of value) collectNodeComponentNames(item, names)
     return names
@@ -2190,13 +2470,15 @@ const collectNodeComponentNames = (
   return names
 }
 
-const collectRouteComponentNames = (routes: LakebedRoute[]): string[] => [
-  ...new Set(
-    routes.flatMap((route) => [...collectNodeComponentNames(route.node)]),
-  ),
-]
+function collectRouteComponentNames(routes: LakebedRoute[]): string[] {
+  return [
+    ...new Set(
+      routes.flatMap((route) => [...collectNodeComponentNames(route.node)]),
+    ),
+  ]
+}
 
-const routeGapClass = (value: unknown): string => {
+function routeGapClass(value: unknown): string {
   if (value === 'none') return 'gap-0'
   if (value === 'xs') return 'gap-1'
   if (value === 'sm') return 'gap-2'
@@ -2205,7 +2487,7 @@ const routeGapClass = (value: unknown): string => {
   return 'gap-4'
 }
 
-const routeAlignClass = (value: unknown): string => {
+function routeAlignClass(value: unknown): string {
   if (value === 'start') return 'items-start'
   if (value === 'center') return 'items-center'
   if (value === 'end') return 'items-end'
@@ -2213,7 +2495,7 @@ const routeAlignClass = (value: unknown): string => {
   return ''
 }
 
-const routeJustifyClass = (value: unknown): string => {
+function routeJustifyClass(value: unknown): string {
   if (value === 'start') return 'justify-start'
   if (value === 'center') return 'justify-center'
   if (value === 'end') return 'justify-end'
@@ -2222,8 +2504,8 @@ const routeJustifyClass = (value: unknown): string => {
   return ''
 }
 
-const routeStackClass = (props: Record<string, unknown>) =>
-  [
+function routeStackClass(props: Record<string, unknown>) {
+  return [
     'flex',
     props.direction === 'row' ? 'flex-row' : 'flex-col',
     routeGapClass(props.gap),
@@ -2236,8 +2518,9 @@ const routeStackClass = (props: Record<string, unknown>) =>
       (item): item is string => typeof item === 'string' && item.length > 0,
     )
     .join(' ')
+}
 
-const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
+function routeGridClass(cols: unknown, gap: unknown, className: unknown) {
   const colsClass =
     cols === '1'
       ? 'grid-cols-1'
@@ -2257,14 +2540,14 @@ const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
     .join(' ')
 }
 
-const routeHeadingClass = (level: unknown): string => {
+function routeHeadingClass(level: unknown): string {
   if (level === '1') return 'text-4xl font-bold tracking-tight md:text-5xl'
   if (level === '3') return 'text-2xl font-semibold'
   if (level === '4') return 'text-lg font-semibold'
   return 'text-3xl font-semibold tracking-tight'
 }
 
-const routeSpacerClass = (size: unknown): string => {
+function routeSpacerClass(size: unknown): string {
   if (size === 'xs') return 'h-2'
   if (size === 'sm') return 'h-4'
   if (size === 'lg') return 'h-16'
@@ -2272,19 +2555,20 @@ const routeSpacerClass = (size: unknown): string => {
   return 'h-8'
 }
 
-const jsxAttribute = (name: string, value: unknown): string =>
-  typeof value === 'string' && value.length > 0
+function jsxAttribute(name: string, value: unknown): string {
+  return typeof value === 'string' && value.length > 0
     ? ` ${name}=${JSON.stringify(value)}`
     : ''
+}
 
-const renderRouteNodeChildren = (value: unknown): string => {
+function renderRouteNodeChildren(value: unknown): string {
   if (Array.isArray(value)) {
     return value.map((item) => renderRouteNode(item)).join('\n')
   }
   return renderRouteNode(value)
 }
 
-const renderRouteNode = (value: unknown): string => {
+function renderRouteNode(value: unknown): string {
   if (!isOpenUIElementNode(value)) return ''
 
   const props = value.props ?? {}
@@ -2353,35 +2637,38 @@ ${renderRouteNodeChildren(props.children)}
   )}} lakebed={input.lakebed} />`
 }
 
-const renderRouteClientComponentDefinition = (
+function renderRouteClientComponentDefinition(
   route: LakebedRoute,
   nestedComponentNames: string[],
-): ClientComponentDefinition => ({
-  name: route.componentName,
-  preludeSources: [],
-  source: `(input) => (
+): ClientComponentDefinition {
+  return {
+    name: route.componentName,
+    preludeSources: [],
+    source: `(input) => (
     <>
 ${renderRouteNode(route.node)}
     </>
   )`,
-  imports: [
-    'import type { ComponentChildren } from "preact";',
-    'import type { LakebedAdapter } from "../lib/lakebed";',
-    ...nestedComponentNames.map(
-      (name) =>
-        `import { ${toIdentifier(name)}Block } from "./${toIdentifier(name)}";`,
-    ),
-  ],
-  vendorFiles: new Set<string>(),
-})
+    imports: [
+      'import type { ComponentChildren } from "preact";',
+      'import type { LakebedAdapter } from "../lib/lakebed";',
+      ...nestedComponentNames.map(
+        (name) =>
+          `import { ${toIdentifier(name)}Block } from "./${toIdentifier(name)}";`,
+      ),
+    ],
+    vendorFiles: new Set<string>(),
+  }
+}
 
-const normalizeRouteTarget = (value: string): string =>
-  value.trim().toLowerCase()
+function normalizeRouteTarget(value: string): string {
+  return value.trim().toLowerCase()
+}
 
-const resolveLakebedRouteTarget = (
+function resolveLakebedRouteTarget(
   target: string,
   routes: LakebedRoute[],
-): string | null => {
+): string | null {
   const [pageLabel, sectionId] = target.split('#')
   const route = routes.find(
     (entry) =>
@@ -2392,11 +2679,11 @@ const resolveLakebedRouteTarget = (
   return sectionId ? `${route.path}#${sectionId}` : route.path
 }
 
-const buildLakebedTargetMap = (
+function buildLakebedTargetMap(
   routes: LakebedRoute[],
   sourceTargetMap: Record<string, string>,
-): Record<string, string> =>
-  Object.fromEntries(
+): Record<string, string> {
+  return Object.fromEntries(
     Object.entries(sourceTargetMap)
       .map(([alias, target]) => [
         alias,
@@ -2406,14 +2693,16 @@ const buildLakebedTargetMap = (
         (entry): entry is [string, string] => typeof entry[1] === 'string',
       ),
   )
+}
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
 
-const firstString = (
+function firstString(
   source: Record<string, unknown>,
   keys: string[],
-): string | undefined => {
+): string | undefined {
   for (const key of keys) {
     const value = source[key]
     if (typeof value === 'string' && value.trim()) return value.trim()
@@ -2423,14 +2712,15 @@ const firstString = (
   return undefined
 }
 
-const sanitizeSharedText = (value: string): string =>
-  value
+function sanitizeSharedText(value: string): string {
+  return value
     .replace(/\bprocesses\b/gi, (match) =>
       match[0] === match[0]?.toUpperCase() ? 'Workflows' : 'workflows',
     )
     .replace(/\bprocess\b/gi, (match) =>
       match[0] === match[0]?.toUpperCase() ? 'Workflow' : 'workflow',
     )
+}
 
 const sectionTitleKeys = [
   'title',
@@ -2464,11 +2754,11 @@ const sectionMetaKeys = [
   'cta',
 ]
 
-const collectContentSections = (
+function collectContentSections(
   value: unknown,
   routeId: string,
   sections: ContentSection[] = [],
-): ContentSection[] => {
+): ContentSection[] {
   if (sections.length >= 12 || value == null) return sections
 
   if (Array.isArray(value)) {
@@ -2502,10 +2792,10 @@ type ServerSchemaRender = {
   tableFields: Map<string, string[]>
 }
 
-const collectTableFieldsFromSchemaSource = (
+function collectTableFieldsFromSchemaSource(
   source: string,
   tableFields: Map<string, Map<string, string>>,
-) => {
+) {
   const sourceFile = ts.createSourceFile(
     'merged-schema.ts',
     `const schema = ${source}`,
@@ -2544,10 +2834,10 @@ const collectTableFieldsFromSchemaSource = (
   }
 }
 
-const renderMergedSchema = (
+function renderMergedSchema(
   sources: Array<string | null>,
   fallback: string,
-): ServerSchemaRender => {
+): ServerSchemaRender {
   const schemaSources = sources.filter((source): source is string =>
     Boolean(source?.trim()),
   )
@@ -2579,26 +2869,39 @@ const renderMergedSchema = (
   }
 }
 
-const singularTableName = (tableName: string): string => {
+function singularTableName(tableName: string): string {
   if (tableName.endsWith('ies')) return `${tableName.slice(0, -3)}y`
   if (tableName.endsWith('s')) return tableName.slice(0, -1)
   return tableName
 }
 
-const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
 
-const collectionItemsForTable = (
+function collectionItemsForTable(
   props: Record<string, unknown>,
   tableName: string,
-): Record<string, unknown>[] => {
+  fields: string[],
+): Record<string, unknown>[] {
   const candidates = [tableName, singularTableName(tableName)]
   const items: Record<string, unknown>[] = []
   const seen = new Set<unknown>()
 
-  const visit = (value: unknown) => {
+  const visit = (value, fromCollection = false) => {
     if (!isPlainRecord(value) || seen.has(value)) return
     seen.add(value)
+    const projectedFieldCount = fields.filter(
+      (field) => seedFieldValue(value, field) != null,
+    ).length
+    const minimumProjectedFields = Math.min(2, fields.length)
+    if (
+      fromCollection &&
+      minimumProjectedFields > 0 &&
+      projectedFieldCount >= minimumProjectedFields
+    ) {
+      items.push(value)
+    }
 
     for (const key of candidates) {
       const collection = value[key]
@@ -2615,7 +2918,7 @@ const collectionItemsForTable = (
       if (isPlainRecord(nested)) {
         visit(nested)
       } else if (Array.isArray(nested)) {
-        for (const entry of nested) visit(entry)
+        for (const entry of nested) visit(entry, true)
       }
     }
   }
@@ -2624,99 +2927,36 @@ const collectionItemsForTable = (
   return items
 }
 
-const DEFAULT_COMMERCE_PRODUCTS: Record<string, string>[] = [
-  {
-    brand: 'Featured',
-    name: 'Signature Series',
-    alt: 'Featured product on a clean studio background',
-    price: '$195',
-    oldPrice: '$230',
-    badge: 'New',
-    image: '',
-  },
-  {
-    brand: 'Featured',
-    name: 'Everyday Essential',
-    alt: 'Lifestyle product photography on a neutral background',
-    price: '$250',
-    oldPrice: '',
-    badge: '',
-    image: '',
-  },
-  {
-    brand: 'Featured',
-    name: 'Classic Edition',
-    alt: 'Close-up product detail on a neutral background',
-    price: '$175',
-    oldPrice: '$210',
-    badge: 'Sale',
-    image: '',
-  },
-  {
-    brand: 'Featured',
-    name: 'Studio Collection',
-    alt: 'Featured product on a clean studio background',
-    price: '$160',
-    oldPrice: '',
-    badge: '',
-    image: '',
-  },
-]
-
-const usesDefaultCommerceProducts = (route: LakebedRoute): boolean => {
-  if (!/commerce|ecommerce|shop|store|marketplace/i.test(route.componentName)) {
-    return false
-  }
-
-  return collectionItemsForTable(route.props, 'products').length === 0
+const seedFieldAliases: Record<string, string[]> = {
+  imageAlt: ['alt', 'name', 'label', 'title'],
+  itemKey: ['id', 'key', 'slug', 'name', 'label', 'title'],
+  label: ['name', 'title'],
+  name: ['label', 'title'],
+  price: ['amount', 'cost'],
+  subtitle: ['description', 'excerpt', 'summary'],
 }
 
-const defaultRowsForTable = (
+function seedFieldValue(item: Record<string, unknown>, field: string): unknown {
+  if (item[field] != null) return item[field]
+  for (const alias of seedFieldAliases[field] ?? []) {
+    if (item[alias] != null) return item[alias]
+  }
+  return undefined
+}
+
+function seedRowsForTable(
   tableName: string,
   fields: string[],
   routes: LakebedRoute[],
-): Record<string, unknown>[] => {
-  const fieldSet = new Set(fields)
-  if (
-    tableName !== 'products' ||
-    !fieldSet.has('name') ||
-    !fieldSet.has('price') ||
-    !routes.some(usesDefaultCommerceProducts)
-  ) {
-    return []
-  }
-
-  return DEFAULT_COMMERCE_PRODUCTS
-}
-
-const seedRowsForTable = (
-  tableName: string,
-  fields: string[],
-  routes: LakebedRoute[],
-): Array<Record<string, string>> => {
+): Array<Record<string, string>> {
   const rowsByKey = new Map<string, Record<string, string>>()
   for (const route of routes) {
-    const items = collectionItemsForTable(route.props, tableName)
+    const items = collectionItemsForTable(route.props, tableName, fields)
     for (const item of items) {
       const row: Record<string, string> = {}
       let hasFieldValue = false
       for (const field of fields) {
-        const raw = item[field]
-        const value = raw == null ? '' : String(raw)
-        row[field] = value
-        if (value) hasFieldValue = true
-      }
-      if (!hasFieldValue) continue
-      rowsByKey.set(JSON.stringify(row), row)
-    }
-  }
-
-  if (rowsByKey.size === 0) {
-    for (const item of defaultRowsForTable(tableName, fields, routes)) {
-      const row: Record<string, string> = {}
-      let hasFieldValue = false
-      for (const field of fields) {
-        const raw = item[field]
+        const raw = seedFieldValue(item, field)
         const value = raw == null ? '' : String(raw)
         row[field] = value
         if (value) hasFieldValue = true
@@ -2732,16 +2972,16 @@ const seedRowsForTable = (
 // Project real catalog rows (from the session's Lakebed store) onto a table's
 // declared fields, dropping engine-managed keys (id/createdAt/updatedAt) and
 // coercing to strings (the anonymous Lakebed schema is all-string).
-const projectExternalSeedRows = (
+function projectExternalSeedRows(
   rows: Array<Record<string, unknown>>,
   fields: string[],
-): Array<Record<string, string>> =>
-  rows
+): Array<Record<string, string>> {
+  return rows
     .map((item) => {
       const row: Record<string, string> = {}
       let hasFieldValue = false
       for (const field of fields) {
-        const raw = item[field]
+        const raw = seedFieldValue(item, field)
         const value = raw == null ? '' : String(raw)
         row[field] = value
         if (value) hasFieldValue = true
@@ -2749,12 +2989,13 @@ const projectExternalSeedRows = (
       return hasFieldValue ? row : null
     })
     .filter((row): row is Record<string, string> => row !== null)
+}
 
-export const renderSeedData = (
+export function renderSeedData(
   routes: LakebedRoute[],
   tableFields: Map<string, string[]>,
   externalSeed?: Record<string, Array<Record<string, unknown>>>,
-): string => {
+): string {
   const seedRows = Object.fromEntries(
     [...tableFields.entries()]
       .map(([tableName, fields]) => {
@@ -2797,10 +3038,11 @@ function ensureSeedData(db: Record<string, LakebedSeedTable | undefined>) {
 `
 }
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
-const allowedLakebedClientBareImport = (specifier: string): string | null => {
+function allowedLakebedClientBareImport(specifier: string): string | null {
   if (specifier === 'react' || specifier === 'react-dom') return 'preact/compat'
   if (specifier === 'react/jsx-runtime') return 'preact/jsx-runtime'
   if (specifier === 'react/jsx-dev-runtime') return 'preact/jsx-dev-runtime'
@@ -2818,13 +3060,16 @@ const allowedLakebedClientBareImport = (specifier: string): string | null => {
   return null
 }
 
-const packageSubpath = (specifier: string, packageName: string): string =>
-  specifier === packageName ? '.' : `.${specifier.slice(packageName.length)}`
+function packageSubpath(specifier: string, packageName: string): string {
+  return specifier === packageName
+    ? '.'
+    : `.${specifier.slice(packageName.length)}`
+}
 
-const exportedPackagePath = (
+function exportedPackagePath(
   exportTarget: unknown,
   subpath = '.',
-): string | null => {
+): string | null {
   if (typeof exportTarget === 'string') {
     if (exportTarget.includes('*') && subpath.startsWith('./')) {
       return exportTarget.replace('*', subpath.slice(2))
@@ -2841,10 +3086,10 @@ const exportedPackagePath = (
   )
 }
 
-const resolvePackageExportTarget = (
+function resolvePackageExportTarget(
   exportsField: unknown,
   subpath: string,
-): unknown => {
+): unknown {
   if (subpath === '.') {
     return exportsField && typeof exportsField === 'object'
       ? (exportsField as Record<string, unknown>)['.']
@@ -2861,9 +3106,7 @@ const resolvePackageExportTarget = (
   return null
 }
 
-const resolveVendorSourceManifestPath = (
-  sourceRelPath: string,
-): string | null => {
+function resolveVendorSourceManifestPath(sourceRelPath: string): string | null {
   const normalizedRel = toPosixPath(sourceRelPath)
     .replace(/^node_modules\//, '')
     .replace(/^client\/vendor\//, '')
@@ -2875,15 +3118,16 @@ const resolveVendorSourceManifestPath = (
   )
 }
 
-const resolveRelativeVendorSourcePath = (
+function resolveRelativeVendorSourcePath(
   sourcePath: string,
   moduleName: string,
-): string | null =>
-  resolveVendorSourceManifestPath(
+): string | null {
+  return resolveVendorSourceManifestPath(
     toPosixPath(join(dirname(sourcePath), moduleName)),
   )
+}
 
-const resolveBareImportFile = (specifier: string): string => {
+function resolveBareImportFile(specifier: string): string {
   const packageName = readPublicPackageName(specifier)
   if (!packageName) {
     throw new Error(`Cannot resolve non-package import: ${specifier}`)
@@ -2973,12 +3217,15 @@ const resolveBareImportFile = (specifier: string): string => {
   return resolved
 }
 
-const vendorOutPathFor = (sourcePath: string): string => {
+function vendorOutPathFor(sourcePath: string): string {
   const relativeToNodeModules = resolveVendorSourceManifestPath(sourcePath)
   if (!relativeToNodeModules) {
     throw new Error(`Cannot find vendored dependency source: ${sourcePath}`)
   }
-  return `client/vendor/${relativeToNodeModules}`
+  const portablePath = relativeToNodeModules
+    .replace(/^@ship-fast\/lakebed(?=\/|$)/, 'data-runtime')
+    .replace(/^ship-fast-blocks(?=\/|$)/, 'blocks-runtime')
+  return `client/vendor/${portablePath}`
 }
 
 type SourceRewriteContext = {
@@ -2989,10 +3236,10 @@ type SourceRewriteContext = {
   seenBlockFiles: Set<string>
 }
 
-const replaceRanges = (
+function replaceRanges(
   source: string,
   ranges: Array<{ start: number; end: number; text: string }>,
-): string => {
+): string {
   let next = source
   for (const range of ranges.sort((a, b) => b.start - a.start)) {
     next = `${next.slice(0, range.start)}${range.text}${next.slice(range.end)}`
@@ -3000,11 +3247,17 @@ const replaceRanges = (
   return next
 }
 
-const applyLakebedVendorCompatibility = (
+function applyLakebedVendorCompatibility(
   source: string,
   sourcePath: string,
-): string => {
+): string {
   const relativeToNodeModules = resolveVendorSourceManifestPath(sourcePath)
+  if (relativeToNodeModules === '@ship-fast/lakebed/src/server.ts') {
+    return source.replaceAll(
+      'ShipFastLakebedDefinition',
+      'PortableLakebedDefinition',
+    )
+  }
   if (relativeToNodeModules !== '@radix-ui/react-presence/dist/index.mjs') {
     return source
   }
@@ -3020,14 +3273,15 @@ type VendorExportTarget = {
   sourcePath: string
 }
 
-const vendorSourceFileKind = (path: string): ts.ScriptKind =>
-  /\.(tsx|jsx)$/.test(path) ? ts.ScriptKind.TSX : ts.ScriptKind.JS
+function vendorSourceFileKind(path: string): ts.ScriptKind {
+  return /\.(tsx|jsx)$/.test(path) ? ts.ScriptKind.TSX : ts.ScriptKind.JS
+}
 
-const resolveVendorNamedExportInFile = (
+function resolveVendorNamedExportInFile(
   sourcePath: string,
   exportedName: string,
   seen = new Set<string>(),
-): VendorExportTarget | null => {
+): VendorExportTarget | null {
   const manifestPath = resolveVendorSourceManifestPath(sourcePath)
   if (!manifestPath || seen.has(manifestPath)) return null
   seen.add(manifestPath)
@@ -3114,10 +3368,10 @@ const resolveVendorNamedExportInFile = (
   return null
 }
 
-const resolveVendorNamedExport = (
+function resolveVendorNamedExport(
   specifier: string,
   exportedName: string,
-): VendorExportTarget => {
+): VendorExportTarget {
   const entry = resolveBareImportFile(specifier)
   return (
     resolveVendorNamedExportInFile(entry, exportedName) ?? {
@@ -3128,11 +3382,11 @@ const resolveVendorNamedExport = (
   )
 }
 
-const copyVendorSourceFile = (
+function copyVendorSourceFile(
   sourcePath: string,
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
-): string => {
+): string {
   const manifestPath = resolveVendorSourceManifestPath(sourcePath)
   if (!manifestPath) {
     throw new Error(`Cannot find vendored dependency source: ${sourcePath}`)
@@ -3155,17 +3409,22 @@ const copyVendorSourceFile = (
   return outPath
 }
 
-const copyBareVendorImport = (
+function copyBareVendorImport(
   specifier: string,
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
-): string =>
-  copyVendorSourceFile(resolveBareImportFile(specifier), files, seenVendorFiles)
+): string {
+  return copyVendorSourceFile(
+    resolveBareImportFile(specifier),
+    files,
+    seenVendorFiles,
+  )
+}
 
-const rewriteNamedBareImport = (
+function rewriteNamedBareImport(
   statement: ts.ImportDeclaration,
   context: SourceRewriteContext,
-): string | null => {
+): string | null {
   const specifier = statement.moduleSpecifier
   if (!ts.isStringLiteral(specifier)) return null
   const moduleName = specifier.text
@@ -3241,7 +3500,7 @@ function rewriteLakebedClientImports(
   )
   const ranges: Array<{ start: number; end: number; text: string }> = []
 
-  const rewriteModuleSpecifier = (moduleName: string) => {
+  const rewriteModuleSpecifier = (moduleName) => {
     const allowed = allowedLakebedClientBareImport(moduleName)
     if (allowed) return allowed
 
@@ -3373,11 +3632,9 @@ function copyBlocksClientSourceForLakebed(
   const outPath =
     blocksRel === 'src/lib/utils.ts'
       ? 'client/lib/cn.ts'
-      : blocksRel.startsWith('src/components/')
-        ? `client/${blocksRel.slice('src/'.length)}`
-        : blocksRel.startsWith('src/section-kit/')
-          ? `client/${blocksRel.slice('src/'.length)}`
-          : `client/vendor/ship-fast-blocks/${blocksRel}`
+      : blocksRel.startsWith('src/section-kit/')
+        ? `client/section-kit/${blocksRel.slice('src/section-kit/'.length)}`
+        : `client/vendor/blocks-runtime/${blocksRel}`
   if (seenBlockFiles.has(outPath)) return outPath
   seenBlockFiles.add(outPath)
   const source = getBlockSourceFile(sourcePath)
@@ -3391,39 +3648,79 @@ function copyBlocksClientSourceForLakebed(
   return outPath
 }
 
-const normalizeNumericFieldWrites = (
+function normalizeNumericFieldWrites(
   source: string,
   numericFieldNames: Set<string>,
-): string => {
-  let normalized = source
+): string {
+  if (numericFieldNames.size === 0) return source
+  const prefix = 'const __handler = () => {\n'
+  const sourceFile = ts.createSourceFile(
+    'numeric-writes.ts',
+    `${prefix}${source}\n}`,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const ranges: Array<{ start: number; end: number; text: string }> = []
+  const replaceNode = (node, text) => {
+    ranges.push({
+      start: node.getStart(sourceFile) - prefix.length,
+      end: node.getEnd() - prefix.length,
+      text,
+    })
+  }
+  const visit = (node) => {
+    if (ts.isPropertyAssignment(node)) {
+      const fieldName = propertyNameText(node.name, sourceFile)
+      if (numericFieldNames.has(fieldName)) {
+        const initializer = node.initializer
+        const alreadyString =
+          ts.isCallExpression(initializer) &&
+          ts.isIdentifier(initializer.expression) &&
+          initializer.expression.text === 'String'
+        if (!alreadyString) {
+          replaceNode(initializer, `String(${initializer.getText(sourceFile)})`)
+        }
+        return
+      }
+    }
+    if (ts.isShorthandPropertyAssignment(node)) {
+      const fieldName = node.name.text
+      if (numericFieldNames.has(fieldName)) {
+        replaceNode(node, `${fieldName}: String(${fieldName})`)
+        return
+      }
+    }
+    if (
+      ts.isBinaryExpression(node) &&
+      ts.isTypeOfExpression(node.left) &&
+      ts.isPropertyAccessExpression(node.left.expression) &&
+      numericFieldNames.has(node.left.expression.name.text) &&
+      ts.isStringLiteralLike(node.right) &&
+      node.right.text === 'number'
+    ) {
+      replaceNode(node.right, JSON.stringify('string'))
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+  let normalized = replaceRanges(source, ranges)
   for (const fieldName of numericFieldNames) {
     const field = escapeRegExp(fieldName)
     normalized = normalized.replace(
-      new RegExp(`\\b([A-Za-z_$][\\w$]*\\.${field})\\s*\\+\\s*(\\d+)`, 'g'),
-      (_match, left: string, right: string) => `Number(${left}) + ${right}`,
-    )
-    normalized = normalized.replace(
-      new RegExp(`([,{]\\s*)${field}(\\s*[,}])`, 'g'),
-      `$1${fieldName}: String(${fieldName})$2`,
-    )
-    normalized = normalized.replace(
-      new RegExp(
-        `(${field}\\s*:\\s*)(?!\\s*String\\()([^,}\\n]+)(?=\\s*[,}])`,
-        'g',
-      ),
-      (_match, prefix: string, expression: string) =>
-        `${prefix}String(${expression.trim()})`,
+      new RegExp(`Number\\.isFinite\\(([A-Za-z_$][\\w$]*\\.${field})\\)`, 'g'),
+      'Number.isFinite(Number($1))',
     )
   }
   return normalized
 }
 
-const transformHandler = (
+function transformHandler(
   name: string,
   source: string,
   wrapper: 'query' | 'mutation',
   numericFieldNames: Set<string>,
-): string => {
+): string {
   const sourceFile = ts.createSourceFile(
     `${name}.ts`,
     `const handler = ${source}`,
@@ -3447,9 +3744,20 @@ const transformHandler = (
   // prop-fallback sample. Real data now arrives via the authorized
   // `/api/__sync` endpoint; queries must just read.
   const seedCall = wrapper === 'mutation' ? '  ensureSeedData(ctx.db);\n' : ''
+  const shouldRecordSync = wrapper === 'mutation' && name !== '__lakebedSeed'
+  const writesDelete = /\.delete\s*\(/.test(source)
+  const writesInsert = /\.insert\s*\(/.test(source)
+  const writesUpdate = /\.update\s*\(/.test(source)
+  const syncOperation =
+    writesDelete && !writesInsert && !writesUpdate
+      ? 'delete'
+      : writesInsert && !writesUpdate
+        ? 'create'
+        : 'update'
   if (!handler || !ts.isArrowFunction(handler)) {
     return `${name}: ${wrapper}((ctx) => {
-${seedCall}  return { ok: true, userId: ctx.auth.userId };
+${seedCall}  const result = { ok: true, userId: ctx.auth.userId };
+${shouldRecordSync ? `  recordIdempotencyKeyVersionedSyncOutboxChangeEvent(ctx, ${JSON.stringify(name)}, ${JSON.stringify(syncOperation)}, [], result);\n` : ''}  return result;
 })`
   }
 
@@ -3462,8 +3770,11 @@ ${seedCall}  return { ok: true, userId: ctx.auth.userId };
     .map((parameter) => parameter.name.getText(sourceFile))
     .join(', ')
   const prefix = args ? `ctx, ${args}` : 'ctx'
+  const syncStatement = shouldRecordSync
+    ? `  recordIdempotencyKeyVersionedSyncOutboxChangeEvent(ctx, ${JSON.stringify(name)}, ${JSON.stringify(syncOperation)}, [${args}], result);\n`
+    : ''
 
-  const normalizeHandlerSource = (value: string) =>
+  const normalizeHandlerSource = (value) =>
     normalizeNumericFieldWrites(
       value.replace(
         /\.orderBy\((['"])createdAt\1\)/g,
@@ -3478,10 +3789,13 @@ ${seedCall}  return { ok: true, userId: ctx.auth.userId };
       .join('\n')
     return `${name}: ${wrapper}((${prefix}) => {
 ${seedCall}  const db = ctx.db
-${contextAlias}${normalizeHandlerSource(body)
-      .split('\n')
-      .map((line) => `  ${line}`)
-      .join('\n')}
+${contextAlias}  const result = (() => {
+${normalizeHandlerSource(body)
+  .split('\n')
+  .map((line) => `    ${line}`)
+  .join('\n')}
+  })();
+${syncStatement}  return result;
 })`
   }
 
@@ -3489,16 +3803,17 @@ ${contextAlias}${normalizeHandlerSource(body)
     printNode(handler.body, sourceFile),
   ).replace(/(^|[^A-Za-z0-9_$.])db\./g, '$1ctx.db.')
   return `${name}: ${wrapper}((${prefix}) => {
-${seedCall}${contextAlias}  return ${expression};
+${seedCall}${contextAlias}  const result = ${expression};
+${syncStatement}  return result;
 })`
 }
 
-const mergeHandlers = (
+function mergeHandlers(
   definitions: LakebedDefinition[],
   key: 'queries' | 'mutations',
   wrapper: 'query' | 'mutation',
   fallback: string,
-): string => {
+): string {
   const numericFieldNames = new Set(
     definitions.flatMap((definition) => definition.numericFieldNames),
   )
@@ -3516,7 +3831,7 @@ const mergeHandlers = (
   return handlers.length > 0 ? `{\n${handlers.join(',\n')}\n}` : fallback
 }
 
-const mergeEndpointHandlers = (definitions: LakebedDefinition[]): string => {
+function mergeEndpointHandlers(definitions: LakebedDefinition[]): string {
   const handlersByName = new Map<string, string>()
   for (const definition of definitions) {
     for (const [name, endpointDefinition] of Object.entries(
@@ -3531,30 +3846,38 @@ const mergeEndpointHandlers = (definitions: LakebedDefinition[]): string => {
   return handlers.length > 0 ? `{\n${handlers.join(',\n')}\n}` : '{}'
 }
 
-const primitiveImportsFor = (schemaSource: string): string[] =>
-  ['boolean', 'string', 'table'].filter((name) =>
+function primitiveImportsFor(schemaSource: string): string[] {
+  return ['boolean', 'string', 'table'].filter((name) =>
     new RegExp(`\\b${name}\\s*\\(`).test(schemaSource),
   )
+}
 
-const lakebedEndpointImportsFor = (endpointsSource: string): string[] =>
-  ['endpoint', 'empty', 'json', 'redirect', 'text'].filter((name) =>
+function lakebedEndpointImportsFor(endpointsSource: string): string[] {
+  return ['endpoint', 'empty', 'json', 'redirect', 'text'].filter((name) =>
     new RegExp(`\\b${name}\\s*\\(`).test(endpointsSource),
   )
+}
 
-const renderReadme = (projectName: string): string => `# ${projectName}
+function renderReadme(
+  projectName: string,
+  includeGeneratorCredit: boolean,
+): string {
+  return `# ${projectName}
 
 Run this Lakebed app:
 
 \`\`\`sh
-npx lakebed dev
+${includeGeneratorCredit ? 'npx' : 'bunx'} lakebed dev
 \`\`\`
 
 The exported app has one client entry, one server entry, and shared TypeScript.
 
-Generated with [ShipFast](https://ship-fast.io) 🚀.
+${includeGeneratorCredit ? 'Generated with [ShipFast](https://ship-fast.io) 🚀.' : 'Portable project export.'}
 `
+}
 
-const renderAgents = (): string => `# Lakebed App Instructions
+function renderAgents(): string {
+  return `# Lakebed App Instructions
 
 - Run Lakebed commands with \`npx lakebed <command>\`.
 - Client code belongs in \`client/index.tsx\`.
@@ -3564,11 +3887,12 @@ const renderAgents = (): string => `# Lakebed App Instructions
 - Use \`lakebed/server\` only from server code.
 - Use relative imports for local code.
 `
+}
 
-const renderSharedContent = (
+function renderSharedContent(
   projectName: string,
   routes: LakebedRoute[],
-): string => {
+): string {
   const pages = routes.map((route, index) => {
     const hero = route.props.hero as
       | Record<string, unknown>
@@ -3665,11 +3989,11 @@ export function normalizeEmail(value: string): string {
 `
 }
 
-const renderClientRoutes = (
+function renderClientRoutes(
   routes: LakebedRoute[],
   imageSources: ImageSource[],
   targetMap: Record<string, string>,
-): string => {
+): string {
   const routeData = routes.map((route) => ({
     label: route.label,
     path: route.path,
@@ -3695,14 +4019,16 @@ export const imageSources = ${JSON.stringify(imageSources, null, 2)} satisfies A
 `
 }
 
-const renderClientTheme = (
+function renderClientTheme(
   themeCss: string,
   tailwindThemeCss: string,
   defaultDark: boolean,
-): string => `import { useEffect } from "preact/hooks";
+  includeLegacyTailwindRuntime: boolean,
+): string {
+  return `import { useEffect } from "preact/hooks";
 
 export const themeCss = ${JSON.stringify(themeCss)};
-export const tailwindThemeCss = ${JSON.stringify(tailwindThemeCss)};
+${includeLegacyTailwindRuntime ? `export const tailwindThemeCss = ${JSON.stringify(tailwindThemeCss)};` : ''}
 export const defaultDark = ${defaultDark ? 'true' : 'false'};
 
 // Shared dark-mode contract for the whole site: the \`.dark\` class on <html>
@@ -3742,11 +4068,9 @@ export function StyleRuntime() {
       document.head.appendChild(style);
     }
     style.textContent = themeCss;
-
-    // Inject the @theme block into a <style type="text/tailwindcss"> element
-    // so @tailwindcss/browser processes it and generates custom-color utilities
-    // (bg-background, text-foreground, border-border/50, bg-background/65,
-    // responsive variants, etc.) that the default Tailwind palette doesn't include.
+${
+  includeLegacyTailwindRuntime
+    ? `
     let twStyle = document.getElementById("site-tailwind-theme");
     if (!twStyle) {
       twStyle = document.createElement("style");
@@ -3754,19 +4078,62 @@ export function StyleRuntime() {
       twStyle.setAttribute("type", "text/tailwindcss");
       document.head.appendChild(twStyle);
     }
-    twStyle.textContent = tailwindThemeCss;
+    twStyle.textContent = tailwindThemeCss;`
+    : ''
+}
   }, []);
 
   return null;
 }
 `
+}
 
-const renderLakebedLogoComponent = (input: OpenUIExportInput): string => {
+function renderLakebedLogoComponent(input: OpenUIExportInput): string {
   const selection = input.selectedBrandLogo
   const icon = typeof selection?.icon === 'string' ? selection.icon.trim() : ''
   const logo = typeof selection?.logo === 'string' ? selection.logo.trim() : ''
   const src = icon || logo || ''
   const brandName = selection?.name ?? ''
+  if (!icon && logo) {
+    return `import { cn } from "../lib/cn";
+
+const logoUrl = ${JSON.stringify(logo)};
+const logoName = ${JSON.stringify(brandName)};
+
+export function Logo({
+  brand = logoName,
+  className,
+  imageClassName,
+  labelClassName,
+}: {
+  brand?: string;
+  className?: string;
+  imageClassName?: string;
+  labelClassName?: string;
+  [key: string]: unknown;
+}) {
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent",
+          className,
+        )}
+      >
+        <img
+          alt={brand}
+          className={cn("block size-full object-contain", imageClassName)}
+          draggable={false}
+          src={logoUrl}
+        />
+      </span>
+      <span className={labelClassName}>{brand}</span>
+    </>
+  );
+}
+`
+  }
   return `import type { ComponentChildren } from "preact";
 import { cn } from "../lib/cn";
 
@@ -3816,9 +4183,9 @@ export function Logo({
 `
 }
 
-const renderClientStyleOverridesCss = (
+function renderClientStyleOverridesCss(
   styleOverrides: StyleOverride[],
-): string => {
+): string {
   if (styleOverrides.length === 0) return ''
   const rules = styleOverrides
     .map((override) => {
@@ -3843,8 +4210,8 @@ const renderClientStyleOverridesCss = (
     : ''
 }
 
-const renderClientNavigation =
-  (): string => `import { routeByLabel, routeTargets } from "../routes";
+function renderClientNavigation(): string {
+  return `import { routeByLabel, routeTargets } from "../routes";
 
 function slugFragment(value: string): string {
   return value
@@ -3880,13 +4247,14 @@ export function useNavigate() {
       navigateTo(route);
       return;
     }
-    console.warn("[ShipFast] Unresolved navigation target:", slugFragment(value));
+    console.warn("[Navigation] Unresolved target:", slugFragment(value));
   };
 }
 `
+}
 
-const renderClientImage =
-  (): string => `import { imageSources } from "../routes";
+function renderClientImage(): string {
+  return `import { imageSources } from "../routes";
 
 const imageSourcesByAlt = new Map(
   imageSources.map((image) => [image.alt, image.src]),
@@ -3962,15 +4330,17 @@ export function Image({
   );
 }
 `
+}
 
-const renderClientLakebed = (): string => `import {
+function renderClientLakebed(): string {
+  return `import {
   signInWithGoogle,
   signOut,
   useAuth,
   useMutation,
   useQuery,
 } from "lakebed/client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 export { signInWithGoogle, signOut, useAuth };
 
@@ -3999,134 +4369,51 @@ export type LakebedKeyedMutationFunction<Args extends unknown[], Result> = {
   run(key: string, ...args: Args): Promise<Result | undefined>;
 };
 
-function normalizeQueryValue(name: string, value: unknown) {
-  if (!/(Names|Titles|Emails)$/.test(name)) return value;
-  if (value instanceof Set) return value;
-  if (Array.isArray(value)) return new Set(value);
-  if (value && typeof value === "object") return new Set(Object.values(value));
-  if (value == null) return new Set<string>();
-  return value;
+function isQueryRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function isDbRecordCollection(value: unknown): boolean {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const entries = Object.entries(value);
-  if (!entries.length) return false;
-  // A DB-shaped record collection maps record IDs to record objects. Tolerate
-  // malformed rows (null / undefined / non-object entries) by ignoring them,
-  // but reject values that contain genuine scalar primitive fields (strings,
-  // numbers, booleans) or arrays — those indicate a scalar record, not a
-  // collection. At least one entry must be a record object.
-  let hasRecord = false;
-  for (const [, v] of entries) {
-    if (v == null) continue;
-    if (typeof v === "object" && !Array.isArray(v)) {
-      hasRecord = true;
-      continue;
-    }
-    return false;
-  }
-  return hasRecord;
+function queryRecordRows(value: unknown): Record<string, unknown>[] | null {
+  if (!isQueryRecord(value)) return null;
+  const values = Object.values(value);
+  if (values.length === 0) return null;
+  if (!values.every((item) => item == null || isQueryRecord(item))) return null;
+  return values.filter(isQueryRecord);
 }
 
-function recordCollectionValues(
-  value: Record<string, unknown>,
-): Record<string, unknown>[] {
-  return Object.values(value).filter(
-    (v): v is Record<string, unknown> =>
-      Boolean(v) && typeof v === "object" && !Array.isArray(v),
-  );
-}
-
-function normalizeDbShapedQueryResult(name: string, value: unknown) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+function prepareQueryResult<T>(value: T): T;
+function prepareQueryResult(value: unknown): unknown {
+  if (!isQueryRecord(value)) return value;
+  const rows = queryRecordRows(value);
+  if (rows) return rows;
   const collectionKeys = ["items", "rows", "data", "result"];
-  // Null / undefined entries are malformed rows, not scalar fields — exclude
-  // them so a DB record collection with missing rows is still detected.
-  const hasScalarField = Object.values(value).some(
-    (v) => v != null && (typeof v !== "object" || Array.isArray(v)),
-  );
-  if (!hasScalarField && !collectionKeys.some((key) => key in value)) {
-    if (isDbRecordCollection(value)) {
-      return recordCollectionValues(value as Record<string, unknown>);
-    }
-    return value;
-  }
-  let normalized = value as Record<string, unknown>;
+  let changed = false;
+  const normalized = { ...value };
   for (const key of collectionKeys) {
-    if (!(key in normalized)) continue;
-    const nested = normalized[key];
-    if (Array.isArray(nested)) continue;
-    if (isDbRecordCollection(nested)) {
-      if (normalized === value) normalized = { ...normalized };
-      normalized[key] = recordCollectionValues(
-        nested as Record<string, unknown>,
-      );
-    } else if (nested == null) {
-      if (normalized === value) normalized = { ...normalized };
+    if (!(key in value)) continue;
+    const nestedRows = queryRecordRows(value[key]);
+    if (nestedRows) {
+      normalized[key] = nestedRows;
+      changed = true;
+    } else if (value[key] == null) {
       normalized[key] = [];
+      changed = true;
     }
   }
-  if ("count" in normalized && !("items" in normalized)) {
-    if (normalized === value) normalized = { ...normalized };
-    normalized.items = [];
-  }
-  return normalized;
-}
-
-function collectionValues(value: unknown) {
-  if (Array.isArray(value)) return value;
-  if (!value || typeof value !== "object") return [];
-  const nestedCollection = Object.entries(value).find(([key, nested]) => {
-    return ["items", "rows", "data", "result"].includes(key) && Array.isArray(nested);
-  });
-  if (nestedCollection) {
-    const [, nested] = nestedCollection;
-    if (Array.isArray(nested)) return nested;
-  }
-  return Object.values(value);
-}
-
-function normalizeEntityListValue(name: string, value: unknown) {
-  if (!/(Items|Lines)$/.test(name)) return value;
-  return collectionValues(value).map((item) => {
-    if (!item || typeof item !== "object" || Array.isArray(item)) return item;
-    if (!("quantity" in item) || typeof item.quantity !== "string") return item;
-    const quantity = Number(item.quantity);
-    return Number.isFinite(quantity) ? { ...item, quantity } : item;
-  });
-}
-
-function fallbackLakebedQueryValue(name: string): unknown {
-  if (/(Names|Titles|Emails)$/.test(name)) return new Set<string>();
-  return [];
-}
-
-function canUseLakebedRuntimeHooks(): boolean {
-  const querySource = Function.prototype.toString.call(useQuery);
-  const mutationSource = Function.prototype.toString.call(useMutation);
-  const combinedSource = querySource + "\\n" + mutationSource;
-  return ![
-    "addQueryListener",
-    "getQueryValue",
-    "mutation.run",
-    "query.subscribe",
-  ].some((needle) => combinedSource.includes(needle));
+  return changed ? normalized : value;
 }
 
 function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown>(
   name: string,
 ): LakebedMutationFunction<Args, Result> {
-  const mutation = canUseLakebedRuntimeHooks()
-    ? useMutation<Args, Result>(name)
-    : ((async () => undefined as Result) as (...args: Args) => Promise<Result>);
+  const mutation = useMutation<Args, Result>(name);
   const mutationRef = useRef(mutation);
   mutationRef.current = mutation;
   const [lastError, setLastError] = useState<unknown | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const reset = useCallback(() => setLastError(null), []);
-  const callable = useMemo(() => {
-    const run = (async (...args: Args) => {
+  const callable = Object.assign(
+    async (...args: Args) => {
       setPendingCount((count) => count + 1);
       setLastError(null);
       try {
@@ -4137,13 +4424,14 @@ function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown
       } finally {
         setPendingCount((count) => Math.max(0, count - 1));
       }
-    }) as LakebedMutationFunction<Args, Result>;
-    run.isPending = false;
-    run.lastError = null;
-    run.pendingCount = 0;
-    run.reset = reset;
-    return run;
-  }, [reset]);
+    },
+    {
+      isPending: false,
+      lastError: null,
+      pendingCount: 0,
+      reset,
+    },
+  );
 
   callable.isPending = pendingCount > 0;
   callable.lastError = lastError;
@@ -4219,9 +4507,9 @@ export function AuthRuntime() {
 // this makes baked seed data visible to the site (endpoint writes do not share
 // that scope). Idempotent server-side (skips already-seeded tables).
 export function SeedRuntime() {
-  const seed = useLakebedMutation("__lakebedSeed");
+  const seed = useLakebedMutation<[], unknown>("__lakebedSeed");
   useEffect(() => {
-    void (seed as (...args: unknown[]) => Promise<unknown>)().catch(() => {});
+    void seed().catch(() => {});
   }, []);
   return null;
 }
@@ -4231,14 +4519,7 @@ export function useLakebedAdapter() {
 
   return {
     useQuery<T = unknown>(name: string): T {
-      const value = canUseLakebedRuntimeHooks()
-        ? (useQuery<unknown>(name) ?? fallbackLakebedQueryValue(name))
-        : fallbackLakebedQueryValue(name);
-      const dbNormalized = normalizeDbShapedQueryResult(name, value);
-      return normalizeQueryValue(
-        name,
-        normalizeEntityListValue(name, dbNormalized),
-      ) as T;
+      return prepareQueryResult(useQuery<T>(name));
     },
     useMutation<Args extends unknown[] = unknown[], Result = unknown>(
       name: string,
@@ -4260,6 +4541,7 @@ export function useLakebedAdapter() {
   };
 }
 `
+}
 
 // Bindings the client import transformer deliberately strips because they are
 // build-time-only — their imports cannot be resolved by the Lakebed client
@@ -4271,10 +4553,13 @@ export function useLakebedAdapter() {
 // positions (via collectValueIdentifierTexts).
 // A client file that our builder generates or copies (not a third-party
 // vendored ESM module, which legitimately reads browser globals we don't model).
-const isGuardedClientSourcePath = (path: string): boolean =>
-  path.startsWith('client/') &&
-  !path.startsWith('client/vendor/') &&
-  /\.tsx?$/.test(path)
+function isGuardedClientSourcePath(path: string): boolean {
+  return (
+    path.startsWith('client/') &&
+    !path.startsWith('client/vendor/') &&
+    /\.tsx?$/.test(path)
+  )
+}
 
 // Fail the build if any generated/copied client file references a value that is
 // bound nowhere in the module and is not a runtime global — i.e. an import that
@@ -4282,9 +4567,7 @@ const isGuardedClientSourcePath = (path: string): boolean =>
 // `z is not defined` / `useEmblaCarousel is not defined` blank-render bugs:
 // esbuild treats the free identifier as a global, ships the bundle, and it
 // throws a ReferenceError at render → blank deploy with no build error.
-const assertNoUnboundClientReferences = (
-  files: Record<string, string>,
-): void => {
+function assertNoUnboundClientReferences(files: Record<string, string>): void {
   const offenders: string[] = []
   for (const [path, contents] of Object.entries(files)) {
     if (!isGuardedClientSourcePath(path)) continue
@@ -4299,9 +4582,9 @@ const assertNoUnboundClientReferences = (
   }
 }
 
-const renderClientComponentModule = (
+function renderClientComponentModule(
   component: ClientComponentDefinition,
-): string => {
+): string {
   const imports = [...component.imports]
   let source = component.source
 
@@ -4344,10 +4627,10 @@ export const ${toIdentifier(component.name)}Block: (input: {
 // capsule source string and return the emitted Lakebed client module. Used by
 // the export-builder unit tests to lock the zod-leak regression without wiring
 // up the whole generated-source manifest.
-export const buildLakebedClientComponentForTest = (
+export function buildLakebedClientComponentForTest(
   componentName: string,
   source: string,
-): { module: string; preludeSources: string[] } | null => {
+): { module: string; preludeSources: string[] } | null {
   const files: Record<string, string> = {}
   const definition = readClientComponentDefinition(
     componentName,
@@ -4363,12 +4646,13 @@ export const buildLakebedClientComponentForTest = (
   }
 }
 
-const renderClientIndex = (
+function renderClientIndex(
   routes: LakebedRoute[],
   components: ClientComponentDefinition[],
   adminAccess: LakebedAdminAccessConfig | null,
   input: OpenUIExportInput,
-): string => {
+  hasPortableLogo: boolean,
+): string {
   void routes
   void input.selectedBrandLogo
   // Bake the full catalog into the client so capsules can render it directly
@@ -4380,10 +4664,40 @@ const renderClientIndex = (
   const bakedSeedAssignment =
     Object.keys(bakedSeed).length > 0
       ? `if (typeof globalThis !== "undefined") {
-  (globalThis as { __LAKEBED_GOV_SEED__?: unknown }).__LAKEBED_GOV_SEED__ = ${JSON.stringify(bakedSeed)};
+  Reflect.set(globalThis, "__LAKEBED_GOV_SEED__", ${JSON.stringify(bakedSeed)});
 }
 `
       : ''
+  const selectedBrandName = input.selectedBrandLogo?.name?.trim() ?? ''
+  const selectedBrandLogoUrl =
+    input.selectedBrandLogo?.logo?.trim() ||
+    input.selectedBrandLogo?.icon?.trim() ||
+    ''
+  const brandImport =
+    selectedBrandName || selectedBrandLogoUrl
+      ? 'import { brandLogoUrl, brandName } from "./brand";'
+      : ''
+  const logoImport =
+    input.selectedBrandLogo || hasPortableLogo
+      ? 'import { Logo } from "./section-kit/Logo";'
+      : ''
+  const brandAssignment =
+    selectedBrandName || selectedBrandLogoUrl
+      ? `if (typeof globalThis !== "undefined") {
+  Reflect.set(globalThis, "__SITE_BRAND__", { name: brandName, logo: brandLogoUrl });
+}
+`
+      : ''
+  const commerceConfig = readPortableCommerceConfig(input.siteSpecJson)
+  const commerceImport = commerceConfig
+    ? 'import { commerceBackendUrl, commerceStorefrontUrl } from "./commerce";'
+    : ''
+  const commerceAssignment = commerceConfig
+    ? `if (typeof globalThis !== "undefined") {
+  Reflect.set(globalThis, "__COMMERCE_CONFIG__", { backendUrl: commerceBackendUrl, storefrontUrl: commerceStorefrontUrl });
+}
+`
+    : ''
   const componentImports = components
     .map(
       (component) =>
@@ -4411,28 +4725,13 @@ const renderClientIndex = (
       ),
     ),
   ]
-
-  return `import { Link, Route, Router, Routes } from "lakebed/client";
-import type { ComponentChildren } from "preact";
-import { useMemo, useState } from "preact/hooks";
-import { pages, type SitePage } from "./routes";
-import { AuthRuntime, useLakebedAdapter, type LakebedAdapter } from "./lib/lakebed";
-import { StyleRuntime } from "./lib/theme";
-${componentImports}
-
-${bakedSeedAssignment}
-type PageComponent = (input: {
-  props: Record<string, unknown>;
-  lakebed: LakebedAdapter;
-}) => ComponentChildren;
-
-const pageComponents = {
-${componentEntries}
-} satisfies Record<string, PageComponent>;
-
-const shipFastAdminEmails = ${JSON.stringify(adminEmails, null, 2)} as readonly string[];
-const shipFastAdminRouteLabels = ${JSON.stringify(adminRouteLabels, null, 2)} as readonly string[];
-const shipFastAdminRoutePaths = ${JSON.stringify(adminRoutePaths, null, 2)} as readonly string[];
+  const adminHooksImport = adminAccess
+    ? 'import { useMemo, useState } from "preact/hooks";'
+    : ''
+  const adminRuntime = adminAccess
+    ? `const shipFastAdminEmails = ${JSON.stringify(adminEmails, null, 2)};
+const shipFastAdminRouteLabels = ${JSON.stringify(adminRouteLabels, null, 2)};
+const shipFastAdminRoutePaths = ${JSON.stringify(adminRoutePaths, null, 2)};
 
 function normalizeAdminValue(value: unknown): string {
   return String(value || "").trim().toLowerCase();
@@ -4527,16 +4826,46 @@ function ShipFastAdminGate({
     </main>
   );
 }
+`
+    : ''
+  const pageViewResult = adminAccess
+    ? `  return isShipFastAdminRoute(page) ? (
+    <ShipFastAdminGate routeLabel={page.label}>{rendered}</ShipFastAdminGate>
+  ) : (
+    rendered
+  );`
+    : '  return rendered;'
+
+  return `import { Link, Route, Router, Routes } from "lakebed/client";
+import type { ComponentChildren } from "preact";
+${adminHooksImport}
+import { pages, type SitePage } from "./routes";
+import { AuthRuntime, useLakebedAdapter, type LakebedAdapter } from "./lib/lakebed";
+import { StyleRuntime } from "./lib/theme";
+${brandImport}
+${logoImport}
+${commerceImport}
+${componentImports}
+
+${bakedSeedAssignment}
+${brandAssignment}
+${commerceAssignment}
+type PageComponent = (input: {
+  props: Record<string, unknown>;
+  lakebed: LakebedAdapter;
+}) => ComponentChildren;
+
+const pageComponents = {
+${componentEntries}
+};
+
+${adminRuntime}
 
 function PageView({ page }: { page: SitePage }) {
   const lakebed = useLakebedAdapter();
   const Page = pageComponents[page.componentName];
   const rendered = Page ? <Page props={page.props} lakebed={lakebed} /> : <NotFoundPage />;
-  return isShipFastAdminRoute(page) ? (
-    <ShipFastAdminGate routeLabel={page.label}>{rendered}</ShipFastAdminGate>
-  ) : (
-    rendered
-  );
+${pageViewResult}
 }
 
 function NotFoundPage() {
@@ -4574,10 +4903,8 @@ export function App() {
 `
 }
 
-const renderStaticClientIndex = (
-  projectName: string,
-  html: string,
-): string => `import { Route, Router, Routes } from "lakebed/client";
+function renderStaticClientIndex(projectName: string, html: string): string {
+  return `import { Route, Router, Routes } from "lakebed/client";
 import { projectName } from "../shared/content";
 
 const html = ${JSON.stringify(html)};
@@ -4606,6 +4933,7 @@ export function App() {
   );
 }
 `
+}
 
 // Auto-generated authorized data-sync endpoint. Our platform POSTs catalog data
 // to `POST /__lakebed/sync` with `Authorization: Bearer <syncSecret>` to seed or
@@ -4614,32 +4942,137 @@ export function App() {
 // platform can write. Rows are projected to each table's declared fields
 // (unknown/engine-managed keys are rejected by lakebed inserts), and every
 // posted table is bulk-replaced (idempotent). Proven end-to-end in ~/test-lakebed.
-export const injectSyncEndpoint = (
+export function injectSyncEndpoint(
   endpointsSource: string,
   tableFields: Map<string, string[]>,
   syncSecret?: string,
-): string => {
-  if (!syncSecret) return endpointsSource
+  receiverIdentity = 'deployment-release',
+  useEnvironmentSyncSecret = false,
+): string {
+  if (!syncSecret && !useEnvironmentSyncSecret) return endpointsSource
   const fieldMap = JSON.stringify(Object.fromEntries(tableFields))
+  const stableIdentityFields = Object.fromEntries(
+    [...tableFields.entries()].map(([tableName, fields]) => [
+      tableName,
+      ['itemKey', 'key', 'slug', 'email', 'label', 'name', 'title'].find(
+        (field) => fields.includes(field),
+      ) ??
+        fields[0] ??
+        '',
+    ]),
+  )
   const entry = `
-  __lakebedSync: endpoint(
-    { method: "POST", path: "/api/__sync" },
-    async (ctx, req) => {
-      if (req.headers.get("authorization") !== "Bearer " + ${JSON.stringify(syncSecret)}) {
-        return json({ error: "unauthorized" }, { status: 401 });
+  __lakebedSync: (() => {
+    const canonicalSyncPath = "/__lakebed/sync";
+    const configuredSyncSecret = ${
+      syncSecret
+        ? JSON.stringify(syncSecret)
+        : '(typeof process !== "undefined" ? process.env.LAKEBED_SYNC_SECRET : "")'
+    };
+    const receiverIdentity = ${JSON.stringify(receiverIdentity)};
+    const fieldMap = ${fieldMap};
+    const protocolFieldMap = {
+      receipts: ["idempotencyKey", "origin", "target", "version"],
+      tombstones: ["deletedAt", "deletedVersion", "stateKey"],
+      versions: ["stateKey", "version"],
+    };
+    const stableIdentityFields = ${JSON.stringify(stableIdentityFields)};
+
+    function isRecord(value) {
+      return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+    }
+
+    function isScalar(value) {
+      return value == null ||
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean";
+    }
+
+    function projectedRow(raw, fields, fillMissing) {
+      const row = {};
+      for (const field of fields) {
+        if (Object.prototype.hasOwnProperty.call(raw, field)) {
+          row[field] = raw[field];
+        } else if (fillMissing) {
+          row[field] = "";
+        }
       }
-      let payload;
-      try {
-        payload = await req.json();
-      } catch {
-        return json({ error: "invalid json" }, { status: 400 });
+      return row;
+    }
+
+    function validateRows(tables) {
+      for (const name of Object.keys(tables)) {
+        const fields = fieldMap[name];
+        const rows = tables[name];
+        if (!fields || !Array.isArray(rows)) return "unknown or invalid table";
+        for (const row of rows) {
+          if (!isRecord(row)) return "row must be an object";
+          for (const field of fields) {
+            if (Object.prototype.hasOwnProperty.call(row, field) && !isScalar(row[field])) {
+              return "row fields must be scalar";
+            }
+          }
+        }
       }
-      const tables =
-        payload && typeof payload === "object" ? payload.tables : null;
-      if (!tables || typeof tables !== "object") {
-        return json({ error: "tables object required" }, { status: 400 });
+      return null;
+    }
+
+    function validateLegacyRows(tables) {
+      for (const name of Object.keys(tables)) {
+        const fields = fieldMap[name];
+        if (!fields) continue;
+        const rows = tables[name];
+        if (!Array.isArray(rows)) return "invalid legacy table";
+        for (const row of rows) {
+          if (!isRecord(row)) return "legacy row must be an object";
+          for (const field of fields) {
+            if (Object.prototype.hasOwnProperty.call(row, field) && !isScalar(row[field])) {
+              return "legacy row fields must be scalar";
+            }
+          }
+        }
       }
-      const fieldMap = ${fieldMap};
+      return null;
+    }
+
+    function validateEnvelope(payload) {
+      if (!isRecord(payload)) return "object payload required";
+      if (payload.schemaVersion !== 1) return "schemaVersion 1 required";
+      if (typeof payload.idempotencyKey !== "string" || !payload.idempotencyKey.trim()) {
+        return "idempotencyKey required";
+      }
+      if (typeof payload.origin !== "string" || !payload.origin.trim()) return "origin required";
+      if (typeof payload.target !== "string" || !payload.target.trim()) return "target required";
+      if (payload.target !== receiverIdentity) return "target does not match receiver";
+      if (!Number.isSafeInteger(payload.version) || payload.version < 0) return "valid version required";
+      if (!isRecord(payload.tables)) return "tables object required";
+      const rowError = validateRows(payload.tables);
+      if (rowError) return rowError;
+      if (!Array.isArray(payload.changes)) return "changes array required";
+      for (const change of payload.changes) {
+        if (!isRecord(change)) return "change must be an object";
+        if (!fieldMap[change.table]) return "unknown change table";
+        if (typeof change.key !== "string" || !change.key.trim()) return "change key required";
+        if (!["create", "update", "delete"].includes(change.operation)) return "invalid operation";
+        if (!Number.isSafeInteger(change.version) || change.version < 0) return "invalid change version";
+        if (change.operation !== "delete") {
+          if (!isRecord(change.data)) return "change data required";
+          const dataError = validateRows({ [change.table]: [change.data] });
+          if (dataError) return dataError;
+        }
+      }
+      return null;
+    }
+
+    function canUseLegacySnapshot(ctx, tables) {
+      const names = Object.keys(tables).filter((name) => fieldMap[name] && ctx.db[name]);
+      return names.length > 0 && names.every((name) =>
+        typeof ctx.db[name].get !== "function" || typeof ctx.db[name].update !== "function"
+      );
+    }
+
+    function applyLegacySnapshot(ctx, tables) {
       const result = {};
       for (const name of Object.keys(tables)) {
         const fields = fieldMap[name];
@@ -4649,24 +5082,292 @@ export const injectSyncEndpoint = (
         for (const existing of target.all()) target.delete(existing.id);
         let inserted = 0;
         for (const raw of rows) {
-          if (!raw || typeof raw !== "object") continue;
+          if (!isRecord(raw)) continue;
           const row = {};
           for (const field of fields) {
             const value = raw[field];
             row[field] = value == null ? "" : String(value);
           }
-          try {
-            target.insert(row);
-            inserted += 1;
-          } catch {
-            // skip malformed row
-          }
+          target.insert(row);
+          inserted += 1;
         }
         result[name] = inserted;
       }
-      return json({ ok: true, tables: result });
+      return result;
     }
-  ),`
+
+    function protocolTablesAvailable(ctx) {
+      return Boolean(
+        ctx.db.__syncInternalReceiptsV1 &&
+        ctx.db.__syncInternalVersionsV1 &&
+        ctx.db.__syncInternalTombstonesV1,
+      );
+    }
+
+    function compatibilityState(ctx) {
+      const owner = Object.values(ctx.db).find(
+        (candidate) => candidate && typeof candidate.all === "function",
+      );
+      if (!owner) throw new Error("sync storage unavailable");
+      if (!owner.__syncProtocolCompatibilityState) {
+        Object.defineProperty(owner, "__syncProtocolCompatibilityState", {
+          configurable: false,
+          enumerable: false,
+          value: { receipts: [], tombstones: {}, versions: {} },
+          writable: false,
+        });
+      }
+      return owner.__syncProtocolCompatibilityState;
+    }
+
+    function hasReceipt(ctx, idempotencyKey) {
+      if (!protocolTablesAvailable(ctx)) {
+        return compatibilityState(ctx).receipts.includes(idempotencyKey);
+      }
+      return Boolean(
+        ctx.db.__syncInternalReceiptsV1
+          .where("idempotencyKey", idempotencyKey)
+          .all()
+          .at(0),
+      );
+    }
+
+    function latestVersionFor(ctx, stateKey) {
+      if (!protocolTablesAvailable(ctx)) {
+        return compatibilityState(ctx).versions[stateKey];
+      }
+      const record = ctx.db.__syncInternalVersionsV1.where("stateKey", stateKey).all().at(0);
+      const version = record ? Number(record.version) : NaN;
+      return Number.isSafeInteger(version) ? version : undefined;
+    }
+
+    function protocolUpsert(target, keyField, key, values, fields, undo) {
+      const existing = target.where(keyField, key).all().at(0);
+      if (existing) {
+        const previous = projectedRow(existing, fields, true);
+        target.update(existing.id, values);
+        undo.push(() => target.update(existing.id, previous));
+        return;
+      }
+      const inserted = target.insert(values);
+      const insertedId = inserted && inserted.id;
+      undo.push(() => {
+        if (insertedId != null) target.delete(insertedId);
+      });
+    }
+
+    function persistProtocolState(ctx, payload, actions, undo) {
+      if (!protocolTablesAvailable(ctx)) {
+        const state = compatibilityState(ctx);
+        for (const action of actions) {
+          state.versions[action.stateKey] = action.change.version;
+          if (action.change.operation === "delete") {
+            state.tombstones[action.stateKey] = {
+              deletedAt: action.change.deletedAt || "",
+              deletedVersion: action.change.version,
+            };
+          } else {
+            delete state.tombstones[action.stateKey];
+          }
+        }
+        state.receipts.push(payload.idempotencyKey);
+        if (state.receipts.length > 1000) {
+          state.receipts.splice(0, state.receipts.length - 1000);
+        }
+        return;
+      }
+
+      for (const action of actions) {
+        protocolUpsert(
+          ctx.db.__syncInternalVersionsV1,
+          "stateKey",
+          action.stateKey,
+          { stateKey: action.stateKey, version: String(action.change.version) },
+          protocolFieldMap.versions,
+          undo,
+        );
+        const existingTombstone = ctx.db.__syncInternalTombstonesV1
+          .where("stateKey", action.stateKey)
+          .all()
+          .at(0);
+        if (action.change.operation === "delete") {
+          protocolUpsert(
+            ctx.db.__syncInternalTombstonesV1,
+            "stateKey",
+            action.stateKey,
+            {
+              deletedAt: action.change.deletedAt || "",
+              deletedVersion: String(action.change.version),
+              stateKey: action.stateKey,
+            },
+            protocolFieldMap.tombstones,
+            undo,
+          );
+        } else if (existingTombstone) {
+          const previous = projectedRow(
+            existingTombstone,
+            protocolFieldMap.tombstones,
+            true,
+          );
+          ctx.db.__syncInternalTombstonesV1.delete(existingTombstone.id);
+          undo.push(() => ctx.db.__syncInternalTombstonesV1.insert(previous));
+        }
+      }
+      protocolUpsert(
+        ctx.db.__syncInternalReceiptsV1,
+        "idempotencyKey",
+        payload.idempotencyKey,
+        {
+          idempotencyKey: payload.idempotencyKey,
+          origin: payload.origin,
+          target: payload.target,
+          version: String(payload.version),
+        },
+        protocolFieldMap.receipts,
+        undo,
+      );
+      const receipts = ctx.db.__syncInternalReceiptsV1.all();
+      for (const expired of receipts.slice(0, Math.max(0, receipts.length - 1000))) {
+        ctx.db.__syncInternalReceiptsV1.delete(expired.id);
+      }
+    }
+
+    function findExisting(target, tableName, key) {
+      const identityField = stableIdentityFields[tableName];
+      if (!identityField) return null;
+      if (typeof target.where === "function") {
+        return target.where(identityField, key).all().at(0) || null;
+      }
+      return (
+        target.all().find((row) => String(row[identityField]) === key) || null
+      );
+    }
+
+    function tombstoneCount(ctx) {
+      return protocolTablesAvailable(ctx)
+        ? ctx.db.__syncInternalTombstonesV1.all().length
+        : Object.keys(compatibilityState(ctx).tombstones).length;
+    }
+
+    function rollback(undo) {
+      for (let index = undo.length - 1; index >= 0; index -= 1) {
+        try { undo[index](); } catch {}
+      }
+    }
+
+    return endpoint(
+      { method: "POST", path: "/api/__sync" },
+      (ctx, req) => {
+        if (!configuredSyncSecret) {
+          return json({ error: "sync unavailable" }, { status: 503 });
+        }
+        if (req.headers.get("authorization") !== "Bearer " + configuredSyncSecret) {
+          return json({ error: "unauthorized" }, { status: 401 });
+        }
+        return req.text().then(function(body) {
+          let payload;
+          try {
+            payload = JSON.parse(body);
+          } catch {
+            return json({ error: "invalid json" }, { status: 400 });
+          }
+
+          const envelopeError = validateEnvelope(payload);
+          if (envelopeError) {
+            const legacyTables = isRecord(payload) && isRecord(payload.tables)
+              ? payload.tables
+              : null;
+            if (legacyTables && !validateLegacyRows(legacyTables) && canUseLegacySnapshot(ctx, legacyTables)) {
+              try {
+                return json({ ok: true, tables: applyLegacySnapshot(ctx, legacyTables), legacy: true });
+              } catch {
+                return json({ error: "storage unavailable" }, { status: 500 });
+              }
+            }
+            return json({ error: envelopeError }, { status: 422 });
+          }
+
+          const idempotencyKey = payload.idempotencyKey.trim();
+          if (hasReceipt(ctx, idempotencyKey)) {
+            return json({ ok: true, duplicate: true, idempotencyKey });
+          }
+          if (payload.origin === payload.target) {
+            return json({ ok: true, ignored: true, reason: "sync loop suppressed" });
+          }
+
+          const actionsByState = new Map();
+          let staleChanges = 0;
+          for (const change of payload.changes) {
+            const stateKey = change.table + "::" + change.key;
+            const pending = actionsByState.get(stateKey);
+            const persistedVersion = latestVersionFor(ctx, stateKey);
+            const latestVersion = pending
+              ? Math.max(pending.change.version, persistedVersion ?? -1)
+              : persistedVersion;
+            if (typeof latestVersion === "number" && change.version <= latestVersion) {
+              staleChanges += 1;
+              continue;
+            }
+            actionsByState.set(stateKey, { change, stateKey });
+          }
+          const actions = [...actionsByState.values()];
+
+          const undo = [];
+          const result = {};
+          try {
+            const orderedActions = actions.slice().sort((left, right) =>
+              Number(left.change.operation === "delete") - Number(right.change.operation === "delete")
+            );
+            for (const action of orderedActions) {
+              const change = action.change;
+              const target = ctx.db[change.table];
+              const fields = fieldMap[change.table];
+              if (!target || !fields) throw new Error("sync table unavailable");
+              const existing = findExisting(target, change.table, change.key);
+
+              if (change.operation === "delete") {
+                if (existing) {
+                  target.delete(existing.id);
+                  const previous = projectedRow(existing, fields, true);
+                  undo.push(() => target.insert(previous));
+                }
+              } else {
+                const patch = projectedRow(change.data, fields, change.operation === "create");
+                const identityField = stableIdentityFields[change.table];
+                if (identityField) patch[identityField] = change.key;
+                if (existing) {
+                  const previous = projectedRow(existing, fields, true);
+                  target.update(existing.id, patch);
+                  undo.push(() => target.update(existing.id, previous));
+                } else {
+                  const inserted = target.insert(patch);
+                  const insertedId = inserted && inserted.id;
+                  undo.push(() => {
+                    if (insertedId != null) target.delete(insertedId);
+                  });
+                }
+              }
+              result[change.table] = (result[change.table] || 0) + 1;
+            }
+            persistProtocolState(ctx, payload, actions, undo);
+          } catch {
+            rollback(undo);
+            return json({ error: "storage unavailable" }, { status: 500 });
+          }
+
+          return json({
+            ok: true,
+            idempotencyKey,
+            version: payload.version,
+            path: canonicalSyncPath,
+            stale: actions.length === 0 && staleChanges > 0,
+            tables: result,
+            tombstones: tombstoneCount(ctx),
+          });
+        });
+      }
+    );
+  })(),`
   const trimmed = endpointsSource.trimStart()
   if (!trimmed.startsWith('{')) return endpointsSource
   return trimmed.replace('{', `{${entry}`)
@@ -4676,7 +5377,7 @@ export const injectSyncEndpoint = (
 // page's queries read (unlike endpoint handlers), so a one-shot client call to
 // this on mount populates the DB the sections actually query. `ensureSeedData`
 // is idempotent (skips non-empty tables).
-const injectSeedMutation = (mutationsSource: string): string => {
+function injectSeedMutation(mutationsSource: string): string {
   const entry = `
   __lakebedSeed: mutation((ctx) => {
     ensureSeedData(ctx.db);
@@ -4687,13 +5388,22 @@ const injectSeedMutation = (mutationsSource: string): string => {
   return trimmed.replace('{', `{${entry}`)
 }
 
-const renderServerIndex = (
+function renderServerIndex(
   projectName: string,
   definitions: LakebedDefinition[],
   routes: LakebedRoute[],
   externalSeed?: Record<string, Array<Record<string, unknown>>>,
   syncSecret?: string,
-): string => {
+  syncMetadata: Record<string, string> = {},
+  useEnvironmentSyncSecret = false,
+): string {
+  const helpersByName = new Map<string, string>()
+  for (const definition of definitions) {
+    for (const [name, source] of Object.entries(definition.helpers)) {
+      if (!helpersByName.has(name)) helpersByName.set(name, source)
+    }
+  }
+  const helperSources = [...new Set(helpersByName.values())].join('\n\n')
   const renderedSchema = renderMergedSchema(
     definitions.map((definition) => definition.schemaSource),
     `{
@@ -4712,7 +5422,51 @@ const renderServerIndex = (
   }),
 }`,
   )
-  const schemaSource = renderedSchema.source
+  let schemaSource = renderedSchema.source
+  const protocolTables = [
+    {
+      fields: [
+        'changeKey',
+        'event',
+        'idempotencyKey',
+        'mutationName',
+        'operation',
+        'payload',
+        'retryCount',
+        'status',
+        'tombstone',
+        'version',
+      ],
+      name: '__syncInternalOutboxV1',
+    },
+    {
+      fields: ['idempotencyKey', 'origin', 'target', 'version'],
+      name: '__syncInternalReceiptsV1',
+    },
+    {
+      fields: ['stateKey', 'version'],
+      name: '__syncInternalVersionsV1',
+    },
+    {
+      fields: ['deletedAt', 'deletedVersion', 'stateKey'],
+      name: '__syncInternalTombstonesV1',
+    },
+  ]
+  for (const protocolTable of protocolTables) {
+    if (renderedSchema.tableFields.has(protocolTable.name)) {
+      throw new Error(
+        `Lakebed schema uses reserved table ${protocolTable.name}`,
+      )
+    }
+    const body = schemaSource.trim().slice(1, -1).trim()
+    schemaSource = `{
+${body}${body ? ',' : ''}
+  ${protocolTable.name}: table({
+${protocolTable.fields.map((field) => `    ${field}: string(),`).join('\n')}
+  })
+}`
+    renderedSchema.tableFields.set(protocolTable.name, protocolTable.fields)
+  }
   const queriesSource = mergeHandlers(
     definitions,
     'queries',
@@ -4739,20 +5493,93 @@ const renderServerIndex = (
 }`,
     ),
   )
+  const internalTableNames = new Set(protocolTables.map((table) => table.name))
+  const inboundTableFields = new Map(
+    [...renderedSchema.tableFields].filter(
+      ([tableName]) => !internalTableNames.has(tableName),
+    ),
+  )
   const endpointsSource = injectSyncEndpoint(
     mergeEndpointHandlers(definitions),
-    renderedSchema.tableFields,
+    inboundTableFields,
     syncSecret,
+    projectName ? toProjectSlug(projectName) : 'deployment-release',
+    useEnvironmentSyncSecret,
   )
+  const endpointImports = lakebedEndpointImportsFor(endpointsSource)
   const imports = [
     'capsule',
     'mutation',
     'query',
     ...primitiveImportsFor(schemaSource),
-    ...lakebedEndpointImportsFor(endpointsSource),
   ]
 
   return `import { ${[...new Set(imports)].sort().join(', ')} } from "lakebed/server";
+${
+  endpointImports.length > 0
+    ? `import * as lakebedServerRuntime from "lakebed/server";
+
+const endpoint = Reflect.get(lakebedServerRuntime, "endpoint") ??
+  ((config, handler) => ({ config, handler }));
+const json = Reflect.get(lakebedServerRuntime, "json") ??
+  ((body, options = {}) => ({ body, status: options.status ?? 200 }));
+const text = Reflect.get(lakebedServerRuntime, "text") ??
+  ((body, options = {}) => ({ body, status: options.status ?? 200 }));
+`
+    : ''
+}
+
+${helperSources}
+
+const syncMetadata = ${JSON.stringify(syncMetadata, null, 2)};
+
+function recordIdempotencyKeyVersionedSyncOutboxChangeEvent(
+  ctx,
+  mutationName,
+  operation,
+  args,
+  result,
+) {
+  const input = args[0] && typeof args[0] === "object" ? args[0] : {};
+  const changeKey = String(
+    input.itemKey ?? input.id ?? input.key ?? input.label ?? mutationName,
+  );
+  const version =
+    ctx.db.__syncInternalOutboxV1
+      .all()
+      .filter((entry) => entry.changeKey === changeKey)
+      .reduce((latest, entry) => Math.max(latest, Number(entry.version) || 0), 0) + 1;
+  const idempotencyKey =
+    "lakebed:" + changeKey + ":" + version + ":" + mutationName;
+  const payload = JSON.stringify(result ?? null);
+  const tombstone = operation === "delete";
+  const changeEvent = {
+    changeKey,
+    idempotencyKey,
+    metadata: syncMetadata,
+    mutationName,
+    operation,
+    origin: "lakebed",
+    payload,
+    schemaVersion: 1,
+    target: "dashboard",
+    tombstone,
+    version,
+  };
+  ctx.db.__syncInternalOutboxV1.insert({
+    changeKey,
+    event: JSON.stringify(changeEvent),
+    idempotencyKey,
+    mutationName,
+    operation,
+    payload,
+    retryCount: "0",
+    status: "pending",
+    tombstone: String(tombstone),
+    version: String(version),
+  });
+  return changeEvent;
+}
 
 ${renderSeedData(routes, renderedSchema.tableFields, externalSeed)}
 
@@ -4770,9 +5597,8 @@ export default capsule({
 `
 }
 
-const renderStaticServerIndex = (
-  projectName: string,
-): string => `import { capsule } from "lakebed/server";
+function renderStaticServerIndex(projectName: string): string {
+  return `import { capsule } from "lakebed/server";
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
@@ -4782,16 +5608,18 @@ export default capsule({
   endpoints: {}
 });
 `
+}
 
-const zipFiles = (files: Record<string, string>): Uint8Array =>
-  zipSync(
+function zipFiles(files: Record<string, string>): Uint8Array {
+  return zipSync(
     Object.fromEntries(
       Object.entries(files).map(([name, content]) => [name, strToU8(content)]),
     ),
     { level: 9 },
   )
+}
 
-const assertNoLeakedSourceTerms = (files: Record<string, string>) => {
+function assertNoLeakedSourceTerms(files: Record<string, string>) {
   const forbiddenPathParts = ['/capsules/']
   const forbiddenTerms = [
     '@openuidev',
@@ -4819,10 +5647,87 @@ const assertNoLeakedSourceTerms = (files: Record<string, string>) => {
   }
 }
 
-const buildStaticLakebedProjectFiles = async (
+function artifactSourcePaths(files: Record<string, string>): string[] {
+  return Object.keys(files).filter(
+    (path) => /\.(?:[cm]?[jt]sx?)$/.test(path) && !path.endsWith('.d.ts'),
+  )
+}
+
+function artifactModuleSpecifiers(path: string, source: string): string[] {
+  const sourceFile = ts.createSourceFile(
+    path,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  )
+  return sourceFile.statements.flatMap((statement) => {
+    if (
+      (!ts.isImportDeclaration(statement) &&
+        !ts.isExportDeclaration(statement)) ||
+      !statement.moduleSpecifier ||
+      !ts.isStringLiteralLike(statement.moduleSpecifier)
+    ) {
+      return []
+    }
+    return [statement.moduleSpecifier.text]
+  })
+}
+
+function resolveArtifactRelativeImport(
+  files: Record<string, string>,
+  fromPath: string,
+  specifier: string,
+): string | null {
+  const base = toPosixPath(join(dirname(fromPath), specifier))
+  const withoutJsExtension = base.replace(/\.(?:m?js|jsx)$/, '')
+  const candidates = [
+    base,
+    withoutJsExtension,
+    ...['.ts', '.tsx', '.js', '.jsx', '.mjs'].map(
+      (extension) => `${withoutJsExtension}${extension}`,
+    ),
+    ...['.ts', '.tsx', '.js', '.jsx', '.mjs'].map((extension) =>
+      join(withoutJsExtension, `index${extension}`),
+    ),
+  ]
+  return candidates.find((candidate) => candidate in files) ?? null
+}
+
+function pruneUnreachableLakebedSources(files: Record<string, string>): void {
+  const artifactSources = new Set(artifactSourcePaths(files))
+  const ownedSources = new Set(
+    [...artifactSources].filter((path) => !path.includes('/vendor/')),
+  )
+  const reachable = new Set<string>()
+  const pending = ['client/index.tsx', 'server/index.ts'].filter((path) =>
+    artifactSources.has(path),
+  )
+  while (pending.length > 0) {
+    const path = pending.pop()
+    if (!path || reachable.has(path)) continue
+    reachable.add(path)
+    for (const specifier of artifactModuleSpecifiers(path, files[path] ?? '')) {
+      if (!specifier.startsWith('.')) continue
+      const resolved = resolveArtifactRelativeImport(files, path, specifier)
+      if (
+        resolved &&
+        artifactSources.has(resolved) &&
+        !reachable.has(resolved)
+      ) {
+        pending.push(resolved)
+      }
+    }
+  }
+  for (const path of ownedSources) {
+    if (!reachable.has(path)) delete files[path]
+  }
+}
+
+async function buildStaticLakebedProjectFiles(
   input: OpenUIExportInput,
   projectName: string,
-): Promise<LakebedProjectFiles> => {
+): Promise<LakebedProjectFiles> {
   const html = await rewritePreviewImageUrls(
     input.previewHtml?.trim() || input.source.trim(),
   )
@@ -4837,7 +5742,7 @@ const buildStaticLakebedProjectFiles = async (
   const files = await formatExportFiles({
     'AGENTS.md': renderAgents(),
     'CLAUDE.md': renderAgents(),
-    'README.md': renderReadme(projectName),
+    'README.md': renderReadme(projectName, true),
     'client/index.tsx': renderStaticClientIndex(projectName, html),
     'server/index.ts': renderStaticServerIndex(projectName),
     'shared/content.ts': renderSharedContent(projectName, routes),
@@ -4854,6 +5759,7 @@ const buildStaticLakebedProjectFiles = async (
 
 export async function buildOpenUILakebedProjectFiles(
   input: OpenUIExportInput,
+  options: { useEnvironmentSyncSecret?: boolean } = {},
 ): Promise<LakebedProjectFiles> {
   if (isHtmlLikeSource(input.source)) {
     return await buildStaticLakebedProjectFiles(
@@ -4898,17 +5804,43 @@ export async function buildOpenUILakebedProjectFiles(
   const targetMap = buildLakebedTargetMap(routes, parsed.targetMap)
   const styleOverrides = extractStyleOverrides(input.previewHtml)
   const adminAccess = readLakebedAdminAccessConfig(input.siteSpecJson)
+  const commerceConfig = readPortableCommerceConfig(input.siteSpecJson)
+  const contentRevision = createHash('sha256')
+    .update(input.source)
+    .digest('hex')
+  const syncMetadata = {
+    contentRevision,
+    locale: input.locale ?? 'en',
+    logo:
+      input.selectedBrandLogo?.logo?.trim() ||
+      input.selectedBrandLogo?.icon?.trim() ||
+      '',
+    theme: themeName ?? 'default',
+  }
   Object.assign(files, {
-    'AGENTS.md': renderAgents(),
-    'CLAUDE.md': renderAgents(),
-    'README.md': renderReadme(parsed.projectName),
+    'README.md': renderReadme(parsed.projectName, false),
     'client/index.tsx': renderClientIndex(
       routes,
       clientComponents,
       adminAccess,
       input,
+      Boolean(files['client/section-kit/Logo.tsx']),
     ),
     'client/routes.ts': renderClientRoutes(routes, imageSources, targetMap),
+    ...(input.selectedBrandLogo
+      ? {
+          'client/brand.ts': `export const brandName = ${JSON.stringify(input.selectedBrandLogo.name?.trim() ?? '')};
+export const brandLogoUrl = ${JSON.stringify(input.selectedBrandLogo.logo?.trim() || input.selectedBrandLogo.icon?.trim() || '')};
+`,
+        }
+      : {}),
+    ...(commerceConfig
+      ? {
+          'client/commerce.ts': `export const commerceBackendUrl = ${JSON.stringify(commerceConfig.backendUrl)};
+export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontUrl)};
+`,
+        }
+      : {}),
     'client/lib/image.tsx': renderClientImage(),
     'client/lib/lakebed.ts': renderClientLakebed(),
     'client/lib/navigation.tsx': renderClientNavigation(),
@@ -4916,6 +5848,11 @@ export async function buildOpenUILakebedProjectFiles(
       themeCss + renderClientStyleOverridesCss(styleOverrides),
       tailwindThemeCss,
       isDarkTheme,
+      !input.themeName &&
+        !input.locale &&
+        !input.selectedBrandLogo &&
+        !input.lakebedSeedData &&
+        !input.syncSecret,
     ),
     'server/index.ts': renderServerIndex(
       parsed.projectName,
@@ -4923,14 +5860,17 @@ export async function buildOpenUILakebedProjectFiles(
       routes,
       input.lakebedSeedData,
       input.syncSecret,
+      syncMetadata,
+      options.useEnvironmentSyncSecret,
     ),
     'shared/content.ts': renderSharedContent(parsed.projectName, routes),
+    'public/favicon.svg': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#171717"/><circle cx="32" cy="32" r="15" fill="#f5f5f5"/></svg>`,
   })
   for (const component of clientComponents) {
     files[`client/components/${toIdentifier(component.name)}.tsx`] =
       renderClientComponentModule(component)
   }
-  if (files['client/section-kit/Logo.tsx']) {
+  if (input.selectedBrandLogo || files['client/section-kit/Logo.tsx']) {
     files['client/section-kit/Logo.tsx'] = renderLakebedLogoComponent(input)
   }
   const seoBundle = buildExportSeoBundle(
@@ -4942,6 +5882,7 @@ export async function buildOpenUILakebedProjectFiles(
     if (seoBundle.sitemapXml) files['public/sitemap.xml'] = seoBundle.sitemapXml
     if (seoBundle.llmsTxt) files['public/llms.txt'] = seoBundle.llmsTxt
   }
+  pruneUnreachableLakebedSources(files)
   const formattedFiles = await formatExportFiles(files)
   assertNoLeakedSourceTerms(formattedFiles)
   assertNoUnboundClientReferences(formattedFiles)

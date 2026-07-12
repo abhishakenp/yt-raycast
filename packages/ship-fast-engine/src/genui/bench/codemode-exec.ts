@@ -20,25 +20,21 @@ export type CodemodeResult = {
   pages: CodemodePage[]
 }
 
-const stripFences = (s: string): string =>
-  s
+function stripFences(s: string): string {
+  return s
     .replace(/^[\s\S]*?```(?:js|javascript|ts|typescript)?\s*/i, (m) =>
       m.includes('```') ? '' : m,
     )
     .replace(/```[\s\S]*$/, '')
     .trim()
+}
 
 export function runCodemodeProgram(code: string): CodemodeResult {
   const out: CodemodeResult = { pages: [] }
-  const home = (component: string, props?: Record<string, unknown>) => {
+  const home = (component, props?) => {
     out.home = { component, props: props ?? {} }
   }
-  const page = (
-    id: string,
-    label: string,
-    component: string,
-    props?: Record<string, unknown>,
-  ) => {
+  const page = (id, label, component, props?) => {
     out.pages.push({ id, label, component, props: props ?? {} })
   }
   // Restricted: only `home`/`page` are passed in. (Benchmark-grade isolation.)

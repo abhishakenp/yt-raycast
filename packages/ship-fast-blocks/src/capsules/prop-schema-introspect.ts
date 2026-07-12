@@ -27,14 +27,15 @@ type ZodDef = {
 
 type ZodLike = { _zod?: { def?: ZodDef } }
 
-const defOf = (schema: unknown): ZodDef | undefined =>
-  (schema as ZodLike | undefined)?._zod?.def
+function defOf(schema: unknown): ZodDef | undefined {
+  return (schema as ZodLike | undefined)?._zod?.def
+}
 
 // ─── Unwrapping ─────────────────────────────────────────────────────────────
 
 /** Follow optional/nullable/default/catch/readonly/lazy innerType chain
  *  to reach the core schema type. */
-const unwrap = (schema: unknown): unknown => {
+function unwrap(schema: unknown): unknown {
   let current = schema
   let depth = 0
   while (depth < 16) {
@@ -59,16 +60,15 @@ const unwrap = (schema: unknown): unknown => {
 }
 
 /** Get the core zod type string after unwrapping wrappers. */
-const coreType = (schema: unknown): string | undefined =>
-  defOf(unwrap(schema))?.type
+function coreType(schema: unknown): string | undefined {
+  return defOf(unwrap(schema))?.type
+}
 
 // ─── Literal / enum value extraction ────────────────────────────────────────
 
 /** Extract the literal value from a z.literal schema.
  *  zod/v4 stores literal values as `values: [value]` (an array). */
-const literalValue = (
-  schema: unknown,
-): string | number | boolean | undefined => {
+function literalValue(schema: unknown): string | number | boolean | undefined {
   const def = defOf(schema)
   if (def?.type !== 'literal') return undefined
   const vals = def.values
@@ -94,7 +94,7 @@ const literalValue = (
 
 /** Extract all option values from a z.enum schema.
  *  zod/v4 stores enum values in `entries` as a Record<string, string>. */
-const enumValues = (schema: unknown): (string | number | boolean)[] => {
+function enumValues(schema: unknown): (string | number | boolean)[] {
   const def = defOf(schema)
   if (!def) return []
   if (def.type === 'enum') {
@@ -113,9 +113,9 @@ const enumValues = (schema: unknown): (string | number | boolean)[] => {
 }
 
 /** Check if a union's options are all literals. If so, return their values. */
-const unionLiteralValues = (
+function unionLiteralValues(
   schema: unknown,
-): (string | number | boolean)[] | null => {
+): (string | number | boolean)[] | null {
   const def = defOf(schema)
   if (def?.type !== 'union') return null
   const options = def.options ?? []
@@ -185,16 +185,16 @@ const EXCLUDED_KEYS = new Set(['className'])
 /** Heading-like keys already handled by inline text editing. */
 const HEADING_KEYS = new Set(['heading', 'subheading', 'description'])
 
-const isOptional = (schema: unknown): boolean => {
+function isOptional(schema: unknown): boolean {
   const def = defOf(schema)
   return def?.type === 'optional' || def?.type === 'default'
 }
 
 /** Classify a field inside a collection item object. */
-const classifyCollectionField = (
+function classifyCollectionField(
   key: string,
   schema: unknown,
-): CollectionField => {
+): CollectionField {
   const optional = isOptional(schema)
   const unwrapped = unwrap(schema)
   const type = coreType(unwrapped)
@@ -220,22 +220,24 @@ const classifyCollectionField = (
 }
 
 /** Build a variant option label from a value. */
-const optionLabel = (value: string | number | boolean): string => {
+function optionLabel(value: string | number | boolean): string {
   if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   return String(value)
 }
 
 /** Build a variant prop from option values. */
-const makeVariant = (
+function makeVariant(
   key: string,
   values: (string | number | boolean)[],
-): VariantProp => ({
-  key,
-  options: values.map((value) => ({
-    value,
-    label: optionLabel(value),
-  })),
-})
+): VariantProp {
+  return {
+    key,
+    options: values.map((value) => ({
+      value,
+      label: optionLabel(value),
+    })),
+  }
+}
 
 // ─── Main introspection function ────────────────────────────────────────────
 
@@ -247,9 +249,9 @@ const makeVariant = (
  * scalars (string/number props). Excludes `className` and heading-like keys
  * from scalars (those are handled by inline text editing).
  */
-export const introspectCapsuleSchema = (
+export function introspectCapsuleSchema(
   propsSchema: unknown,
-): CapsuleSchemaInfo => {
+): CapsuleSchemaInfo {
   const result: CapsuleSchemaInfo = {
     collections: [],
     variants: [],
@@ -343,9 +345,9 @@ export const introspectCapsuleSchema = (
  * array-strings to empty array. Optional fields are included with defaults
  * so the form shows all fields.
  */
-export const createDefaultItem = (
+export function createDefaultItem(
   collection: CollectionProp,
-): Record<string, unknown> => {
+): Record<string, unknown> {
   const item: Record<string, unknown> = {}
   for (const field of collection.itemFields) {
     switch (field.type) {
@@ -373,7 +375,10 @@ export const createDefaultItem = (
 
 /** Returns true if the schema info has any editable content (collections,
  *  variants, or non-heading scalars). */
-export const hasContextInfo = (info: CapsuleSchemaInfo): boolean =>
-  info.collections.length > 0 ||
-  info.variants.length > 0 ||
-  info.scalars.length > 0
+export function hasContextInfo(info: CapsuleSchemaInfo): boolean {
+  return (
+    info.collections.length > 0 ||
+    info.variants.length > 0 ||
+    info.scalars.length > 0
+  )
+}

@@ -157,7 +157,7 @@ export const InvestingPricing = defineCapsule({
             ],
           },
         ]
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -171,7 +171,7 @@ export const InvestingPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-    const Cross = ({ className }: { className?: string }) => (
+    const Cross = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

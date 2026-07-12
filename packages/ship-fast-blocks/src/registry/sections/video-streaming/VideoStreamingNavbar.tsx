@@ -12,16 +12,18 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * header for streaming services, on-demand video apps, or OTT platforms.
  * Renders fully with no props via baked-in defaults.
  */
-const PlayMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5Z" />
-  </svg>
-)
+function PlayMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5Z" />
+    </svg>
+  )
+}
 
 export const VideoStreamingNavbar = defineCapsule({
   name: 'VideoStreamingNavbar',

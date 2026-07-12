@@ -145,7 +145,7 @@ let copiedStyle: string | null = null
 // Check if a capsule has editable schema (variants, collections, or scalars).
 // Used to hide the "Capsule controls" button when the panel would be empty.
 const capsuleSchemaCache = new Map<string, boolean>()
-const capsuleHasContext = (capsuleName: string): boolean => {
+function capsuleHasContext(capsuleName: string): boolean {
   const cached = capsuleSchemaCache.get(capsuleName)
   if (cached !== undefined) return cached
   const capsule = allCapsules.find((c) => c.client.name === capsuleName)
@@ -469,7 +469,7 @@ export function InlineEditToolbar({
     rel: string
   } | null>(null)
 
-  const rememberLinkAttrs = useCallback((element: HTMLAnchorElement) => {
+  const rememberLinkAttrs = useCallback((element) => {
     originalLinkAttrsRef.current = {
       element,
       target: element.getAttribute('target'),
@@ -512,16 +512,7 @@ export function InlineEditToolbar({
   }, [activeElement, pendingImageSrc])
 
   const setActivePanelWithCleanup = useCallback(
-    (
-      nextPanel:
-        | 'style'
-        | 'typography'
-        | 'link'
-        | 'ai'
-        | 'image'
-        | 'capsule'
-        | null,
-    ) => {
+    (nextPanel) => {
       if (activePanel === 'link' && nextPanel !== 'link') {
         restoreRememberedLinkAttrs()
       }
@@ -924,7 +915,7 @@ export function InlineEditToolbar({
   // BUT: <select> and <input> elements need the mousedown default to function
   // (open dropdown, open color picker). Skip preventDefault for those so the
   // font-size dropdown and color picker actually work.
-  const preventFocusSteal = (e: React.MouseEvent) => {
+  const preventFocusSteal = (e) => {
     const target = e.target as HTMLElement
     const tag = target.tagName
     // <select>, <input>, and Radix Select triggers (role="combobox") need
@@ -979,7 +970,7 @@ export function InlineEditToolbar({
   // those should NOT close the toolbar.
   useEffect(() => {
     if (!isOpen || isApplying || isForking) return
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+    const handleClickOutside = (e) => {
       const target = e.target as HTMLElement
       const isInWrapper =
         (wrapperRef.current && wrapperRef.current.contains(target)) ||
@@ -1013,7 +1004,7 @@ export function InlineEditToolbar({
   // Close on escape
   useEffect(() => {
     if (!isOpen || isApplying || isForking) return
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e) => {
       if (e.key === 'Escape') closeWithoutSaving()
     }
     document.addEventListener('keydown', handleEscape)
@@ -1030,7 +1021,7 @@ export function InlineEditToolbar({
   // in handleApply; handleClose reverts the src. newSrc may be a multi-image
   // payload (encodeMultiImageSrc) — the live <img> previews its first URL and
   // the full payload is kept pending so Apply persists the whole carousel.
-  const handleImagePreview = (newSrc: string | null) => {
+  const handleImagePreview = (newSrc) => {
     if (!activeElement || !isImageElement) return
     if (originalImageSrcRef.current === null) {
       originalImageSrcRef.current = (activeElement as HTMLImageElement).src
@@ -1127,7 +1118,7 @@ export function InlineEditToolbar({
   // committed only when Apply is pressed (handleApply reads the full inline
   // style) and reverted by closeWithoutSaving (restores originalStyleRef) if
   // the user cancels, clicks away, or presses Escape without saving.
-  const handleLayer = (direction: 'front' | 'back') => {
+  const handleLayer = (direction) => {
     if (!activeElement || isApplying || isForking) return
 
     const computed = window.getComputedStyle(activeElement)
@@ -1229,7 +1220,7 @@ export function InlineEditToolbar({
       if (parent && parent !== capsuleElement) {
         const currentTag = current.tagName
         const siblings = Array.from(parent.children).filter(
-          (c: Element) => c.tagName === currentTag,
+          (c) => c.tagName === currentTag,
         )
         if (siblings.length > bestSiblingCount) {
           const index = siblings.indexOf(current)
@@ -1264,7 +1255,7 @@ export function InlineEditToolbar({
   return (
     <TooltipProvider delayDuration={300}>
       <div
-        ref={(node: HTMLDivElement | null) => {
+        ref={(node) => {
           wrapperRef.current = node
           refs.setFloating(node)
         }}

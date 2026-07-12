@@ -12,19 +12,20 @@ import { extractOpenUISourceStrings } from './session_translation_cache_helpers'
 
 type JsonObject = Record<string, unknown>
 
-const isJsonObject = (value: unknown): value is JsonObject =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 /**
  * Recursively walk a parsed JSON value and replace the first occurrence of
  * oldText with newText inside a string leaf. Mirrors applyPreviewTextEdit but
  * operates on structured JSON (site specs) instead of raw HTML/source.
  */
-const replaceFirstJsonText = (
+function replaceFirstJsonText(
   value: unknown,
   oldText: string,
   newText: string,
-): { value: unknown; replaced: boolean } => {
+): { value: unknown; replaced: boolean } {
   if (typeof value === 'string') {
     const result = applyPreviewTextEdit(value, oldText, newText)
     return { value: result.html, replaced: result.replaced }
@@ -59,7 +60,7 @@ const replaceFirstJsonText = (
   return { value: next, replaced }
 }
 
-const uniqueNonEmptyTexts = (values: Array<string | undefined>): string[] => {
+function uniqueNonEmptyTexts(values: Array<string | undefined>): string[] {
   const seen = new Set<string>()
   const texts: string[] = []
 
@@ -80,11 +81,11 @@ const uniqueNonEmptyTexts = (values: Array<string | undefined>): string[] => {
  * cannot silently corrupt an unrelated longer leaf that merely contains it
  * ("Leadership & Board of Directors").
  */
-const replaceEqualJsonTextLeaf = (
+function replaceEqualJsonTextLeaf(
   value: unknown,
   oldText: string,
   newText: string,
-): { value: unknown; replaced: boolean } => {
+): { value: unknown; replaced: boolean } {
   if (typeof value === 'string') {
     if (value.trim() === oldText) return { value: newText, replaced: true }
     return { value, replaced: false }
@@ -138,14 +139,14 @@ const replaceEqualJsonTextLeaf = (
  * historical substring semantics so partial-node edits that already matched
  * preview/source still propagate into mirrored sessionData values.
  */
-const patchTextEditIntoSessionData = async (
+async function patchTextEditIntoSessionData(
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
   beforeTexts: Array<string | undefined>,
   afterText: string | undefined,
   now: number,
   exactLeafOnly = false,
-): Promise<boolean> => {
+): Promise<boolean> {
   const replacement = String(afterText ?? '').trim()
   if (!replacement) return false
 
@@ -194,11 +195,11 @@ export type SessionEditInput = {
   occurrenceIndex?: number
 }
 
-const getCurrentHomeModuleAndSiteSpec = async (
+async function getCurrentHomeModuleAndSiteSpec(
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
-) =>
-  await Promise.all([
+) {
+  return await Promise.all([
     ctx.db
       .query('generatedModules')
       .withIndex('by_sessionId_moduleKey', (index) =>
@@ -210,22 +211,25 @@ const getCurrentHomeModuleAndSiteSpec = async (
       .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .first(),
   ])
+}
 
-const normalizeComparableText = (value: string | undefined): string =>
-  String(value ?? '')
+function normalizeComparableText(value: string | undefined): string {
+  return String(value ?? '')
     .replace(/\s+/g, ' ')
     .trim()
+}
 
-const translationCacheKey = (locale: string, text: string): string =>
-  `${locale.trim().toLowerCase()}\n${text.trim()}`
+function translationCacheKey(locale: string, text: string): string {
+  return `${locale.trim().toLowerCase()}\n${text.trim()}`
+}
 
-const rememberTranslation = async (
+async function rememberTranslation(
   ctx: MutationCtx,
   locale: string | undefined,
   sourceText: string | undefined,
   translation: string | undefined,
   now: number,
-): Promise<void> => {
+): Promise<void> {
   const normalizedLocale = normalizeComparableText(locale).toLowerCase()
   const normalizedSourceText = String(sourceText ?? '').trim()
   const normalizedTranslation = String(translation ?? '').trim()
@@ -262,12 +266,12 @@ const rememberTranslation = async (
   })
 }
 
-const rememberIdentityTranslation = async (
+async function rememberIdentityTranslation(
   ctx: MutationCtx,
   locale: string | undefined,
   text: string | undefined,
   now: number,
-): Promise<void> => {
+): Promise<void> {
   await rememberTranslation(ctx, locale, text, text, now)
 }
 
@@ -283,12 +287,12 @@ type CanonicalizedTextEdit = {
   patchCanonicalArtifacts: boolean
 }
 
-const withCanonicalTranslatedBeforeText = async (
+async function withCanonicalTranslatedBeforeText(
   ctx: MutationCtx,
   session: Doc<'sessions'>,
   sessionId: Id<'sessions'>,
   args: SessionEditInput,
-): Promise<CanonicalizedTextEdit> => {
+): Promise<CanonicalizedTextEdit> {
   const unchanged = {
     args,
     patchCanonicalArtifacts: true,
@@ -349,7 +353,7 @@ const withCanonicalTranslatedBeforeText = async (
   return unchanged
 }
 
-const findAiCapsuleTextEdits = async (
+async function findAiCapsuleTextEdits(
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
   beforeText: string | undefined,
@@ -360,7 +364,7 @@ const findAiCapsuleTextEdits = async (
     capsule: Doc<'aiCapsules'>
     compiledJs: string
   }>
-> => {
+> {
   const aiCapsules = await ctx.db
     .query('aiCapsules')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
@@ -395,16 +399,17 @@ const findAiCapsuleTextEdits = async (
   return edits
 }
 
-const normalizeFlattenedEditText = (value: string | undefined): string =>
-  String(value ?? '')
+function normalizeFlattenedEditText(value: string | undefined): string {
+  return String(value ?? '')
     .replace(/\s+/g, '')
     .trim()
     .toLowerCase()
+}
 
-const unescapeJsStringLiteral = (value: string): string =>
-  value.replace(
+function unescapeJsStringLiteral(value: string): string {
+  return value.replace(
     /\\(u\{[0-9a-fA-F]+\}|u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/g,
-    (raw, escaped: string) => {
+    (raw, escaped) => {
       if (escaped === 'n') return '\n'
       if (escaped === 'r') return '\r'
       if (escaped === 't') return '\t'
@@ -424,9 +429,10 @@ const unescapeJsStringLiteral = (value: string): string =>
       return raw.slice(1)
     },
   )
+}
 
-const escapeJsStringLiteralContent = (value: string, quote: string): string =>
-  value
+function escapeJsStringLiteralContent(value: string, quote: string): string {
+  return value
     .replace(/\\/g, '\\\\')
     .replace(
       new RegExp(quote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
@@ -434,21 +440,22 @@ const escapeJsStringLiteralContent = (value: string, quote: string): string =>
     )
     .replace(/\r/g, '\\r')
     .replace(/\n/g, '\\n')
+}
 
-const isJsxTagNameLiteral = (
+function isJsxTagNameLiteral(
   source: string,
   literal: { start: number; value: string },
-): boolean => {
+): boolean {
   if (!/^[a-z][\w-]*$/.test(literal.value)) return false
   const prefix = source.slice(Math.max(0, literal.start - 16), literal.start)
   return /\bjsx[s]?\(\s*$/.test(prefix)
 }
 
-const applyFlattenedStringLiteralEdit = (
+function applyFlattenedStringLiteralEdit(
   source: string,
   beforeText: string | undefined,
   afterText: string | undefined,
-): { source: string; replaced: boolean } => {
+): { source: string; replaced: boolean } {
   const target = normalizeFlattenedEditText(beforeText)
   if (!source.trim() || !target) return { source, replaced: false }
 
@@ -519,7 +526,7 @@ const applyFlattenedStringLiteralEdit = (
   return { source, replaced: false }
 }
 
-export const applyTextEditToCurrentArtifacts = async (
+export async function applyTextEditToCurrentArtifacts(
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
   beforeText: string | undefined,
@@ -532,7 +539,7 @@ export const applyTextEditToCurrentArtifacts = async (
   openUiReplaced: boolean
   siteSpecReplaced: boolean
   aiCapsuleReplaced: boolean
-}> => {
+}> {
   const [homeModule, siteSpec] = await getCurrentHomeModuleAndSiteSpec(
     ctx,
     sessionId,
@@ -627,13 +634,13 @@ export const applyTextEditToCurrentArtifacts = async (
  * source — not just one — otherwise stale copies survive in
  * homeModule.source and re-emerge on reload.
  */
-const applyAiRewriteToCurrentArtifacts = async (
+async function applyAiRewriteToCurrentArtifacts(
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
   beforeText: string,
   afterText: string,
   now: number,
-): Promise<{ openUiSource?: string; siteSpecJson?: string }> => {
+): Promise<{ openUiSource?: string; siteSpecJson?: string }> {
   const [homeModule, siteSpec] = await getCurrentHomeModuleAndSiteSpec(
     ctx,
     sessionId,
@@ -679,13 +686,13 @@ const applyAiRewriteToCurrentArtifacts = async (
   return { openUiSource, siteSpecJson }
 }
 
-const snapshotCurrentArtifacts = async (
+async function snapshotCurrentArtifacts(
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
 ): Promise<{
   openUiSource?: string
   siteSpecJson?: string
-}> => {
+}> {
   const [homeModule, siteSpec] = await getCurrentHomeModuleAndSiteSpec(
     ctx,
     sessionId,
@@ -702,11 +709,11 @@ export type CreateSessionEditInput = SessionEditInput & {
   anonymousOwnerSecret?: string
 }
 
-export const createSessionEdit = async (
+export async function createSessionEdit(
   ctx: MutationCtx,
   args: CreateSessionEditInput,
   now = Date.now(),
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   session !== null ||
@@ -722,12 +729,12 @@ export const createSessionEdit = async (
   return await applySessionEdit(ctx, session, args, now)
 }
 
-export const applySessionEdit = async (
+export async function applySessionEdit(
   ctx: MutationCtx,
   session: Doc<'sessions'>,
   args: SessionEditInput,
   now: number,
-) => {
+) {
   const sessionId = session._id
   const canonicalized = await withCanonicalTranslatedBeforeText(
     ctx,

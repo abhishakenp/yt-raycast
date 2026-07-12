@@ -13,7 +13,7 @@ const HOVER_STYLE =
 const SELECTED_STYLE =
   'position:fixed;z-index:2147483646;pointer-events:none;border:2px solid #22d3ee;background:rgba(34,211,238,0.10);box-sizing:border-box;'
 
-const createOverlay = (baseStyle: string, role: 'hover' | 'selected') => {
+function createOverlay(baseStyle: string, role: 'hover' | 'selected') {
   const el = document.createElement('div')
   el.setAttribute('data-ship-fast-inspector-overlay', '')
   el.setAttribute('data-overlay-role', role)
@@ -21,7 +21,7 @@ const createOverlay = (baseStyle: string, role: 'hover' | 'selected') => {
   return el
 }
 
-const positionOverlay = (overlay: HTMLDivElement, rect: DOMRect) => {
+function positionOverlay(overlay: HTMLDivElement, rect: DOMRect) {
   // Set individual properties rather than replacing cssText — concatenating a
   // long style string is brittle (one unparseable declaration can drop the
   // rest in stricter CSS parsers), and we want the base styles from
@@ -72,11 +72,11 @@ export function useElementInspector(
       hoverOverlay.style.display = 'none'
     }
 
-    const paintHover = (target: HTMLElement) => {
+    const paintHover = (target) => {
       positionOverlay(hoverOverlay, target.getBoundingClientRect())
     }
 
-    const onMouseMove = (e: MouseEvent) => {
+    const onMouseMove = (e) => {
       const target = e.target
       if (!(target instanceof HTMLElement) || !container.contains(target)) {
         hideHover()
@@ -91,7 +91,7 @@ export function useElementInspector(
 
     const onMouseLeave = () => hideHover()
 
-    const commitSelection = (target: HTMLElement) => {
+    const commitSelection = (target) => {
       selectedElementRef.current = target
       positionOverlay(selectedOverlay, target.getBoundingClientRect())
       onSectionSelectRef.current?.(buildInspectorSelection(container, target))
@@ -103,7 +103,7 @@ export function useElementInspector(
       onSectionSelectRef.current?.(null)
     }
 
-    const onClick = (e: MouseEvent) => {
+    const onClick = (e) => {
       const target = e.target
       if (!(target instanceof HTMLElement) || !container.contains(target)) {
         return
@@ -135,7 +135,7 @@ export function useElementInspector(
       }
     }
 
-    const onKey = (e: KeyboardEvent) => {
+    const onKey = (e) => {
       if (e.key === 'Escape') {
         clearSelection()
       }
@@ -143,7 +143,7 @@ export function useElementInspector(
 
     // Click outside the preview container AND outside the inline edit toolbar →
     // clear the selection (mirrors devtools' click-away-to-deselect).
-    const onDocumentMouseDown = (e: MouseEvent) => {
+    const onDocumentMouseDown = (e) => {
       const target = e.target
       if (!(target instanceof HTMLElement)) return
       if (container.contains(target)) return
@@ -167,7 +167,7 @@ export function useElementInspector(
     // e.g. a gapless page root). Routing it through commitSelection keeps the
     // cyan overlay, onSectionSelect, and the toolbar in sync — exactly as a
     // real click would.
-    const onSelectRequest = (e: Event) => {
+    const onSelectRequest = (e) => {
       const target = (e as CustomEvent<{ element?: HTMLElement }>).detail
         ?.element
       if (target instanceof HTMLElement && container.contains(target)) {

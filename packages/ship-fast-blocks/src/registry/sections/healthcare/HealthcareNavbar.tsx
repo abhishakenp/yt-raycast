@@ -52,7 +52,7 @@ export const HealthcareNavbar = defineCapsule({
     const phone = props.phone ?? '(415) 555-1234'
     const cta = props.cta ?? 'Book Appointment'
     const ctaTarget = props.ctaTarget ?? 'Schedule Your Visit'
-    const HeartMark = ({ className }: { className?: string }) => (
+    const HeartMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-xl bg-primary text-primary-foreground',

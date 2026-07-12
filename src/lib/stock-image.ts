@@ -23,9 +23,11 @@ type ResolveResult = {
 
 const cache = new Map<string, ResolveResult>()
 
-const cacheKey = (query: string, w: number, h: number) => `${query}|${w}x${h}`
+function cacheKey(query: string, w: number, h: number) {
+  return `${query}|${w}x${h}`
+}
 
-const pickBySeed = <T>(items: T[], seed: string): T | undefined => {
+function pickBySeed(items: T[], seed: string): T | undefined {
   if (!items.length) return undefined
   return items[seedFromAlt(seed) % items.length]
 }
@@ -56,20 +58,20 @@ interface UnsplashResponse {
   results: UnsplashPhoto[]
 }
 
-const pexelsPhotoUrl = (photo: PexelsPhoto, w: number, h: number): string => {
+function pexelsPhotoUrl(photo: PexelsPhoto, w: number, h: number): string {
   if (w > 1200 || h > 1200) return photo.src.original
   if (w > 800 || h > 800) return photo.src.large2x
   if (w > 400 || h > 400) return photo.src.large
   return photo.src.medium
 }
 
-const searchPexels = async (
+async function searchPexels(
   query: string,
   w: number,
   h: number,
   seed: string,
   apiKey: string,
-): Promise<string | null> => {
+): Promise<string | null> {
   const orientation = orientationFromSize(w, h)
   const response = await fetch(
     `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=15&orientation=${orientation}`,
@@ -84,19 +86,19 @@ const searchPexels = async (
   return pexelsPhotoUrl(photo, w, h)
 }
 
-const unsplashSizeParam = (w: number, h: number): string => {
+function unsplashSizeParam(w: number, h: number): string {
   const targetW = Math.min(Math.max(w, 400), 2400)
   const targetH = Math.min(Math.max(h, 300), 1600)
   return `&w=${targetW}&h=${targetH}&fit=crop`
 }
 
-const searchUnsplash = async (
+async function searchUnsplash(
   query: string,
   w: number,
   h: number,
   seed: string,
   accessKey: string,
-): Promise<string | null> => {
+): Promise<string | null> {
   const orientation = orientationFromSize(w, h)
   const response = await fetch(
     `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=15&orientation=${orientation}`,
@@ -140,7 +142,9 @@ export const BACKGROUND_RESOLUTION_DIMENSIONS: Record<
   high: { w: 1920, h: 1280 },
 }
 
-const stripQuery = (url: string): string => url.split('?')[0]
+function stripQuery(url: string): string {
+  return url.split('?')[0]
+}
 
 /**
  * Build a high-resolution URL for a stock image at the requested quality
@@ -152,10 +156,10 @@ const stripQuery = (url: string): string => url.split('?')[0]
  * full-bleed heroes and retina displays. Falls back to the thumbnail when no
  * hi-res source URL is available.
  */
-export const buildBackgroundImageUrl = (
+export function buildBackgroundImageUrl(
   result: StockImageResult,
   resolution: BackgroundImageResolution,
-): string => {
+): string {
   const base = result.baseUrl
   if (!base) return result.imageUrl
   if (resolution === 'max') {
@@ -186,7 +190,7 @@ export const buildBackgroundImageUrl = (
 /** Search both Pexels and Unsplash for multiple images at once, merged and
  *  shuffled together. Supports pagination via `page`. Returns up to
  *  `perPage` results per call (split across both providers). */
-export const searchStockImages = async ({
+export async function searchStockImages({
   query,
   w = 400,
   h = 300,
@@ -198,7 +202,7 @@ export const searchStockImages = async ({
   h?: number
   page?: number
   perPage?: number
-}): Promise<StockImageResult[]> => {
+}): Promise<StockImageResult[]> {
   if (!query.trim()) return []
 
   const orientation = orientationFromSize(w, h)
@@ -282,14 +286,14 @@ export const searchStockImages = async ({
   // (e.g. malformed HTML instead of JSON), fall back to picsum with
   // deterministic seeds per page. The seed uses the full slugified query
   // (no truncation) so each query/page/index combination is unique.
-  const fullSlug = (text: string): string =>
+  const fullSlug = (text) =>
     text
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '') || 'image'
 
-  const picsumFallback = (): StockImageResult[] =>
+  const picsumFallback = () =>
     Array.from({ length: perPage }, (_, i) => {
       const seed = `${fullSlug(query)}-${page}-${i}`
       return {
@@ -311,13 +315,13 @@ export const searchStockImages = async ({
   return interleaved.slice(0, perPage)
 }
 
-export const resolveStockImage = async ({
+export async function resolveStockImage({
   alt,
   query,
   w = 800,
   h = 600,
   context,
-}: ResolveInput): Promise<ResolveResult> => {
+}: ResolveInput): Promise<ResolveResult> {
   const seed = (alt ?? query ?? 'image').trim() || 'image'
 
   // Use context-aware query generation if context is provided, otherwise fall back to simple query

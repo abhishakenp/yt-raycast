@@ -96,7 +96,7 @@ export const PricingPage = () => {
         '[data-pricing-checkout-cta="true"]',
       ),
     )
-    const handleCtaClick = (event: MouseEvent) => {
+    const handleCtaClick = (event) => {
       event.preventDefault()
       void startCheckout()
     }
@@ -131,7 +131,7 @@ export const PricingPage = () => {
     const faqTriggers = Array.from(
       content.querySelectorAll<HTMLButtonElement>('[data-faq-trigger]'),
     )
-    const handleFaqClick = (event: MouseEvent) => {
+    const handleFaqClick = (event) => {
       const trigger = event.currentTarget as HTMLButtonElement
       const item = trigger.closest<HTMLElement>('[data-faq-item]')
       const panelId = trigger.getAttribute('aria-controls')

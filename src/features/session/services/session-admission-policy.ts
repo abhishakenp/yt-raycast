@@ -123,16 +123,17 @@ const keyboardMashSequences = [
   'ghjkl',
 ]
 
-const normalizeSpaces = (value: string): string =>
-  value.replace(/\s+/g, ' ').trim()
+function normalizeSpaces(value: string): string {
+  return value.replace(/\s+/g, ' ').trim()
+}
 
-const normalizeUrl = (value: string): string => {
+function normalizeUrl(value: string): string {
   const parsed = new URL(value)
   parsed.hash = ''
   return parsed.toString()
 }
 
-const simpleHash = (value: string): string => {
+function simpleHash(value: string): string {
   let hash = 2166136261
   for (let i = 0; i < value.length; i += 1) {
     hash ^= value.charCodeAt(i)
@@ -141,18 +142,19 @@ const simpleHash = (value: string): string => {
   return (hash >>> 0).toString(16).padStart(8, '0')
 }
 
-export const normalizePromptCacheKey = (
+export function normalizePromptCacheKey(
   prompt: string,
   preferredLanguage = 'en',
-): string =>
-  `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(
+): string {
+  return `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(
     prompt,
   )
     .toLowerCase()
     .replace(/[^a-z0-9\p{L}\p{N}]+/gu, ' ')
     .trim()}`
+}
 
-export const isLikelyGibberishPrompt = (prompt: string): boolean => {
+export function isLikelyGibberishPrompt(prompt: string): boolean {
   const text = normalizeSpaces(prompt)
   if (text.length < 8) return true
 
@@ -194,10 +196,10 @@ export const isLikelyGibberishPrompt = (prompt: string): boolean => {
   return false
 }
 
-export const parseSessionAdmission = (
+export function parseSessionAdmission(
   input: SessionAdmissionInput,
   usage: SessionAdmissionUsage = {},
-): SessionAdmissionAccepted | SessionAdmissionRejected => {
+): SessionAdmissionAccepted | SessionAdmissionRejected {
   const now = usage.now ?? Date.now()
   const disableLimits = devFlags.disableGenerationLimits
   const prompt = normalizeSpaces(

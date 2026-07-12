@@ -15,7 +15,7 @@ type MemoryStorage = Pick<
   'clear' | 'getItem' | 'key' | 'length' | 'removeItem' | 'setItem'
 >
 
-const createMemoryStorage = (): MemoryStorage => {
+function createMemoryStorage(): MemoryStorage {
   const store = new Map<string, string>()
 
   return {
@@ -34,7 +34,7 @@ const createMemoryStorage = (): MemoryStorage => {
   }
 }
 
-const defineStorage = (name: 'localStorage' | 'sessionStorage') => {
+function defineStorage(name: 'localStorage' | 'sessionStorage') {
   const storage = createMemoryStorage()
 
   for (const target of [globalThis, globalThis.window].filter(Boolean)) {

@@ -29,13 +29,14 @@ const CURRENCY_LOCALE: Record<string, string> = {
   BRL: 'pt-BR',
 }
 
-const localeForCurrency = (currency: string): string =>
-  CURRENCY_LOCALE[currency] ?? 'en-US'
+function localeForCurrency(currency: string): string {
+  return CURRENCY_LOCALE[currency] ?? 'en-US'
+}
 
-const formatPrice = (
+function formatPrice(
   price: number | undefined,
   currencyCode: string | undefined,
-): string | undefined => {
+): string | undefined {
   if (price === undefined) return undefined
   const normalizedCurrency = currencyCode?.trim().toUpperCase()
   if (!normalizedCurrency) return `$${price.toFixed(2)}`
@@ -58,7 +59,7 @@ const formatPrice = (
   }
 }
 
-const collectTextNodes = (root: HTMLElement): Array<Text> => {
+function collectTextNodes(root: HTMLElement): Array<Text> {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   const nodes: Array<Text> = []
   let node = walker.nextNode()
@@ -69,7 +70,7 @@ const collectTextNodes = (root: HTMLElement): Array<Text> => {
   return nodes
 }
 
-const replaceText = (root: HTMLElement, from: string, to: string): void => {
+function replaceText(root: HTMLElement, from: string, to: string): void {
   if (!from.trim() || from === to) return
   for (const node of collectTextNodes(root)) {
     if (!node.nodeValue?.includes(from)) continue
@@ -77,14 +78,11 @@ const replaceText = (root: HTMLElement, from: string, to: string): void => {
   }
 }
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
-const replacePriceText = (
-  root: HTMLElement,
-  from: string,
-  to: string,
-): void => {
+function replacePriceText(root: HTMLElement, from: string, to: string): void {
   if (!from.trim() || from === to) return
   const pattern = new RegExp(`${escapeRegExp(from)}(?![\\d.,])`, 'g')
   for (const node of collectTextNodes(root)) {
@@ -94,7 +92,7 @@ const replacePriceText = (
   }
 }
 
-const priceCandidates = (price: number): Array<string> => {
+function priceCandidates(price: number): Array<string> {
   const rounded = Number.isInteger(price) ? String(price) : String(price)
   return [
     `$${rounded}`,
@@ -108,10 +106,10 @@ const priceCandidates = (price: number): Array<string> => {
   ]
 }
 
-const findProductScope = (
+function findProductScope(
   root: HTMLElement,
   title: string,
-): HTMLElement | undefined => {
+): HTMLElement | undefined {
   const textNodes = collectTextNodes(root)
   const titleNode = textNodes.find((node) => node.nodeValue?.includes(title))
   let element = titleNode?.parentElement ?? undefined
@@ -130,7 +128,7 @@ const SYNCED_ATTR = 'data-medusa-synced'
 // idempotent: once a product card has been rewritten, a later run that
 // rediscovers a narrower scope inside the same card is skipped instead of
 // re-replacing a generated title that is now a substring of the Medusa title.
-const isAlreadySynced = (scope: HTMLElement, root: HTMLElement): boolean => {
+function isAlreadySynced(scope: HTMLElement, root: HTMLElement): boolean {
   let el: HTMLElement | null = scope
   while (el !== null && el !== root) {
     if (el.hasAttribute(SYNCED_ATTR)) return true
@@ -139,10 +137,10 @@ const isAlreadySynced = (scope: HTMLElement, root: HTMLElement): boolean => {
   return false
 }
 
-export const applyMedusaProductsToPreviewDom = (
+export function applyMedusaProductsToPreviewDom(
   root: HTMLElement,
   { generatedProducts, medusaProducts }: ApplyMedusaProductsInput,
-): void => {
+): void {
   const generatedByHandle = new Map(
     generatedProducts.map((product) => [product.handle, product]),
   )

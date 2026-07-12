@@ -49,7 +49,7 @@ export const MentalHealthNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
     const bookLabel = props.bookLabel ?? nav[nav.length - 1] ?? 'Book Session'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         className={className}
         fill="none"

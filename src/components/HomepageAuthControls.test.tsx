@@ -9,7 +9,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const clerkMocks = vi.hoisted(() => ({
-  provider: vi.fn(({ children }: { children: React.ReactNode }) => (
+  provider: vi.fn(({ children }) => (
     <div data-testid="clerk-provider">{children}</div>
   )),
 }))
@@ -29,7 +29,7 @@ type TestClerk = {
   unmountUserButton?: ReturnType<typeof vi.fn>
 }
 
-const importControls = async (publishableKey: string | undefined) => {
+async function importControls(publishableKey: string | undefined) {
   vi.resetModules()
   vi.unstubAllEnvs()
   vi.stubEnv('VITE_DISABLE_CLERK', '')
@@ -43,7 +43,7 @@ const importControls = async (publishableKey: string | undefined) => {
   return import('./HomepageAuthControls')
 }
 
-const setClerk = (clerk: TestClerk) => {
+function setClerk(clerk: TestClerk) {
   Object.defineProperty(window, 'Clerk', {
     configurable: true,
     writable: true,

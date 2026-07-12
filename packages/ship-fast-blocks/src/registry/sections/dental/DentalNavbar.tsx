@@ -62,7 +62,7 @@ export const DentalNavbar = defineCapsule({
       </svg>
     )
 
-    const LogoBadge = ({ className }: { className?: string }) => (
+    const LogoBadge = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-xl bg-primary text-primary-foreground',

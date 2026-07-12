@@ -69,7 +69,7 @@ export const MentalHealthTestimonials = defineCapsule({
           },
         ]
 
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={className}
         fill="currentColor"

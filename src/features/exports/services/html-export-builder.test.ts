@@ -2,7 +2,7 @@ import { parseHTML } from 'linkedom'
 import { describe, expect, it } from 'vitest'
 import { buildHtmlExport, injectShipFastBadge } from './html-export-builder'
 
-const parseBadge = (html: string) => {
+function parseBadge(html: string) {
   const { document } = parseHTML(html)
   return document.querySelector('[data-ship-fast-export-badge]')
 }

@@ -44,7 +44,7 @@ export const LandscapingFooter = defineCapsule({
       : ['Privacy', 'Terms', 'Careers']
     const homeTarget = props.homeTarget ?? 'Services'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

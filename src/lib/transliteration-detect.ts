@@ -9,8 +9,9 @@
  * instructs the model to always write alt text in English. This module
  * only handles the case where the LLM slips and includes non-English script.
  */
-export const stripNonAscii = (query: string): string =>
-  query
+export function stripNonAscii(query: string): string {
+  return query
     .replace(/[^\x20-\x7E]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}

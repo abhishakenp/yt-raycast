@@ -41,7 +41,7 @@ export const NewsletterNavbar = defineCapsule({
       ? props.nav
       : ['Recent Issues', 'About', 'Subscribe']
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-foreground font-serif font-medium text-background',

@@ -130,15 +130,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -180,7 +177,7 @@ function createAutoDealershipLakebedStub() {
       leads: state.leads,
     }
   }
-  const syncVehicles = (vehicles: TestVehicleInput[]) => {
+  const syncVehicles = (vehicles) => {
     const nextVehicles = [...state.vehicles]
 
     for (const vehicle of vehicles) {
@@ -211,7 +208,7 @@ function createAutoDealershipLakebedStub() {
 
     state = { ...state, vehicles: nextVehicles }
   }
-  const recordLead = (input: TestLeadInput) => {
+  const recordLead = (input) => {
     state = {
       ...state,
       leads: [

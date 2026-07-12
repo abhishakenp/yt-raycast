@@ -11,7 +11,7 @@ import { renderSeedData } from './openui-lakebed-export-builder'
  * rows for tables with no external data.
  */
 
-const parseSeedRows = (source: string): Record<string, unknown[]> => {
+function parseSeedRows(source: string): Record<string, unknown[]> {
   const match = source.match(/const seedRows[^=]*=\s*(\{[\s\S]*?\});/)
   if (!match) throw new Error('seedRows literal not found')
   return JSON.parse(match[1]) as Record<string, unknown[]>

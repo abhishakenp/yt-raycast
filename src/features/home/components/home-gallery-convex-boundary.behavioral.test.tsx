@@ -6,15 +6,7 @@ import { renderToString } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    to,
-    ...props
-  }: {
-    children: ReactNode
-    to: string
-    [key: string]: unknown
-  }) => (
+  Link: ({ children, to, ...props }) => (
     <a href={to} {...props}>
       {children}
     </a>
@@ -32,7 +24,7 @@ describe('home gallery Convex boundary', () => {
     cleanup()
   })
 
-  const withConvex = (children: ReactNode) => (
+  const withConvex = (children) => (
     <ConvexProvider
       client={
         new ConvexReactClient('https://convex.example.test', {

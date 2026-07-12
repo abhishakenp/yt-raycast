@@ -41,7 +41,7 @@ export const DentalContactCta = defineCapsule({
       ? props.perks
       : ['Open 6 days a week', 'Free parking available', 'Evening appointments']
 
-    const PhoneIcon = ({ className }: { className?: string }) => (
+    const PhoneIcon = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

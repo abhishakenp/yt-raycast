@@ -1,6 +1,6 @@
-export const shouldUseSwiper = (
+export function shouldUseSwiper(
   siteSpec: { siteType?: string; userPrompt?: string } | null,
-): boolean => {
+): boolean {
   if (!siteSpec) return false
   if (siteSpec.siteType === 'ecommerce') return true
   const p = String(siteSpec.userPrompt || '').toLowerCase()

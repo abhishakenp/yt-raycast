@@ -74,11 +74,12 @@ Rules:
 - Static HTML only: no JSX, no framework syntax, no template loops.
 - Keep the file under 110 lines.`
 
-const cleanFence = (value: string): string =>
-  value
+function cleanFence(value: string): string {
+  return value
     .replace(/^```(?:html)?\s*/i, '')
     .replace(/\s*```$/i, '')
     .trim()
+}
 
 // Hosts allowed to serve <script src="..."> tags. Inline scripts and
 // scripts from any other origin are stripped as a security measure.
@@ -91,7 +92,7 @@ const SAFE_SCRIPT_HOSTS = [
   'fonts.googleapis.com',
 ]
 
-const isAllowedScriptSrc = (src: string): boolean => {
+function isAllowedScriptSrc(src: string): boolean {
   if (!src) return false
   try {
     const host = new URL(src, 'https://example.com').hostname
@@ -103,8 +104,8 @@ const isAllowedScriptSrc = (src: string): boolean => {
 
 // Strip <script> tags that carry inline content or load from untrusted
 // origins. Known-safe CDN scripts (e.g. Tailwind runtime) are preserved.
-export const stripDangerousScripts = (html: string): string =>
-  html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (match) => {
+export function stripDangerousScripts(html: string): string {
+  return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (match) => {
     const contentMatch = match.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i)
     const content = contentMatch?.[1] ?? ''
     // Inline content (e.g. alert("xss")) is always dangerous → remove.
@@ -114,22 +115,25 @@ export const stripDangerousScripts = (html: string): string =>
     // No src and no content is useless; unknown origins are untrusted.
     return isAllowedScriptSrc(src) ? match : ''
   })
+}
 
 // Remove inline event handler attributes (onclick, onload, onerror, …).
-export const stripInlineEventHandlers = (html: string): string =>
-  html.replace(/\s+on[a-zA-Z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+export function stripInlineEventHandlers(html: string): string {
+  return html.replace(/\s+on[a-zA-Z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+}
 
 // Neutralize javascript: URLs in href (and src) attributes.
-export const stripJavascriptUrls = (html: string): string =>
-  html
+export function stripJavascriptUrls(html: string): string {
+  return html
     .replace(/(href\s*=\s*["'])javascript:[^"']*["']/gi, '$1#"')
     .replace(/(src\s*=\s*["'])javascript:[^"']*["']/gi, '$1#"')
     .replace(
       /\b(href|src)\s*=\s*(?!["'])([^\s>]*javascript:[^\s>]*)/gi,
       '$1="#"',
     )
+}
 
-export const sanitizeSffHtml = (raw: string): string => {
+export function sanitizeSffHtml(raw: string): string {
   let html = cleanFence(String(raw || ''))
   const start = html.search(/<!doctype\s+html/i)
   if (start > 0) html = html.slice(start).trim()
@@ -141,22 +145,25 @@ export const sanitizeSffHtml = (raw: string): string => {
   return html
 }
 
-export const isCompleteSffHtml = (html: string): boolean =>
-  /^<!doctype\s+html/i.test(html.trim()) &&
-  /<html[\s>]/i.test(html) &&
-  /<head[\s>]/i.test(html) &&
-  /<body[\s>]/i.test(html) &&
-  /<\/html>\s*$/i.test(html.trim())
+export function isCompleteSffHtml(html: string): boolean {
+  return (
+    /^<!doctype\s+html/i.test(html.trim()) &&
+    /<html[\s>]/i.test(html) &&
+    /<head[\s>]/i.test(html) &&
+    /<body[\s>]/i.test(html) &&
+    /<\/html>\s*$/i.test(html.trim())
+  )
+}
 
-const summarizeSiteSpec = (siteSpec?: Record<string, unknown>): string => {
+function summarizeSiteSpec(siteSpec?: Record<string, unknown>): string {
   if (!siteSpec) return 'No site spec was generated.'
-  const pick = (key: string) => {
+  const pick = (key) => {
     const value = siteSpec[key]
     return typeof value === 'string' && value.trim() ? value.trim() : undefined
   }
   const pages = Array.isArray(siteSpec.pages)
     ? siteSpec.pages
-        .map((page: unknown) =>
+        .map((page) =>
           page && typeof page === 'object' && 'name' in page
             ? String((page as { name?: unknown }).name ?? '')
             : String(page ?? ''),
@@ -175,9 +182,9 @@ const summarizeSiteSpec = (siteSpec?: Record<string, unknown>): string => {
     .join('\n')
 }
 
-const buildMediaPromptBlock = (
+function buildMediaPromptBlock(
   imageHints?: WriteSffHtmlHomeInput['imageHints'],
-): string => {
+): string {
   const photos = imageHints?.photos ?? []
   const videos = imageHints?.videos ?? []
   if (!photos.length && !videos.length) {
@@ -214,7 +221,7 @@ const buildMediaPromptBlock = (
   ].join('\n')
 }
 
-export const buildSffHtmlPrompt = ({
+export function buildSffHtmlPrompt({
   prompt,
   siteSpec,
   preferredLanguage,
@@ -226,7 +233,8 @@ export const buildSffHtmlPrompt = ({
   preferredLanguage?: string
   imageHints?: WriteSffHtmlHomeInput['imageHints']
   brandProfile?: WriteSffHtmlHomeInput['brandProfile']
-}): string => `Create the website for this brief:
+}): string {
+  return `Create the website for this brief:
 ${prompt}
 
 Generated planning context:
@@ -240,12 +248,13 @@ ${brandProfilePromptBlockTyped(brandProfile)}
 
 Faithfulness target:
 Match the /Users/livio/Desktop/sff prototype generator behavior: one fast, polished, complete single-file site that feels immediately shippable in the preview frame.`
+}
 
-const defaultGenerateHtml = async ({
+async function defaultGenerateHtml({
   system,
   user,
   onToken,
-}: GenerateHtmlInput): Promise<GenerateHtmlResult> => {
+}: GenerateHtmlInput): Promise<GenerateHtmlResult> {
   const result = await groqStreamTyped(user, {
     system,
     temperature: 0.78,

@@ -3,21 +3,23 @@ import { z } from 'zod/v4'
 
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
-const CodeMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="m8 8-4 4 4 4" />
-    <path d="m16 8 4 4-4 4" />
-  </svg>
-)
+function CodeMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="m8 8-4 4 4 4" />
+      <path d="m16 8 4 4-4 4" />
+    </svg>
+  )
+}
 
 export const PortfolioDevFooter = defineCapsule({
   name: 'PortfolioDevFooter',

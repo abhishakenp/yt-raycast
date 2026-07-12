@@ -73,7 +73,7 @@ export const HotelResortTestimonials = defineCapsule({
           },
         ]
 
-    const StarIcon = ({ className }: { className?: string }) => (
+    const StarIcon = ({ className }) => (
       <svg
         className={className}
         width="20"

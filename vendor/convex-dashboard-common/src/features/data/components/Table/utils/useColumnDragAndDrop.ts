@@ -30,19 +30,19 @@ export function useColumnDragAndDrop({
     }),
   )
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
+  const handleDragStart = useCallback((event) => {
     setActiveColumnId(event.active.id as string)
     setDragOffset(0)
   }, [])
 
-  const handleDragMove = useCallback((event: any) => {
+  const handleDragMove = useCallback((event) => {
     if (event.delta) {
       setDragOffset(event.delta.x)
     }
   }, [])
 
   const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
+    (event) => {
       const { active, over } = event
       setActiveColumnId(null)
       setDragOffset(0)

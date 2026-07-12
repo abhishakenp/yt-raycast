@@ -44,11 +44,14 @@ function extractImageFiles(files: File[]): File[] {
 }
 
 // ── Color + alpha helpers ──────────────────────────────────────────────
-const clamp255 = (n: number): number =>
-  Math.max(0, Math.min(255, Math.round(n)))
-const toHex2 = (n: number): string => clamp255(n).toString(16).padStart(2, '0')
+function clamp255(n: number): number {
+  return Math.max(0, Math.min(255, Math.round(n)))
+}
+function toHex2(n: number): string {
+  return clamp255(n).toString(16).padStart(2, '0')
+}
 
-const expandHex = (h: string): string => {
+function expandHex(h: string): string {
   const clean = h.replace(/[^0-9a-fA-F]/g, '')
   if (clean.length === 3)
     return clean
@@ -270,7 +273,7 @@ const BG_PRESETS: Preset[] = [
   },
 ]
 
-const buildGradient = (g: GradientState, opacity = 100): string => {
+function buildGradient(g: GradientState, opacity = 100): string {
   // Apply the panel-level opacity to each stop so the Opacity slider dims the
   // whole gradient, not just a solid fill.
   const c1 = toCssColor(parseColor(g.color1).hex, opacity)
@@ -418,14 +421,14 @@ export function BackgroundPanel({
     onModified?.()
   }
 
-  const applyLiveStyle = (prop: string, value: string) => {
+  const applyLiveStyle = (prop, value) => {
     if (activeElement) {
       activeElement.style.setProperty(prop, value)
       markModified()
     }
   }
 
-  const applySolidColor = (hex: string) => {
+  const applySolidColor = (hex) => {
     // Picking a hue implies wanting it visible: if the fill was fully
     // transparent, restore full opacity; otherwise keep the chosen opacity.
     const nextOpacity = bgOpacity === 0 ? 100 : bgOpacity
@@ -443,21 +446,21 @@ export function BackgroundPanel({
     }
   }
 
-  const applyGradientValue = (next: GradientState) => {
+  const applyGradientValue = (next) => {
     setGradient(next)
     setBgMode('gradient')
     setHasBgImage(false)
     applyLiveStyle('background-image', buildGradient(next, bgOpacity))
   }
 
-  const updateGradient = (patch: Partial<GradientState>) => {
+  const updateGradient = (patch) => {
     const next = { ...gradient, ...patch }
     applyGradientValue(next)
   }
 
   // Panel-level Opacity slider — dims whatever the current background is,
   // never the foreground.
-  const applyBackgroundOpacity = (value: number) => {
+  const applyBackgroundOpacity = (value) => {
     setBgOpacity(value)
     if (!activeElement) return
     if (hasBgImage) {
@@ -559,22 +562,17 @@ export function BackgroundPanel({
     return () => observer.disconnect()
   }, [loadMore])
 
-  const fitBackgroundSize = (fit: BgFit): string =>
+  const fitBackgroundSize = (fit) =>
     FIT_OPTIONS.find((o) => o.value === fit)?.backgroundSize ?? 'cover'
 
-  const fitObjectFit = (fit: BgFit): string =>
+  const fitObjectFit = (fit) =>
     fit === 'fill' ? 'fill' : fit === 'auto' ? 'none' : fit
 
   // Paint a background image on a (non-<img>) element, fading it toward the
   // color behind the element when opacity < 100 via a translucent overlay
   // LAYER — the background alone dims; foreground text is never affected
   // (unlike element `opacity`).
-  const paintDivImageBackground = (
-    el: HTMLElement,
-    url: string,
-    fit: BgFit,
-    opacity: number,
-  ) => {
+  const paintDivImageBackground = (el, url, fit, opacity) => {
     const fitSize = fitBackgroundSize(fit)
     if (opacity >= 100) {
       el.style.setProperty('background-image', `url("${url}")`)
@@ -593,7 +591,7 @@ export function BackgroundPanel({
     }
   }
 
-  const applyBgImage = (url: string, fit: BgFit = bgFit) => {
+  const applyBgImage = (url, fit = bgFit) => {
     if (!activeElement) return
     setHasBgImage(true)
     setBgMode('solid')
@@ -626,18 +624,18 @@ export function BackgroundPanel({
 
   // Selecting a stock result resolves a high-resolution URL at the chosen
   // quality tier and remembers the pick so resolution changes can re-resolve.
-  const handleSelectStock = (result: StockImageResult) => {
+  const handleSelectStock = (result) => {
     setAppliedStockResult(result)
     applyBgImage(buildBackgroundImageUrl(result, bgResolution))
   }
 
-  const handleSelectUpload = (url: string) => {
+  const handleSelectUpload = (url) => {
     // Uploaded images have no provider variants — apply the stored URL as-is.
     setAppliedStockResult(null)
     applyBgImage(url)
   }
 
-  const applyFit = (fit: BgFit) => {
+  const applyFit = (fit) => {
     setBgFit(fit)
     if (!activeElement) return
     if (activeElement.tagName.toLowerCase() === 'img') {
@@ -651,7 +649,7 @@ export function BackgroundPanel({
     markModified()
   }
 
-  const applyResolution = (res: BackgroundImageResolution) => {
+  const applyResolution = (res) => {
     setBgResolution(res)
     if (appliedStockResult) {
       applyBgImage(buildBackgroundImageUrl(appliedStockResult, res))
@@ -694,7 +692,7 @@ export function BackgroundPanel({
 
   // ── File upload ──────────────────────────────────────────────────────
   const uploadFile = useCallback(
-    async (file: File) => {
+    async (file) => {
       const validationError = validateImageFile(file)
       if (validationError) {
         setUploadError(validationError)
@@ -742,7 +740,7 @@ export function BackgroundPanel({
   )
 
   // ── Drag-and-drop ────────────────────────────────────────────────────
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
+  const handleDragEnter = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
     dragCounterRef.current++
@@ -751,7 +749,7 @@ export function BackgroundPanel({
     }
   }, [])
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
     dragCounterRef.current--
@@ -760,13 +758,13 @@ export function BackgroundPanel({
     }
   }, [])
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleDragOver = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
   }, [])
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    (e) => {
       e.preventDefault()
       e.stopPropagation()
       dragCounterRef.current = 0
@@ -789,7 +787,7 @@ export function BackgroundPanel({
         alt: img.filename ?? 'Uploaded image',
       })) ?? []
 
-  const applyBackdropBlur = (value: number) => {
+  const applyBackdropBlur = (value) => {
     setBackdropBlur(value)
     if (activeElement) {
       if (value > 0) {
@@ -1378,7 +1376,7 @@ function parseGradientBody(
   }
   const stops = colorParts.slice(0, 2)
   if (stops.length < 2) return null
-  const parseStop = (stop: string): { color: string; pos: number } | null => {
+  const parseStop = (stop) => {
     const m = stop.match(/^(.+?)\s+(\d+(?:\.\d+)?)%$/)
     if (m) return { color: m[1].trim(), pos: Math.round(parseFloat(m[2])) }
     return { color: stop.trim(), pos: 0 }

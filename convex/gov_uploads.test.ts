@@ -16,14 +16,15 @@ type SessionDoc = Doc<'sessions'>
 const sessionId = 'session_gov_upload' as Id<'sessions'>
 const storageId = 'storage_test_123' as Id<'_storage'>
 
-const sessionDoc = (overrides: Partial<SessionDoc> = {}): SessionDoc =>
-  ({
+function sessionDoc(overrides: Partial<SessionDoc> = {}): SessionDoc {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Gov upload test',
     workspace: 'default',
     ...overrides,
-  }) as SessionDoc
+  } as SessionDoc
+}
 
 /** Convex mutation/query objects store the raw handler on `_handler`. */
 type MutationWithHandler<Args, Ret> = {

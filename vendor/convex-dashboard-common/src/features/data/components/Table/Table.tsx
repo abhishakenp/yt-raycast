@@ -55,7 +55,9 @@ import { PermissionsContext } from '@common/lib/deploymentContext'
 import { useNents } from '@common/lib/useNents'
 import { useColumnDragAndDrop } from '@common/features/data/components/Table/utils/useColumnDragAndDrop'
 
-const getRowId = (d: GenericDocument) => d._id as string
+function getRowId(d: GenericDocument) {
+  return d._id as string
+}
 
 const pageThreshold = 25
 
@@ -187,7 +189,7 @@ export function Table({
   )
 
   const reorderColumns = useCallback(
-    (item: { index: number }, newIndex: number) => {
+    (item, newIndex) => {
       const { index: currentIndex } = item
 
       const currentItem = state.columnOrder[currentIndex]
@@ -262,7 +264,7 @@ export function Table({
   })
 
   const onEditDocument = useCallback(
-    (document: GenericDocument) => {
+    (document) => {
       setPopup({
         type: 'editDocument',
         document,

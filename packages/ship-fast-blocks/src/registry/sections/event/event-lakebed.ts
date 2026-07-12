@@ -59,7 +59,7 @@ export const eventLakebed = {
     ),
   },
   mutations: {
-    recordEventAction: event.mutation((_ctx, input: EventActionInput) => {
+    recordEventAction: event.mutation((_ctx, input) => {
       _ctx.db.actions.insert({
         action: input.action ?? 'register',
         label: input.label,
@@ -69,30 +69,28 @@ export const eventLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt').all()
     }),
-    syncTickets: event.mutation(
-      (_ctx, input: { tickets: EventTicketInput[] }) => {
-        for (const ticket of input.tickets) {
-          const name = ticket.name.trim()
-          if (!name) continue
+    syncTickets: event.mutation((_ctx, input) => {
+      for (const ticket of input.tickets) {
+        const name = ticket.name.trim()
+        if (!name) continue
 
-          const existing = _ctx.db.tickets.where('name', name).all().at(0)
-          const next = {
-            availability: ticket.availability ?? '',
-            cta: ticket.cta ?? '',
-            name,
-            price: ticket.price ?? '',
-            unit: ticket.unit ?? '',
-          }
-
-          if (existing) {
-            _ctx.db.tickets.update(existing.id, next)
-          } else {
-            _ctx.db.tickets.insert(next)
-          }
+        const existing = _ctx.db.tickets.where('name', name).all().at(0)
+        const next = {
+          availability: ticket.availability ?? '',
+          cta: ticket.cta ?? '',
+          name,
+          price: ticket.price ?? '',
+          unit: ticket.unit ?? '',
         }
 
-        return _ctx.db.tickets.orderBy('updatedAt', 'desc').all()
-      },
-    ),
+        if (existing) {
+          _ctx.db.tickets.update(existing.id, next)
+        } else {
+          _ctx.db.tickets.insert(next)
+        }
+      }
+
+      return _ctx.db.tickets.orderBy('updatedAt', 'desc').all()
+    }),
   },
 } as const

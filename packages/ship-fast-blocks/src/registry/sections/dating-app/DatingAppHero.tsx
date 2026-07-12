@@ -71,7 +71,7 @@ export const DatingAppHero = defineCapsule({
       'profile photo of Sarah a 28 year old marketing manager'
     const matchBadge = props.matchBadge ?? "It's a Match!"
 
-    const HeartGlyph = ({ className }: { className?: string }) => (
+    const HeartGlyph = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -86,7 +86,7 @@ export const DatingAppHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -101,7 +101,7 @@ export const DatingAppHero = defineCapsule({
       </svg>
     )
 
-    const ChevronDown = ({ className }: { className?: string }) => (
+    const ChevronDown = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

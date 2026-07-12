@@ -60,7 +60,7 @@ export const BootcampApplyCta = defineCapsule({
     const inputCls =
       'w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20'
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         fill="currentColor"

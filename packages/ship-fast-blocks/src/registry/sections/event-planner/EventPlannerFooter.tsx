@@ -62,7 +62,7 @@ export const EventPlannerFooter = defineCapsule({
       ? props.legalLinks
       : ['Privacy Policy', 'Terms of Service']
 
-    const Clock = ({ className }: { className?: string }) => (
+    const Clock = ({ className }) => (
       <svg
         className={className}
         fill="none"

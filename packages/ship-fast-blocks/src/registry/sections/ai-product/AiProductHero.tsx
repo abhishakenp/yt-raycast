@@ -73,7 +73,7 @@ export const AiProductHero = defineCapsule({
       ? props.previewActions
       : ['Use this', 'Try again', 'Make shorter']
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         width="20"
@@ -90,7 +90,7 @@ export const AiProductHero = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="20"

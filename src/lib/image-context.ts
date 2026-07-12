@@ -329,7 +329,7 @@ function queriesForVisualPhrase(
 function extractSalientPhrases(prompt = '', max = 4): string[] {
   const raw = normalizeText(prompt)
   const out: string[] = []
-  const stripTail = (s: string) =>
+  const stripTail = (s) =>
     s
       .replace(/\s+with\s+[\s\S]+$/i, '')
       .replace(/\s+including\s+[\s\S]+$/i, '')

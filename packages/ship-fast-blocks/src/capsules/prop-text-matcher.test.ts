@@ -5,39 +5,43 @@ import type { CapsulePropContext } from './prop-text-matcher'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-const makeEl = (text: string, tag = 'p'): HTMLElement => {
+function makeEl(text: string, tag = 'p'): HTMLElement {
   const el = document.createElement(tag)
   el.textContent = text
   return el
 }
 
-const scalarContext = (
+function scalarContext(
   propKey: string,
   capsuleName = 'TestCapsule',
   statementId = 'home_test',
-): CapsulePropContext => ({
-  lakebedKey: `${capsuleName}:${statementId}`,
-  capsuleName,
-  statementId,
-  propKey,
-  kind: 'scalar',
-})
+): CapsulePropContext {
+  return {
+    lakebedKey: `${capsuleName}:${statementId}`,
+    capsuleName,
+    statementId,
+    propKey,
+    kind: 'scalar',
+  }
+}
 
-const collectionContext = (
+function collectionContext(
   propKey: string,
   index: number,
   fieldKey: string,
   capsuleName = 'TestCapsule',
   statementId = 'home_test',
-): CapsulePropContext => ({
-  lakebedKey: `${capsuleName}:${statementId}`,
-  capsuleName,
-  statementId,
-  propKey,
-  index,
-  fieldKey,
-  kind: 'collection',
-})
+): CapsulePropContext {
+  return {
+    lakebedKey: `${capsuleName}:${statementId}`,
+    capsuleName,
+    statementId,
+    propKey,
+    index,
+    fieldKey,
+    kind: 'collection',
+  }
+}
 
 // ─── matchElementToProp ─────────────────────────────────────────────────────
 

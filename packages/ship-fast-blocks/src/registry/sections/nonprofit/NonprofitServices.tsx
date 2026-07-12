@@ -15,20 +15,22 @@ import { Container } from '#/section-kit/Container.tsx'
  * humanitarian organization runs. Renders fully with no props via baked-in
  * "Roots of Hope" program defaults.
  */
-const Icon = ({ d, className }: { d: string; className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d={d} />
-  </svg>
-)
+function Icon({ d, className }: { d: string; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d={d} />
+    </svg>
+  )
+}
 
 export const NonprofitServices = defineCapsule({
   name: 'NonprofitServices',

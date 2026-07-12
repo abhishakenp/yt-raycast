@@ -18,7 +18,7 @@ type PromptHomeControllerTestState = {
 
 let originalFetch: typeof globalThis.fetch
 
-const getTestState = (): PromptHomeControllerTestState => {
+function getTestState(): PromptHomeControllerTestState {
   const testGlobal = globalThis as typeof globalThis & {
     __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
   }
@@ -49,7 +49,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 
 vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => ({
-    mutation: async (ref: unknown, payload: unknown) => {
+    mutation: async (ref, payload) => {
       const state = (
         globalThis as typeof globalThis & {
           __shipFastPromptHomeControllerState?: PromptHomeControllerTestState

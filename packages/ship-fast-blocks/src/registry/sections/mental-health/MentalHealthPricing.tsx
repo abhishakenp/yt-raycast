@@ -112,7 +112,7 @@ export const MentalHealthPricing = defineCapsule({
     const note =
       props.note ??
       'Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability.'
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         fill="none"

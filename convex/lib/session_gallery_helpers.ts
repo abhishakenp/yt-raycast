@@ -43,10 +43,10 @@ export type OwnedGalleryListInput = PublicGalleryListInput & {
   anonymousClientId?: string
 }
 
-const loadPublicGalleryBaseArtifacts = async (
+async function loadPublicGalleryBaseArtifacts(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
-): Promise<PublicGalleryArtifacts> => {
+): Promise<PublicGalleryArtifacts> {
   const [homeModule, siteSpec] = await Promise.all([
     ctx.db
       .query('generatedModules')
@@ -87,11 +87,11 @@ const loadPublicGalleryBaseArtifacts = async (
   return baseArtifacts
 }
 
-export const loadPublicGalleryArtifacts = async (
+export async function loadPublicGalleryArtifacts(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
   preferredLanguage?: string,
-): Promise<PublicGalleryArtifacts> => {
+): Promise<PublicGalleryArtifacts> {
   const baseArtifacts = await loadPublicGalleryBaseArtifacts(ctx, sessionId)
   const translations = await loadCachedTranslationsForSource(
     ctx,
@@ -107,7 +107,7 @@ export const loadPublicGalleryArtifacts = async (
     : baseArtifacts
 }
 
-const isLikelyOpenUISource = (source: string | undefined): boolean => {
+function isLikelyOpenUISource(source: string | undefined): boolean {
   if (source === undefined) return false
   const trimmed = source.trim()
   if (!trimmed) return false
@@ -117,9 +117,9 @@ const isLikelyOpenUISource = (source: string | undefined): boolean => {
   return /(?:^|\n)\s*(?:root|\$page)\s*=/.test(trimmed)
 }
 
-const readOpenUISourceFromSiteSpec = (
+function readOpenUISourceFromSiteSpec(
   siteSpec: Doc<'siteSpecs'> | null,
-): string | undefined => {
+): string | undefined {
   const candidates = [siteSpec?.specJson, siteSpec?.spec]
 
   for (const candidate of candidates) {
@@ -145,9 +145,7 @@ const readOpenUISourceFromSiteSpec = (
   return undefined
 }
 
-const resolveGalleryOpenUISource = (
-  artifacts: PublicGalleryArtifacts,
-): string => {
+function resolveGalleryOpenUISource(artifacts: PublicGalleryArtifacts): string {
   const { preview, homeModule, siteSpec } = artifacts
   return preview?.openUiSource && isLikelyOpenUISource(preview.openUiSource)
     ? preview.openUiSource
@@ -158,10 +156,10 @@ const resolveGalleryOpenUISource = (
         '')
 }
 
-const applyGalleryEditsToSource = (
+function applyGalleryEditsToSource(
   source: string,
   edits: Doc<'edits'>[] | null | undefined,
-): string => {
+): string {
   if (!edits || edits.length === 0) return source
 
   let result = source
@@ -196,9 +194,9 @@ const applyGalleryEditsToSource = (
   return result
 }
 
-const isRenderableGalleryArtifacts = (
+function isRenderableGalleryArtifacts(
   artifacts: PublicGalleryArtifacts,
-): boolean => {
+): boolean {
   if (artifacts.preview === null) {
     return resolveGalleryOpenUISource(artifacts).trim().length > 0
   }
@@ -206,11 +204,11 @@ const isRenderableGalleryArtifacts = (
   return resolveGalleryOpenUISource(artifacts).trim().length > 0
 }
 
-export const serializePublicGallerySession = (
+export function serializePublicGallerySession(
   session: Doc<'sessions'>,
   artifacts: PublicGalleryArtifacts,
   options: PublicGallerySessionOptions = {},
-) => {
+) {
   const previewReady =
     session.status === 'preview_ready' ||
     (options.previewReadyFromStoredPreview === true &&
@@ -263,10 +261,10 @@ export const serializePublicGallerySession = (
   }
 }
 
-export const listPublicGallerySessions = async (
+export async function listPublicGallerySessions(
   ctx: Pick<QueryCtx, 'db'>,
   args: PublicGalleryListInput,
-) => {
+) {
   const limit = Math.min(Math.max(args.limit ?? 12, 1), 48)
   const requestedPage = Math.max(args.page ?? 1, 1)
   const scanLimit = Math.min(Math.max(requestedPage * limit * 2, limit), 96)
@@ -325,10 +323,10 @@ export const listPublicGallerySessions = async (
   }
 }
 
-export const loadPublicGallerySession = async (
+export async function loadPublicGallerySession(
   ctx: Pick<QueryCtx, 'db'>,
   sessionIdValue: string,
-) => {
+) {
   const sessionId = ctx.db.normalizeId('sessions', sessionIdValue)
   if (sessionId === null) return null
 
@@ -359,10 +357,10 @@ export const loadPublicGallerySession = async (
 // "My generations" — returns sessions owned by the caller (signed-in userId via
 // Convex auth, or anonymousClientId hashed to anonymousClientIdHash), including
 // PRIVATE sessions the caller owns. Excludes sessions owned by anyone else.
-export const listOwnedGallerySessions = async (
+export async function listOwnedGallerySessions(
   ctx: QueryCtx,
   args: OwnedGalleryListInput,
-) => {
+) {
   const userId = await getUserId(ctx)
   const anonymousClientIdHash =
     userId === undefined && args.anonymousClientId !== undefined

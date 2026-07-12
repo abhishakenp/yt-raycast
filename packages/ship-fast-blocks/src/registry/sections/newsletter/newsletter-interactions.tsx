@@ -57,7 +57,7 @@ export function NewsletterSubscribeForm({
   const subscribe = lakebed.useMutation('subscribe')
   const count = summary?.count ?? 0
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = (event) => {
     event.preventDefault()
     const nextEmail = email.trim()
     if (!nextEmail || subscribe.isPending) return
@@ -201,7 +201,7 @@ export function NewsletterMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?: string) => {
+  const navigate = (target?) => {
     setOpen(false)
     go(target)
   }

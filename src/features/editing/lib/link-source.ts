@@ -67,21 +67,24 @@ type LinkSourceUpdate = {
   occurrenceIndex?: number
 }
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
-const escapeStringValue = (value: string): string =>
-  value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+function escapeStringValue(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
 
-const quotedHrefPattern = (href: string): RegExp =>
-  new RegExp(`(["'])${escapeRegExp(href)}\\1`, 'g')
+function quotedHrefPattern(href: string): RegExp {
+  return new RegExp(`(["'])${escapeRegExp(href)}\\1`, 'g')
+}
 
-const replaceNearestQuotedText = (
+function replaceNearestQuotedText(
   source: string,
   oldText: string,
   newText: string,
   anchorIndex: number,
-): { source: string; replaced: boolean } => {
+): { source: string; replaced: boolean } {
   if (!oldText || oldText === newText) return { source, replaced: false }
 
   const pattern = new RegExp(`(["'])${escapeRegExp(oldText)}\\1`, 'g')
@@ -110,17 +113,18 @@ const replaceNearestQuotedText = (
   }
 }
 
-const removeStringProperty = (objectSource: string, prop: string): string =>
-  objectSource
+function removeStringProperty(objectSource: string, prop: string): string {
+  return objectSource
     .replace(new RegExp(`,?\\s*${prop}\\s*:\\s*(["']).*?\\1`, 'g'), '')
     .replace(/\{\s*,\s*/g, '{ ')
     .replace(/,\s*\}/g, ' }')
+}
 
-const upsertStringProperty = (
+function upsertStringProperty(
   objectSource: string,
   prop: string,
   value: string | null | undefined,
-): string => {
+): string {
   if (value === undefined) return objectSource
   if (value === null || value === '')
     return removeStringProperty(objectSource, prop)
@@ -137,12 +141,12 @@ const upsertStringProperty = (
   return `${objectSource.slice(0, closeIndex)}${needsComma ? ', ' : ''}${prop}: "${escapedValue}"${objectSource.slice(closeIndex)}`
 }
 
-const updateObjectLinkAttributes = (
+function updateObjectLinkAttributes(
   source: string,
   hrefIndex: number,
   target: string | null | undefined,
   rel: string | undefined,
-): { source: string; replaced: boolean } => {
+): { source: string; replaced: boolean } {
   if (target === undefined && rel === undefined) {
     return { source, replaced: false }
   }
@@ -165,11 +169,11 @@ const updateObjectLinkAttributes = (
   }
 }
 
-const upsertHtmlAttribute = (
+function upsertHtmlAttribute(
   tagSource: string,
   attr: string,
   value: string | null | undefined,
-): string => {
+): string {
   if (value === undefined) return tagSource
 
   const pattern = new RegExp(`\\s${attr}\\s*=\\s*(["']).*?\\1`, 'i')
@@ -188,12 +192,12 @@ const upsertHtmlAttribute = (
   )
 }
 
-const updateHtmlLinkAttributes = (
+function updateHtmlLinkAttributes(
   source: string,
   hrefIndex: number,
   target: string | null | undefined,
   rel: string | undefined,
-): { source: string; replaced: boolean } => {
+): { source: string; replaced: boolean } {
   if (target === undefined && rel === undefined) {
     return { source, replaced: false }
   }

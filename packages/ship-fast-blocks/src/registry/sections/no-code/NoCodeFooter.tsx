@@ -86,7 +86,7 @@ export const NoCodeFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookies']
     const homeTarget = props.homeTarget ?? 'Features'
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-foreground text-background',

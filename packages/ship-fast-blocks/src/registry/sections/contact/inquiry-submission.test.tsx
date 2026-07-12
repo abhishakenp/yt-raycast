@@ -59,16 +59,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -129,7 +129,7 @@ const { LawFirmContact } = await import('../law-firm/LawFirmContact.tsx')
 const { ContactFormDetails } = await import('./ContactFormDetails.tsx')
 const { ContactNavbar } = await import('./ContactNavbar.tsx')
 
-const submitButtonForm = (button: HTMLElement) => {
+function submitButtonForm(button: HTMLElement) {
   const form = button.closest('form')
   if (!form || form.tagName !== 'FORM') {
     throw new Error('Expected submit button to be inside a form')
@@ -149,9 +149,9 @@ function createInquiryLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const normalize = (value: unknown) => String(value ?? '').trim()
-  const normalizeEmail = (value: unknown) => normalize(value).toLowerCase()
-  const pickField = (fields: Record<string, string>, keys: string[]) => {
+  const normalize = (value) => String(value ?? '').trim()
+  const normalizeEmail = (value) => normalize(value).toLowerCase()
+  const pickField = (fields, keys) => {
     for (const key of keys) {
       const value = fields[key]?.trim()
       if (value) return value
@@ -204,7 +204,7 @@ function createInquiryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: InquiryActionInput) => {
+      const runMutation = useCallback(async (input) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
 
@@ -235,7 +235,7 @@ function createInquiryLakebedStub() {
       const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input: InquiryActionInput) => runMutation(input), {
+          Object.assign((input) => runMutation(input), {
             isPending: false,
             lastError: initialLastError,
             pendingCount: 0,
@@ -255,7 +255,7 @@ function createInquiryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: InquiryInput) => {
+      const runMutation = useCallback(async (input) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
 
@@ -314,7 +314,7 @@ function createInquiryLakebedStub() {
       const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input: InquiryInput) => runMutation(input), {
+          Object.assign((input) => runMutation(input), {
             isPending: false,
             lastError: initialLastError,
             pendingCount: 0,

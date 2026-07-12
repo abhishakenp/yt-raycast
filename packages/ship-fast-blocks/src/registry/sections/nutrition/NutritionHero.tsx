@@ -58,7 +58,7 @@ export const NutritionHero = defineCapsule({
     const badgeTitle = props.badgeTitle ?? 'Meal logged'
     const badgeSubtitle = props.badgeSubtitle ?? 'Mediterranean bowl • 485 cal'
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

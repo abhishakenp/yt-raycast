@@ -28,14 +28,18 @@ import {
 } from './prompt.ts'
 import { StreamingParser } from './streaming.ts'
 
-const log = (sessionCtx: any) => (msg: string) => {
-  console.log(msg)
-  sessionCtx?.broadcast?.({ type: 'log', message: msg })
+function log(sessionCtx: any) {
+  return (msg) => {
+    console.log(msg)
+    sessionCtx?.broadcast?.({ type: 'log', message: msg })
+  }
 }
 
-const status = (sessionCtx: any) => (message: string, phase: string) => {
-  console.log(`  [${phase}] ${message}`)
-  sessionCtx?.broadcast?.({ type: 'status', message, phase })
+function status(sessionCtx: any) {
+  return (message, phase) => {
+    console.log(`  [${phase}] ${message}`)
+    sessionCtx?.broadcast?.({ type: 'status', message, phase })
+  }
 }
 
 // Seeded RNG (mulberry32-style) — deterministic theme pick per session.
@@ -225,7 +229,7 @@ export async function runAllV3(
     // ── Streaming parse (decision #24) ──────────────────────────────────────
     timings.stream_start = Date.now()
     const streamParser = new StreamingParser()
-    streamParser.onSectionStart((role: string) => {
+    streamParser.onSectionStart((role) => {
       _status(`Section: ${role}`, 'section')
     })
     streamParser.onSectionComplete((section) => {

@@ -298,8 +298,8 @@ export const GovPortalNavbar = defineCapsule({
     const stateLogoUrl = dbBrand?.stateLogoUrl || ''
     const phone = props.phone || ''
     const nav = DEFAULT_NAV
-    const label = (group: NavGroup) => (group.key ? t(group.key) : group.label)
-    const linkLabel = (link: NavLink) =>
+    const label = (group) => (group.key ? t(group.key) : group.label)
+    const linkLabel = (link) =>
       lang === 'hi' && link.labelHi ? link.labelHi : link.label
 
     const initials = brand

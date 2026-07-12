@@ -51,9 +51,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }: { alt: string; className?: string }) => (
-    <img alt={alt} className={className} />
-  ),
+  Image: ({ alt, className }) => <img alt={alt} className={className} />,
 }))
 
 type TestMutation = ((input?: PropertyMutationInput) => Promise<unknown>) & {
@@ -66,14 +64,11 @@ vi.mock('@ship-fast/lakebed/react', () => ({
     if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
     return lakebedRef.current
   }),
-  useKeyedLakebedMutation: (
-    lakebed: { useMutation: (name: string) => TestMutation },
-    name: string,
-  ) => {
+  useKeyedLakebedMutation: (lakebed, name) => {
     const mutation = lakebed.useMutation(name)
     const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
     const run = useCallback(
-      async (key: string, input: PropertyMutationInput) => {
+      async (key, input) => {
         if (pendingKeys.includes(key)) return undefined
 
         setPendingKeys((current) =>
@@ -88,7 +83,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
       [mutation, pendingKeys],
     )
     const isPending = useCallback(
-      (key: string) => pendingKeys.includes(key),
+      (key) => pendingKeys.includes(key),
       [pendingKeys],
     )
     const reset = useCallback(() => {
@@ -112,16 +107,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
   class TestResizeObserver {
     disconnect() {}
     observe() {}
@@ -218,14 +213,14 @@ function createPropertyListingLakebedStub(
     version += 1
     for (const listener of listeners) listener()
   }
-  const mutationDelayFor = (name: string) => {
+  const mutationDelayFor = (name) => {
     if (name === 'selectListing') return mutationDelays.selectListing ?? 0
     if (name === 'setPropertySearch') {
       return mutationDelays.setPropertySearch ?? 0
     }
     return 0
   }
-  const waitForMutation = (name: string) => {
+  const waitForMutation = (name) => {
     const delayMs = mutationDelayFor(name)
     if (delayMs <= 0) return Promise.resolve()
 
@@ -233,11 +228,7 @@ function createPropertyListingLakebedStub(
       setTimeout(resolve, delayMs)
     })
   }
-  const row = <TRow extends Record<string, unknown>>(
-    prefix: string,
-    value: TRow,
-    index: number,
-  ) => ({
+  const row = <TRow extends Record<string, unknown>>(prefix, value, index) => ({
     ...value,
     createdAt: now,
     id: `${prefix}-${index}`,
@@ -290,48 +281,42 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: PropertyListingInquiryInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const intent = input.intent.trim()
-            if (intent) {
-              inquiries = [
-                row(
-                  'inquiry',
-                  {
-                    address: input.address?.trim() ?? '',
-                    intent,
-                    source: input.source?.trim() ?? '',
-                  },
-                  inquiries.length + 1,
-                ),
-                ...inquiries,
-              ]
-            }
-            notify()
-            return inquiries
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const intent = input.intent.trim()
+          if (intent) {
+            inquiries = [
+              row(
+                'inquiry',
+                {
+                  address: input.address?.trim() ?? '',
+                  intent,
+                  source: input.source?.trim() ?? '',
+                },
+                inquiries.length + 1,
+              ),
+              ...inquiries,
+            ]
           }
-        },
-        [],
-      )
+          notify()
+          return inquiries
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: PropertyListingInquiryInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -346,48 +331,42 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: PropertyListingSaveInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const address = input.address.trim()
-            const existing = saved.find((item) => item.address === address)
-            saved = existing
-              ? saved.filter((item) => item.address !== address)
-              : [
-                  row(
-                    'saved',
-                    {
-                      address,
-                      price: input.price?.trim() ?? '',
-                    },
-                    saved.length + 1,
-                  ),
-                  ...saved,
-                ]
-            notify()
-            return saved
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const address = input.address.trim()
+          const existing = saved.find((item) => item.address === address)
+          saved = existing
+            ? saved.filter((item) => item.address !== address)
+            : [
+                row(
+                  'saved',
+                  {
+                    address,
+                    price: input.price?.trim() ?? '',
+                  },
+                  saved.length + 1,
+                ),
+                ...saved,
+              ]
+          notify()
+          return saved
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: PropertyListingSaveInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -402,45 +381,39 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: PropertyListingSelectInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            await waitForMutation('selectListing')
-            const selectedAddress = input.address.trim()
-            state = row(
-              'state',
-              {
-                filter: state?.filter ?? '',
-                location: state?.location ?? '',
-                query: state?.query ?? '',
-                selectedAddress,
-              },
-              1,
-            )
-            notify()
-            return state ? [state] : []
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          await waitForMutation('selectListing')
+          const selectedAddress = input.address.trim()
+          state = row(
+            'state',
+            {
+              filter: state?.filter ?? '',
+              location: state?.location ?? '',
+              query: state?.query ?? '',
+              selectedAddress,
+            },
+            1,
+          )
+          notify()
+          return state ? [state] : []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: PropertyListingSelectInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -455,56 +428,50 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: PropertyListingSearchInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            await waitForMutation('setPropertySearch')
-            state = row(
-              'state',
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          await waitForMutation('setPropertySearch')
+          state = row(
+            'state',
+            {
+              filter: input.filter?.trim() ?? '',
+              location: input.location?.trim() ?? '',
+              query: input.query?.trim() ?? '',
+              selectedAddress: '',
+            },
+            1,
+          )
+          searches = [
+            row(
+              'search',
               {
-                filter: input.filter?.trim() ?? '',
-                location: input.location?.trim() ?? '',
-                query: input.query?.trim() ?? '',
-                selectedAddress: '',
+                filter: state.filter,
+                location: state.location,
+                query: state.query,
               },
-              1,
-            )
-            searches = [
-              row(
-                'search',
-                {
-                  filter: state.filter,
-                  location: state.location,
-                  query: state.query,
-                },
-                searches.length + 1,
-              ),
-              ...searches,
-            ]
-            notify()
-            return state ? [state] : []
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+              searches.length + 1,
+            ),
+            ...searches,
+          ]
+          notify()
+          return state ? [state] : []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: PropertyListingSearchInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -519,59 +486,49 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: { listings: PropertyListingCatalogInput[] }) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const existingByAddress = new Map(
-              listings.map((listing) => [
-                listing.address.toLowerCase(),
-                listing,
-              ]),
-            )
-            listings = input.listings
-              .filter((listing) => listing.address.trim())
-              .map((listing, index) => {
-                const address = listing.address.trim()
-                const existing = existingByAddress.get(address.toLowerCase())
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const existingByAddress = new Map(
+            listings.map((listing) => [listing.address.toLowerCase(), listing]),
+          )
+          listings = input.listings
+            .filter((listing) => listing.address.trim())
+            .map((listing, index) => {
+              const address = listing.address.trim()
+              const existing = existingByAddress.get(address.toLowerCase())
 
-                return row(
-                  'listing',
-                  {
-                    address,
-                    baths: listing.baths.trim(),
-                    beds: listing.beds.trim(),
-                    price: listing.price.trim(),
-                    sqft: listing.sqft.trim(),
-                    tag: listing.tag?.trim() ?? '',
-                  },
-                  existing ? Number(existing.id.split('-').at(-1)) : index + 1,
-                )
-              })
-            notify()
-            return listings
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+              return row(
+                'listing',
+                {
+                  address,
+                  baths: listing.baths.trim(),
+                  beds: listing.beds.trim(),
+                  price: listing.price.trim(),
+                  sqft: listing.sqft.trim(),
+                  tag: listing.tag?.trim() ?? '',
+                },
+                existing ? Number(existing.id.split('-').at(-1)) : index + 1,
+              )
+            })
+          notify()
+          return listings
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: { listings: PropertyListingCatalogInput[] }) =>
-            runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 

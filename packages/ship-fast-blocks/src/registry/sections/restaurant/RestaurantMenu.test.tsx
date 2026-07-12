@@ -53,14 +53,11 @@ vi.mock('@ship-fast/lakebed/react', () => ({
     if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
     return lakebedRef.current
   }),
-  useKeyedLakebedMutation: (
-    lakebed: RestaurantLakebed,
-    name: RestaurantMutationName,
-  ) => {
+  useKeyedLakebedMutation: (lakebed, name) => {
     const mutation = lakebed.useMutation(name) as GenericMutation
     const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
     const run = useCallback(
-      async (key: string, input?: unknown) => {
+      async (key, input) => {
         if (pendingKeys.includes(key)) return undefined
 
         setPendingKeys((current) =>
@@ -75,7 +72,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
       [mutation, pendingKeys],
     )
     const isPending = useCallback(
-      (key: string) => pendingKeys.includes(key),
+      (key) => pendingKeys.includes(key),
       [pendingKeys],
     )
 
@@ -95,16 +92,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -212,11 +209,7 @@ function createRestaurantLakebedStub({
     version += 1
     for (const listener of listeners) listener()
   }
-  const row = <TRow extends Record<string, unknown>>(
-    prefix: string,
-    value: TRow,
-    index: number,
-  ) => ({
+  const row = <TRow extends Record<string, unknown>>(prefix, value, index) => ({
     ...value,
     createdAt: now,
     id: `${prefix}-${index}`,
@@ -286,74 +279,68 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: RestaurantMenuItemInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            await addDelay?.()
-            const existing = orderItems.find((item) => item.name === input.name)
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          await addDelay?.()
+          const existing = orderItems.find((item) => item.name === input.name)
 
-            if (existing) {
-              orderItems = orderItems.map((item) =>
-                item.name === input.name
-                  ? { ...item, quantity: item.quantity + 1 }
-                  : item,
-              )
-            } else {
-              orderItems = [
-                ...orderItems,
-                row(
-                  'order',
-                  {
-                    category: input.category,
-                    description: input.description ?? '',
-                    name: input.name,
-                    price: input.price ?? '',
-                    quantity: 1,
-                    tag: input.tag ?? '',
-                  },
-                  orderItems.length + 1,
-                ),
-              ]
-            }
-
-            selections = [
+          if (existing) {
+            orderItems = orderItems.map((item) =>
+              item.name === input.name
+                ? { ...item, quantity: item.quantity + 1 }
+                : item,
+            )
+          } else {
+            orderItems = [
+              ...orderItems,
               row(
-                'selection',
+                'order',
                 {
                   category: input.category,
+                  description: input.description ?? '',
                   name: input.name,
                   price: input.price ?? '',
-                  source: 'order',
+                  quantity: 1,
+                  tag: input.tag ?? '',
                 },
-                selections.length + 1,
+                orderItems.length + 1,
               ),
-              ...selections,
             ]
-
-            notify()
-            return orderItems
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
           }
-        },
-        [],
-      )
+
+          selections = [
+            row(
+              'selection',
+              {
+                category: input.category,
+                name: input.name,
+                price: input.price ?? '',
+                source: 'order',
+              },
+              selections.length + 1,
+            ),
+            ...selections,
+          ]
+
+          notify()
+          return orderItems
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: RestaurantMenuItemInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -404,34 +391,28 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: RestaurantOrderItemTarget) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            orderItems = orderItems.filter((item) => item.name !== input.name)
-            notify()
-            return orderItems
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          orderItems = orderItems.filter((item) => item.name !== input.name)
+          notify()
+          return orderItems
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: RestaurantOrderItemTarget) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -446,45 +427,39 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: RestaurantReservationInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            await reserveDelay?.()
-            reservations = [
-              row(
-                'reservation',
-                {
-                  label: input.label ?? '',
-                  source: input.source,
-                },
-                reservations.length + 1,
-              ),
-              ...reservations,
-            ]
-            notify()
-            return reservations
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          await reserveDelay?.()
+          reservations = [
+            row(
+              'reservation',
+              {
+                label: input.label ?? '',
+                source: input.source,
+              },
+              reservations.length + 1,
+            ),
+            ...reservations,
+          ]
+          notify()
+          return reservations
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: RestaurantReservationInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -499,51 +474,44 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: RestaurantMenuItemInput & { source?: string }) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            await selectDelay?.()
-            selectedCategory = input.category
-            selectedMenuItem = input.name
-            selectedPrice = input.price ?? ''
-            selections = [
-              row(
-                'selection',
-                {
-                  category: input.category,
-                  name: input.name,
-                  price: input.price ?? '',
-                  source: input.source ?? 'search',
-                },
-                selections.length + 1,
-              ),
-              ...selections,
-            ]
-            notify()
-            return selections
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          await selectDelay?.()
+          selectedCategory = input.category
+          selectedMenuItem = input.name
+          selectedPrice = input.price ?? ''
+          selections = [
+            row(
+              'selection',
+              {
+                category: input.category,
+                name: input.name,
+                price: input.price ?? '',
+                source: input.source ?? 'search',
+              },
+              selections.length + 1,
+            ),
+            ...selections,
+          ]
+          notify()
+          return selections
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: RestaurantMenuItemInput & { source?: string }) =>
-            runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -558,7 +526,7 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: RestaurantCatalogInput) => {
+      const runMutation = useCallback(async (input) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -596,15 +564,12 @@ function createRestaurantLakebedStub({
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: RestaurantCatalogInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 

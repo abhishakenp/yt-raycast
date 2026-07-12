@@ -48,7 +48,7 @@ export const CommunityForumHero = defineCapsule({
       ? props.trust
       : ['Free 14-day trial', 'No credit card required', 'Cancel anytime']
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

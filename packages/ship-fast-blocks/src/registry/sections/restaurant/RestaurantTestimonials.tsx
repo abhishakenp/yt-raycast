@@ -11,7 +11,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * the value cannot be parsed so the caller can skip rendering a StarRating
  * rather than leaking raw fragments into aria labels.
  */
-const coerceRating = (rating: unknown): number | null => {
+function coerceRating(rating: unknown): number | null {
   if (typeof rating === 'number' && Number.isFinite(rating)) return rating
   if (typeof rating === 'string') {
     const parsed = Number(rating)

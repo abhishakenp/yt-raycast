@@ -54,7 +54,7 @@ const { authState } = vi.hoisted(() => ({
   },
 }))
 
-const getConvexState = (): ConvexTestState => {
+function getConvexState(): ConvexTestState {
   const testGlobal = globalThis as typeof globalThis & {
     __shipFastDashboardToolbarConvexState?: ConvexTestState
   }
@@ -67,7 +67,7 @@ const getConvexState = (): ConvexTestState => {
   return testGlobal.__shipFastDashboardToolbarConvexState
 }
 
-const createMemoryStorage = (): Storage => {
+function createMemoryStorage(): Storage {
   const values = new Map<string, string>()
   return {
     get length() {
@@ -81,7 +81,9 @@ const createMemoryStorage = (): Storage => {
   }
 }
 
-const getAuthState = (): AuthTestState => authState
+function getAuthState(): AuthTestState {
+  return authState
+}
 
 const ensureWindowStorage = () => {
   try {
@@ -146,7 +148,7 @@ vi.mock('convex/react', () => ({
     // the call shape to distinguish. Default resolves; tests override.
     return state?.publishMutation ?? vi.fn().mockResolvedValue(undefined)
   },
-  useQuery: (_query: unknown, args: unknown) => {
+  useQuery: (_query, args) => {
     const state = (
       globalThis as typeof globalThis & {
         __shipFastDashboardToolbarConvexState?: ConvexTestState
@@ -164,18 +166,14 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }: { children: ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  ),
+  Link: ({ children, to }) => <a href={to}>{children}</a>,
   useNavigate: () => vi.fn(),
   useParams: () => ({}),
   useRouter: () => ({ state: { location: { pathname: '/' } } }),
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }: { children: ReactNode }) => (
-    <>{children}</>
-  ),
+  LakebedSessionProvider: ({ children }) => <>{children}</>,
 }))
 
 vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
@@ -185,27 +183,27 @@ vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
 }))
 
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
-  CommercePanel: ({ sessionId }: { sessionId: string }) => (
+  CommercePanel: ({ sessionId }) => (
     <div data-testid="commerce-panel-stub">Commerce panel {sessionId}</div>
   ),
 }))
 vi.mock('@/features/exports/components/ExportPanel', () => ({
-  ExportPanel: ({ sessionId }: { sessionId: string }) => (
+  ExportPanel: ({ sessionId }) => (
     <div data-testid="export-panel-stub">Export panel {sessionId}</div>
   ),
 }))
 vi.mock('@/features/deployments/components/DeploymentPanel', () => ({
-  DeploymentPanel: ({ sessionId }: { sessionId: string }) => (
+  DeploymentPanel: ({ sessionId }) => (
     <div data-testid="deployment-panel-stub">Deployment panel {sessionId}</div>
   ),
 }))
 vi.mock('@/features/github/components/GitHubPanel', () => ({
-  GitHubPanel: ({ sessionId }: { sessionId: string }) => (
+  GitHubPanel: ({ sessionId }) => (
     <div data-testid="github-panel-stub">GitHub panel {sessionId}</div>
   ),
 }))
 vi.mock('@/genui/components/ThemePicker', () => ({
-  default: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>,
+  default: ({ trigger }) => <>{trigger}</>,
 }))
 vi.mock('@/genui/theme-apply', () => ({
   resolveThemeStyles: () => undefined,
@@ -217,11 +215,6 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
     editMode,
     deviceMode,
     onElementActivate,
-  }: {
-    source: string
-    editMode?: boolean
-    deviceMode?: string
-    onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
   }) => (
     <div data-testid="generated-module-preview">
       <span data-testid="gmp-source">{source}</span>
@@ -251,49 +244,53 @@ vi.mock('@/components/GenUI/IntroLoader', () => ({
 }))
 
 vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
-  InlineEditToolbar: ({ isOpen }: { isOpen: boolean }) =>
+  InlineEditToolbar: ({ isOpen }) =>
     isOpen ? (
       <div data-testid="inline-edit-toolbar">Inline edit toolbar</div>
     ) : null,
 }))
 
 // ─── helpers ───────────────────────────────────────────────────────────────
-const readyGenerationView = (
+function readyGenerationView(
   overrides: Partial<GenerationView> = {},
-): GenerationView => ({
-  session: {
-    sessionId: 'ready-session',
-    status: 'preview_ready',
-    prompt: 'A ready website',
-    preferredLanguage: 'en',
-    isPrivate: false,
-    ...overrides.session,
-  },
-  tasks: [{ status: 'succeeded', title: 'Build' }],
-  events: [],
-  homeModule: {
-    source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
-    status: 'succeeded',
-    updatedAt: 100,
-    ...overrides.homeModule,
-  },
-  siteSpec: null,
-  latestPreview: undefined,
-  ...overrides,
-})
+): GenerationView {
+  return {
+    session: {
+      sessionId: 'ready-session',
+      status: 'preview_ready',
+      prompt: 'A ready website',
+      preferredLanguage: 'en',
+      isPrivate: false,
+      ...overrides.session,
+    },
+    tasks: [{ status: 'succeeded', title: 'Build' }],
+    events: [],
+    homeModule: {
+      source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      status: 'succeeded',
+      updatedAt: 100,
+      ...overrides.homeModule,
+    },
+    siteSpec: null,
+    latestPreview: undefined,
+    ...overrides,
+  }
+}
 
-const generatingGenerationView = (): GenerationView => ({
-  session: {
-    sessionId: 'generating-session',
-    status: 'running',
-    prompt: 'A generating website',
-    preferredLanguage: 'en',
-  },
-  tasks: [{ status: 'running', title: 'Build' }],
-  events: [],
-  homeModule: { source: '', status: 'running', updatedAt: 50 },
-  siteSpec: null,
-})
+function generatingGenerationView(): GenerationView {
+  return {
+    session: {
+      sessionId: 'generating-session',
+      status: 'running',
+      prompt: 'A generating website',
+      preferredLanguage: 'en',
+    },
+    tasks: [{ status: 'running', title: 'Build' }],
+    events: [],
+    homeModule: { source: '', status: 'running', updatedAt: 50 },
+    siteSpec: null,
+  }
+}
 
 const installLocationMock = () => {
   const hrefSetter = vi.fn()

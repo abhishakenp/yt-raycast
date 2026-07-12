@@ -12,9 +12,9 @@ export type BrandLogoSelection = {
 
 const BrandLogoContext = createContext<BrandLogoSelection | null>(null)
 
-export const getBrandLogoImageSrc = (
+export function getBrandLogoImageSrc(
   value: BrandLogoSelection | null | undefined,
-): string | null => {
+): string | null {
   const icon = typeof value?.icon === 'string' ? value.icon.trim() : ''
   if (icon) return icon
   const logo = typeof value?.logo === 'string' ? value.logo.trim() : ''
@@ -32,7 +32,7 @@ const runtimeSlotAttr = 'data-brand-logo-runtime-slot'
 const runtimeSlotSrcAttr = 'data-brand-logo-runtime-src'
 const originalDisplayAttr = 'data-brand-logo-original-display'
 
-const restoreRuntimeSlots = (root: ParentNode) => {
+function restoreRuntimeSlots(root: ParentNode) {
   root.querySelectorAll(`[${runtimeSlotAttr}="true"]`).forEach((slot) => {
     const patched = slot.nextElementSibling as HTMLElement | null
     if (patched?.hasAttribute(originalDisplayAttr)) {
@@ -43,7 +43,7 @@ const restoreRuntimeSlots = (root: ParentNode) => {
   })
 }
 
-const isLikelyBrandMark = (element: Element): element is HTMLElement => {
+function isLikelyBrandMark(element: Element): element is HTMLElement {
   if (!(element instanceof HTMLElement || element instanceof SVGElement)) {
     return false
   }
@@ -56,9 +56,7 @@ const isLikelyBrandMark = (element: Element): element is HTMLElement => {
   )
 }
 
-const findLegacyBrandMark = (
-  root: Element,
-): HTMLElement | SVGElement | null => {
+function findLegacyBrandMark(root: Element): HTMLElement | SVGElement | null {
   const candidates = Array.from(
     root.querySelectorAll('button, a, [role="link"]'),
   )
@@ -70,7 +68,7 @@ const findLegacyBrandMark = (
   return null
 }
 
-const readLogoSlotClasses = (mark: Element): string => {
+function readLogoSlotClasses(mark: Element): string {
   const classes = (mark.getAttribute('class') ?? '').split(/\s+/)
   const safeClasses = classes.filter((className) =>
     /^(size-|h-|w-|min-h-|min-w-|max-h-|max-w-|rounded)/.test(className),
@@ -78,10 +76,7 @@ const readLogoSlotClasses = (mark: Element): string => {
   return safeClasses.length > 0 ? safeClasses.join(' ') : 'size-8'
 }
 
-const applyRuntimeLogo = (
-  root: ParentNode,
-  logo: BrandLogoSelection | null,
-) => {
+function applyRuntimeLogo(root: ParentNode, logo: BrandLogoSelection | null) {
   const src = getBrandLogoImageSrc(logo)
   if (!src) {
     restoreRuntimeSlots(root)

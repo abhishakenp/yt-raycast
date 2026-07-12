@@ -240,11 +240,7 @@ export const CafeMenu = defineCapsule({
       ),
     )
 
-    const MenuAddButton = ({
-      item,
-    }: {
-      item: { name: string; price: string }
-    }) => (
+    const MenuAddButton = ({ item }) => (
       <CommerceAddItemButton
         lakebed={lakebed}
         item={{

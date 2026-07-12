@@ -38,13 +38,7 @@ export const ConstructionNavbar = defineCapsule({
       : ['Services', 'Projects', 'Process', 'Pricing', 'Reviews', 'FAQ']
     const phone = props.phone ?? '(206) 555-1234'
     const ctaLabel = props.ctaLabel ?? 'Get a Quote'
-    const LogoMark = ({
-      className,
-      tone = 'primary',
-    }: {
-      className?: string
-      tone?: 'primary' | 'foreground'
-    }) => (
+    const LogoMark = ({ className, tone = 'primary' }) => (
       <span
         className={cn(
           'grid place-items-center rounded-md',

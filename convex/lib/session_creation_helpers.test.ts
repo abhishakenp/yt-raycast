@@ -49,8 +49,8 @@ type InsertedRow = {
 type Row = Doc<'sessions'> | Record<string, unknown>
 type Predicate = (row: Row) => boolean
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: `session_${Math.random()}`,
     _creationTime: 1,
     prompt: 'Build a site',
@@ -60,67 +60,61 @@ const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
     isPrivate: false,
     createdAt: 1,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
 const queryHelper = {
-  field: (name: string) => name,
-  eq:
-    (field: string, value: unknown): Predicate =>
-    (row) =>
-      row[field as keyof typeof row] === value,
+  field: (name) => name,
+  eq: (field, value) => (row) => row[field as keyof typeof row] === value,
   or:
-    (...predicates: Predicate[]): Predicate =>
+    (...predicates) =>
     (row) =>
       predicates.some((predicate) => predicate(row)),
 }
 
 const indexHelper = {
-  eq: (field: string, value: unknown) => ({ field, value }),
+  eq: (field, value) => ({ field, value }),
 }
 
-const chainFor = (rows: Row[]) => ({
-  withIndex: (
-    _indexName: string,
-    applyIndex: (index: typeof indexHelper) => {
-      field: string
-      value: unknown
+function chainFor(rows: Row[]) {
+  return {
+    withIndex: (_indexName, applyIndex) => {
+      const { field, value } = applyIndex(indexHelper)
+      return chainFor(
+        rows.filter((row) => row[field as keyof typeof row] === value),
+      )
     },
-  ) => {
-    const { field, value } = applyIndex(indexHelper)
-    return chainFor(
-      rows.filter((row) => row[field as keyof typeof row] === value),
-    )
-  },
-  order: (direction: 'asc' | 'desc') =>
-    chainFor(
-      [...rows].sort((left, right) => {
-        const leftTime = Number(left._creationTime ?? 0)
-        const rightTime = Number(right._creationTime ?? 0)
-        return direction === 'desc'
-          ? rightTime - leftTime
-          : leftTime - rightTime
-      }),
-    ),
-  filter: (applyFilter: (query: typeof queryHelper) => Predicate) =>
-    chainFor(rows.filter(applyFilter(queryHelper))),
-  take: async (limit: number) => rows.slice(0, limit),
-  unique: async () => rows[0] ?? null,
-  first: async () => rows[0] ?? null,
-})
+    order: (direction) =>
+      chainFor(
+        [...rows].sort((left, right) => {
+          const leftTime = Number(left._creationTime ?? 0)
+          const rightTime = Number(right._creationTime ?? 0)
+          return direction === 'desc'
+            ? rightTime - leftTime
+            : leftTime - rightTime
+        }),
+      ),
+    filter: (applyFilter) => chainFor(rows.filter(applyFilter(queryHelper))),
+    take: async (limit) => rows.slice(0, limit),
+    unique: async () => rows[0] ?? null,
+    first: async () => rows[0] ?? null,
+  }
+}
 
-const ctxFor = (rows: Partial<QueryRows>) =>
-  ({
+function ctxFor(rows: Partial<QueryRows>) {
+  return {
     db: {
-      query: (table: QueryTable) => chainFor(rows[table] ?? []),
+      query: (table) => chainFor(rows[table] ?? []),
     },
-  }) as unknown as Pick<MutationCtx, 'db'>
+  } as unknown as Pick<MutationCtx, 'db'>
+}
 
 type TestIdentity = Awaited<ReturnType<MutationCtx['auth']['getUserIdentity']>>
 
-const createMutationCtxFor = (
+function createMutationCtxFor(
   initialRows: Partial<QueryRows> = {},
   identity: TestIdentity = null,
-) => {
+) {
   const rows: QueryRows = {
     sessions: [...(initialRows.sessions ?? [])],
     subscriptions: [...(initialRows.subscriptions ?? [])],
@@ -129,7 +123,7 @@ const createMutationCtxFor = (
   const patches: Array<{ id: string; value: Record<string, unknown> }> = []
   const runAfter = vi.fn(async () => null)
 
-  const findRow = (id: string) =>
+  const findRow = (id) =>
     rows.sessions.find((row) => row._id === id) ??
     inserted.find((row) => row.id === id)?.value ??
     null
@@ -139,9 +133,9 @@ const createMutationCtxFor = (
       getUserIdentity: async () => identity,
     },
     db: {
-      query: (table: QueryTable) => chainFor(rows[table] ?? []),
-      get: async (id: string) => findRow(id),
-      insert: async (table: string, value: Record<string, unknown>) => {
+      query: (table) => chainFor(rows[table] ?? []),
+      get: async (id) => findRow(id),
+      insert: async (table, value) => {
         const id = `${table}_${inserted.length + 1}`
         const row = { _id: id, _creationTime: inserted.length + 1, ...value }
         inserted.push({ table, id, value: row })
@@ -152,7 +146,7 @@ const createMutationCtxFor = (
 
         return id
       },
-      patch: async (id: string, value: Record<string, unknown>) => {
+      patch: async (id, value) => {
         patches.push({ id, value })
         const target = findRow(id)
         if (target !== null) Object.assign(target, value)

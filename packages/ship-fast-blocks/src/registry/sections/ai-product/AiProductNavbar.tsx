@@ -52,7 +52,7 @@ export const AiProductNavbar = defineCapsule({
     const cta = props.cta ?? 'Start free trial'
     const ctaTarget = props.ctaTarget ?? 'Start writing free'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-foreground text-background',

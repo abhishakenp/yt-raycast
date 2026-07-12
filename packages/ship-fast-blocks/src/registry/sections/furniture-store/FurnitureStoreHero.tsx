@@ -76,7 +76,7 @@ export const FurnitureStoreHero = defineCapsule({
       }),
     ])
 
-    const ArrowLong = ({ className }: { className?: string }) => (
+    const ArrowLong = ({ className }) => (
       <svg
         width="16"
         height="16"

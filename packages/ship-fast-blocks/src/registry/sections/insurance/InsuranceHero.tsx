@@ -77,7 +77,7 @@ export const InsuranceHero = defineCapsule({
     const proofLabel = props.proofLabel ?? 'Happy customers'
     const proofRating = props.proofRating ?? '4.9/5'
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="20"
@@ -94,7 +94,7 @@ export const InsuranceHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         width="20"
@@ -111,7 +111,7 @@ export const InsuranceHero = defineCapsule({
       </svg>
     )
 
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={className}
         width="20"

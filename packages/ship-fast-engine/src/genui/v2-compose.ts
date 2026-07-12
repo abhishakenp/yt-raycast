@@ -154,8 +154,9 @@ function makeSeededRng(seed: string): () => number {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
-const pick = <T>(rng: () => number, xs: readonly T[]): T =>
-  xs[Math.min(xs.length - 1, Math.floor(rng() * xs.length))]
+function pick(rng: () => number, xs: readonly T[]): T {
+  return xs[Math.min(xs.length - 1, Math.floor(rng() * xs.length))]
+}
 
 // ─── Brand extraction ───────────────────────────────────────────────────────
 // The LLM extracts the brand in the first-pass superagent call (zero extra
@@ -228,7 +229,9 @@ function classifySystem(): string {
   return `Pick the 3 best-fitting verticals for the requested website from this list, most-fitting first, comma-separated. Output ONLY names from the list.\n${FAMILY_NAMES.join(', ')}`
 }
 
-const norm = (s: string): string => s.replace(/[^A-Za-z]/g, '').toLowerCase()
+function norm(s: string): string {
+  return s.replace(/[^A-Za-z]/g, '').toLowerCase()
+}
 const BY_NORM = new Map(FAMILY_NAMES.map((n) => [norm(n), n]))
 
 /**
@@ -387,14 +390,17 @@ const STOPWORDS = new Set([
   'best',
   'platform',
 ])
-const tokenize = (s: string): string[] =>
-  s
+function tokenize(s: string): string[] {
+  return s
     .toLowerCase()
     .replace(/[^a-z0-9 ]+/g, ' ')
     .split(/\s+/)
     .filter((w) => w.length > 2 && !STOPWORDS.has(w))
+}
 
-const splitCamel = (s: string): string => s.replace(/([a-z])([A-Z])/g, '$1 $2')
+function splitCamel(s: string): string {
+  return s.replace(/([a-z])([A-Z])/g, '$1 $2')
+}
 // Coarse intent synonyms → boost whole groups of families the keywords miss.
 const INTENT_GROUPS: { hints: string[]; families: string[] }[] = [
   {
@@ -651,15 +657,7 @@ export async function composeHomeFirstPass(input: {
         `  ${sec.toLowerCase()}: ${getComponentSignature(`${fam.name}${sec}`) ?? `${fam.name}${sec}(...)`}`,
     ),
   }))
-  const ask = async (
-    strict: boolean,
-  ): Promise<{
-    family?: string
-    brand?: string
-    title?: string
-    navLabels?: Record<string, string>
-    props: Record<string, Record<string, unknown>>
-  }> => {
+  const ask = async (strict) => {
     const sys = strict
       ? `${superagentSystem(input.locale)} You MUST fill EVERY section listed for the chosen vertical with rich content — never return an empty or partial object.`
       : superagentSystem(input.locale)
@@ -724,7 +722,7 @@ export async function composeHomeFirstPass(input: {
   // Quality strictness: the home must be substantially filled (hero + ≥ half the
   // sections). If not, retry once with a stricter instruction — never ship an
   // empty/placeholder homepage.
-  const enough = (fam: Family, props: Record<string, unknown>): boolean => {
+  const enough = (fam, props) => {
     const have = fam.sections.filter((s) => props[s.toLowerCase()]).length
     return Boolean(props['hero']) && have >= Math.ceil(fam.sections.length / 2)
   }
@@ -984,13 +982,15 @@ type PagePlan = { id: string; label: string; sections: string[] }
 const navigationKeyPattern =
   /(^|_|\b)(nav|cta|link|links|href|route|routes|action|button|buttons|primary|secondary|submit|phone|email|legal)(\b|_|$)/i
 
-const normalizeAlias = (value: string): string => value.trim().toLowerCase()
+function normalizeAlias(value: string): string {
+  return value.trim().toLowerCase()
+}
 
-const addTargetAlias = (
+function addTargetAlias(
   targetMap: Record<string, string>,
   alias: string,
   target: string,
-) => {
+) {
   const cleanAlias = alias.trim()
   const cleanTarget = target.trim()
   if (!cleanAlias || !cleanTarget) return
@@ -998,12 +998,12 @@ const addTargetAlias = (
   targetMap[normalizeAlias(cleanAlias)] = cleanTarget
 }
 
-const collectNavigationStrings = (
+function collectNavigationStrings(
   value: unknown,
   values = new Set<string>(),
   navigationContext = false,
   key = '',
-): Set<string> => {
+): Set<string> {
   const nextNavigationContext =
     navigationContext || navigationKeyPattern.test(key)
   if (typeof value === 'string') {
@@ -1078,7 +1078,7 @@ function buildRouteTargetMap(input: {
     }
   }
 
-  const semanticTargetFor = (value: string): string | null => {
+  const semanticTargetFor = (value) => {
     const normalized = normalizeAlias(value)
     const exact =
       targetMap[value] ??
@@ -2010,7 +2010,7 @@ export async function runV2ComposedGeneration(input: {
   let navLabels: Record<string, string> | undefined
   const locale = input.preferredLanguage || 'en'
   const theme = pick(rng, THEME_CATALOG).name
-  const emit = (e: V2Event) => input.onEvent?.(e)
+  const emit = (e) => input.onEvent?.(e)
 
   // A flight simulator is a real-time Three.js runtime, not a composition of
   // generic form/state primitives. Select the registered whole-page capsule by

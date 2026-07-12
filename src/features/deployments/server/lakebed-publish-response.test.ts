@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { createLakebedPublishResponse } from './lakebed-publish-response'
 
-const requestFor = (body: unknown = {}) =>
-  new Request(
+function requestFor(body: unknown = {}) {
+  return new Request(
     'https://ship-fast.test/api/sessions/session_123/deploy/lakebed',
     {
       body: JSON.stringify(body),
@@ -14,6 +14,7 @@ const requestFor = (body: unknown = {}) =>
       method: 'POST',
     },
   )
+}
 
 const realConvexFailedLakebedDeployment = {
   deploymentId: 'js7bs1688tg9art1de6x9jc4ys89m106',

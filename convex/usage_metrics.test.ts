@@ -13,16 +13,16 @@ const usageMetricsTest = () => {
   return t
 }
 
-const requireEventStream = <T>(stream: T | null): T => {
+function requireEventStream(stream: T | null): T {
   if (stream === null) throw new Error('Expected event stream')
   return stream
 }
 
-const createTestSession = (
+function createTestSession(
   t: ReturnType<typeof convexTest>,
   prompt = 'Test site',
-) =>
-  t.mutation(api.sessions.create, {
+) {
+  return t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -30,6 +30,7 @@ const createTestSession = (
     workspace: 'workspace_test',
     anonymousClientId: `anon-${prompt}`,
   })
+}
 
 afterEach(async () => {
   vi.unstubAllGlobals()

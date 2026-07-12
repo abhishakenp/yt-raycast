@@ -5,11 +5,11 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
-const createTestSession = (
+function createTestSession(
   t: ReturnType<typeof convexTest>,
   prompt = 'Test store',
-) =>
-  t.mutation(api.sessions.create, {
+) {
+  return t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -17,6 +17,7 @@ const createTestSession = (
     workspace: 'workspace_test',
     anonymousClientId: `anon-${prompt}`,
   })
+}
 
 test('provisionMedusaTenant creates or updates commerce config', async () => {
   const t = convexTest(schema, modules)

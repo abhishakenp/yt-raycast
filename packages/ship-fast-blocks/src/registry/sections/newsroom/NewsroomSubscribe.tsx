@@ -112,7 +112,7 @@ export const NewsroomSubscribe = defineCapsule({
         ]
     const footnote = props.footnote ?? 'Cancel anytime. No questions asked.'
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

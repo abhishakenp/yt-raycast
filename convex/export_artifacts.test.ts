@@ -63,16 +63,18 @@ type PreparedExportArtifact = {
   isPrivate: boolean
 }
 
-const preparedFixture = (): PreparedExportArtifact => ({
-  sessionId: SESSION_ID,
-  prompt: 'Build a test site',
-  target: TARGET,
-  previewVersion: 1,
-  source: 'root = Text("Hello")',
-  html: '<html><body><h1>Hello</h1></body></html>',
-  siteSpecJson: JSON.stringify({ projectName: 'Test' }),
-  isPrivate: false,
-})
+function preparedFixture(): PreparedExportArtifact {
+  return {
+    sessionId: SESSION_ID,
+    prompt: 'Build a test site',
+    target: TARGET,
+    previewVersion: 1,
+    source: 'root = Text("Hello")',
+    html: '<html><body><h1>Hello</h1></body></html>',
+    siteSpecJson: JSON.stringify({ projectName: 'Test' }),
+    isPrivate: false,
+  }
+}
 
 type BuiltExport = {
   body: string | Uint8Array
@@ -81,25 +83,27 @@ type BuiltExport = {
   fileCount: number
 }
 
-const downloadFixture = (): BuiltExport => ({
-  body: 'fake-zip-bytes',
-  contentType: 'application/zip',
-  filename: 'test-site.zip',
-  fileCount: 3,
-})
+function downloadFixture(): BuiltExport {
+  return {
+    body: 'fake-zip-bytes',
+    contentType: 'application/zip',
+    filename: 'test-site.zip',
+    fileCount: 3,
+  }
+}
 
 /**
  * Build a mock ActionCtx with controllable runMutation, runQuery, and
  * storage.store stubs.
  */
-const mockActionCtx = (overrides?: {
+function mockActionCtx(overrides?: {
   prepareResult?: PreparedExportArtifact | null
 }): {
   ctx: ActionCtx
   runMutation: ReturnType<typeof vi.fn>
   runQuery: ReturnType<typeof vi.fn>
   storageStore: ReturnType<typeof vi.fn>
-} => {
+} {
   const runMutation = vi.fn().mockResolvedValue(undefined)
   const runQuery = vi
     .fn()

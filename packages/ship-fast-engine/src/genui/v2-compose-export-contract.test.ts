@@ -27,13 +27,13 @@ import { FAMILIES } from './v2-compose.ts'
  * component in any of the three registries.
  */
 describe('engine families ↔ library + manifest + signature consistency', () => {
-  const libraryComponentNames = (): Set<string> => {
+  const libraryComponentNames = () => {
     const schema = library.toJSONSchema()
     const defs = (schema.$defs ?? {}) as Record<string, unknown>
     return new Set(Object.keys(defs))
   }
 
-  const manifestComponentNames = (): Set<string> => {
+  const manifestComponentNames = () => {
     if (reactExportSourcesEncoding !== 'br+base64') {
       throw new Error(
         `Unexpected manifest encoding: ${reactExportSourcesEncoding}`,
@@ -53,7 +53,7 @@ describe('engine families ↔ library + manifest + signature consistency', () =>
     )
   }
 
-  const engineEmittedComponentNames = (): string[] => {
+  const engineEmittedComponentNames = () => {
     const names: string[] = []
     for (const family of FAMILIES.values()) {
       for (const section of family.sections) {

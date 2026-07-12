@@ -67,7 +67,7 @@ export async function timedCall(opts: {
   }
 }
 
-export const median = (xs: number[]): number => {
+export function median(xs: number[]): number {
   const s = [...xs].sort((a, b) => a - b)
   return s.length ? s[Math.floor(s.length / 2)] : 0
 }

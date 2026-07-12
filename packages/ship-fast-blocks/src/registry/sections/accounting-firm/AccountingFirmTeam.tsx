@@ -92,7 +92,7 @@ export const AccountingFirmTeam = defineCapsule({
       'Our full team includes 20 additional professionals including senior accountants, bookkeepers, and support staff.'
     const footnoteCta = props.footnoteCta ?? 'Get to know our full team'
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

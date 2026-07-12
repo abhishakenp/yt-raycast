@@ -10,8 +10,9 @@ import {
 import { buildExportSeoBundle } from './export-seo'
 
 const fixtureDir = join(__dirname, '__fixtures__')
-const readFixture = (name: string) =>
-  readFileSync(join(fixtureDir, name), 'utf8')
+function readFixture(name: string) {
+  return readFileSync(join(fixtureDir, name), 'utf8')
+}
 
 // Real OpenUI source from Convex DB — coffee roastery with products + reviews
 const realReviewSource = readFixture('real-review.openui')
@@ -23,7 +24,7 @@ const siteSpec = JSON.stringify({
 })
 
 /** Build routes + JSON-LD map from an OpenUI source, same as the export builder does. */
-const buildBundle = (source: string, spec = siteSpec) => {
+function buildBundle(source: string, spec = siteSpec) {
   const parsed = parseOpenUIForExport(source, spec)
   const routePaths = parsed.routes.map((r, i) => ({
     path: i === 0 ? '/' : `/${r.toLowerCase().replace(/\s+/g, '-')}`,
@@ -45,7 +46,7 @@ const buildBundle = (source: string, spec = siteSpec) => {
 }
 
 /** Parse structured data JSON, normalizing single-object to array. */
-const parseJsonLd = (json: string): Record<string, unknown>[] => {
+function parseJsonLd(json: string): Record<string, unknown>[] {
   const parsed = JSON.parse(json)
   return Array.isArray(parsed) ? parsed : [parsed]
 }
@@ -58,7 +59,7 @@ describe('JSON-LD extraction from real DB data', () => {
     expect(json).toBeTruthy()
     const data = parseJsonLd(json)
 
-    const types = data.map((e: Record<string, unknown>) => e['@type'])
+    const types = data.map((e) => e['@type'])
     // Should have ItemList (multiple products) — NOT WebPage/Organization
     expect(types).toContain('ItemList')
     expect(types).not.toContain('WebPage')
@@ -66,9 +67,7 @@ describe('JSON-LD extraction from real DB data', () => {
     expect(types).not.toContain('WebSite')
 
     // Verify actual product data from the source
-    const itemList = data.find(
-      (e: Record<string, unknown>) => e['@type'] === 'ItemList',
-    )
+    const itemList = data.find((e) => e['@type'] === 'ItemList')
     expect(itemList).toBeTruthy()
     const items = itemList!.itemListElement as Array<Record<string, unknown>>
     expect(items.length).toBeGreaterThanOrEqual(3)
@@ -88,9 +87,7 @@ describe('JSON-LD extraction from real DB data', () => {
     const data = parseJsonLd(seoBundle!.homeSeo!.structuredDataJson)
 
     // Reviews should be attached to a product (inside ItemList or on single Product)
-    const findProductWithReviews = (
-      entries: Record<string, unknown>[],
-    ): Record<string, unknown> | undefined => {
+    const findProductWithReviews = (entries) => {
       for (const e of entries) {
         if (e['@type'] === 'Product' && e.review) return e
         if (e['@type'] === 'ItemList') {
@@ -115,7 +112,7 @@ describe('JSON-LD extraction from real DB data', () => {
   it('does NOT emit WebPage/Organization/WebSite (those duplicate head metadata)', () => {
     const seoBundle = buildBundle(realProductSource)
     const data = parseJsonLd(seoBundle!.homeSeo!.structuredDataJson)
-    const types = data.map((e: Record<string, unknown>) => e['@type'])
+    const types = data.map((e) => e['@type'])
     expect(types).not.toContain('WebPage')
     expect(types).not.toContain('Organization')
     expect(types).not.toContain('WebSite')
@@ -126,9 +123,7 @@ describe('JSON-LD extraction from real DB data', () => {
     const data = parseJsonLd(seoBundle!.homeSeo!.structuredDataJson)
 
     // Find any Review with a rating
-    const findReview = (
-      entries: Record<string, unknown>[],
-    ): Record<string, unknown> | undefined => {
+    const findReview = (entries) => {
       for (const e of entries) {
         if (e['@type'] === 'Review') return e
         if (e['@type'] === 'ItemList') {

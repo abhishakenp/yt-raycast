@@ -40,7 +40,7 @@ import type {
 
 export type DirectoryLakebed = LakebedClientRuntime<typeof directoryLakebed>
 
-export const directoryListing = ({
+export function directoryListing({
   address,
   category,
   hours,
@@ -48,15 +48,17 @@ export const directoryListing = ({
   name,
   rating,
   reviews,
-}: DirectoryListingInput): DirectoryListingInput => ({
-  address: address ?? '',
-  category: category ?? '',
-  hours: hours ?? '',
-  imageAlt: imageAlt ?? '',
-  name,
-  rating: rating ?? '',
-  reviews: reviews ?? '',
-})
+}: DirectoryListingInput): DirectoryListingInput {
+  return {
+    address: address ?? '',
+    category: category ?? '',
+    hours: hours ?? '',
+    imageAlt: imageAlt ?? '',
+    name,
+    rating: rating ?? '',
+    reviews: reviews ?? '',
+  }
+}
 
 export function DirectoryMutationSpinner({
   className,
@@ -137,7 +139,7 @@ export function useDirectorySearch(lakebed: DirectoryLakebed) {
   const setDirectorySearch = lakebed.useMutation('setDirectorySearch')
 
   const submitSearch = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (setDirectorySearch.isPending) return
 
@@ -151,7 +153,7 @@ export function useDirectorySearch(lakebed: DirectoryLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input: DirectorySearchInput) => {
+    (input) => {
       if (setDirectorySearch.isPending) return
       void setDirectorySearch(input)
     },
@@ -171,7 +173,7 @@ export function useDirectoryListings(lakebed: DirectoryLakebed) {
   const selectListing = lakebed.useMutation('selectListing')
 
   const select = useCallback(
-    async (input: DirectorySelectInput) => {
+    async (input) => {
       if (selectListing.isPending) return
       await selectListing(input)
     },
@@ -282,7 +284,7 @@ export function DirectoryMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?: string) => {
+  const navigate = (target?) => {
     setOpen(false)
     go(target)
   }

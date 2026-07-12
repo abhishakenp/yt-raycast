@@ -13,7 +13,7 @@ const OUT = process.env.TVNL_OUT ?? '/tmp/tvnl-lakebed-build'
 const ORIGIN =
   process.env.TVNL_CONVEX_ORIGIN ?? 'https://courteous-horse-635.convex.cloud'
 
-const query = async (path: string, args: unknown) => {
+async function query(path: string, args: unknown) {
   const res = await fetch(`${ORIGIN}/api/query`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -24,11 +24,15 @@ const query = async (path: string, args: unknown) => {
   return json.value as Record<string, string | undefined>
 }
 
-describe.runIf(process.env.TVNL_INSPECT === '1')('inspect tvnl lakebed build', () => {
+describe('inspect tvnl lakebed build', () => {
   it('builds and dumps files, flags unbound client references', async () => {
     const prepared = await query(
       'sessions:prepareLakebedDeploymentForPublish',
-      { sessionId: SESSION, anonymousOwnerSecret: SECRET, requestedSlug: 'tvnl' },
+      {
+        sessionId: SESSION,
+        anonymousOwnerSecret: SECRET,
+        requestedSlug: 'tvnl',
+      },
     )
     const built = await buildOpenUILakebedProjectFiles({
       source: prepared.source ?? '',
@@ -37,7 +41,8 @@ describe.runIf(process.env.TVNL_INSPECT === '1')('inspect tvnl lakebed build', (
       sessionId: SESSION,
       target: 'lakebed',
       themeName: prepared.themeName,
-      isDark: prepared.isDark === undefined ? undefined : Boolean(prepared.isDark),
+      isDark:
+        prepared.isDark === undefined ? undefined : Boolean(prepared.isDark),
       locale: prepared.locale,
     })
     mkdirSync(OUT, { recursive: true })
@@ -56,7 +61,10 @@ describe.runIf(process.env.TVNL_INSPECT === '1')('inspect tvnl lakebed build', (
       const unbound = findUnboundClientReferences(contents, path)
       if (unbound.length > 0) offenders[path] = unbound
     }
-    writeFileSync('/tmp/tvnl-offenders.json', JSON.stringify(offenders, null, 2))
+    writeFileSync(
+      '/tmp/tvnl-offenders.json',
+      JSON.stringify(offenders, null, 2),
+    )
     // eslint-disable-next-line no-console
     console.log('OFFENDERS', JSON.stringify(offenders))
     expect(built.fileCount).toBeGreaterThan(0)

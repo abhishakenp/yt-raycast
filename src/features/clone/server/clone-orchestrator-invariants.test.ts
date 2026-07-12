@@ -26,7 +26,7 @@ const cloneMocks = vi.hoisted(() => {
     crawlSite: vi.fn(),
     generateText: vi.fn(),
     launch: vi.fn().mockResolvedValue(browser),
-    normalizeUrl: vi.fn((url: string) => new URL(url).toString()),
+    normalizeUrl: vi.fn((url) => new URL(url).toString()),
   }
 })
 
@@ -61,14 +61,16 @@ vi.mock('playwright', () => ({
   },
 }))
 
-const capturedPage = (url: string, title: string): CapturedPage => ({
-  url,
-  normalizedUrl: url,
-  html: `<!doctype html><html><head><title>${title}</title></head><body><h1>${title}</h1><a href="/contact">Contact</a></body></html>`,
-  computedStyles: new Map(),
-  bboxes: new Map(),
-  assetUrls: [],
-})
+function capturedPage(url: string, title: string): CapturedPage {
+  return {
+    url,
+    normalizedUrl: url,
+    html: `<!doctype html><html><head><title>${title}</title></head><body><h1>${title}</h1><a href="/contact">Contact</a></body></html>`,
+    computedStyles: new Map(),
+    bboxes: new Map(),
+    assetUrls: [],
+  }
+}
 
 const mutationArgs = () =>
   cloneMocks.client.mutation.mock.calls.map(([, args]) => args)
@@ -84,12 +86,8 @@ describe('clone orchestrator behavior', () => {
         ['https://example.com/about', { html: '<html></html>', depth: 1 }],
       ]),
     })
-    cloneMocks.capturePage.mockImplementation(
-      async (_browser: unknown, url: string) =>
-        capturedPage(
-          url,
-          url.endsWith('/about') ? 'About Title' : 'Home Title',
-        ),
+    cloneMocks.capturePage.mockImplementation(async (_browser, url) =>
+      capturedPage(url, url.endsWith('/about') ? 'About Title' : 'Home Title'),
     )
     cloneMocks.generateText.mockResolvedValue(
       JSON.stringify([{ before: 'Home Title', after: 'Edited Home Title' }]),
@@ -156,12 +154,10 @@ describe('clone orchestrator behavior', () => {
   })
 
   it('persists failed rest pages and keeps the clone job alive when one capture fails', async () => {
-    cloneMocks.capturePage.mockImplementation(
-      async (_browser: unknown, url: string) => {
-        if (url.endsWith('/about')) throw new Error('capture failed')
-        return capturedPage(url, 'Home Title')
-      },
-    )
+    cloneMocks.capturePage.mockImplementation(async (_browser, url) => {
+      if (url.endsWith('/about')) throw new Error('capture failed')
+      return capturedPage(url, 'Home Title')
+    })
 
     await runCloneJob({
       sessionId: 'clone-session',
@@ -194,17 +190,15 @@ describe('clone orchestrator behavior', () => {
       }
       return null
     })
-    cloneMocks.capturePage.mockImplementation(
-      async (_browser: unknown, url: string) => {
-        if (url.endsWith('/about')) {
-          return {
-            ...capturedPage(url, 'About Title'),
-            html: `<!doctype html><html><head><title>About Title</title></head><body><main>${largeBody}</main></body></html>`,
-          }
+    cloneMocks.capturePage.mockImplementation(async (_browser, url) => {
+      if (url.endsWith('/about')) {
+        return {
+          ...capturedPage(url, 'About Title'),
+          html: `<!doctype html><html><head><title>About Title</title></head><body><main>${largeBody}</main></body></html>`,
         }
-        return capturedPage(url, 'Home Title')
-      },
-    )
+      }
+      return capturedPage(url, 'Home Title')
+    })
     const fetchMock = vi.fn(
       async () =>
         new Response('<!doctype html><h1>upload gateway failure</h1>', {
@@ -254,17 +248,15 @@ describe('clone orchestrator behavior', () => {
       }
       return null
     })
-    cloneMocks.capturePage.mockImplementation(
-      async (_browser: unknown, url: string) => {
-        if (url === 'https://example.com/') {
-          return {
-            ...capturedPage(url, 'TVNL - Tenughat Vidyut Nigam Limited'),
-            html: `<!doctype html><html><head><title>TVNL - Tenughat Vidyut Nigam Limited</title></head><body><main>${largeHomeBody}</main></body></html>`,
-          }
+    cloneMocks.capturePage.mockImplementation(async (_browser, url) => {
+      if (url === 'https://example.com/') {
+        return {
+          ...capturedPage(url, 'TVNL - Tenughat Vidyut Nigam Limited'),
+          html: `<!doctype html><html><head><title>TVNL - Tenughat Vidyut Nigam Limited</title></head><body><main>${largeHomeBody}</main></body></html>`,
         }
-        return capturedPage(url, 'About Title')
-      },
-    )
+      }
+      return capturedPage(url, 'About Title')
+    })
     const fetchMock = vi.fn(
       async () =>
         new Response('<!doctype html><h1>upload gateway failure</h1>', {

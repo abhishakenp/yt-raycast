@@ -118,7 +118,7 @@ export const CybersecurityPricing = defineCapsule({
       ),
     )
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

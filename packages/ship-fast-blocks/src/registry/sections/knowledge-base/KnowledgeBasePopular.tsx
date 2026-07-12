@@ -127,7 +127,7 @@ export const KnowledgeBasePopular = defineCapsule({
       </svg>
     )
 
-    const ChevronRight = ({ className }: { className?: string }) => (
+    const ChevronRight = ({ className }) => (
       <svg
         className={className}
         width="20"
@@ -144,7 +144,7 @@ export const KnowledgeBasePopular = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="16"
@@ -162,7 +162,7 @@ export const KnowledgeBasePopular = defineCapsule({
       </svg>
     )
 
-    const ChatIcon = ({ className }: { className?: string }) => (
+    const ChatIcon = ({ className }) => (
       <svg
         className={className}
         width="20"

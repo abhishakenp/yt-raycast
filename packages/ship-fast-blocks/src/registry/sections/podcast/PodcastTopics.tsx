@@ -5,112 +5,124 @@ import { z } from 'zod/v4'
 
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
-const DotWave = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M4 12v0" />
-    <path d="M8 9v6" />
-    <path d="M12 5v14" />
-    <path d="M16 8v8" />
-    <path d="M20 11v2" />
-  </svg>
-)
+function DotWave({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M4 12v0" />
+      <path d="M8 9v6" />
+      <path d="M12 5v14" />
+      <path d="M16 8v8" />
+      <path d="M20 11v2" />
+    </svg>
+  )
+}
 
-const Headphones = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
-    <path d="M4 14a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1Z" />
-    <path d="M20 14a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2 1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1Z" />
-  </svg>
-)
+function Headphones({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+      <path d="M4 14a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1Z" />
+      <path d="M20 14a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2 1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1Z" />
+    </svg>
+  )
+}
 
-const Sparkle = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M12 3v4" />
-    <path d="M12 17v4" />
-    <path d="M3 12h4" />
-    <path d="M17 12h4" />
-    <path d="M12 8a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4Z" />
-  </svg>
-)
+function Sparkle({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 3v4" />
+      <path d="M12 17v4" />
+      <path d="M3 12h4" />
+      <path d="M17 12h4" />
+      <path d="M12 8a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4Z" />
+    </svg>
+  )
+}
 
-const Mic = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <rect x="9" y="3" width="6" height="11" rx="3" />
-    <path d="M6 11a6 6 0 0 0 12 0" />
-    <path d="M12 17v4" />
-    <path d="M8 21h8" />
-  </svg>
-)
+function Mic({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M6 11a6 6 0 0 0 12 0" />
+      <path d="M12 17v4" />
+      <path d="M8 21h8" />
+    </svg>
+  )
+}
 
-const Chat = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
-    <path d="M8 10h8" />
-    <path d="M8 13h5" />
-  </svg>
-)
+function Chat({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+      <path d="M8 10h8" />
+      <path d="M8 13h5" />
+    </svg>
+  )
+}
 
-const Music = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M9 18V6l11-2v12" />
-    <circle cx="6" cy="18" r="3" />
-    <circle cx="17" cy="16" r="3" />
-  </svg>
-)
+function Music({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M9 18V6l11-2v12" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="17" cy="16" r="3" />
+    </svg>
+  )
+}
 
 const ICONS = [DotWave, Music, Sparkle, Mic, Headphones, Chat]
 

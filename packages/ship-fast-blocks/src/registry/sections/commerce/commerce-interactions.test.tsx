@@ -21,16 +21,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -86,8 +86,7 @@ if (typeof ResizeObserver === 'undefined') {
 if (typeof requestAnimationFrame === 'undefined') {
   Object.defineProperty(globalThis, 'requestAnimationFrame', {
     configurable: true,
-    value: (callback: FrameRequestCallback) =>
-      setTimeout(() => callback(Date.now()), 0),
+    value: (callback) => setTimeout(() => callback(Date.now()), 0),
     writable: true,
   })
 }
@@ -95,7 +94,7 @@ if (typeof requestAnimationFrame === 'undefined') {
 if (typeof cancelAnimationFrame === 'undefined') {
   Object.defineProperty(globalThis, 'cancelAnimationFrame', {
     configurable: true,
-    value: (id: number) => clearTimeout(id),
+    value: (id) => clearTimeout(id),
     writable: true,
   })
 }
@@ -198,64 +197,74 @@ type TestMutationInput = {
 
 const timestamp = '2026-06-26T00:00:00.000Z'
 
-const testCartItem = (item: TestCartItemInput): TestCartItem => ({
-  createdAt: timestamp,
-  id: item.id,
-  itemKey: item.itemKey ?? '',
-  label: item.label,
-  price: item.price ?? '',
-  quantity: item.quantity,
-  updatedAt: timestamp,
-})
+function testCartItem(item: TestCartItemInput): TestCartItem {
+  return {
+    createdAt: timestamp,
+    id: item.id,
+    itemKey: item.itemKey ?? '',
+    label: item.label,
+    price: item.price ?? '',
+    quantity: item.quantity,
+    updatedAt: timestamp,
+  }
+}
 
-const testProduct = (product: TestProductInput): TestProduct => ({
-  createdAt: timestamp,
-  id: product.id ?? '',
-  imageAlt: product.imageAlt ?? '',
-  itemKey: product.itemKey ?? '',
-  label: product.label,
-  price: product.price ?? '',
-  subtitle: product.subtitle ?? '',
-  updatedAt: timestamp,
-})
+function testProduct(product: TestProductInput): TestProduct {
+  return {
+    createdAt: timestamp,
+    id: product.id ?? '',
+    imageAlt: product.imageAlt ?? '',
+    itemKey: product.itemKey ?? '',
+    label: product.label,
+    price: product.price ?? '',
+    subtitle: product.subtitle ?? '',
+    updatedAt: timestamp,
+  }
+}
 
-const testCommerceSearch = (
+function testCommerceSearch(
   search: TestCommerceSearchInput,
-): TestCommerceSearch => ({
-  createdAt: timestamp,
-  updatedAt: timestamp,
-  ...search,
-})
+): TestCommerceSearch {
+  return {
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    ...search,
+  }
+}
 
-const publicCartItem = ({
+function publicCartItem({
   id,
   itemKey,
   label,
   price,
   quantity,
-}: TestCartItem): TestCartItemInput => ({
-  id,
-  itemKey,
-  label,
-  price,
-  quantity,
-})
+}: TestCartItem): TestCartItemInput {
+  return {
+    id,
+    itemKey,
+    label,
+    price,
+    quantity,
+  }
+}
 
-const publicProduct = ({
+function publicProduct({
   id,
   imageAlt,
   itemKey,
   label,
   price,
   subtitle,
-}: TestProduct): TestProductInput => ({
-  id,
-  imageAlt,
-  itemKey,
-  label,
-  price,
-  subtitle,
-})
+}: TestProduct): TestProductInput {
+  return {
+    id,
+    imageAlt,
+    itemKey,
+    label,
+    price,
+    subtitle,
+  }
+}
 
 function useTestLakebedMutation<TMutation>({
   lastError,
@@ -273,15 +282,12 @@ function useTestLakebedMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -338,14 +344,14 @@ function createCommerceLakebedStub({
     version += 1
     for (const listener of listeners) listener()
   }
-  const subscribe = (listener: () => void) => {
+  const subscribe = (listener) => {
     listeners.add(listener)
     return () => {
       listeners.delete(listener)
     }
   }
   const getSnapshot = () => version
-  const findItem = (input: TestMutationInput) =>
+  const findItem = (input) =>
     state.items.find((item) => {
       if (input.id && item.id === input.id) return true
       if (input.itemKey && item.itemKey === input.itemKey) return true
@@ -733,7 +739,7 @@ function createSharedPendingCommerceLakebedStub({
     version += 1
     for (const listener of listeners) listener()
   }
-  const subscribe = (listener: () => void) => {
+  const subscribe = (listener) => {
     listeners.add(listener)
     return () => {
       listeners.delete(listener)
@@ -1236,8 +1242,7 @@ describe('commerce interaction surfaces', () => {
     )
     const lakebed = {
       useMutation: () => noopMutation,
-      useQuery: (name: string) =>
-        name === 'cartSummary' ? { count: 3 } : null,
+      useQuery: (name) => (name === 'cartSummary' ? { count: 3 } : null),
     } as unknown as CommerceLakebed
 
     render(<CommerceCartButton lakebed={lakebed} />)
@@ -1729,7 +1734,7 @@ describe('commerce interaction surfaces', () => {
     const { lakebed } = createCommerceLakebedStub()
     const malformedCatalogLakebed = {
       ...lakebed,
-      useQuery: ((name: string) => {
+      useQuery: ((name) => {
         if (name === 'productCatalog') {
           return {
             missing: null,

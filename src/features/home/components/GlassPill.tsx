@@ -83,7 +83,7 @@ type PillButtonProps = {
   onAnimationEnd?: () => void
 }
 
-export const GlassPillButton = ({
+export function GlassPillButton({
   children,
   className = '',
   disabled,
@@ -92,30 +92,33 @@ export const GlassPillButton = ({
   ariaLabel,
   onClick,
   onAnimationEnd,
-}: PillButtonProps) => (
-  <button
-    type={type}
-    className={cn(
-      'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
-      className,
-    )}
-    id={id}
-    disabled={disabled}
-    aria-label={ariaLabel}
-    onClick={onClick}
-    onAnimationEnd={onAnimationEnd}
-  >
-    <PillDecorations />
-    <span className="pill__body relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">
-      {children}
-    </span>
-  </button>
-)
+}: PillButtonProps) {
+  return (
+    <button
+      type={type}
+      className={cn(
+        'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
+        className,
+      )}
+      id={id}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      onClick={onClick}
+      onAnimationEnd={onAnimationEnd}
+    >
+      <PillDecorations />
+      <span className="pill__body relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">
+        {children}
+      </span>
+    </button>
+  )
+}
 
-const isInternalHref = (href: string): boolean =>
-  href.startsWith('/') && !href.startsWith('//')
+function isInternalHref(href: string): boolean {
+  return href.startsWith('/') && !href.startsWith('//')
+}
 
-export const GlassPillAnchor = ({
+export function GlassPillAnchor({
   children,
   className = '',
   href,
@@ -123,7 +126,7 @@ export const GlassPillAnchor = ({
   children: ReactNode
   className?: string
   href: string
-}) => {
+}) {
   const cls = cn(
     'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
     className,

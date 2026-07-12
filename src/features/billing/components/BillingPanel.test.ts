@@ -25,8 +25,9 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
 
 const fetchMock = vi.fn<typeof globalThis.fetch>()
 
-const json = (body: unknown, ok = true) =>
-  ({ ok, json: async () => body, status: ok ? 200 : 400 }) as Response
+function json(body: unknown, ok = true) {
+  return { ok, json: async () => body, status: ok ? 200 : 400 } as Response
+}
 
 describe('BillingPanel — Convex JWT usage', () => {
   let originalFetch: typeof globalThis.fetch

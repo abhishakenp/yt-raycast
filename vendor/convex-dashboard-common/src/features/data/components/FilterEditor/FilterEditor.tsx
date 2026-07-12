@@ -101,7 +101,7 @@ export function FilterEditor({
     return newState
   }
 
-  const onChangeValue = useCallback((v?: Value) => {
+  const onChangeValue = useCallback((v?) => {
     dispatch({ value: v })
   }, [])
 
@@ -294,15 +294,14 @@ function ValueEditor({
   )
 }
 
-const selectField =
-  (
-    state: FilterState,
-    dispatch: React.Dispatch<Partial<FilterState>>,
-    defaultDocument: GenericDocument,
-    forceRerender: () => void,
-    clearErrors: () => void,
-  ) =>
-  (option: string | null) => {
+function selectField(
+  state: FilterState,
+  dispatch: React.Dispatch<Partial<FilterState>>,
+  defaultDocument: GenericDocument,
+  forceRerender: () => void,
+  clearErrors: () => void,
+) {
+  return (option) => {
     if (option === null) {
       return
     }
@@ -341,15 +340,15 @@ const selectField =
     }
     forceRerender()
   }
+}
 
-const selectOperator =
-  (
-    state: FilterState,
-    dispatch: React.Dispatch<Partial<FilterState>>,
-    defaultDocument: GenericDocument,
-    clearErrors: () => void,
-  ) =>
-  (option: Filter['op'] | null) => {
+function selectOperator(
+  state: FilterState,
+  dispatch: React.Dispatch<Partial<FilterState>>,
+  defaultDocument: GenericDocument,
+  clearErrors: () => void,
+) {
+  return (option) => {
     if (
       state.op === 'anyOf' ||
       state.op === 'noneOf' ||
@@ -396,3 +395,4 @@ const selectOperator =
     // Default case: not switching between types of filters.
     dispatch({ op: option })
   }
+}

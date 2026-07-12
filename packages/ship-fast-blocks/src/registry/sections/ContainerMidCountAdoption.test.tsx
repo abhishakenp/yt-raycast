@@ -93,15 +93,13 @@ const moduleLoaders = [
   () => import('./crypto/CryptoTestimonials.tsx'),
 ]
 
-const isCapsule = (
-  value: unknown,
-): value is {
+function isCapsule(value: unknown): value is {
   client: {
     component: (input: { props: {}; statementId: string }) => JSX.Element
     name: string
   }
-} =>
-  Boolean(
+} {
+  return Boolean(
     value &&
     typeof value === 'object' &&
     'client' in value &&
@@ -110,6 +108,7 @@ const isCapsule = (
     'component' in value.client &&
     typeof value.client.component === 'function',
   )
+}
 
 const loadSections = async () => {
   const modules = await Promise.all(moduleLoaders.map((load) => load()))

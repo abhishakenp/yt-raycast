@@ -41,16 +41,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({
-    alt,
-    className,
-  }: {
-    alt: string
-    className?: string
-    h?: number
-    loading?: string
-    w?: number
-  }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }) => <img alt={alt} className={className} />,
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -71,16 +62,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -179,9 +170,9 @@ function createJobBoardLakebedStub() {
     visibleCount: state?.visibleCount ?? 3,
   })
   const nextRow = <TRow extends Record<string, unknown>>(
-    prefix: string,
-    value: TRow,
-    index: number,
+    prefix,
+    value,
+    index,
   ) => ({
     ...value,
     createdAt: now,
@@ -223,50 +214,44 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: JobBoardApplicationInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const role = input.role.trim()
-            if (
-              role &&
-              !applications.some((application) => application.role === role)
-            ) {
-              applications = [
-                ...applications,
-                nextRow(
-                  'application',
-                  {
-                    company: input.company?.trim() ?? '',
-                    role,
-                  },
-                  applications.length + 1,
-                ),
-              ]
-            }
-            notify()
-            return applications
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const role = input.role.trim()
+          if (
+            role &&
+            !applications.some((application) => application.role === role)
+          ) {
+            applications = [
+              ...applications,
+              nextRow(
+                'application',
+                {
+                  company: input.company?.trim() ?? '',
+                  role,
+                },
+                applications.length + 1,
+              ),
+            ]
           }
-        },
-        [],
-      )
+          notify()
+          return applications
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: JobBoardApplicationInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -281,7 +266,7 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (increment: number = 3) => {
+      const runMutation = useCallback(async (increment = 3) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -307,7 +292,7 @@ function createJobBoardLakebedStub() {
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
         const callable = Object.assign(
-          (increment: number = 3) => runMutation(increment),
+          (increment = 3) => runMutation(increment),
           {
             isPending: false,
             lastError: initialLastError,
@@ -329,7 +314,7 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: JobBoardActionInput) => {
+      const runMutation = useCallback(async (input) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -355,15 +340,12 @@ function createJobBoardLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: JobBoardActionInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -378,7 +360,7 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: JobBoardSearchInput) => {
+      const runMutation = useCallback(async (input) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -415,15 +397,12 @@ function createJobBoardLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: JobBoardSearchInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -438,62 +417,56 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: { items: JobBoardCatalogInput[] }) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const existingByRole = new Map(
-              items.map((item) => [item.role.toLowerCase(), item]),
-            )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const existingByRole = new Map(
+            items.map((item) => [item.role.toLowerCase(), item]),
+          )
 
-            for (const job of input.items) {
-              const role = job.role.trim()
-              if (!role) continue
+          for (const job of input.items) {
+            const role = job.role.trim()
+            if (!role) continue
 
-              const current = existingByRole.get(role.toLowerCase())
-              const next = {
-                badge: job.badge?.trim() ?? '',
-                company: job.company?.trim() ?? '',
-                description: job.description?.trim() ?? '',
-                logoAlt: job.logoAlt?.trim() ?? '',
-                posted: job.posted?.trim() ?? '',
-                role,
-                tags: job.tags?.trim() ?? '',
-              }
-
-              if (current) {
-                items = items.map((candidate) =>
-                  candidate.id === current.id
-                    ? { ...current, ...next, updatedAt: now }
-                    : candidate,
-                )
-              } else {
-                items = [...items, nextRow('job', next, items.length + 1)]
-              }
+            const current = existingByRole.get(role.toLowerCase())
+            const next = {
+              badge: job.badge?.trim() ?? '',
+              company: job.company?.trim() ?? '',
+              description: job.description?.trim() ?? '',
+              logoAlt: job.logoAlt?.trim() ?? '',
+              posted: job.posted?.trim() ?? '',
+              role,
+              tags: job.tags?.trim() ?? '',
             }
-            notify()
-            return items
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
+
+            if (current) {
+              items = items.map((candidate) =>
+                candidate.id === current.id
+                  ? { ...current, ...next, updatedAt: now }
+                  : candidate,
+              )
+            } else {
+              items = [...items, nextRow('job', next, items.length + 1)]
+            }
           }
-        },
-        [],
-      )
+          notify()
+          return items
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: { items: JobBoardCatalogInput[] }) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 

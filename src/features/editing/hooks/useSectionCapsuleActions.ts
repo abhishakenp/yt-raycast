@@ -21,8 +21,9 @@ export type SectionCapsuleActions = {
   mergeData: (patch: Partial<JsonRecord>) => Promise<JsonRecord>
 }
 
-const isJsonRecord = (value: unknown): value is JsonRecord =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+function isJsonRecord(value: unknown): value is JsonRecord {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
 
 /**
  * Hook that reads/writes lakebed session data for a specific capsule section.
@@ -31,10 +32,10 @@ const isJsonRecord = (value: unknown): value is JsonRecord =>
  * The lakebed key is `${capsuleName}:${statementId}` — the same key
  * `withSectionRealtime` uses to seed and merge section data.
  */
-export const useSectionCapsuleActions = (
+export function useSectionCapsuleActions(
   capsuleName: string,
   statementId: string,
-): SectionCapsuleActions => {
+): SectionCapsuleActions {
   const lakebedKey = `${capsuleName}:${statementId}`
   const { canWrite, data } = useSessionState<JsonRecord>(lakebedKey)
   const mergeData = useMergeSessionData<JsonRecord>(lakebedKey)
@@ -42,7 +43,7 @@ export const useSectionCapsuleActions = (
   const canEdit = canWrite && data !== null
 
   const addItem = useCallback(
-    async (collectionKey: string, item: JsonRecord) => {
+    async (collectionKey, item) => {
       const currentItems = Array.isArray(data?.[collectionKey])
         ? (data![collectionKey] as unknown[])
         : []
@@ -54,7 +55,7 @@ export const useSectionCapsuleActions = (
   )
 
   const removeItem = useCallback(
-    async (collectionKey: string, index: number) => {
+    async (collectionKey, index) => {
       if (!Array.isArray(data?.[collectionKey])) return
       const items = data![collectionKey] as unknown[]
       const filtered = items.filter((_, i) => i !== index)
@@ -66,7 +67,7 @@ export const useSectionCapsuleActions = (
   )
 
   const reorderItem = useCallback(
-    async (collectionKey: string, fromIndex: number, toIndex: number) => {
+    async (collectionKey, fromIndex, toIndex) => {
       if (!Array.isArray(data?.[collectionKey])) return
       const items = [...(data![collectionKey] as unknown[])]
       if (
@@ -86,7 +87,7 @@ export const useSectionCapsuleActions = (
   )
 
   const editItem = useCallback(
-    async (collectionKey: string, index: number, patch: JsonRecord) => {
+    async (collectionKey, index, patch) => {
       if (!Array.isArray(data?.[collectionKey])) return
       const items = data![collectionKey] as unknown[]
       const item = items[index]
@@ -102,7 +103,7 @@ export const useSectionCapsuleActions = (
   )
 
   const setProp = useCallback(
-    async (key: string, value: unknown) => {
+    async (key, value) => {
       await mergeData({ [key]: value } as Partial<JsonRecord>)
     },
     [mergeData],

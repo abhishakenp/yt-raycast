@@ -17,7 +17,7 @@ import appCss from '../styles.css?url'
 
 const PLAUSIBLE_TRACKED_DOMAIN = 'ship-fast.ai'
 const PLAUSIBLE_SCRIPT_SRC = 'https://plausible.ship-fast.ai/js/script.js'
-const RootDocument = ({ children }: { children: ReactNode }) => {
+function RootDocument({ children }: { children: ReactNode }) {
   useReferralCapture()
 
   useEffect(() => {

@@ -18,17 +18,19 @@ type BrandfetchLogoResult = {
   verified: boolean
 }
 
-const textValue = (value: unknown): string =>
-  typeof value === 'string' ? value.trim() : ''
+function textValue(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
 
-const normalizeQuery = (value: string): string =>
-  value
+function normalizeQuery(value: string): string {
+  return value
     .trim()
     .replace(/^https?:\/\//i, '')
     .replace(/\/.*$/, '')
     .slice(0, MAX_QUERY_LENGTH)
+}
 
-const normalizeCursor = (value: string | null): number => {
+function normalizeCursor(value: string | null): number {
   if (!value) return 0
   const parsed = Number.parseInt(value, 10)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
@@ -46,7 +48,7 @@ const getBrandfetchHeaders = () => {
   }
 }
 
-const rawResults = (data: unknown): RawBrandfetchResult[] => {
+function rawResults(data: unknown): RawBrandfetchResult[] {
   if (Array.isArray(data)) return data as RawBrandfetchResult[]
   if (
     data &&
@@ -58,10 +60,10 @@ const rawResults = (data: unknown): RawBrandfetchResult[] => {
   return []
 }
 
-const normalizeResult = (
+function normalizeResult(
   item: RawBrandfetchResult,
   index: number,
-): BrandfetchLogoResult | null => {
+): BrandfetchLogoResult | null {
   const brand = item.brand as RawBrandfetchResult | undefined
   const company = item.company as RawBrandfetchResult | undefined
   const name =

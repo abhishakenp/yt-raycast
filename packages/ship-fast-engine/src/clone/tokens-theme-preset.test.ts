@@ -68,7 +68,7 @@ describe('tokensToThemePreset', () => {
     const { dark } = tokensToThemePreset(baseTokens())
     expect(/^#[0-9a-f]{6}$/i.test(dark.background)).toBe(true)
     // Dark bg must be dark, fg must be light.
-    const lum = (hex: string) => {
+    const lum = (hex) => {
       const m = hex.match(/^#([0-9a-f]{6})$/i)!
       const r = parseInt(m[1].slice(0, 2), 16)
       const g = parseInt(m[1].slice(2, 4), 16)

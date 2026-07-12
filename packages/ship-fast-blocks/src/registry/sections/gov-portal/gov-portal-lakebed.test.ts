@@ -36,12 +36,13 @@ const write = () =>
     writable: true,
   })
 
-const readAfter = (ctx: ReturnType<typeof write>) =>
-  createLakebedHandlerContext({
+function readAfter(ctx: ReturnType<typeof write>) {
+  return createLakebedHandlerContext({
     data: { ...emptyData(), ...ctx.getPatch() },
     props: {},
     schema: govPortalLakebed.schema,
   })
+}
 
 describe('govPortalLakebed', () => {
   it('interaction tables are not seeded from props', () => {

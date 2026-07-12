@@ -49,7 +49,7 @@ export const DirectoryNavbar = defineCapsule({
     const signIn = props.signIn ?? 'Sign In'
     const listCta = props.listCta ?? 'List Your Business'
     const homeTarget = props.homeTarget ?? nav[0]
-    const PinLogo = ({ className }: { className?: string }) => (
+    const PinLogo = ({ className }) => (
       <svg
         className={className}
         fill="none"

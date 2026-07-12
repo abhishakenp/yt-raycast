@@ -69,8 +69,7 @@ export function useRestaurantOrder(lakebed: RestaurantLakebed) {
   )
 
   const add = useCallback(
-    (key: string, input: RestaurantMenuItemInput) =>
-      addMenuItem.run(key, input),
+    (key, input) => addMenuItem.run(key, input),
     [addMenuItem],
   )
   const clear = useCallback(
@@ -78,7 +77,7 @@ export function useRestaurantOrder(lakebed: RestaurantLakebed) {
     [clearRestaurantOrder],
   )
   const quantityFor = useCallback(
-    (name: string) =>
+    (name) =>
       normalizeRecords<RestaurantOrderItem>(order?.items).find(
         (item) => item.name === name,
       )?.quantity ?? 0,
@@ -278,7 +277,7 @@ export function RestaurantMobileMenu({
 }) {
   const [open, setOpen] = useState(false)
   const go = useNavigate()
-  const navigate = (target?: string) => {
+  const navigate = (target?) => {
     setOpen(false)
     go(target)
   }

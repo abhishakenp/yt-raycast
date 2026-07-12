@@ -31,11 +31,13 @@ home_features_anchor = SectionAnchor("home_features", home_features, "scroll-mt-
 home = Stack([home_navbar_anchor, home_hero_anchor, home_features_anchor])
 root = PageSwitch(["Home"], [home], "", {})`
 
-const stackLine = (src: string): string =>
-  src.split('\n').find((l) => l.includes('Stack('))!
+function stackLine(src: string): string {
+  return src.split('\n').find((l) => l.includes('Stack('))!
+}
 
-const indexOf = (src: string, item: string): number =>
-  stackLine(src).indexOf(item)
+function indexOf(src: string, item: string): number {
+  return stackLine(src).indexOf(item)
+}
 
 // ---------------------------------------------------------------------------
 // PART A — reorderInStack correctness
@@ -107,12 +109,15 @@ describe('reorderInStack — correctness', () => {
  * Today they only do `el.getAttribute('id') || el.closest('[id]')?.getAttribute('id')`,
  * which misses `data-openui-var` entirely (BUG 1).
  */
-const resolveVarName = (el: HTMLElement): string | undefined =>
-  el.getAttribute('data-openui-var') ??
-  el.closest('[data-openui-var]')?.getAttribute('data-openui-var') ??
-  el.getAttribute('id') ??
-  el.closest('[id]')?.getAttribute('id') ??
-  undefined
+function resolveVarName(el: HTMLElement): string | undefined {
+  return (
+    el.getAttribute('data-openui-var') ??
+    el.closest('[data-openui-var]')?.getAttribute('data-openui-var') ??
+    el.getAttribute('id') ??
+    el.closest('[id]')?.getAttribute('id') ??
+    undefined
+  )
+}
 
 describe('resolveVarName — data-openui-var DOM lookup', () => {
   it('reads data-openui-var from element itself', () => {

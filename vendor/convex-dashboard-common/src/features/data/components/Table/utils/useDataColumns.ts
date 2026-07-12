@@ -23,7 +23,7 @@ export const useStoredColumnOrder = (localStorageKey = '_disabled_') =>
 export const useStoredHiddenColumns = (localStorageKey = '_disabled_') =>
   useLocalStorage<string[]>(`${localStorageKey}_hiddenColumns`)
 
-export const useDataColumns = ({
+export function useDataColumns({
   fields,
   localStorageKey = '_disabled_',
   data = [],
@@ -34,7 +34,7 @@ export const useDataColumns = ({
   localStorageKey?: string
   data?: GenericDocument[]
   width?: number
-}) => {
+}) {
   const [settings] = useGlobalLocalStorage<
     | {
         columnWidths: { [key: string]: number }
@@ -68,7 +68,7 @@ export const useDataColumns = ({
           // id and accessorFn support empty-string key (because there are falsy
           // checks on all these fields and empty string is falsy).
           id: field === '' ? emptyColumnName : undefined,
-          accessorFn: (row: any) => row[field],
+          accessorFn: (row) => row[field],
           isDate: dateRenderedColumns.includes(field),
           minWidth:
             field === '_creationTime'

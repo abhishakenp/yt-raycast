@@ -17,9 +17,9 @@ interface MockMQL {
   dispatchChange: (matches: boolean) => void
 }
 
-const installMatchMedia = (): MockMQL & {
+function installMatchMedia(): MockMQL & {
   listeners: Map<string, Set<(event: { matches: boolean }) => void>>
-} => {
+} {
   const listeners = new Map<
     string,
     Set<(event: { matches: boolean }) => void>
@@ -51,7 +51,7 @@ const installMatchMedia = (): MockMQL & {
   return { ...mql, listeners }
 }
 
-const setViewportWidth = (width: number) => {
+function setViewportWidth(width: number) {
   Object.defineProperty(window, 'innerWidth', {
     configurable: true,
     writable: true,

@@ -19,7 +19,7 @@ const routeMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+  createFileRoute: (path) => (options) => ({ options, path }),
 }))
 
 vi.mock('@/features/referrals/server/referral-api-response', () => ({
@@ -67,7 +67,7 @@ type RouteWithHandlers = {
   }
 }
 
-const importRoute = async (path: string): Promise<RouteWithHandlers> => {
+async function importRoute(path: string): Promise<RouteWithHandlers> {
   const mod = await import(path)
   return mod.Route as unknown as RouteWithHandlers
 }

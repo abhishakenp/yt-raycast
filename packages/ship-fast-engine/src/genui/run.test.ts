@@ -12,22 +12,22 @@ const mocks = ((
   }
 ).__runMocks ??= {
   generateText: vi.fn(),
-  detectLanguage: vi.fn(async (_prompt: string, preferred?: string) => ({
+  detectLanguage: vi.fn(async (_prompt, preferred?) => ({
     code: preferred || 'en',
   })),
 })
 
 vi.mock('../generate.ts', () => ({
-  generateText: (...args: unknown[]) =>
+  generateText: (...args) =>
     (
       (globalThis as typeof globalThis & { __runMocks: typeof mocks })
         .__runMocks.generateText as unknown as (...a: unknown[]) => unknown
     )(...args),
   isHardLlmFailure: () => false,
-  formatLlmFailureMessage: (e: unknown) => String(e),
+  formatLlmFailureMessage: (e) => String(e),
 }))
 vi.mock('../pipeline/detect-language.js', () => ({
-  detectLanguage: (...args: unknown[]) =>
+  detectLanguage: (...args) =>
     (
       (globalThis as typeof globalThis & { __runMocks: typeof mocks })
         .__runMocks.detectLanguage as unknown as (...a: unknown[]) => unknown
@@ -38,7 +38,7 @@ import { auditOpenUIProgram } from './openui-program-audit.ts'
 import { runHomepageOrchestrator } from './run.ts'
 
 // Fill the first-pass superagent (vertical + section props) and the per-page calls.
-const superagentReply = (user: string): string => {
+function superagentReply(user: string): string {
   const family =
     (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
   const keys = [...user.matchAll(/^\s+([a-z0-9]+):\s/gm)].map((m) => m[1])
@@ -54,8 +54,8 @@ const superagentReply = (user: string): string => {
   )
   return JSON.stringify({ family, sections })
 }
-const richProps = (user: string): string =>
-  JSON.stringify(
+function richProps(user: string): string {
+  return JSON.stringify(
     Object.fromEntries(
       [...user.matchAll(/"([a-z0-9_]+)":\s*[A-Z]/g)].map((m) => [
         m[1],
@@ -63,24 +63,24 @@ const richProps = (user: string): string =>
       ]),
     ),
   )
-const reply = (user: string) =>
-  /Candidate verticals/.test(user) ? superagentReply(user) : richProps(user)
+}
+function reply(user: string) {
+  return /Candidate verticals/.test(user)
+    ? superagentReply(user)
+    : richProps(user)
+}
 
 describe('runHomepageOrchestrator (composable engine)', () => {
   beforeEach(() => {
     mocks.generateText.mockReset()
     mocks.detectLanguage.mockClear()
-    mocks.detectLanguage.mockImplementation(
-      async (_prompt: string, preferred?: string) => ({
-        code: preferred || 'en',
-      }),
-    )
+    mocks.detectLanguage.mockImplementation(async (_prompt, preferred?) => ({
+      code: preferred || 'en',
+    }))
   })
 
   it('composes a valid multi-page PageSwitch site with theme, brand and category', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
-      reply(String(_a[2])),
-    )
+    mocks.generateText.mockImplementation(async (..._a) => reply(String(_a[2])))
     const events: { type: string }[] = []
     const result = await runHomepageOrchestrator({
       prompt: 'a crm for small sales teams',
@@ -112,9 +112,7 @@ describe('runHomepageOrchestrator (composable engine)', () => {
   })
 
   it('carries the detected locale through to the result', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
-      reply(String(_a[2])),
-    )
+    mocks.generateText.mockImplementation(async (..._a) => reply(String(_a[2])))
     const result = await runHomepageOrchestrator({
       prompt: 'un cafe de quartier',
       preferredLanguage: 'fr',

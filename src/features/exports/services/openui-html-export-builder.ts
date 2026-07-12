@@ -99,7 +99,7 @@ const themeVarKeys = [
   'spacing',
 ] as const
 
-const readPreviewCss = (): string => {
+function readPreviewCss(): string {
   try {
     return readFileSync(cssPath, 'utf8')
   } catch {
@@ -107,7 +107,7 @@ const readPreviewCss = (): string => {
   }
 }
 
-const isUsablePreviewHtml = (html: string | undefined): html is string => {
+function isUsablePreviewHtml(html: string | undefined): html is string {
   const trimmed = html?.trim()
   return Boolean(
     trimmed &&
@@ -118,25 +118,28 @@ const isUsablePreviewHtml = (html: string | undefined): html is string => {
   )
 }
 
-const isHtmlDocumentSource = (source: string): boolean => {
+function isHtmlDocumentSource(source: string): boolean {
   const trimmed = source.trim()
   return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
 }
 
-const isHtmlLikeSource = (source: string): boolean => /<[^>]+>/.test(source)
+function isHtmlLikeSource(source: string): boolean {
+  return /<[^>]+>/.test(source)
+}
 
-const extractBodyMarkup = (html: string): string => {
+function extractBodyMarkup(html: string): string {
   const trimmed = html.trim()
   const body = trimmed.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)
   return (body?.[1] ?? trimmed).trim()
 }
 
-const stripPreviewSourceMetadata = (html: string): string =>
-  html.replace(/\sdata-tsd-source=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+function stripPreviewSourceMetadata(html: string): string {
+  return html.replace(/\sdata-tsd-source=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+}
 
-const parseSiteSpec = (
+function parseSiteSpec(
   siteSpecJson: string | undefined,
-): Record<string, unknown> => {
+): Record<string, unknown> {
   if (!siteSpecJson) return {}
   try {
     const parsed = JSON.parse(siteSpecJson) as unknown
@@ -148,10 +151,10 @@ const parseSiteSpec = (
   }
 }
 
-const readProjectName = (
+function readProjectName(
   siteSpec: Record<string, unknown>,
   fallback: string,
-): string => {
+): string {
   const candidates = [
     siteSpec.projectName,
     siteSpec.brand,
@@ -164,36 +167,34 @@ const readProjectName = (
   return match?.trim() || fallback
 }
 
-const readThemeName = (
+function readThemeName(
   siteSpec: Record<string, unknown>,
   requestedThemeName?: string,
-): string | undefined => {
+): string | undefined {
   if (requestedThemeName) return requestedThemeName
   const theme = siteSpec.themeName ?? siteSpec.genuiTheme ?? siteSpec.theme
   return typeof theme === 'string' ? theme : undefined
 }
 
-const readGenUIExportMetadata = (
+function readGenUIExportMetadata(
   siteSpec: Record<string, unknown>,
-): Record<string, unknown> | null => {
+): Record<string, unknown> | null {
   const genui = siteSpec.genui
   return genui !== null && typeof genui === 'object' && !Array.isArray(genui)
     ? (genui as Record<string, unknown>)
     : null
 }
 
-const readGenUIAdminPolicy = (
+function readGenUIAdminPolicy(
   genui: Record<string, unknown> | null,
-): Record<string, unknown> => {
+): Record<string, unknown> {
   const policy = genui?.adminPolicy
   return policy !== null && typeof policy === 'object' && !Array.isArray(policy)
     ? (policy as Record<string, unknown>)
     : {}
 }
 
-const readGenUIAdminEmails = (
-  genui: Record<string, unknown> | null,
-): string[] => {
+function readGenUIAdminEmails(genui: Record<string, unknown> | null): string[] {
   const policy = readGenUIAdminPolicy(genui)
   const values = Array.isArray(policy.adminEmails)
     ? policy.adminEmails
@@ -212,10 +213,10 @@ const readGenUIAdminEmails = (
   ]
 }
 
-const buildInlineAdminBootstrap = (
+function buildInlineAdminBootstrap(
   genui: Record<string, unknown> | null,
   target: string,
-): string => {
+): string {
   if (genui === null) return ''
   const adminPolicy = readGenUIAdminPolicy(genui)
   return `
@@ -239,10 +240,7 @@ const buildInlineAdminBootstrap = (
     };`
 }
 
-const buildThemeStyle = (
-  styles: ThemeStyles | null,
-  isDark: boolean,
-): string => {
+function buildThemeStyle(styles: ThemeStyles | null, isDark: boolean): string {
   if (!styles) return ''
   const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
   return themeVarKeys
@@ -253,7 +251,7 @@ const buildThemeStyle = (
     .join(' ')
 }
 
-const buildThemeStylesheet = (styles: ThemeStyles | null): string => {
+function buildThemeStylesheet(styles: ThemeStyles | null): string {
   if (!styles) return ''
   return `
     :root, [data-theme="light"] { ${buildThemeStyle(styles, false)} }
@@ -266,10 +264,10 @@ const buildThemeStylesheet = (styles: ThemeStyles | null): string => {
   `
 }
 
-const themeValues = (
+function themeValues(
   styles: ThemeStyles | null,
   isDark: boolean,
-): Record<string, string> => {
+): Record<string, string> {
   if (!styles) return {}
   const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
   return Object.fromEntries(
@@ -280,11 +278,12 @@ const themeValues = (
   )
 }
 
-const buildThemeRuntime = (
+function buildThemeRuntime(
   styles: ThemeStyles | null,
   initialDark: boolean,
   rootId: 'openui-root' | 'site-root',
-): string => `
+): string {
+  return `
 (function () {
   var lightTheme = ${stringifyJs(themeValues(styles, false))};
   var darkTheme = ${stringifyJs(themeValues(styles, true))};
@@ -311,8 +310,10 @@ const buildThemeRuntime = (
     colorScheme.addListener(onColorSchemeChange);
   }
 })();`
+}
 
-const buildInteractionRuntime = (): string => `
+function buildInteractionRuntime(): string {
+  return `
 (function () {
   var cartStorageKey = 'static-site-cart-v1';
   var authStorageKey = 'static-site-auth-v1';
@@ -407,8 +408,9 @@ const buildInteractionRuntime = (): string => `
   });
   renderCart();
 })();`
+}
 
-const buildThemeFontLinks = (styles: ThemeStyles | null): string => {
+function buildThemeFontLinks(styles: ThemeStyles | null): string {
   if (!styles) return ''
   const systemFontRe =
     /^(ui-|system|-apple|blinkmac|segoe|roboto$|helvetica|arial|sans-serif|serif|monospace|menlo|consolas|courier|georgia|cambria|times)/i
@@ -434,27 +436,30 @@ const buildThemeFontLinks = (styles: ThemeStyles | null): string => {
   return `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?${params}&display=swap" />`
 }
 
-const stringifyJs = (value: unknown): string =>
-  JSON.stringify(value)
+function stringifyJs(value: unknown): string {
+  return JSON.stringify(value)
     .replaceAll('<', '\\u003c')
     .replaceAll('\u2028', '\\u2028')
     .replaceAll('\u2029', '\\u2029')
+}
 
-const escapeHtml = (value: string): string =>
-  value
+function escapeHtml(value: string): string {
+  return value
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;')
+}
 
 const escapeAttribute = escapeHtml
 
-const buildRouteScript = (
+function buildRouteScript(
   routes: string[],
   targetMap: Record<string, string>,
   pageAttribute: 'data-export-page' | 'data-sf-export-page',
-): string => `
+): string {
+  return `
 (function () {
   var routes = ${stringifyJs(routes)};
   var targetMap = ${stringifyJs(targetMap)};
@@ -668,6 +673,7 @@ const buildRouteScript = (
   document.addEventListener('submit', function (event) { event.preventDefault(); });
   show(0);
 })();`
+}
 
 export async function parseOpenUIForHtmlExport(
   source: string,
@@ -773,12 +779,12 @@ export async function parseOpenUIForHtmlExport(
   }
 }
 
-const renderPageHtml = async (
+async function renderPageHtml(
   page: ElementNode,
   library: ParsedOpenUIProgram['library'],
   locale: string,
   brandLogo?: BrandLogoSelection | null,
-): Promise<string> => {
+): Promise<string> {
   const pageSource = jsonToOpenUI(page, library)
   const { html } = (await renderOpenUIToHTMLWithTheme(
     pageSource,
@@ -791,12 +797,12 @@ const renderPageHtml = async (
   return html
 }
 
-const buildPagesMarkup = async (
+async function buildPagesMarkup(
   parsed: ParsedOpenUIProgram,
   locale: string,
   brandLogo?: BrandLogoSelection | null,
-): Promise<string> =>
-  (
+): Promise<string> {
+  return (
     await Promise.all(
       parsed.pages.map(async (page, index) => {
         const label = parsed.routes[index] ?? `Page ${index + 1}`
@@ -804,11 +810,12 @@ const buildPagesMarkup = async (
       }),
     )
   ).join('\n')
+}
 
-const buildStandaloneHtmlDocument = async (
+async function buildStandaloneHtmlDocument(
   input: OpenUIExportInput,
   parsed: ParsedOpenUIProgram,
-): Promise<string> => {
+): Promise<string> {
   const siteSpec = parseSiteSpec(input.siteSpecJson)
   const themeName = readThemeName(siteSpec, input.themeName)
   const isDark = input.isDark ?? true

@@ -13,24 +13,26 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * Use to close a creator/influencer link hub, freelancer bio link, or personal
  * landing page. Renders fully with no props via baked-in "Sarah Chen" defaults.
  */
-const SparkMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M12 3v4" />
-    <path d="M12 17v4" />
-    <path d="M3 12h4" />
-    <path d="M17 12h4" />
-    <path d="M12 8a4 4 0 0 0 4 4 4 4 0 0 0-4 4 4 4 0 0 0-4-4 4 4 0 0 0 4-4Z" />
-  </svg>
-)
+function SparkMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 3v4" />
+      <path d="M12 17v4" />
+      <path d="M3 12h4" />
+      <path d="M17 12h4" />
+      <path d="M12 8a4 4 0 0 0 4 4 4 4 0 0 0-4 4 4 4 0 0 0-4-4 4 4 0 0 0 4-4Z" />
+    </svg>
+  )
+}
 
 export const LinkInBioFooter = defineCapsule({
   name: 'LinkInBioFooter',

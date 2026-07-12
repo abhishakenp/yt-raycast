@@ -5,7 +5,7 @@ import { buildOpenUIHtmlExport } from './openui-html-export-builder'
 
 const siteSpecJson = JSON.stringify({ projectName: 'Coworking Render' })
 
-const renderSource = async (source: string) => {
+async function renderSource(source: string) {
   const result = await buildOpenUIHtmlExport({
     source,
     siteSpecJson,

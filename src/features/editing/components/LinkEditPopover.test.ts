@@ -19,8 +19,11 @@ const onApply =
   >()
 const onClose = vi.fn()
 
-const renderPopover = (activeElement: HTMLAnchorElement | null) =>
-  render(createElement(LinkEditPopover, { activeElement, onApply, onClose }))
+function renderPopover(activeElement: HTMLAnchorElement | null) {
+  return render(
+    createElement(LinkEditPopover, { activeElement, onApply, onClose }),
+  )
+}
 
 describe('LinkEditPopover', () => {
   let activeElement: HTMLAnchorElement

@@ -50,19 +50,20 @@ export type LakebedDeploymentFailureInput = {
 
 export type LakebedPreparedSourceKind = 'html' | 'openui'
 
-export const normalizeDeploymentSlug = (value: string): string =>
-  value
+export function normalizeDeploymentSlug(value: string): string {
+  return value
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .replace(/-{2,}/g, '-')
     .slice(0, 63)
+}
 
-export const createDefaultDeploymentSlug = (
+export function createDefaultDeploymentSlug(
   prompt: string,
   sessionId: string,
-): string => {
+): string {
   const fromPrompt = normalizeDeploymentSlug(prompt)
     .split('-')
     .slice(0, 4)
@@ -72,11 +73,11 @@ export const createDefaultDeploymentSlug = (
   return fromPrompt || fallback || 'generated-site'
 }
 
-export const reserveDefaultDeploymentSlug = async (
+export async function reserveDefaultDeploymentSlug(
   ctx: MutationCtx,
   prompt: string,
   sessionId: Id<'sessions'>,
-): Promise<string> => {
+): Promise<string> {
   const baseSlug = createDefaultDeploymentSlug(prompt, sessionId)
   let finalSlug = baseSlug
   let attempts = 0
@@ -101,13 +102,14 @@ export const reserveDefaultDeploymentSlug = async (
   return finalSlug
 }
 
-export const createDeploymentUrl = (slug: string): string =>
-  `https://${slug}.ship-fast.io`
+export function createDeploymentUrl(slug: string): string {
+  return `https://${slug}.ship-fast.io`
+}
 
-const readLakebedThemeName = (
+function readLakebedThemeName(
   siteSpecJson: string | undefined,
   fallback: unknown,
-): string | undefined => {
+): string | undefined {
   if (typeof fallback === 'string' && fallback.trim().length > 0) {
     return fallback
   }
@@ -127,12 +129,13 @@ const readLakebedThemeName = (
   }
 }
 
-const readLakebedIsDark = (session: { themeMode?: unknown }): boolean =>
-  session.themeMode !== 'light'
+function readLakebedIsDark(session: { themeMode?: unknown }): boolean {
+  return session.themeMode !== 'light'
+}
 
-const readOpenUiSourceFromSiteSpec = (
+function readOpenUiSourceFromSiteSpec(
   siteSpec: { specJson?: string; spec?: string } | null,
-): string | undefined => {
+): string | undefined {
   const candidates = [siteSpec?.specJson, siteSpec?.spec]
   for (const candidate of candidates) {
     if (typeof candidate !== 'string' || !candidate.trim()) continue
@@ -155,7 +158,7 @@ const readOpenUiSourceFromSiteSpec = (
   return undefined
 }
 
-const isLikelyOpenUiSource = (source: string | undefined): source is string => {
+function isLikelyOpenUiSource(source: string | undefined): source is string {
   const trimmed = source?.trim()
   if (!trimmed) return false
   if (/^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) {
@@ -164,12 +167,15 @@ const isLikelyOpenUiSource = (source: string | undefined): source is string => {
   return /(?:^|\n)\s*root\s*=/.test(trimmed)
 }
 
-const containsOpenUiErrorMarker = (html: string | undefined): boolean =>
-  typeof html === 'string' &&
-  (/class=["'][^"']*\bopenui-error\b/i.test(html) ||
-    /Failed to render:/i.test(html))
+function containsOpenUiErrorMarker(html: string | undefined): boolean {
+  return (
+    typeof html === 'string' &&
+    (/class=["'][^"']*\bopenui-error\b/i.test(html) ||
+      /Failed to render:/i.test(html))
+  )
+}
 
-const lakebedDeploymentMetadata = (deployment: {
+function lakebedDeploymentMetadata(deployment: {
   provider?: 'ship-fast' | 'lakebed'
   lakebedDeployId?: string
   lakebedClaimUrl?: string
@@ -182,8 +188,8 @@ const lakebedDeploymentMetadata = (deployment: {
   lakebedExpiresAt?: string
   lakebedInspectPolicy?: string
   errorMessage?: string
-}) =>
-  deployment.provider === 'lakebed'
+}) {
+  return deployment.provider === 'lakebed'
     ? {
         provider: deployment.provider,
         lakebedDeployId: deployment.lakebedDeployId,
@@ -201,11 +207,12 @@ const lakebedDeploymentMetadata = (deployment: {
     : deployment.provider === undefined
       ? {}
       : { provider: deployment.provider, errorMessage: deployment.errorMessage }
+}
 
-export const loadLakebedDeploymentUpdateTarget = async (
+export async function loadLakebedDeploymentUpdateTarget(
   ctx: DeploymentReadCtx,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const deployment = await ctx.db
     .query('deployments')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
@@ -226,10 +233,10 @@ export const loadLakebedDeploymentUpdateTarget = async (
   }
 }
 
-export const loadDeploymentBySlug = async (
+export async function loadDeploymentBySlug(
   ctx: DeploymentReadCtx,
   slug: string,
-) => {
+) {
   const deployment = await ctx.db
     .query('deployments')
     .withIndex('by_slug', (index) => index.eq('slug', slug))
@@ -257,10 +264,10 @@ export const loadDeploymentBySlug = async (
   }
 }
 
-export const loadDeploymentStatus = async (
+export async function loadDeploymentStatus(
   ctx: DeploymentReadCtx,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const deployment = await ctx.db
     .query('deployments')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
@@ -280,10 +287,10 @@ export const loadDeploymentStatus = async (
       }
 }
 
-export const loadOwnedLakebedDeploymentArtifact = async (
+export async function loadOwnedLakebedDeploymentArtifact(
   ctx: QueryCtx,
   args: PublishSessionPreviewInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   session !== null ||
@@ -320,10 +327,10 @@ export const loadOwnedLakebedDeploymentArtifact = async (
   }
 }
 
-export const prepareLakebedSessionDeployment = async (
+export async function prepareLakebedSessionDeployment(
   ctx: QueryCtx,
   args: PublishSessionPreviewInput,
-) => {
+) {
   console.log(
     '[lakebed_deploy:prepare] start',
     JSON.stringify({ sessionId: args.sessionId }),
@@ -484,12 +491,12 @@ export const prepareLakebedSessionDeployment = async (
   }
 }
 
-const deploymentSlugForRecord = async (
+async function deploymentSlugForRecord(
   ctx: Pick<MutationCtx, 'db'>,
   sessionId: Id<'sessions'>,
   session: { prompt: string; deploymentSlug?: string },
   requestedSlug?: string,
-) => {
+) {
   const existingDeployment = await ctx.db
     .query('deployments')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
@@ -532,10 +539,10 @@ const deploymentSlugForRecord = async (
   return { existingDeployment, slug }
 }
 
-export const recordLakebedSessionDeploymentSuccess = async (
+export async function recordLakebedSessionDeploymentSuccess(
   ctx: MutationCtx,
   args: LakebedDeploymentSuccessInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -638,10 +645,10 @@ export const recordLakebedSessionDeploymentSuccess = async (
   }
 }
 
-export const recordLakebedSessionDeploymentFailure = async (
+export async function recordLakebedSessionDeploymentFailure(
   ctx: MutationCtx,
   args: LakebedDeploymentFailureInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -686,10 +693,10 @@ export const recordLakebedSessionDeploymentFailure = async (
   return { sessionId: args.sessionId, slug, status: 'failed' as const }
 }
 
-export const publishSessionPreview = async (
+export async function publishSessionPreview(
   ctx: MutationCtx,
   args: PublishSessionPreviewInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -845,13 +852,13 @@ export const publishSessionPreview = async (
   }
 }
 
-export const markSessionDeploymentUpdating = async (
+export async function markSessionDeploymentUpdating(
   ctx: MutationCtx,
   args: {
     sessionId: Id<'sessions'>
     previewVersion: number
   },
-) => {
+) {
   const deployment = await ctx.db
     .query('deployments')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
@@ -869,13 +876,13 @@ export const markSessionDeploymentUpdating = async (
   return { status: 'updating' as const }
 }
 
-export const refreshShipFastDeploymentIfPresent = async (
+export async function refreshShipFastDeploymentIfPresent(
   ctx: MutationCtx,
   args: {
     sessionId: Id<'sessions'>
     previewVersion: number
   },
-) => {
+) {
   const [session, deployment, preview] = await Promise.all([
     ctx.db.get(args.sessionId),
     ctx.db

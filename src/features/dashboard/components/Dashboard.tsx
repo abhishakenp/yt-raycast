@@ -218,12 +218,12 @@ type RailLockedButtonProps = {
  * glyph and routes the click to the Clerk sign-in modal via `useSignInGate`.
  * Rendered by `<SignInGate locked={...}>` when the user is signed out.
  */
-const RailLockedButton = ({
+function RailLockedButton({
   label,
   icon,
   badges,
   sublabel,
-}: RailLockedButtonProps) => {
+}: RailLockedButtonProps) {
   const { openSignIn } = useSignInGate()
   return (
     <button
@@ -252,9 +252,9 @@ const RailLockedButton = ({
   )
 }
 
-const formatThemeName = (
+function formatThemeName(
   name: string | { styles?: unknown } | null | undefined,
-): string => {
+): string {
   if (!name) return 'Default'
   // An on-the-fly cloned theme is a preset OBJECT (not a catalog name string).
   if (typeof name !== 'string') return 'Cloned Theme'
@@ -266,10 +266,10 @@ const formatThemeName = (
     .join(' ')
 }
 
-const themeButtonStyle = (
+function themeButtonStyle(
   styles: ReturnType<typeof resolveThemeStyles>,
   isDark: boolean,
-): CSSProperties | undefined => {
+): CSSProperties | undefined {
   if (!styles) return undefined
   const palette = styles[isDark ? 'dark' : 'light']
   const stops = [
@@ -299,7 +299,7 @@ const themeButtonStyle = (
   }
 }
 
-const readSiteThemeName = (specJson: string | undefined): string | null => {
+function readSiteThemeName(specJson: string | undefined): string | null {
   if (!specJson) return null
   try {
     const parsed = JSON.parse(specJson) as {
@@ -314,17 +314,23 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   }
 }
 
-const isFullHtmlDocument = (html: string | undefined): boolean =>
-  typeof html === 'string' &&
-  (/^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html))
+function isFullHtmlDocument(html: string | undefined): boolean {
+  return (
+    typeof html === 'string' &&
+    (/^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html))
+  )
+}
 
-const isOpenUIHandoffHtml = (html: string | undefined): boolean =>
-  typeof html === 'string' &&
-  isFullHtmlDocument(html) &&
-  (((/id=["']ship-fast-openui-source["']/i.test(html) ||
-    /Generated OpenUI source is ready/i.test(html)) &&
-    /data-openui-ready=["']source["']/i.test(html)) ||
-    /id=["']openui-client-source["']/i.test(html))
+function isOpenUIHandoffHtml(html: string | undefined): boolean {
+  return (
+    typeof html === 'string' &&
+    isFullHtmlDocument(html) &&
+    (((/id=["']ship-fast-openui-source["']/i.test(html) ||
+      /Generated OpenUI source is ready/i.test(html)) &&
+      /data-openui-ready=["']source["']/i.test(html)) ||
+      /id=["']openui-client-source["']/i.test(html))
+  )
+}
 
 const ToolPopoverFallback = () => (
   <div className="grid gap-3" aria-hidden="true">
@@ -338,102 +344,108 @@ const ToolPopoverFallback = () => (
   </div>
 )
 
-const MissingProjectState = ({ onBackHome }: { onBackHome: () => void }) => (
-  <div
-    className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
-    role="status"
-    aria-live="polite"
-  >
-    <div className="max-w-md rounded-3xl border border-white/10 bg-white/[0.045] p-8 shadow-[0_22px_80px_rgba(0,0,0,0.35)]">
-      <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-200/70">
-        Project missing
-      </p>
-      <h1 className="text-2xl font-bold tracking-tight text-white">
-        This generated website is no longer available.
-      </h1>
-      <p className="mt-3 text-sm leading-6 text-white/56">
-        It may have been deleted while resetting the public gallery. Create a
-        new website from the home page to start fresh.
-      </p>
-      <button
-        type="button"
-        onClick={onBackHome}
-        className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
-      >
-        Back to home
-      </button>
+function MissingProjectState({ onBackHome }: { onBackHome: () => void }) {
+  return (
+    <div
+      className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="max-w-md rounded-3xl border border-white/10 bg-white/[0.045] p-8 shadow-[0_22px_80px_rgba(0,0,0,0.35)]">
+        <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-200/70">
+          Project missing
+        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-white">
+          This generated website is no longer available.
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-white/56">
+          It may have been deleted while resetting the public gallery. Create a
+          new website from the home page to start fresh.
+        </p>
+        <button
+          type="button"
+          onClick={onBackHome}
+          className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
+        >
+          Back to home
+        </button>
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
-const GenerationFailureState = ({
+function GenerationFailureState({
   errorMessage,
   onBackHome,
 }: {
   errorMessage: string
   onBackHome: () => void
-}) => (
-  <div
-    className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
-    role="alert"
-    aria-live="assertive"
-  >
-    <div className="max-w-md rounded-3xl border border-rose-500/20 bg-white/[0.045] p-8 shadow-[0_22px_80px_rgba(0,0,0,0.35)]">
-      <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-rose-300/80">
-        Generation failed
-      </p>
-      <h1 className="text-2xl font-bold tracking-tight text-white">
-        We couldn&apos;t finish building this website.
-      </h1>
-      <p className="mt-3 text-sm leading-6 text-white/56">{errorMessage}</p>
-      <button
-        type="button"
-        onClick={onBackHome}
-        className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
-      >
-        Back to home
-      </button>
+}) {
+  return (
+    <div
+      className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
+      role="alert"
+      aria-live="assertive"
+    >
+      <div className="max-w-md rounded-3xl border border-rose-500/20 bg-white/[0.045] p-8 shadow-[0_22px_80px_rgba(0,0,0,0.35)]">
+        <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-rose-300/80">
+          Generation failed
+        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-white">
+          We couldn&apos;t finish building this website.
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-white/56">{errorMessage}</p>
+        <button
+          type="button"
+          onClick={onBackHome}
+          className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
+        >
+          Back to home
+        </button>
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
-const toDashboardGenerationView = (
+function toDashboardGenerationView(
   data: ReadySessionPreviewCacheEntry,
-): DashboardGenerationView => ({
-  events: [],
-  homeModule: {
-    moduleKey: data.homeModule.moduleKey ?? 'home',
-    source: data.homeModule.source,
-    status: data.homeModule.status ?? 'succeeded',
-    updatedAt: data.homeModule.updatedAt ?? data.createdAt,
-  },
-  latestPreview: data.preview,
-  session: {
-    sessionId: data.sessionId as Id<'sessions'>,
-    status: data.status,
-    previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
-    prompt: data.prompt,
-    preferredLanguage: data.preferredLanguage,
-    preferredExportTarget: data.preferredExportTarget ?? 'html',
-    elapsed: data.elapsed,
-    isPrivate: false,
-    themeOverride: data.themeOverride ?? null,
-    selectedBrandLogo: data.selectedBrandLogo ?? null,
-    designReferenceUrls: [],
-    designReferenceNotes: '',
-  },
-  siteSpec: data.siteSpec,
-  tasks: (data.tasks ?? []).map((task) => ({
-    taskKey: task.id,
-    title: task.title,
-    status: task.status,
-    order: task.order ?? 0,
-  })),
-})
+): DashboardGenerationView {
+  return {
+    events: [],
+    homeModule: {
+      moduleKey: data.homeModule.moduleKey ?? 'home',
+      source: data.homeModule.source,
+      status: data.homeModule.status ?? 'succeeded',
+      updatedAt: data.homeModule.updatedAt ?? data.createdAt,
+    },
+    latestPreview: data.preview,
+    session: {
+      sessionId: data.sessionId as Id<'sessions'>,
+      status: data.status,
+      previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
+      prompt: data.prompt,
+      preferredLanguage: data.preferredLanguage,
+      preferredExportTarget: data.preferredExportTarget ?? 'html',
+      elapsed: data.elapsed,
+      isPrivate: false,
+      themeOverride: data.themeOverride ?? null,
+      selectedBrandLogo: data.selectedBrandLogo ?? null,
+      designReferenceUrls: [],
+      designReferenceNotes: '',
+    },
+    siteSpec: data.siteSpec,
+    tasks: (data.tasks ?? []).map((task) => ({
+      taskKey: task.id,
+      title: task.title,
+      status: task.status,
+      order: task.order ?? 0,
+    })),
+  }
+}
 
-const readCachedGenerationView = (
+function readCachedGenerationView(
   sessionId: string,
-): DashboardGenerationView | undefined => {
+): DashboardGenerationView | undefined {
   if (typeof window === 'undefined') return undefined
   const cached = readReadySessionPreview(window.localStorage, { sessionId })
   return cached === null ? undefined : toDashboardGenerationView(cached)
@@ -448,7 +460,7 @@ const getHydratedServerSnapshot = () => false
  *  already selected something); otherwise builds one from the inline toolbar's
  *  active element, but only if it lives inside the preview root. Returns null
  *  when the active element is dashboard chrome (outside the preview). */
-export const resolveSectionEditSelection = ({
+export function resolveSectionEditSelection({
   activeElement,
   inspectorSelection,
   previewRoot,
@@ -456,7 +468,7 @@ export const resolveSectionEditSelection = ({
   activeElement: HTMLElement | null
   inspectorSelection: InspectorSelection | null
   previewRoot: HTMLElement | null
-}): InspectorSelection | null => {
+}): InspectorSelection | null {
   if (inspectorSelection) return inspectorSelection
   if (!activeElement || !previewRoot) return null
   if (!previewRoot.contains(activeElement)) return null
@@ -504,7 +516,7 @@ export function Dashboard({
   // Find the actual scrollable element inside the preview. The scroll
   // container may be .genui-preview itself or a descendant div depending
   // on the rendered layout.
-  const getPreviewScrollEl = (): Element | null => {
+  const getPreviewScrollEl = () => {
     const root = document.querySelector('.genui-preview')
     if (!root) return null
     if (root.scrollHeight > root.clientHeight + 10) return root
@@ -513,13 +525,10 @@ export function Dashboard({
     )
     return scrollChild ?? null
   }
-  const handleCommitTextReady = useCallback(
-    (commitFn: () => void, cancelFn: () => void) => {
-      commitTextEditRef.current = commitFn
-      cancelTextEditRef.current = cancelFn
-    },
-    [],
-  )
+  const handleCommitTextReady = useCallback((commitFn, cancelFn) => {
+    commitTextEditRef.current = commitFn
+    cancelTextEditRef.current = cancelFn
+  }, [])
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [selectedBrand, setSelectedBrand] = useState<BrandLogoSelection | null>(
     null,
@@ -879,7 +888,7 @@ export function Dashboard({
     overflow: 'hidden',
   }
 
-  const navigateHome = (e: React.MouseEvent) => {
+  const navigateHome = (e) => {
     e.preventDefault()
     window.location.href = '/'
   }
@@ -904,7 +913,7 @@ export function Dashboard({
     : `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`
 
   const handleBrandSelect = useCallback(
-    (brand: BrandLogoSelection) => {
+    (brand) => {
       setSelectedBrand(brand)
       if (resolvedSessionId === undefined) return
 
@@ -1000,11 +1009,11 @@ export function Dashboard({
     }
   }
 
-  const handlePreviewSelect = (_selection: PreviewSelection) => {
+  const handlePreviewSelect = (_selection) => {
     // Selection no longer used with inline editing
   }
 
-  const handleSectionSelect = (selection: InspectorSelection | null) => {
+  const handleSectionSelect = (selection) => {
     setInspectorSelection(selection)
     if (selection) {
       // Unified: also open the InlineEditToolbar for the selected section element
@@ -1029,7 +1038,7 @@ export function Dashboard({
     document.dispatchEvent(new CustomEvent('ship-fast-inspector-clear'))
   }
 
-  const resolveMoveVarName = (): string | undefined => {
+  const resolveMoveVarName = () => {
     if (!inspectorSelection) return undefined
     if (inspectorSelection.openuiVar) return inspectorSelection.openuiVar
     const root = document.querySelector('.genui-preview')
@@ -1059,7 +1068,7 @@ export function Dashboard({
     await reorder.reorder(varName, 'down')
   }
 
-  const handleSectionEditSubmit = async (prompt: string) => {
+  const handleSectionEditSubmit = async (prompt) => {
     if (!resolvedSessionId) return
     // The AI edit can be triggered from either the section inspector
     // (inspectorSelection set) or the inline toolbar's Sparkles panel
@@ -1117,7 +1126,7 @@ export function Dashboard({
     }
   }
 
-  const handleTextChange = async (change: CapsuleTextChange) => {
+  const handleTextChange = async (change) => {
     // ─── Capsule-aware path: route to Lakebed structured data ──────────────
     // When the edited text matches a capsule prop, persist via Lakebed merge
     // instead of the generic text-override path. This keeps the capsule's
@@ -1164,7 +1173,7 @@ export function Dashboard({
   }
 
   /** Original text-override path — persists via Convex createEdit. */
-  const handleTextChangeFallback = async (change: CapsuleTextChange) => {
+  const handleTextChangeFallback = async (change) => {
     const tag = change.element.tagName.toLowerCase()
     const text = change.element.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
@@ -1208,12 +1217,7 @@ export function Dashboard({
     }
   }
 
-  const handleImageChange = (change: {
-    oldSrc: string
-    newSrc: string
-    element: HTMLImageElement
-    alt: string
-  }) => {
+  const handleImageChange = (change) => {
     // Optimistic: show the new image immediately (reverted below on failure).
     // A multi-image payload previews its first URL — the carousel renders once
     // the persisted edit re-applies through imageOverrides.
@@ -1271,7 +1275,7 @@ export function Dashboard({
       })
   }
 
-  const handleImageTarget = (e: Event) => {
+  const handleImageTarget = (e) => {
     const customEvent = e as CustomEvent<{
       element: HTMLImageElement
       src: string
@@ -1290,7 +1294,7 @@ export function Dashboard({
     })
   }
 
-  const handleImageSelect = (newSrc: string, originalSrc: string) => {
+  const handleImageSelect = (newSrc, originalSrc) => {
     const el = toolbarState.activeElement as HTMLImageElement | null
     if (el) {
       handleImageChange({
@@ -1302,7 +1306,7 @@ export function Dashboard({
     }
   }
 
-  const handleElementActivate = (element: HTMLElement, rect: DOMRect) => {
+  const handleElementActivate = (element, rect) => {
     originalStyleAttributeRef.current = element.getAttribute('style')
     setToolbarState({
       isOpen: true,
@@ -1316,21 +1320,13 @@ export function Dashboard({
   // background). Route through the inspector's select event so the cyan
   // overlay, inspectorSelection and toolbar all move together, exactly as a
   // real click on that element would.
-  const handleSelectParent = (element: HTMLElement) => {
+  const handleSelectParent = (element) => {
     document.dispatchEvent(
       new CustomEvent('ship-fast-inspector-select', { detail: { element } }),
     )
   }
 
-  const handleLinkEdit = async (payload: {
-    oldHref: string
-    newHref: string
-    oldText: string
-    newText: string
-    target: string | null
-    rel: string
-    occurrenceIndex: number
-  }) => {
+  const handleLinkEdit = async (payload) => {
     if (!resolvedSessionId) return
     const source = generationView?.homeModule?.source
     if (!source) return
@@ -1414,11 +1410,7 @@ export function Dashboard({
     }
   }
 
-  const handleStyleApply = async (payload: {
-    sourceAnchor: string
-    style: string
-    occurrenceIndex: number
-  }) => {
+  const handleStyleApply = async (payload) => {
     // Use the original style captured when the toolbar opened (before any
     // live-preview modification). Capturing at apply-time is too late — the
     // toolbar has already applied the live preview by then.
@@ -1489,7 +1481,7 @@ export function Dashboard({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const handleImageTargetEvent = (e: Event) => handleImageTarget(e)
+    const handleImageTargetEvent = (e) => handleImageTarget(e)
     window.addEventListener('image-target', handleImageTargetEvent)
 
     return () => {
@@ -2073,7 +2065,7 @@ export function Dashboard({
                           popoverAlign="start"
                           popoverSideOffset={12}
                           popoverClassName="z-[140] w-[min(360px,calc(100vw-24px))] p-0"
-                          onSelect={(theme: string) => {
+                          onSelect={(theme) => {
                             setSelectedTheme(theme)
                             if (resolvedSessionId) {
                               setThemeOverrideMutation({
@@ -2230,7 +2222,7 @@ export function Dashboard({
                           value={
                             generationView?.session.preferredLanguage ?? null
                           }
-                          onSelect={(language: string) => {
+                          onSelect={(language) => {
                             if (resolvedSessionId) {
                               setPreferredLanguageMutation({
                                 sessionId: resolvedSessionId,

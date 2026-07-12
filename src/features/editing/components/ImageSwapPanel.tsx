@@ -243,7 +243,7 @@ export function ImageSwapPanel({
   // ── File upload ──────────────────────────────────────────────────────
 
   const uploadFile = useCallback(
-    async (file: File) => {
+    async (file) => {
       const validationError = validateImageFile(file)
       if (validationError) {
         setUploadError(validationError)
@@ -294,7 +294,7 @@ export function ImageSwapPanel({
 
   // ── Drag-and-drop ────────────────────────────────────────────────────
 
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
+  const handleDragEnter = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
     dragCounterRef.current++
@@ -303,7 +303,7 @@ export function ImageSwapPanel({
     }
   }, [])
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
     dragCounterRef.current--
@@ -312,13 +312,13 @@ export function ImageSwapPanel({
     }
   }, [])
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleDragOver = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
   }, [])
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    (e) => {
       e.preventDefault()
       e.stopPropagation()
       dragCounterRef.current = 0
@@ -335,7 +335,7 @@ export function ImageSwapPanel({
   // ── Multi-select toggle ──────────────────────────────────────────────
   // 1 selected → plain URL (single swap, as before). 2+ selected → encoded
   // payload rendered as an auto-sliding carousel. 0 → clear the preview.
-  const toggleImage = (url: string) => {
+  const toggleImage = (url) => {
     const next = selectedSrcs.includes(url)
       ? selectedSrcs.filter((selected) => selected !== url)
       : [...selectedSrcs, url]

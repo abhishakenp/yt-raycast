@@ -18,7 +18,7 @@ type DashboardConvexTestState = {
   mutationCalls: Array<{ mutation: unknown; args: unknown }>
 }
 
-const getConvexState = (): DashboardConvexTestState => {
+function getConvexState(): DashboardConvexTestState {
   const testGlobal = globalThis as typeof globalThis & {
     __shipFastDashboardConvexState?: DashboardConvexTestState
   }
@@ -30,7 +30,7 @@ const getConvexState = (): DashboardConvexTestState => {
   return testGlobal.__shipFastDashboardConvexState
 }
 
-const createMemoryStorage = (): Storage => {
+function createMemoryStorage(): Storage {
   const values = new Map<string, string>()
   return {
     get length() {
@@ -81,7 +81,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 
 vi.mock('convex/react', () => ({
   useAction: () => vi.fn(),
-  useMutation: (mutation: unknown) => async (args: unknown) => {
+  useMutation: (mutation) => async (args) => {
     const state = (
       globalThis as typeof globalThis & {
         __shipFastDashboardConvexState?: DashboardConvexTestState
@@ -89,7 +89,7 @@ vi.mock('convex/react', () => ({
     ).__shipFastDashboardConvexState
     state?.mutationCalls.push({ mutation, args })
   },
-  useQuery: (_query: unknown, args: unknown) => {
+  useQuery: (_query, args) => {
     const state = (
       globalThis as typeof globalThis & {
         __shipFastDashboardConvexState?: DashboardConvexTestState
@@ -103,9 +103,7 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }: { children: ReactNode }) => (
-    <>{children}</>
-  ),
+  LakebedSessionProvider: ({ children }) => <>{children}</>,
 }))
 
 vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
@@ -115,17 +113,7 @@ vi.mock('@/features/billing/components/BillingPanel', () => ({
   BillingPanel: () => null,
 }))
 vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
-  BrandMediaPanel: ({
-    onSelectBrand,
-  }: {
-    onSelectBrand?: (brand: {
-      name: string
-      domain: string | null
-      brandId: string | null
-      icon: string | null
-      logo: string | null
-    }) => void
-  }) => (
+  BrandMediaPanel: ({ onSelectBrand }) => (
     <button
       type="button"
       onClick={() =>
@@ -143,15 +131,7 @@ vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
   ),
 }))
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
-  CommercePanel: ({
-    sessionId,
-    visualProductCount,
-    visualProducts,
-  }: {
-    sessionId: string
-    visualProductCount?: number
-    visualProducts?: Array<{ handle: string; price: number; title: string }>
-  }) => (
+  CommercePanel: ({ sessionId, visualProductCount, visualProducts }) => (
     <div>
       <span>Medusa commerce panel {sessionId}</span>
       <span data-testid="commerce-visual-product-count">
@@ -176,7 +156,7 @@ vi.mock('@/features/exports/components/ExportPanel', () => ({
   ExportPanel: () => null,
 }))
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }: { source: string }) => {
+  GeneratedModulePreview: ({ source }) => {
     const [initialSource] = useState(source)
     return (
       <div data-testid="generated-module-preview">
@@ -195,7 +175,7 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: () => undefined,
 }))
 vi.mock('@/genui/components/ThemePicker', () => ({
-  default: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>,
+  default: ({ trigger }) => <>{trigger}</>,
 }))
 vi.mock('@/genui/theme-apply', () => ({
   resolveThemeStyles: () => undefined,

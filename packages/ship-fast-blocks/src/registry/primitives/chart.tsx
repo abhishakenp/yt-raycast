@@ -10,7 +10,7 @@ const DEFAULT_DATA = [
   { label: 'Jun', value: 264 },
 ]
 
-const chartPoints = (data: typeof DEFAULT_DATA) => {
+function chartPoints(data: typeof DEFAULT_DATA) {
   const values = data.map((item) => item.value)
   const min = Math.min(...values)
   const max = Math.max(...values)

@@ -155,20 +155,28 @@ export type LakebedDeployResult = {
   sourceFileCount: number
 }
 
-const isBareSpecifier = (path: string): boolean =>
-  !path.startsWith('.') && !path.startsWith('/') && !/^[a-zA-Z]:/.test(path)
+function isBareSpecifier(path: string): boolean {
+  return (
+    !path.startsWith('.') && !path.startsWith('/') && !/^[a-zA-Z]:/.test(path)
+  )
+}
 
-const isPlainObject = (value: unknown): value is JsonRecord =>
-  Boolean(value) &&
-  typeof value === 'object' &&
-  Object.getPrototypeOf(value) === Object.prototype
+function isPlainObject(value: unknown): value is JsonRecord {
+  return (
+    Boolean(value) &&
+    typeof value === 'object' &&
+    Object.getPrototypeOf(value) === Object.prototype
+  )
+}
 
-const diagnostic = (file: string, message: string): Diagnostic => ({
-  file,
-  message,
-})
+function diagnostic(file: string, message: string): Diagnostic {
+  return {
+    file,
+    message,
+  }
+}
 
-const normalizeDeployApiOrigin = (value: string): string => {
+function normalizeDeployApiOrigin(value: string): string {
   const url = new URL(value)
   const isLocal =
     url.hostname === 'localhost' ||
@@ -194,18 +202,19 @@ const normalizeDeployApiOrigin = (value: string): string => {
     : url.origin
 }
 
-const resolveDeployApiUrl = (api?: string): string =>
-  normalizeDeployApiOrigin(
+function resolveDeployApiUrl(api?: string): string {
+  return normalizeDeployApiOrigin(
     api ??
       process.env.LAKEBED_DEPLOY_API ??
       process.env.SPAN_DEPLOY_API ??
       LAKEBED_DEPLOY_API_URL,
   )
+}
 
-const claimTokenFromClaimUrl = (
+function claimTokenFromClaimUrl(
   claimUrl: string | undefined,
   deployId: string | undefined,
-): string | null => {
+): string | null {
   if (!claimUrl || !deployId) return null
   try {
     const url = new URL(claimUrl)
@@ -219,10 +228,11 @@ const claimTokenFromClaimUrl = (
   return null
 }
 
-const createSourceStore = (files: Record<string, string>): MemorySourceStore =>
-  new MemorySourceStore(new Map(Object.entries(files)))
+function createSourceStore(files: Record<string, string>): MemorySourceStore {
+  return new MemorySourceStore(new Map(Object.entries(files)))
+}
 
-const esbuildPackageForCurrentPlatform = (): string | null => {
+function esbuildPackageForCurrentPlatform(): string | null {
   const platform = process.platform
   const arch = process.arch
   if (platform === 'linux' && arch === 'arm64') return '@esbuild/linux-arm64'
@@ -232,7 +242,7 @@ const esbuildPackageForCurrentPlatform = (): string | null => {
   return null
 }
 
-const ensureEsbuildBinaryExecutable = (log?: LakebedDeployLogger) => {
+function ensureEsbuildBinaryExecutable(log?: LakebedDeployLogger) {
   const packageName = esbuildPackageForCurrentPlatform()
   if (packageName === null) return
   try {
@@ -259,7 +269,7 @@ const ensureEsbuildBinaryExecutable = (log?: LakebedDeployLogger) => {
   }
 }
 
-const summarizeFiles = (files: Record<string, string>) => {
+function summarizeFiles(files: Record<string, string>) {
   const entries = Object.entries(files)
   const totalBytes = entries.reduce(
     (sum, [, contents]) => sum + byteLength(contents),
@@ -272,10 +282,10 @@ const summarizeFiles = (files: Record<string, string>) => {
   }
 }
 
-const resolveSourceFile = async (
+async function resolveSourceFile(
   sourceStore: MemorySourceStore,
   requestedPath: string,
-): Promise<string> => {
+): Promise<string> {
   const normalized = sourcePathJoin(requestedPath)
   const candidates = [
     normalized,
@@ -299,7 +309,7 @@ const resolveSourceFile = async (
   throw new Error(`Unable to resolve source import: ${requestedPath}`)
 }
 
-const loaderForPath = (path: string): esbuild.Loader => {
+function loaderForPath(path: string): esbuild.Loader {
   if (path.endsWith('.tsx')) return 'tsx'
   if (path.endsWith('.ts')) return 'ts'
   if (path.endsWith('.jsx')) return 'jsx'
@@ -307,10 +317,10 @@ const loaderForPath = (path: string): esbuild.Loader => {
   return 'js'
 }
 
-const createSourcePlugin = (
+function createSourcePlugin(
   sourceStore: MemorySourceStore,
   target: 'server' | 'client',
-): esbuild.Plugin => {
+): esbuild.Plugin {
   const allowedBare = new Set(
     target === 'server'
       ? ['lakebed/server']
@@ -422,9 +432,9 @@ const createSourcePlugin = (
   }
 }
 
-const readSourceFiles = async (
+async function readSourceFiles(
   sourceStore: MemorySourceStore,
-): Promise<SourceFile[]> => {
+): Promise<SourceFile[]> {
   const paths = (await sourceStore.listFiles()).filter(
     (path) =>
       !path.startsWith('__lakebed/') &&
@@ -446,10 +456,10 @@ const readSourceFiles = async (
   return files.sort((left, right) => left.path.localeCompare(right.path))
 }
 
-const forbiddenSourceDiagnostics = (
+function forbiddenSourceDiagnostics(
   files: SourceFile[],
   { allowAsync = false } = {},
-): Diagnostic[] => {
+): Diagnostic[] {
   const checks: Array<[RegExp, string]> = [
     [/\beval\s*\(/, 'eval is not available in anonymous server code.'],
     [
@@ -502,9 +512,10 @@ const forbiddenSourceDiagnostics = (
   return diagnostics
 }
 
-const serializeSchema = (
-  schema: JsonRecord | undefined,
-): { diagnostics: Diagnostic[]; schema: JsonRecord } => {
+function serializeSchema(schema: JsonRecord | undefined): {
+  diagnostics: Diagnostic[]
+  schema: JsonRecord
+} {
   const cleanSchema: JsonRecord = {}
   const diagnostics: Diagnostic[] = []
 
@@ -560,24 +571,27 @@ const serializeSchema = (
   return { diagnostics, schema: cleanSchema }
 }
 
-export const isReservedEndpointPath = (path: string): boolean =>
-  path === '/' ||
-  path === '/index.html' ||
-  path === '/client.js' ||
-  path === '/auth/callback' ||
-  path.startsWith('/auth/') ||
-  path === '/admin' ||
-  path.startsWith('/admin/') ||
-  path === '/__lakebed' ||
-  path.startsWith('/__lakebed/') ||
-  path === '/__span' ||
-  path.startsWith('/__span/')
+export function isReservedEndpointPath(path: string): boolean {
+  return (
+    path === '/' ||
+    path === '/index.html' ||
+    path === '/client.js' ||
+    path === '/auth/callback' ||
+    path.startsWith('/auth/') ||
+    path === '/admin' ||
+    path.startsWith('/admin/') ||
+    path === '/__lakebed' ||
+    path.startsWith('/__lakebed/') ||
+    path === '/__span' ||
+    path.startsWith('/__span/')
+  )
+}
 
-const validateEndpointRoute = (
+function validateEndpointRoute(
   { method, path }: { method: string; path: string },
   diagnosticPath: string,
   diagnostics: Diagnostic[],
-) => {
+) {
   if (!endpointMethodPattern.test(method)) {
     diagnostics.push(
       diagnostic(
@@ -613,9 +627,10 @@ const validateEndpointRoute = (
   }
 }
 
-const serializeEndpoints = (
-  endpoints: JsonRecord | undefined,
-): { diagnostics: Diagnostic[]; endpoints: JsonRecord } => {
+function serializeEndpoints(endpoints: JsonRecord | undefined): {
+  diagnostics: Diagnostic[]
+  endpoints: JsonRecord
+} {
   const diagnostics: Diagnostic[] = []
   const cleanEndpoints: JsonRecord = {}
   const seenRoutes = new Map<string, string>()
@@ -659,10 +674,10 @@ const serializeEndpoints = (
   return { diagnostics, endpoints: cleanEndpoints }
 }
 
-const buildBundles = async (
+async function buildBundles(
   sourceStore: MemorySourceStore,
   log?: LakebedDeployLogger,
-): Promise<{ app: JsonRecord; clientBundle: Buffer; serverBundle: Buffer }> => {
+): Promise<{ app: JsonRecord; clientBundle: Buffer; serverBundle: Buffer }> {
   const workingStore = sourceStore.clone()
   const sourcePaths = await sourceStore.listFiles()
   log?.('bundle:source-store:ready', {
@@ -773,10 +788,10 @@ render(createElement(App, {}), document.getElementById("app"));
 // network) using the exact production client-entry + esbuild + resolution
 // pipeline. Returns the bundled JS so tests can evaluate it and assert the
 // single-preact-core contract (single render, live event handlers).
-export const buildLakebedClientBundleForTest = async (
+export async function buildLakebedClientBundleForTest(
   files: Record<string, string>,
   options: { format?: 'esm' | 'iife'; minify?: boolean } = {},
-): Promise<{ code: string; metafile: esbuild.Metafile }> => {
+): Promise<{ code: string; metafile: esbuild.Metafile }> {
   const sourceStore = createSourceStore(files)
   const workingStore = sourceStore.clone()
   if (!workingStore.hasFile('client/index.tsx')) {
@@ -819,9 +834,9 @@ render(createElement(App, {}), document.getElementById("app"));
 // bind to one copy while the tree is diffed by the other → the app renders
 // twice and click handlers silently do nothing. The invariant: every preact
 // subpackage resolves to exactly one build. Returns the offenders (empty = ok).
-export const duplicatedPreactPackagesFromMetafile = (
+export function duplicatedPreactPackagesFromMetafile(
   metafile: esbuild.Metafile,
-): Record<string, string[]> => {
+): Record<string, string[]> {
   const byPackage: Record<string, string[]> = {}
   for (const input of Object.keys(metafile.inputs)) {
     const match = input.match(
@@ -836,10 +851,10 @@ export const duplicatedPreactPackagesFromMetafile = (
   )
 }
 
-export const buildLakebedAnonymousDeployRequest = async (
+export async function buildLakebedAnonymousDeployRequest(
   files: Record<string, string>,
   options: { inspectPolicy?: 'public'; log?: LakebedDeployLogger } = {},
-): Promise<LakebedBuildResult> => {
+): Promise<LakebedBuildResult> {
   options.log?.('anonymous-request:source-store:create', summarizeFiles(files))
   const sourceStore = createSourceStore(files)
   const bundleStartedAt = Date.now()
@@ -979,21 +994,21 @@ export const buildLakebedAnonymousDeployRequest = async (
   }
 }
 
-const readResponseJson = async (response: Response): Promise<JsonRecord> => {
+async function readResponseJson(response: Response): Promise<JsonRecord> {
   const body = await response.text()
   if (!response.ok)
     throw new Error(body || `Request failed with ${response.status}`)
   return JSON.parse(body) as JsonRecord
 }
 
-export const deployLakebedProjectFiles = async ({
+export async function deployLakebedProjectFiles({
   api,
   existingDeployment,
   fetchImpl = fetch,
   files,
   inspectPolicy,
   log,
-}: LakebedDeployInput): Promise<LakebedDeployResult> => {
+}: LakebedDeployInput): Promise<LakebedDeployResult> {
   const buildStartedAt = Date.now()
   log?.('anonymous-request:start', summarizeFiles(files))
   const built = await buildLakebedAnonymousDeployRequest(files, {

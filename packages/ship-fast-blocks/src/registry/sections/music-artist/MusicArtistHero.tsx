@@ -48,7 +48,7 @@ export const MusicArtistHero = defineCapsule({
       props.imageAlt ??
       'Minimalist album cover showing a misty mountain landscape at dawn with soft neutral tones'
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="16"

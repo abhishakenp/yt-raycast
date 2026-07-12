@@ -67,10 +67,13 @@ function hasMarketingStructure(bodyHtml: string): boolean {
   return false
 }
 
-const siteSpecLooksEcommerce = (siteSpec: SiteSpec): boolean =>
-  String(
-    siteSpec?.siteType || siteSpec?.metadata?.siteType || '',
-  ).toLowerCase() === 'ecommerce'
+function siteSpecLooksEcommerce(siteSpec: SiteSpec): boolean {
+  return (
+    String(
+      siteSpec?.siteType || siteSpec?.metadata?.siteType || '',
+    ).toLowerCase() === 'ecommerce'
+  )
+}
 
 function hasEcommerceSignals(bodyHtml: string): boolean {
   const textSignals =

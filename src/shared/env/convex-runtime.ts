@@ -9,17 +9,20 @@ type RuntimeImportMeta = ImportMeta & {
   env?: ConvexRuntimeEnv
 }
 
-const getProcessEnv = (): ConvexRuntimeEnv =>
-  typeof process === 'undefined' ? {} : process.env
+function getProcessEnv(): ConvexRuntimeEnv {
+  return typeof process === 'undefined' ? {} : process.env
+}
 
-export const getDefaultRuntimeConvexEnv = (): ConvexRuntimeEnv => ({
-  ...((import.meta as RuntimeImportMeta).env ?? {}),
-  ...getProcessEnv(),
-})
+export function getDefaultRuntimeConvexEnv(): ConvexRuntimeEnv {
+  return {
+    ...((import.meta as RuntimeImportMeta).env ?? {}),
+    ...getProcessEnv(),
+  }
+}
 
-export const getRuntimeConvexUrl = (
+export function getRuntimeConvexUrl(
   env: ConvexRuntimeEnv = getDefaultRuntimeConvexEnv(),
-): string => {
+): string {
   const url =
     env.CONVEX_SELF_HOSTED_URL ??
     env.CONVEX_URL ??

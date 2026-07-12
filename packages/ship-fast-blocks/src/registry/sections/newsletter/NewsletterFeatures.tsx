@@ -65,7 +65,7 @@ export const NewsletterFeatures = defineCapsule({
           { title: 'Private Discord', description: 'Join the conversation' },
         ]
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         width="20"

@@ -7,14 +7,17 @@ import schema from './schema'
 const modules = import.meta.glob('./**/*.ts')
 
 const ISS = 'https://clerk.test'
-const id = (u: string) => `${ISS}|${u}`
+function id(u: string) {
+  return `${ISS}|${u}`
+}
 
-const asUser = (t: ReturnType<typeof convexTest>, user: string) =>
-  t.withIdentity({
+function asUser(t: ReturnType<typeof convexTest>, user: string) {
+  return t.withIdentity({
     tokenIdentifier: id(user),
     subject: user,
     issuer: ISS,
   })
+}
 
 describe('GitHub Convex integration', () => {
   afterEach(() => {

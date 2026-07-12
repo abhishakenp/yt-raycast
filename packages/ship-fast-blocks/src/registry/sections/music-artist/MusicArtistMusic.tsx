@@ -90,7 +90,7 @@ export const MusicArtistMusic = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="16"

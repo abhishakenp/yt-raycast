@@ -63,7 +63,7 @@ export const NoCodeHero = defineCapsule({
     const editorLabel = props.editorLabel ?? 'Buildr Editor'
     const toast = props.toast ?? 'Published!'
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         width="16"
         height="16"
@@ -81,7 +81,7 @@ export const NoCodeHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         width="20"
         height="20"

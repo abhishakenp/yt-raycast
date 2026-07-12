@@ -1,14 +1,16 @@
-const stripTags = (html: string): string =>
-  String(html || '')
+function stripTags(html: string): string {
+  return String(html || '')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .toLowerCase()
+}
 
-const stripScripts = (html: string): string =>
-  String(html || '').replace(/<script[\s\S]*?<\/script>/gi, '')
+function stripScripts(html: string): string {
+  return String(html || '').replace(/<script[\s\S]*?<\/script>/gi, '')
+}
 
 const NOVA_VISUAL_SITE_TYPES = new Set([
   'saas',
@@ -19,10 +21,10 @@ const NOVA_VISUAL_SITE_TYPES = new Set([
   'community',
 ])
 
-const collectNovaVisualCraftIssues = (
+function collectNovaVisualCraftIssues(
   html: string,
   siteType: string,
-): string[] => {
+): string[] {
   const st = String(siteType || '').toLowerCase()
   if (!NOVA_VISUAL_SITE_TYPES.has(st)) return []
   const s = String(html || '')
@@ -88,10 +90,10 @@ const collectNovaVisualCraftIssues = (
   return issues
 }
 
-export const collectHomepageQualityIssues = (
+export function collectHomepageQualityIssues(
   html: string,
   { siteType = '', prompt = '' }: { siteType?: string; prompt?: string } = {},
-): string[] => {
+): string[] {
   const s = String(html || '')
   const issues: string[] = []
   const st = String(siteType || '').toLowerCase()

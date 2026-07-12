@@ -59,7 +59,7 @@ export const MentalHealthHero = defineCapsule({
       : ['Licensed Clinicians', 'In-Person & Virtual']
     const bookLabel = props.bookLabel ?? 'Book Session'
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         fill="none"

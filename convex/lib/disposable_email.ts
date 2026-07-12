@@ -155,7 +155,7 @@ const EMAIL_RE = /^[^\s@]+@([^\s@]+)$/
  * Extract and normalize the domain portion of an email (lowercased, trimmed).
  * Returns `null` for anything that is not shaped like an email.
  */
-export const extractEmailDomain = (email: string): string | null => {
+export function extractEmailDomain(email: string): string | null {
   const match = EMAIL_RE.exec(
     String(email ?? '')
       .trim()
@@ -170,7 +170,7 @@ export const extractEmailDomain = (email: string): string | null => {
  * can decide separately whether a malformed email is acceptable — use
  * `isValidEmail` for shape validation.
  */
-export const isDisposableEmail = (email: string): boolean => {
+export function isDisposableEmail(email: string): boolean {
   const domain = extractEmailDomain(email)
   if (domain === null) return false
   if (DISPOSABLE_EMAIL_DOMAINS.has(domain)) return true
@@ -182,21 +182,20 @@ export const isDisposableEmail = (email: string): boolean => {
 }
 
 /** Basic structural email validation (not deliverability). */
-export const isValidEmail = (email: string): boolean =>
-  extractEmailDomain(email) !== null
+export function isValidEmail(email: string): boolean {
+  return extractEmailDomain(email) !== null
+}
 
 /**
  * Classify an email for referral-qualification purposes.
  * `acceptable` is true only when the email parses AND is not disposable.
  */
-export const classifyReferralEmail = (
-  email: string | null | undefined,
-): {
+export function classifyReferralEmail(email: string | null | undefined): {
   email: string
   valid: boolean
   disposable: boolean
   acceptable: boolean
-} => {
+} {
   const normalized = String(email ?? '')
     .trim()
     .toLowerCase()

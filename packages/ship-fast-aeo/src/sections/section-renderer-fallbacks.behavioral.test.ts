@@ -11,8 +11,9 @@ import { renderPricingSummarySection } from './pricing-summary.ts'
 import { renderUseCasesSection } from './use-cases.ts'
 import { renderWhoForSection } from './who-for.ts'
 
-const parseHtml = (html: string) =>
-  new DOMParser().parseFromString(html, 'text/html')
+function parseHtml(html: string) {
+  return new DOMParser().parseFromString(html, 'text/html')
+}
 
 describe('AEO section renderer fallback contracts', () => {
   it('uses stable default section ids and omits empty headings', () => {

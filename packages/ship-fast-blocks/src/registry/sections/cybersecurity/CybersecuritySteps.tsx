@@ -67,7 +67,7 @@ export const CybersecuritySteps = defineCapsule({
       : ['Asset inventory', 'Risk scoring', 'Baseline profiles']
     const liveLabel = props.liveLabel ?? 'Live protection active'
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

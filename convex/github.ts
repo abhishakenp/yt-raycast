@@ -24,10 +24,10 @@ type IdentityKey =
   | { clerkTokenIdentifier: string; clerkUserId: string }
   | { anonymousClientIdHash: string }
 
-const resolveIdentityKey = async (
+async function resolveIdentityKey(
   ctx: QueryCtx | MutationCtx,
   anonymousClientId?: string,
-): Promise<IdentityKey> => {
+): Promise<IdentityKey> {
   const identity = await ctx.auth.getUserIdentity()
   if (identity) {
     return {
@@ -45,14 +45,15 @@ const resolveIdentityKey = async (
   throw new Error(AUTH_REQUIRED)
 }
 
-const normalizeScopes = (scopes: string[]): string[] =>
-  Array.from(
+function normalizeScopes(scopes: string[]): string[] {
+  return Array.from(
     new Set(
       scopes
         .map((scope) => scope.trim().toLowerCase())
         .filter((scope) => scope.length > 0),
     ),
   ).sort()
+}
 
 export const createOAuthState = mutation({
   args: {

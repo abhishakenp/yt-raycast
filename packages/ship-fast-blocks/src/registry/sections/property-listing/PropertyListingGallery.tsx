@@ -115,7 +115,7 @@ export const PropertyListingGallery = defineCapsule({
     const activeQuery = propertySearch.state?.query.toLowerCase() ?? ''
     const savedAddresses = new Set(propertyActions.state?.savedAddresses ?? [])
     const selectedAddress = propertyActions.state?.selectedAddress ?? ''
-    const matchesFilter = (listing: PropertyListingCatalogInput) => {
+    const matchesFilter = (listing) => {
       const listingStatus = listing.price.includes('/mo')
         ? 'For Rent'
         : 'For Sale'

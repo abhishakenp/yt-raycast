@@ -97,15 +97,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -130,7 +127,7 @@ function createDashboardLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const addOrder = (input: DashboardOrderInput) => {
+  const addOrder = (input) => {
     state = {
       orders: [
         ...state.orders,
@@ -149,11 +146,7 @@ function createDashboardLakebedStub() {
       ],
     }
   }
-  const setOrderStatus = (input: {
-    id: string
-    status: string
-    statusTone: string
-  }) => {
+  const setOrderStatus = (input) => {
     state = {
       orders: state.orders.map((order) =>
         order.id === input.id
@@ -167,7 +160,7 @@ function createDashboardLakebedStub() {
       ),
     }
   }
-  const removeOrder = (input: { id: string }) => {
+  const removeOrder = (input) => {
     state = {
       orders: state.orders.filter((order) => order.id !== input.id),
     }

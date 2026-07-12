@@ -54,7 +54,7 @@ export const MarketingAgencyHero = defineCapsule({
     const statValue = props.statValue ?? '340%'
     const statLabel = props.statLabel ?? 'Avg. ROI Increase'
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -69,7 +69,7 @@ export const MarketingAgencyHero = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

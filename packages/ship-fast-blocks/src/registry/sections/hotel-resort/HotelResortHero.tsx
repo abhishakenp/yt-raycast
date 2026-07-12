@@ -63,7 +63,7 @@ export const HotelResortHero = defineCapsule({
       ? props.badges
       : ['5-Star Forbes Rating', 'Private Beach Access']
 
-    const StarIcon = ({ className }: { className?: string }) => (
+    const StarIcon = ({ className }) => (
       <svg
         className={className}
         width="20"

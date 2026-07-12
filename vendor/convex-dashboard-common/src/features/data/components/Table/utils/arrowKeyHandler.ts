@@ -16,9 +16,10 @@ function newDirection(
   }
 }
 
-export const arrowKeyHandler =
-  (cellRef: React.MutableRefObject<HTMLDivElement | HTMLLabelElement | null>) =>
-  (event: React.KeyboardEvent<HTMLButtonElement | HTMLInputElement>) => {
+export function arrowKeyHandler(
+  cellRef: React.MutableRefObject<HTMLDivElement | HTMLLabelElement | null>,
+) {
+  return (event) => {
     if (event.key.startsWith('Arrow')) {
       const wrapper = cellRef.current?.parentElement
       const row = wrapper?.parentElement
@@ -35,3 +36,4 @@ export const arrowKeyHandler =
       ;(newTarget?.firstElementChild as HTMLButtonElement)?.focus()
     }
   }
+}

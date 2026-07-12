@@ -16,11 +16,11 @@ const createBuildRoot = () => {
   return root
 }
 
-const writeAsset = (root: string, relativePath: string, source: string) => {
+function writeAsset(root: string, relativePath: string, source: string) {
   writeFileSync(join(root, relativePath), source)
 }
 
-const writePassingAssets = (root: string) => {
+function writePassingAssets(root: string) {
   writeAsset(
     root,
     '.output/public/assets/-generate-dashboard-route-test.js',

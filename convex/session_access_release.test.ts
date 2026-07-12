@@ -11,14 +11,15 @@ const modules = import.meta.glob('./**/*.ts')
 
 const ISSUER = 'https://clerk.test'
 
-const asUser = (t: ReturnType<typeof convexTest>, userId: string) =>
-  t.withIdentity({
+function asUser(t: ReturnType<typeof convexTest>, userId: string) {
+  return t.withIdentity({
     issuer: ISSUER,
     subject: userId,
     tokenIdentifier: `${ISSUER}|${userId}`,
   })
+}
 
-const insertSession = async (
+async function insertSession(
   t: ReturnType<typeof convexTest>,
   input: {
     isPrivate: boolean
@@ -26,7 +27,7 @@ const insertSession = async (
     anonymousOwnerSecret?: string
     prompt?: string
   },
-) => {
+) {
   const anonOwnerSecretHash =
     input.anonymousOwnerSecret === undefined
       ? undefined

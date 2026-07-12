@@ -113,7 +113,7 @@ export const CleaningServicePricing = defineCapsule({
         }),
       ),
     )
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         width="20"
         height="20"
@@ -129,7 +129,7 @@ export const CleaningServicePricing = defineCapsule({
         />
       </svg>
     )
-    const PhoneIcon = ({ className }: { className?: string }) => (
+    const PhoneIcon = ({ className }) => (
       <svg
         width="18"
         height="18"

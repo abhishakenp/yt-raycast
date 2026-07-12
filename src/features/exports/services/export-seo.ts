@@ -46,7 +46,7 @@ type SiteSpecLike = Record<string, unknown> & {
   >
 }
 
-const parseSiteSpec = (siteSpecJson: string | undefined): SiteSpecLike => {
+function parseSiteSpec(siteSpecJson: string | undefined): SiteSpecLike {
   if (!siteSpecJson) return {}
   try {
     const parsed = JSON.parse(siteSpecJson) as unknown
@@ -58,7 +58,7 @@ const parseSiteSpec = (siteSpecJson: string | undefined): SiteSpecLike => {
   }
 }
 
-const normalizePath = (value: string): string => {
+function normalizePath(value: string): string {
   const raw = value.trim()
   if (!raw || raw === '/') return '/'
   return raw.startsWith('/') ? raw : `/${raw}`
@@ -74,7 +74,7 @@ export type ExportSeoBundleOptions = {
  * Strips tags/scripts, collapses whitespace, and trims to ~160 chars at a
  * word boundary. Returns '' when no meaningful text exists.
  */
-export const extractDescriptionFromMarkup = (markup: string): string => {
+export function extractDescriptionFromMarkup(markup: string): string {
   const text = markup
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -96,12 +96,12 @@ export const extractDescriptionFromMarkup = (markup: string): string => {
  * brand/locale/route labels so every export ships title, description, robots,
  * OG/Twitter, and JSON-LD.
  */
-export const buildExportSeoBundle = (
+export function buildExportSeoBundle(
   siteSpecJson: string | undefined,
   routePaths: Array<{ path: string; label: string }>,
   options: ExportSeoBundleOptions = {},
   routeJsonLdEntries?: Map<string, Record<string, unknown>[]>,
-): ExportSeoBundle => {
+): ExportSeoBundle {
   const parsedSpec = parseSiteSpec(siteSpecJson)
 
   // Generated specs carry `brand`/`locale` at the top level without a seo
@@ -203,7 +203,7 @@ export const buildExportSeoBundle = (
 /**
  * Generate Next.js metadata export string from a route's SEO data.
  */
-export const renderNextMetadataExport = (routeSeo: ExportRouteSeo): string => {
+export function renderNextMetadataExport(routeSeo: ExportRouteSeo): string {
   const meta = routeSeo.nextMetadata
   const lines: string[] = ['export const metadata = {']
   for (const [key, value] of Object.entries(meta)) {
@@ -217,7 +217,7 @@ export const renderNextMetadataExport = (routeSeo: ExportRouteSeo): string => {
  * Generate Next.js viewport export string from a route's SEO data.
  * Next.js 16+ requires themeColor in viewport export, not metadata.
  */
-export const renderNextViewportExport = (routeSeo: ExportRouteSeo): string => {
+export function renderNextViewportExport(routeSeo: ExportRouteSeo): string {
   const viewport = routeSeo.nextViewport
   if (!viewport || Object.keys(viewport).length === 0) return ''
   const lines: string[] = ['export const viewport = {']
@@ -235,7 +235,7 @@ export const renderNextViewportExport = (routeSeo: ExportRouteSeo): string => {
  * Uses JSON.stringify with XSS sanitization per Next.js recommendation.
  * @see https://nextjs.org/docs/app/guides/json-ld
  */
-export const renderJsonLdScript = (routeSeo: ExportRouteSeo): string => {
+export function renderJsonLdScript(routeSeo: ExportRouteSeo): string {
   if (!routeSeo.structuredDataJson) return ''
   const data = JSON.parse(routeSeo.structuredDataJson)
   const objectLiteral = JSON.stringify(data, null, 2)
@@ -252,7 +252,7 @@ export const renderJsonLdScript = (routeSeo: ExportRouteSeo): string => {
 /**
  * Generate Next.js robots.ts route content.
  */
-export const renderNextRobotsRoute = (robotsTxt: string): string => {
+export function renderNextRobotsRoute(robotsTxt: string): string {
   return `import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -261,7 +261,7 @@ export default function robots(): MetadataRoute.Robots {
 `
 }
 
-const parseRobotsTxt = (txt: string): Record<string, unknown> => {
+function parseRobotsTxt(txt: string): Record<string, unknown> {
   const result: Record<string, unknown> = {
     rules: [{ userAgent: '*', allow: '/' }],
   }
@@ -275,9 +275,9 @@ const parseRobotsTxt = (txt: string): Record<string, unknown> => {
 /**
  * Generate Next.js sitemap.ts route content.
  */
-export const renderNextSitemapRoute = (
+export function renderNextSitemapRoute(
   sitemapXml: string | null,
-): string | null => {
+): string | null {
   if (!sitemapXml) return null
   const urls: Array<Record<string, unknown>> = []
   const urlMatches = sitemapXml.matchAll(

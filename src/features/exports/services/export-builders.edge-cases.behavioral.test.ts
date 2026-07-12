@@ -28,23 +28,26 @@ import { createZipBuffer } from './zip-builder'
 // Helpers — parse outputs as structured data, never assert on raw source
 // ---------------------------------------------------------------------------
 
-const parseHtmlDocument = (html: string) => parseHTML(html).document
+function parseHtmlDocument(html: string) {
+  return parseHTML(html).document
+}
 
-const createRuntimeDocument = (html: string) => {
+function createRuntimeDocument(html: string) {
   const dom = new JSDOM(html, {
     pretendToBeVisual: true,
     runScripts: 'dangerously',
     url: 'https://export.test/',
   })
-  dom.window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+  dom.window.requestAnimationFrame = (callback) => {
     callback(0)
     return 1
   }
   return dom
 }
 
-const parseBadge = (html: string) =>
-  parseHtmlDocument(html).querySelector('[data-ship-fast-export-badge]')
+function parseBadge(html: string) {
+  return parseHtmlDocument(html).querySelector('[data-ship-fast-export-badge]')
+}
 
 const SAMPLE_SOURCE = `root = SaasHero("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
 const routedSource = `root = PageSwitch(["Home", "Pricing"], [home, pricing], "", {"Get Started":"Pricing#pricing_pricing","get started":"Pricing#pricing_pricing","Pricing":"Pricing"})
@@ -110,15 +113,16 @@ const openUiHindiHandoffPreviewHtml = `<!doctype html>
 </body>
 </html>`
 
-const unzipTextFiles = (body: Uint8Array): Record<string, string> =>
-  Object.fromEntries(
+function unzipTextFiles(body: Uint8Array): Record<string, string> {
+  return Object.fromEntries(
     Object.entries(unzipSync(body)).map(([name, value]) => [
       name,
       strFromU8(value),
     ]),
   )
+}
 
-const unzipBuiltExportTextFiles = (body: string | Uint8Array) => {
+function unzipBuiltExportTextFiles(body: string | Uint8Array) {
   if (typeof body === 'string') {
     throw new Error('Expected ZIP body')
   }
@@ -126,46 +130,45 @@ const unzipBuiltExportTextFiles = (body: string | Uint8Array) => {
 }
 
 /** Split a text file into trimmed, non-empty lines (structured representation). */
-const textLines = (text: string): string[] =>
-  text
+function textLines(text: string): string[] {
+  return text
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
+}
 
 /**
  * Evaluate a generated vite.config.js / next.config.js source by mocking
  * the imports and executing via `new Function`. Returns the config object.
  */
-const evaluateEsmDefault = (source: string): unknown => {
+function evaluateEsmDefault(source: string): unknown {
   const transformed = source
-    .replace(
-      /import\s+\{([^}]*)\}\s+from\s+['"]vite['"]/g,
-      (_m, names: string) =>
-        names
-          .split(',')
-          .map((n: string) => n.trim())
-          .filter(Boolean)
-          .map((n: string) => `const ${n} = (c) => c;`)
-          .join(' '),
+    .replace(/import\s+\{([^}]*)\}\s+from\s+['"]vite['"]/g, (_m, names) =>
+      names
+        .split(',')
+        .map((n) => n.trim())
+        .filter(Boolean)
+        .map((n) => `const ${n} = (c) => c;`)
+        .join(' '),
     )
     .replace(
       /import\s+\{([^}]*)\}\s+from\s+['"]@vitejs\/plugin-react['"]/g,
-      (_m, names: string) =>
+      (_m, names) =>
         names
           .split(',')
-          .map((n: string) => n.trim())
+          .map((n) => n.trim())
           .filter(Boolean)
-          .map((n: string) => `const ${n} = () => "${n}-plugin";`)
+          .map((n) => `const ${n} = () => "${n}-plugin";`)
           .join(' '),
     )
     .replace(
       /import\s+\{([^}]*)\}\s+from\s+['"]@tailwindcss\/vite['"]/g,
-      (_m, names: string) =>
+      (_m, names) =>
         names
           .split(',')
-          .map((n: string) => n.trim())
+          .map((n) => n.trim())
           .filter(Boolean)
-          .map((n: string) => `const ${n} = () => "${n}-plugin";`)
+          .map((n) => `const ${n} = () => "${n}-plugin";`)
           .join(' '),
     )
     .replace(
@@ -176,7 +179,7 @@ const evaluateEsmDefault = (source: string): unknown => {
   return new Function(transformed)()
 }
 
-const evaluateCommonJs = (source: string): unknown => {
+function evaluateCommonJs(source: string): unknown {
   const module = { exports: {} as unknown }
   new Function('module', source)(module)
   // eslint-disable-next-line import/no-commonjs
@@ -184,7 +187,7 @@ const evaluateCommonJs = (source: string): unknown => {
 }
 
 /** Extract all import module specifiers from a TS/TSX source via regex split. */
-const extractImportSpecifiers = (source: string): string[] => {
+function extractImportSpecifiers(source: string): string[] {
   const lines = source.split('\n')
   const specifiers: string[] = []
   for (const line of lines) {
@@ -195,7 +198,7 @@ const extractImportSpecifiers = (source: string): string[] => {
 }
 
 /** Parse a CSS declarations string (e.g. `--a: 1; --b: 2`) into a map. */
-const parseCssDeclarations = (css: string): Map<string, string> => {
+function parseCssDeclarations(css: string): Map<string, string> {
   const map = new Map<string, string>()
   for (const part of css.split(';')) {
     const colon = part.indexOf(':')

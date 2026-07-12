@@ -28,10 +28,10 @@ afterEach(async () => {
   }
 })
 
-const createReadySession = async (
+async function createReadySession(
   t: ReturnType<typeof userImageTest>,
   prompt = 'Test site',
-) => {
+) {
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
@@ -55,18 +55,14 @@ const createReadySession = async (
 
 /** Store a blob in Convex storage via an action handler (storage.store is
  *  only available in actions, not mutations). Returns the storageId. */
-const createStorageId = async (
+async function createStorageId(
   t: ReturnType<typeof userImageTest>,
-): Promise<Id<'_storage'>> => {
-  return await t.action(
-    async (ctx: {
-      storage: { store: (blob: Blob) => Promise<Id<'_storage'>> }
-    }) => {
-      return await ctx.storage.store(
-        new Blob(['test-image-data'], { type: 'image/png' }),
-      )
-    },
-  )
+): Promise<Id<'_storage'>> {
+  return await t.action(async (ctx) => {
+    return await ctx.storage.store(
+      new Blob(['test-image-data'], { type: 'image/png' }),
+    )
+  })
 }
 
 describe('user image upload helpers', () => {
@@ -296,7 +292,7 @@ describe('user image upload helpers', () => {
         }),
       },
       storage: {
-        getUrl: async (storageId: Id<'_storage'>) =>
+        getUrl: async (storageId) =>
           storageId === 'storage_ready'
             ? 'https://storage.test/ready.png'
             : null,

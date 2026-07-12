@@ -83,7 +83,7 @@ export const KnowledgeBaseGuides = defineCapsule({
           },
         ]
 
-    const levelTone = (level: string) => {
+    const levelTone = (level) => {
       const l = level.toLowerCase()
       if (l.includes('begin')) return 'bg-chart-2/15 text-chart-2'
       if (l.includes('inter')) return 'bg-chart-4/15 text-chart-4'
@@ -91,7 +91,7 @@ export const KnowledgeBaseGuides = defineCapsule({
       return 'bg-secondary text-secondary-foreground'
     }
 
-    const ChevronRight = ({ className }: { className?: string }) => (
+    const ChevronRight = ({ className }) => (
       <svg
         className={className}
         width="20"

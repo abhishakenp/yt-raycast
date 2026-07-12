@@ -11,10 +11,10 @@ type DeleteGallerySessionResult = {
   deleted: number
 }
 
-export const deleteGallerySession = async ({
+export async function deleteGallerySession({
   anonymousClientId,
   sessionId,
-}: DeleteGallerySessionInput): Promise<DeleteGallerySessionResult> => {
+}: DeleteGallerySessionInput): Promise<DeleteGallerySessionResult> {
   const client = createRuntimeConvexHttpClient()
   return await client.mutation(api.sessions.deleteMine, {
     anonymousClientId,

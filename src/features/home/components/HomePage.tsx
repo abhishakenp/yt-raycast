@@ -132,25 +132,28 @@ const TopActions = () => {
   )
 }
 
-const getLanguageOptionName = (code: string) =>
-  LANGUAGE_OPTIONS.find(([optionCode]) => optionCode === code)?.[1] ??
-  getLanguageDisplayName(code)
+function getLanguageOptionName(code: string) {
+  return (
+    LANGUAGE_OPTIONS.find(([optionCode]) => optionCode === code)?.[1] ??
+    getLanguageDisplayName(code)
+  )
+}
 
-const buildFocusedLanguageOptions = (selectedLanguage: string) => {
+function buildFocusedLanguageOptions(selectedLanguage: string) {
   const normalized = normalizeLanguageCode(selectedLanguage) || 'en'
   if (!normalized || normalized === 'en') return DEFAULT_LANGUAGE_OPTIONS
   const selected = [normalized, getLanguageOptionName(normalized)] as const
   return [DEFAULT_LANGUAGE_OPTION, selected]
 }
 
-const persistPreferredLanguage = (language: string) => {
+function persistPreferredLanguage(language: string) {
   if (typeof window === 'undefined') return
   const normalized = normalizeLanguageCode(language)
   if (!normalized) return
   window.localStorage.setItem(PREFERRED_LANGUAGE_KEY, normalized)
 }
 
-const collectDesignReferenceUrls = (formData: FormData): string[] => {
+function collectDesignReferenceUrls(formData: FormData): string[] {
   const candidates = [
     formData.get('design-ref-url-1'),
     formData.get('design-ref-url-2'),
@@ -252,7 +255,7 @@ export const HomePage = () => {
   useEffect(() => {
     if (!privateModalOpen) return
 
-    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+    const onKeyDown = (event) => {
       if (event.key === 'Escape') setPrivateModalOpen(false)
     }
 
@@ -418,11 +421,11 @@ export const HomePage = () => {
     }
   }, [errorMessage, refreshShareBonusStatus, shareBonusClaimed])
 
-  const onShareClick = (platform: string) => {
+  const onShareClick = (platform) => {
     void handleShareClick(platform, claimShareBonus)
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event) => {
     event.preventDefault()
 
     const form = event.currentTarget
@@ -442,12 +445,12 @@ export const HomePage = () => {
     })
   }
 
-  const handleExamplePrompt = (value: string) => {
+  const handleExamplePrompt = (value) => {
     selectExamplePrompt(value)
     void submitPrompt({ prompt: value, engineVersion })
   }
 
-  const handlePreferredLanguageChange = (value: string) => {
+  const handlePreferredLanguageChange = (value) => {
     const normalized = normalizeLanguageCode(value) || 'en'
     setLanguageOptions(buildFocusedLanguageOptions(normalized))
     setPreferredLanguage(normalized)
@@ -464,16 +467,14 @@ export const HomePage = () => {
     setPromptSuggestActive(0)
   }
 
-  const applyPromptSuggestion = (value: string | undefined) => {
+  const applyPromptSuggestion = (value) => {
     if (!value) return
     closePromptSuggestions()
     suppressSuggestionsRef.current = true
     setPrompt(value)
   }
 
-  const handlePromptKeyDown = (
-    event: ReactKeyboardEvent<HTMLTextAreaElement>,
-  ) => {
+  const handlePromptKeyDown = (event) => {
     if (promptSuggestionsOpen) {
       if (event.key === 'ArrowDown') {
         event.preventDefault()
@@ -513,7 +514,7 @@ export const HomePage = () => {
     }
   }
 
-  const handleHeroCardPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+  const handleHeroCardPointerMove = (event) => {
     const card = event.currentTarget
     const rect = card.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
@@ -528,7 +529,7 @@ export const HomePage = () => {
     )
   }
 
-  const handleHeroCardPointerLeave = (event: PointerEvent<HTMLDivElement>) => {
+  const handleHeroCardPointerLeave = (event) => {
     event.currentTarget.style.setProperty('--hero-glow-x', '30%')
     event.currentTarget.style.setProperty('--hero-glow-y', '20%')
   }

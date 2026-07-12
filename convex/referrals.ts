@@ -18,7 +18,7 @@ const activeSubscriptionStatuses = new Set([
   'authenticated',
 ])
 
-const requireUserId = async (ctx: QueryCtx | MutationCtx): Promise<string> => {
+async function requireUserId(ctx: QueryCtx | MutationCtx): Promise<string> {
   const identity = await ctx.auth.getUserIdentity()
   const userId = identity?.tokenIdentifier
   if (userId === undefined) {
@@ -30,7 +30,7 @@ const requireUserId = async (ctx: QueryCtx | MutationCtx): Promise<string> => {
   return userId
 }
 
-const requireServerSecret = (secret: string) => {
+function requireServerSecret(secret: string) {
   const expected = process.env.BILLING_WEBHOOK_MUTATION_SECRET
   if (!expected || secret !== expected) {
     throw new ConvexError({
@@ -40,10 +40,10 @@ const requireServerSecret = (secret: string) => {
   }
 }
 
-const getActiveSubscriptionForUser = async (
+async function getActiveSubscriptionForUser(
   ctx: QueryCtx | MutationCtx,
   userId: string,
-) => {
+) {
   const subscriptions = await ctx.db
     .query('subscriptions')
     .withIndex('by_userId', (index) => index.eq('userId', userId))
@@ -55,7 +55,7 @@ const getActiveSubscriptionForUser = async (
   )
 }
 
-const findCodeOwner = async (ctx: QueryCtx | MutationCtx, code: string) => {
+async function findCodeOwner(ctx: QueryCtx | MutationCtx, code: string) {
   if (!code) return null
   return await ctx.db
     .query('referralCodes')
@@ -63,10 +63,10 @@ const findCodeOwner = async (ctx: QueryCtx | MutationCtx, code: string) => {
     .first()
 }
 
-const ensureReferralCode = async (
+async function ensureReferralCode(
   ctx: MutationCtx,
   userId: string,
-): Promise<string> => {
+): Promise<string> {
   const existing = await ctx.db
     .query('referralCodes')
     .withIndex('by_userId', (index) => index.eq('userId', userId))
@@ -156,7 +156,7 @@ export const getMyReferralStatus = query({
   },
 })
 
-const maskEmail = (email: string | undefined): string | null => {
+function maskEmail(email: string | undefined): string | null {
   if (!email) return null
   const [local, domain] = email.split('@')
   if (!domain) return null

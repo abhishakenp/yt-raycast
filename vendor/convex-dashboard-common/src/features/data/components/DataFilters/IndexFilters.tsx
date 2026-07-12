@@ -207,7 +207,7 @@ export function IndexFilters({
             indexOptions.find((o) => o.value.name === shownFilters.index?.name)
               ?.value ?? DEFAULT_INDEX
           }
-          setSelectedOption={(option: IndexOptionValue | null) => {
+          setSelectedOption={(option) => {
             if (!option) {
               return
             }
@@ -230,7 +230,7 @@ export function IndexFilters({
                     index: {
                       name: option.name,
                       search: searchIndex ? searchIndex.search : '',
-                      clauses: option.fields.map((field: string) => ({
+                      clauses: option.fields.map((field) => ({
                         field,
                         enabled: false,
                         value:
@@ -248,7 +248,7 @@ export function IndexFilters({
                       searchIndex ? undefined : shownFilters.order,
                     index: {
                       name: option.name,
-                      clauses: option.fields.map((field: string) => ({
+                      clauses: option.fields.map((field) => ({
                         type: 'indexEq',
                         enabled: false,
                         value:
@@ -306,9 +306,8 @@ export function IndexFilters({
 
             // Get the index definition
             const tableIndexes =
-              activeSchema?.tables.find(
-                (t: { tableName: string }) => t.tableName === tableName,
-              )?.indexes || []
+              activeSchema?.tables.find((t) => t.tableName === tableName)
+                ?.indexes || []
 
             const indexName = shownFilters.index?.name
 
@@ -324,7 +323,7 @@ export function IndexFilters({
             } else if (indexName === 'by_id') {
               fieldName = '_id'
             } else {
-              const indexDef = tableIndexes.find((i: any) => {
+              const indexDef = tableIndexes.find((i) => {
                 const simpleIndex = i as unknown as SimpleIndex
                 return simpleIndex.name === indexName
               })
@@ -381,7 +380,7 @@ export function IndexFilters({
             <SearchValueEditor
               field={searchFilterField ?? 'unknown'}
               value={searchIndex.search}
-              onChange={(newValue: string) => {
+              onChange={(newValue) => {
                 const newFilters: FilterExpression = {
                   ...shownFilters,
                   index: {

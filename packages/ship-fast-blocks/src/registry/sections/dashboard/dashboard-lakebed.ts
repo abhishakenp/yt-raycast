@@ -57,7 +57,7 @@ export const dashboardLakebed = {
     }),
   },
   mutations: {
-    addOrder: dashboard.mutation((_ctx, input: DashboardOrderInput) => {
+    addOrder: dashboard.mutation((_ctx, input) => {
       _ctx.db.orders.insert({
         amount: input.amount ?? '$0.00',
         customer: input.customer ?? 'New Customer',
@@ -70,24 +70,22 @@ export const dashboardLakebed = {
 
       return _ctx.db.orders.orderBy('createdAt').all()
     }),
-    removeOrder: dashboard.mutation((_ctx, input: DashboardOrderTarget) => {
+    removeOrder: dashboard.mutation((_ctx, input) => {
       const order = _ctx.db.orders.get(input.id)
       if (order) _ctx.db.orders.delete(order.id)
 
       return _ctx.db.orders.orderBy('createdAt').all()
     }),
-    setOrderStatus: dashboard.mutation(
-      (_ctx, input: DashboardOrderStatusInput) => {
-        const order = _ctx.db.orders.get(input.id)
-        if (order) {
-          _ctx.db.orders.update(order.id, {
-            status: input.status,
-            statusTone: input.statusTone,
-          })
-        }
+    setOrderStatus: dashboard.mutation((_ctx, input) => {
+      const order = _ctx.db.orders.get(input.id)
+      if (order) {
+        _ctx.db.orders.update(order.id, {
+          status: input.status,
+          statusTone: input.statusTone,
+        })
+      }
 
-        return _ctx.db.orders.orderBy('createdAt').all()
-      },
-    ),
+      return _ctx.db.orders.orderBy('createdAt').all()
+    }),
   },
 } as const

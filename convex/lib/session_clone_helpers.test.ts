@@ -21,10 +21,10 @@ type Row = Record<string, unknown>
 
 const sessionId = 'session_clone_helpers' as Id<'sessions'>
 
-const sessionDoc = async (
+async function sessionDoc(
   overrides: Partial<Doc<'sessions'>> = {},
-): Promise<Doc<'sessions'>> =>
-  ({
+): Promise<Doc<'sessions'>> {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Clone a site',
@@ -38,26 +38,26 @@ const sessionDoc = async (
     updatedAt: 1,
     anonOwnerSecretHash: await hashOwnerSecret('owner-secret'),
     ...overrides,
-  }) as Doc<'sessions'>
-
-const indexHelper = {
-  eq: (_field: string, _value: unknown) => indexHelper,
+  } as Doc<'sessions'>
 }
 
-const chainFor = (rows: Row[]) => ({
-  withIndex: (
-    _indexName: string,
-    _applyIndex: (index: typeof indexHelper) => typeof indexHelper,
-  ) => chainFor(rows),
-  collect: async () => [...rows],
-  first: async () => rows[0] ?? null,
-})
+const indexHelper = {
+  eq: (_field, _value) => indexHelper,
+}
 
-const mutationCtxFor = async (args: {
+function chainFor(rows: Row[]) {
+  return {
+    withIndex: (_indexName, _applyIndex) => chainFor(rows),
+    collect: async () => [...rows],
+    first: async () => rows[0] ?? null,
+  }
+}
+
+async function mutationCtxFor(args: {
   session?: Doc<'sessions'> | null
   userId?: string
   clonePages?: Row[]
-}) => {
+}) {
   const session = args.session === undefined ? await sessionDoc() : args.session
   const tables: Record<TableName, Row[]> = {
     sessions: session === null ? [] : [session],
@@ -70,7 +70,7 @@ const mutationCtxFor = async (args: {
   const patches: Array<{ id: string; value: Row }> = []
   let insertSeq = 0
 
-  const findRow = (id: string): Row | undefined =>
+  const findRow = (id) =>
     [session, ...Object.values(tables).flat()].find(
       (candidate) => candidate !== null && candidate?._id === id,
     ) as Row | undefined
@@ -86,9 +86,9 @@ const mutationCtxFor = async (args: {
       runAfter: vi.fn(async () => undefined),
     },
     db: {
-      get: vi.fn(async (id: string) => (id === sessionId ? session : null)),
-      query: (table: TableName) => chainFor(tables[table]),
-      insert: vi.fn(async (table: TableName, value: Row) => {
+      get: vi.fn(async (id) => (id === sessionId ? session : null)),
+      query: (table) => chainFor(tables[table]),
+      insert: vi.fn(async (table, value) => {
         insertSeq += 1
         const _id = `${table}_${insertSeq}`
         const stored = { _id, _creationTime: insertSeq, ...value }
@@ -96,7 +96,7 @@ const mutationCtxFor = async (args: {
         inserted.push({ table, value })
         return _id
       }),
-      patch: vi.fn(async (id: string, value: Row) => {
+      patch: vi.fn(async (id, value) => {
         patches.push({ id, value })
         const row = findRow(id)
         if (row !== undefined) Object.assign(row, value)
@@ -107,36 +107,40 @@ const mutationCtxFor = async (args: {
   return { ctx, tables, inserted, patches }
 }
 
-const clonePageRow = (overrides: Partial<Row> = {}): Row => ({
-  _id: `clone_${String(overrides.pathname ?? 'home')}`,
-  _creationTime: 1,
-  sessionId,
-  pathname: '/',
-  title: 'Home',
-  html: '<main>Home</main>',
-  isHome: true,
-  failed: false,
-  order: 0,
-  byteLength: 12,
-  truncated: false,
-  createdAt: 1,
-  updatedAt: 1,
-  ...overrides,
-})
+function clonePageRow(overrides: Partial<Row> = {}): Row {
+  return {
+    _id: `clone_${String(overrides.pathname ?? 'home')}`,
+    _creationTime: 1,
+    sessionId,
+    pathname: '/',
+    title: 'Home',
+    html: '<main>Home</main>',
+    isHome: true,
+    failed: false,
+    order: 0,
+    byteLength: 12,
+    truncated: false,
+    createdAt: 1,
+    updatedAt: 1,
+    ...overrides,
+  }
+}
 
-const writeArgs = (overrides: Partial<Row> = {}) => ({
-  sessionId,
-  anonymousOwnerSecret: 'owner-secret',
-  pathname: '/about',
-  title: 'About',
-  html: '<main>About</main>',
-  isHome: false,
-  failed: false,
-  order: 1,
-  byteLength: 18,
-  truncated: false,
-  ...overrides,
-})
+function writeArgs(overrides: Partial<Row> = {}) {
+  return {
+    sessionId,
+    anonymousOwnerSecret: 'owner-secret',
+    pathname: '/about',
+    title: 'About',
+    html: '<main>About</main>',
+    isHome: false,
+    failed: false,
+    order: 1,
+    byteLength: 18,
+    truncated: false,
+    ...overrides,
+  }
+}
 
 describe('session clone helpers', () => {
   describe('writeSessionClonePage', () => {
@@ -520,8 +524,7 @@ describe('session clone helpers', () => {
         },
         storage: {
           getUrl: vi.fn(
-            async (storageId: Id<'_storage'>) =>
-              `https://storage.test/${storageId}`,
+            async (storageId) => `https://storage.test/${storageId}`,
           ),
         },
       } as unknown as Pick<QueryCtx, 'db' | 'storage'>
@@ -555,8 +558,7 @@ describe('session clone helpers', () => {
         },
         storage: {
           getUrl: vi.fn(
-            async (storageId: Id<'_storage'>) =>
-              `https://storage.test/${storageId}`,
+            async (storageId) => `https://storage.test/${storageId}`,
           ),
         },
       } as unknown as Pick<QueryCtx, 'db' | 'storage'>

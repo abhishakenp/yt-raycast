@@ -8,7 +8,7 @@ const EXCLUDED_SITE_TYPES = new Set([
   'institutional',
 ])
 
-export const isVagueMarketingPrompt = (prompt: string): boolean => {
+export function isVagueMarketingPrompt(prompt: string): boolean {
   const s = String(prompt || '').trim()
   if (s.length < 10) return true
   if (s.length > 420) return false
@@ -28,10 +28,10 @@ export const isVagueMarketingPrompt = (prompt: string): boolean => {
   return false
 }
 
-export const shouldExpandVagueMarketing = (
+export function shouldExpandVagueMarketing(
   prompt: string,
   siteType: string | null,
-): boolean => {
+): boolean {
   if (!isVagueMarketingPrompt(prompt)) return false
   const st = String(siteType || '').toLowerCase()
   if (st && EXCLUDED_SITE_TYPES.has(st)) return false

@@ -14,19 +14,21 @@ type SessionCreateClient = {
   ) => Promise<unknown>
 }
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const isPublicPreviewMode = (): boolean =>
-  process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE === 'true'
+function isPublicPreviewMode(): boolean {
+  return process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE === 'true'
+}
 
-export const getClientIp = (request: Request): string => {
+export function getClientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) {
     const firstForwarded = forwarded.split(',')[0]?.trim()
@@ -41,15 +43,16 @@ export const getClientIp = (request: Request): string => {
   )
 }
 
-export const hashClientIp = (
+export function hashClientIp(
   ip: string,
   salt = process.env.SHIP_FAST_IP_HASH_SALT ?? '',
-): string =>
-  createHash('sha256').update(`${salt}:${ip}`).digest('hex').slice(0, 48)
+): string {
+  return createHash('sha256').update(`${salt}:${ip}`).digest('hex').slice(0, 48)
+}
 
-const readJsonBody = async (
+async function readJsonBody(
   request: Request,
-): Promise<Record<string, unknown>> => {
+): Promise<Record<string, unknown>> {
   const text = await request.text()
   if (!text.trim()) return {}
   const parsed = JSON.parse(text) as unknown
@@ -59,7 +62,7 @@ const readJsonBody = async (
   return parsed as Record<string, unknown>
 }
 
-const errorPayload = (error: unknown) => {
+function errorPayload(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
   if (/QUOTA_EXCEEDED/.test(message)) {
     return {
@@ -87,10 +90,10 @@ const errorPayload = (error: unknown) => {
   }
 }
 
-export const createSessionCreateResponse = async (
+export async function createSessionCreateResponse(
   request: Request,
   clientOverride?: SessionCreateClient,
-): Promise<Response> => {
+): Promise<Response> {
   if (!isPublicPreviewMode()) {
     return json(
       { error: 'Public preview session creation is disabled.' },

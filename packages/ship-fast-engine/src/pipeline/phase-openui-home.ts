@@ -39,7 +39,7 @@ function upsertManifest(
     }
   }
   if (!manifest.pages) manifest.pages = []
-  manifest.pages = manifest.pages.filter((p: any) => p.route !== route)
+  manifest.pages = manifest.pages.filter((p) => p.route !== route)
   manifest.pages.push({
     route,
     title,
@@ -127,7 +127,7 @@ export async function generateAndWriteOpenUIHome(p: {
   let localeName = forcedLocale || 'en'
   const brandSoFar = projectTitle(p.siteSpec, p.prompt)
 
-  const onEvent = (event: any) => {
+  const onEvent = (event) => {
     if (event.type === 'theme') {
       log(`  genui: theme → ${event.name}`)
     } else if (event.type === 'locale') {
@@ -143,7 +143,7 @@ export async function generateAndWriteOpenUIHome(p: {
   // Do not expose that partial source as the preview: it renders with interim
   // skeleton/theme state and can be captured by thumbnails before final colors
   // are applied. The completed source is persisted and broadcast below.
-  const onSource = (accumulated: string) => {
+  const onSource = (accumulated) => {
     if (!accumulated.trim()) return
   }
 

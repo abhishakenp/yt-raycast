@@ -117,7 +117,7 @@ type ConvexTestState = {
   }
 }
 
-const getConvexState = (): ConvexTestState => {
+function getConvexState(): ConvexTestState {
   const testGlobal = globalThis as typeof globalThis & {
     __shipFastDashboardSessionConvexState?: ConvexTestState
   }
@@ -154,7 +154,7 @@ const getConvexState = (): ConvexTestState => {
   return testGlobal.__shipFastDashboardSessionConvexState
 }
 
-const createMemoryStorage = (): Storage => {
+function createMemoryStorage(): Storage {
   const values = new Map<string, string>()
   return {
     get length() {
@@ -211,7 +211,7 @@ vi.mock('convex/react', () => ({
     ).__shipFastDashboardSessionConvexState
     return state?.publishMutation ?? vi.fn().mockResolvedValue(undefined)
   },
-  useQuery: (_query: unknown, args: unknown) => {
+  useQuery: (_query, args) => {
     const state = (
       globalThis as typeof globalThis & {
         __shipFastDashboardSessionConvexState?: ConvexTestState
@@ -231,18 +231,14 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }: { children: ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  ),
+  Link: ({ children, to }) => <a href={to}>{children}</a>,
   useNavigate: () => vi.fn(),
   useParams: () => ({}),
   useRouter: () => ({ state: { location: { pathname: '/' } } }),
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }: { children: ReactNode }) => (
-    <>{children}</>
-  ),
+  LakebedSessionProvider: ({ children }) => <>{children}</>,
 }))
 
 vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
@@ -272,7 +268,7 @@ vi.mock('@/genui/theme-apply', () => ({
   ],
   // resolveThemeStyles must return a palette object with both modes plus a
   // themeName label so themeButtonStyle can read styles[isDark ? 'dark' : 'light'].
-  resolveThemeStyles: (name: string | null | undefined) =>
+  resolveThemeStyles: (name) =>
     name
       ? {
           themeName: name,
@@ -372,35 +368,6 @@ vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
     isForking,
     isSectionSubmitting,
     sectionError,
-  }: {
-    isOpen: boolean
-    onStyleApply?: (payload: {
-      sourceAnchor: string
-      style: string
-      occurrenceIndex: number
-    }) => void
-    onLinkEdit?: (payload: {
-      oldHref: string
-      newHref: string
-      oldText: string
-      newText: string
-      target: string | null
-      rel: string
-      occurrenceIndex: number
-    }) => void
-    onSectionEdit?: (prompt: string) => void
-    canUndo?: boolean
-    canRedo?: boolean
-    onUndo?: () => void
-    onRedo?: () => void
-    onMoveUp?: () => void
-    onMoveDown?: () => void
-    onClose?: () => void
-    activeElement?: HTMLElement | null
-    isApplying?: boolean
-    isForking?: boolean
-    isSectionSubmitting?: boolean
-    sectionError?: string
   }) =>
     isOpen ? (
       <div data-testid="inline-edit-toolbar">
@@ -500,7 +467,7 @@ vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
 // handoff and progress wiring can be observed without depending on the real
 // loader's internal animation timers.
 vi.mock('@/components/GenUI/IntroLoader', () => ({
-  IntroLoader: (props: { progress?: number; phase?: string }) => (
+  IntroLoader: (props) => (
     <div
       data-testid="intro-loader"
       data-progress={props.progress}
@@ -515,7 +482,7 @@ vi.mock('@/components/GenUI/IntroLoader', () => ({
 // (source, image/style/text overrides, theme styles, device mode, edit mode,
 // site spec, locale, prompt) and simulates a scrollable .genui-preview
 // container so the scroll-preservation behavior can be exercised.
-const setupPreviewScroll = (el: HTMLElement | null) => {
+function setupPreviewScroll(el: HTMLElement | null) {
   if (!el) return
   let scrollTop = 0
   Object.defineProperty(el, 'scrollHeight', {
@@ -529,50 +496,14 @@ const setupPreviewScroll = (el: HTMLElement | null) => {
   Object.defineProperty(el, 'scrollTop', {
     configurable: true,
     get: () => scrollTop,
-    set: (v: number) => {
+    set: (v) => {
       scrollTop = v
     },
   })
 }
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: (props: {
-    source?: string
-    imageOverrides?: unknown
-    styleOverrides?: unknown
-    textOverrides?: unknown
-    themeStyles?: unknown
-    isDark?: boolean
-    deviceMode?: string
-    editMode?: boolean
-    siteSpecJson?: string
-    locale?: string
-    prompt?: string
-    selectedBrandLogo?: unknown
-    onTextChange?: (change: {
-      oldText: string
-      newText: string
-      element: HTMLElement
-      occurrenceIndex: number
-    }) => void
-    onImageChange?: (change: {
-      oldSrc: string
-      newSrc: string
-      element: HTMLImageElement
-      alt: string
-    }) => void
-    onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
-    onCommitText?: (commitFn: () => void, cancelFn: () => void) => void
-    onSectionSelect?: (selection: {
-      tag: string
-      elementPath: string
-      textContent: string
-      outerHTML: string
-      boundingBox: { x: number; y: number; width: number; height: number }
-      openuiComponent?: string
-      openuiVar?: string
-    }) => void
-  }) => (
+  GeneratedModulePreview: (props) => (
     <div
       data-testid="generated-module-preview"
       className="genui-preview"
@@ -735,55 +666,59 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
 }))
 
 // ─── fixtures ──────────────────────────────────────────────────────────────
-const readyGenerationView = (
+function readyGenerationView(
   overrides: Partial<GenerationView> = {},
-): GenerationView => ({
-  session: {
-    sessionId: 'ready-session',
-    status: 'preview_ready',
-    prompt: 'A ready website',
-    preferredLanguage: 'en',
-    isPrivate: false,
-    ...overrides.session,
-  },
-  tasks: overrides.tasks ?? [
-    { status: 'succeeded', title: 'Build', taskKey: 'build' },
-  ],
-  events: overrides.events ?? [],
-  homeModule: {
-    moduleKey: 'home',
-    source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
-    status: 'succeeded',
-    updatedAt: 100,
-    ...overrides.homeModule,
-  },
-  siteSpec: overrides.siteSpec ?? null,
-  latestPreview: overrides.latestPreview ?? null,
-})
+): GenerationView {
+  return {
+    session: {
+      sessionId: 'ready-session',
+      status: 'preview_ready',
+      prompt: 'A ready website',
+      preferredLanguage: 'en',
+      isPrivate: false,
+      ...overrides.session,
+    },
+    tasks: overrides.tasks ?? [
+      { status: 'succeeded', title: 'Build', taskKey: 'build' },
+    ],
+    events: overrides.events ?? [],
+    homeModule: {
+      moduleKey: 'home',
+      source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      status: 'succeeded',
+      updatedAt: 100,
+      ...overrides.homeModule,
+    },
+    siteSpec: overrides.siteSpec ?? null,
+    latestPreview: overrides.latestPreview ?? null,
+  }
+}
 
-const generatingGenerationView = (
+function generatingGenerationView(
   overrides: Partial<GenerationView> = {},
-): GenerationView => ({
-  session: {
-    sessionId: 'generating-session',
-    status: 'running',
-    prompt: 'A generating website',
-    preferredLanguage: 'en',
-    ...overrides.session,
-  },
-  tasks: overrides.tasks ?? [
-    { status: 'running', title: 'Build', taskKey: 'build' },
-  ],
-  events: overrides.events ?? [],
-  homeModule: {
-    source: '',
-    status: 'running',
-    updatedAt: 50,
-    ...overrides.homeModule,
-  },
-  siteSpec: overrides.siteSpec ?? null,
-  latestPreview: overrides.latestPreview ?? null,
-})
+): GenerationView {
+  return {
+    session: {
+      sessionId: 'generating-session',
+      status: 'running',
+      prompt: 'A generating website',
+      preferredLanguage: 'en',
+      ...overrides.session,
+    },
+    tasks: overrides.tasks ?? [
+      { status: 'running', title: 'Build', taskKey: 'build' },
+    ],
+    events: overrides.events ?? [],
+    homeModule: {
+      source: '',
+      status: 'running',
+      updatedAt: 50,
+      ...overrides.homeModule,
+    },
+    siteSpec: overrides.siteSpec ?? null,
+    latestPreview: overrides.latestPreview ?? null,
+  }
+}
 
 const realConvexStreamingSession = {
   sessionId: 'k5739j2a2meyfe8ah0fe5g9jx189jndy',
@@ -832,12 +767,12 @@ const dbObservedBreweryRenderedHtml = `<!doctype html>
 </body>
 </html>`
 
-const setHandoffFlag = (sessionId: string) => {
+function setHandoffFlag(sessionId: string) {
   // takeGenerationLaunchHandoff reads `ship-fast:generation-launch:<id>` == '1'.
   window.sessionStorage.setItem(`ship-fast:generation-launch:${sessionId}`, '1')
 }
 
-const setupReady = (overrides: Partial<GenerationView> = {}) => {
+function setupReady(overrides: Partial<GenerationView> = {}) {
   getConvexState().generationView = readyGenerationView(overrides)
   getConvexState().sidePanelData = null
   getConvexState().editController.edits = []

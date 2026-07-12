@@ -43,9 +43,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }: { alt: string; className?: string }) => (
-    <img alt={alt} className={className} />
-  ),
+  Image: ({ alt, className }) => <img alt={alt} className={className} />,
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -66,16 +64,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -165,11 +163,7 @@ function createFoodDeliveryLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const row = <TRow extends Record<string, unknown>>(
-    prefix: string,
-    value: TRow,
-    index: number,
-  ) => ({
+  const row = <TRow extends Record<string, unknown>>(prefix, value, index) => ({
     ...value,
     createdAt: now,
     id: `${prefix}-${index}`,
@@ -221,44 +215,38 @@ function createFoodDeliveryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: FoodDeliveryActionInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            actions = [
-              row(
-                'action',
-                {
-                  action: input.action.trim(),
-                  source: input.source?.trim() ?? '',
-                },
-                actions.length + 1,
-              ),
-              ...actions,
-            ]
-            notify()
-            return actions
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          actions = [
+            row(
+              'action',
+              {
+                action: input.action.trim(),
+                source: input.source?.trim() ?? '',
+              },
+              actions.length + 1,
+            ),
+            ...actions,
+          ]
+          notify()
+          return actions
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: FoodDeliveryActionInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -273,56 +261,50 @@ function createFoodDeliveryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: FoodDeliveryRestaurantInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const selectedRestaurant = input.name.trim()
-            const selectedCuisine = input.cuisine?.trim() ?? ''
-            state = row(
-              'state',
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const selectedRestaurant = input.name.trim()
+          const selectedCuisine = input.cuisine?.trim() ?? ''
+          state = row(
+            'state',
+            {
+              address: state?.address ?? '',
+              query: state?.query ?? '',
+              selectedCuisine,
+              selectedRestaurant,
+            },
+            1,
+          )
+          selections = [
+            row(
+              'selection',
               {
-                address: state?.address ?? '',
-                query: state?.query ?? '',
-                selectedCuisine,
-                selectedRestaurant,
+                cuisine: selectedCuisine,
+                name: selectedRestaurant,
               },
-              1,
-            )
-            selections = [
-              row(
-                'selection',
-                {
-                  cuisine: selectedCuisine,
-                  name: selectedRestaurant,
-                },
-                selections.length + 1,
-              ),
-              ...selections,
-            ]
-            notify()
-            return selections
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+              selections.length + 1,
+            ),
+            ...selections,
+          ]
+          notify()
+          return selections
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: FoodDeliveryRestaurantInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -337,56 +319,50 @@ function createFoodDeliveryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: FoodDeliverySearchInput) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const address = input.address?.trim() ?? ''
-            const query = input.query?.trim() || address
-            state = row(
-              'state',
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const address = input.address?.trim() ?? ''
+          const query = input.query?.trim() || address
+          state = row(
+            'state',
+            {
+              address,
+              query,
+              selectedCuisine: '',
+              selectedRestaurant: '',
+            },
+            1,
+          )
+          searches = [
+            row(
+              'search',
               {
-                address,
-                query,
-                selectedCuisine: '',
-                selectedRestaurant: '',
+                address: state.address,
+                query: state.query,
               },
-              1,
-            )
-            searches = [
-              row(
-                'search',
-                {
-                  address: state.address,
-                  query: state.query,
-                },
-                searches.length + 1,
-              ),
-              ...searches,
-            ]
-            notify()
-            return state ? [state] : []
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
-          }
-        },
-        [],
-      )
+              searches.length + 1,
+            ),
+            ...searches,
+          ]
+          notify()
+          return state ? [state] : []
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: FoodDeliverySearchInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -401,62 +377,56 @@ function createFoodDeliveryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: { items: FoodDeliveryCatalogInput[] }) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const existingByName = new Map(
-              items.map((item) => [item.name.toLowerCase(), item]),
-            )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const existingByName = new Map(
+            items.map((item) => [item.name.toLowerCase(), item]),
+          )
 
-            for (const item of input.items) {
-              const nameValue = item.name.trim()
-              if (!nameValue) continue
+          for (const item of input.items) {
+            const nameValue = item.name.trim()
+            if (!nameValue) continue
 
-              const current = existingByName.get(nameValue.toLowerCase())
-              const next = {
-                category: item.category?.trim() ?? '',
-                cuisine: item.cuisine?.trim() ?? '',
-                delivery: item.delivery?.trim() ?? '',
-                imageAlt: item.imageAlt?.trim() ?? '',
-                name: nameValue,
-                rating: item.rating?.trim() ?? '',
-                time: item.time?.trim() ?? '',
-              }
-
-              if (current) {
-                items = items.map((candidate) =>
-                  candidate.id === current.id
-                    ? { ...current, ...next, updatedAt: now }
-                    : candidate,
-                )
-              } else {
-                items = [...items, row('item', next, items.length + 1)]
-              }
+            const current = existingByName.get(nameValue.toLowerCase())
+            const next = {
+              category: item.category?.trim() ?? '',
+              cuisine: item.cuisine?.trim() ?? '',
+              delivery: item.delivery?.trim() ?? '',
+              imageAlt: item.imageAlt?.trim() ?? '',
+              name: nameValue,
+              rating: item.rating?.trim() ?? '',
+              time: item.time?.trim() ?? '',
             }
-            notify()
-            return items
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
+
+            if (current) {
+              items = items.map((candidate) =>
+                candidate.id === current.id
+                  ? { ...current, ...next, updatedAt: now }
+                  : candidate,
+              )
+            } else {
+              items = [...items, row('item', next, items.length + 1)]
+            }
           }
-        },
-        [],
-      )
+          notify()
+          return items
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: { items: FoodDeliveryCatalogInput[] }) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -631,7 +601,7 @@ describe('food delivery fullstack search', () => {
     const { lakebed } = createFoodDeliveryLakebedStub()
     const malformedCatalogLakebed = {
       ...lakebed,
-      useQuery: ((name: string) => {
+      useQuery: ((name) => {
         if (name === 'restaurantCatalog') {
           return {
             missing: null,

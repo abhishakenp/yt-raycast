@@ -3,9 +3,9 @@ import type { RunShipFastEngine } from './ship-fast-engine-adapter'
 
 const engineFlag = process.env.SHIP_FAST_ENGINE?.trim().toLowerCase()
 
-export const getSelectedEngine = (
+export function getSelectedEngine(
   version: 'v1' | 'v2' | 'v3' = 'v1',
-): RunShipFastEngine => {
+): RunShipFastEngine {
   // If version is explicitly provided, use it. Otherwise fall back to env var.
   if (version === 'v3') return runAllV3
   if (version === 'v2') return runAllV2

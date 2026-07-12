@@ -71,7 +71,7 @@ export const InvestingHero = defineCapsule({
           { label: 'YTD Return', value: '+18.4%' },
         ]
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

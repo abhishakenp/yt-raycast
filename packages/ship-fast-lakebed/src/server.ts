@@ -60,19 +60,24 @@ export type TypedTableDefinition<TFields extends Record<string, Field<any>>> =
     seedFromProps?: boolean
   }
 
-export const table = <TFields extends Record<string, Field<any>>>(
-  fields: TFields,
-): TypedTableDefinition<TFields> =>
-  lakebedTable(fields) as TypedTableDefinition<TFields>
+export function table(fields: TFields): TypedTableDefinition<TFields> {
+  return lakebedTable(fields) as TypedTableDefinition<TFields>
+}
 
-export const string = (): Field<string> => lakebedString()
-export const boolean = (): Field<boolean> => lakebedBoolean()
-export const number = (): Field<number> => ({
-  kind: 'number',
-  default(value: number) {
-    return { ...this, defaultValue: value }
-  },
-})
+export function string(): Field<string> {
+  return lakebedString()
+}
+export function boolean(): Field<boolean> {
+  return lakebedBoolean()
+}
+export function number(): Field<number> {
+  return {
+    kind: 'number',
+    default(value: number) {
+      return { ...this, defaultValue: value }
+    },
+  }
+}
 
 type FieldValue<TField> = TField extends Field<infer TValue> ? TValue : unknown
 type FieldsOf<TTable> = TTable extends { fields: infer TFields }
@@ -254,12 +259,12 @@ export function createLakebedHandlerContext<TProps, TData extends JsonRecord>({
     props,
     replaceData:
       replaceData ??
-      (async (nextData: TData) => {
+      (async (nextData) => {
         return nextData
       }),
     setData:
       setData ??
-      (async (patch: Partial<TData>) => {
+      (async (patch) => {
         return { ...data, ...patch }
       }),
   }

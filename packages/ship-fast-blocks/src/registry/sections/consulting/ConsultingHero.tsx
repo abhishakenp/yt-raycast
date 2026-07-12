@@ -65,7 +65,7 @@ export const ConsultingHero = defineCapsule({
     const statTitle = props.statTitle ?? 'Client Retention Rate'
     const statSubtitle = props.statSubtitle ?? 'Average 8-year partnership'
 
-    const CheckIcon = ({ className }: { className?: string }) => (
+    const CheckIcon = ({ className }) => (
       <svg
         width="20"
         height="20"

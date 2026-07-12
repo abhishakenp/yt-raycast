@@ -59,10 +59,11 @@ const ProviderFallback = () => (
   />
 )
 
-const shouldShowPublicLaunchBackdrop = (pathname: string): boolean =>
-  PUBLIC_LAUNCH_BACKDROP_PATHS.has(pathname)
+function shouldShowPublicLaunchBackdrop(pathname: string): boolean {
+  return PUBLIC_LAUNCH_BACKDROP_PATHS.has(pathname)
+}
 
-const WithSignInHost = ({
+function WithSignInHost({
   children,
   showLaunchBackdrop,
   signInRequestId,
@@ -71,28 +72,30 @@ const WithSignInHost = ({
   showLaunchBackdrop: boolean
   signInRequestId: number
   clerkMounted: boolean
-}) => (
-  <>
-    {showLaunchBackdrop ? (
-      <Suspense fallback={null}>
-        <LazyLaunchBackdrop />
-      </Suspense>
-    ) : null}
-    <div className="contents" id="ship-fast-app-content">
-      {children}
-    </div>
-    {signInRequestId > 0 ? (
-      <Suspense fallback={null}>
-        <LazySignInModalHost
-          requestId={signInRequestId}
-          clerkMounted={clerkMounted}
-        />
-      </Suspense>
-    ) : null}
-  </>
-)
+}) {
+  return (
+    <>
+      {showLaunchBackdrop ? (
+        <Suspense fallback={null}>
+          <LazyLaunchBackdrop />
+        </Suspense>
+      ) : null}
+      <div className="contents" id="ship-fast-app-content">
+        {children}
+      </div>
+      {signInRequestId > 0 ? (
+        <Suspense fallback={null}>
+          <LazySignInModalHost
+            requestId={signInRequestId}
+            clerkMounted={clerkMounted}
+          />
+        </Suspense>
+      ) : null}
+    </>
+  )
+}
 
-export const AppProviders = ({ children }: AppProvidersProps) => {
+export function AppProviders({ children }: AppProvidersProps) {
   const [signInRequestId, setSignInRequestId] = useState(0)
   const pathname = useRouterState({
     select: (state) => state.location.pathname,

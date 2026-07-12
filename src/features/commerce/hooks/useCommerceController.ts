@@ -16,10 +16,10 @@ type CommerceHandoff = {
   tenantId: string
 }
 
-export const useCommerceController = (
+export function useCommerceController(
   sessionId: string,
   visualProducts: Array<GeneratedCommerceProduct> = [],
-) => {
+) {
   const config = useQuery(api.sessions.getCommerceConfig, {
     sessionId: sessionId as Id<'sessions'>,
   })

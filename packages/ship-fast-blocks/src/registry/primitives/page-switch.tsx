@@ -5,12 +5,15 @@ import { useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { RoutesContext } from '#/lib/use-navigate.tsx'
 import { PreviewUrlBridgeContext } from '#/lib/preview-url-bridge.tsx'
 
-const slugifyRoute = (value: string): string =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'page'
+function slugifyRoute(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'page'
+  )
+}
 
 // System-owned multi-page switcher. The orchestrator emits exactly one of these as `root`.
 // routes[i] is the nav label; pages[i] is the page node for that route. Renders only the
@@ -106,7 +109,7 @@ const fixedHeaderOffset = () => {
   return 0
 }
 
-const scrollElementIntoViewBelowChrome = (node: HTMLElement) => {
+function scrollElementIntoViewBelowChrome(node: HTMLElement) {
   const offset = fixedHeaderOffset()
   if (!offset) {
     node.scrollIntoView({ behavior: 'smooth', block: 'start' })

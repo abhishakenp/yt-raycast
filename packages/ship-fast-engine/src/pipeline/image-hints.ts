@@ -533,7 +533,7 @@ function phraseFromPrompt(prompt: string, maxWords = 5) {
 function extractSalientPhrases(prompt: string, max = 4) {
   const raw = normalizeText(prompt)
   const out: string[] = []
-  const stripTail = (s: string) =>
+  const stripTail = (s) =>
     s
       .replace(/\s+with\s+[\s\S]+$/i, '')
       .replace(/\s+including\s+[\s\S]+$/i, '')
@@ -1617,8 +1617,9 @@ function pickPhotoForImg(
   return pick
 }
 
-const sleep = async (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms))
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 function tryDerivePexelsFallbackUrl(url: string) {
   try {
@@ -1827,7 +1828,7 @@ function looksLikeTrustedStockImageUrl(src: string) {
   }
 }
 
-export const normalizeStockImageMatchKey = (src: string) => {
+export function normalizeStockImageMatchKey(src: string) {
   const s = String(src || '').trim()
   if (!s || s.startsWith('data:')) return ''
   try {
@@ -1906,8 +1907,7 @@ function neutralizeNonStockImages(html: string) {
     } else {
       out = out.replace(
         /\bstyle\s*=\s*["']([^"']*)["']/i,
-        (_m: string, st: string) =>
-          `style="${st};${NEUTRAL_IMG_FALLBACK_STYLE}"`,
+        (_m, st) => `style="${st};${NEUTRAL_IMG_FALLBACK_STYLE}"`,
       )
     }
     return out
@@ -1925,14 +1925,7 @@ function realignObjectImageUrls(
 
   return html.replace(
     pattern,
-    (
-      match: string,
-      prefix: string,
-      label: string,
-      middle: string,
-      currentUrl: string,
-      suffix: string,
-    ) => {
+    (match, prefix, label, middle, currentUrl, suffix) => {
       const best = pickPhotoForImg(label, photos, usage)
       if (!best || best.url === currentUrl) return match
 
@@ -2074,7 +2067,7 @@ function repairMalformedTailwindClasses(html: string) {
   let next = html.replace(/\bclassrelative\b/g, 'class="relative"')
   next = next.replace(
     /\bclass\s*=\s*(["'])([^"']*)\1/g,
-    (full: string, quote: string, classes: string) => {
+    (full, quote, classes) => {
       const fixed = classes
         .replace(/\s+\/\d+\b/g, '')
         .replace(/\s{2,}/g, ' ')
@@ -2106,13 +2099,7 @@ function stripDecorativeGradientMedia(html: string) {
     return html
   return html.replace(
     /(<(?:div|article)\b([^>]*\bbg-gradient-to[^>]*)>)([\s\S]*?)(<\/(?:div|article)>)/gi,
-    (
-      full: string,
-      open: string,
-      attrs: string,
-      inner: string,
-      close: string,
-    ) => {
+    (full, open, attrs, inner, close) => {
       if (!isDecorativeGradientBlob(attrs, inner)) return full
       const cleaned = inner
         .replace(/<img\b[^>]*>/gi, '')
@@ -2145,7 +2132,7 @@ function sanitizeStockImageTags(html: string) {
     const cleaned = cls
       .split(/\s+/)
       .filter(
-        (c: string) =>
+        (c) =>
           c &&
           !/^flex(?:-col|-row|-1|-none|-wrap|-grow|-shrink)?$/i.test(c) &&
           !/^items-/.test(c) &&
@@ -2169,7 +2156,7 @@ function sanitizeStockImageTags(html: string) {
     } else if (!/\bobject-cover\b/i.test(cls)) {
       next = next.replace(
         /\bclass\s*=\s*(["'])/i,
-        (_m: string, q: string) => `class=${q}object-cover block `,
+        (_m, q) => `class=${q}object-cover block `,
       )
     }
     const src = extractAttribute(next, 'src')
@@ -2195,7 +2182,7 @@ function ensureHeroSectionMedia(
 
   return html.replace(
     /<section\b([^>]*\bclass="[^"]*(?:min-h-screen|min-h-\[(?:60|70|76|80|90))[^"]*"[^>]*)>([\s\S]*?)<\/section>/gi,
-    (full: string, attrs: string, body: string) => {
+    (full, attrs, body) => {
       if (sectionHasVisibleHeroMedia(body)) return full
       const pick = pickPhotoForImg(prompt, photos, usage) || photos[0]
       const heroUrl = pick?.url
@@ -2291,7 +2278,7 @@ function hydrateArtSurfaceSlots(
   const videos = Array.isArray(imageHints?.videos) ? imageHints.videos : []
   const usage = new Map<string, number>()
 
-  return replaceArtSurfaceDivBlocks(html, (attrs: string, inner: string) => {
+  return replaceArtSurfaceDivBlocks(html, (attrs, inner) => {
     if (!isEmptyArtSurfaceInner(inner)) return `<div${attrs}>${inner}</div>`
     const kind =
       attrs.match(/\bdata-visual-kind=["']([^"']+)["']/i)?.[1] ||
@@ -2328,7 +2315,7 @@ function hydrateHeroGradientBackgrounds(
 
   return html.replace(
     /(<section\b[^>]*class="[^"]*(?:min-h-screen|min-h-\[(?:60|70|76|80|90))[^"]*"[^>]*>)([\s\S]*?)(<\/section>)/gi,
-    (full: string, open: string, body: string, close: string) => {
+    (full, open, body, close) => {
       if (/<(?:img|video)\b[^>]*\bsrc=/i.test(body)) return full
       if (!/\bbg-gradient-to/i.test(body)) return full
       const backdrop =
@@ -2358,7 +2345,7 @@ function hydrateGradientCardMedia(
 
   return html.replace(
     /<(div|article)\b([^>]*\bbg-gradient-to[^>]*)>([\s\S]*?)<\/\1>/gi,
-    (full: string, tag: string, attrs: string, inner: string) => {
+    (full, tag, attrs, inner) => {
       if (/<img\b/i.test(full)) return full
       if (/footer-branding|data-sf-|sr-only|intro-media/i.test(full))
         return full
@@ -2379,15 +2366,12 @@ function hydrateGradientCardMedia(
       usage.set(url, (usage.get(url) || 0) + 1)
       const alt = escapeHtmlAttribute(label.slice(0, 80) || 'Destination')
       const relAttrs = /\bclass\s*=/.test(attrs)
-        ? attrs.replace(
-            /\bclass\s*=\s*(["'])([^"']*)\1/,
-            (_: string, q: string, cls: string) => {
-              const nextCls = cls.includes('relative')
-                ? cls
-                : `relative overflow-hidden ${cls}`
-              return `class=${q}${nextCls}${q}`
-            },
-          )
+        ? attrs.replace(/\bclass\s*=\s*(["'])([^"']*)\1/, (_, q, cls) => {
+            const nextCls = cls.includes('relative')
+              ? cls
+              : `relative overflow-hidden ${cls}`
+            return `class=${q}${nextCls}${q}`
+          })
         : `${attrs} class="relative overflow-hidden"`
       return `<${tag}${relAttrs}><img src="${url}" alt="${alt}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" /><div class="absolute inset-0 bg-black/45"></div><div class="relative">${inner}</div></${tag}>`
     },
@@ -2934,7 +2918,7 @@ export async function hydrateDataImgSlots(
 
   const usage = new Map<string, number>()
 
-  let next = replaceDataImgDivBlocks(html, (attrs: string, subject: string) => {
+  let next = replaceDataImgDivBlocks(html, (attrs, subject) => {
     const classMatch = attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i)
     const classes = dataImgClassesForPhoto(classMatch?.[1])
     const intent = parseDataImgIntent(subject, classMatch?.[1] ?? '', promptCtx)
@@ -3006,7 +2990,7 @@ export function hydrateStorefrontGradientSlots(
 
   next = next.replace(
     /<article\s+class="product-card"[^>]*>([\s\S]*?)<\/article>/gi,
-    (block: string) => {
+    (block) => {
       const h = block.match(/<h3[^>]*>([^<]*)</i)
       const title = (h?.[1] ?? 'Product').trim()
       const desc =
@@ -3030,7 +3014,7 @@ export function hydrateStorefrontGradientSlots(
 
   next = next.replace(
     /<article\s+class="collection-card"[^>]*>([\s\S]*?)<\/article>/gi,
-    (block: string) => {
+    (block) => {
       const lab = block.match(/class="label"[^>]*>([^<]*)</i)
       const title = (lab?.[1] ?? 'Collection').trim()
       const promptCtx = String(
@@ -3063,7 +3047,7 @@ export function hydrateStorefrontGradientSlots(
 
   next = next.replace(
     /(<section[^>]*class="[^"]*materials[^"]*"[^>]*>)([\s\S]*?)(<\/section>)/i,
-    (full: string, open: string, inner: string, close: string) => {
+    (full, open, inner, close) => {
       if (!/<div\s+class="visual"[^>]*>\s*<\/div>/i.test(inner)) return full
       const mp = String(
         imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '',

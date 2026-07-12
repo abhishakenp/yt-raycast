@@ -39,7 +39,7 @@ const BILLING_ENV_KEYS = [
 
 const originalEnv = { ...process.env }
 
-const configureEnv = (overrides: Record<string, string | undefined> = {}) => {
+function configureEnv(overrides: Record<string, string | undefined> = {}) {
   for (const key of BILLING_ENV_KEYS) {
     delete process.env[key]
   }
@@ -50,7 +50,7 @@ const configureEnv = (overrides: Record<string, string | undefined> = {}) => {
   })
 }
 
-const loadPayments = async (env: Record<string, string | undefined> = {}) => {
+async function loadPayments(env: Record<string, string | undefined> = {}) {
   vi.resetModules()
   convexMock.clients.length = 0
   convexMock.mutation.mockReset()
@@ -107,7 +107,7 @@ describe('billing download access decisions', () => {
   it('unlocks ZIP downloads for subscriptions before credits', async () => {
     const { getDownloadAccessDecision, setActiveSubscriptionLookupForTest } =
       await loadPayments()
-    setActiveSubscriptionLookupForTest((uid: string) => uid === 'paid-user')
+    setActiveSubscriptionLookupForTest((uid) => uid === 'paid-user')
     convexMock.query.mockResolvedValue(7)
 
     await expect(
@@ -194,7 +194,7 @@ describe('session payment details', () => {
         STRIPE_CREDITS_10_PRICE_ID: 'price_credits_10',
       })
     setActiveSubscriptionLookupForTest(() => false)
-    convexMock.query.mockImplementation(async (name: string) => {
+    convexMock.query.mockImplementation(async (name) => {
       if (name === 'billing:getEarlyAdopterStatus') {
         return { count: 4, slotsRemaining: 6, users: [] }
       }

@@ -9,7 +9,7 @@ import { collectHomepageQualityIssues } from './homepage-quality-audit'
 const hookRe =
   /data-mobile-nav|data-accordion|data-carousel|data-tab-group|data-counter|data-pricing-billing|data-bill|\bdata-acc\b|data-open-drawer|data-cart-count|data-add\b|data-magnet|data-reveal|popovertarget|data-docs-nav|data-copy\b/i
 
-export const scoreRalphHomepage = (
+export function scoreRalphHomepage(
   html: string,
   {
     prompt = '',
@@ -24,7 +24,7 @@ export const scoreRalphHomepage = (
     refTight?: boolean
     siteType?: string
   } = {},
-) => {
+) {
   const s = String(html || '')
   const siteSt = String(siteType || '').toLowerCase()
   if (!s.trim()) {
@@ -121,12 +121,12 @@ export const scoreRalphHomepage = (
   return { ok, score, reasons, feedback }
 }
 
-export const passesHomepagePublicDesignVerification = (
+export function passesHomepagePublicDesignVerification(
   html: string,
   prompt: string,
   refPath: string,
   siteType = '',
-) => {
+) {
   if (!refPath || !existsSync(refPath)) {
     const sc = scoreRalphHomepage(html, {
       prompt,

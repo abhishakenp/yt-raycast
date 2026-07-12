@@ -15,24 +15,27 @@ vi.mock('../brandfetch.js', () => ({
     mocks.materializeBrandfetchLogoToWorkspace,
 }))
 
-const htmlResponse = (url: string, html: string) =>
-  ({
+function htmlResponse(url: string, html: string) {
+  return {
     ok: true,
     url,
     headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
     text: async () => html,
-  }) as Response
+  } as Response
+}
 
-const missingResponse = (url: string) =>
-  ({
+function missingResponse(url: string) {
+  return {
     ok: false,
     url,
     headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
     text: async () => '',
-  }) as Response
+  } as Response
+}
 
-const readProfile = (workspace: string) =>
-  JSON.parse(readFileSync(join(workspace, 'brand-profile.json'), 'utf8'))
+function readProfile(workspace: string) {
+  return JSON.parse(readFileSync(join(workspace, 'brand-profile.json'), 'utf8'))
+}
 
 type BrandProfile = {
   requestedName: string
@@ -58,7 +61,7 @@ type EnrichBrandProfile = (
   log?: (line: string) => void,
 ) => Promise<BrandProfile | null>
 
-const requireProfile = (profile: BrandProfile | null): BrandProfile => {
+function requireProfile(profile: BrandProfile | null): BrandProfile {
   if (profile === null) throw new Error('Expected brand profile')
   return profile
 }
@@ -129,7 +132,7 @@ describe('brand profile enrichment', () => {
       await enrich(
         'Build a landing page for the company Linear.',
         workspace,
-        (line: string) => {
+        (line) => {
           log.push(line)
         },
       ),
@@ -204,7 +207,7 @@ describe('brand profile enrichment', () => {
 
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (url: string | URL) => {
+      vi.fn(async (url) => {
         const href = String(url)
         if (
           href === 'https://kaverisilks.test' ||
@@ -235,9 +238,9 @@ describe('brand profile enrichment', () => {
     expect(profile.emails).toContain('care@kaverisilks.test')
     expect(profile.phones).toContain('+91 98765 43210')
     expect(profile.addresses[0]).toContain('12 Silk Road')
-    expect(
-      profile.socials.map((social: { url: string }) => social.url),
-    ).toContain('https://instagram.com/kaverisilks/')
+    expect(profile.socials.map((social) => social.url)).toContain(
+      'https://instagram.com/kaverisilks/',
+    )
     expect(profile.sourceUrls).toContain('https://kaverisilks.test/about')
     expect(readProfile(workspace).verified).toBe(true)
   })
@@ -254,7 +257,7 @@ describe('brand profile enrichment', () => {
     })
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (url: string | URL) => missingResponse(String(url))),
+      vi.fn(async (url) => missingResponse(String(url))),
     )
 
     const profile = requireProfile(

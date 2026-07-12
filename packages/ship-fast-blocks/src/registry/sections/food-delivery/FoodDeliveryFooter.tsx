@@ -69,7 +69,7 @@ export const FoodDeliveryFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'Instagram']
-    const PinMark = ({ className }: { className?: string }) => (
+    const PinMark = ({ className }) => (
       <svg
         className={className}
         fill="currentColor"

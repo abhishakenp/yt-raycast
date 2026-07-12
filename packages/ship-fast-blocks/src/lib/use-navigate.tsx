@@ -47,7 +47,9 @@ const SIGN_OUT_INTENT = /\b(sign\s*-?\s*out|log\s*-?\s*out|logout)\b/i
 const SIGN_IN_INTENT =
   /\b(sign\s*-?\s*in|log\s*-?\s*in|login|signin|sign\s*-?\s*up|signup|my\s*account|create\s*(?:a\s*|an\s*|your\s*|free\s*)?account)\b/i
 
-const normalizeTarget = (value: string): string => value.trim().toLowerCase()
+function normalizeTarget(value: string): string {
+  return value.trim().toLowerCase()
+}
 
 export function parseRouteTarget(value: string): RouteTarget | null {
   const raw = value.trim()
@@ -75,7 +77,7 @@ export function resolveRouteTarget(
   const exact = routes.find((r) => normalizeTarget(r) === normalized)
   if (exact) return { type: 'page', page: exact }
 
-  const find = (routePattern: RegExp, sectionPattern?: RegExp) => {
+  const find = (routePattern, sectionPattern?) => {
     const route = routes.find((r) => routePattern.test(normalizeTarget(r)))
     if (route) return { type: 'page' as const, page: route }
     if (sectionPattern) {
@@ -138,18 +140,21 @@ export function resolveRouteTarget(
   )
 }
 
-const slugifyRoute = (value: string): string =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'page'
+function slugifyRoute(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'page'
+  )
+}
 
 export function useNavigate() {
   const routing = useContext(RoutesContext)
   const page = useStateField<string>('page')
   const urlBridge = useContext(PreviewUrlBridgeContext)
-  return (target?: string) => {
+  return (target?) => {
     const rawTarget = (target ?? '').trim()
     const t = rawTarget.toLowerCase()
     // Real auth takes precedence over page routing.

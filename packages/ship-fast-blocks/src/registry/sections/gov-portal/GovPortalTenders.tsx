@@ -22,9 +22,11 @@ import {
   type GovRow,
 } from './gov-portal-interactions.tsx'
 
-const str = (row: GovRow, key: string) => String(row[key] ?? '').trim()
+function str(row: GovRow, key: string) {
+  return String(row[key] ?? '').trim()
+}
 
-const NoticeRows = ({ rows, lang }: { rows: GovRow[]; lang: GovLang }) => {
+function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
   if (!rows.length) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">

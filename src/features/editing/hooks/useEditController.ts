@@ -20,7 +20,7 @@ type CreateEditResult = {
   }
 } | null
 
-export const useEditController = (sessionId: string) => {
+export function useEditController(sessionId: string) {
   const navigate = useNavigate()
   const createEdit = useMutation(api.sessions['createEdit'])
   const forkSession = useMutation(api.sessions['forkSession'])
@@ -60,9 +60,7 @@ export const useEditController = (sessionId: string) => {
    *  FORBIDDEN retry, translation caching, in-flight refcount, and error
    *  handling all live here so the UI handlers and the AI stay behaviourally
    *  identical. `applyEdit` is a thin wrapper that builds the command first. */
-  const applyCommand = async (
-    command: CreateInlineEditCommand,
-  ): Promise<true | 'fork_needed' | { ok: false; error: string }> => {
+  const applyCommand = async (command) => {
     const {
       editType,
       targetLabel,
@@ -155,14 +153,14 @@ export const useEditController = (sessionId: string) => {
   }
 
   const applyEdit = async (
-    editType: 'text' | 'ai_rewrite' | 'style' | 'image',
-    targetLabel: string | undefined,
-    beforeText: string | undefined,
-    afterText: string | undefined,
-    instruction: string | undefined,
-    afterHtml?: string,
-    occurrenceIndex?: number,
-  ): Promise<true | 'fork_needed' | { ok: false; error: string }> =>
+    editType,
+    targetLabel,
+    beforeText,
+    afterText,
+    instruction,
+    afterHtml?,
+    occurrenceIndex?,
+  ) =>
     applyCommand(
       buildCreateEditCommand(
         {
@@ -221,7 +219,7 @@ export const useEditController = (sessionId: string) => {
     }
   }
 
-  const restoreVersion = async (version: number) => {
+  const restoreVersion = async (version) => {
     setEditError(undefined)
     setIsEditing(true)
 

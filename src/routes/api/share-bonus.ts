@@ -2,14 +2,15 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { shareBonusIps } from '@/lib/rate-limit'
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
 function getClientIp(request: Request): string | null {
   const forwarded = request.headers.get('x-forwarded-for')
@@ -22,7 +23,7 @@ function getClientIp(request: Request): string | null {
   return null
 }
 
-const getShareBonusStatus = (request: Request) => {
+function getShareBonusStatus(request: Request) {
   const ip = getClientIp(request)
   if (ip === null) {
     return json(
@@ -41,7 +42,7 @@ const getShareBonusStatus = (request: Request) => {
   return json({ claimed })
 }
 
-const claimShareBonus = (request: Request) => {
+function claimShareBonus(request: Request) {
   const ip = getClientIp(request)
   if (ip === null) {
     return json(

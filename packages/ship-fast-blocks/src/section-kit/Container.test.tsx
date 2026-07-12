@@ -10,8 +10,9 @@ afterEach(() => {
   cleanup()
 })
 
-const hasAll = (el: Element, ...classes: string[]) =>
-  classes.every((c) => el.classList.contains(c))
+function hasAll(el: Element, ...classes: string[]) {
+  return classes.every((c) => el.classList.contains(c))
+}
 
 describe('Container', () => {
   it('renders a div with the shared gutter and default xl width', () => {

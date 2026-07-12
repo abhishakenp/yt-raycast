@@ -103,7 +103,7 @@ export const NewsTopics = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

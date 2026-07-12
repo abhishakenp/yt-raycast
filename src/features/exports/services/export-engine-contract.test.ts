@@ -11,7 +11,7 @@ const mocks = ((
 ).__v2exportContractMocks ??= { generateText: vi.fn() })
 
 vi.mock('@ship-fast/engine/generate.ts', () => ({
-  generateText: (...args: unknown[]) =>
+  generateText: (...args) =>
     (
       (
         globalThis as typeof globalThis & {
@@ -22,7 +22,7 @@ vi.mock('@ship-fast/engine/generate.ts', () => ({
       ) => unknown
     )(...args),
   isHardLlmFailure: () => false,
-  formatLlmFailureMessage: (e: unknown) => String(e),
+  formatLlmFailureMessage: (e) => String(e),
 }))
 
 import { runV2ComposedGeneration } from '@ship-fast/engine/genui/v2-compose.ts'
@@ -33,11 +33,12 @@ import {
 import { buildOpenUIHtmlExport } from './openui-html-export-builder'
 
 // Extract section ids from the compose prompt's `"<sectionId>": <Signature>` lines.
-const sectionIdsFromPrompt = (user: string): string[] =>
-  [...user.matchAll(/"([a-z0-9_]+)":\s*[A-Z]/g)].map((m) => m[1])
+function sectionIdsFromPrompt(user: string): string[] {
+  return [...user.matchAll(/"([a-z0-9_]+)":\s*[A-Z]/g)].map((m) => m[1])
+}
 
-const richProps = (user: string): string =>
-  JSON.stringify(
+function richProps(user: string): string {
+  return JSON.stringify(
     Object.fromEntries(
       sectionIdsFromPrompt(user).map((id) => [
         id,
@@ -49,10 +50,11 @@ const richProps = (user: string): string =>
       ]),
     ),
   )
+}
 
 // Mock reply for the first-pass superagent call: pick the first listed vertical
 // and fill every listed section role with content.
-const superagentReply = (user: string): string => {
+function superagentReply(user: string): string {
   const family =
     (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
   const keys = [...user.matchAll(/^\s+([a-z0-9]+):\s/gm)].map((m) => m[1])
@@ -88,7 +90,7 @@ describe('engine output → export pipeline contract', () => {
   beforeEach(() => mocks.generateText.mockReset())
 
   it('parses and builds a composed multi-page site without export errors', async () => {
-    mocks.generateText.mockImplementation(async (...a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (...a) => {
       const user = String(a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -130,7 +132,7 @@ describe('engine output → export pipeline contract', () => {
   })
 
   it('parses and builds a composed commerce site without export errors', async () => {
-    mocks.generateText.mockImplementation(async (...a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (...a) => {
       const user = String(a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)

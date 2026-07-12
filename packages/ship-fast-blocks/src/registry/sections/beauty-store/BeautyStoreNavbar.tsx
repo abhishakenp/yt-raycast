@@ -51,7 +51,7 @@ export const BeautyStoreNavbar = defineCapsule({
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
     const homeTarget = props.homeTarget ?? nav[0]
 
-    const SearchIcon = (): ReactNode => (
+    const SearchIcon = () => (
       <svg
         className="size-5"
         fill="none"
@@ -68,7 +68,7 @@ export const BeautyStoreNavbar = defineCapsule({
       </svg>
     )
 
-    const AccountIcon = (): ReactNode => (
+    const AccountIcon = () => (
       <svg
         className="size-5"
         fill="none"
@@ -85,7 +85,7 @@ export const BeautyStoreNavbar = defineCapsule({
       </svg>
     )
 
-    const CartIcon = (): ReactNode => (
+    const CartIcon = () => (
       <svg
         className="size-5"
         fill="none"

@@ -63,7 +63,7 @@ export const MobileAppDownloadCta = defineCapsule({
       </svg>
     )
 
-    const CheckIcon = ({ className }: { className?: string }) => (
+    const CheckIcon = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

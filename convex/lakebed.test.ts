@@ -12,13 +12,15 @@ afterEach(() => {
   vi.unstubAllEnvs()
 })
 
-const identityFor = (userId: string) => ({
-  issuer: 'https://convex.test',
-  subject: userId,
-  tokenIdentifier: `https://convex.test|${userId}`,
-})
+function identityFor(userId: string) {
+  return {
+    issuer: 'https://convex.test',
+    subject: userId,
+    tokenIdentifier: `https://convex.test|${userId}`,
+  }
+}
 
-const createSession = async (
+async function createSession(
   t: any,
   {
     identity,
@@ -29,7 +31,7 @@ const createSession = async (
     anonymousClientId: string
     prompt: string
   },
-) => {
+) {
   const args = {
     anonymousClientId,
     anonymousOwnerSecret: ownerSecret,
@@ -171,10 +173,10 @@ test('lakebed admin listing includes legacy session data without owner keys', as
     sessionId,
   })
 
-  const legacyDocs = await t.run(async (ctx: any) => {
+  const legacyDocs = await t.run(async (ctx) => {
     const docs = await ctx.db
       .query('sessionData')
-      .withIndex('by_sessionId', (q: any) => q.eq('sessionId', sessionId))
+      .withIndex('by_sessionId', (q) => q.eq('sessionId', sessionId))
       .collect()
 
     for (const doc of docs) {

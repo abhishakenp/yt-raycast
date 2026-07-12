@@ -71,7 +71,7 @@ export const MobileAppFooter = defineCapsule({
       props.note ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
     const madeIn = props.madeIn ?? 'Made with care in San Francisco'
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         viewBox="0 0 32 32"
         fill="none"

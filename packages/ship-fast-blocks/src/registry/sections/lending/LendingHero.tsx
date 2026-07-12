@@ -83,7 +83,7 @@ export const LendingHero = defineCapsule({
     const inputCls =
       'w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring'
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -98,7 +98,7 @@ export const LendingHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

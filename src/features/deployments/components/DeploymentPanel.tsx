@@ -48,10 +48,10 @@ type DeploymentPanelError = {
   target: DeploymentTarget
 }
 
-const publishLakebedViaApi = async (
+async function publishLakebedViaApi(
   sessionId: string,
   anonymousOwnerSecret?: string,
-): Promise<PublishResult> => {
+): Promise<PublishResult> {
   const response = await fetch(
     `/api/sessions/${encodeURIComponent(sessionId)}/deploy/lakebed`,
     {
@@ -85,16 +85,19 @@ const targetDetails: Record<
   },
 }
 
-const isPublishResponse = (value: unknown): value is PublishResult =>
-  value !== null &&
-  typeof value === 'object' &&
-  !Array.isArray(value) &&
-  (!('error' in value) || typeof value.error === 'string') &&
-  (!('status' in value) || typeof value.status === 'string') &&
-  (!('url' in value) || typeof value.url === 'string')
+function isPublishResponse(value: unknown): value is PublishResult {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    (!('error' in value) || typeof value.error === 'string') &&
+    (!('status' in value) || typeof value.status === 'string') &&
+    (!('url' in value) || typeof value.url === 'string')
+  )
+}
 
-const artifactProgressPercent = (target: DeploymentExportTarget | undefined) =>
-  target?.artifactReady
+function artifactProgressPercent(target: DeploymentExportTarget | undefined) {
+  return target?.artifactReady
     ? 100
     : target?.artifactStatus === 'building'
       ? 72
@@ -103,8 +106,9 @@ const artifactProgressPercent = (target: DeploymentExportTarget | undefined) =>
         : target?.artifactStatus === 'loading'
           ? 12
           : 0
+}
 
-export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
+export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
   const publishPreview = useMutation(api.sessions.publishPreviewByLookup)
   const ensureExportArtifact = useMutation(
     api.sessions.ensureExportArtifactByLookup,
@@ -157,7 +161,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
       ? error.message
       : lakebedArtifactError
 
-  const publishNow = async (target: DeploymentTarget) => {
+  const publishNow = async (target) => {
     setError(undefined)
 
     if (target === 'lakebed' && lakebedDeploymentUrl) {
@@ -234,7 +238,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
     }
   }
 
-  const startPublish = (target: DeploymentTarget) => {
+  const startPublish = (target) => {
     if (isPrivate) {
       setError(undefined)
       setPendingPublicTarget(target)

@@ -18,6 +18,8 @@ const MAX_TRANSLATION_BATCH_SIZE = 120
 // smaller chunks and translating them in parallel keeps each call's latency
 // well under the timeout regardless of total page size.
 const MAX_MODEL_BATCH_SIZE = 30
+const CACHE_CLAIM_POLL_MS = 25
+const CACHE_CLAIM_WAIT_MS = 12_000
 
 type TranslationCacheClient = {
   getBatch: (input: {
@@ -28,6 +30,32 @@ type TranslationCacheClient = {
     locale: string
     entries: Array<{ text: string; translation: string }>
   }) => Promise<unknown>
+  claimBatch?: (input: {
+    locale: string
+    texts: string[]
+    owner: string
+  }) => Promise<TranslationClaimResult[]>
+  completeBatch?: (input: {
+    locale: string
+    owner: string
+    entries: Array<{ text: string; translation: string }>
+  }) => Promise<Array<string | null>>
+  releaseBatch?: (input: {
+    locale: string
+    texts: string[]
+    owner: string
+  }) => Promise<unknown>
+}
+
+type TranslationClaimResult =
+  | { state: 'cached'; translation: string }
+  | { state: 'claimed' }
+  | { state: 'pending' }
+
+type CoordinatedTranslationCacheClient = TranslationCacheClient & {
+  claimBatch: NonNullable<TranslationCacheClient['claimBatch']>
+  completeBatch: NonNullable<TranslationCacheClient['completeBatch']>
+  releaseBatch: NonNullable<TranslationCacheClient['releaseBatch']>
 }
 
 type TranslationCacheEntry = {
@@ -35,40 +63,44 @@ type TranslationCacheEntry = {
   translation: string
 }
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const normalizeLocale = (value: unknown): string =>
-  String(typeof value === 'string' ? value : '')
+function normalizeLocale(value: unknown): string {
+  return String(typeof value === 'string' ? value : '')
     .trim()
     .toLowerCase()
     .slice(0, 24)
+}
 
-const stripCodeFence = (value: string): string =>
-  value
+function stripCodeFence(value: string): string {
+  return value
     .trim()
     .replace(/^```(?:text)?/i, '')
     .replace(/```$/i, '')
     .trim()
+}
 
-const localeBase = (locale: string): string =>
-  locale === 'hinglish'
+function localeBase(locale: string): string {
+  return locale === 'hinglish'
     ? 'hi'
     : locale.replace(/-(latn|en)$/i, '').split(/[-_]/)[0] || locale
+}
 
-const localeStyle = (locale: string): 'native' | 'romanized' | 'codemix' => {
+function localeStyle(locale: string): 'native' | 'romanized' | 'codemix' {
   if (locale === 'hinglish' || /-en$/i.test(locale)) return 'codemix'
   if (/-latn$/i.test(locale)) return 'romanized'
   return 'native'
 }
 
-const languageName = (locale: string): string => {
+function languageName(locale: string): string {
   const base = localeBase(locale)
   const known = lookupKnownLanguage(base)
   if (known?.name) return known.name.replace(/\s*\(Roman\)$/i, '')
@@ -79,7 +111,7 @@ const languageName = (locale: string): string => {
   }
 }
 
-const buildTranslationPrompt = (texts: string[], locale: string) => {
+function buildTranslationPrompt(texts: string[], locale: string) {
   const baseName = languageName(locale)
   const style = localeStyle(locale)
   const system =
@@ -95,10 +127,7 @@ const buildTranslationPrompt = (texts: string[], locale: string) => {
   }
 }
 
-const parseTranslationArray = (
-  raw: string,
-  fallbackTexts: string[],
-): string[] => {
+function parseTranslationArray(raw: string, fallbackTexts: string[]): string[] {
   const cleaned = stripCodeFence(raw)
   try {
     const parsed = JSON.parse(cleaned) as unknown
@@ -125,21 +154,26 @@ const defaultTranslateModel: TranslateModel = async (system, user, signal) => {
   return await generateText(DEFAULT_MODEL, system, user, signal, 2)
 }
 
-const createDefaultTranslationCacheClient =
-  (): TranslationCacheClient | null => {
-    try {
-      const client = createRuntimeConvexHttpClient()
-      return {
-        getBatch: (input) => client.query(api.translationCache.getBatch, input),
-        setBatch: (input) =>
-          client.mutation(api.translationCache.setBatch, input),
-      }
-    } catch {
-      return null
+function createDefaultTranslationCacheClient(): TranslationCacheClient | null {
+  try {
+    const client = createRuntimeConvexHttpClient()
+    return {
+      getBatch: (input) => client.query(api.translationCache.getBatch, input),
+      setBatch: (input) =>
+        client.mutation(api.translationCache.setBatch, input),
+      claimBatch: (input) =>
+        client.mutation(api.translationCache.claimBatch, input),
+      completeBatch: (input) =>
+        client.mutation(api.translationCache.completeBatch, input),
+      releaseBatch: (input) =>
+        client.mutation(api.translationCache.releaseBatch, input),
     }
+  } catch {
+    return null
   }
+}
 
-const normalizeTexts = (body: { texts?: unknown }): string[] => {
+function normalizeTexts(body: { texts?: unknown }): string[] {
   if (Array.isArray(body.texts)) {
     return body.texts
       .slice(0, MAX_TRANSLATION_BATCH_SIZE)
@@ -153,13 +187,149 @@ const normalizeTexts = (body: { texts?: unknown }): string[] => {
   return []
 }
 
-const normalizeEntries = (body: {
+function supportsClaimCoordination(
+  cacheClient: TranslationCacheClient | null,
+): cacheClient is CoordinatedTranslationCacheClient {
+  return (
+    typeof cacheClient?.claimBatch === 'function' &&
+    typeof cacheClient.completeBatch === 'function' &&
+    typeof cacheClient.releaseBatch === 'function'
+  )
+}
+
+async function translateModelBatch({
+  texts,
+  locale,
+  translateModel,
+  signal,
+}: {
+  texts: string[]
+  locale: string
+  translateModel: TranslateModel
+  signal: AbortSignal
+}): Promise<string[]> {
+  const chunks: string[][] = []
+  for (let start = 0; start < texts.length; start += MAX_MODEL_BATCH_SIZE) {
+    chunks.push(texts.slice(start, start + MAX_MODEL_BATCH_SIZE))
+  }
+
+  const chunkTranslations = await Promise.all(
+    chunks.map(async (chunkTexts) => {
+      const prompt = buildTranslationPrompt(chunkTexts, locale)
+      const raw = await translateModel(prompt.system, prompt.user, signal)
+      return parseTranslationArray(raw, chunkTexts)
+    }),
+  )
+  return chunkTranslations.flat()
+}
+
+type UniqueTranslationEntry = {
+  text: string
+  indexes: number[]
+}
+
+async function translateWithClaimCoordination({
+  entries,
+  translations,
+  locale,
+  owner,
+  initialClaims,
+  translateModel,
+  cacheClient,
+  signal,
+}: {
+  entries: UniqueTranslationEntry[]
+  translations: string[]
+  locale: string
+  owner: string
+  initialClaims: TranslationClaimResult[]
+  translateModel: TranslateModel
+  cacheClient: CoordinatedTranslationCacheClient
+  signal: AbortSignal
+}): Promise<{ translations: string[]; modelCalled: boolean }> {
+  const deadline = Date.now() + CACHE_CLAIM_WAIT_MS
+  let unresolved = entries
+  let claims = initialClaims
+  let modelCalled = false
+
+  while (unresolved.length > 0) {
+    const claimed: UniqueTranslationEntry[] = []
+    const pending: UniqueTranslationEntry[] = []
+
+    unresolved.forEach((entry, index) => {
+      const claim = claims[index]
+      if (claim?.state === 'cached') {
+        entry.indexes.forEach((translationIndex) => {
+          translations[translationIndex] = claim.translation
+        })
+      } else if (claim?.state === 'claimed') {
+        claimed.push(entry)
+      } else {
+        pending.push(entry)
+      }
+    })
+
+    if (claimed.length > 0) {
+      modelCalled = true
+      const claimedTexts = claimed.map(({ text }) => text)
+      try {
+        const modelTranslations = await translateModelBatch({
+          texts: claimedTexts,
+          locale,
+          translateModel,
+          signal,
+        })
+        const completed = await cacheClient.completeBatch({
+          locale,
+          owner,
+          entries: claimed.map(({ text }, index) => ({
+            text,
+            translation: modelTranslations[index] || text,
+          })),
+        })
+
+        claimed.forEach((entry, index) => {
+          const translation = completed[index]
+          if (typeof translation !== 'string') {
+            pending.push(entry)
+            return
+          }
+          entry.indexes.forEach((translationIndex) => {
+            translations[translationIndex] = translation
+          })
+        })
+      } catch (error) {
+        await cacheClient
+          .releaseBatch({ locale, owner, texts: claimedTexts })
+          .catch(() => null)
+        throw error
+      }
+    }
+
+    if (pending.length === 0) break
+    if (signal.aborted || Date.now() >= deadline) {
+      throw new Error('Timed out waiting for translation cache claim.')
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, CACHE_CLAIM_POLL_MS))
+    unresolved = pending
+    claims = await cacheClient.claimBatch({
+      locale,
+      owner,
+      texts: unresolved.map(({ text }) => text),
+    })
+  }
+
+  return { translations, modelCalled }
+}
+
+function normalizeEntries(body: {
   entries?: unknown
-}): TranslationCacheEntry[] => {
+}): TranslationCacheEntry[] {
   if (!Array.isArray(body.entries)) return []
   return body.entries
     .slice(0, MAX_TRANSLATION_BATCH_SIZE)
-    .map((entry): TranslationCacheEntry | null => {
+    .map((entry) => {
       if (entry === null || typeof entry !== 'object') return null
       const record = entry as Record<string, unknown>
       const text =
@@ -175,7 +345,7 @@ const normalizeEntries = (body: {
     .filter((entry): entry is TranslationCacheEntry => entry !== null)
 }
 
-const translateBatch = async ({
+async function translateBatch({
   texts,
   locale,
   translateModel,
@@ -187,8 +357,52 @@ const translateBatch = async ({
   translateModel: TranslateModel
   cacheClient: TranslationCacheClient | null
   signal: AbortSignal
-}) => {
+}) {
   const translations = [...texts]
+  const uniqueEntriesByText = new Map<string, UniqueTranslationEntry>()
+
+  texts.forEach((text, index) => {
+    if (!text) return
+    if (shouldPreserveNativeLocaleText(text, locale)) {
+      translations[index] = text
+      return
+    }
+    const existing = uniqueEntriesByText.get(text)
+    if (existing) {
+      existing.indexes.push(index)
+    } else {
+      uniqueEntriesByText.set(text, { text, indexes: [index] })
+    }
+  })
+
+  const uniqueEntries = [...uniqueEntriesByText.values()]
+  if (uniqueEntries.length === 0) {
+    return { translations, modelCalled: false }
+  }
+
+  if (supportsClaimCoordination(cacheClient)) {
+    const owner = crypto.randomUUID()
+    const initialClaims = await cacheClient
+      .claimBatch({
+        locale,
+        owner,
+        texts: uniqueEntries.map(({ text }) => text),
+      })
+      .catch(() => null)
+    if (initialClaims) {
+      return await translateWithClaimCoordination({
+        entries: uniqueEntries,
+        translations,
+        locale,
+        owner,
+        initialClaims,
+        translateModel,
+        cacheClient,
+        signal,
+      })
+    }
+  }
+
   const cached = await cacheClient
     ?.getBatch({ locale, texts })
     .catch(() => null)
@@ -212,20 +426,12 @@ const translateBatch = async ({
     return { translations, modelCalled: false }
   }
 
-  const chunks: Array<{ index: number; text: string }[]> = []
-  for (let start = 0; start < missing.length; start += MAX_MODEL_BATCH_SIZE) {
-    chunks.push(missing.slice(start, start + MAX_MODEL_BATCH_SIZE))
-  }
-
-  const chunkTranslations = await Promise.all(
-    chunks.map(async (chunk) => {
-      const chunkTexts = chunk.map((item) => item.text)
-      const prompt = buildTranslationPrompt(chunkTexts, locale)
-      const raw = await translateModel(prompt.system, prompt.user, signal)
-      return parseTranslationArray(raw, chunkTexts)
-    }),
-  )
-  const translatedMissing = chunkTranslations.flat()
+  const translatedMissing = await translateModelBatch({
+    texts: missing.map(({ text }) => text),
+    locale,
+    translateModel,
+    signal,
+  })
 
   const cacheEntries: Array<{ text: string; translation: string }> = []
   missing.forEach((item, offset) => {
@@ -245,11 +451,11 @@ const translateBatch = async ({
   return { translations, modelCalled: true }
 }
 
-export const createTranslateResponse = async (
+export async function createTranslateResponse(
   request: Request,
   translateModel: TranslateModel = defaultTranslateModel,
   cacheClient: TranslationCacheClient | null = createDefaultTranslationCacheClient(),
-): Promise<Response> => {
+): Promise<Response> {
   let body: { texts?: unknown; locale?: unknown; entries?: unknown } = {}
 
   try {

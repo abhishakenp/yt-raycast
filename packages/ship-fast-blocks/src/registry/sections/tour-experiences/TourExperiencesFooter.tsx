@@ -4,24 +4,26 @@ import { z } from 'zod/v4'
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /** Inline compass brand mark — adventurous, currentColor → theme token. */
-const CompassMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    className={className}
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="9" />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m15.5 8.5-2.2 5.3-5.3 2.2 2.2-5.3 5.3-2.2Z"
-    />
-    <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
-  </svg>
-)
+function CompassMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m15.5 8.5-2.2 5.3-5.3 2.2 2.2-5.3 5.3-2.2Z"
+      />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
 
 /**
  * TourExperiencesFooter — closing multi-column footer for an adventure /

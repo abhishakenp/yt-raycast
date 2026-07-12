@@ -7,17 +7,16 @@ import {
   toTaskStatus,
 } from './session_serialization_helpers'
 
-const sessionDoc = (
-  overrides: Partial<Doc<'sessions'>> = {},
-): Doc<'sessions'> =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}): Doc<'sessions'> {
+  return {
     _id: 'session_123',
     _creationTime: 1000,
     prompt: 'Build a launch page',
     workspace: 'default',
     createdAt: 1700000000000,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
 const dbObservedGenerationFailure = {
   sessionId: 'k5785546fefkxmfrwkqy70st3n89j7ah',

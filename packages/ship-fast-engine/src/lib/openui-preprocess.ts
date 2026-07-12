@@ -127,7 +127,7 @@ function repairMalformedQuotedObjectKeys(code: string): string {
   // a string VALUE like "https://x" or "time:3pm" gets its opening quote stripped
   // because `https:` / `time:` look like a quoted key.
   let prevSig = ''
-  const emit = (ch: string): void => {
+  const emit = (ch): void => {
     result += ch
     if (!/\s/.test(ch)) prevSig = ch
   }
@@ -316,12 +316,12 @@ function sanitizePartialImages(code: string): string {
   return stripNullsFromArrays(replaced)
 }
 
-const transformOutsideQuotedStrings = (
+function transformOutsideQuotedStrings(
   source: string,
   transform: (segment: string) => string,
-): string => {
+): string {
   const quotedSegments: string[] = []
-  const tokenFor = (index: number) => `\uE000${index}\uE001`
+  const tokenFor = (index) => `\uE000${index}\uE001`
   let masked = ''
   let index = 0
 
@@ -366,8 +366,8 @@ const transformOutsideQuotedStrings = (
   )
 }
 
-const stripActionCalls = (source: string): string =>
-  transformOutsideQuotedStrings(source, (masked) => {
+function stripActionCalls(source: string): string {
+  return transformOutsideQuotedStrings(source, (masked) => {
     const actionPattern = /\bAction\s*\(/g
     let result = ''
     let cursor = 0
@@ -397,6 +397,7 @@ const stripActionCalls = (source: string): string =>
 
     return result
   })
+}
 
 function stripNullsFromArrays(code: string): string {
   // Aggressive null stripping for streaming: remove all null values from arrays
@@ -654,7 +655,7 @@ function forceGaplessSectionBandStack(code: string): string {
   // Array-only Stack (no trailing args): `X = Stack([ ...idents... ])`.
   return code.replace(
     /^(\s*[A-Za-z_$][\w$]*\s*=\s*)Stack\(\s*\[([^[\]]*)\]\s*\)(\s*)$/gm,
-    (match, prefix: string, inner: string, tail: string) => {
+    (match, prefix, inner, tail) => {
       const children = inner
         .split(',')
         .map((c) => c.trim())

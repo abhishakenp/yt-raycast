@@ -41,7 +41,7 @@ export const MarketingAgencyContactCta = defineCapsule({
       ? props.reassurances
       : ['30 minutes', 'No pitch, just strategy', 'Recording shared after']
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

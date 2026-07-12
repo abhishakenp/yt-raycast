@@ -143,7 +143,7 @@ export const FashionStoreProducts = defineCapsule({
     )
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         width="16"
         height="16"

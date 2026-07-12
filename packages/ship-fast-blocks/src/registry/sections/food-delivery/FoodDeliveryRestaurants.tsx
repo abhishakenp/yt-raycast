@@ -160,7 +160,7 @@ export const FoodDeliveryRestaurants = defineCapsule({
         .toLowerCase()
       return haystack.includes(activeQuery)
     })
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         fill="none"

@@ -10,7 +10,7 @@ type DiscountConvexClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 const STRIPE_REFERRAL_COUPON_ID = 'shipfast_ref_50_forever'
 const REFERRAL_DISCOUNT_PERCENT = 50
 
-const formBody = (entries: Record<string, string>): URLSearchParams => {
+function formBody(entries: Record<string, string>): URLSearchParams {
   const params = new URLSearchParams()
   for (const [key, value] of Object.entries(entries)) {
     if (value) params.set(key, value)
@@ -18,12 +18,12 @@ const formBody = (entries: Record<string, string>): URLSearchParams => {
   return params
 }
 
-const stripeRequest = async (
+async function stripeRequest(
   env: ReferralDiscountEnv,
   path: string,
   body: URLSearchParams,
-) =>
-  await fetch(`https://api.stripe.com/v1${path}`, {
+) {
+  return await fetch(`https://api.stripe.com/v1${path}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
@@ -31,15 +31,16 @@ const stripeRequest = async (
     },
     body,
   })
+}
 
 /**
  * Resolve the Stripe coupon id for the lifetime referral discount.
  * Prefers an explicit env override; otherwise lazily creates a single reusable
  * `50% off, duration: forever` coupon and reuses it on subsequent calls.
  */
-export const ensureStripeReferralCoupon = async (
+export async function ensureStripeReferralCoupon(
   env: ReferralDiscountEnv,
-): Promise<string | null> => {
+): Promise<string | null> {
   if (!env.STRIPE_SECRET_KEY) return null
   const override = (env.STRIPE_REFERRAL_COUPON_ID ?? '').trim()
   if (override) return override
@@ -67,11 +68,11 @@ export const ensureStripeReferralCoupon = async (
 }
 
 /** Attach the lifetime coupon to an existing Stripe subscription. */
-export const applyStripeReferralDiscountToSubscription = async (
+export async function applyStripeReferralDiscountToSubscription(
   env: ReferralDiscountEnv,
   subscriptionId: string,
   couponId: string,
-): Promise<boolean> => {
+): Promise<boolean> {
   const response = await stripeRequest(
     env,
     `/subscriptions/${encodeURIComponent(subscriptionId)}`,
@@ -86,11 +87,11 @@ export const applyStripeReferralDiscountToSubscription = async (
  * and record it. NEVER throws — discount application must not break payment
  * processing; failures are returned for logging and retried on the next event.
  */
-export const applyReferralDiscountForUser = async (
+export async function applyReferralDiscountForUser(
   env: ReferralDiscountEnv,
   userId: string,
   clientOverride?: DiscountConvexClient,
-): Promise<{ applied: boolean; reason: string }> => {
+): Promise<{ applied: boolean; reason: string }> {
   const secret = env.BILLING_WEBHOOK_MUTATION_SECRET
   if (!secret) return { applied: false, reason: 'not_configured' }
 

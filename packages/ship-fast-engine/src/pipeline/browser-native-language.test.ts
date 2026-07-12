@@ -35,7 +35,7 @@ const createSessionCtx = () => ({
   setCost: vi.fn(),
 })
 
-const makeWorkspace = (preferredLanguage: string) => {
+function makeWorkspace(preferredLanguage: string) {
   const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-browser-language-'))
   writeFileSync(
     join(workspace, '.session.json'),

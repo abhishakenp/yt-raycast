@@ -34,16 +34,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({
-    alt,
-    className,
-  }: {
-    alt: string
-    className?: string
-    h?: number
-    loading?: string
-    w?: number
-  }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }) => <img alt={alt} className={className} />,
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -64,16 +55,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name: string, value: unknown) => {
+  const defineGlobal = (name, value) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+  const requestAnimationFrame = (callback) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+  const cancelAnimationFrame = (id) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -156,9 +147,9 @@ function createLogisticsLakebedStub() {
     for (const listener of listeners) listener()
   }
   const nextRow = <TRow extends Record<string, unknown>>(
-    prefix: string,
-    value: TRow,
-    index: number,
+    prefix,
+    value,
+    index,
   ) => ({
     ...value,
     createdAt: now,
@@ -209,7 +200,7 @@ function createLogisticsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: LogisticsTrackingInput) => {
+      const runMutation = useCallback(async (input) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -230,15 +221,12 @@ function createLogisticsLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: LogisticsTrackingInput) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 
@@ -253,66 +241,60 @@ function createLogisticsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(
-        async (input: { items: LogisticsShipmentInput[] }) => {
-          setPendingCount((count) => count + 1)
-          setLastError(null)
-          try {
-            const existingByTrackingId = new Map(
-              shipments.map((shipment) => [
-                shipment.trackingId.toLowerCase(),
-                shipment,
-              ]),
-            )
+      const runMutation = useCallback(async (input) => {
+        setPendingCount((count) => count + 1)
+        setLastError(null)
+        try {
+          const existingByTrackingId = new Map(
+            shipments.map((shipment) => [
+              shipment.trackingId.toLowerCase(),
+              shipment,
+            ]),
+          )
 
-            for (const item of input.items) {
-              const trackingId = item.trackingId.trim()
-              if (!trackingId) continue
+          for (const item of input.items) {
+            const trackingId = item.trackingId.trim()
+            if (!trackingId) continue
 
-              const next = {
-                destination: item.destination?.trim() ?? '',
-                estimatedDelivery: item.estimatedDelivery?.trim() ?? '',
-                origin: item.origin?.trim() ?? '',
-                status: item.status?.trim() ?? '',
-                trackingId,
-              }
-              const current = existingByTrackingId.get(trackingId.toLowerCase())
-
-              if (current) {
-                shipments = shipments.map((candidate) =>
-                  candidate.id === current.id
-                    ? { ...current, ...next, updatedAt: now }
-                    : candidate,
-                )
-              } else {
-                shipments = [
-                  ...shipments,
-                  nextRow('shipment', next, shipments.length + 1),
-                ]
-              }
+            const next = {
+              destination: item.destination?.trim() ?? '',
+              estimatedDelivery: item.estimatedDelivery?.trim() ?? '',
+              origin: item.origin?.trim() ?? '',
+              status: item.status?.trim() ?? '',
+              trackingId,
             }
-            notify()
-            return shipments
-          } catch (error) {
-            setLastError(error)
-            throw error
-          } finally {
-            setPendingCount((count) => Math.max(0, count - 1))
+            const current = existingByTrackingId.get(trackingId.toLowerCase())
+
+            if (current) {
+              shipments = shipments.map((candidate) =>
+                candidate.id === current.id
+                  ? { ...current, ...next, updatedAt: now }
+                  : candidate,
+              )
+            } else {
+              shipments = [
+                ...shipments,
+                nextRow('shipment', next, shipments.length + 1),
+              ]
+            }
           }
-        },
-        [],
-      )
+          notify()
+          return shipments
+        } catch (error) {
+          setLastError(error)
+          throw error
+        } finally {
+          setPendingCount((count) => Math.max(0, count - 1))
+        }
+      }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign(
-          (input: { items: LogisticsShipmentInput[] }) => runMutation(input),
-          {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          },
-        )
+        const callable = Object.assign((input) => runMutation(input), {
+          isPending: false,
+          lastError: initialLastError,
+          pendingCount: 0,
+          reset,
+        })
         return callable
       }, [reset, runMutation])
 

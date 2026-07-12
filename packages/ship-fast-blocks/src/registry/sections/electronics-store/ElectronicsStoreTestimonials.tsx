@@ -62,7 +62,7 @@ export const ElectronicsStoreTestimonials = defineCapsule({
               'Professional headshot of a smiling male photographer with beard and glasses',
           },
         ]
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={cn('size-4', className)}
         viewBox="0 0 20 20"

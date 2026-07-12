@@ -77,12 +77,12 @@ const lakebedApi = api.lakebed
 
 const rowHeight = 38
 
-const useClickAway = (
+function useClickAway(
   ref: React.RefObject<HTMLElement | null>,
   callback: () => void,
-) => {
+) {
   useEffect(() => {
-    const handleClick = (event: MouseEvent) => {
+    const handleClick = (event) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
         callback()
       }
@@ -92,10 +92,11 @@ const useClickAway = (
   }, [ref, callback])
 }
 
-const isJsonRecord = (value: unknown): value is JsonRecord =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+function isJsonRecord(value: unknown): value is JsonRecord {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
 
-const withoutGeneratedFields = (value: unknown): unknown => {
+function withoutGeneratedFields(value: unknown): unknown {
   if (!isJsonRecord(value)) return value
   const { _id: _id, _key: _key, ...rest } = value
   void _id
@@ -103,19 +104,19 @@ const withoutGeneratedFields = (value: unknown): unknown => {
   return rest
 }
 
-const defaultValueForColumn = (column: string) => {
+function defaultValueForColumn(column: string) {
   if (column.toLowerCase().endsWith('at')) return new Date().toISOString()
   if (column.toLowerCase().includes('count')) return 0
   if (column.toLowerCase().includes('quantity')) return 1
   return ''
 }
 
-const nextRowValue = (
+function nextRowValue(
   table: LakebedAdminTable,
   row: LakebedAdminRow,
   column: string,
   value: unknown,
-) => {
+) {
   if (column === '_id') return row.value
 
   if (table.storage === 'value' && !isJsonRecord(row.value)) {
@@ -128,7 +129,7 @@ const nextRowValue = (
   }
 }
 
-const nextDataForRowSave = ({
+function nextDataForRowSave({
   data,
   row,
   table,
@@ -138,7 +139,7 @@ const nextDataForRowSave = ({
   row: LakebedAdminRow
   table: LakebedAdminTable
   value: unknown
-}): JsonRecord => {
+}): JsonRecord {
   const nextData = { ...data }
   const currentValue = data[table.field]
 
@@ -166,7 +167,7 @@ const nextDataForRowSave = ({
   return nextData
 }
 
-const nextDataForRowDelete = ({
+function nextDataForRowDelete({
   data,
   row,
   table,
@@ -174,7 +175,7 @@ const nextDataForRowDelete = ({
   data: JsonRecord
   row: LakebedAdminRow
   table: LakebedAdminTable
-}): JsonRecord => {
+}): JsonRecord {
   const nextData = { ...data }
   const currentValue = data[table.field]
 
@@ -194,7 +195,7 @@ const nextDataForRowDelete = ({
   return nextData
 }
 
-const nextDataForRowAdd = ({
+function nextDataForRowAdd({
   data,
   table,
   value,
@@ -202,7 +203,7 @@ const nextDataForRowAdd = ({
   data: JsonRecord
   table: LakebedAdminTable
   value: unknown
-}): JsonRecord => {
+}): JsonRecord {
   const nextData = { ...data }
   const currentValue = data[table.field]
 
@@ -226,14 +227,15 @@ const nextDataForRowAdd = ({
   return nextData
 }
 
-const newDocumentTemplate = (table: LakebedAdminTable): JsonRecord =>
-  Object.fromEntries(
+function newDocumentTemplate(table: LakebedAdminTable): JsonRecord {
+  return Object.fromEntries(
     table.columns
       .filter((column) => !column.startsWith('_'))
       .map((column) => [column, defaultValueForColumn(column)]),
   )
+}
 
-const safeStringify = (value: unknown) => {
+function safeStringify(value: unknown) {
   try {
     return JSON.stringify(value, null, 2)
   } catch {
@@ -241,11 +243,13 @@ const safeStringify = (value: unknown) => {
   }
 }
 
-const documentFromRow = (row: LakebedAdminRow): LakebedDocument => ({
-  ...row.cells,
-  __lakebedRow: row,
-  __rowId: row.id,
-})
+function documentFromRow(row: LakebedAdminRow): LakebedDocument {
+  return {
+    ...row.cells,
+    __lakebedRow: row,
+    __rowId: row.id,
+  }
+}
 
 export function LakebedAdminPanel({
   capsuleSchemas,
@@ -292,8 +296,7 @@ export function LakebedAdminPanel({
     visibleTables[0] ??
     tables[0]
   const docForCapsule = useCallback(
-    (capsule: string | undefined) =>
-      docs?.find((doc) => doc.capsule === capsule),
+    (capsule) => docs?.find((doc) => doc.capsule === capsule),
     [docs],
   )
   const addTargetCapsule =
@@ -348,15 +351,7 @@ export function LakebedAdminPanel({
   )
 
   const saveData = useCallback(
-    async (
-      table: LakebedAdminTable,
-      data: JsonRecord,
-      capsule = table.capsule,
-      options: {
-        surfacePanelError?: boolean
-        surfacePanelSaving?: boolean
-      } = {},
-    ) => {
+    async (table, data, capsule = table.capsule, options = {}) => {
       setError(undefined)
       if (options.surfacePanelSaving !== false) setIsSaving(true)
       try {
@@ -381,7 +376,7 @@ export function LakebedAdminPanel({
   )
 
   const saveCell = useCallback(
-    async (row: LakebedAdminRow, column: string, value: unknown) => {
+    async (row, column, value) => {
       if (!selectedTable || column.startsWith('_')) return
       const sourceCapsule = row.sourceCapsule ?? selectedTable.capsule
       const sourceDoc = docForCapsule(sourceCapsule)
@@ -403,7 +398,7 @@ export function LakebedAdminPanel({
     [docForCapsule, saveData, selectedTable],
   )
 
-  const addDocument = async (value: unknown) => {
+  const addDocument = async (value) => {
     if (!selectedTable || !selectedDoc || selectedTable.storage === 'value')
       return
     await saveData(
@@ -418,7 +413,7 @@ export function LakebedAdminPanel({
     setPopup(undefined)
   }
 
-  const saveDocument = async (row: LakebedAdminRow, value: unknown) => {
+  const saveDocument = async (row, value) => {
     if (!selectedTable) return
     const sourceCapsule = row.sourceCapsule ?? selectedTable.capsule
     const sourceDoc = docForCapsule(sourceCapsule)
@@ -436,7 +431,7 @@ export function LakebedAdminPanel({
     setPopup(undefined)
   }
 
-  const deleteRows = async (rowIds: Set<string>) => {
+  const deleteRows = async (rowIds) => {
     if (!selectedTable || selectedTable.storage === 'value') return
     const rowsByCapsule = new Map<string, LakebedAdminRow[]>()
     for (const row of selectedTable.rows) {
@@ -932,7 +927,7 @@ function DataTable({
       {
         Header: '*select',
         accessor: '__rowId',
-        Cell: ({ row }: { row: Row<LakebedDocument> }) => (
+        Cell: ({ row }) => (
           <TableCheckbox
             checked={selectedRows.has(row.original.__lakebedRow.id)}
             disabled={isSaving}
@@ -955,13 +950,7 @@ function DataTable({
       ...columns.map((column) => ({
         Header: column,
         accessor: column,
-        Cell: ({
-          row,
-          value,
-        }: {
-          row: Row<LakebedDocument>
-          value: unknown
-        }) => (
+        Cell: ({ row, value }) => (
           <DataCell
             column={column}
             document={row.original}
@@ -1189,7 +1178,7 @@ function DataCell({
     setDraft(previewAdminValue(value))
   }, [value])
 
-  const uploadDocument = async (file: File) => {
+  const uploadDocument = async (file) => {
     setError(undefined)
     setIsUploading(true)
     try {

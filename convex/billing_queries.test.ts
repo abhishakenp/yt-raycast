@@ -10,24 +10,27 @@ const modules = import.meta.glob('./**/*.ts')
 
 const ISSUER = 'https://clerk.test'
 
-const asUser = (t: ReturnType<typeof convexTest>, userId: string) =>
-  t.withIdentity({
+function asUser(t: ReturnType<typeof convexTest>, userId: string) {
+  return t.withIdentity({
     issuer: ISSUER,
     subject: userId,
     tokenIdentifier: `${ISSUER}|${userId}`,
   })
+}
 
-const subscriptionArgs = (
+function subscriptionArgs(
   userId: string,
   providerSubscriptionId: string,
   status: 'active' | 'trialing' | 'authenticated' | 'past_due' | 'cancelled',
-) => ({
-  userId,
-  provider: 'stripe' as const,
-  status,
-  planId: 'pro',
-  providerSubscriptionId,
-})
+) {
+  return {
+    userId,
+    provider: 'stripe' as const,
+    status,
+    planId: 'pro',
+    providerSubscriptionId,
+  }
+}
 
 describe('billing read and internal mutation contracts', () => {
   it('rejects unauthenticated self-service billing reads', async () => {

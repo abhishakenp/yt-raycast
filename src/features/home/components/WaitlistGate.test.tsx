@@ -19,7 +19,7 @@ const { mockAuth, capturedWaitlistProps, mockClerkClientEnabled } = vi.hoisted(
 )
 
 vi.mock('@clerk/tanstack-react-start', () => ({
-  Waitlist: (props: Record<string, unknown>) => {
+  Waitlist: (props) => {
     Object.assign(capturedWaitlistProps, props)
     return <div data-testid="clerk-waitlist">Join the waitlist</div>
   },
@@ -39,11 +39,11 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 
 const TestChildren = () => <div data-testid="prompt-form">Prompt form</div>
 
-const setAuth = (
+function setAuth(
   isLoaded: boolean,
   isSignedIn: boolean,
   clerkClientEnabled = true,
-) => {
+) {
   mockAuth.isLoaded = isLoaded
   mockAuth.isSignedIn = isSignedIn
   mockClerkClientEnabled.value = clerkClientEnabled

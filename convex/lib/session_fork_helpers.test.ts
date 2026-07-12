@@ -35,8 +35,8 @@ const notifyFunction =
     MutationCtx['scheduler']['runAfter']
   >[1]
 
-const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
-  ({
+function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
+  return {
     _id: sourceSessionId,
     _creationTime: 1,
     prompt: 'Build a product landing page',
@@ -54,10 +54,11 @@ const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
     createdAt: 1,
     updatedAt: 2,
     ...overrides,
-  }) as SessionRecord
+  } as SessionRecord
+}
 
-const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
-  ({
+function previewDoc(overrides: Partial<PreviewRecord> = {}): PreviewRecord {
+  return {
     _id: 'source_preview_1' as Id<'previews'>,
     _creationTime: 2,
     sessionId: sourceSessionId,
@@ -68,12 +69,13 @@ const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
     source: 'generation',
     createdAt: 2,
     ...overrides,
-  }) as PreviewRecord
+  } as PreviewRecord
+}
 
-const generatedModuleDoc = (
+function generatedModuleDoc(
   overrides: Partial<GeneratedModuleRecord> = {},
-): GeneratedModuleRecord =>
-  ({
+): GeneratedModuleRecord {
+  return {
     _id: 'source_module_1' as Id<'generatedModules'>,
     _creationTime: 3,
     sessionId: sourceSessionId,
@@ -83,10 +85,11 @@ const generatedModuleDoc = (
     createdAt: 3,
     updatedAt: 3,
     ...overrides,
-  }) as GeneratedModuleRecord
+  } as GeneratedModuleRecord
+}
 
-const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
-  ({
+function siteSpecDoc(overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord {
+  return {
     _id: 'source_spec_1' as Id<'siteSpecs'>,
     _creationTime: 4,
     sessionId: sourceSessionId,
@@ -94,15 +97,16 @@ const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
     createdAt: 4,
     updatedAt: 4,
     ...overrides,
-  }) as SiteSpecRecord
+  } as SiteSpecRecord
+}
 
-const ctxFor = (input: {
+function ctxFor(input: {
   userId?: string
   sessions?: SessionRecord[]
   previews?: PreviewRecord[]
   generatedModules?: GeneratedModuleRecord[]
   siteSpecs?: SiteSpecRecord[]
-}) => {
+}) {
   const sessions = [...(input.sessions ?? [])]
   const previews = [...(input.previews ?? [])]
   const generatedModules = [...(input.generatedModules ?? [])]
@@ -116,7 +120,7 @@ const ctxFor = (input: {
   const usageMetrics: Array<Record<string, unknown>> = []
   const schedulerCalls: Array<{ delayMs: number; functionRef: unknown }> = []
 
-  const rowsFor = (table: string): Array<Record<string, unknown>> => {
+  const rowsFor = (table) => {
     switch (table) {
       case 'sessions':
         return sessions as unknown as Array<Record<string, unknown>>
@@ -145,11 +149,7 @@ const ctxFor = (input: {
     }
   }
 
-  const queryRows = (
-    table: string,
-    filters: Array<{ field: string; value: unknown }>,
-    direction?: 'asc' | 'desc',
-  ) => {
+  const queryRows = (table, filters, direction?) => {
     const rows = rowsFor(table).filter((row) =>
       filters.every((filter) => row[filter.field] === filter.value),
     )
@@ -176,7 +176,7 @@ const ctxFor = (input: {
             },
     },
     db: {
-      get: async (id: string) =>
+      get: async (id) =>
         [
           ...sessions,
           ...previews,
@@ -186,7 +186,7 @@ const ctxFor = (input: {
           ...translationCache,
           ...aiCapsules,
         ].find((row) => row._id === id) ?? null,
-      insert: async (table: string, value: Record<string, unknown>) => {
+      insert: async (table, value) => {
         const rows = rowsFor(table)
         const nextId =
           table === 'sessions'
@@ -199,7 +199,7 @@ const ctxFor = (input: {
         })
         return nextId
       },
-      patch: async (id: string, value: Record<string, unknown>) => {
+      patch: async (id, value) => {
         const row = [
           ...sessions,
           ...previews,
@@ -213,18 +213,13 @@ const ctxFor = (input: {
         if (row === undefined) throw new Error(`Missing row ${id}`)
         Object.assign(row, value)
       },
-      query: (table: string) => {
+      query: (table) => {
         const filters: Array<{ field: string; value: unknown }> = []
         let direction: 'asc' | 'desc' | undefined
         const builder = {
-          withIndex: (
-            _name: string,
-            callback: (index: {
-              eq: (field: string, value: unknown) => unknown
-            }) => unknown,
-          ) => {
+          withIndex: (_name, callback) => {
             const index = {
-              eq: (field: string, value: unknown) => {
+              eq: (field, value) => {
                 filters.push({ field, value })
                 return index
               },
@@ -232,19 +227,19 @@ const ctxFor = (input: {
             callback(index)
             return builder
           },
-          order: (nextDirection: 'asc' | 'desc') => {
+          order: (nextDirection) => {
             direction = nextDirection
             return builder
           },
           first: async () => queryRows(table, filters, direction)[0] ?? null,
-          take: async (limit: number) =>
+          take: async (limit) =>
             queryRows(table, filters, direction).slice(0, limit),
         }
         return builder
       },
     },
     scheduler: {
-      runAfter: async (delayMs: number, functionRef: unknown) => {
+      runAfter: async (delayMs, functionRef) => {
         schedulerCalls.push({ delayMs, functionRef })
       },
     },

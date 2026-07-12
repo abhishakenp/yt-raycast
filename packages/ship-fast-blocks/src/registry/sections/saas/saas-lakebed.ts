@@ -23,8 +23,12 @@ export type SaasAuthSessionInput = {
   provider?: string
 }
 
-const normalizeLabel = (label: string) => label.trim() || 'Workspace'
-const normalizeEmail = (email: string) => email.trim().toLowerCase()
+function normalizeLabel(label: string) {
+  return label.trim() || 'Workspace'
+}
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase()
+}
 
 const saas = createLakebedDefinition({
   authSessions: {
@@ -90,7 +94,7 @@ export const saasLakebed = {
 
       return []
     }),
-    recordAuthSession: saas.mutation((_ctx, input: SaasAuthSessionInput) => {
+    recordAuthSession: saas.mutation((_ctx, input) => {
       const email = normalizeEmail(input.email)
       if (!email)
         return _ctx.db.authSessions.orderBy('signedInAt', 'desc').all()
@@ -118,7 +122,7 @@ export const saasLakebed = {
 
       return _ctx.db.authSessions.orderBy('signedInAt', 'desc').all()
     }),
-    requestDemo: saas.mutation((_ctx, input: SaasIntentInput) => {
+    requestDemo: saas.mutation((_ctx, input) => {
       const label = normalizeLabel(input.label)
       _ctx.db.intents.insert({
         label,
@@ -129,7 +133,7 @@ export const saasLakebed = {
 
       return _ctx.db.intents.orderBy('createdAt').all()
     }),
-    selectPlan: saas.mutation((_ctx, input: SaasIntentInput) => {
+    selectPlan: saas.mutation((_ctx, input) => {
       const label = normalizeLabel(input.label)
       _ctx.db.intents.insert({
         label,
@@ -140,7 +144,7 @@ export const saasLakebed = {
 
       return _ctx.db.intents.orderBy('createdAt').all()
     }),
-    syncPlans: saas.mutation((_ctx, input: { plans: SaasPlanInput[] }) => {
+    syncPlans: saas.mutation((_ctx, input) => {
       for (const plan of input.plans) {
         const name = plan.name.trim()
         if (!name) continue

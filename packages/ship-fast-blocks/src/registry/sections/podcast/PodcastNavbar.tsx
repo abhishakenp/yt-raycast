@@ -3,26 +3,28 @@ import { z } from 'zod/v4'
 
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
-const MicWaveMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <rect x="9" y="2" width="6" height="11" rx="3" />
-    <path d="M5 10v1a7 7 0 0 0 14 0v-1" />
-    <path d="M12 18v3" />
-    <path d="M2 14v-3" />
-    <path d="M22 14v-3" />
-    <path d="M5 15v-1" />
-    <path d="M19 15v-1" />
-  </svg>
-)
+function MicWaveMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="9" y="2" width="6" height="11" rx="3" />
+      <path d="M5 10v1a7 7 0 0 0 14 0v-1" />
+      <path d="M12 18v3" />
+      <path d="M2 14v-3" />
+      <path d="M22 14v-3" />
+      <path d="M5 15v-1" />
+      <path d="M19 15v-1" />
+    </svg>
+  )
+}
 
 export const PodcastNavbar = defineCapsule({
   name: 'PodcastNavbar',

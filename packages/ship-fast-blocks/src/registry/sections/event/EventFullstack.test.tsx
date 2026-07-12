@@ -101,15 +101,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -135,7 +132,7 @@ function createEventLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const syncTickets = (tickets: EventTicketInput[]) => {
+  const syncTickets = (tickets) => {
     const nextTickets = [...state.tickets]
 
     for (const ticket of tickets) {
@@ -166,7 +163,7 @@ function createEventLakebedStub() {
 
     state = { ...state, tickets: nextTickets }
   }
-  const recordEventAction = (input: EventActionInput) => {
+  const recordEventAction = (input) => {
     state = {
       ...state,
       actions: [

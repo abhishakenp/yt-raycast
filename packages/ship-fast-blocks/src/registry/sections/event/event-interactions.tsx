@@ -22,19 +22,21 @@ type EventRegistrationSummary = ReturnType<
   typeof eventLakebed.queries.registrationSummary
 >
 
-export const eventTicket = ({
+export function eventTicket({
   availability,
   cta,
   name,
   price,
   unit,
-}: EventTicketInput): EventTicketInput => ({
-  availability: availability ?? '',
-  cta: cta ?? '',
-  name,
-  price: price ?? '',
-  unit: unit ?? '',
-})
+}: EventTicketInput): EventTicketInput {
+  return {
+    availability: availability ?? '',
+    cta: cta ?? '',
+    name,
+    price: price ?? '',
+    unit: unit ?? '',
+  }
+}
 
 export function EventMutationSpinner({ className }: { className?: string }) {
   return (
@@ -164,7 +166,7 @@ export function EventMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
   const navigate = useCallback(
-    (target?: string) => {
+    (target?) => {
       setOpen(false)
       go(target)
     },

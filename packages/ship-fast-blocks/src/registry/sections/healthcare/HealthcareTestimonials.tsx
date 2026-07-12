@@ -90,7 +90,7 @@ export const HealthcareTestimonials = defineCapsule({
             avatarAlt: 'Portrait of patient Marcus Johnson',
           },
         ]
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={className}
         width="20"

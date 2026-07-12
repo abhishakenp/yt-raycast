@@ -9,7 +9,9 @@ export type NewsletterSubscriberInput = {
   source?: string
 }
 
-const normalizeEmail = (email: string) => email.trim().toLowerCase()
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase()
+}
 
 const newsletter = createLakebedDefinition({
   subscribers: {
@@ -35,7 +37,7 @@ export const newsletterLakebed = {
     }),
   },
   mutations: {
-    subscribe: newsletter.mutation((_ctx, input: NewsletterSubscriberInput) => {
+    subscribe: newsletter.mutation((_ctx, input) => {
       const email = normalizeEmail(input.email)
       if (!email) return _ctx.db.subscribers.orderBy('createdAt').all()
 

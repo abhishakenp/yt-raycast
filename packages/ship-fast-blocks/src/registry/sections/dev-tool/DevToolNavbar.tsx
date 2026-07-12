@@ -55,7 +55,7 @@ export const DevToolNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get Started'
     const ctaTarget = props.ctaTarget ?? 'Start Building Free'
 
-    const BoltMark = ({ className }: { className?: string }) => (
+    const BoltMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

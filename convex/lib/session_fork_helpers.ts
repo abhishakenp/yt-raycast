@@ -19,11 +19,11 @@ export type ForkSessionInput = {
   edit?: SessionEditInput
 }
 
-export const forkSessionForOwner = async (
+export async function forkSessionForOwner(
   ctx: MutationCtx,
   args: ForkSessionInput,
   sendOperationalNotification: OperationalNotificationReference,
-) => {
+) {
   const source = await ctx.db.get(args.sourceSessionId)
   const now = Date.now()
 

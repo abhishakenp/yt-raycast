@@ -16,7 +16,7 @@ import schema from '../../../convex/schema'
 // ─── helpers ──────────────────────────────────────────────────────────────
 
 /** Collect every Text node under `el` in document order. */
-const textNodesOf = (el: Node): Text[] => {
+function textNodesOf(el: Node): Text[] {
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
   const nodes: Text[] = []
   let current = walker.nextNode()
@@ -70,7 +70,7 @@ describe('useTextEdit — behavioral', () => {
   beforeEach(() => {
     // Run rAF callbacks synchronously so deferred blur handlers fire
     // immediately — this exercises the re-entrant finishEdit path.
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    vi.stubGlobal('requestAnimationFrame', (cb) => {
       cb(0)
       return 0
     })
@@ -172,7 +172,7 @@ describe('useTextEdit — behavioral', () => {
 
 describe('useTextEdit — cancel reverts text changes', () => {
   beforeEach(() => {
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    vi.stubGlobal('requestAnimationFrame', (cb) => {
       cb(0)
       return 0
     })

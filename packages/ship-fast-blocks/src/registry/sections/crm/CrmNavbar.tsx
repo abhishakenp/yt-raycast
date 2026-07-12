@@ -52,7 +52,7 @@ export const CrmNavbar = defineCapsule({
     const cta = props.cta ?? 'Start Free Trial'
     const homeTarget = props.homeTarget ?? nav[0]
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

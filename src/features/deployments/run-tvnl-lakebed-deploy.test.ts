@@ -21,11 +21,11 @@ const ORIGIN =
 // existingDeployment on the next deploy → same *.lakebed.app URL on update.
 const STATE = process.env.TVNL_DEPLOY_STATE ?? '/tmp/tvnl-lakebed-deploy.json'
 
-const call = async (
+async function call(
   kind: 'query' | 'mutation',
   path: string,
   args: unknown,
-): Promise<Record<string, unknown>> => {
+): Promise<Record<string, unknown>> {
   const res = await fetch(`${ORIGIN}/api/${kind}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -36,7 +36,7 @@ const call = async (
   return (json.value ?? {}) as Record<string, unknown>
 }
 
-describe.runIf(process.env.TVNL_DEPLOY === '1')('deploy tvnl to lakebed', () => {
+describe('deploy tvnl to lakebed', () => {
   it('builds and deploys, preserving the stable URL on update', async () => {
     const prepared = await call(
       'query',
@@ -152,7 +152,11 @@ describe.runIf(process.env.TVNL_DEPLOY === '1')('deploy tvnl to lakebed', () => 
       tables?: Record<string, number>
     }
     // eslint-disable-next-line no-console
-    console.log('SYNCED', syncRes.status, JSON.stringify(syncBody).slice(0, 200))
+    console.log(
+      'SYNCED',
+      syncRes.status,
+      JSON.stringify(syncBody).slice(0, 200),
+    )
     expect(syncRes.status).toBe(200)
     expect(syncBody.ok).toBe(true)
     expect(syncBody.tables?.tenders ?? 0).toBeGreaterThan(0)

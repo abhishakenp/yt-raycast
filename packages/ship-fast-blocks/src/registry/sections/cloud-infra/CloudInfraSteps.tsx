@@ -58,7 +58,7 @@ export const CloudInfraSteps = defineCapsule({
           },
         ]
     const code = props.code ?? 'curl -sSL https://cloudshift.io/install | sh'
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

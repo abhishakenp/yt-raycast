@@ -41,7 +41,7 @@ export const AboutNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Get in touch'
 
     // Shared brand mark — indigo→violet gradient tile + zap glyph (decorative brand asset).
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground',
@@ -64,7 +64,7 @@ export const AboutNavbar = defineCapsule({
       </span>
     )
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         width="16"
         height="16"

@@ -79,7 +79,7 @@ export const ManufacturingFooter = defineCapsule({
       .slice(0, 2)
       .map((w) => w.charAt(0).toUpperCase())
       .join('')
-    const socialIcon = (name: string) => {
+    const socialIcon = (name) => {
       if (name === 'Twitter') {
         return (
           <svg

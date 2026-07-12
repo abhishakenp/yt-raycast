@@ -115,7 +115,7 @@ export function DatabaseIndexFilterEditor({
   const isCreationTimeField = field === '_creationTime'
 
   // Determine the current operator
-  const getCurrentOperator = (): string => {
+  const getCurrentOperator = () => {
     if (!isRangeFilter) {
       return 'equals'
     }
@@ -144,7 +144,7 @@ export function DatabaseIndexFilterEditor({
 
   // Handle changes to the filter's enabled state
   const handleEnabledChange = useCallback(
-    (event: React.SyntheticEvent<HTMLInputElement>) => {
+    (event) => {
       const enabled = (event.target as HTMLInputElement).checked
 
       // If trying to disable and subsequent filters are enabled, prevent the change
@@ -159,7 +159,7 @@ export function DatabaseIndexFilterEditor({
 
   // Handle changes to the filter's value
   const handleValueChange = useCallback(
-    (value?: Value) => {
+    (value?) => {
       if (filter.type !== 'indexEq') {
         throw new Error('Called handleValueChange for non-equals filter')
       }
@@ -176,7 +176,7 @@ export function DatabaseIndexFilterEditor({
 
   // Handle date change for _creationTime
   const handleDateChange = useCallback(
-    (date: Date) => {
+    (date) => {
       const timestamp = date.getTime()
 
       if (filter.type === 'indexEq') {
@@ -194,7 +194,7 @@ export function DatabaseIndexFilterEditor({
 
   // Handle lower date change for _creationTime between
   const handleLowerDateChange = useCallback(
-    (date: Date) => {
+    (date) => {
       const timestamp = date.getTime()
       if ('lowerValue' in filter) {
         onChange({ ...filter, lowerValue: timestamp }, idx)
@@ -216,7 +216,7 @@ export function DatabaseIndexFilterEditor({
 
   // Handle upper date change for _creationTime between
   const handleUpperDateChange = useCallback(
-    (date: Date) => {
+    (date) => {
       const timestamp = date.getTime()
       if ('upperValue' in filter) {
         onChange({ ...filter, upperValue: timestamp }, idx)
@@ -238,7 +238,7 @@ export function DatabaseIndexFilterEditor({
 
   // Handle changes to range filter values
   const handleLowerValueChange = useCallback(
-    (value?: Value) => {
+    (value?) => {
       if ('lowerValue' in filter) {
         onChange(
           {
@@ -266,7 +266,7 @@ export function DatabaseIndexFilterEditor({
   )
 
   const handleUpperValueChange = useCallback(
-    (value?: Value) => {
+    (value?) => {
       if ('upperValue' in filter) {
         onChange(
           {
@@ -351,7 +351,7 @@ export function DatabaseIndexFilterEditor({
 
   // Convert to single operator range filter
   const convertToSingleOperatorFilter = useCallback(
-    (op: 'lt' | 'lte' | 'gt' | 'gte') => {
+    (op) => {
       let value = null
 
       // Try to preserve the current value
@@ -408,7 +408,7 @@ export function DatabaseIndexFilterEditor({
 
   // Handle filter type change
   const handleFilterTypeChange = useCallback(
-    (option: string | null) => {
+    (option) => {
       if (!option) return
 
       if (option === 'equals') {
@@ -428,14 +428,14 @@ export function DatabaseIndexFilterEditor({
 
   // Handle errors from ObjectEditor
   const handleError = useCallback(
-    (newErrors: string[]) => {
+    (newErrors) => {
       onError(idx, newErrors)
     },
     [idx, onError],
   )
 
   // Helper to get timestamp value or default to current time
-  const getTimestampValue = (value: any): Date => {
+  const getTimestampValue = (value) => {
     if (typeof value === 'number') {
       return new Date(value)
     }
@@ -443,11 +443,7 @@ export function DatabaseIndexFilterEditor({
   }
 
   // Reusable DateTimePicker component
-  const renderDateTimePicker = (
-    value: any,
-    onChangeHandler: (date: Date) => void,
-    className = '',
-  ) => (
+  const renderDateTimePicker = (value, onChangeHandler, className = '') => (
     <DateTimePicker
       date={getTimestampValue(value)}
       onChange={onChangeHandler}

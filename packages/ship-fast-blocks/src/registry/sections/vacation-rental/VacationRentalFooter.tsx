@@ -14,26 +14,28 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * villa, or boutique short-stay site. Renders fully with no props via baked-in
  * "Azure Cove Retreats" defaults.
  */
-const PalmMark = ({ className }: { className?: string }) => (
-  <svg
-    width="28"
-    height="28"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <circle cx="17.5" cy="6.5" r="2.5" />
-    <path d="M12 22v-9" />
-    <path d="M12 13c-2-3-5-4-8-3 2-2 6-2 8 0" />
-    <path d="M12 13c2-3 5-4 8-3-2-2-6-2-8 0" />
-    <path d="M12 13c-1-3-1-6 1-8-3 1-4 5-1 8" />
-  </svg>
-)
+function PalmMark({ className }: { className?: string }) {
+  return (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="17.5" cy="6.5" r="2.5" />
+      <path d="M12 22v-9" />
+      <path d="M12 13c-2-3-5-4-8-3 2-2 6-2 8 0" />
+      <path d="M12 13c2-3 5-4 8-3-2-2-6-2-8 0" />
+      <path d="M12 13c-1-3-1-6 1-8-3 1-4 5-1 8" />
+    </svg>
+  )
+}
 
 export const VacationRentalFooter = defineCapsule({
   name: 'VacationRentalFooter',

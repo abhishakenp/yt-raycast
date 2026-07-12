@@ -32,14 +32,6 @@ vi.mock('@tanstack/react-router', () => ({
     to,
     params,
     ...props
-  }: {
-    children?: ReactNode
-    onPointerEnter?: PointerEventHandler<HTMLAnchorElement>
-    onPointerLeave?: PointerEventHandler<HTMLAnchorElement>
-    preload?: false | 'intent'
-    to?: string
-    params?: Record<string, string>
-    [key: string]: unknown
   }) => {
     let href = typeof to === 'string' ? to : '#'
     if (params && typeof params === 'object') {
@@ -78,7 +70,7 @@ vi.mock('convex/react', () => ({
       }
     }
   },
-  ConvexProvider: ({ children }: { children: ReactNode }) => children,
+  ConvexProvider: ({ children }) => children,
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
@@ -92,7 +84,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }: { source: string }) => (
+  GeneratedModulePreview: ({ source }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))
@@ -111,9 +103,9 @@ const controllerState = {
 }
 
 vi.mock('./hooks/useGalleryController', () => ({
-  getGalleryThumbnailUrl: (session: GallerySession) =>
+  getGalleryThumbnailUrl: (session) =>
     `/api/sessions/${encodeURIComponent(session.sessionId)}/gallery-thumb?v=${encodeURIComponent(String(session.previewVersion ?? 0))}`,
-  resolveGalleryThumbnail: async (thumbnailUrl: string) => {
+  resolveGalleryThumbnail: async (thumbnailUrl) => {
     try {
       const response = await fetch(thumbnailUrl, {
         signal: new AbortController().signal,
@@ -129,11 +121,6 @@ vi.mock('./hooks/useGalleryController', () => ({
     limit = 12,
     page = 1,
     search = '',
-  }: {
-    category?: string
-    limit?: number
-    page?: number
-    search?: string
   }) => {
     if (controllerState.loading) {
       return { gallery: undefined, sessions: undefined }
@@ -143,15 +130,14 @@ vi.mock('./hooks/useGalleryController', () => ({
     if (search.trim().length > 0) {
       const needle = search.trim().toLowerCase()
       items = items.filter(
-        (session: GallerySession) =>
+        (session) =>
           session.prompt?.toLowerCase().includes(needle) ||
           session.categories?.some((c) => c.toLowerCase().includes(needle)),
       )
     }
     if (category.trim().length > 0) {
       items = items.filter(
-        (session: GallerySession) =>
-          session.categories?.includes(category) ?? false,
+        (session) => session.categories?.includes(category) ?? false,
       )
     }
 
@@ -244,7 +230,7 @@ const emptyGallery: GalleryPayload = {
   totalPages: 1,
 }
 
-const resetController = (sessions: GallerySession[] = baseSessions) => {
+function resetController(sessions: GallerySession[] = baseSessions) {
   controllerState.loading = false
   controllerState.sessions = sessions
   controllerState.categoriesOverride = undefined
@@ -900,10 +886,7 @@ describe('Gallery API response', () => {
   it('29. search/query alias: "search=foo" and "query=foo" forward the same value', async () => {
     const captured: Array<{ search?: string; category?: string }> = []
     const mockClient = {
-      query: async (
-        _fn: unknown,
-        args: { search?: string; category?: string },
-      ) => {
+      query: async (_fn, args) => {
         captured.push(args)
         return emptyApiPayload
       },
@@ -924,7 +907,7 @@ describe('Gallery API response', () => {
 
   it('30. category filter: category=saas is forwarded to the query', async () => {
     const mockClient = {
-      query: async (_fn: unknown, args: { category?: string }) => {
+      query: async (_fn, args) => {
         expect(args.category).toBe('saas')
         return {
           ...emptyApiPayload,

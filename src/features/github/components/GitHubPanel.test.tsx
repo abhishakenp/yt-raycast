@@ -56,7 +56,7 @@ vi.mock('@/features/session/services/session-create-payload', () => ({
   createAnonymousClientId: () => 'anon_test_client',
 }))
 
-const setExportTargets = (targets: MockGitHubTarget[]) => {
+function setExportTargets(targets: MockGitHubTarget[]) {
   exportTargetsState.value = { targets }
 }
 
@@ -64,9 +64,9 @@ const createStorage = () => {
   const values = new Map<string, string>()
   return {
     clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    removeItem: vi.fn((key: string) => values.delete(key)),
-    setItem: vi.fn((key: string, value: string) => {
+    getItem: vi.fn((key) => values.get(key) ?? null),
+    removeItem: vi.fn((key) => values.delete(key)),
+    setItem: vi.fn((key, value) => {
       values.set(key, value)
     }),
   }
@@ -117,7 +117,7 @@ describe('GitHubPanel', () => {
         artifactStatus: 'building',
       },
     ])
-    const fetchMock = vi.fn(async (url: string | URL, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url, init) => {
       void init
       const path = String(url)
 
@@ -224,7 +224,7 @@ describe('GitHubPanel', () => {
         artifactStatus: 'ready',
       },
     ])
-    const fetchMock = vi.fn(async (url: string | URL, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url, init) => {
       void init
       const path = String(url)
 
@@ -414,7 +414,7 @@ describe('GitHubPanel', () => {
       status: 'ready',
       previewVersion: 2,
     })
-    const fetchMock = vi.fn(async (url: string | URL, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url, init) => {
       void init
       const path = String(url)
 
@@ -474,7 +474,7 @@ describe('GitHubPanel', () => {
       href: 'http://localhost:3000/generate/session_456',
       assign: assignMock,
     })
-    const fetchMock = vi.fn(async (url: string | URL, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url, init) => {
       const path = String(url)
 
       if (path.endsWith('/github/push')) {
@@ -544,7 +544,7 @@ describe('GitHubPanel', () => {
       'ship-fast:github-pending-push',
       JSON.stringify({ sessionId: 'session_999', target: 'html' }),
     )
-    const fetchMock = vi.fn(async (url: string | URL, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url, init) => {
       void init
       const path = String(url)
 

@@ -29,60 +29,58 @@ type TestIdentity = NonNullable<
   Awaited<ReturnType<AccessCtx['auth']['getUserIdentity']>>
 >
 
-const identityFor = (
+function identityFor(
   values: Partial<Pick<TestIdentity, 'subject' | 'tokenIdentifier'>>,
-): TestIdentity =>
-  ({
+): TestIdentity {
+  return {
     issuer: 'https://convex.test',
     subject: values.subject ?? 'subject',
     tokenIdentifier: values.tokenIdentifier,
-  }) as TestIdentity
+  } as TestIdentity
+}
 
-const authCtx = (identity: TestIdentity | null): AccessCtx => ({
-  auth: {
-    getUserIdentity: async () => identity,
-  },
-})
+function authCtx(identity: TestIdentity | null): AccessCtx {
+  return {
+    auth: {
+      getUserIdentity: async () => identity,
+    },
+  }
+}
 
 const sessionId = 'session_access' as Id<'sessions'>
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a site',
     workspace: 'default',
     createdAt: 1,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
-const mutationCtxForSessions = (input: {
+function mutationCtxForSessions(input: {
   sessions: Doc<'sessions'>[]
   identity?: TestIdentity | null
-}) => {
+}) {
   const sessions = [...input.sessions]
   const deletedIds: Array<Id<'sessions'>> = []
   const patches: Array<{ id: Id<'sessions'>; patch: Record<string, unknown> }> =
     []
 
   const db = {
-    get: async (id: Id<'sessions'>) =>
-      sessions.find((session) => session._id === id) ?? null,
-    query: (table: 'sessions') => {
+    get: async (id) => sessions.find((session) => session._id === id) ?? null,
+    query: (table) => {
       expect(table).toBe('sessions')
       let rows = [...sessions]
 
       const builder = {
-        withIndex: (
-          indexName: 'by_userId' | 'by_anonymousClientIdHash',
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (indexName, applyIndex) => {
           expect(['by_userId', 'by_anonymousClientIdHash']).toContain(indexName)
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -103,12 +101,12 @@ const mutationCtxForSessions = (input: {
 
       return builder
     },
-    delete: async (id: Id<'sessions'>) => {
+    delete: async (id) => {
       deletedIds.push(id)
       const index = sessions.findIndex((session) => session._id === id)
       if (index >= 0) sessions.splice(index, 1)
     },
-    patch: async (id: Id<'sessions'>, patch: Record<string, unknown>) => {
+    patch: async (id, patch) => {
       patches.push({ id, patch })
       const session = sessions.find((next) => next._id === id)
       if (session !== undefined) Object.assign(session, patch)

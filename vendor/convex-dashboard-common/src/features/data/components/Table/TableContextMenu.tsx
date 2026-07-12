@@ -94,37 +94,23 @@ export function TableContextMenu({
   const disableEdit =
     state?.selectedCell?.column.startsWith('_') || disableEditDoc
 
-  const createActionHandler =
-    (
-      action:
-        | 'edit'
-        | 'copy'
-        | 'view'
-        | 'editDoc'
-        | 'viewDoc'
-        | 'copyDoc'
-        | 'goToRef',
-    ) =>
-    () => {
-      if (!state?.selectedCell?.callbacks?.[action]) return
+  const createActionHandler = (action) => () => {
+    if (!state?.selectedCell?.callbacks?.[action]) return
 
-      if (action === 'editDoc' && disableEditDoc) return
-      if (action === 'edit' && disableEdit) return
+    if (action === 'editDoc' && disableEditDoc) return
+    if (action === 'edit' && disableEdit) return
 
-      if (action === 'editDoc' || action === 'viewDoc') {
-        const selectedRowId = state.selectedCell?.rowId
-        const document = data.find((row) => row._id === selectedRowId)
-        if (!document) {
-          captureMessage(
-            'Can’t find the right-clicked document in data',
-            'error',
-          )
-          return
-        }
+    if (action === 'editDoc' || action === 'viewDoc') {
+      const selectedRowId = state.selectedCell?.rowId
+      const document = data.find((row) => row._id === selectedRowId)
+      if (!document) {
+        captureMessage('Can’t find the right-clicked document in data', 'error')
+        return
       }
-      state.selectedCell.callbacks[action]()
-      close()
     }
+    state.selectedCell.callbacks[action]()
+    close()
+  }
   const editCb = createActionHandler('edit')
   const editDocCb = createActionHandler('editDoc')
   const viewDocCb = createActionHandler('viewDoc')

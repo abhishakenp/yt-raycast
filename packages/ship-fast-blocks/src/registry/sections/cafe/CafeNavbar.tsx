@@ -53,7 +53,7 @@ export const CafeNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Location'
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
-    const OwlMark = ({ className }: { className?: string }) => (
+    const OwlMark = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="currentColor"

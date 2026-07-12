@@ -20,9 +20,9 @@ const CODE_LENGTH = 8
  * Math.random, which Convex seeds deterministically inside a mutation).
  * Injectable RNG keeps this unit-testable.
  */
-export const generateReferralCode = (
+export function generateReferralCode(
   random: () => number = Math.random,
-): string => {
+): string {
   let code = ''
   for (let i = 0; i < CODE_LENGTH; i += 1) {
     code += CODE_ALPHABET[Math.floor(random() * CODE_ALPHABET.length)]
@@ -31,30 +31,33 @@ export const generateReferralCode = (
 }
 
 /** Normalize a user-supplied referral code to its canonical stored form. */
-export const normalizeReferralCode = (code: unknown): string =>
-  String(code ?? '')
+export function normalizeReferralCode(code: unknown): string {
+  return String(code ?? '')
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '')
     .slice(0, CODE_LENGTH)
+}
 
 /** Whether `qualifiedCount` meets the unlock threshold. */
-export const isRewardUnlocked = (qualifiedCount: number): boolean =>
-  qualifiedCount >= REFERRAL_THRESHOLD
+export function isRewardUnlocked(qualifiedCount: number): boolean {
+  return qualifiedCount >= REFERRAL_THRESHOLD
+}
 
 /** Referrals still needed before the reward unlocks (never negative). */
-export const referralsRemaining = (qualifiedCount: number): number =>
-  Math.max(0, REFERRAL_THRESHOLD - qualifiedCount)
+export function referralsRemaining(qualifiedCount: number): number {
+  return Math.max(0, REFERRAL_THRESHOLD - qualifiedCount)
+}
 
 /**
  * Compute the next reward state from the current qualified count.
  * Unlock is monotonic: once `alreadyUnlocked` is true it stays true regardless
  * of the current count (permanent-once-unlocked semantics).
  */
-export const computeRewardState = (
+export function computeRewardState(
   qualifiedCount: number,
   alreadyUnlocked: boolean,
-): { unlocked: boolean; justUnlocked: boolean } => {
+): { unlocked: boolean; justUnlocked: boolean } {
   const unlocked = alreadyUnlocked || isRewardUnlocked(qualifiedCount)
   return {
     unlocked,

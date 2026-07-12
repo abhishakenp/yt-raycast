@@ -474,10 +474,10 @@ export const INDIAN_LANGUAGE_CODES = new Set(
   PROMPT_DETECT_LANGUAGES.map((l) => l.code),
 )
 
-export const preferMixedEnglishBcp47FromPrompt = (
+export function preferMixedEnglishBcp47FromPrompt(
   prompt: unknown,
   pureBcp47Code: string,
-): string | null => {
+): string | null {
   const pl = String(prompt || '').toLowerCase()
   const mixed = MIXED_ENGLISH_LANGUAGES.find(
     (l) => l.code === `${pureBcp47Code}-en`,
@@ -489,9 +489,9 @@ export const preferMixedEnglishBcp47FromPrompt = (
   return null
 }
 
-export const preferMixedEnglishBcp47FromSnippet = (
+export function preferMixedEnglishBcp47FromSnippet(
   snippet: unknown,
-): string | null => {
+): string | null {
   const pl = String(snippet || '').toLowerCase()
   if (/\bhinglish\b/.test(pl)) return 'hinglish'
   if (/\bmanglish\b/.test(pl)) return 'ml-en'
@@ -511,20 +511,21 @@ export const preferMixedEnglishBcp47FromSnippet = (
   return null
 }
 
-export const isMixedEnglishIndicCode = (code: unknown): boolean => {
+export function isMixedEnglishIndicCode(code: unknown): boolean {
   const c = String(code || '')
     .trim()
     .toLowerCase()
   return c === 'hinglish' || /^[a-z]{2,8}-en$/.test(c)
 }
 
-export const isRomanizedIndicCode = (code: unknown): boolean =>
-  /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
+export function isRomanizedIndicCode(code: unknown): boolean {
+  return /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
+}
 
 // Any non-English locale we render via /api/translate: plain 2-char ISO, xx-latn
 // (romanized), or the code-mixed variants (hinglish / xx-en). English is the only
 // non-translatable value.
-export const isTranslatableLocale = (code: unknown): boolean => {
+export function isTranslatableLocale(code: unknown): boolean {
   const c = String(code || '')
     .trim()
     .toLowerCase()
@@ -540,9 +541,9 @@ export const isTranslatableLocale = (code: unknown): boolean => {
   )
 }
 
-export const preferRomanizedBcp47FromSnippet = (
+export function preferRomanizedBcp47FromSnippet(
   snippet: unknown,
-): string | null => {
+): string | null {
   const pl = String(snippet || '').toLowerCase()
   for (const l of INDIC_PURE_LANGUAGES) {
     const n = l.name.toLowerCase()
@@ -562,9 +563,9 @@ export const preferRomanizedBcp47FromSnippet = (
   return null
 }
 
-export const preferIndicBcp47FromRomanizedPrompt = (
+export function preferIndicBcp47FromRomanizedPrompt(
   snippet: unknown,
-): string | null => {
+): string | null {
   const words = new Set(
     String(snippet || '')
       .toLowerCase()
@@ -629,8 +630,10 @@ export const INDIAN_DESIGN_TOKENS = {
   ],
 }
 
-export const getDefaultFontForScript = (script: string): string =>
-  SCRIPT_FONT_MAP[script] || 'Inter, system-ui, sans-serif'
+export function getDefaultFontForScript(script: string): string {
+  return SCRIPT_FONT_MAP[script] || 'Inter, system-ui, sans-serif'
+}
 
-export const lookupKnownLanguage = (code: string): LanguageEntry | null =>
-  KNOWN_LANGUAGES.find((l) => l.code === code) || null
+export function lookupKnownLanguage(code: string): LanguageEntry | null {
+  return KNOWN_LANGUAGES.find((l) => l.code === code) || null
+}

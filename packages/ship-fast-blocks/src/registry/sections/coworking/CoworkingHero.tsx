@@ -97,7 +97,7 @@ export const CoworkingHero = defineCapsule({
           'Professional headshot of a man with beard in casual attire',
         ]
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -112,7 +112,7 @@ export const CoworkingHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

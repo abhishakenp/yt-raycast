@@ -60,7 +60,7 @@ const discountEnv = {
   BILLING_WEBHOOK_MUTATION_SECRET: MUTATION_SECRET,
 } as unknown as NodeJS.ProcessEnv
 
-const hmacSha256Hex = async (secret: string, payload: string) => {
+async function hmacSha256Hex(secret: string, payload: string) {
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),
@@ -78,7 +78,7 @@ const hmacSha256Hex = async (secret: string, payload: string) => {
   ).join('')
 }
 
-const buildSignedStripeRequest = async (event: unknown) => {
+async function buildSignedStripeRequest(event: unknown) {
   const rawBody = JSON.stringify(event)
   const t = '1700000000'
   const v1 = await hmacSha256Hex(STRIPE_SECRET, `${t}.${rawBody}`)
@@ -89,7 +89,7 @@ const buildSignedStripeRequest = async (event: unknown) => {
   })
 }
 
-const buildSignedRazorpayRequest = async (event: unknown) => {
+async function buildSignedRazorpayRequest(event: unknown) {
   const rawBody = JSON.stringify(event)
   const signature = await hmacSha256Hex(RAZORPAY_SECRET, rawBody)
   return new Request('https://ship-fast.io/api/razorpay/webhook', {
@@ -100,49 +100,53 @@ const buildSignedRazorpayRequest = async (event: unknown) => {
 }
 
 /** A Stripe checkout.session event for a subscription. */
-const stripeSubscriptionEvent = (overrides: Record<string, unknown> = {}) => ({
-  id: 'evt_sub_1',
-  data: {
-    object: {
-      id: 'cs_1',
-      mode: 'subscription',
-      subscription: 'sub_1',
-      status: 'active',
-      metadata: { userId: 'user_1', mode: 'subscription', tier: 'pro' },
-      ...overrides,
-    },
-  },
-})
-
-/** A Stripe checkout.session event for a credit pack. */
-const stripeCreditPackEvent = (packId: string, userId = 'user_1') => ({
-  id: `evt_${packId}`,
-  data: {
-    object: {
-      id: `cs_${packId}`,
-      mode: 'payment',
-      metadata: { userId, mode: 'credit_pack', packId },
-    },
-  },
-})
-
-/** A Razorpay subscription webhook event. */
-const razorpaySubscriptionEvent = (
-  overrides: Record<string, unknown> = {},
-) => ({
-  event: 'subscription.activated',
-  payload: {
-    subscription: {
-      entity: {
-        id: 'sub_rzp_1',
+function stripeSubscriptionEvent(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'evt_sub_1',
+    data: {
+      object: {
+        id: 'cs_1',
+        mode: 'subscription',
+        subscription: 'sub_1',
         status: 'active',
-        plan_id: 'plan_pro',
-        notes: { userId: 'user_1', tier: 'pro' },
+        metadata: { userId: 'user_1', mode: 'subscription', tier: 'pro' },
         ...overrides,
       },
     },
-  },
-})
+  }
+}
+
+/** A Stripe checkout.session event for a credit pack. */
+function stripeCreditPackEvent(packId: string, userId = 'user_1') {
+  return {
+    id: `evt_${packId}`,
+    data: {
+      object: {
+        id: `cs_${packId}`,
+        mode: 'payment',
+        metadata: { userId, mode: 'credit_pack', packId },
+      },
+    },
+  }
+}
+
+/** A Razorpay subscription webhook event. */
+function razorpaySubscriptionEvent(overrides: Record<string, unknown> = {}) {
+  return {
+    event: 'subscription.activated',
+    payload: {
+      subscription: {
+        entity: {
+          id: 'sub_rzp_1',
+          status: 'active',
+          plan_id: 'plan_pro',
+          notes: { userId: 'user_1', tier: 'pro' },
+          ...overrides,
+        },
+      },
+    },
+  }
+}
 
 const noOpApplyDiscount = vi.fn(
   async (): Promise<{ applied: boolean; reason: string }> => ({
@@ -154,13 +158,15 @@ const noOpApplyDiscount = vi.fn(
 type MockedMutation = ConvexHttpClient['mutation'] & Mock
 type MockedConvexClient = { mutation: MockedMutation }
 
-const mockConvexClient = (
+function mockConvexClient(
   mutationImpl: (args: Record<string, unknown>) => unknown,
-): MockedConvexClient => ({
-  mutation: vi.fn(async (_path: unknown, args: Record<string, unknown>) =>
-    mutationImpl(args),
-  ) as unknown as MockedMutation,
-})
+): MockedConvexClient {
+  return {
+    mutation: vi.fn(async (_path, args) =>
+      mutationImpl(args),
+    ) as unknown as MockedMutation,
+  }
+}
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -766,13 +772,11 @@ describe('referrals', () => {
         referralUnlock: { referrerUserId: 'referrer' },
       }))
 
-      const applyDiscount = vi.fn(
-        async (_env: NodeJS.ProcessEnv, userId: string) => ({
-          applied: true,
-          reason: 'ok',
-          userId,
-        }),
-      )
+      const applyDiscount = vi.fn(async (_env, userId) => ({
+        applied: true,
+        reason: 'ok',
+        userId,
+      }))
 
       const response = await createWebhookApiResponse(
         request,
@@ -788,7 +792,7 @@ describe('referrals', () => {
     })
 
     it('applyReferralDiscountForUser attaches the Stripe coupon for an unlocked referrer', async () => {
-      const fetchMock = vi.fn(async (url: unknown) => {
+      const fetchMock = vi.fn(async (url) => {
         const u = String(url)
         if (u.endsWith('/coupons')) {
           return new Response(

@@ -119,14 +119,15 @@ const nextPrebuiltFiles = {
   'src/lib/cn.ts': 'export const cn = () => ""',
 }
 
-const filesUrlForTarget = (target: unknown): string =>
-  target === 'react'
+function filesUrlForTarget(target: unknown): string {
+  return target === 'react'
     ? 'https://storage.test/react-files.json'
     : target === 'lakebed'
       ? 'https://storage.test/lakebed-files.json'
       : target === 'next'
         ? 'https://storage.test/next-files.json'
         : 'https://storage.test/html-files.json'
+}
 
 const jwtFor = (sub = 'user_123') =>
   [
@@ -204,7 +205,7 @@ const unusedFetch: typeof fetch = async () =>
 describe('createGitHubPushResponse', () => {
   beforeEach(() => {
     globalThis.fetch = unusedFetch
-    globalThis.fetch = vi.fn(async (url: string | URL) => {
+    globalThis.fetch = vi.fn(async (url) => {
       const href = String(url)
       if (href === 'https://storage.test/html-files.json') {
         return Response.json(htmlPrebuiltFiles)
@@ -578,7 +579,7 @@ describe('createGitHubPushResponse', () => {
 
   it('treats malformed prebuilt export file manifests as not ready before touching GitHub', async () => {
     const { fetchMock, requests } = createGitHubFetch()
-    globalThis.fetch = vi.fn(async (url: string | URL) => {
+    globalThis.fetch = vi.fn(async (url) => {
       if (String(url) === 'https://storage.test/html-files.json') {
         return new Response('<!doctype html><title>storage down</title>', {
           headers: { 'Content-Type': 'text/html' },
@@ -616,7 +617,7 @@ describe('createGitHubPushResponse', () => {
 
   it('does not push a DB-observed ready HTML artifact when the file manifest lacks index.html', async () => {
     const { fetchMock, requests } = createGitHubFetch()
-    globalThis.fetch = vi.fn(async (url: string | URL) => {
+    globalThis.fetch = vi.fn(async (url) => {
       if (String(url) === 'https://storage.test/db-brewery-html-files.json') {
         return Response.json({
           'README.md':
@@ -654,7 +655,7 @@ describe('createGitHubPushResponse', () => {
 
   it('does not push a DB-observed ready HTML artifact when index.html is blank', async () => {
     const { fetchMock, requests } = createGitHubFetch()
-    globalThis.fetch = vi.fn(async (url: string | URL) => {
+    globalThis.fetch = vi.fn(async (url) => {
       if (String(url) === 'https://storage.test/db-brewery-html-files.json') {
         return Response.json({
           'README.md': '# Craft Beer Brewery',
@@ -696,7 +697,7 @@ describe('createGitHubPushResponse', () => {
 
   it('does not push a DB-observed ready Lakebed artifact when required project entrypoints are missing', async () => {
     const { fetchMock, requests } = createGitHubFetch()
-    globalThis.fetch = vi.fn(async (url: string | URL) => {
+    globalThis.fetch = vi.fn(async (url) => {
       if (
         String(url) === 'https://storage.test/db-brewery-lakebed-files.json'
       ) {
@@ -739,7 +740,7 @@ describe('createGitHubPushResponse', () => {
     const { fetchMock, requests } = createGitHubFetch()
     const dbObservedOpenUiHandoffHtml =
       '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>'
-    globalThis.fetch = vi.fn(async (url: string | URL) => {
+    globalThis.fetch = vi.fn(async (url) => {
       if (String(url) === 'https://storage.test/html-files.json') {
         return Response.json({
           ...htmlPrebuiltFiles,
@@ -1063,7 +1064,7 @@ describe('createGitHubPushResponse', () => {
 
   it('does not push a DB-observed ready Next.js artifact when required project entrypoints are missing', async () => {
     const { fetchMock, requests } = createGitHubFetch()
-    globalThis.fetch = vi.fn(async (url: string | URL) => {
+    globalThis.fetch = vi.fn(async (url) => {
       if (String(url) === 'https://storage.test/db-brewery-next-files.json') {
         return Response.json({
           'README.md':

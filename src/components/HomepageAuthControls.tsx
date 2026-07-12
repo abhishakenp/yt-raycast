@@ -43,15 +43,15 @@ const syncAuthModalBackgroundState = () => {
   }
 }
 
-const HomepageAuthInner = ({
+function HomepageAuthInner({
   autoOpen = false,
   renderButton = true,
-}: HomepageAuthControlsProps) => {
+}: HomepageAuthControlsProps) {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const hasAutoOpenedRef = useRef(false)
   const userButtonRef = useRef<HTMLDivElement | null>(null)
 
-  const openSignIn = (): boolean => {
+  const openSignIn = () => {
     if (typeof window === 'undefined') return false
     const clerk = (window as ClerkWindow).Clerk
     if (typeof clerk?.openSignIn !== 'function') return false
@@ -153,11 +153,11 @@ const HomepageAuthInner = ({
   )
 }
 
-export const HomepageAuthControls = ({
+export function HomepageAuthControls({
   autoOpen = false,
   renderButton = true,
   wrapProvider = true,
-}: HomepageAuthControlsProps) => {
+}: HomepageAuthControlsProps) {
   if (
     typeof clerkPublishableKey !== 'string' ||
     clerkPublishableKey.trim().length === 0

@@ -110,19 +110,23 @@ const { FashionStoreHero } = await import('./FashionStoreHero.tsx')
 const { FashionStoreNavbar } = await import('./FashionStoreNavbar.tsx')
 const { FashionStoreProducts } = await import('./FashionStoreProducts.tsx')
 
-const publicCartItem = ({ id, label, price, quantity }: TestCartItem) => ({
-  id,
-  label,
-  price,
-  quantity,
-})
+function publicCartItem({ id, label, price, quantity }: TestCartItem) {
+  return {
+    id,
+    label,
+    price,
+    quantity,
+  }
+}
 
-const publicProduct = ({
+function publicProduct({
   imageAlt,
   label,
   price,
   subtitle,
-}: TestProduct): TestProductInput => ({ imageAlt, label, price, subtitle })
+}: TestProduct): TestProductInput {
+  return { imageAlt, label, price, subtitle }
+}
 
 function useTestMutation<TMutation>({
   lastError,
@@ -140,15 +144,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -186,15 +187,12 @@ function createCommerceLakebedStub() {
     count: state.items.reduce((total, item) => total + item.quantity, 0),
     items: state.items,
   })
-  const findItem = (input: TestCartInput) =>
+  const findItem = (input) =>
     (input.id ? state.items.find((item) => item.id === input.id) : undefined) ??
     (input.label
       ? state.items.find((item) => item.label === input.label)
       : undefined)
-  const replaceItem = (
-    target: TestCartItem,
-    updater: (item: TestCartItem) => TestCartItem,
-  ) => {
+  const replaceItem = (target, updater) => {
     state = {
       ...state,
       items: state.items.map((item) =>
@@ -202,7 +200,7 @@ function createCommerceLakebedStub() {
       ),
     }
   }
-  const addItem = (input: TestCartInput) => {
+  const addItem = (input) => {
     const label = input.label?.trim() || 'Item'
     const existing = state.items.find((item) => item.label === label)
 
@@ -232,7 +230,7 @@ function createCommerceLakebedStub() {
       ],
     }
   }
-  const syncCatalog = (products: TestProductInput[]) => {
+  const syncCatalog = (products) => {
     const nextProducts = [...state.products]
 
     products.forEach((product) => {

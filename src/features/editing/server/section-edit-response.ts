@@ -61,19 +61,21 @@ const MAX_SELECTION_HTML_CHARS = 8000
 const MAX_TSX_SOURCE_CHARS = 30000
 const MAX_AUTO_FIX_RETRIES = 3
 
-const asSessionId = (sessionId: string): Id<'sessions'> =>
-  sessionId as Id<'sessions'>
+function asSessionId(sessionId: string): Id<'sessions'> {
+  return sessionId as Id<'sessions'>
+}
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const loadGenerateTextRuntime = async (): Promise<GenerateTextRuntime> => {
+async function loadGenerateTextRuntime(): Promise<GenerateTextRuntime> {
   const [{ generateText, generateWithTools }, { DEFAULT_MODEL }] =
     await Promise.all([
       import('@ship-fast/engine'),
@@ -91,7 +93,7 @@ const resolveInlineStockImage: ResolveInlineStockImage = async (input) => {
   return resolveStockImage(input)
 }
 
-const getString = (body: JsonBody, keys: string[]): string | undefined => {
+function getString(body: JsonBody, keys: string[]): string | undefined {
   for (const key of keys) {
     const value = body[key]
     if (typeof value === 'string') return value
@@ -99,18 +101,22 @@ const getString = (body: JsonBody, keys: string[]): string | undefined => {
   return undefined
 }
 
-const getOwnerSecret = (request: Request, body: JsonBody): string | undefined =>
-  getString(body, ['anonymousOwnerSecret']) ??
-  request.headers.get('x-anonymous-owner-secret') ??
-  undefined
+function getOwnerSecret(request: Request, body: JsonBody): string | undefined {
+  return (
+    getString(body, ['anonymousOwnerSecret']) ??
+    request.headers.get('x-anonymous-owner-secret') ??
+    undefined
+  )
+}
 
-const readJsonBody = async (request: Request): Promise<JsonBody> => {
+async function readJsonBody(request: Request): Promise<JsonBody> {
   const text = await request.text()
   return JSON.parse(text) as JsonBody
 }
 
-const truncate = (value: string, max: number): string =>
-  value.length > max ? `${value.slice(0, max)}…` : value
+function truncate(value: string, max: number): string {
+  return value.length > max ? `${value.slice(0, max)}…` : value
+}
 
 type GenerationViewSnapshot = {
   homeModule?: { source: string } | null
@@ -141,19 +147,20 @@ type ResolveInlineStockImage = (input: {
 
 const INLINE_EDIT_CODE_MODE_TOOL_DEFINITIONS = INLINE_EDIT_TOOL_DEFINITIONS
 
-const isTranslatedEditOutput = (
+function isTranslatedEditOutput(
   value: unknown,
-): value is NonNullable<InlineToolExecutionResult['translatedEdit']> =>
-  Boolean(
+): value is NonNullable<InlineToolExecutionResult['translatedEdit']> {
+  return Boolean(
     value &&
     typeof value === 'object' &&
     typeof (value as { locale?: unknown }).locale === 'string' &&
     typeof (value as { sourceText?: unknown }).sourceText === 'string' &&
     typeof (value as { translation?: unknown }).translation === 'string',
   )
+}
 
 /** Determine if the session is HTML (iframe srcDoc) or OpenUI (component tree). */
-const isHtmlSession = (snapshot: GenerationViewSnapshot): boolean => {
+function isHtmlSession(snapshot: GenerationViewSnapshot): boolean {
   const source = snapshot.homeModule?.source ?? ''
   return /^\s*(?:<!DOCTYPE\s+html|<html[\s>]|<[a-z][\w:-]*(?:\s|>|\/>))/i.test(
     source.trim(),
@@ -162,11 +169,11 @@ const isHtmlSession = (snapshot: GenerationViewSnapshot): boolean => {
 
 // ─── LLM Prompt Builders ────────────────────────────────────────────────────
 
-const buildHtmlToolOnlyEditPrompt = (
+function buildHtmlToolOnlyEditPrompt(
   selection: InspectorSelection,
   instruction: string,
   previewHtml: string,
-): { system: string; user: string } => {
+): { system: string; user: string } {
   const system = [
     'You are editing an HTML page with inline editor tools.',
     'Use only the available tools when the requested edit can be represented as text, style, image, link, deletion, or section rewrite operations.',
@@ -194,11 +201,11 @@ const buildHtmlToolOnlyEditPrompt = (
   return { system, user }
 }
 
-const buildHtmlSectionEditPrompt = (
+function buildHtmlSectionEditPrompt(
   selection: InspectorSelection,
   instruction: string,
   previewHtml: string,
-): { system: string; user: string } => {
+): { system: string; user: string } {
   const system = [
     'You are a frontend engineer editing a section of an HTML page.',
     'You will receive the current full HTML of the page and a user instruction.',
@@ -227,12 +234,12 @@ const buildHtmlSectionEditPrompt = (
   return { system, user }
 }
 
-const buildOpenUiCapsuleEditPrompt = (
+function buildOpenUiCapsuleEditPrompt(
   selection: InspectorSelection,
   instruction: string,
   capsuleSource: string,
   similarCapsules: string[],
-): { system: string; user: string } => {
+): { system: string; user: string } {
   const system = [
     'You are a React/TypeScript engineer rewriting an OpenUI capsule component.',
     'The capsule is a React component that receives props and renders a UI section.',
@@ -270,11 +277,11 @@ const buildOpenUiCapsuleEditPrompt = (
   return { system, user }
 }
 
-const buildOpenUiToolOnlyEditPrompt = (
+function buildOpenUiToolOnlyEditPrompt(
   selection: InspectorSelection,
   instruction: string,
   source: string,
-): { system: string; user: string } => {
+): { system: string; user: string } {
   const system = [
     'You are editing an OpenUI-generated page with inline editor tools.',
     'Use only the available tools when the requested edit can be represented as text, style, image, link, deletion, section move, or section rewrite operations.',
@@ -303,12 +310,12 @@ const buildOpenUiToolOnlyEditPrompt = (
   return { system, user }
 }
 
-const selectionClassAnchor = (selection: InspectorSelection): string => {
+function selectionClassAnchor(selection: InspectorSelection): string {
   const match = selection.outerHTML?.match(/\sclass=(["'])(.*?)\1/i)
   return match?.[2]?.trim() ?? ''
 }
 
-const selectionIdAnchor = (selection: InspectorSelection): string => {
+function selectionIdAnchor(selection: InspectorSelection): string {
   const match = selection.outerHTML?.match(/\sid=(["'])(.*?)\1/i)
   const id = match?.[2]?.trim()
   return id ? `#${id}` : ''
@@ -320,10 +327,11 @@ const STYLE_SOURCE_ATTRIBUTE_ANCHORS = [
   'data-sf-export-page',
 ] as const
 
-const escapeAttributeSelectorValue = (value: string): string =>
-  value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+function escapeAttributeSelectorValue(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
 
-const selectionAttributeAnchor = (selection: InspectorSelection): string => {
+function selectionAttributeAnchor(selection: InspectorSelection): string {
   for (const attributeName of STYLE_SOURCE_ATTRIBUTE_ANCHORS) {
     const pattern = new RegExp(`\\s${attributeName}=(["'])(.*?)\\1`, 'i')
     const match = selection.outerHTML?.match(pattern)
@@ -335,21 +343,24 @@ const selectionAttributeAnchor = (selection: InspectorSelection): string => {
   return ''
 }
 
-const selectionOpenUiVar = (selection: InspectorSelection): string => {
+function selectionOpenUiVar(selection: InspectorSelection): string {
   if (selection.openuiVar) return selection.openuiVar
   const match = selection.outerHTML?.match(/\sdata-openui-var=(["'])(.*?)\1/i)
   return match?.[2]?.trim() ?? ''
 }
 
-const selectionStyleAnchor = (selection: InspectorSelection): string =>
-  selectionClassAnchor(selection) ||
-  selectionIdAnchor(selection) ||
-  selectionAttributeAnchor(selection)
+function selectionStyleAnchor(selection: InspectorSelection): string {
+  return (
+    selectionClassAnchor(selection) ||
+    selectionIdAnchor(selection) ||
+    selectionAttributeAnchor(selection)
+  )
+}
 
-const selectionHasAnchor = (
+function selectionHasAnchor(
   selection: InspectorSelection,
   anchor: string | undefined,
-): boolean => {
+): boolean {
   const normalizedAnchor = anchor?.trim()
   if (!normalizedAnchor) return false
   const selectedTag = selection.tag.trim().toLowerCase()
@@ -380,10 +391,10 @@ const selectionHasAnchor = (
   )
 }
 
-const normalizeStyleApplyInput = (
+function normalizeStyleApplyInput(
   input: Parameters<typeof buildStyleApplyCommand>[0],
   selection: InspectorSelection,
-): Parameters<typeof buildStyleApplyCommand>[0] => {
+): Parameters<typeof buildStyleApplyCommand>[0] {
   if (input.targetScope && input.targetScope !== 'element') {
     const scopedAnchor = selectionScopedAnchor(selection, input.targetScope)
     if (scopedAnchor) {
@@ -415,10 +426,10 @@ const normalizeStyleApplyInput = (
   }
 }
 
-const normalizeElementDeleteInput = (
+function normalizeElementDeleteInput(
   input: Parameters<typeof buildElementDeleteCommand>[0],
   selection: InspectorSelection,
-): Parameters<typeof buildElementDeleteCommand>[0] => {
+): Parameters<typeof buildElementDeleteCommand>[0] {
   if (input.targetScope && input.targetScope !== 'element') {
     const scopedAnchor = selectionScopedAnchor(selection, input.targetScope)
     if (scopedAnchor) {
@@ -431,10 +442,10 @@ const normalizeElementDeleteInput = (
   return input
 }
 
-const normalizeImageReplaceInput = (
+function normalizeImageReplaceInput(
   input: Parameters<typeof buildImageReplaceCommand>[0],
   selection: InspectorSelection,
-): Parameters<typeof buildImageReplaceCommand>[0] => {
+): Parameters<typeof buildImageReplaceCommand>[0] {
   if (input.targetScope && input.targetScope !== 'element') {
     const scopedAnchor = selectionScopedAnchor(selection, input.targetScope)
     if (scopedAnchor) {
@@ -447,10 +458,10 @@ const normalizeImageReplaceInput = (
   return input
 }
 
-const normalizeImageRemoveInput = (
+function normalizeImageRemoveInput(
   input: Parameters<typeof buildImageRemoveCommand>[0],
   selection: InspectorSelection,
-): Parameters<typeof buildImageRemoveCommand>[0] => {
+): Parameters<typeof buildImageRemoveCommand>[0] {
   if (input.targetScope && input.targetScope !== 'element') {
     const scopedAnchor = selectionScopedAnchor(selection, input.targetScope)
     if (scopedAnchor) {
@@ -463,17 +474,18 @@ const normalizeImageRemoveInput = (
   return input
 }
 
-const selectionOpenUiVarAnchor = (selection: InspectorSelection): string => {
+function selectionOpenUiVarAnchor(selection: InspectorSelection): string {
   const openUiVar = selectionOpenUiVar(selection)
   return openUiVar
     ? `[data-openui-var="${escapeAttributeSelectorValue(openUiVar)}"]`
     : ''
 }
 
-const selectionSectionAnchor = (selection: InspectorSelection): string =>
-  selection.sectionAnchor ?? selectionOpenUiVarAnchor(selection)
+function selectionSectionAnchor(selection: InspectorSelection): string {
+  return selection.sectionAnchor ?? selectionOpenUiVarAnchor(selection)
+}
 
-const selectionPageAnchor = (selection: InspectorSelection): string => {
+function selectionPageAnchor(selection: InspectorSelection): string {
   if (selection.pageLabel) {
     return `[data-sf-export-page="${escapeAttributeSelectorValue(
       selection.pageLabel,
@@ -482,35 +494,36 @@ const selectionPageAnchor = (selection: InspectorSelection): string => {
   return selectionAttributeAnchor(selection)
 }
 
-const selectionScopedAnchor = (
+function selectionScopedAnchor(
   selection: InspectorSelection,
   targetScope: 'section' | 'page',
-): string =>
-  targetScope === 'section'
+): string {
+  return targetScope === 'section'
     ? selectionSectionAnchor(selection)
     : selectionPageAnchor(selection) || selectionSectionAnchor(selection)
+}
 
-const selectionImageSrcAnchor = (selection: InspectorSelection): string => {
+function selectionImageSrcAnchor(selection: InspectorSelection): string {
   const match = selection.outerHTML?.match(/\ssrc=(["'])(.*?)\1/i)
   return match?.[2]?.trim() ?? ''
 }
 
-const selectionImageAltAnchor = (selection: InspectorSelection): string => {
+function selectionImageAltAnchor(selection: InspectorSelection): string {
   const imageMatch = selection.outerHTML?.match(/<img\b[^>]*>/i)
   const altMatch = imageMatch?.[0].match(/\salt=(["'])(.*?)\1/i)
   return altMatch?.[2]?.trim() ?? ''
 }
 
-const selectionLinkHref = (selection: InspectorSelection): string => {
+function selectionLinkHref(selection: InspectorSelection): string {
   const anchorMatch = selection.outerHTML?.match(/<a\b[^>]*>/i)
   const hrefMatch = anchorMatch?.[0].match(/\shref=(["'])(.*?)\1/i)
   return hrefMatch?.[2]?.trim() ?? ''
 }
 
-const stockDimension = (
+function stockDimension(
   value: number | string | undefined,
   fallback: number,
-): number => {
+): number {
   const numeric =
     typeof value === 'number'
       ? value
@@ -522,14 +535,14 @@ const stockDimension = (
     : fallback
 }
 
-const getStockImageDimensions = (
+function getStockImageDimensions(
   input: {
     width?: number | string
     height?: number | string
     targetScope?: 'element' | 'section' | 'page'
   },
   selection: InspectorSelection,
-): { w: number; h: number } => {
+): { w: number; h: number } {
   const selectedWidth = Math.round(selection.boundingBox.width) || 800
   const selectedHeight = Math.round(selection.boundingBox.height) || 600
 
@@ -548,12 +561,14 @@ const getStockImageDimensions = (
   }
 }
 
-const executeInlineEditCommand = (
+function executeInlineEditCommand(
   client: SectionEditClient,
   command: InlineEditPersistenceCommand,
-): Promise<unknown> => client.mutation(command.mutation, command.args)
+): Promise<unknown> {
+  return client.mutation(command.mutation, command.args)
+}
 
-const buildServerInlineEditCommand = async ({
+async function buildServerInlineEditCommand({
   anonymousOwnerSecret,
   currentPreviewVersion,
   currentSource,
@@ -573,7 +588,7 @@ const buildServerInlineEditCommand = async ({
   selection: InspectorSelection
   sessionId: string
   toolName: string
-}): Promise<InlineEditPersistenceCommand> => {
+}): Promise<InlineEditPersistenceCommand> {
   const sourceAnchor =
     toolName === 'styleApply'
       ? selectionStyleAnchor(selection) ||
@@ -685,7 +700,7 @@ const buildServerInlineEditCommand = async ({
   throw new Error(`Unsupported inline editor tool: ${toolName}`)
 }
 
-const runInlineEditsWithCodeMode = async ({
+async function runInlineEditsWithCodeMode({
   anonymousOwnerSecret,
   client,
   currentPreviewVersion,
@@ -711,7 +726,7 @@ const runInlineEditsWithCodeMode = async ({
   selection: InspectorSelection
   sessionId: string
   signal: AbortSignal
-}): Promise<InlineToolExecutionResult[]> => {
+}): Promise<InlineToolExecutionResult[]> {
   const results: InlineToolExecutionResult[] = []
   let workingSource = currentSource
   let workingPreviewVersion = currentPreviewVersion
@@ -789,7 +804,7 @@ type CompileResult =
   | { ok: true; compiledJs: string }
   | { ok: false; error: string }
 
-const compileTsx = async (tsxSource: string): Promise<CompileResult> => {
+async function compileTsx(tsxSource: string): Promise<CompileResult> {
   try {
     // Dynamic import so esbuild (and its native fsevents dep) is only loaded
     // server-side, not pulled into Vite's client dependency scan.
@@ -845,9 +860,7 @@ type SmokeTestResult = { ok: true } | { ok: false; error: string }
  *  Uses a data: URL which works in both Node.js (>=20) and browsers.
  *  Sets up globalThis.React and globalThis.__jsxRuntime so the compiled JS
  *  (which references these globals instead of importing 'react') can run. */
-const smokeTestCapsule = async (
-  compiledJs: string,
-): Promise<SmokeTestResult> => {
+async function smokeTestCapsule(compiledJs: string): Promise<SmokeTestResult> {
   try {
     const smokeGlobals: CapsuleSmokeGlobals = globalThis
     // Set up globals that the compiled JS references instead of 'react' imports
@@ -885,12 +898,12 @@ type AutoFixResult =
   | { ok: false; error: string; attempts: number }
 
 /** Compile + smoke-test the TSX. On failure, ask the LLM to fix, up to 3 retries. */
-const compileAndValidateWithAutoFix = async (
+async function compileAndValidateWithAutoFix(
   tsxSource: string,
   generate: GenerateText,
   model: string,
   originalInstruction: string,
-): Promise<AutoFixResult> => {
+): Promise<AutoFixResult> {
   let currentSource = tsxSource
 
   for (let attempt = 0; attempt <= MAX_AUTO_FIX_RETRIES; attempt++) {
@@ -945,13 +958,13 @@ const compileAndValidateWithAutoFix = async (
   }
 }
 
-const requestAutoFix = async (
+async function requestAutoFix(
   generate: GenerateText,
   model: string,
   brokenSource: string,
   error: string,
   originalInstruction: string,
-): Promise<string> => {
+): Promise<string> {
   const system = [
     'You are fixing a broken React/TypeScript component.',
     'The previous version failed to compile or render.',
@@ -982,12 +995,12 @@ const requestAutoFix = async (
 // ─── OpenUI Source Patching ─────────────────────────────────────────────────
 
 /** Replace the capsule reference in OpenUI source with the AI capsule name. */
-export const patchOpenUiSourceWithAiCapsule = (
+export function patchOpenUiSourceWithAiCapsule(
   source: string,
   originalCapsuleName: string,
   aiCapsuleName: string,
   varName?: string,
-): string => {
+): string {
   // OpenUI source looks like: `hero = SaasHero({...})`
   // We replace `SaasHero` with `AICustom_SaasHero_v1`
   if (varName) {
@@ -1005,12 +1018,13 @@ export const patchOpenUiSourceWithAiCapsule = (
   )
 }
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
 // ─── Main Handler ───────────────────────────────────────────────────────────
 
-export const createSectionEditResponse = async (
+export async function createSectionEditResponse(
   sessionId: string,
   request: Request,
   options: {
@@ -1020,7 +1034,7 @@ export const createSectionEditResponse = async (
     model?: string
     resolveStockImage?: ResolveInlineStockImage
   } = {},
-): Promise<Response> => {
+): Promise<Response> {
   let body: JsonBody
   try {
     body = await readJsonBody(request)
@@ -1289,10 +1303,7 @@ export const createSectionEditResponse = async (
 /** Generate a deterministic AI capsule name based on the parent capsule and
  *  optional source variable. This ensures re-edits update the same capsule
  *  row instead of creating orphan duplicates. */
-const generateAiCapsuleName = (
-  parentName: string,
-  varName?: string,
-): string => {
+function generateAiCapsuleName(parentName: string, varName?: string): string {
   if (parentName.startsWith('AICustom_')) return parentName
   if (varName) {
     return `AICustom_${parentName}_${varName}`
@@ -1308,7 +1319,7 @@ let capsuleSourceIndex: Record<
 
 /** Load the actual TSX source code of a capsule by name from the compressed
  *  react-export-sources manifest. This gives the LLM the real source to edit. */
-const loadCapsuleSource = async (capsuleName: string): Promise<string> => {
+async function loadCapsuleSource(capsuleName: string): Promise<string> {
   try {
     if (capsuleSourceIndex === null) {
       const { reactExportSourcesBase64, reactExportSourcesEncoding } =

@@ -42,7 +42,7 @@ export const KidsEducationCta = defineCapsule({
     const note =
       props.note ?? 'Used by families in 35+ countries. Cancel anytime.'
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="20"

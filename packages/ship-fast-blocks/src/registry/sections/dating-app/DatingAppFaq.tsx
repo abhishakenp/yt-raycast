@@ -68,7 +68,7 @@ export const DatingAppFaq = defineCapsule({
           },
         ]
 
-    const ChevronDown = ({ className }: { className?: string }) => (
+    const ChevronDown = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

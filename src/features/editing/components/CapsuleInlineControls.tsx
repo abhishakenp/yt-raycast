@@ -46,7 +46,7 @@ interface CapsuleInlineControlsProps {
   capsuleElement?: HTMLElement | null
 }
 
-export const CapsuleInlineControls = ({
+export function CapsuleInlineControls({
   capsuleName,
   statementId,
   sessionId,
@@ -54,22 +54,24 @@ export const CapsuleInlineControls = ({
   activeCollectionItem,
   handleRef,
   capsuleElement,
-}: CapsuleInlineControlsProps) => (
-  <LakebedSessionProvider
-    sessionId={sessionId}
-    anonymousOwnerSecret={anonymousOwnerSecret}
-  >
-    <CapsuleInlineControlsInner
-      capsuleName={capsuleName}
-      statementId={statementId}
-      activeCollectionItem={activeCollectionItem}
-      handleRef={handleRef}
-      capsuleElement={capsuleElement}
-    />
-  </LakebedSessionProvider>
-)
+}: CapsuleInlineControlsProps) {
+  return (
+    <LakebedSessionProvider
+      sessionId={sessionId}
+      anonymousOwnerSecret={anonymousOwnerSecret}
+    >
+      <CapsuleInlineControlsInner
+        capsuleName={capsuleName}
+        statementId={statementId}
+        activeCollectionItem={activeCollectionItem}
+        handleRef={handleRef}
+        capsuleElement={capsuleElement}
+      />
+    </LakebedSessionProvider>
+  )
+}
 
-const lookupCapsuleSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
+function lookupCapsuleSchema(capsuleName: string): CapsuleSchemaInfo | null {
   const capsule = allCapsules.find((c) => c.client.name === capsuleName)
   if (!capsule) return null
   const propsSchema = capsule.client.props
@@ -78,8 +80,9 @@ const lookupCapsuleSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
   return hasContextInfo(info) ? info : null
 }
 
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v)
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
 
 const TITLE_FIELD_KEYS = [
   'name',
@@ -93,20 +96,21 @@ const TITLE_FIELD_KEYS = [
   'role',
 ]
 
-const findTitleField = (itemFields: CollectionField[]): string | undefined =>
-  itemFields.find((f) => TITLE_FIELD_KEYS.includes(f.key))?.key
+function findTitleField(itemFields: CollectionField[]): string | undefined {
+  return itemFields.find((f) => TITLE_FIELD_KEYS.includes(f.key))?.key
+}
 
-const extractItemTitle = (
+function extractItemTitle(
   item: unknown,
   titleField: string | undefined,
   fallback: string,
-): string => {
+): string {
   if (!titleField || !isPlainObject(item)) return fallback
   const val = item[titleField]
   return typeof val === 'string' && val.trim() ? val : fallback
 }
 
-const CapsuleInlineControlsInner = ({
+function CapsuleInlineControlsInner({
   capsuleName,
   statementId,
   activeCollectionItem,
@@ -118,7 +122,7 @@ const CapsuleInlineControlsInner = ({
   activeCollectionItem?: { collectionKey: string; index: number } | null
   handleRef?: React.MutableRefObject<CapsuleInlineHandle | null>
   capsuleElement?: HTMLElement | null
-}) => {
+}) {
   const actions = useSectionCapsuleActions(capsuleName, statementId)
   const schemaInfo = useMemo(
     () => lookupCapsuleSchema(capsuleName),
@@ -232,32 +236,29 @@ const CapsuleInlineControlsInner = ({
 
   // Find the grid container in the capsule element for a given collection key.
   // The grid is the element with the most same-tag children (e.g. 5 ARTICLEs).
-  const findGridContainer = useCallback(
-    (_collectionKey: string): HTMLElement | null => {
-      if (!capsuleElementRef.current) return null
-      // Find the element with the most same-tag direct children
-      let best: HTMLElement | null = null
-      let bestCount = 1
-      const all = capsuleElementRef.current.querySelectorAll('*')
-      for (const el of Array.from(all)) {
-        const htmlEl = el as HTMLElement
-        const children = Array.from(htmlEl.children)
-        if (children.length <= bestCount) continue
-        // Check if children are all the same tag (like ARTICLE)
-        const tags = new Set(children.map((c) => c.tagName))
-        if (tags.size === 1) {
-          best = htmlEl
-          bestCount = children.length
-        }
+  const findGridContainer = useCallback((_collectionKey) => {
+    if (!capsuleElementRef.current) return null
+    // Find the element with the most same-tag direct children
+    let best: HTMLElement | null = null
+    let bestCount = 1
+    const all = capsuleElementRef.current.querySelectorAll('*')
+    for (const el of Array.from(all)) {
+      const htmlEl = el as HTMLElement
+      const children = Array.from(htmlEl.children)
+      if (children.length <= bestCount) continue
+      // Check if children are all the same tag (like ARTICLE)
+      const tags = new Set(children.map((c) => c.tagName))
+      if (tags.size === 1) {
+        best = htmlEl
+        bestCount = children.length
       }
-      return best
-    },
-    [],
-  )
+    }
+    return best
+  }, [])
 
   // Apply reorder to DOM for live preview
   const applyReorderToDom = useCallback(
-    (collectionKey: string, order: number[]) => {
+    (collectionKey, order) => {
       const grid = findGridContainer(collectionKey)
       if (!grid) return
 
@@ -288,7 +289,7 @@ const CapsuleInlineControlsInner = ({
     )
   }
 
-  const bufferedValue = (key: string, backend: unknown) =>
+  const bufferedValue = (key, backend) =>
     key in pendingScalars ? pendingScalars[key] : backend
 
   const hasVariants = schemaInfo.variants.length > 0
@@ -374,7 +375,7 @@ const CapsuleInlineControlsInner = ({
 
 // ─── Inline variant switcher — flow row of pills ────────────────────────────
 
-const InlineVariantSwitcher = ({
+function InlineVariantSwitcher({
   variantKey,
   options,
   currentValue,
@@ -384,37 +385,39 @@ const InlineVariantSwitcher = ({
   options: { value: string | number | boolean; label: string }[]
   currentValue: unknown
   onBuffer: (value: unknown) => void
-}) => (
-  <div className="flex shrink-0 items-center gap-1.5">
-    <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
-      {variantKey}
-    </span>
-    <div className="flex gap-0.5 rounded-md bg-white/5 p-0.5">
-      {options.map((option) => {
-        const isActive = currentValue === option.value
-        return (
-          <button
-            key={String(option.value)}
-            type="button"
-            onClick={() => onBuffer(option.value)}
-            className={cn(
-              'rounded px-2 py-0.5 text-xs font-semibold transition-all',
-              isActive
-                ? 'bg-cyan-300/20 text-cyan-100'
-                : 'text-white/45 hover:text-white',
-            )}
-          >
-            {option.label}
-          </button>
-        )
-      })}
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-1.5">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
+        {variantKey}
+      </span>
+      <div className="flex gap-0.5 rounded-md bg-white/5 p-0.5">
+        {options.map((option) => {
+          const isActive = currentValue === option.value
+          return (
+            <button
+              key={String(option.value)}
+              type="button"
+              onClick={() => onBuffer(option.value)}
+              className={cn(
+                'rounded px-2 py-0.5 text-xs font-semibold transition-all',
+                isActive
+                  ? 'bg-cyan-300/20 text-cyan-100'
+                  : 'text-white/45 hover:text-white',
+              )}
+            >
+              {option.label}
+            </button>
+          )
+        })}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 // ─── Inline collection controls — compact flow row ──────────────────────────
 
-const InlineCollectionControls = ({
+function InlineCollectionControls({
   collectionKey,
   itemFields,
   items,
@@ -432,7 +435,7 @@ const InlineCollectionControls = ({
   onReorderLocal: (order: number[]) => void
   onAdd: (key: string, item: Record<string, unknown>) => void
   onRemove: (key: string, index: number) => void
-}) => {
+}) {
   const rawItems = Array.isArray(items) ? items : []
   const label = collectionKey.charAt(0).toUpperCase() + collectionKey.slice(1)
   const titleField = findTitleField(itemFields)
@@ -479,7 +482,7 @@ const InlineCollectionControls = ({
   }
 
   const doReorder = useCallback(
-    (fromDisplay: number, toDisplay: number) => {
+    (fromDisplay, toDisplay) => {
       if (toDisplay < 0 || toDisplay >= currentOrder.length) return
       const nextOrder = [...currentOrder]
       const [moved] = nextOrder.splice(fromDisplay, 1)

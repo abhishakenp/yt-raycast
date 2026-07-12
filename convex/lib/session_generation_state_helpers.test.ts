@@ -28,8 +28,8 @@ const realConvexOpenUiHandoffCompletion = {
     'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
 } as const
 
-const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
-  ({
+function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a homepage',
@@ -40,10 +40,11 @@ const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
     anonymousClientIdHash: 'anon-hash',
     isPrivate: false,
     ...overrides,
-  }) as SessionRecord
+  } as SessionRecord
+}
 
-const taskDoc = (overrides: Partial<TaskRecord> = {}): TaskRecord =>
-  ({
+function taskDoc(overrides: Partial<TaskRecord> = {}): TaskRecord {
+  return {
     _id: 'task_homepage' as Id<'tasks'>,
     _creationTime: 1,
     sessionId,
@@ -54,14 +55,15 @@ const taskDoc = (overrides: Partial<TaskRecord> = {}): TaskRecord =>
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as TaskRecord
+  } as TaskRecord
+}
 
-const ctxFor = (input: {
+function ctxFor(input: {
   sessions: SessionRecord[]
   tasks?: TaskRecord[]
   siteSpecs?: SiteSpecRecord[]
   generatedModules?: GeneratedModuleRecord[]
-}) => {
+}) {
   const sessions = [...input.sessions]
   const tasks = [...(input.tasks ?? [])]
   const siteSpecs = [...(input.siteSpecs ?? [])]
@@ -76,7 +78,7 @@ const ctxFor = (input: {
   }> = []
   let nextId = 1
 
-  const rowsFor = (table: string) => {
+  const rowsFor = (table) => {
     switch (table) {
       case 'sessions':
         return sessions
@@ -99,7 +101,7 @@ const ctxFor = (input: {
     }
   }
 
-  const filterRows = (table: string, filters: Map<string, unknown>) =>
+  const filterRows = (table, filters) =>
     rowsFor(table).filter((row) =>
       Array.from(filters.entries()).every(
         ([field, value]) => (row as Record<string, unknown>)[field] === value,
@@ -107,18 +109,12 @@ const ctxFor = (input: {
     )
 
   const db = {
-    get: async (id: Id<'sessions'>) =>
-      sessions.find((session) => session._id === id) ?? null,
-    query: (table: string) => ({
-      withIndex: (
-        _indexName: string,
-        applyIndex: (index: {
-          eq: (field: string, value: unknown) => typeof index
-        }) => unknown,
-      ) => {
+    get: async (id) => sessions.find((session) => session._id === id) ?? null,
+    query: (table) => ({
+      withIndex: (_indexName, applyIndex) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field: string, value: unknown) => {
+          eq: (field, value) => {
             filters.set(field, value)
             return index
           },
@@ -130,7 +126,7 @@ const ctxFor = (input: {
         }
       },
     }),
-    insert: async (table: string, value: Record<string, unknown>) => {
+    insert: async (table, value) => {
       const row = {
         _id: `${table}_${nextId++}`,
         _creationTime: 1,
@@ -139,7 +135,7 @@ const ctxFor = (input: {
       rowsFor(table).push(row as never)
       return row._id
     },
-    patch: async (id: string, value: Record<string, unknown>) => {
+    patch: async (id, value) => {
       for (const rows of [
         sessions,
         tasks,
@@ -161,11 +157,7 @@ const ctxFor = (input: {
   } as unknown as Pick<MutationCtx, 'db'>['db']
 
   const scheduler = {
-    runAfter: async (
-      delayMs: number,
-      _ref: Parameters<MutationCtx['scheduler']['runAfter']>[1],
-      event: Record<string, unknown>,
-    ) => {
+    runAfter: async (delayMs, _ref, event) => {
       schedulerCalls.push({ delayMs, event })
     },
   } as unknown as Pick<MutationCtx, 'scheduler'>['scheduler']

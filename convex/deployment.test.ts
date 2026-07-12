@@ -23,11 +23,11 @@ type LegacyEditedSessionExportRebuildReference = FunctionReference<
 
 let activeTest: ReturnType<typeof convexTest> | null = null
 
-const createTestSession = (
+function createTestSession(
   t: ReturnType<typeof convexTest>,
   prompt = 'Test site',
-) =>
-  t.mutation(api.sessions.create, {
+) {
+  return t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -36,13 +36,14 @@ const createTestSession = (
     anonymousClientId: `anon-${prompt}`,
     anonymousOwnerSecret: 'owner-secret',
   })
+}
 
-const persistGeneratedPreview = (
+function persistGeneratedPreview(
   t: ReturnType<typeof convexTest>,
   sessionId: Id<'sessions'>,
   prompt = 'Test site',
-) =>
-  t.action(internal.sessions.completeGeneration, {
+) {
+  return t.action(internal.sessions.completeGeneration, {
     sessionId,
     html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
@@ -54,6 +55,7 @@ const persistGeneratedPreview = (
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
     elapsed: 1000,
   })
+}
 
 const deploymentTest = () => {
   const t = convexTest(schema, modules)
@@ -62,17 +64,17 @@ const deploymentTest = () => {
   return t
 }
 
-const drainScheduledFunctions = async (t: ReturnType<typeof convexTest>) => {
+async function drainScheduledFunctions(t: ReturnType<typeof convexTest>) {
   for (let i = 0; i < 5; i++) {
     await new Promise((r) => setTimeout(r, 10))
     await t.finishInProgressScheduledFunctions()
   }
 }
 
-const loadEditedSessionExportRebuildCallArgs = async (
+async function loadEditedSessionExportRebuildCallArgs(
   t: ReturnType<typeof convexTest>,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const debouncerComponent =
     components.debouncer as unknown as DebouncerComponentApi
   const debouncerCallDetails = (
@@ -295,7 +297,7 @@ test('public preview by deployment slug auto-refreshes after an edited preview r
 test.each([
   [
     'theme',
-    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
+    async (t, sessionId) =>
       await t.mutation(api.sessions.setThemeOverride, {
         sessionId,
         anonymousOwnerSecret: 'owner-secret',
@@ -305,7 +307,7 @@ test.each([
   ],
   [
     'language',
-    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
+    async (t, sessionId) =>
       await t.mutation(api.sessions.setPreferredLanguage, {
         sessionId,
         anonymousOwnerSecret: 'owner-secret',
@@ -314,7 +316,7 @@ test.each([
   ],
   [
     'brand',
-    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
+    async (t, sessionId) =>
       await t.mutation(api.sessions.setBrandLogo, {
         sessionId,
         anonymousOwnerSecret: 'owner-secret',

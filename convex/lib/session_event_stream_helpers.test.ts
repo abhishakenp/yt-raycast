@@ -12,8 +12,8 @@ type EventStreamCtx = Pick<QueryCtx, 'auth' | 'db'>
 
 const sessionId = 'session_event_stream' as Id<'sessions'>
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build an event stream',
@@ -24,56 +24,51 @@ const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
     createdAt: 100,
     updatedAt: 120,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
-const eventDoc = (
+function eventDoc(
   id: string,
   createdAt: number,
   message: string,
-): Doc<'generationEvents'> =>
-  ({
+): Doc<'generationEvents'> {
+  return {
     _id: id as Id<'generationEvents'>,
     _creationTime: createdAt,
     sessionId,
     eventType: 'status',
     message,
     createdAt,
-  }) as Doc<'generationEvents'>
+  } as Doc<'generationEvents'>
+}
 
-const ctxFor = (input: {
+function ctxFor(input: {
   sessions?: Doc<'sessions'>[]
   events?: Doc<'generationEvents'>[]
   userId?: string
-}): EventStreamCtx => {
+}): EventStreamCtx {
   const sessions = [...(input.sessions ?? [])]
   const events = [...(input.events ?? [])]
 
   const db = {
-    normalizeId: (table: string, value: string) =>
+    normalizeId: (table, value) =>
       table === 'sessions' && sessions.some((session) => session._id === value)
         ? value
         : null,
-    get: async (id: string) =>
-      sessions.find((session) => session._id === id) ?? null,
-    query: (table: string) => {
+    get: async (id) => sessions.find((session) => session._id === id) ?? null,
+    query: (table) => {
       let rows = table === 'generationEvents' ? [...events] : []
 
       const builder = {
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-            gt: (field: string, value: number) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const equalFilters = new Map<string, unknown>()
           const gtFilters = new Map<string, number>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               equalFilters.set(field, value)
               return index
             },
-            gt: (field: string, value: number) => {
+            gt: (field, value) => {
               gtFilters.set(field, value)
               return index
             },
@@ -95,7 +90,7 @@ const ctxFor = (input: {
 
           return builder
         },
-        order: (direction: 'asc' | 'desc') => {
+        order: (direction) => {
           rows = [...rows].sort((left, right) =>
             direction === 'desc'
               ? right.createdAt - left.createdAt
@@ -104,7 +99,7 @@ const ctxFor = (input: {
 
           return builder
         },
-        take: async (limit: number) => rows.slice(0, limit),
+        take: async (limit) => rows.slice(0, limit),
       }
 
       return builder

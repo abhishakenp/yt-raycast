@@ -99,7 +99,7 @@ export const MarketplaceAuthors = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className ?? 'size-4'}
         viewBox="0 0 24 24"
@@ -114,7 +114,7 @@ export const MarketplaceAuthors = defineCapsule({
       </svg>
     )
 
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 20 20"
@@ -125,7 +125,7 @@ export const MarketplaceAuthors = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -140,7 +140,7 @@ export const MarketplaceAuthors = defineCapsule({
       </svg>
     )
 
-    const BoxIcon = ({ className }: { className?: string }) => (
+    const BoxIcon = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -155,7 +155,7 @@ export const MarketplaceAuthors = defineCapsule({
       </svg>
     )
 
-    const UsersIcon = ({ className }: { className?: string }) => (
+    const UsersIcon = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

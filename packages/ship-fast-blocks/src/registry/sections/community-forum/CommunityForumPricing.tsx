@@ -97,7 +97,7 @@ export const CommunityForumPricing = defineCapsule({
           },
         ]
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

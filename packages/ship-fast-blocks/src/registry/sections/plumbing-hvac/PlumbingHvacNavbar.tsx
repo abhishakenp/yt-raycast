@@ -15,26 +15,28 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * licensed home-service trades. Renders fully with no props via baked-in
  * "Pipeworks Plumbing & HVAC" defaults.
  */
-const PipeMark = ({ className }: { className?: string }) => (
-  <span
-    className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm"
-    aria-hidden="true"
-  >
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
+function PipeMark({ className }: { className?: string }) {
+  return (
+    <span
+      className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm"
+      aria-hidden="true"
     >
-      <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12 5 12 2C12 5 9 7 7 9.5S5 13 5 15a7 7 0 0 0 7 7Z" />
-    </svg>
-  </span>
-)
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+      >
+        <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12 5 12 2C12 5 9 7 7 9.5S5 13 5 15a7 7 0 0 0 7 7Z" />
+      </svg>
+    </span>
+  )
+}
 
 export const PlumbingHvacNavbar = defineCapsule({
   name: 'PlumbingHvacNavbar',

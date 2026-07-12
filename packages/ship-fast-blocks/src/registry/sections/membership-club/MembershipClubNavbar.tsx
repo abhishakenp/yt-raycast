@@ -42,7 +42,7 @@ export const MembershipClubNavbar = defineCapsule({
     const cta = props.cta ?? 'Apply Now'
     const ctaTarget = props.ctaTarget ?? 'Apply for Membership'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

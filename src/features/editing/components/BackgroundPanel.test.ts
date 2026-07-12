@@ -38,10 +38,7 @@ vi.mock('@/lib/stock-image', () => ({
   // Mirror production behaviour: with no hi-res baseUrl, fall back to the
   // thumbnail; when a baseUrl exists, hand back a resolution-tagged URL so
   // tests can assert the quality tier is threaded through.
-  buildBackgroundImageUrl: (
-    result: { imageUrl: string; baseUrl?: string },
-    resolution: string,
-  ) =>
+  buildBackgroundImageUrl: (result, resolution) =>
     result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 vi.mock('convex/react', () => ({
@@ -67,18 +64,19 @@ const { BackgroundPanel } = await import('./BackgroundPanel')
 
 const onModified = vi.fn<() => void>()
 
-const renderPanel = (
+function renderPanel(
   activeElement: HTMLElement | null,
   props: Partial<ComponentProps<typeof BackgroundPanel>> = {},
-) =>
-  render(
+) {
+  return render(
     createElement(BackgroundPanel, { activeElement, onModified, ...props }),
   )
+}
 
-const makeComputed = (
+function makeComputed(
   overrides: Partial<Record<string, string>> = {},
-): CSSStyleDeclaration =>
-  ({
+): CSSStyleDeclaration {
+  return {
     backgroundColor: 'rgb(0, 0, 0)',
     backgroundImage: 'none',
     backgroundSize: '',
@@ -89,7 +87,8 @@ const makeComputed = (
     getPropertyValue(prop: string) {
       return (this as Record<string, string>)[prop] ?? ''
     },
-  }) as unknown as CSSStyleDeclaration
+  } as unknown as CSSStyleDeclaration
+}
 
 describe('BackgroundPanel', () => {
   let activeElement: HTMLElement

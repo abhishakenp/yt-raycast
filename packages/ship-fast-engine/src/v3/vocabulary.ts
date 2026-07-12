@@ -7,12 +7,16 @@
 import type { KindVocabulary, RoleField, RoleVocabulary } from './types.ts'
 
 // ── Field builders ──────────────────────────────────────────────────────────
-const f = (name: string): RoleField => ({ name })
-const fa = (name: string, nested?: RoleField[]): RoleField => ({
-  name,
-  array: true,
-  nested: nested ?? [],
-})
+function f(name: string): RoleField {
+  return { name }
+}
+function fa(name: string, nested?: RoleField[]): RoleField {
+  return {
+    name,
+    array: true,
+    nested: nested ?? [],
+  }
+}
 
 // Common nested field shapes (used across kinds).
 const FEATURE_ITEMS = [f('title'), f('description')]

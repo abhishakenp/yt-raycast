@@ -42,15 +42,17 @@ type BookingSummary = ReturnType<
   typeof localServiceLakebed.queries.bookingSummary
 >
 
-export const localServiceItem = ({
+export function localServiceItem({
   name,
   price,
   summary,
-}: LocalServiceItemInput): LocalServiceItemInput => ({
-  name,
-  price: price ?? '',
-  summary: summary ?? '',
-})
+}: LocalServiceItemInput): LocalServiceItemInput {
+  return {
+    name,
+    price: price ?? '',
+    summary: summary ?? '',
+  }
+}
 
 export function LocalServiceMutationSpinner({
   className,
@@ -261,7 +263,7 @@ export function LocalServiceMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?: string) => {
+    (target?) => {
       setOpen(false)
       go(target)
     },

@@ -4,16 +4,17 @@ type HealthConvexClient = {
   query: (reference: unknown, args: Record<string, unknown>) => Promise<unknown>
 }
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: { 'Content-Type': 'application/json', ...init?.headers },
   })
+}
 
-export const createHealthApiResponse = async (
+export async function createHealthApiResponse(
   clientOverride?: HealthConvexClient,
   timeoutMs = 5000,
-): Promise<Response> => {
+): Promise<Response> {
   const startedAt = Date.now()
   try {
     const client = clientOverride ?? createRuntimeConvexHttpClient()

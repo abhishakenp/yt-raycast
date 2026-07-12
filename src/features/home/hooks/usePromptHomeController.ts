@@ -37,21 +37,19 @@ type CreateSessionResult = {
   cloned?: boolean
 }
 
-const delay = (ms: number) =>
-  new Promise((resolve) => {
+function delay(ms: number) {
+  return new Promise((resolve) => {
     window.setTimeout(resolve, ms)
   })
+}
 
-const waitForMinimumLaunchFeedback = async (startedAt: number) => {
+async function waitForMinimumLaunchFeedback(startedAt: number) {
   const remainingMs = MIN_LAUNCH_FEEDBACK_MS - (Date.now() - startedAt)
   if (remainingMs > 0) await delay(remainingMs)
 }
 
-const withTimeout = async <T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-): Promise<T> =>
-  await new Promise<T>((resolve, reject) => {
+async function withTimeout(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return await new Promise<T>((resolve, reject) => {
     const timer = window.setTimeout(() => {
       reject(new Error('create_session_timeout'))
     }, timeoutMs)
@@ -67,8 +65,9 @@ const withTimeout = async <T>(
       },
     )
   })
+}
 
-const isRetryableCreateSessionError = (error: unknown): boolean => {
+function isRetryableCreateSessionError(error: unknown): boolean {
   if (!(error instanceof Error)) return false
   return (
     error.message === 'create_session_timeout' ||
@@ -79,10 +78,10 @@ const isRetryableCreateSessionError = (error: unknown): boolean => {
   )
 }
 
-const createSessionWithRetry = async <Payload, Result>(
+async function createSessionWithRetry(
   createSession: (payload: Payload) => Promise<Result>,
   payload: Payload,
-): Promise<Result> => {
+): Promise<Result> {
   let lastError: unknown
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -101,9 +100,9 @@ const createSessionWithRetry = async <Payload, Result>(
   throw lastError
 }
 
-const createSessionFromHttp = async (
+async function createSessionFromHttp(
   payload: CreateSessionPayload,
-): Promise<CreateSessionResult> => {
+): Promise<CreateSessionResult> {
   const response = await fetch('/api/sessions/create', {
     method: 'POST',
     headers: {
@@ -197,15 +196,7 @@ export const usePromptHomeController = () => {
 
   const normalizedPrompt = useMemo(() => normalizePromptDraft(prompt), [prompt])
   const canSubmit = normalizedPrompt.length > 0 && !isSubmitting
-  const runSubmit = async (opts?: {
-    preferredLanguage?: string
-    isPrivate?: boolean
-    prompt?: string
-    designReferenceUrls?: string[]
-    designReferenceNotes?: string
-    cloneUrl?: string
-    engineVersion?: 'v1' | 'v2' | 'v3'
-  }) => {
+  const runSubmit = async (opts?) => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
     const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
     const isPrivate = opts?.isPrivate ?? false
@@ -324,7 +315,7 @@ export const usePromptHomeController = () => {
     }
   }
 
-  const selectExamplePrompt = (value: string) => {
+  const selectExamplePrompt = (value) => {
     setPrompt(value)
   }
 

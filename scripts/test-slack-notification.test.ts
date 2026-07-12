@@ -14,8 +14,8 @@ type RunResult = {
   stdout: string
 }
 
-const runSlackScript = (env: Record<string, string | undefined>) =>
-  new Promise<RunResult>((resolve, reject) => {
+function runSlackScript(env: Record<string, string | undefined>) {
+  return new Promise<RunResult>((resolve, reject) => {
     const child = spawn(process.execPath, [scriptPath.pathname], {
       env: {
         ...process.env,
@@ -36,10 +36,11 @@ const runSlackScript = (env: Record<string, string | undefined>) =>
     child.on('error', reject)
     child.on('close', (code) => resolve({ code, stderr, stdout }))
   })
+}
 
-const withWebhookServer = async (
+async function withWebhookServer(
   handler: (req: IncomingMessage, res: ServerResponse, body: string) => void,
-) => {
+) {
   const requests: Array<{ body: string; headers: IncomingMessage['headers'] }> =
     []
   const server = createServer((req, res) => {

@@ -5,20 +5,21 @@ export type GenerationLaunchStorage = Pick<
   'getItem' | 'removeItem' | 'setItem'
 >
 
-export const getGenerationLaunchStorageKey = (sessionId: string): string =>
-  `${generationLaunchStoragePrefix}${sessionId}`
+export function getGenerationLaunchStorageKey(sessionId: string): string {
+  return `${generationLaunchStoragePrefix}${sessionId}`
+}
 
-export const rememberGenerationLaunchHandoff = (
+export function rememberGenerationLaunchHandoff(
   storage: Pick<Storage, 'setItem'>,
   sessionId: string,
-): void => {
+): void {
   storage.setItem(getGenerationLaunchStorageKey(sessionId), '1')
 }
 
-export const takeGenerationLaunchHandoff = (
+export function takeGenerationLaunchHandoff(
   storage: Pick<Storage, 'getItem' | 'removeItem'>,
   sessionId: string,
-): boolean => {
+): boolean {
   const key = getGenerationLaunchStorageKey(sessionId)
   const shouldShowIntro = storage.getItem(key) === '1'
   if (shouldShowIntro) storage.removeItem(key)

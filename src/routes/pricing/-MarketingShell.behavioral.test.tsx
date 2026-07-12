@@ -13,15 +13,7 @@ const galleryPrewarm = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    to,
-    ...props
-  }: {
-    children: ReactNode
-    to: string
-    [key: string]: unknown
-  }) => (
+  Link: ({ children, to, ...props }) => (
     <a href={to} {...props}>
       {children}
     </a>
@@ -94,7 +86,7 @@ describe('MarketingShell', () => {
   })
 
   it('prewarms internal routes, gallery data, image, and fonts after idle', async () => {
-    const requestIdleCallback = vi.fn((callback: IdleRequestCallback) => {
+    const requestIdleCallback = vi.fn((callback) => {
       callback({ didTimeout: false, timeRemaining: () => 8 })
       return 42
     })

@@ -307,12 +307,13 @@ export const KIND_NAMES: string[] = KINDS.map((k) => k.kind)
 const DEFAULT_TOP3 = ['marketing', 'saas', 'restaurant']
 
 // tokenize: lowercase, split on non-alphanumerics, drop short tokens (matches v2-compose).
-const tokenize = (s: string): string[] =>
-  s
+function tokenize(s: string): string[] {
+  return s
     .toLowerCase()
     .replace(/[^a-z0-9 ]+/g, ' ')
     .split(/\s+/)
     .filter((w) => w.length > 2)
+}
 
 export function inferKind(prompt: string): ConfidenceResult {
   const tokens = tokenize(prompt)

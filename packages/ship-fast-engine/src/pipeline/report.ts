@@ -53,11 +53,11 @@ export function formatRunAllReport(
     indiaMode?.code && indiaMode.code !== 'en'
       ? `Groq (${indiaMode.name})   `
       : 'Groq              '
-  const ms = (a: string, b: string) =>
+  const ms = (a, b) =>
     timings[b] && timings[a]
       ? ((timings[b] - timings[a]) / 1000).toFixed(1)
       : '\u2014'
-  const tokFmt = (t: number) => (t > 0 ? t.toLocaleString() : '\u2014')
+  const tokFmt = (t) => (t > 0 ? t.toLocaleString() : '\u2014')
 
   const totalInput =
     (designStats?.inputTokens ?? 0) +

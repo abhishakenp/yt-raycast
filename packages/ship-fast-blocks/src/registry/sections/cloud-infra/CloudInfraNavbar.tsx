@@ -50,7 +50,7 @@ export const CloudInfraNavbar = defineCapsule({
       : ['Features', 'Pricing', 'Showcase', 'FAQ']
     const ctaLabel = props.ctaLabel ?? 'Get Started'
     const homeTarget = props.homeTarget ?? nav[0]
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

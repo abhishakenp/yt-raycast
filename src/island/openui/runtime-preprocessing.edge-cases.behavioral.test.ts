@@ -532,7 +532,7 @@ describe('chrome on-device translator', () => {
   })
 
   it('21. uses the Translator API when available (Chrome 138+)', async () => {
-    const translate = vi.fn(async (t: string) => `[on-device]${t}`)
+    const translate = vi.fn(async (t) => `[on-device]${t}`)
     const create = vi.fn(async () => ({ translate }))
     const availability = vi.fn(async () => 'available')
     ;(globalThis as Record<string, unknown>).Translator = {
@@ -560,7 +560,7 @@ describe('chrome on-device translator', () => {
     beforeEach(() => {
       ;(globalThis as Record<string, unknown>).Translator = {
         availability: async () => 'available',
-        create: async () => ({ translate: async (t: string) => t }),
+        create: async () => ({ translate: async (t) => t }),
       }
     })
 
@@ -582,7 +582,7 @@ describe('chrome on-device translator', () => {
 
   it('canonicalizes regional locale tags before creating a translator', async () => {
     const create = vi.fn(async () => ({
-      translate: async (t: string) => `MX:${t}`,
+      translate: async (t) => `MX:${t}`,
     }))
     const availability = vi.fn(async () => 'available')
     ;(globalThis as Record<string, unknown>).Translator = {
@@ -605,7 +605,7 @@ describe('chrome on-device translator', () => {
 
   it('24. instance caching: the same locale reuses one translator instance', async () => {
     const create = vi.fn(async () => ({
-      translate: async (t: string) => `T:${t}`,
+      translate: async (t) => `T:${t}`,
     }))
     ;(globalThis as Record<string, unknown>).Translator = {
       availability: async () => 'available',
@@ -623,7 +623,7 @@ describe('chrome on-device translator', () => {
   describe('model download states', () => {
     it('25. "downloadable" returns null so preview rendering falls back instead of blocking on model setup', async () => {
       const create = vi.fn(async () => ({
-        translate: async (t: string) => `D:${t}`,
+        translate: async (t) => `D:${t}`,
       }))
       ;(globalThis as Record<string, unknown>).Translator = {
         availability: async () => 'downloadable',

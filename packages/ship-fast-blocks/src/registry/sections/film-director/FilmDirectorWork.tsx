@@ -116,7 +116,7 @@ export const FilmDirectorWork = defineCapsule({
               "intimate close-up still from a narrative film showing an elderly actor's weathered hands holding a vintage pocket watch in soft window light",
           },
         ]
-    const PlayIcon = ({ className }: { className?: string }) => (
+    const PlayIcon = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

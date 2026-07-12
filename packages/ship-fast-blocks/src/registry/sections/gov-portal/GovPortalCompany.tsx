@@ -22,7 +22,9 @@ import {
   type GovRow,
 } from './gov-portal-interactions.tsx'
 
-const str = (row: GovRow, key: string) => String(row[key] ?? '').trim()
+function str(row: GovRow, key: string) {
+  return String(row[key] ?? '').trim()
+}
 
 import { Container } from '#/section-kit/Container.tsx'
 

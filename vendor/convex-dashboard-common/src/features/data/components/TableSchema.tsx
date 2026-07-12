@@ -192,7 +192,7 @@ function TableSchema({
 
   const singleTableShapes = new Map()
   singleTableShapes.set(tableName, tableShape)
-  const lineHighlighter = (code: string) => {
+  const lineHighlighter = (code) => {
     const splitLines = code.split('\n')
     const tableStartIndex =
       splitLines.findIndex((value) => value.trim().startsWith(tableName)) + 1
@@ -201,8 +201,7 @@ function TableSchema({
       endLineNumber: splitLines.length - 1,
     }
   }
-  const codeTransformation = (code: string) =>
-    insertOtherTablesComment(tableName, code)
+  const codeTransformation = (code) => insertOtherTablesComment(tableName, code)
 
   return (
     <ShowSchema

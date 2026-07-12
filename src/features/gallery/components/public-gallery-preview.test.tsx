@@ -4,13 +4,7 @@ import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    ...props
-  }: {
-    children: ReactNode
-    [key: string]: unknown
-  }) => {
+  Link: ({ children, ...props }) => {
     const anchorProps = { ...props }
     delete anchorProps.params
     delete anchorProps.to
@@ -34,7 +28,7 @@ vi.mock('convex/react', () => ({
 // Surface the live module preview runtime as a marker so we can assert it
 // never mounts in the public gallery.
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }: { source: string }) => (
+  GeneratedModulePreview: ({ source }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))
@@ -52,12 +46,14 @@ const emptyGallery: GalleryPayload = {
   totalPages: 1,
 }
 
-const sessionWith = (overrides: Partial<GalleryPayload['items'][number]>) => ({
-  sessionId: 'preview-session',
-  prompt: 'AI image studio',
-  previewVersion: 1,
-  ...overrides,
-})
+function sessionWith(overrides: Partial<GalleryPayload['items'][number]>) {
+  return {
+    sessionId: 'preview-session',
+    prompt: 'AI image studio',
+    previewVersion: 1,
+    ...overrides,
+  }
+}
 
 const dbObservedOpenUiRows = [
   {

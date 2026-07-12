@@ -28,7 +28,7 @@ type BillingOverview = {
 
 type CheckoutMode = 'subscription' | 'credit_pack'
 
-export const BillingPanel = ({ sessionId }: BillingPanelProps) => {
+export function BillingPanel({ sessionId }: BillingPanelProps) {
   const { getToken, isSignedIn } = useOptionalAuth()
   const [overview, setOverview] = useState<BillingOverview | null>(null)
   const [error, setError] = useState<string>()
@@ -71,10 +71,7 @@ export const BillingPanel = ({ sessionId }: BillingPanelProps) => {
     void loadOverview()
   }, [isSignedIn])
 
-  const startCheckout = async (
-    mode: CheckoutMode,
-    packId?: '3_credits' | '10_credits',
-  ) => {
+  const startCheckout = async (mode, packId?) => {
     setError(undefined)
     setCheckoutState(
       mode === 'subscription'

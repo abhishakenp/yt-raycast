@@ -9,16 +9,14 @@ const generationMocks = vi.hoisted(() => {
   const selectedV2Engine = vi.fn()
   const selectedV3Engine = vi.fn()
   return {
-    getSelectedEngine: vi.fn((version: string) => {
+    getSelectedEngine: vi.fn((version) => {
       if (version === 'v2') return selectedV2Engine
       if (version === 'v3') return selectedV3Engine
       return vi.fn()
     }),
-    renderOpenUIToHTMLWithTheme: vi.fn(
-      (source: string, _theme: object | undefined, language?: string) => ({
-        html: `<main data-lang="${language ?? 'en'}">${source}</main>`,
-      }),
-    ),
+    renderOpenUIToHTMLWithTheme: vi.fn((source, _theme, language?) => ({
+      html: `<main data-lang="${language ?? 'en'}">${source}</main>`,
+    })),
     runEngineGeneration: vi.fn(),
     runHomepageOrchestrator: vi.fn(),
     selectedV2Engine,
@@ -66,7 +64,7 @@ const dbObservedOpenUiHandoffHtml = `<!doctype html>
 </body>
 </html>`
 
-const withGroqApiKey = async (run: () => Promise<void>) => {
+async function withGroqApiKey(run: () => Promise<void>) {
   const originalGroqApiKey = process.env.GROQ_API_KEY
   process.env.GROQ_API_KEY = 'test-groq-key'
 
@@ -103,17 +101,7 @@ describe('convex generation action', () => {
     const queries: Array<Record<string, unknown>> = []
 
     generationMocks.runEngineGeneration.mockImplementationOnce(
-      async (input: {
-        runAll: unknown
-        persistence: {
-          completeGeneration: (value: {
-            html: string
-            siteSpecJson: string
-            openUiSource: string
-            tasks: unknown[]
-          }) => Promise<unknown>
-        }
-      }) => {
+      async (input) => {
         expect(input.runAll).toBe(generationMocks.selectedV2Engine)
         await input.persistence.completeGeneration({
           html: `<!doctype html><h1>${DB_OBSERVED_GENERATION.brand}</h1>`,
@@ -128,18 +116,16 @@ describe('convex generation action', () => {
     )
 
     const ctx = {
-      runQuery: vi.fn(async (_ref: unknown, args: Record<string, unknown>) => {
+      runQuery: vi.fn(async (_ref, args) => {
         queries.push(args)
         return session
       }),
-      runMutation: vi.fn(
-        async (_ref: unknown, args: Record<string, unknown>) => {
-          mutations.push({ args })
-          if ('eventType' in args) return null
-          if ('html' in args) return null
-          return { started: true }
-        },
-      ),
+      runMutation: vi.fn(async (_ref, args) => {
+        mutations.push({ args })
+        if ('eventType' in args) return null
+        if ('html' in args) return null
+        return { started: true }
+      }),
     }
 
     await withGroqApiKey(async () => {
@@ -218,17 +204,7 @@ describe('convex generation action', () => {
     const queries: Array<Record<string, unknown>> = []
 
     generationMocks.runEngineGeneration.mockImplementationOnce(
-      async (input: {
-        runAll: unknown
-        persistence: {
-          completeGeneration: (value: {
-            html: string
-            siteSpecJson: string
-            openUiSource: string
-            tasks: unknown[]
-          }) => Promise<unknown>
-        }
-      }) => {
+      async (input) => {
         expect(input.runAll).toBe(generationMocks.selectedV3Engine)
         await input.persistence.completeGeneration({
           html: `<!doctype html><h1>${DB_OBSERVED_GENERATION.brand}</h1>`,
@@ -243,18 +219,16 @@ describe('convex generation action', () => {
     )
 
     const ctx = {
-      runQuery: vi.fn(async (_ref: unknown, args: Record<string, unknown>) => {
+      runQuery: vi.fn(async (_ref, args) => {
         queries.push(args)
         return session
       }),
-      runMutation: vi.fn(
-        async (_ref: unknown, args: Record<string, unknown>) => {
-          mutations.push({ args })
-          if ('eventType' in args) return null
-          if ('html' in args) return null
-          return { started: true }
-        },
-      ),
+      runMutation: vi.fn(async (_ref, args) => {
+        mutations.push({ args })
+        if ('eventType' in args) return null
+        if ('html' in args) return null
+        return { started: true }
+      }),
     }
 
     await withGroqApiKey(async () => {
@@ -335,16 +309,7 @@ describe('convex generation action', () => {
       html: `<main data-lang="${DB_OBSERVED_GENERATION.preferredLanguage}"><h1>${DB_OBSERVED_GENERATION.brand}</h1><p>${DB_OBSERVED_GENERATION.menuItem}</p></main>`,
     })
     generationMocks.runEngineGeneration.mockImplementationOnce(
-      async (input: {
-        persistence: {
-          completeGeneration: (value: {
-            html: string
-            siteSpecJson: string
-            openUiSource: string
-            tasks: unknown[]
-          }) => Promise<unknown>
-        }
-      }) => {
+      async (input) => {
         await input.persistence.completeGeneration({
           html: dbObservedOpenUiHandoffHtml,
           siteSpecJson: JSON.stringify({
@@ -359,20 +324,18 @@ describe('convex generation action', () => {
 
     const ctx = {
       runQuery: vi.fn(async () => session),
-      runMutation: vi.fn(
-        async (_ref: unknown, args: Record<string, unknown>) => {
-          mutations.push({ args })
-          if (
-            typeof args.html === 'string' &&
-            args.html.includes('ship-fast-openui-source')
-          ) {
-            throw new Error('Preview HTML is not renderable')
-          }
-          if ('eventType' in args) return null
-          if ('html' in args) return null
-          return { started: true }
-        },
-      ),
+      runMutation: vi.fn(async (_ref, args) => {
+        mutations.push({ args })
+        if (
+          typeof args.html === 'string' &&
+          args.html.includes('ship-fast-openui-source')
+        ) {
+          throw new Error('Preview HTML is not renderable')
+        }
+        if ('eventType' in args) return null
+        if ('html' in args) return null
+        return { started: true }
+      }),
     }
 
     await withGroqApiKey(async () => {
@@ -422,12 +385,7 @@ describe('convex generation action', () => {
     const mutations: Array<{ args: Record<string, unknown> }> = []
 
     generationMocks.runHomepageOrchestrator.mockImplementationOnce(
-      async (input: {
-        prompt: string
-        preferredLanguage?: string
-        onSource?: (source: string) => void
-        onEvent?: (event: { type: 'status'; message: string }) => void
-      }) => {
+      async (input) => {
         expect(input.prompt).toBe(DB_OBSERVED_GENERATION.prompt)
         expect(input.preferredLanguage).toBe(
           DB_OBSERVED_GENERATION.preferredLanguage,
@@ -459,14 +417,12 @@ describe('convex generation action', () => {
 
     const ctx = {
       runQuery: vi.fn(async () => session),
-      runMutation: vi.fn(
-        async (_ref: unknown, args: Record<string, unknown>) => {
-          mutations.push({ args })
-          if ('eventType' in args) return null
-          if ('html' in args) return null
-          return { started: true }
-        },
-      ),
+      runMutation: vi.fn(async (_ref, args) => {
+        mutations.push({ args })
+        if ('eventType' in args) return null
+        if ('html' in args) return null
+        return { started: true }
+      }),
     }
 
     await withGroqApiKey(async () => {
@@ -536,12 +492,7 @@ describe('convex generation action', () => {
     const aiTitle = `${DB_OBSERVED_GENERATION.brand} — Boutique Classes in San Francisco`
 
     generationMocks.runHomepageOrchestrator.mockImplementationOnce(
-      async (input: {
-        prompt: string
-        preferredLanguage?: string
-        onSource?: (source: string) => void
-        onEvent?: (event: { type: 'status'; message: string }) => void
-      }) => {
+      async (input) => {
         input.onEvent?.({
           type: 'status',
           message: `Drafting ${DB_OBSERVED_GENERATION.brand}`,
@@ -562,14 +513,12 @@ describe('convex generation action', () => {
 
     const ctx = {
       runQuery: vi.fn(async () => session),
-      runMutation: vi.fn(
-        async (_ref: unknown, args: Record<string, unknown>) => {
-          mutations.push({ args })
-          if ('eventType' in args) return null
-          if ('html' in args) return null
-          return { started: true }
-        },
-      ),
+      runMutation: vi.fn(async (_ref, args) => {
+        mutations.push({ args })
+        if ('eventType' in args) return null
+        if ('html' in args) return null
+        return { started: true }
+      }),
     }
 
     await withGroqApiKey(async () => {
@@ -625,14 +574,12 @@ describe('convex generation action', () => {
 
     const ctx = {
       runQuery: vi.fn(async () => session),
-      runMutation: vi.fn(
-        async (_ref: unknown, args: Record<string, unknown>) => {
-          mutations.push({ args })
-          if ('eventType' in args) return null
-          if ('html' in args) return null
-          return { started: true }
-        },
-      ),
+      runMutation: vi.fn(async (_ref, args) => {
+        mutations.push({ args })
+        if ('eventType' in args) return null
+        if ('html' in args) return null
+        return { started: true }
+      }),
     }
 
     await withGroqApiKey(async () => {

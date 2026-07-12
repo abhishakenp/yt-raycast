@@ -14,23 +14,25 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * poets, essayists, or any writer's personal brand. Renders fully with no props
  * via baked-in "Eleanor Vance" defaults.
  */
-const FeatherMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M20 4C10 5 7 11 7 17l-3 3" />
-    <path d="M20 4c0 6-3 12-13 13" />
-    <path d="M11 14h5" />
-    <path d="M9 18h5" />
-  </svg>
-)
+function FeatherMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 4C10 5 7 11 7 17l-3 3" />
+      <path d="M20 4c0 6-3 12-13 13" />
+      <path d="M11 14h5" />
+      <path d="M9 18h5" />
+    </svg>
+  )
+}
 
 export const WriterAuthorFooter = defineCapsule({
   name: 'WriterAuthorFooter',

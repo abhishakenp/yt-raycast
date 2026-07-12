@@ -33,16 +33,18 @@ type GalleryThumbnailSession = {
   selectedBrandLogo?: BrandLogoSelection | null
 }
 
-const escapeHtml = (value: string): string =>
-  value
+function escapeHtml(value: string): string {
+  return value
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;')
+}
 
-const truncateText = (value: string, max: number): string =>
-  value.length <= max ? value : value.slice(0, max)
+function truncateText(value: string, max: number): string {
+  return value.length <= max ? value : value.slice(0, max)
+}
 
 const galleryCategoryTerms = {
   saas: [
@@ -84,7 +86,7 @@ const galleryCategoryTerms = {
   app: ['app', 'mobile', 'tool', 'planner', 'manager', 'studio'],
 } as const
 
-export const getGalleryCategories = (prompt: string): string[] => {
+export function getGalleryCategories(prompt: string): string[] {
   const normalizedPrompt = prompt.toLowerCase()
 
   return Object.entries(galleryCategoryTerms)
@@ -94,14 +96,15 @@ export const getGalleryCategories = (prompt: string): string[] => {
     .map(([category]) => category)
 }
 
-export const formatGalleryCategory = (category: string): string =>
-  category
+export function formatGalleryCategory(category: string): string {
+  return category
     .split(/[-_\s]+/)
     .filter((part) => part.length > 0)
     .map((part) => part[0].toUpperCase() + part.slice(1))
     .join(' ')
+}
 
-const formatElapsed = (elapsed?: number | null): string | null => {
+function formatElapsed(elapsed?: number | null): string | null {
   if (typeof elapsed !== 'number' || !Number.isFinite(elapsed) || elapsed < 0)
     return null
   const seconds = elapsed / 1000
@@ -114,40 +117,44 @@ const formatElapsed = (elapsed?: number | null): string | null => {
     : `${minutes}m ${remainingSeconds}s`
 }
 
-const formatCost = (cost?: number | null): string | null => {
+function formatCost(cost?: number | null): string | null {
   if (typeof cost !== 'number' || !Number.isFinite(cost) || cost < 0)
     return null
   if (cost === 0) return '$0.00'
   return `$${cost.toFixed(cost < 1 ? 4 : 2)}`
 }
 
-const readString = (value: unknown): string | undefined =>
-  typeof value === 'string' && value.trim().length > 0
+function readString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0
     ? value.trim()
     : undefined
+}
 
-const htmlResponse = (html: string): Response =>
-  new Response(html, {
+function htmlResponse(html: string): Response {
+  return new Response(html, {
     status: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'public, max-age=20, stale-while-revalidate=120',
     },
   })
+}
 
-const readGalleryThemeName = (
+function readGalleryThemeName(
   session: GalleryThumbnailSession,
-): string | undefined =>
-  readString(session.themeOverride) ?? readString(session.genuiTheme)
+): string | undefined {
+  return readString(session.themeOverride) ?? readString(session.genuiTheme)
+}
 
-const readGalleryIsDark = (session: GalleryThumbnailSession): boolean =>
-  session.themeMode !== 'light'
+function readGalleryIsDark(session: GalleryThumbnailSession): boolean {
+  return session.themeMode !== 'light'
+}
 
-const renderOpenUiGalleryHtml = async (
+async function renderOpenUiGalleryHtml(
   sessionId: string,
   session: GalleryThumbnailSession,
   source: string,
-): Promise<string | null> => {
+): Promise<string | null> {
   try {
     const rendered = await buildOpenUIHtmlExport({
       source,
@@ -171,7 +178,7 @@ const renderOpenUiGalleryHtml = async (
   }
 }
 
-const buildMetadataLabel = (session: GalleryThumbnailSession): string => {
+function buildMetadataLabel(session: GalleryThumbnailSession): string {
   const readyCount = [
     session.readiness?.homepageReady ?? session.homepageReady,
     session.readiness?.siteSpecReady ?? session.siteSpecReady,
@@ -187,12 +194,12 @@ const buildMetadataLabel = (session: GalleryThumbnailSession): string => {
   return parts.length > 0 ? parts.join('  |  ') : 'Public generated site'
 }
 
-export const generateDeterministicThumbnailSvg = (
+export function generateDeterministicThumbnailSvg(
   prompt: string,
   categories: string[],
   status?: string | null,
   metadataLabel = 'Public generated site',
-): string => {
+): string {
   const safePrompt = escapeHtml(truncateText(prompt, 80))
   const title =
     safePrompt.split(/\s+/).slice(0, 4).join(' ') || 'Generated website'
@@ -274,11 +281,11 @@ export const generateDeterministicThumbnailSvg = (
 </svg>`
 }
 
-export const createGalleryThumbnailResponse = async (
+export async function createGalleryThumbnailResponse(
   sessionId: string,
   _request?: Request,
   clientOverride?: GalleryConvexClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const client = clientOverride ?? createRuntimeConvexHttpClient()
     const session = await client.query(api.sessions.getPublicGallerySession, {

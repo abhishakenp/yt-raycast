@@ -15,13 +15,13 @@ type IdleWindow = Window & {
   cancelIdleCallback?: (handle: number) => void
 }
 
-export const MarketingShell = ({
+export function MarketingShell({
   children,
   footer = false,
 }: {
   children: React.ReactNode
   footer?: boolean
-}) => {
+}) {
   const router = useRouter()
   const routerRef = useRef(router)
 

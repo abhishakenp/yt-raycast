@@ -15,7 +15,9 @@ export type DocsCatalogInput = {
   title: string
 }
 
-const clean = (value: unknown) => String(value ?? '').trim()
+function clean(value: unknown) {
+  return String(value ?? '').trim()
+}
 
 const docs = createLakebedDefinition({
   articles: table({
@@ -56,7 +58,7 @@ export const docsLakebed = {
     }),
   },
   mutations: {
-    setDocsSearch: docs.mutation((_ctx, input: DocsSearchInput) => {
+    setDocsSearch: docs.mutation((_ctx, input) => {
       const query = clean(input.query)
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
       const next = { query }
@@ -71,34 +73,32 @@ export const docsLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncDocsArticles: docs.mutation(
-      (_ctx, input: { articles: DocsCatalogInput[] }) => {
-        const existing = _ctx.db.articles.orderBy('createdAt').all()
-        const existingBySlug = new Map(
-          existing.map((article) => [article.slug.toLowerCase(), article]),
-        )
+    syncDocsArticles: docs.mutation((_ctx, input) => {
+      const existing = _ctx.db.articles.orderBy('createdAt').all()
+      const existingBySlug = new Map(
+        existing.map((article) => [article.slug.toLowerCase(), article]),
+      )
 
-        for (const article of input.articles) {
-          const slug = clean(article.slug)
-          if (!slug) continue
+      for (const article of input.articles) {
+        const slug = clean(article.slug)
+        if (!slug) continue
 
-          const next = {
-            category: clean(article.category),
-            content: clean(article.content),
-            slug,
-            title: clean(article.title),
-          }
-          const current = existingBySlug.get(slug.toLowerCase())
-
-          if (current) {
-            _ctx.db.articles.update(current.id, next)
-          } else {
-            _ctx.db.articles.insert(next)
-          }
+        const next = {
+          category: clean(article.category),
+          content: clean(article.content),
+          slug,
+          title: clean(article.title),
         }
+        const current = existingBySlug.get(slug.toLowerCase())
 
-        return _ctx.db.articles.orderBy('createdAt').all()
-      },
-    ),
+        if (current) {
+          _ctx.db.articles.update(current.id, next)
+        } else {
+          _ctx.db.articles.insert(next)
+        }
+      }
+
+      return _ctx.db.articles.orderBy('createdAt').all()
+    }),
   },
 } as const

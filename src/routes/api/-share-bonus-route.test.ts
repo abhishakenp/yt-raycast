@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+  createFileRoute: (path) => (options) => ({ options, path }),
 }))
 
 type RouteWithHandlers = {
@@ -16,11 +16,12 @@ type RouteWithHandlers = {
   }
 }
 
-const requestWithIp = (ip: string, method: 'GET' | 'POST' = 'GET') =>
-  new Request('https://ship-fast.test/api/share-bonus', {
+function requestWithIp(ip: string, method: 'GET' | 'POST' = 'GET') {
+  return new Request('https://ship-fast.test/api/share-bonus', {
     method,
     headers: { 'x-forwarded-for': ip },
   })
+}
 
 describe('/api/share-bonus route', () => {
   it('registers GET and POST handlers at /api/share-bonus', async () => {

@@ -30,7 +30,7 @@ export function CellEditor({
   const [path] = useState(Math.random())
   const [error, setError] = useState<string | undefined>(undefined)
 
-  const saveEditedValue = async (editedValue?: Value) => {
+  const saveEditedValue = async (editedValue?) => {
     if (editedValue === undefined || error) {
       return
     }

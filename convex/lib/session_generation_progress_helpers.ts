@@ -9,11 +9,11 @@ const startableGenerationStatuses = new Set<
   Doc<'sessions'>['status'] | undefined
 >([undefined, 'created', 'queued', 'validating'])
 
-export const markSessionGenerationStarted = async (
+export async function markSessionGenerationStarted(
   ctx: GenerationProgressCtx,
   sessionId: Id<'sessions'>,
   now: number,
-) => {
+) {
   const session = await ctx.db.get(sessionId)
 
   if (session === null || (session.previewVersion ?? 0) > 0) {
@@ -62,7 +62,7 @@ export const markSessionGenerationStarted = async (
   return { started: true }
 }
 
-export const upsertGeneratedModuleRecord = async (
+export async function upsertGeneratedModuleRecord(
   ctx: GenerationProgressCtx,
   args: {
     sessionId: Id<'sessions'>
@@ -71,7 +71,7 @@ export const upsertGeneratedModuleRecord = async (
     status?: SessionTaskStatus
     now: number
   },
-) => {
+) {
   const existingModule = await ctx.db
     .query('generatedModules')
     .withIndex('by_sessionId_moduleKey', (index) =>
@@ -96,7 +96,7 @@ export const upsertGeneratedModuleRecord = async (
       })
 }
 
-export const addGenerationProgressEvent = async (
+export async function addGenerationProgressEvent(
   ctx: GenerationProgressCtx,
   args: {
     sessionId: Id<'sessions'>
@@ -105,7 +105,7 @@ export const addGenerationProgressEvent = async (
     previewVersion?: number
     now: number
   },
-) => {
+) {
   await ctx.db.insert('generationEvents', {
     sessionId: args.sessionId,
     eventType: args.eventType,

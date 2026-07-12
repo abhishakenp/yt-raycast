@@ -12,8 +12,9 @@ const modules = import.meta.glob('../**/*.ts')
 
 const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
 
-const loadFixture = (name: string): string =>
-  readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+function loadFixture(name: string): string {
+  return readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+}
 
 let activeTest: ReturnType<typeof convexTest> | null = null
 
@@ -34,12 +35,12 @@ afterEach(async () => {
   }
 })
 
-const createReadySessionWithFixture = async (
+async function createReadySessionWithFixture(
   t: ReturnType<typeof sessionEditContractTest>,
   fixtureName: string,
   prompt: string,
   language = 'en',
-) => {
+) {
   const source = loadFixture(fixtureName)
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
@@ -71,14 +72,12 @@ const createReadySessionWithFixture = async (
  * The real pizza-delivery fixture renders:
  *   <h1 ...>Craving Something Hot?<br/>Pizza Delivered Fast</h1>
  */
-const findBrSeparatedHero = (
-  html: string,
-): {
+function findBrSeparatedHero(html: string): {
   fullMatch: string
   textContent: string
   firstFragment: string
   secondFragment: string
-} | null => {
+} | null {
   // Match <h1...>text<br/>text</h1> (br may be <br> or <br/>)
   const match = html.match(/<h1[^>]*>([^<]+)<br\s*\/?>([^<]+)<\/h1>/)
   if (!match) return null

@@ -10,7 +10,7 @@ const env = {
   BILLING_WEBHOOK_MUTATION_SECRET: MUTATION_SECRET,
 } as unknown as NodeJS.ProcessEnv
 
-const hmacSha256Hex = async (secret: string, payload: string) => {
+async function hmacSha256Hex(secret: string, payload: string) {
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),
@@ -28,7 +28,7 @@ const hmacSha256Hex = async (secret: string, payload: string) => {
   ).join('')
 }
 
-const buildSignedStripeRequest = async (event: unknown) => {
+async function buildSignedStripeRequest(event: unknown) {
   const rawBody = JSON.stringify(event)
   const t = '1700000000'
   const v1 = await hmacSha256Hex(WEBHOOK_SECRET, `${t}.${rawBody}`)
@@ -64,12 +64,10 @@ describe('billing webhook → referral discount wiring', () => {
         referralUnlock: { referrerUserId: 'referrer' },
       })),
     }
-    const applyDiscount = vi.fn(
-      async (_env: NodeJS.ProcessEnv, _userId: string) => ({
-        applied: true,
-        reason: 'ok',
-      }),
-    )
+    const applyDiscount = vi.fn(async (_env, _userId) => ({
+      applied: true,
+      reason: 'ok',
+    }))
 
     const response = await createWebhookApiResponse(
       request,
@@ -107,12 +105,10 @@ describe('billing webhook → referral discount wiring', () => {
         referralUnlock: null,
       })),
     }
-    const applyDiscount = vi.fn(
-      async (_env: NodeJS.ProcessEnv, _userId: string) => ({
-        applied: false,
-        reason: 'x',
-      }),
-    )
+    const applyDiscount = vi.fn(async (_env, _userId) => ({
+      applied: false,
+      reason: 'x',
+    }))
 
     await createWebhookApiResponse(
       request,

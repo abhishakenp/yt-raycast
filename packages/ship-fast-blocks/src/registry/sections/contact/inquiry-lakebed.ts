@@ -21,13 +21,14 @@ export type InquiryActionInput = {
   target?: string
 }
 
-const clean = (value: unknown) => String(value ?? '').trim()
-const normalizeEmail = (email: unknown) => clean(email).toLowerCase()
+function clean(value: unknown) {
+  return String(value ?? '').trim()
+}
+function normalizeEmail(email: unknown) {
+  return clean(email).toLowerCase()
+}
 
-const pickField = (
-  fields: Record<string, string> | undefined,
-  keys: string[],
-) => {
+function pickField(fields: Record<string, string> | undefined, keys: string[]) {
   for (const key of keys) {
     const value = fields?.[key]
     if (value?.trim()) return value.trim()
@@ -84,7 +85,7 @@ export const inquiryLakebed = {
     }),
   },
   mutations: {
-    recordContactAction: inquiry.mutation((_ctx, input: InquiryActionInput) => {
+    recordContactAction: inquiry.mutation((_ctx, input) => {
       const label = clean(input.label) || 'Contact'
 
       _ctx.db.actions.insert({
@@ -96,7 +97,7 @@ export const inquiryLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt').all()
     }),
-    submitInquiry: inquiry.mutation((_ctx, input: InquirySubmissionInput) => {
+    submitInquiry: inquiry.mutation((_ctx, input) => {
       const fields = input.fields ?? {}
       const email = normalizeEmail(
         input.email || pickField(fields, ['email', 'emailAddress']),

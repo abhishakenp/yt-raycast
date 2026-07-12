@@ -148,7 +148,7 @@ export const CrowdfundingRewards = defineCapsule({
           },
         ]
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         width="16"

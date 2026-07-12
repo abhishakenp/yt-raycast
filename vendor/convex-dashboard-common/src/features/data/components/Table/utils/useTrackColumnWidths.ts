@@ -3,10 +3,10 @@ import { useEffect } from 'react'
 import { TableState } from 'react-table'
 import { usePrevious } from 'react-use'
 
-export const useTrackColumnWidths = (
+export function useTrackColumnWidths(
   state: TableState<object>,
   localStorageKey: string,
-) => {
+) {
   const { isResizingColumn } = state.columnResizing
   const [savedWidths, setSavedWidths] = useGlobalLocalStorage<
     | {

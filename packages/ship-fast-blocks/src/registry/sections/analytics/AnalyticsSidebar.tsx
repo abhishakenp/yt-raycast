@@ -69,7 +69,7 @@ export const AnalyticsSidebar = defineCapsule({
       'Professional headshot of a product manager with short brown hair and a friendly smile'
 
     // Brand logo tile — solid token mark with the brand initial (decorative).
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary font-black text-primary-foreground',

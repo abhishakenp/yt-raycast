@@ -11,10 +11,10 @@ export type GenerationViewLookupArgs = {
   lookup?: string
 }
 
-export const resolveGenerationViewSessionId = async (
+export async function resolveGenerationViewSessionId(
   ctx: GenerationViewCtx,
   args: GenerationViewLookupArgs,
-): Promise<Id<'sessions'> | null> => {
+): Promise<Id<'sessions'> | null> {
   const lookup = args.lookup
   const directSessionId: Id<'sessions'> | null =
     args.sessionId ??
@@ -37,10 +37,10 @@ export const resolveGenerationViewSessionId = async (
   return deployment?.sessionId ?? null
 }
 
-export const loadGenerationView = async (
+export async function loadGenerationView(
   ctx: GenerationViewCtx,
   args: GenerationViewLookupArgs,
-) => {
+) {
   const sessionId = await resolveGenerationViewSessionId(ctx, args)
 
   if (sessionId === null) return null

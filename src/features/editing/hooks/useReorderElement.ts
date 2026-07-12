@@ -18,10 +18,7 @@ export function useReorderElement({
   const [isReordering, setIsReordering] = useState(false)
   const [reorderError, setReorderError] = useState<string>()
 
-  const reorder = async (
-    varName: string,
-    direction: 'up' | 'down',
-  ): Promise<boolean> => {
+  const reorder = async (varName, direction) => {
     if (!sessionId) return false
     setIsReordering(true)
     setReorderError(undefined)

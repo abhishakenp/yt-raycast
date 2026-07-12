@@ -13,16 +13,18 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * footer for streaming services, OTT apps, or on-demand video platforms.
  * Renders fully with no props via baked-in "Lumen" defaults.
  */
-const PlayMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5Z" />
-  </svg>
-)
+function PlayMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5Z" />
+    </svg>
+  )
+}
 
 export const VideoStreamingFooter = defineCapsule({
   name: 'VideoStreamingFooter',

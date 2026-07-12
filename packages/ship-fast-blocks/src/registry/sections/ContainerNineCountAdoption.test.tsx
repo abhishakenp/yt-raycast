@@ -181,8 +181,8 @@ type CapsuleExport = {
 
 type ModuleWithCapsules = Record<string, unknown>
 
-const isCapsule = (value: unknown): value is CapsuleExport =>
-  Boolean(
+function isCapsule(value: unknown): value is CapsuleExport {
+  return Boolean(
     value &&
     typeof value === 'object' &&
     'client' in value &&
@@ -191,6 +191,7 @@ const isCapsule = (value: unknown): value is CapsuleExport =>
     'component' in value.client &&
     typeof value.client.component === 'function',
   )
+}
 
 const loadSections = async () => {
   const modules = await Promise.all(

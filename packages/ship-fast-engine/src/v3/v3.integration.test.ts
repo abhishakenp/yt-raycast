@@ -13,15 +13,7 @@ footer
 
 // Mock generateText to return the restaurant DSL.
 const generateTextMock = vi.hoisted(() =>
-  vi.fn(
-    async (
-      _modelId: string,
-      _system: string,
-      _user: string,
-      _signal: AbortSignal,
-      _retries?: number,
-    ): Promise<string> => restaurantDsl,
-  ),
+  vi.fn(async (_modelId, _system, _user, _signal, _retries?) => restaurantDsl),
 )
 
 // Mock resolvePipelineLanguage to return a fixed English mode.
@@ -106,7 +98,7 @@ const parseSitePlanMock = vi.hoisted(() =>
 const validatePlanMock = vi.hoisted(() =>
   vi.fn(() => ({ valid: true, errors: [] })),
 )
-const fixPlanMock = vi.hoisted(() => vi.fn((plan: unknown) => plan))
+const fixPlanMock = vi.hoisted(() => vi.fn((plan) => plan))
 const retryLoopMock = vi.hoisted(() =>
   vi.fn(() => ({
     plan: parseSitePlanMock(),
@@ -223,7 +215,7 @@ describe('runAllV3', () => {
     const signalOpenuiReady = vi.fn()
     const sessionCtx = {
       id: 'test-session-v3',
-      broadcast: (payload: unknown) => broadcasts.push(payload),
+      broadcast: (payload) => broadcasts.push(payload),
       setPrompt: vi.fn(),
       setTasks: vi.fn(),
       updateTask: vi.fn(),
@@ -286,9 +278,7 @@ describe('runAllV3', () => {
     const tasks = JSON.parse(
       readFileSync(join(workspace, 'tasks.json'), 'utf8'),
     )
-    expect(tasks.tasks.map((t: { status: string }) => t.status)).toEqual([
-      'DONE',
-    ])
+    expect(tasks.tasks.map((t) => t.status)).toEqual(['DONE'])
 
     // generateText was called (high-confidence restaurant prompt).
     expect(generateTextMock).toHaveBeenCalled()

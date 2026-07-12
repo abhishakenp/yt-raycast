@@ -36,7 +36,7 @@ const justifyMap = {
   around: 'justify-around',
 } as const
 
-const toReactNode = (node: unknown): ReactNode => {
+function toReactNode(node: unknown): ReactNode {
   if (
     node === null ||
     node === undefined ||
@@ -56,7 +56,7 @@ const toReactNode = (node: unknown): ReactNode => {
   return null
 }
 
-const withRenderKeys = (nodes: unknown): ReactNode => {
+function withRenderKeys(nodes: unknown): ReactNode {
   const rendered = toReactNode(nodes)
 
   if (Array.isArray(rendered)) {

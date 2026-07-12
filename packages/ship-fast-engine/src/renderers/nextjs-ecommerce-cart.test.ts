@@ -34,7 +34,7 @@ vi.mock('framer-motion', async () => {
     transition?: unknown
     whileHover?: unknown
   }
-  const element = (tag: string) =>
+  const element = (tag) =>
     React.forwardRef<HTMLElement, MotionMockProps>(
       (
         {
@@ -134,45 +134,53 @@ declare global {
   var __shipFastMedusaAddControl: AddControl | undefined
 }
 
-const isCartProviderModule = (
+function isCartProviderModule(
   value: unknown,
-): value is GeneratedCartProviderModule =>
-  typeof value === 'object' &&
-  value !== null &&
-  typeof Reflect.get(value, 'CartProvider') === 'function'
+): value is GeneratedCartProviderModule {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof Reflect.get(value, 'CartProvider') === 'function'
+  )
+}
 
-const isProductCardModule = (
+function isProductCardModule(
   value: unknown,
-): value is GeneratedProductCardModule =>
-  typeof value === 'object' &&
-  value !== null &&
-  typeof Reflect.get(value, 'default') === 'function'
+): value is GeneratedProductCardModule {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof Reflect.get(value, 'default') === 'function'
+  )
+}
 
-const isCartDrawerModule = (
+function isCartDrawerModule(
   value: unknown,
-): value is GeneratedCartDrawerModule =>
-  typeof value === 'object' &&
-  value !== null &&
-  typeof Reflect.get(value, 'default') === 'function'
+): value is GeneratedCartDrawerModule {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof Reflect.get(value, 'default') === 'function'
+  )
+}
 
-const isCheckoutViewModule = (
+function isCheckoutViewModule(
   value: unknown,
-): value is GeneratedCheckoutViewModule =>
-  typeof value === 'object' &&
-  value !== null &&
-  typeof Reflect.get(value, 'default') === 'function'
+): value is GeneratedCheckoutViewModule {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof Reflect.get(value, 'default') === 'function'
+  )
+}
 
-const writeGeneratedFile = (
-  root: string,
-  path: string,
-  source: string,
-): void => {
+function writeGeneratedFile(root: string, path: string, source: string): void {
   const filePath = join(root, path)
   mkdirSync(dirname(filePath), { recursive: true })
   writeFileSync(filePath, source)
 }
 
-const writeGeneratedDependencyStubs = (root: string): void => {
+function writeGeneratedDependencyStubs(root: string): void {
   writeGeneratedFile(
     root,
     'node_modules/next/package.json',
@@ -235,21 +243,23 @@ export function useReducedMotion() {
   )
 }
 
-const product = (title: string, variantId: string): GeneratedProduct => ({
-  handle: title.toLowerCase().replaceAll(/\s+/g, '-'),
-  title,
-  variants: [
-    {
-      calculated_price: {
-        calculated_amount: 1200,
-        currency_code: 'USD',
+function product(title: string, variantId: string): GeneratedProduct {
+  return {
+    handle: title.toLowerCase().replaceAll(/\s+/g, '-'),
+    title,
+    variants: [
+      {
+        calculated_price: {
+          calculated_amount: 1200,
+          currency_code: 'USD',
+        },
+        id: variantId,
       },
-      id: variantId,
-    },
-  ],
-})
+    ],
+  }
+}
 
-const buttonNamed = (name: string): HTMLButtonElement => {
+function buttonNamed(name: string): HTMLButtonElement {
   const element = screen.getByRole('button', { name })
   if (!(element instanceof HTMLButtonElement)) {
     throw new Error(`Expected "${name}" to resolve to a button element`)

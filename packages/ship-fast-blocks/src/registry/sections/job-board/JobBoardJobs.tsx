@@ -146,7 +146,7 @@ export const JobBoardJobs = defineCapsule({
     const appliedRoles = new Set(
       jobActions.applications.map((application) => application.role),
     )
-    const matchesSearch = (job: (typeof items)[number]) => {
+    const matchesSearch = (job) => {
       const haystack = [job.role, job.company, job.description, ...job.tags]
         .join(' ')
         .toLowerCase()
@@ -160,7 +160,7 @@ export const JobBoardJobs = defineCapsule({
     }
     const matchingItems = items.filter(matchesSearch)
     const visibleItems = matchingItems.slice(0, visibleCount)
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="16"

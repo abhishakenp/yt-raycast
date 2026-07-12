@@ -24,7 +24,7 @@ type SignInGateValue = {
  * returns `true`, so gated controls keep working. Mirrors the `WaitlistGate`
  * and `useOptionalAuth` anonymous-fallback patterns.
  */
-export const useSignInGate = (): SignInGateValue => {
+export function useSignInGate(): SignInGateValue {
   const clerkEnabled = isClerkClientEnabled()
   const { isLoaded, isSignedIn } = useOptionalAuth()
   const clerk = useOptionalClerk()
@@ -55,7 +55,7 @@ type SignInGateProps = {
  * control (e.g. a Radix Popover or ThemePicker) for a locked fallback so the
  * real control never mounts while gated — no click interception needed.
  */
-export const SignInGate = ({ locked, children }: SignInGateProps) => {
+export function SignInGate({ locked, children }: SignInGateProps) {
   const { isGated } = useSignInGate()
   return <>{isGated ? locked : children}</>
 }

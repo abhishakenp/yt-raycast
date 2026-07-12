@@ -8,7 +8,7 @@ import { useIsMobile } from './use-mobile'
 
 type MatchMediaListener = () => void
 
-const installMatchMedia = (matches: boolean, width: number) => {
+function installMatchMedia(matches: boolean, width: number) {
   const listeners = new Set<MatchMediaListener>()
   Object.defineProperty(window, 'innerWidth', {
     configurable: true,
@@ -18,12 +18,12 @@ const installMatchMedia = (matches: boolean, width: number) => {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     value: vi.fn(() => ({
-      addEventListener: (_event: string, listener: MatchMediaListener) => {
+      addEventListener: (_event, listener) => {
         listeners.add(listener)
       },
       matches,
       media: '(max-width: 767px)',
-      removeEventListener: (_event: string, listener: MatchMediaListener) => {
+      removeEventListener: (_event, listener) => {
         listeners.delete(listener)
       },
     })),

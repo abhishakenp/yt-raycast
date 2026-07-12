@@ -8,8 +8,9 @@ import {
   readEngineWorkspaceArtifacts,
 } from '@/features/generation/server/engine-workspace'
 
-const createTempRoot = (): string =>
-  mkdtempSync(join(tmpdir(), 'ship-fast-v2-engine-'))
+function createTempRoot(): string {
+  return mkdtempSync(join(tmpdir(), 'ship-fast-v2-engine-'))
+}
 
 describe('engine workspace', () => {
   it('creates deterministic safe workspace paths for generated sessions', () => {

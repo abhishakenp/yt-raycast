@@ -82,7 +82,7 @@ export const LogisticsFooter = defineCapsule({
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground',

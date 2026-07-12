@@ -59,7 +59,7 @@ export const autoDealershipLakebed = {
     ),
   },
   mutations: {
-    recordLead: dealership.mutation((_ctx, input: AutoLeadInput) => {
+    recordLead: dealership.mutation((_ctx, input) => {
       _ctx.db.leads.insert({
         action: input.action ?? 'lead',
         label: input.label,
@@ -69,30 +69,28 @@ export const autoDealershipLakebed = {
 
       return _ctx.db.leads.orderBy('createdAt').all()
     }),
-    syncVehicles: dealership.mutation(
-      (_ctx, input: { vehicles: AutoVehicleInput[] }) => {
-        for (const vehicle of input.vehicles) {
-          const name = vehicle.name.trim()
-          if (!name) continue
+    syncVehicles: dealership.mutation((_ctx, input) => {
+      for (const vehicle of input.vehicles) {
+        const name = vehicle.name.trim()
+        if (!name) continue
 
-          const existing = _ctx.db.vehicles.where('name', name).all().at(0)
-          const next = {
-            badge: vehicle.badge ?? '',
-            imageAlt: vehicle.imageAlt ?? '',
-            name,
-            price: vehicle.price ?? '',
-            specs: vehicle.specs ?? '',
-          }
-
-          if (existing) {
-            _ctx.db.vehicles.update(existing.id, next)
-          } else {
-            _ctx.db.vehicles.insert(next)
-          }
+        const existing = _ctx.db.vehicles.where('name', name).all().at(0)
+        const next = {
+          badge: vehicle.badge ?? '',
+          imageAlt: vehicle.imageAlt ?? '',
+          name,
+          price: vehicle.price ?? '',
+          specs: vehicle.specs ?? '',
         }
 
-        return _ctx.db.vehicles.orderBy('updatedAt', 'desc').all()
-      },
-    ),
+        if (existing) {
+          _ctx.db.vehicles.update(existing.id, next)
+        } else {
+          _ctx.db.vehicles.insert(next)
+        }
+      }
+
+      return _ctx.db.vehicles.orderBy('updatedAt', 'desc').all()
+    }),
   },
 } as const

@@ -44,7 +44,7 @@ export const LogisticsNavbar = defineCapsule({
     const cta = props.cta ?? 'Get a Quote'
     const ctaTarget = props.ctaTarget ?? cta
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground',

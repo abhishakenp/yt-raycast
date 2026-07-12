@@ -3,21 +3,23 @@ import { z } from 'zod/v4'
 
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
-const CompassMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="9" />
-    <path d="M15.5 8.5l-2 5-5 2 2-5z" />
-  </svg>
-)
+function CompassMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15.5 8.5l-2 5-5 2 2-5z" />
+    </svg>
+  )
+}
 
 export const TravelAgencyNavbar = defineCapsule({
   name: 'TravelAgencyNavbar',

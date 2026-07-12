@@ -285,10 +285,11 @@ export function summarizeAssignments(assignments: ChangeGroupAssignment[]) {
     .filter(({ count }) => count > 0)
 }
 
-const withReportPath = (paths: string[]) =>
-  paths.includes(changeGroupReportPath)
+function withReportPath(paths: string[]) {
+  return paths.includes(changeGroupReportPath)
     ? paths
     : [...paths, changeGroupReportPath].sort((a, b) => a.localeCompare(b))
+}
 
 export function renderChangeGroupReport(paths: string[]) {
   const { assignments, unclassified } = classifyChangedPaths(paths)

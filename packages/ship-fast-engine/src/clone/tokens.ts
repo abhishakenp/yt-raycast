@@ -10,7 +10,7 @@ function clampByte(n: number): number {
 
 // Compose an #rrggbb string from three channels.
 function channelsToHex(r: number, g: number, b: number): string {
-  const h = (n: number) => clampByte(n).toString(16).padStart(2, '0')
+  const h = (n) => clampByte(n).toString(16).padStart(2, '0')
   return `#${h(r)}${h(g)}${h(b)}`
 }
 
@@ -345,7 +345,7 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
   // property — body's radius is almost always 0. Adopt the dominant *non-zero*
   // radius across captured elements so the cloned page keeps the original's
   // rounded/sharp character; fall back to body, then a sensible default.
-  const acceptRadius = (v: string): string | null => {
+  const acceptRadius = (v) => {
     if (!v) return null
     // Reject 0 / 0px / 0rem and multi-value (per-corner) noise — keep a single
     // uniform non-zero radius which is what the theme token represents.
@@ -363,7 +363,7 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
 
   // Spacing comes from the dominant gap among flex/grid containers; body rarely
   // sets gap, so survey captured layout elements before falling back.
-  const acceptGap = (v: string): string | null => {
+  const acceptGap = (v) => {
     if (!v) return null
     const first = v.split(/\s+/)[0]
     if (!first || /^(normal|0(px|rem|em|%)?)$/.test(first)) return null

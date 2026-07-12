@@ -9,8 +9,9 @@ import {
   matchesGalleryFilters,
 } from './gallery_helpers'
 
-const makeSession = (overrides: Record<string, unknown> = {}) =>
-  ({ _id: 'session-1', prompt: '', ...overrides }) as any
+function makeSession(overrides: Record<string, unknown> = {}) {
+  return { _id: 'session-1', prompt: '', ...overrides } as any
+}
 
 describe('hasGalleryReadySignal', () => {
   it('returns true when genuiStatus is done', () => {

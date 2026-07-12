@@ -14,17 +14,19 @@ type DocsCatalogItem = NonNullable<
   ReturnType<typeof docsLakebed.queries.docsCatalog>
 >[number]
 
-export const docsCatalogItem = ({
+export function docsCatalogItem({
   category,
   content,
   slug,
   title,
-}: DocsCatalogInput): DocsCatalogInput => ({
-  category: category ?? '',
-  content: content ?? '',
-  slug,
-  title: title ?? '',
-})
+}: DocsCatalogInput): DocsCatalogInput {
+  return {
+    category: category ?? '',
+    content: content ?? '',
+    slug,
+    title: title ?? '',
+  }
+}
 
 export function useSyncDocsCatalog(
   lakebed: DocsLakebed,
@@ -53,7 +55,7 @@ export function useDocsSearch(lakebed: DocsLakebed) {
   const setDocsSearch = lakebed.useMutation('setDocsSearch')
 
   const submitSearch = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (setDocsSearch.isPending) return
 
@@ -68,7 +70,7 @@ export function useDocsSearch(lakebed: DocsLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input: DocsSearchInput) => {
+    (input) => {
       if (setDocsSearch.isPending) return
       void setDocsSearch(input)
     },

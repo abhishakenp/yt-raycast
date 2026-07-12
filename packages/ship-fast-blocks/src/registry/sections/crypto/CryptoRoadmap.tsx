@@ -88,7 +88,7 @@ export const CryptoRoadmap = defineCapsule({
           },
         ]
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         fill="currentColor"
@@ -103,7 +103,7 @@ export const CryptoRoadmap = defineCapsule({
       </svg>
     )
 
-    const statusStyle = (status: 'Completed' | 'In Progress' | 'Planned') => {
+    const statusStyle = (status) => {
       if (status === 'Completed')
         return {
           node: 'bg-primary/15 text-primary',

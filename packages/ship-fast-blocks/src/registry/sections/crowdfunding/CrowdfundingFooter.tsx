@@ -71,7 +71,7 @@ export const CrowdfundingFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
 
-    const LeafMark = ({ className }: { className?: string }) => (
+    const LeafMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-full bg-primary text-primary-foreground',

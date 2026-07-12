@@ -9,7 +9,7 @@ export function usePasteListener(
   allowTopLevelUndefined: boolean = true,
 ) {
   useEffect(() => {
-    const listener = (e: ClipboardEvent) => {
+    const listener = (e) => {
       if (
         columnName.startsWith('_') ||
         !cellRef.current?.contains(document.activeElement)

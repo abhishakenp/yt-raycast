@@ -40,7 +40,7 @@ export const AccountingFirmNavbar = defineCapsule({
       : ['Services', 'About', 'Team', 'Pricing', 'FAQ']
     const cta = props.cta ?? 'Schedule Consultation'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-md bg-primary font-bold text-primary-foreground',

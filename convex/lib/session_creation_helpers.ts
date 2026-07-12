@@ -41,18 +41,22 @@ type GenerationLimitEnv = {
 export const SHORT_WINDOW_LIMIT = 5
 export const PROMPT_CACHE_LOOKBACK_LIMIT = 12
 
-export const areGenerationLimitsDisabled = (
+export function areGenerationLimitsDisabled(
   env: GenerationLimitEnv = process.env,
-): boolean => env.DISABLE_LIMIT === 'true' || env.IS_DEV === 'true'
+): boolean {
+  return env.DISABLE_LIMIT === 'true' || env.IS_DEV === 'true'
+}
 
-export const isPublicPreviewModeEnabled = (
+export function isPublicPreviewModeEnabled(
   env: Record<string, string | undefined> = process.env,
-): boolean => env.SHIP_FAST_PUBLIC_PREVIEW_MODE === 'true'
+): boolean {
+  return env.SHIP_FAST_PUBLIC_PREVIEW_MODE === 'true'
+}
 
-export const findReusablePromptCacheSession = async (
+export async function findReusablePromptCacheSession(
   ctx: SessionCreationCtx,
   promptCacheKey: string,
-): Promise<Doc<'sessions'> | null> => {
+): Promise<Doc<'sessions'> | null> {
   const candidates = await ctx.db
     .query('sessions')
     .withIndex('by_promptCacheKey', (index) =>
@@ -83,10 +87,10 @@ export type FindIdempotentWorkspaceSessionArgs = {
   clientIpHash?: string
 }
 
-export const findIdempotentWorkspaceSession = async (
+export async function findIdempotentWorkspaceSession(
   ctx: SessionCreationCtx,
   args: FindIdempotentWorkspaceSessionArgs,
-): Promise<Doc<'sessions'> | null> => {
+): Promise<Doc<'sessions'> | null> {
   const existing = await ctx.db
     .query('sessions')
     .withIndex('by_workspace', (index) => index.eq('workspace', args.workspace))
@@ -131,10 +135,10 @@ export type GenerationAdmission = {
   remaining: number
 }
 
-export const loadGenerationAdmission = async (
+export async function loadGenerationAdmission(
   ctx: SessionCreationCtx,
   args: GenerationAdmissionInput,
-): Promise<GenerationAdmission> => {
+): Promise<GenerationAdmission> {
   if (
     args.publicPreviewMode === true &&
     args.userId === undefined &&
@@ -265,11 +269,11 @@ export type CreateGenerationSessionResult = {
   cloned?: boolean
 }
 
-export const createGenerationSession = async (
+export async function createGenerationSession(
   ctx: MutationCtx,
   args: CreateGenerationSessionInput,
   references: CreateGenerationSessionReferences,
-): Promise<CreateGenerationSessionResult> => {
+): Promise<CreateGenerationSessionResult> {
   const disableLimits = areGenerationLimitsDisabled()
   const publicPreviewMode = isPublicPreviewModeEnabled()
   const prompt = args.prompt.trim()

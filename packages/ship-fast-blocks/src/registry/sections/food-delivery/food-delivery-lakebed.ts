@@ -29,7 +29,9 @@ export type FoodDeliveryRestaurantInput = {
   name: string
 }
 
-const clean = (value: unknown) => String(value ?? '').trim()
+function clean(value: unknown) {
+  return String(value ?? '').trim()
+}
 
 const foodDelivery = createLakebedDefinition({
   actions: {
@@ -102,101 +104,93 @@ export const foodDeliveryLakebed = {
     }),
   },
   mutations: {
-    recordFoodAction: foodDelivery.mutation(
-      (_ctx, input: FoodDeliveryActionInput) => {
-        const action = clean(input.action)
-        if (!action) return _ctx.db.actions.orderBy('createdAt').all()
+    recordFoodAction: foodDelivery.mutation((_ctx, input) => {
+      const action = clean(input.action)
+      if (!action) return _ctx.db.actions.orderBy('createdAt').all()
 
-        _ctx.db.actions.insert({
-          action,
-          source: clean(input.source),
-        })
+      _ctx.db.actions.insert({
+        action,
+        source: clean(input.source),
+      })
 
-        return _ctx.db.actions.orderBy('createdAt', 'desc').all()
-      },
-    ),
-    selectRestaurant: foodDelivery.mutation(
-      (_ctx, input: FoodDeliveryRestaurantInput) => {
-        const name = clean(input.name)
-        if (!name) return _ctx.db.selections.orderBy('createdAt').all()
+      return _ctx.db.actions.orderBy('createdAt', 'desc').all()
+    }),
+    selectRestaurant: foodDelivery.mutation((_ctx, input) => {
+      const name = clean(input.name)
+      if (!name) return _ctx.db.selections.orderBy('createdAt').all()
 
-        const cuisine = clean(input.cuisine)
-        const current = _ctx.db.state.orderBy('createdAt').all().at(0)
-        const patch = {
+      const cuisine = clean(input.cuisine)
+      const current = _ctx.db.state.orderBy('createdAt').all().at(0)
+      const patch = {
+        selectedCuisine: cuisine,
+        selectedRestaurant: name,
+      }
+
+      if (current) {
+        _ctx.db.state.update(current.id, patch)
+      } else {
+        _ctx.db.state.insert({
+          address: '',
+          query: '',
           selectedCuisine: cuisine,
           selectedRestaurant: name,
-        }
+        })
+      }
 
-        if (current) {
-          _ctx.db.state.update(current.id, patch)
-        } else {
-          _ctx.db.state.insert({
-            address: '',
-            query: '',
-            selectedCuisine: cuisine,
-            selectedRestaurant: name,
-          })
-        }
+      _ctx.db.selections.insert({ cuisine, name })
 
-        _ctx.db.selections.insert({ cuisine, name })
+      return _ctx.db.selections.orderBy('createdAt', 'desc').all()
+    }),
+    setFoodSearch: foodDelivery.mutation((_ctx, input) => {
+      const address = clean(input.address)
+      const query = clean(input.query) || address
+      const current = _ctx.db.state.orderBy('createdAt').all().at(0)
+      const next = {
+        address,
+        query,
+        selectedCuisine: '',
+        selectedRestaurant: '',
+      }
 
-        return _ctx.db.selections.orderBy('createdAt', 'desc').all()
-      },
-    ),
-    setFoodSearch: foodDelivery.mutation(
-      (_ctx, input: FoodDeliverySearchInput) => {
-        const address = clean(input.address)
-        const query = clean(input.query) || address
-        const current = _ctx.db.state.orderBy('createdAt').all().at(0)
+      if (current) {
+        _ctx.db.state.update(current.id, next)
+      } else {
+        _ctx.db.state.insert(next)
+      }
+
+      _ctx.db.searches.insert({ address, query })
+
+      return _ctx.db.state.orderBy('createdAt').all()
+    }),
+    syncRestaurants: foodDelivery.mutation((_ctx, input) => {
+      const existing = _ctx.db.items.orderBy('createdAt').all()
+      const existingByName = new Map(
+        existing.map((item) => [item.name.toLowerCase(), item]),
+      )
+
+      for (const item of input.items) {
+        const name = clean(item.name)
+        if (!name) continue
+
         const next = {
-          address,
-          query,
-          selectedCuisine: '',
-          selectedRestaurant: '',
+          category: clean(item.category),
+          cuisine: clean(item.cuisine),
+          delivery: clean(item.delivery),
+          imageAlt: clean(item.imageAlt),
+          name,
+          rating: clean(item.rating),
+          time: clean(item.time),
         }
+        const current = existingByName.get(name.toLowerCase())
 
         if (current) {
-          _ctx.db.state.update(current.id, next)
+          _ctx.db.items.update(current.id, next)
         } else {
-          _ctx.db.state.insert(next)
+          _ctx.db.items.insert(next)
         }
+      }
 
-        _ctx.db.searches.insert({ address, query })
-
-        return _ctx.db.state.orderBy('createdAt').all()
-      },
-    ),
-    syncRestaurants: foodDelivery.mutation(
-      (_ctx, input: { items: FoodDeliveryCatalogInput[] }) => {
-        const existing = _ctx.db.items.orderBy('createdAt').all()
-        const existingByName = new Map(
-          existing.map((item) => [item.name.toLowerCase(), item]),
-        )
-
-        for (const item of input.items) {
-          const name = clean(item.name)
-          if (!name) continue
-
-          const next = {
-            category: clean(item.category),
-            cuisine: clean(item.cuisine),
-            delivery: clean(item.delivery),
-            imageAlt: clean(item.imageAlt),
-            name,
-            rating: clean(item.rating),
-            time: clean(item.time),
-          }
-          const current = existingByName.get(name.toLowerCase())
-
-          if (current) {
-            _ctx.db.items.update(current.id, next)
-          } else {
-            _ctx.db.items.insert(next)
-          }
-        }
-
-        return _ctx.db.items.orderBy('createdAt').all()
-      },
-    ),
+      return _ctx.db.items.orderBy('createdAt').all()
+    }),
   },
 } as const

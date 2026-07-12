@@ -113,7 +113,7 @@ export const InsuranceFooter = defineCapsule({
           'Norton Secured SSL certificate badge',
         ]
     const homeTarget = props.homeTarget ?? brand
-    const Shield = ({ className }: { className?: string }) => (
+    const Shield = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',
@@ -135,7 +135,7 @@ export const InsuranceFooter = defineCapsule({
         </svg>
       </span>
     )
-    const Phone = ({ className }: { className?: string }) => (
+    const Phone = ({ className }) => (
       <svg
         className={className}
         width="20"

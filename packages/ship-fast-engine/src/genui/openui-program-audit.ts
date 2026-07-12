@@ -7,21 +7,25 @@ export type OpenUIProgramAuditOptions = {
   expectedPageIds?: string[]
 }
 
-const readMetaErrors = (
+function readMetaErrors(
   errors: Array<{ code?: string; component?: string; message?: string }>,
   code: string,
-): string[] =>
-  errors
+): string[] {
+  return errors
     .filter((error) => error.code === code)
     .map(
       (error) =>
         error.component ?? error.message ?? JSON.stringify(error) ?? code,
     )
+}
 
-const isElementNode = (value: unknown): value is ElementNode =>
-  Boolean(value) &&
-  typeof value === 'object' &&
-  (value as { type?: unknown }).type === 'element'
+function isElementNode(value: unknown): value is ElementNode {
+  return (
+    Boolean(value) &&
+    typeof value === 'object' &&
+    (value as { type?: unknown }).type === 'element'
+  )
+}
 
 export async function auditOpenUIProgram(
   source: string,

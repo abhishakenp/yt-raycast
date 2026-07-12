@@ -7,10 +7,13 @@ import {
 } from './vocabulary'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-const fieldNames = (kind: string, role: string): string[] =>
-  getVocabulary(kind)
-    .roles.find((r) => r.role === role)
-    ?.fields.map((f) => f.name) ?? []
+function fieldNames(kind: string, role: string): string[] {
+  return (
+    getVocabulary(kind)
+      .roles.find((r) => r.role === role)
+      ?.fields.map((f) => f.name) ?? []
+  )
+}
 
 const universalRoleNames = UNIVERSAL_ROLES.map((r) => r.role)
 

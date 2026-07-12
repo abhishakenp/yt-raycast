@@ -19,8 +19,12 @@ export type HotelBookingInput = {
   source?: string
 }
 
-const clean = (value: unknown) => String(value ?? '').trim()
-const normalizeLabel = (label: string) => clean(label) || 'Availability'
+function clean(value: unknown) {
+  return String(value ?? '').trim()
+}
+function normalizeLabel(label: string) {
+  return clean(label) || 'Availability'
+}
 
 const hotel = createLakebedDefinition({
   bookingIntents: {
@@ -62,7 +66,7 @@ export const hotelResortLakebed = {
     ),
   },
   mutations: {
-    requestBooking: hotel.mutation((_ctx, input: HotelBookingInput) => {
+    requestBooking: hotel.mutation((_ctx, input) => {
       _ctx.db.bookingIntents.insert({
         action: clean(input.action) || 'booking',
         fieldsJson: JSON.stringify(input.fields ?? {}),
@@ -73,7 +77,7 @@ export const hotelResortLakebed = {
 
       return _ctx.db.bookingIntents.orderBy('createdAt').all()
     }),
-    syncRooms: hotel.mutation((_ctx, input: { rooms: HotelRoomInput[] }) => {
+    syncRooms: hotel.mutation((_ctx, input) => {
       for (const room of input.rooms) {
         const name = clean(room.name)
         if (!name) continue

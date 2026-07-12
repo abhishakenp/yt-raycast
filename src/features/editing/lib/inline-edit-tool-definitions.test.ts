@@ -13,14 +13,18 @@ import {
   textRewriteInputSchema,
 } from './inline-edit-tool-definitions'
 
-const validateOutput = async (
+async function validateOutput(
   tool: (typeof INLINE_EDIT_TOOL_DEFINITIONS)[number],
   value: unknown,
-) => Promise.resolve(tool.outputSchema!['~standard'].validate(value))
+) {
+  return Promise.resolve(tool.outputSchema!['~standard'].validate(value))
+}
 
-const validationIssues = (
+function validationIssues(
   result: Awaited<ReturnType<typeof validateOutput>>,
-): unknown => (result as { issues?: unknown }).issues
+): unknown {
+  return (result as { issues?: unknown }).issues
+}
 
 describe('inline edit tool definitions', () => {
   it('exposes every shared inline edit tool to imperative client execution', () => {

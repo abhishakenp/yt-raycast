@@ -83,7 +83,7 @@ export const EventFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service']
     const homeTarget = props.homeTarget ?? columns[0]?.links[0] ?? brand
 
-    const socialIcon = (social: string) => {
+    const socialIcon = (social) => {
       if (social === 'Twitter') {
         return (
           <svg

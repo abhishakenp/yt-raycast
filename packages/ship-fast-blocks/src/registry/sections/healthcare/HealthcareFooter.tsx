@@ -87,7 +87,7 @@ export const HealthcareFooter = defineCapsule({
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
       : ['Privacy Policy', 'Terms of Service', 'Accessibility']
-    const HeartMark = ({ className }: { className?: string }) => (
+    const HeartMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-xl bg-primary text-primary-foreground',

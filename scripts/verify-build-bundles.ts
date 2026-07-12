@@ -19,7 +19,9 @@ type ForbiddenAssetRule = {
   reason: string
 }
 
-const mib = (value: number) => value * 1024 * 1024
+function mib(value: number) {
+  return value * 1024 * 1024
+}
 
 const publicRules: AssetRule[] = [
   {

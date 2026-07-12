@@ -5,10 +5,10 @@ import { serializeSession } from './session_serialization_helpers'
 
 type SessionReadinessCtx = Pick<QueryCtx, 'db'>
 
-export const loadSessionReadiness = async (
+export async function loadSessionReadiness(
   ctx: SessionReadinessCtx,
   lookup: string,
-) => {
+) {
   const sessionId = ctx.db.normalizeId('sessions', lookup)
 
   if (sessionId === null) return null

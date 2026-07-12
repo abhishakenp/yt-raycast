@@ -32,7 +32,7 @@ export function useDataPageSize(componentId: string | null, tableName: string) {
   )
 }
 
-export const useQueryFilteredTable = (tableName: string) => {
+export function useQueryFilteredTable(tableName: string) {
   const router = useRouter()
 
   const filters = (router.query.filters as string) || null

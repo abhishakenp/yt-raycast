@@ -15,7 +15,7 @@ function bodyInner(html: string): string {
   return m ? m[1] : String(html || '')
 }
 
-export const promptExpectsNovaDenseMarketing = (prompt: string): boolean => {
+export function promptExpectsNovaDenseMarketing(prompt: string): boolean {
   const p = String(prompt || '').toLowerCase()
   if (!p.trim()) return false
   if (
@@ -45,7 +45,7 @@ export const promptExpectsNovaDenseMarketing = (prompt: string): boolean => {
   )
 }
 
-export const explainNovaMarketingBarFailures = (html: string): string[] => {
+export function explainNovaMarketingBarFailures(html: string): string[] {
   const raw = String(html || '')
   if (!/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(raw))
     return []
@@ -86,8 +86,9 @@ export const explainNovaMarketingBarFailures = (html: string): string[] => {
   return failures
 }
 
-export const htmlFailsNovaMarketingBar = (html: string): boolean =>
-  explainNovaMarketingBarFailures(html).length > 0
+export function htmlFailsNovaMarketingBar(html: string): boolean {
+  return explainNovaMarketingBarFailures(html).length > 0
+}
 
 function countStructuralTags(html: string): number {
   const s = String(html || '')

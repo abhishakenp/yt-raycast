@@ -6,10 +6,14 @@ export type GalleryThumbnailSession = {
 // Gallery previews must come from server-rendered static HTML or a local
 // gradient placeholder — never from a fetched PNG thumbnail. These helpers are
 // intentionally no-ops so callers never build a thumbnail URL or fetch a blob.
-export const getGalleryThumbnailUrl = (
+export function getGalleryThumbnailUrl(
   _session: GalleryThumbnailSession,
-): string => ''
+): string {
+  return ''
+}
 
-export const resolveGalleryThumbnail = async (
+export async function resolveGalleryThumbnail(
   _thumbnailUrl: string,
-): Promise<string | undefined> => undefined
+): Promise<string | undefined> {
+  return undefined
+}

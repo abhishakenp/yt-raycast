@@ -11,28 +11,31 @@ const modules = import.meta.glob('./**/*.ts')
 vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 })
 
 const ISS = 'https://clerk.test'
-const id = (u: string) => `${ISS}|${u}`
+function id(u: string) {
+  return `${ISS}|${u}`
+}
 const SECRET = 'test-billing-secret'
 
-const asUser = (
+function asUser(
   t: ReturnType<typeof convexTest>,
   user: string,
   email?: string,
-) =>
-  t.withIdentity({
+) {
+  return t.withIdentity({
     tokenIdentifier: id(user),
     subject: user,
     issuer: ISS,
     ...(email ? { email } : {}),
   })
+}
 
-const paySubscription = (
+function paySubscription(
   t: ReturnType<typeof convexTest>,
   user: string,
   providerSubscriptionId: string,
   idempotencyKey: string,
-) =>
-  t.mutation(api.billing.applyBillingWebhook, {
+) {
+  return t.mutation(api.billing.applyBillingWebhook, {
     secret: SECRET,
     provider: 'stripe',
     idempotencyKey,
@@ -43,6 +46,7 @@ const paySubscription = (
       providerSubscriptionId,
     },
   })
+}
 
 describe('referrals', () => {
   beforeEach(() => {

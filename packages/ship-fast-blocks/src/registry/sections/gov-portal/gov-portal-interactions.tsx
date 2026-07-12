@@ -138,7 +138,7 @@ export function useGovLang(_lakebed?: GovPortalLakebed) {
 
   useEffect(() => {
     setLangState(readStoredLang())
-    const onChange = (event: Event) => {
+    const onChange = (event) => {
       const next = (event as CustomEvent<{ lang?: GovLang }>).detail?.lang
       setLangState(
         next === 'hi' ? 'hi' : next === 'en' ? 'en' : readStoredLang(),
@@ -148,7 +148,7 @@ export function useGovLang(_lakebed?: GovPortalLakebed) {
     return () => window.removeEventListener(GOV_LANG_EVENT, onChange)
   }, [])
 
-  const setLang = useCallback((next: GovLang) => {
+  const setLang = useCallback((next) => {
     try {
       window.localStorage.setItem(GOV_LANG_STORAGE_KEY, next)
     } catch {
@@ -161,7 +161,7 @@ export function useGovLang(_lakebed?: GovPortalLakebed) {
   }, [])
 
   const t = useCallback(
-    (key: GovStringKey) => pickLang(lang, STRINGS[key][0], STRINGS[key][1]),
+    (key) => pickLang(lang, STRINGS[key][0], STRINGS[key][1]),
     [lang],
   )
 
@@ -290,7 +290,7 @@ export function GovDarkModeToggle({
   // stay in sync if another toggle flips it.
   useEffect(() => {
     setIsDark(readStoredDark())
-    const onChange = (event: Event) => {
+    const onChange = (event) => {
       const next = (event as CustomEvent<{ dark?: boolean }>).detail?.dark
       if (typeof next === 'boolean') setIsDark(next)
     }
@@ -398,7 +398,7 @@ export function useGrievanceForm(lakebed: GovPortalLakebed) {
   const [submitted, setSubmitted] = useState<string | null>(null)
 
   const submit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
+    async (event) => {
       event.preventDefault()
       if (submitGrievance.isPending) return
       const form = event.currentTarget
@@ -442,7 +442,7 @@ export function useVendorPortal(lakebed: GovPortalLakebed) {
   const auth = lakebed.useAuth()
 
   const register = useCallback(
-    async (input: VendorInput) => {
+    async (input) => {
       if (registerVendor.isPending) return
       await registerVendor({
         ...input,
@@ -453,7 +453,7 @@ export function useVendorPortal(lakebed: GovPortalLakebed) {
   )
 
   const bid = useCallback(
-    async (input: BidInput) => {
+    async (input) => {
       if (submitBid.isPending) return
       await submitBid(input)
     },
@@ -461,7 +461,7 @@ export function useVendorPortal(lakebed: GovPortalLakebed) {
   )
 
   const pay = useCallback(
-    async (input: RfxPaymentInput) => {
+    async (input) => {
       if (createRfxPayment.isPending || markRfxPaid.isPending) return
       await createRfxPayment(input)
       // mock gateway: immediately mark the RFx payment paid

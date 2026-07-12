@@ -53,7 +53,7 @@ export const HotelResortNavbar = defineCapsule({
     const cta = props.cta ?? 'Book Now'
     const bookTarget = props.bookTarget ?? 'Check Availability'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-full font-light',

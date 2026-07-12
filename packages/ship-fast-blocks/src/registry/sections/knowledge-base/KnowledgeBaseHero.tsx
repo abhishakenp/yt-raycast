@@ -94,7 +94,7 @@ export const KnowledgeBaseHero = defineCapsule({
     const queryValue = kbSearch.state?.query ?? ''
     const results = kbSearch.state?.results ?? []
 
-    const SearchIcon = ({ className }: { className?: string }) => (
+    const SearchIcon = ({ className }) => (
       <svg
         className={className}
         width="20"

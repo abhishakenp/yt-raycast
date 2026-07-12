@@ -79,7 +79,7 @@ function ChartContainer({
   )
 }
 
-const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
+function ChartStyle({ id, config }: { id: string; config: ChartConfig }) {
   const colorConfig = Object.entries(config).filter(
     ([, itemConfig]) => itemConfig.theme ?? itemConfig.color,
   )

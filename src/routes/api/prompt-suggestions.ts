@@ -2,14 +2,15 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { getPartialPromptSuggestions } from './-prompt-suggestions-logic.js'
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
 export const Route = createFileRoute('/api/prompt-suggestions')({
   server: {

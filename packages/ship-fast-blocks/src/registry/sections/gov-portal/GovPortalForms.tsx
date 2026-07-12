@@ -25,7 +25,9 @@ import {
   type GovRow,
 } from './gov-portal-interactions.tsx'
 
-const str = (row: GovRow, key: string) => String(row[key] ?? '').trim()
+function str(row: GovRow, key: string) {
+  return String(row[key] ?? '').trim()
+}
 
 const field =
   'w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary'

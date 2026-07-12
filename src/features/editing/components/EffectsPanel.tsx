@@ -79,19 +79,23 @@ const TRANSITION_PROPERTIES = [
   'border-radius',
 ]
 
-const filterString = (f: FilterState): string =>
-  `blur(${f.blur}px) brightness(${f.brightness}%) contrast(${f.contrast}%) saturate(${f.saturate}%) grayscale(${f.grayscale}%)`
+function filterString(f: FilterState): string {
+  return `blur(${f.blur}px) brightness(${f.brightness}%) contrast(${f.contrast}%) saturate(${f.saturate}%) grayscale(${f.grayscale}%)`
+}
 
-const transformString = (t: TransformState): string =>
-  `rotate(${t.rotate}deg) scale(${t.scale}) skew(${t.skewX}deg, ${t.skewY}deg) translate(${t.translateX}px, ${t.translateY}px)`
+function transformString(t: TransformState): string {
+  return `rotate(${t.rotate}deg) scale(${t.scale}) skew(${t.skewX}deg, ${t.skewY}deg) translate(${t.translateX}px, ${t.translateY}px)`
+}
 
-const transitionString = (t: TransitionState): string =>
-  `${t.property} ${t.duration}ms ${t.easing}`
+function transitionString(t: TransitionState): string {
+  return `${t.property} ${t.duration}ms ${t.easing}`
+}
 
-const num = (match: RegExpMatchArray | null, fallback: number): number =>
-  match && match[1] !== undefined ? parseFloat(match[1]) : fallback
+function num(match: RegExpMatchArray | null, fallback: number): number {
+  return match && match[1] !== undefined ? parseFloat(match[1]) : fallback
+}
 
-const parseFilter = (raw: string): FilterState => {
+function parseFilter(raw: string): FilterState {
   if (!raw || raw === 'none') return { ...DEFAULT_FILTERS }
   return {
     blur: num(raw.match(/blur\(([\d.]+)px\)/), DEFAULT_FILTERS.blur),
@@ -108,7 +112,7 @@ const parseFilter = (raw: string): FilterState => {
   }
 }
 
-const parseTransform = (raw: string): TransformState => {
+function parseTransform(raw: string): TransformState {
   if (!raw || raw === 'none') return { ...DEFAULT_TRANSFORM }
   const matrix = raw.match(/^matrix\(([^)]+)\)$/)
   if (matrix) {
@@ -156,7 +160,7 @@ const parseTransform = (raw: string): TransformState => {
   }
 }
 
-const parseTransition = (raw: string): TransitionState => {
+function parseTransition(raw: string): TransitionState {
   if (!raw || raw === 'none') return { ...DEFAULT_TRANSITION }
   const durationMatch = raw.match(/([\d.]+)(ms|s)\b/)
   const duration = durationMatch
@@ -206,31 +210,31 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
     onModified?.()
   }
 
-  const applyLiveStyle = (prop: string, value: string) => {
+  const applyLiveStyle = (prop, value) => {
     if (activeElement) {
       activeElement.style.setProperty(prop, value)
       markModified()
     }
   }
 
-  const updateOpacity = (value: number) => {
+  const updateOpacity = (value) => {
     setOpacity(value)
     applyLiveStyle('opacity', String(value / 100))
   }
 
-  const updateFilter = (key: keyof FilterState, value: number) => {
+  const updateFilter = (key, value) => {
     const next = { ...filters, [key]: value }
     setFilters(next)
     applyLiveStyle('filter', filterString(next))
   }
 
-  const updateTransform = (key: keyof TransformState, value: number) => {
+  const updateTransform = (key, value) => {
     const next = { ...transform, [key]: value }
     setTransform(next)
     applyLiveStyle('transform', transformString(next))
   }
 
-  const updateTransition = (key: keyof TransitionState, value: string) => {
+  const updateTransition = (key, value) => {
     const next = { ...transition, [key]: value }
     setTransition(next)
     applyLiveStyle('transition', transitionString(next))

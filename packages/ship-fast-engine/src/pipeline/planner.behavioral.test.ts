@@ -23,8 +23,9 @@ import {
   passesHomepagePublicDesignVerification,
 } from './ralph-homepage-score'
 
-const minimalHtml = (body: string) =>
-  `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><script src="/scripts/tailwind-browser.js"></script><script>tailwind.config = { theme: { extend: {} } }</script></head><body>${body}</body></html>`
+function minimalHtml(body: string) {
+  return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><script src="/scripts/tailwind-browser.js"></script><script>tailwind.config = { theme: { extend: {} } }</script></head><body>${body}</body></html>`
+}
 
 describe('planner: genome merge', () => {
   it('GENOME_NAMES exposes sorted genome list', () => {
@@ -543,12 +544,7 @@ describe('planner: theme sanitize', () => {
 })
 
 describe('planner: ralph homepage score', () => {
-  const buildScoredHtml = (opts: {
-    length?: number
-    sections?: number
-    tailwind?: boolean
-    hooks?: boolean
-  }) => {
+  const buildScoredHtml = (opts) => {
     const len = opts.length ?? 12000
     const sections = opts.sections ?? 7
     const tailwind = opts.tailwind ?? true

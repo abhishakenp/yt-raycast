@@ -31,8 +31,9 @@ const HI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८'
 import { Container } from '#/section-kit/Container.tsx'
 
 /** Render ASCII digits in Devanagari so numeric values localise in Hindi. */
-export const toHiNum = (s: string) =>
-  s.replace(/[0-9]/g, (d) => HI_DIGITS[Number(d)])
+export function toHiNum(s: string) {
+  return s.replace(/[0-9]/g, (d) => HI_DIGITS[Number(d)])
+}
 
 const HERO_VIDEOS = [
   'https://videos.pexels.com/video-files/6216793/6216793-hd_1920_1080_30fps.mp4',

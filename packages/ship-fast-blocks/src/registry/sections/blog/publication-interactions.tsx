@@ -36,21 +36,23 @@ import {
 
 export type PublicationLakebed = LakebedClientRuntime<typeof publicationLakebed>
 
-export const publicationArticle = ({
+export function publicationArticle({
   author,
   category,
   date,
   excerpt,
   target,
   title,
-}: PublicationArticleInput): PublicationArticleInput => ({
-  author: author ?? '',
-  category: category ?? '',
-  date: date ?? '',
-  excerpt: excerpt ?? '',
-  target: target ?? title,
-  title,
-})
+}: PublicationArticleInput): PublicationArticleInput {
+  return {
+    author: author ?? '',
+    category: category ?? '',
+    date: date ?? '',
+    excerpt: excerpt ?? '',
+    target: target ?? title,
+    title,
+  }
+}
 
 export function PublicationMutationSpinner({
   className,
@@ -118,7 +120,7 @@ export function PublicationSubscribeForm({
   const subscribe = lakebed.useMutation('subscribe')
   const count = summary?.count ?? 0
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = (event) => {
     event.preventDefault()
     const nextEmail = email.trim()
     if (!nextEmail || subscribe.isPending) return
@@ -367,7 +369,7 @@ export function PublicationMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?: string) => {
+    (target?) => {
       setOpen(false)
       go(target)
     },

@@ -15,30 +15,29 @@ const INLINE_TAG =
 // being part of it: inline tags and HTML comments.
 const BRIDGE_MARKUP = `(?:${INLINE_TAG}|<!--[\\s\\S]*?-->)`
 
-const escapeHtml = (str: string): string =>
-  str
+function escapeHtml(str: string): string {
+  return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
+}
 
-const escapeRegExp = (str: string): string =>
-  str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
-const getQuotedAttribute = (
+function getQuotedAttribute(
   tag: string,
   names: string[],
-): { name: string; value: string } | null => {
+): { name: string; value: string } | null {
   const pattern = new RegExp(`\\b(${names.join('|')})\\s*=\\s*(["'])(.*?)\\2`)
   const match = tag.match(pattern)
   return match ? { name: match[1], value: match[3] } : null
 }
 
-const classTokensIncludeAnchor = (
-  classValue: string,
-  anchor: string,
-): boolean => {
+function classTokensIncludeAnchor(classValue: string, anchor: string): boolean {
   const anchorTokens = anchor.trim().split(/\s+/).filter(Boolean)
   if (anchorTokens.length === 0) return false
   const classTokens = new Set(classValue.trim().split(/\s+/).filter(Boolean))
@@ -48,19 +47,18 @@ const classTokensIncludeAnchor = (
 const STYLE_ATTRIBUTE_ANCHOR_RE =
   /^\[(data-openui-var|data-openui-component|data-sf-export-page)=(["'])(.*?)\2\]$/
 
-const unescapeAttributeSelectorValue = (value: string): string =>
-  value.replace(/\\(["'\\])/g, '$1')
+function unescapeAttributeSelectorValue(value: string): string {
+  return value.replace(/\\(["'\\])/g, '$1')
+}
 
-const cssPropertyToJsxStyleKey = (property: string): string => {
+function cssPropertyToJsxStyleKey(property: string): string {
   const trimmed = property.trim()
   if (trimmed.startsWith('--')) return JSON.stringify(trimmed)
-  const camel = trimmed.replace(/-([a-z])/g, (_, char: string) =>
-    char.toUpperCase(),
-  )
+  const camel = trimmed.replace(/-([a-z])/g, () => char.toUpperCase())
   return /^[A-Za-z_$][\w$]*$/.test(camel) ? camel : JSON.stringify(trimmed)
 }
 
-const cssDeclarationsToJsxStyle = (styleValue: string): string => {
+function cssDeclarationsToJsxStyle(styleValue: string): string {
   const entries = styleValue
     .split(';')
     .map((declaration) => declaration.trim())
@@ -78,10 +76,10 @@ const cssDeclarationsToJsxStyle = (styleValue: string): string => {
   return `{{ ${entries.join(', ')} }}`
 }
 
-const tagMatchesStyleAnchor = (
+function tagMatchesStyleAnchor(
   tag: string,
   anchor: string,
-): { isJsx: boolean } | null => {
+): { isJsx: boolean } | null {
   if (anchor.startsWith('#')) {
     const id = getQuotedAttribute(tag, ['id'])
     const expected = anchor.slice(1).replace(/\\(.)/g, '$1')
@@ -114,7 +112,7 @@ const tagMatchesStyleAnchor = (
  *  creating a string that doesn't exist verbatim in the stored HTML or OpenUI
  *  source (where text fragments are separated by <br/> tags or ", " string-
  *  argument delimiters). */
-const createAggressiveSeparatorPattern = (value: string): RegExp | null => {
+function createAggressiveSeparatorPattern(value: string): RegExp | null {
   const tokens = value.trim().split(/\W+/).filter(Boolean)
   if (tokens.length === 0) return null
   // Separator: HTML tags, HTML entities (&quot; &amp; etc.), or non-word chars.
@@ -124,7 +122,7 @@ const createAggressiveSeparatorPattern = (value: string): RegExp | null => {
   return new RegExp(tokens.map(escapeRegExp).join(sep))
 }
 
-const createMarkupTolerantTextPattern = (value: string): RegExp | null => {
+function createMarkupTolerantTextPattern(value: string): RegExp | null {
   const trimmed = value.trim()
   if (!trimmed) return null
 
@@ -183,20 +181,13 @@ const createMarkupTolerantTextPattern = (value: string): RegExp | null => {
   return new RegExp(`(?:${BRIDGE_MARKUP})*${pattern}(?:${BRIDGE_MARKUP})*`)
 }
 
-export const applyPreviewTextEdit = (
+export function applyPreviewTextEdit(
   html: string,
   oldText: string | undefined,
   newText: string | undefined,
   occurrenceIndex?: number,
-  // This function is shared across genuinely different content types: real
-  // HTML (preview.html) where `<`/`>`/`&` are markup and must be escaped,
-  // but also OpenUI DSL source, compiled JS, and JSON string leaves — where
-  // those same characters are just literal text inside a string/JSON
-  // literal and escaping them would corrupt the source. Defaults to false
-  // (preserving the non-HTML majority of call sites); only pass true when
-  // `html` is genuinely rendered/stored HTML.
   escapeReplacement = false,
-): { html: string; replaced: boolean } => {
+): { html: string; replaced: boolean } {
   const from = String(oldText ?? '')
   const to = String(newText ?? '')
   if (!html.trim() || !from.trim()) return { html, replaced: false }
@@ -237,12 +228,12 @@ export const applyPreviewTextEdit = (
   }
 }
 
-export const applyImageSwap = (
+export function applyImageSwap(
   html: string,
   altAnchor: string | undefined,
   newSrc: string | undefined,
   occurrenceIndex?: number,
-): { html: string; replaced: boolean } => {
+): { html: string; replaced: boolean } {
   const alt = String(altAnchor ?? '')
   // A multi-select payload (JSON array of URLs) renders as a carousel through
   // the client-side Image override; static HTML consumers (preview.html,
@@ -281,12 +272,12 @@ export const applyImageSwap = (
   return { html: edited, replaced: edited !== html }
 }
 
-export const applyStyleEdit = (
+export function applyStyleEdit(
   html: string,
   classAnchor: string | undefined,
   styleValue: string | undefined,
   occurrenceIndex?: number,
-): { html: string; replaced: boolean } => {
+): { html: string; replaced: boolean } {
   const anchor = String(classAnchor ?? '').trim()
   if (!html.trim() || !anchor) return { html, replaced: false }
   const tagRe = /<[a-zA-Z][\w-]*\b[^>]*?>/g
@@ -344,12 +335,12 @@ export const applyStyleEdit = (
  * this function exists to prevent (a section-scoped AI rewrite has no way to
  * know the rest of the page, so it must never be allowed to overwrite it).
  */
-export const applySectionHtmlReplace = (
+export function applySectionHtmlReplace(
   html: string,
   beforeHtml: string | undefined,
   afterHtml: string | undefined,
   occurrenceIndex?: number,
-): { html: string; replaced: boolean } => {
+): { html: string; replaced: boolean } {
   const before = String(beforeHtml ?? '')
   const after = String(afterHtml ?? '')
   if (!html.trim() || !before.trim()) return { html, replaced: false }
@@ -387,11 +378,11 @@ export const applySectionHtmlReplace = (
  * document source, which silently destroys every other section (the same
  * corruption class applySectionHtmlReplace guards against for HTML).
  */
-export const applyOpenUiVarReplace = (
+export function applyOpenUiVarReplace(
   source: string,
   varName: string,
   replacementExpr: string,
-): { source: string; replaced: boolean } => {
+): { source: string; replaced: boolean } {
   if (!source.trim() || !varName.trim() || !replacementExpr.trim()) {
     return { source, replaced: false }
   }
@@ -412,7 +403,7 @@ export const applyOpenUiVarReplace = (
 
 /** Decode a named or numeric HTML entity to its character(s), or null if not
  *  a recognized entity. */
-const decodeEntity = (entity: string): string | null => {
+function decodeEntity(entity: string): string | null {
   const NAMED: Record<string, string> = {
     '&amp;': '&',
     '&lt;': '<',
@@ -472,10 +463,10 @@ const decodeEntity = (entity: string): string | null => {
  *  hex), whitespace normalization, and inline tags splitting text runs —
  *  making TEXT_NOT_FOUND structurally impossible as long as the text exists
  *  in the rendered content. O(n) in HTML length, no regex backtracking. */
-const findTextRangesInHtml = (
+function findTextRangesInHtml(
   html: string,
   target: string,
-): Array<{ start: number; end: number }> => {
+): Array<{ start: number; end: number }> {
   const t = target.replace(/\s+/g, ' ').trim()
   if (!t) return []
 
@@ -559,7 +550,7 @@ const findTextRangesInHtml = (
  *  `<img alt="Hello">` — must NOT count as visible text matches, otherwise
  *  editing visible text that also appears in an alt attribute replaces the
  *  attribute instead of the visible content. */
-const isInsideTag = (html: string, pos: number): boolean => {
+function isInsideTag(html: string, pos: number): boolean {
   // Scan backwards from pos looking for the most recent `<` or `>`.
   for (let i = pos - 1; i >= 0; i--) {
     if (html[i] === '>') return false // we're between tags (visible text)
@@ -568,10 +559,10 @@ const isInsideTag = (html: string, pos: number): boolean => {
   return false
 }
 
-const collectTextMatches = (
+function collectTextMatches(
   text: string,
   from: string,
-): Array<{ index: number; length: number }> => {
+): Array<{ index: number; length: number }> {
   // Tier 0: exact quoted-string match for OpenUI source.
   // In OpenUI source, string arguments are wrapped in double quotes: "go".
   // When from is short (e.g. "go"), substring matching finds it inside

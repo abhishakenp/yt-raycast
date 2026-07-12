@@ -139,7 +139,7 @@ export const BeautyStoreProducts = defineCapsule({
       (product) => [product.brand, product.title, product.price, product.badge],
     )
 
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -166,7 +166,7 @@ export const BeautyStoreProducts = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -181,7 +181,7 @@ export const BeautyStoreProducts = defineCapsule({
       </svg>
     )
 
-    const badgeClass = (badge?: string) => {
+    const badgeClass = (badge?) => {
       if (badge === 'Clean') return 'bg-secondary text-secondary-foreground'
       if (badge === 'New') return 'bg-accent text-accent-foreground'
       return 'bg-primary text-primary-foreground'

@@ -38,35 +38,35 @@ const rawHtmlSource = `<!DOCTYPE html>
 <body><main><h1>Raw SFF export</h1></main></body>
 </html>`
 
-const unzipTextFiles = (body: Uint8Array): Record<string, string> =>
-  Object.fromEntries(
+function unzipTextFiles(body: Uint8Array): Record<string, string> {
+  return Object.fromEntries(
     Object.entries(unzipSync(body)).map(([name, value]) => [
       name,
       strFromU8(value),
     ]),
   )
+}
 
-const unzipBuiltExportTextFiles = (body: string | Uint8Array) => {
+function unzipBuiltExportTextFiles(body: string | Uint8Array) {
   if (typeof body === 'string') {
     throw new Error('Expected ZIP body')
   }
   return unzipTextFiles(body)
 }
 
-const parseHtmlDocument = (html: string) => parseHTML(html).document
+function parseHtmlDocument(html: string) {
+  return parseHTML(html).document
+}
 
-const collectWindowRuntimeErrors = (dom: JSDOM) => {
+function collectWindowRuntimeErrors(dom: JSDOM) {
   const errors: unknown[] = []
 
-  dom.window.addEventListener('error', (event: ErrorEvent) => {
+  dom.window.addEventListener('error', (event) => {
     errors.push(event.error ?? event.message)
   })
-  dom.window.addEventListener(
-    'unhandledrejection',
-    (event: Event & { reason?: unknown }) => {
-      errors.push(event.reason ?? event)
-    },
-  )
+  dom.window.addEventListener('unhandledrejection', (event) => {
+    errors.push(event.reason ?? event)
+  })
 
   return errors
 }
@@ -76,7 +76,7 @@ const flushWindowPromises = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 }
 
-const writeExportFiles = (files: Record<string, string>, directory: string) => {
+function writeExportFiles(files: Record<string, string>, directory: string) {
   for (const [path, fileSource] of Object.entries(files)) {
     const absolutePath = join(directory, path)
     mkdirSync(join(absolutePath, '..'), { recursive: true })
@@ -84,9 +84,9 @@ const writeExportFiles = (files: Record<string, string>, directory: string) => {
   }
 }
 
-const loadBundledCommonJsModule = async (
+async function loadBundledCommonJsModule(
   entryPoint: string,
-): Promise<Record<string, unknown>> => {
+): Promise<Record<string, unknown>> {
   const result = await build({
     bundle: true,
     entryPoints: [entryPoint],
@@ -97,7 +97,7 @@ const loadBundledCommonJsModule = async (
     write: false,
   })
   const module = { exports: {} as Record<string, unknown> }
-  const requireStub = (specifier: string) => {
+  const requireStub = (specifier) => {
     throw new Error(`Unexpected external dependency: ${specifier}`)
   }
   const output = result.outputFiles[0]
@@ -113,7 +113,7 @@ const loadBundledCommonJsModule = async (
   return module.exports
 }
 
-const loadDirectGeneratedEndpointRoute = async (routeSource: string) => {
+async function loadDirectGeneratedEndpointRoute(routeSource: string) {
   const directory = mkdtempSync(join(tmpdir(), 'ship-fast-next-route-'))
   try {
     writeExportFiles(
@@ -160,10 +160,10 @@ const loadDirectGeneratedEndpointRoute = async (routeSource: string) => {
   }
 }
 
-const loadBuiltExportRoute = async (
+async function loadBuiltExportRoute(
   files: Record<string, string>,
   routePath: string,
-) => {
+) {
   const directory = mkdtempSync(join(tmpdir(), 'ship-fast-built-route-'))
   try {
     writeExportFiles(files, directory)
@@ -173,11 +173,11 @@ const loadBuiltExportRoute = async (
   }
 }
 
-const renderExportedBrowserEntry = async (
+async function renderExportedBrowserEntry(
   files: Record<string, string>,
   entrySource: string,
   url = 'https://export.test/',
-) => {
+) {
   const directory = mkdtempSync(join(tmpdir(), 'ship-fast-browser-entry-'))
   try {
     writeExportFiles(files, directory)
@@ -334,7 +334,7 @@ export function useSearchParams() { return new URLSearchParams(); }`,
   }
 }
 
-const extractRouteScriptText = (html: string): string => {
+function extractRouteScriptText(html: string): string {
   const document = parseHtmlDocument(html)
   for (const script of document.querySelectorAll('script')) {
     const text = script.textContent ?? ''
@@ -345,7 +345,7 @@ const extractRouteScriptText = (html: string): string => {
   return ''
 }
 
-const extractTargetMap = (scriptText: string): Record<string, string> => {
+function extractTargetMap(scriptText: string): Record<string, string> {
   const match = scriptText.match(/var targetMap = (\{[\s\S]*?\});/)
   if (!match?.[1]) return {}
   return JSON.parse(match[1]) as Record<string, string>
@@ -433,7 +433,7 @@ describe('openui-export-builder', () => {
       url: 'https://export.test/',
     })
     const scrolledSections: string[] = []
-    runtime.window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+    runtime.window.requestAnimationFrame = (callback) => {
       callback(0)
       return 1
     }
@@ -764,9 +764,7 @@ export function useParams() { return {}; }
     expect(files['app/layout.tsx']).toContain('Export Demo')
   })
 
-  const assertAllFormattableFilesArePrettierFormatted = async (
-    files: Record<string, string>,
-  ) => {
+  const assertAllFormattableFilesArePrettierFormatted = async (files) => {
     const reformatted = await formatExportFiles(files)
     for (const [path, original] of Object.entries(files)) {
       if (!/\.(ts|tsx|mjs|js|json|css|md)$/.test(path)) continue

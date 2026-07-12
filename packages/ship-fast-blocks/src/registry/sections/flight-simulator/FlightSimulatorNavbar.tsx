@@ -13,23 +13,25 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * sims, aviation training titles, or any immersive aircraft game. Renders fully
  * with no props via baked-in "SkyForge Sim" defaults.
  */
-const WingMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M2 12h7l4-7 2 7h7" />
-    <path d="M9 12l-3 5" />
-    <path d="M22 12l-4 5" />
-    <path d="M9 12l4 5" />
-  </svg>
-)
+function WingMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M2 12h7l4-7 2 7h7" />
+      <path d="M9 12l-3 5" />
+      <path d="M22 12l-4 5" />
+      <path d="M9 12l4 5" />
+    </svg>
+  )
+}
 
 export const FlightSimulatorNavbar = defineCapsule({
   name: 'FlightSimulatorNavbar',

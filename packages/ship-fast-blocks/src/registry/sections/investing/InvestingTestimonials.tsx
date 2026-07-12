@@ -92,7 +92,7 @@ export const InvestingTestimonials = defineCapsule({
               'professional headshot of a man in his thirties with short dark hair and clean shaven face',
           },
         ]
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

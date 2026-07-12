@@ -81,7 +81,7 @@ export const FaqTopics = defineCapsule({
           },
         ]
 
-    const CaretRight = ({ className }: { className?: string }) => (
+    const CaretRight = ({ className }) => (
       <svg
         width="14"
         height="14"

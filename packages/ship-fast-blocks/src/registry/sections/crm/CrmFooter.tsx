@@ -106,7 +106,7 @@ export const CrmFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     const homeTarget = props.homeTarget ?? 'Features'
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

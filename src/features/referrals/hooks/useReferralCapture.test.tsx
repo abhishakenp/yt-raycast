@@ -10,7 +10,7 @@ import { useReferralCapture } from './useReferralCapture'
 
 const originalFetch = globalThis.fetch
 
-const setClerk = (clerk: unknown) => {
+function setClerk(clerk: unknown) {
   ;(window as Window & { Clerk?: unknown }).Clerk = clerk
 }
 

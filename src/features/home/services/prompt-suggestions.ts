@@ -39,7 +39,7 @@ const portfolioTails = [
   'with immersive case studies, visual project cards, credibility signals, and a simple booking or contact path.',
 ] as const
 
-const inferTails = (partial: string): readonly string[] => {
+function inferTails(partial: string): readonly string[] {
   const lower = partial.toLowerCase()
   if (
     /\b(blog|publication|newsletter|articles?|magazine|editorial)\b/.test(lower)
@@ -68,27 +68,30 @@ const inferTails = (partial: string): readonly string[] => {
   return genericTails
 }
 
-const normalizePartial = (partial: string): string =>
-  String(partial ?? '')
+function normalizePartial(partial: string): string {
+  return String(partial ?? '')
     .replace(/\s+/g, ' ')
     .trim()
+}
 
-const joinPartialTail = (partial: string, tail: string): string =>
-  /\s$/.test(partial) || /^[,.;:!?]/.test(tail)
+function joinPartialTail(partial: string, tail: string): string {
+  return /\s$/.test(partial) || /^[,.;:!?]/.test(tail)
     ? `${partial}${tail}`
     : `${partial} ${tail}`
+}
 
-export const getPromptSuggestionCacheKey = (
+export function getPromptSuggestionCacheKey(
   partial: string,
   language?: string,
-): string =>
-  `${PROMPT_SUGGESTION_CACHE_PREFIX}${String(language || 'en').toLowerCase()}:${normalizePartial(partial).toLowerCase()}`
+): string {
+  return `${PROMPT_SUGGESTION_CACHE_PREFIX}${String(language || 'en').toLowerCase()}:${normalizePartial(partial).toLowerCase()}`
+}
 
-export const sanitizePromptSuggestions = (
+export function sanitizePromptSuggestions(
   values: unknown,
   partial: string,
   max = 4,
-): string[] => {
+): string[] {
   const p = normalizePartial(partial)
   if (!p || !Array.isArray(values)) return []
 
@@ -109,11 +112,11 @@ export const sanitizePromptSuggestions = (
   return out
 }
 
-export const buildLocalPromptSuggestions = (
+export function buildLocalPromptSuggestions(
   partial: string,
   _language?: string,
   max = 4,
-): string[] => {
+): string[] {
   const p = normalizePartial(partial)
   if (p.length < 2 || p.length > PARTIAL_MAX) return []
   return sanitizePromptSuggestions(

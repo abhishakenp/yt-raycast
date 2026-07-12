@@ -14,8 +14,9 @@ vi.mock('@ship-fast/engine/model-list.js', () => ({
   DEFAULT_MODEL: 'mock-model',
 }))
 
-const editArgs = (mutation: ReturnType<typeof vi.fn>) =>
-  mutation.mock.calls.map(([, args]) => args)
+function editArgs(mutation: ReturnType<typeof vi.fn>) {
+  return mutation.mock.calls.map(([, args]) => args)
+}
 
 const HOME_HTML =
   '<html><head><title>Original Brand</title></head><body>' +

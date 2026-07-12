@@ -8,31 +8,36 @@ import {
 
 let blockSourceFileIndex: Record<string, string | undefined> | null = null
 
-export const toPosixPath = (value: string): string =>
-  value.replaceAll('\\', '/')
+export function toPosixPath(value: string): string {
+  return value.replaceAll('\\', '/')
+}
 
-export const sourcePathCandidates = (base: string): string[] => [
-  base,
-  `${base}.ts`,
-  `${base}.tsx`,
-  `${base}.js`,
-  `${base}.jsx`,
-  `${base}.mjs`,
-  `${base}.cjs`,
-  `${base}.json`,
-  `${base}.css`,
-  `${base}/index.ts`,
-  `${base}/index.tsx`,
-  `${base}/index.js`,
-  `${base}/index.jsx`,
-  `${base}/index.mjs`,
-  `${base}/index.cjs`,
-  `${base}/package.json`,
-]
+export function sourcePathCandidates(base: string): string[] {
+  return [
+    base,
+    `${base}.ts`,
+    `${base}.tsx`,
+    `${base}.js`,
+    `${base}.jsx`,
+    `${base}.mjs`,
+    `${base}.cjs`,
+    `${base}.json`,
+    `${base}.css`,
+    `${base}/index.ts`,
+    `${base}/index.tsx`,
+    `${base}/index.js`,
+    `${base}/index.jsx`,
+    `${base}/index.mjs`,
+    `${base}/index.cjs`,
+    `${base}/package.json`,
+  ]
+}
 
-const parseJson = (source: string): unknown => JSON.parse(source)
+function parseJson(source: string): unknown {
+  return JSON.parse(source)
+}
 
-const isStringRecord = (value: unknown): value is Record<string, string> => {
+function isStringRecord(value: unknown): value is Record<string, string> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return false
   }
@@ -42,10 +47,7 @@ const isStringRecord = (value: unknown): value is Record<string, string> => {
   )
 }
 
-export const getBlockSourceFileIndex = (): Record<
-  string,
-  string | undefined
-> => {
+export function getBlockSourceFileIndex(): Record<string, string | undefined> {
   if (blockSourceFileIndex) return blockSourceFileIndex
   if (blockSourceFilesEncoding !== 'br+base64') {
     throw new Error(
@@ -63,7 +65,7 @@ export const getBlockSourceFileIndex = (): Record<
   return blockSourceFileIndex
 }
 
-export const getBlockSourceFile = (sourcePath: string): string => {
+export function getBlockSourceFile(sourcePath: string): string {
   const source = getBlockSourceFileIndex()[sourcePath]
   if (source === undefined) {
     throw new Error(`Cannot find block dependency source: ${sourcePath}`)
@@ -71,15 +73,16 @@ export const getBlockSourceFile = (sourcePath: string): string => {
   return source
 }
 
-export const normalizeBlockSourceRelPath = (sourceRelPath: string): string =>
-  toPosixPath(sourceRelPath)
+export function normalizeBlockSourceRelPath(sourceRelPath: string): string {
+  return toPosixPath(sourceRelPath)
     .replace(/^packages\/ship-fast-blocks\//, '')
     .replace(/^src\//, '')
     .replace(/\.(ts|tsx|js|jsx|mjs|json|css)$/, '')
+}
 
-export const resolveBlockSourceManifestPath = (
+export function resolveBlockSourceManifestPath(
   sourceRelPath: string,
-): string | null => {
+): string | null {
   const normalizedRel = normalizeBlockSourceRelPath(sourceRelPath)
   const sourceFiles = getBlockSourceFileIndex()
   const candidates = sourcePathCandidates(`src/${normalizedRel}`)
@@ -88,10 +91,10 @@ export const resolveBlockSourceManifestPath = (
   )
 }
 
-export const resolveRelativeBlockSourcePath = (
+export function resolveRelativeBlockSourcePath(
   sourcePath: string,
   moduleName: string,
-): string | null => {
+): string | null {
   const normalizedSourcePath = toPosixPath(sourcePath).replace(
     /^packages\/ship-fast-blocks\//,
     '',

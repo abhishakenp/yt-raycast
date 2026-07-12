@@ -66,8 +66,9 @@ const { GovPortalNavbar } = await import('./GovPortalNavbar.tsx')
 
 afterEach(() => cleanup())
 
-const classTokens = (el: Element) =>
-  (el.getAttribute('class') ?? '').split(/\s+/).filter(Boolean)
+function classTokens(el: Element) {
+  return (el.getAttribute('class') ?? '').split(/\s+/).filter(Boolean)
+}
 
 describe('GovPortalNavbar mega-nav hover visibility', () => {
   // The mega-nav sits on bg-primary (dark indigo) with primary-foreground

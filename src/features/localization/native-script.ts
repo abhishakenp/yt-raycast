@@ -27,17 +27,20 @@ const SCRIPT_BY_LOCALE: Array<{
   { locales: ['el'], pattern: /[\u0370-\u03ff]/gu },
 ]
 
-const localeBase = (locale: string): string =>
-  locale
-    .trim()
-    .toLowerCase()
-    .replace(/-(latn|en)$/i, '')
-    .split(/[-_]/)[0] || locale.trim().toLowerCase()
+function localeBase(locale: string): string {
+  return (
+    locale
+      .trim()
+      .toLowerCase()
+      .replace(/-(latn|en)$/i, '')
+      .split(/[-_]/)[0] || locale.trim().toLowerCase()
+  )
+}
 
-export const shouldPreserveNativeLocaleText = (
+export function shouldPreserveNativeLocaleText(
   text: string,
   locale: string,
-): boolean => {
+): boolean {
   const normalizedLocale = locale.trim().toLowerCase()
   if (
     !text.trim() ||

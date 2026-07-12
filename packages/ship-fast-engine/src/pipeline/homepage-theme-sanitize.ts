@@ -1,5 +1,5 @@
-export const stripDestructiveEmptyDesignTheme = (html: string): string =>
-  String(html || '').replace(
+export function stripDestructiveEmptyDesignTheme(html: string): string {
+  return String(html || '').replace(
     /<!--\s*sf-design-theme\s*-->[\s\S]*?<!--\s*\/sf-design-theme\s*-->\s*/gi,
     (block) => {
       if (/patchColors|patchFonts|Object\.assign/.test(block)) return block
@@ -11,3 +11,4 @@ export const stripDestructiveEmptyDesignTheme = (html: string): string =>
       return block
     },
   )
+}

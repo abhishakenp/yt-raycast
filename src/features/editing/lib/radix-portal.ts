@@ -19,7 +19,7 @@ const RADIX_PORTAL_SELECTORS = [
  * or AlertDialog). Dismiss handlers should bail out early when this is true so
  * interacting with a portalled control does not close the toolbar/selection.
  */
-export const isInRadixPortal = (el: Element | null | undefined): boolean => {
+export function isInRadixPortal(el: Element | null | undefined): boolean {
   if (!el || typeof el.closest !== 'function') return false
   return RADIX_PORTAL_SELECTORS.some((sel) => el.closest(sel))
 }

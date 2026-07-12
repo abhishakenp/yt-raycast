@@ -59,7 +59,7 @@ export const MarketingAgencyTestimonials = defineCapsule({
             role: 'Founder, LearnHub',
           },
         ]
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

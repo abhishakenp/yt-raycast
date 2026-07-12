@@ -94,7 +94,7 @@ export const ConsultingPricing = defineCapsule({
           },
         ]
 
-    const CheckIcon = ({ className }: { className?: string }) => (
+    const CheckIcon = ({ className }) => (
       <svg
         width="20"
         height="20"

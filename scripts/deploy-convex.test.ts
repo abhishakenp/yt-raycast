@@ -26,7 +26,7 @@ const makeTempDir = () => {
   return dir
 }
 
-const installFakeBunx = (exitCode: number) => {
+function installFakeBunx(exitCode: number) {
   const dir = makeTempDir()
   const logPath = join(dir, 'bunx-call.json')
   const binPath = join(dir, 'bunx')
@@ -50,8 +50,8 @@ const installFakeBunx = (exitCode: number) => {
   return { binDir: dir, logPath }
 }
 
-const runDeployScript = (env: Record<string, string | undefined>) =>
-  new Promise<RunResult>((resolve, reject) => {
+function runDeployScript(env: Record<string, string | undefined>) {
+  return new Promise<RunResult>((resolve, reject) => {
     const child = spawn(process.execPath, [scriptPath.pathname], {
       env: {
         ...process.env,
@@ -72,6 +72,7 @@ const runDeployScript = (env: Record<string, string | undefined>) =>
     child.on('error', reject)
     child.on('close', (code) => resolve({ code, stderr, stdout }))
   })
+}
 
 describe('deploy-convex script', () => {
   afterEach(() => {

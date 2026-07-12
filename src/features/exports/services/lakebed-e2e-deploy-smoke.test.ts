@@ -29,8 +29,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { deployLakebedProjectFiles } from '@/features/deployments/server/lakebed-deploy-service'
 import { buildOpenUILakebedProjectFiles } from './openui-lakebed-export-builder'
 
-const SMOKE_ENABLED = process.env.LAKEBED_E2E_SMOKE === '1'
-const test = SMOKE_ENABLED ? it : it.skip
+const SMOKE_ENABLED = true
+const test = it
 
 type DeployedApp = {
   url: string
@@ -43,10 +43,10 @@ const deployedApps: DeployedApp[] = []
  * Deploy a Lakebed app from OpenUI source and return the live URL.
  * Uses real fetch (not mocked) to hit the real Lakebed deploy API.
  */
-const deployApp = async (
+async function deployApp(
   source: string,
   sessionId: string,
-): Promise<DeployedApp> => {
+): Promise<DeployedApp> {
   const built = await buildOpenUILakebedProjectFiles({
     source,
     siteSpecJson: JSON.stringify({ projectName: `E2E Smoke ${sessionId}` }),
@@ -71,7 +71,7 @@ const deployApp = async (
  * Run an agent-browser CLI command and return its stdout.
  * Throws on non-zero exit code so test fails immediately on browser issues.
  */
-const browserExec = (args: string[], timeoutMs = 30000): string => {
+function browserExec(args: string[], timeoutMs = 30000): string {
   try {
     return execFileSync('agent-browser', args, {
       encoding: 'utf8',
@@ -90,7 +90,7 @@ const browserExec = (args: string[], timeoutMs = 30000): string => {
  *
  * Returns a structured result that tests can assert against.
  */
-const loadAndInspect = async (
+async function loadAndInspect(
   url: string,
   opts: { waitForMs?: number } = {},
 ): Promise<{
@@ -99,7 +99,7 @@ const loadAndInspect = async (
   appHtml: string
   appText: string
   pageTitle: string
-}> => {
+}> {
   // Navigate to the URL
   browserExec(['open', url], 30000)
 
@@ -161,11 +161,11 @@ const loadAndInspect = async (
  * Assert no console errors or page errors on the deployed app.
  * This is the foolproof check: ANY error from ANY source fails the test.
  */
-const assertNoBrowserErrors = (
+function assertNoBrowserErrors(
   consoleOutput: string,
   errorOutput: string,
   context: string,
-) => {
+) {
   // Page errors are always fatal — uncaught exceptions, unhandled rejections
   if (errorOutput.length > 0) {
     throw new Error(`Page errors detected on ${context}:\n${errorOutput}`)
@@ -199,11 +199,7 @@ const assertNoBrowserErrors = (
   }
 }
 
-const assertAppRendered = (
-  appHtml: string,
-  appText: string,
-  context: string,
-) => {
+function assertAppRendered(appHtml: string, appText: string, context: string) {
   if (appHtml.length === 0) {
     throw new Error(
       `#app is empty on ${context} — client bundle crashed or failed to render`,

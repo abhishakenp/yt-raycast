@@ -44,7 +44,7 @@ export const EventPlannerNavbar = defineCapsule({
       : ['Services', 'Gallery', 'Process', 'Testimonials', 'FAQ']
     const ctaLabel = props.ctaLabel ?? 'Book Consultation'
 
-    const Clock = ({ className }: { className?: string }) => (
+    const Clock = ({ className }) => (
       <svg
         className={className}
         fill="none"

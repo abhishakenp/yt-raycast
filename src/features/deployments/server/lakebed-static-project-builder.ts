@@ -14,23 +14,27 @@ type StaticRoute = {
   description: string
 }
 
-const toProjectSlug = (value: string): string =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60) || 'lakebed-export'
+function toProjectSlug(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'lakebed-export'
+  )
+}
 
-const decodeHtmlEntities = (value: string): string =>
-  value
+function decodeHtmlEntities(value: string): string {
+  return value
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+}
 
-const readHtmlTitle = (html: string): string | undefined => {
+function readHtmlTitle(html: string): string | undefined {
   const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
   const title = match?.[1]
     ?.replace(/<[^>]+>/g, '')
@@ -39,10 +43,10 @@ const readHtmlTitle = (html: string): string | undefined => {
   return title ? decodeHtmlEntities(title) : undefined
 }
 
-const readProjectName = (
+function readProjectName(
   siteSpecJson: string | undefined,
   fallback: string,
-): string => {
+): string {
   if (siteSpecJson) {
     try {
       const parsed = JSON.parse(siteSpecJson) as {
@@ -59,11 +63,11 @@ const readProjectName = (
   return fallback
 }
 
-const replaceAsync = async (
+async function replaceAsync(
   value: string,
   pattern: RegExp,
   replacer: (...args: string[]) => Promise<string>,
-): Promise<string> => {
+): Promise<string> {
   const replacements = await Promise.all(
     Array.from(value.matchAll(pattern), (match) => replacer(...match)),
   )
@@ -71,13 +75,11 @@ const replaceAsync = async (
   return value.replace(pattern, () => replacements[index++] ?? '')
 }
 
-const rewriteDetachedPreviewImageUrls = async (
-  html: string,
-): Promise<string> => {
+async function rewriteDetachedPreviewImageUrls(html: string): Promise<string> {
   const withAttributes = await replaceAsync(
     html,
     /(\s(?:src|poster)\s*=\s*)(["'])([^"']+)\2/gi,
-    async (match: string, prefix: string, quote: string, value: string) => {
+    async (match, prefix, quote, value) => {
       const rewritten = await resolvePreviewImageUrl(decodeHtmlEntities(value))
       return rewritten ? `${prefix}${quote}${rewritten}${quote}` : match
     },
@@ -86,7 +88,7 @@ const rewriteDetachedPreviewImageUrls = async (
   return await replaceAsync(
     withAttributes,
     /url\((["']?)([^"')]+)\1\)/gi,
-    async (match: string, quote: string, value: string) => {
+    async (match, quote, value) => {
       const rewritten = await resolvePreviewImageUrl(decodeHtmlEntities(value))
       return rewritten ? `url(${quote}${rewritten}${quote})` : match
     },
@@ -95,7 +97,7 @@ const rewriteDetachedPreviewImageUrls = async (
 
 const tailwindCdnScript = '<script src="https://cdn.tailwindcss.com"></script>'
 
-const ensureDetachedTailwindRuntime = (html: string): string => {
+function ensureDetachedTailwindRuntime(html: string): string {
   const rewritten = html.replace(
     /<script\b([^>]*?)\bsrc=(["'])\/scripts\/tailwind-browser\.js\2([^>]*)><\/script>/i,
     tailwindCdnScript,
@@ -105,8 +107,8 @@ const ensureDetachedTailwindRuntime = (html: string): string => {
   return html.replace(/<\/head>/i, `  ${tailwindCdnScript}\n</head>`)
 }
 
-const stripShipFastOpenUIMetadata = (html: string): string =>
-  html
+function stripShipFastOpenUIMetadata(html: string): string {
+  return html
     .replace(
       /\s*<script\b[^>]*\bid=(["'])ship-fast-openui-source\1[^>]*>[\s\S]*?<\/script>/gi,
       '',
@@ -119,8 +121,10 @@ const stripShipFastOpenUIMetadata = (html: string): string =>
       /\sdata-openui-[a-z0-9-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?/gi,
       '',
     )
+}
 
-const renderReadme = (projectName: string): string => `# ${projectName}
+function renderReadme(projectName: string): string {
+  return `# ${projectName}
 
 Run this Lakebed app:
 
@@ -132,8 +136,10 @@ The exported app has one client entry, one server entry, and shared TypeScript.
 
 Generated with [ShipFast](https://ship-fast.io) 🚀.
 `
+}
 
-const renderAgents = (): string => `# Lakebed App Instructions
+function renderAgents(): string {
+  return `# Lakebed App Instructions
 
 - Run Lakebed commands with \`npx lakebed <command>\`.
 - Client code belongs in \`client/index.tsx\`.
@@ -143,11 +149,10 @@ const renderAgents = (): string => `# Lakebed App Instructions
 - Use \`lakebed/server\` only from server code.
 - Use relative imports for local code.
 `
+}
 
-const renderSharedContent = (
-  projectName: string,
-  route: StaticRoute,
-): string => `export type PageData = {
+function renderSharedContent(projectName: string, route: StaticRoute): string {
+  return `export type PageData = {
   label: string;
   path: string;
   title: string;
@@ -158,9 +163,10 @@ export const projectName = ${JSON.stringify(projectName)};
 
 export const pages = ${JSON.stringify([route], null, 2)} satisfies PageData[];
 `
+}
 
-const renderClientIndex =
-  (): string => `import { previewHtml } from "./preview";
+function renderClientIndex(): string {
+  return `import { previewHtml } from "./preview";
 
 export function App() {
   return (
@@ -177,10 +183,10 @@ export function App() {
   );
 }
 `
+}
 
-const renderServerIndex = (
-  projectName: string,
-): string => `import { capsule, endpoint, text } from "lakebed/server";
+function renderServerIndex(projectName: string): string {
+  return `import { capsule, endpoint, text } from "lakebed/server";
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
@@ -192,8 +198,9 @@ export default capsule({
   },
 });
 `
+}
 
-const assertNoOpenUITrace = (files: Record<string, string>) => {
+function assertNoOpenUITrace(files: Record<string, string>) {
   const forbidden = [
     '@openuidev',
     '@ship-fast',

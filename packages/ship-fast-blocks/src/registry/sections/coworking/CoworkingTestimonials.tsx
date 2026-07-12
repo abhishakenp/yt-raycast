@@ -87,7 +87,7 @@ export const CoworkingTestimonials = defineCapsule({
       )
     const members = authored?.length ? authored : defaults
 
-    const Star = ({ filled }: { filled: boolean }) => (
+    const Star = ({ filled }) => (
       <svg
         aria-hidden="true"
         viewBox="0 0 24 24"

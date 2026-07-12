@@ -13,16 +13,17 @@ type AnonymousDeployBody = {
   clientBundle?: unknown
 }
 
-const parseAnonymousDeployBody = (body: string): AnonymousDeployBody =>
-  JSON.parse(body) as AnonymousDeployBody
+function parseAnonymousDeployBody(body: string): AnonymousDeployBody {
+  return JSON.parse(body) as AnonymousDeployBody
+}
 
-const decodeClientBundle = (body: string): string => {
+function decodeClientBundle(body: string): string {
   const parsed = parseAnonymousDeployBody(body)
   expect(typeof parsed.clientBundle).toBe('string')
   return Buffer.from(String(parsed.clientBundle), 'base64').toString('utf8')
 }
 
-const expectNoStockProviderCredentialsOrProxy = (artifact: string) => {
+function expectNoStockProviderCredentialsOrProxy(artifact: string) {
   expect(artifact).not.toContain('PEXELS_API_KEY')
   expect(artifact).not.toContain('VITE_PEXELS_API_KEY')
   expect(artifact).not.toContain('api.pexels.com')

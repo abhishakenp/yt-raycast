@@ -73,11 +73,10 @@ let userImagesValue:
 const originalFetch = globalThis.fetch
 
 vi.mock('@/lib/stock-image', () => ({
-  searchStockImages: (...args: unknown[]) =>
-    searchStockImagesMock(...(args as [])),
+  searchStockImages: (...args) => searchStockImagesMock(...(args as [])),
 }))
 vi.mock('convex/react', () => ({
-  useMutation: (fn: unknown) => {
+  useMutation: (fn) => {
     if (fn === 'generateImageUploadUrl') return generateUploadUrlMock
     if (fn === 'saveUserImage') return saveUserImageMock
     return vi.fn(async () => undefined)
@@ -97,19 +96,20 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: vi.fn(() => undefined),
 }))
 vi.mock('@/lib/image-context', () => ({
-  generateContextAwareQuery: vi.fn((alt: string) => alt),
+  generateContextAwareQuery: vi.fn((alt) => alt),
 }))
 
 const { ImageSwapPanel } = await import('./ImageSwapPanel')
 
-const makeResult = (n: number) =>
-  Array.from({ length: n }, (_, i) => ({
+function makeResult(n: number) {
+  return Array.from({ length: n }, (_, i) => ({
     imageUrl: `https://stock.test/${i}.jpg`,
     source: 'pexels' as const,
     query: 'cats',
   }))
+}
 
-const renderPanel = (
+function renderPanel(
   props?: Partial<{
     currentAlt: string
     onImageSelect: (payload: string | null) => void
@@ -117,8 +117,8 @@ const renderPanel = (
     imageWidth: number
     imageHeight: number
   }>,
-) =>
-  render(
+) {
+  return render(
     createElement(ImageSwapPanel, {
       currentAlt: '',
       onImageSelect: vi.fn(),
@@ -126,6 +126,7 @@ const renderPanel = (
       ...props,
     }),
   )
+}
 
 describe('ImageSwapPanel (behavioral)', () => {
   beforeEach(() => {
@@ -419,7 +420,7 @@ describe('ImageSwapPanel (behavioral)', () => {
 
   // ── Multi-select → carousel payload ─────────────────────────────────────
 
-  const searchAndAwaitTiles = async (count: number) => {
+  const searchAndAwaitTiles = async (count) => {
     fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
       target: { value: 'cats' },
     })

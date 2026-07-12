@@ -21,27 +21,29 @@ import {
  * wineries, cellar doors, vineyards, breweries, taprooms, cideries, or any
  * rustic-premium drinks brand where bookings and visits matter.
  */
-const GrapeClusterMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M12 4c1.2 0 2-1 2-2" />
-    <path d="M12 7v0" />
-    <circle cx="12" cy="9" r="2.1" />
-    <circle cx="8.4" cy="12" r="2.1" />
-    <circle cx="15.6" cy="12" r="2.1" />
-    <circle cx="10.2" cy="15.4" r="2.1" />
-    <circle cx="13.8" cy="15.4" r="2.1" />
-    <circle cx="12" cy="19" r="2.1" />
-  </svg>
-)
+function GrapeClusterMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 4c1.2 0 2-1 2-2" />
+      <path d="M12 7v0" />
+      <circle cx="12" cy="9" r="2.1" />
+      <circle cx="8.4" cy="12" r="2.1" />
+      <circle cx="15.6" cy="12" r="2.1" />
+      <circle cx="10.2" cy="15.4" r="2.1" />
+      <circle cx="13.8" cy="15.4" r="2.1" />
+      <circle cx="12" cy="19" r="2.1" />
+    </svg>
+  )
+}
 
 export const WineryBreweryNavbar = defineCapsule({
   name: 'WineryBreweryNavbar',

@@ -21,27 +21,29 @@ import { publicationLakebed } from './publication-lakebed.ts'
  * one. Use as the header for blogs, publications, journals, or any content site.
  * Renders fully with no props.
  */
-const QuillMark = ({ className }: { className?: string }) => (
-  <span
-    className={`grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm ${className ?? ''}`}
-  >
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
+function QuillMark({ className }: { className?: string }) {
+  return (
+    <span
+      className={`grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm ${className ?? ''}`}
     >
-      <circle cx="5" cy="19" r="2" />
-      <circle cx="19" cy="5" r="2" />
-      <path d="M5 17C5 9 11 5 17 5" />
-    </svg>
-  </span>
-)
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="5" cy="19" r="2" />
+        <circle cx="19" cy="5" r="2" />
+        <path d="M5 17C5 9 11 5 17 5" />
+      </svg>
+    </span>
+  )
+}
 
 export const BlogNavbar = defineCapsule({
   name: 'BlogNavbar',

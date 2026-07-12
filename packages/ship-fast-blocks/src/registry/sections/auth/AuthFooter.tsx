@@ -13,21 +13,23 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * platforms, identity APIs, login SDKs, or developer SaaS. Renders fully with no
  * props.
  */
-const KeyholeMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M12 2a7 7 0 0 0-7 7c0 2.9 1.76 5.39 4.27 6.46L8 22h8l-1.27-6.54A7 7 0 0 0 12 2Z" />
-    <circle cx="12" cy="9" r="2.2" />
-  </svg>
-)
+function KeyholeMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 2a7 7 0 0 0-7 7c0 2.9 1.76 5.39 4.27 6.46L8 22h8l-1.27-6.54A7 7 0 0 0 12 2Z" />
+      <circle cx="12" cy="9" r="2.2" />
+    </svg>
+  )
+}
 
 export const AuthFooter = defineCapsule({
   name: 'AuthFooter',

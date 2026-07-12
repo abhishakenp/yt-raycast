@@ -118,14 +118,17 @@ const VISUAL_HINTS: Array<{ match: RegExp; query: string }> = [
   },
 ]
 
-export const slugifyAlt = (alt: string | undefined): string =>
-  (alt ?? 'image')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 48) || 'image'
+export function slugifyAlt(alt: string | undefined): string {
+  return (
+    (alt ?? 'image')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 48) || 'image'
+  )
+}
 
-export const seedFromAlt = (alt: string): number => {
+export function seedFromAlt(alt: string): number {
   let hash = 0
   for (let i = 0; i < alt.length; i++) {
     hash = (hash * 31 + alt.charCodeAt(i)) >>> 0
@@ -134,7 +137,7 @@ export const seedFromAlt = (alt: string): number => {
 }
 
 /** Turn descriptive alt text into a short stock-photo search query. */
-export const searchQueryFromAlt = (alt: string): string => {
+export function searchQueryFromAlt(alt: string): string {
   const trimmed = alt.trim()
   if (!trimmed) return 'nature'
 
@@ -156,13 +159,14 @@ export const searchQueryFromAlt = (alt: string): string => {
   return 'nature'
 }
 
-export const picsumUrl = (alt: string | undefined, w = 800, h = 600): string =>
-  `https://picsum.photos/seed/${slugifyAlt(alt)}/${w}/${h}`
+export function picsumUrl(alt: string | undefined, w = 800, h = 600): string {
+  return `https://picsum.photos/seed/${slugifyAlt(alt)}/${w}/${h}`
+}
 
-export const orientationFromSize = (
+export function orientationFromSize(
   w: number,
   h: number,
-): 'landscape' | 'portrait' | 'square' => {
+): 'landscape' | 'portrait' | 'square' {
   const ratio = w / h
   if (ratio > 1.15) return 'landscape'
   if (ratio < 0.87) return 'portrait'

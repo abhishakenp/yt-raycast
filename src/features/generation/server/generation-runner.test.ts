@@ -6,8 +6,9 @@ import { runEngineGeneration } from '@/features/generation/server/generation-run
 import type { GenerationPersistence } from '@/features/generation/server/generation-runner'
 import type { RunShipFastEngine } from '@/features/generation/server/ship-fast-engine-adapter'
 
-const createTempRoot = (): string =>
-  mkdtempSync(join(tmpdir(), 'ship-fast-v2-runner-'))
+function createTempRoot(): string {
+  return mkdtempSync(join(tmpdir(), 'ship-fast-v2-runner-'))
+}
 
 describe('generation runner', () => {
   const dbObservedPrompt =

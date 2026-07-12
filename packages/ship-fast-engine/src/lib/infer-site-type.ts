@@ -1,4 +1,4 @@
-export const inferSiteTypeHint = (prompt: string): string | null => {
+export function inferSiteTypeHint(prompt: string): string | null {
   const lower = (prompt || '').toLowerCase()
   if (
     /\b(dashboard|admin\s+panel|analytics\s+(workspace|console)|internal\s+(tool|app|dashboard))\b/.test(

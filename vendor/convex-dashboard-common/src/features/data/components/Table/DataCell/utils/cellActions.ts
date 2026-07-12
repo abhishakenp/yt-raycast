@@ -78,7 +78,7 @@ export function useCellActions({
   }, [document])
 
   const editValue = useCallback(
-    (v?: Value) => {
+    (v?) => {
       if (disableEdit) {
         return
       }
@@ -123,7 +123,7 @@ export function useCellActions({
   }, [setShowDocumentDetail])
 
   const contextMenuCallback = useCallback(
-    (position: Target) =>
+    (position) =>
       onOpenContextMenu(position, rowId, {
         column: columnName,
         value,
@@ -217,9 +217,8 @@ type HotkeyRef<T extends HTMLElement> =
   | ((instance: RefType<T>) => void)
   | MutableRefObject<RefType<T>>
 
-const mergeHotkeyRefs =
-  (...refs: HotkeyRef<HTMLDivElement>[]) =>
-  (node: RefType<HTMLDivElement>) => {
+function mergeHotkeyRefs(...refs: HotkeyRef<HTMLDivElement>[]) {
+  return (node) => {
     for (const ref of refs) {
       if (typeof ref === 'function') {
         ref(node)
@@ -228,10 +227,13 @@ const mergeHotkeyRefs =
       }
     }
   }
+}
 
-const wrapper = (cb: () => void) => (e: KeyboardEvent) => {
-  e.preventDefault()
-  cb()
+function wrapper(cb: () => void) {
+  return (e) => {
+    e.preventDefault()
+    cb()
+  }
 }
 
 export type SelectedCell = {

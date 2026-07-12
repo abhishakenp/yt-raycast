@@ -11,19 +11,23 @@ import {
 
 const modules = import.meta.glob('./**/*.ts')
 
-const identityFor = (userId: string) => ({
-  issuer: 'https://convex.test',
-  subject: userId,
-  tokenIdentifier: `https://convex.test|${userId}`,
-})
+function identityFor(userId: string) {
+  return {
+    issuer: 'https://convex.test',
+    subject: userId,
+    tokenIdentifier: `https://convex.test|${userId}`,
+  }
+}
 
-const createPayload = (stamp: string) => ({
-  prompt: `Authenticated quota verifier site ${stamp}`,
-  preferredLanguage: 'en',
-  preferredExportTarget: 'html' as const,
-  isPrivate: false,
-  workspace: `workspace_authenticated_quota_${stamp}`,
-})
+function createPayload(stamp: string) {
+  return {
+    prompt: `Authenticated quota verifier site ${stamp}`,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html' as const,
+    isPrivate: false,
+    workspace: `workspace_authenticated_quota_${stamp}`,
+  }
+}
 
 afterEach(() => {
   delete process.env.IS_DEV

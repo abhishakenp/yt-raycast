@@ -7,13 +7,16 @@ const ongoingGalleryStatuses = new Set([
   'streaming',
 ])
 
-export const hasGalleryReadySignal = (session: Doc<'sessions'>): boolean =>
-  session.genuiStatus === 'done' ||
-  session.openuiReady === true ||
-  session.status === 'preview_ready' ||
-  (session.previewVersion ?? 0) > 0
+export function hasGalleryReadySignal(session: Doc<'sessions'>): boolean {
+  return (
+    session.genuiStatus === 'done' ||
+    session.openuiReady === true ||
+    session.status === 'preview_ready' ||
+    (session.previewVersion ?? 0) > 0
+  )
+}
 
-export const isGalleryVisibleSession = (session: Doc<'sessions'>): boolean => {
+export function isGalleryVisibleSession(session: Doc<'sessions'>): boolean {
   const status = session.status
   if (status !== undefined && ongoingGalleryStatuses.has(status))
     return hasGalleryReadySignal(session)
@@ -62,7 +65,7 @@ export const galleryCategoryTerms = {
   app: ['app', 'mobile', 'tool', 'planner', 'manager', 'studio'],
 } as const
 
-export const getGalleryCategories = (prompt: string): string[] => {
+export function getGalleryCategories(prompt: string): string[] {
   const normalizedPrompt = prompt.toLowerCase()
 
   return Object.entries(galleryCategoryTerms)
@@ -72,14 +75,15 @@ export const getGalleryCategories = (prompt: string): string[] => {
     .map(([category]) => category)
 }
 
-export const formatGalleryCategory = (category: string): string =>
-  category
+export function formatGalleryCategory(category: string): string {
+  return category
     .split(/[-_\s]+/)
     .filter((part) => part.length > 0)
     .map((part) => part[0].toUpperCase() + part.slice(1))
     .join(' ')
+}
 
-export const getGalleryCategoryOptions = (sessions: Doc<'sessions'>[]) => {
+export function getGalleryCategoryOptions(sessions: Doc<'sessions'>[]) {
   const counts = new Map<string, number>()
 
   for (const session of sessions) {
@@ -100,11 +104,11 @@ export const getGalleryCategoryOptions = (sessions: Doc<'sessions'>[]) => {
     }))
 }
 
-export const matchesGalleryFilters = (
+export function matchesGalleryFilters(
   session: Doc<'sessions'>,
   search: string | undefined,
   category: string | undefined,
-): boolean => {
+): boolean {
   const categories = getGalleryCategories(session.prompt)
   const normalizedCategory = category?.trim().toLowerCase()
   if (

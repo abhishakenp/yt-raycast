@@ -10,18 +10,20 @@ import { runCloneJob } from '@/features/clone/server/clone-orchestrator-response
 // `authorization` header (for authed owners). Returns 202 immediately; the client
 // streams the cloned pages via its Convex session subscription.
 
-const isJsonObject = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: { 'Content-Type': 'application/json', ...init?.headers },
   })
+}
 
-const readJsonBody = async (
+async function readJsonBody(
   request: Request,
-): Promise<Record<string, unknown>> => {
+): Promise<Record<string, unknown>> {
   const text = await request.text()
   if (!text.trim()) return {}
   try {
@@ -32,21 +34,21 @@ const readJsonBody = async (
   }
 }
 
-const getString = (
+function getString(
   body: Record<string, unknown>,
   key: string,
-): string | undefined => {
+): string | undefined {
   const value = body[key]
   return typeof value === 'string' ? value : undefined
 }
 
-const getBearerToken = (request: Request): string | undefined => {
+function getBearerToken(request: Request): string | undefined {
   const auth = request.headers.get('authorization') ?? ''
   const match = auth.match(/^Bearer\s+(.+)$/i)
   return match?.[1]?.trim() || undefined
 }
 
-const isHttpUrl = (value: string): boolean => {
+function isHttpUrl(value: string): boolean {
   try {
     const u = new URL(value)
     return u.protocol === 'http:' || u.protocol === 'https:'
@@ -57,11 +59,11 @@ const isHttpUrl = (value: string): boolean => {
 
 // Best-effort: mark the session's clone preview as a failed home doc so the UI can
 // surface the failure instead of spinning forever. Never throws.
-const writeFailedState = async (
+async function writeFailedState(
   sessionId: string,
   anonymousOwnerSecret: string | undefined,
   bearer: string | undefined,
-): Promise<void> => {
+): Promise<void> {
   try {
     const client = createRuntimeConvexHttpClient(30_000)
     if (bearer) client.setAuth?.(bearer)
@@ -87,7 +89,7 @@ const writeFailedState = async (
   }
 }
 
-const handlePost = async (request: Request): Promise<Response> => {
+async function handlePost(request: Request): Promise<Response> {
   const body = await readJsonBody(request)
   const sessionId = getString(body, 'sessionId')
   const seedUrl = getString(body, 'seedUrl')
@@ -130,7 +132,7 @@ const handlePost = async (request: Request): Promise<Response> => {
 export const Route = createFileRoute('/api/clone')({
   server: {
     handlers: {
-      POST: async ({ request }: { request: Request }) => handlePost(request),
+      POST: async ({ request }) => handlePost(request),
     },
   },
 })

@@ -71,7 +71,7 @@ export const DentalHero = defineCapsule({
           'Professional headshot of Dr. Emily Watson, female dentist with warm approachable smile',
         ]
 
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -82,7 +82,7 @@ export const DentalHero = defineCapsule({
       </svg>
     )
 
-    const PhoneIcon = ({ className }: { className?: string }) => (
+    const PhoneIcon = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

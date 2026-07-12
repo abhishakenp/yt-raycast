@@ -36,30 +36,36 @@ type SessionActor = {
   userId?: string
 }
 
-const toHex = (bytes: ArrayBuffer): string =>
-  Array.from(new Uint8Array(bytes), (byte) =>
+function toHex(bytes: ArrayBuffer): string {
+  return Array.from(new Uint8Array(bytes), (byte) =>
     byte.toString(16).padStart(2, '0'),
   ).join('')
+}
 
-const hashOwnerSecret = async (ownerSecret: string): Promise<string> =>
-  toHex(await crypto.subtle.digest('SHA-256', textEncoder.encode(ownerSecret)))
+async function hashOwnerSecret(ownerSecret: string): Promise<string> {
+  return toHex(
+    await crypto.subtle.digest('SHA-256', textEncoder.encode(ownerSecret)),
+  )
+}
 
-const createGuestAuth = (userId: string, displayName = 'Guest') => ({
-  displayName,
-  isAuthenticated: false,
-  isGuest: true,
-  provider: 'guest' as const,
-  user: {
+function createGuestAuth(userId: string, displayName = 'Guest') {
+  return {
     displayName,
-    id: userId,
+    isAuthenticated: false,
     isGuest: true,
     provider: 'guest' as const,
+    user: {
+      displayName,
+      id: userId,
+      isGuest: true,
+      provider: 'guest' as const,
+      userId,
+    },
     userId,
-  },
-  userId,
-})
+  }
+}
 
-const createUserAuth = async (ctx: AuthCtx) => {
+async function createUserAuth(ctx: AuthCtx) {
   const identity = await ctx.auth.getUserIdentity()
   const userId = identity?.tokenIdentifier ?? identity?.subject
   if (!identity || !userId) return null
@@ -89,10 +95,10 @@ const createUserAuth = async (ctx: AuthCtx) => {
   }
 }
 
-const getSessionOrThrow = async (
+async function getSessionOrThrow(
   ctx: QueryCtx | MutationCtx,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const session = await ctx.db.get(sessionId)
   if (!session) {
     throw new ConvexError({
@@ -104,7 +110,7 @@ const getSessionOrThrow = async (
   return session
 }
 
-const getSessionActor = async (
+async function getSessionActor(
   ctx: QueryCtx | MutationCtx,
   session: {
     anonOwnerSecretHash?: string
@@ -112,7 +118,7 @@ const getSessionActor = async (
     userId?: string
   },
   anonymousOwnerSecret?: string,
-): Promise<SessionActor | null> => {
+): Promise<SessionActor | null> {
   const auth = await createUserAuth(ctx)
   if (auth) {
     if (session.isPrivate === true && session.userId !== auth.userId) {
@@ -167,7 +173,7 @@ const getSessionActor = async (
   return null
 }
 
-const getRequiredSessionActor = async (
+async function getRequiredSessionActor(
   ctx: QueryCtx | MutationCtx,
   session: {
     anonOwnerSecretHash?: string
@@ -175,7 +181,7 @@ const getRequiredSessionActor = async (
     userId?: string
   },
   anonymousOwnerSecret?: string,
-) => {
+) {
   const actor = await getSessionActor(ctx, session, anonymousOwnerSecret)
   if (!actor) {
     throw new ConvexError({
@@ -187,11 +193,11 @@ const getRequiredSessionActor = async (
   return actor
 }
 
-const getSessionDataDoc = async (
+async function getSessionDataDoc(
   ctx: QueryCtx | MutationCtx,
   sessionId: Id<'sessions'>,
   capsule: string,
-) => {
+) {
   const docs = await ctx.db
     .query('sessionData')
     .withIndex('by_sessionId_capsule', (q) =>
@@ -202,13 +208,13 @@ const getSessionDataDoc = async (
   return docs.find((doc) => doc.ownerKey === undefined) ?? null
 }
 
-const getActorSessionDataDoc = async (
+async function getActorSessionDataDoc(
   ctx: QueryCtx | MutationCtx,
   sessionId: Id<'sessions'>,
   capsule: string,
   actor: SessionActor,
-) =>
-  await ctx.db
+) {
+  return await ctx.db
     .query('sessionData')
     .withIndex('by_sessionId_capsule_ownerKey', (q) =>
       q
@@ -217,13 +223,14 @@ const getActorSessionDataDoc = async (
         .eq('ownerKey', actor.ownerKey),
     )
     .unique()
+}
 
-const getReadableSessionDataDoc = async (
+async function getReadableSessionDataDoc(
   ctx: QueryCtx | MutationCtx,
   sessionId: Id<'sessions'>,
   capsule: string,
   actor: SessionActor | null,
-) => {
+) {
   if (!actor) return null
 
   return (
@@ -232,18 +239,17 @@ const getReadableSessionDataDoc = async (
   )
 }
 
-const actorFields = (actor: SessionActor) => ({
-  anonymousOwnerSecretHash: actor.anonymousOwnerSecretHash,
-  ownerKey: actor.ownerKey,
-  userId: actor.userId,
-})
+function actorFields(actor: SessionActor) {
+  return {
+    anonymousOwnerSecretHash: actor.anonymousOwnerSecretHash,
+    ownerKey: actor.ownerKey,
+    userId: actor.userId,
+  }
+}
 
 const defaultAuth = createGuestAuth('guest:public', 'Guest')
 
-const stateFrom = (
-  data: Record<string, unknown>,
-  actor: SessionActor | null,
-) => {
+function stateFrom(data: Record<string, unknown>, actor: SessionActor | null) {
   const auth = actor?.auth ?? defaultAuth
   return { auth, canWrite: actor !== null, data }
 }

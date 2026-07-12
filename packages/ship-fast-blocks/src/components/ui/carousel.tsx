@@ -61,7 +61,7 @@ function Carousel({
   const [canScrollPrev, setCanScrollPrev] = React.useState(false)
   const [canScrollNext, setCanScrollNext] = React.useState(false)
 
-  const onSelect = React.useCallback((emblaApi: CarouselApi) => {
+  const onSelect = React.useCallback((emblaApi) => {
     if (!emblaApi) return
     setCanScrollPrev(emblaApi.canScrollPrev())
     setCanScrollNext(emblaApi.canScrollNext())
@@ -76,7 +76,7 @@ function Carousel({
   }, [api])
 
   const handleKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
+    (event) => {
       if (event.key === 'ArrowLeft') {
         event.preventDefault()
         scrollPrev()

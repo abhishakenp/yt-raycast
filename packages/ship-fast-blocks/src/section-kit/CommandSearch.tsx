@@ -25,7 +25,7 @@ type CommandSearchContextValue = {
   setOpen: (open: boolean) => void
 }
 
-const assignRef = <T,>(ref: React.ForwardedRef<T>, value: T | null) => {
+function assignRef(ref: React.ForwardedRef<T>, value: T | null) {
   if (typeof ref === 'function') {
     ref(value)
   } else if (ref) {
@@ -76,7 +76,7 @@ const CommandSearchTrigger = React.forwardRef<
       <Slot
         ref={ref}
         className={className}
-        onClick={(e: React.MouseEvent<HTMLElement>) => {
+        onClick={(e) => {
           onClick?.(e as React.MouseEvent<HTMLButtonElement>)
           if (!e.defaultPrevented) setOpen(true)
         }}
@@ -128,7 +128,7 @@ const CommandSearchInput = React.forwardRef<
   React.ComponentProps<typeof CommandInput>
 >(({ className, 'aria-label': ariaLabel = 'Search', ...props }, ref) => {
   const setInputRef = React.useCallback(
-    (node: React.ComponentRef<typeof CommandInput> | null) => {
+    (node) => {
       node?.setAttribute('role', 'textbox')
       node?.removeAttribute('aria-labelledby')
       assignRef(ref, node)

@@ -16,10 +16,10 @@ type TranslateResult = {
   error?: string
 }
 
-export const LocalizationPanel = ({
+export function LocalizationPanel({
   preferredLanguage = 'en',
   prompt = '',
-}: LocalizationPanelProps) => {
+}: LocalizationPanelProps) {
   const [locale, setLocale] = useState(preferredLanguage || 'en')
   const [text, setText] = useState(prompt)
   const [result, setResult] = useState<TranslateResult | null>(null)

@@ -84,7 +84,7 @@ export const DirectoryCategories = defineCapsule({
             count: '2,100 listings',
           },
         ]
-    const ChevronRight = ({ className }: { className?: string }) => (
+    const ChevronRight = ({ className }) => (
       <svg
         className={className}
         fill="none"

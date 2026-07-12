@@ -43,10 +43,11 @@ export type RunEngineGenerationResult =
   | { status: 'completed'; previewVersion: number }
   | { status: 'failed'; message: string }
 
-const toErrorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : 'Generation failed'
+function toErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Generation failed'
+}
 
-export const runEngineGeneration = async ({
+export async function runEngineGeneration({
   sessionId,
   prompt,
   preferredLanguage,
@@ -55,7 +56,7 @@ export const runEngineGeneration = async ({
   runAll,
   persistence,
   onEvent,
-}: RunEngineGenerationInput): Promise<RunEngineGenerationResult> => {
+}: RunEngineGenerationInput): Promise<RunEngineGenerationResult> {
   try {
     const result = await createShipFastEngineAdapter({
       runAll,

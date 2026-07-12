@@ -8,16 +8,15 @@ import { calcBuckets } from '@common/lib/charts/buckets'
 import { TableMetric, tableRate } from '@common/lib/appMetrics'
 import { ChartData } from '@common/lib/charts/types'
 
-const useChartData =
-  (
-    deploymentUrl: string,
-    tableName: string,
-    metric: TableMetric,
-    authHeader: string,
-    name: string,
-    color = 'var(--chart-line-1)',
-  ) =>
-  async (start: Date, end: Date): Promise<ChartData> => {
+function useChartData(
+  deploymentUrl: string,
+  tableName: string,
+  metric: TableMetric,
+  authHeader: string,
+  name: string,
+  color = 'var(--chart-line-1)',
+) {
+  return async (start, end) => {
     const { startTime, endTime, numBuckets, timeMultiplier, formatTime } =
       calcBuckets(start, end)
 
@@ -52,6 +51,7 @@ const useChartData =
     ]
     return { data, xAxisKey, lineKeys }
   }
+}
 
 export function TableMetrics({
   tableName,

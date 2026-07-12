@@ -190,7 +190,7 @@ export async function downloadPageAssets(
   const queue = [...captured.assetUrls]
   const running = new Set<Promise<void>>()
 
-  const processNext = async (): Promise<void> => {
+  const processNext = async () => {
     if (signal?.aborted) return
     const url = queue.shift()
     if (!url) return

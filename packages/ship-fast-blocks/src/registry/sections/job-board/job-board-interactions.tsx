@@ -41,7 +41,7 @@ import {
 
 export type JobBoardLakebed = LakebedClientRuntime<typeof jobBoardLakebed>
 
-export const jobBoardCatalogItem = ({
+export function jobBoardCatalogItem({
   badge,
   company,
   description,
@@ -49,15 +49,17 @@ export const jobBoardCatalogItem = ({
   posted,
   role,
   tags,
-}: JobBoardCatalogInput): JobBoardCatalogInput => ({
-  badge: badge ?? '',
-  company: company ?? '',
-  description: description ?? '',
-  logoAlt: logoAlt ?? '',
-  posted: posted ?? '',
-  role,
-  tags: tags ?? '',
-})
+}: JobBoardCatalogInput): JobBoardCatalogInput {
+  return {
+    badge: badge ?? '',
+    company: company ?? '',
+    description: description ?? '',
+    logoAlt: logoAlt ?? '',
+    posted: posted ?? '',
+    role,
+    tags: tags ?? '',
+  }
+}
 
 export function JobBoardMutationSpinner({ className }: { className?: string }) {
   return (
@@ -137,7 +139,7 @@ export function useJobBoardSearch(lakebed: JobBoardLakebed) {
   const setJobSearch = lakebed.useMutation('setJobSearch')
 
   const submitSearch = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (setJobSearch.isPending) return
 
@@ -155,7 +157,7 @@ export function useJobBoardSearch(lakebed: JobBoardLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input: JobBoardSearchInput) => {
+    (input) => {
       if (setJobSearch.isPending) return
       void setJobSearch(input)
     },
@@ -176,7 +178,7 @@ export function useJobBoardActions(lakebed: JobBoardLakebed) {
   const loadMoreJobs = lakebed.useMutation('loadMoreJobs')
 
   const apply = useCallback(
-    async (input: JobBoardApplicationInput) => {
+    async (input) => {
       if (applyToJob.isPending) return
       await applyToJob(input)
     },
@@ -297,7 +299,7 @@ export function JobBoardMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?: string) => {
+  const navigate = (target?) => {
     setOpen(false)
     go(target)
   }

@@ -14,14 +14,16 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * footer (lighter alternative to the dark FashionStoreFooter). Renders fully
  * with no props via baked-in "Marketplace" defaults.
  */
-const LogoTile = ({ brand }: { brand: string }) => (
-  <span
-    className="grid size-8 place-items-center rounded-lg bg-primary text-base font-black text-primary-foreground"
-    aria-hidden="true"
-  >
-    {brand.charAt(0).toUpperCase()}
-  </span>
-)
+function LogoTile({ brand }: { brand: string }) {
+  return (
+    <span
+      className="grid size-8 place-items-center rounded-lg bg-primary text-base font-black text-primary-foreground"
+      aria-hidden="true"
+    >
+      {brand.charAt(0).toUpperCase()}
+    </span>
+  )
+}
 
 export const EcommerceFooter = defineCapsule({
   name: 'EcommerceFooter',

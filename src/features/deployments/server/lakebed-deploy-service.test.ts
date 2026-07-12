@@ -56,7 +56,7 @@ describe('lakebed deploy service', () => {
     const requests: Array<{ body: string; url: string }> = []
     const logs: Array<{ details?: Record<string, unknown>; message: string }> =
       []
-    const fetchImpl = (async (url: RequestInfo | URL, init?: RequestInit) => {
+    const fetchImpl = (async (url, init?) => {
       requests.push({ body: String(init?.body ?? ''), url: String(url) })
       return new Response(
         JSON.stringify({
@@ -124,7 +124,7 @@ describe('lakebed deploy service', () => {
       method?: string
       url: string
     }> = []
-    const fetchImpl = (async (url: RequestInfo | URL, init?: RequestInit) => {
+    const fetchImpl = (async (url, init?) => {
       requests.push({
         authorization:
           init?.headers instanceof Headers

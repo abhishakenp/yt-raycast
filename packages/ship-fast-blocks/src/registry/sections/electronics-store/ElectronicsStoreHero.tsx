@@ -100,7 +100,7 @@ export const ElectronicsStoreHero = defineCapsule({
       </svg>
     )
 
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={cn('size-4', className)}
         viewBox="0 0 20 20"

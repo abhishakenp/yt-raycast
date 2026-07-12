@@ -11,7 +11,7 @@ const activeSubscriptionStatuses = new Set<Doc<'subscriptions'>['status']>([
   'authenticated',
 ])
 
-const getUserId = async (ctx: QueryCtx | MutationCtx): Promise<string> => {
+async function getUserId(ctx: QueryCtx | MutationCtx): Promise<string> {
   const identity = await ctx.auth.getUserIdentity()
   const userId = identity?.tokenIdentifier
 
@@ -25,10 +25,10 @@ const getUserId = async (ctx: QueryCtx | MutationCtx): Promise<string> => {
   return userId
 }
 
-const getActiveSubscription = async (
+async function getActiveSubscription(
   ctx: QueryCtx | MutationCtx,
   userId: string,
-) => {
+) {
   const candidates = await Promise.all(
     [...activeSubscriptionStatuses].map((status) =>
       ctx.db
@@ -51,7 +51,7 @@ const getActiveSubscription = async (
   )
 }
 
-const getCredits = async (ctx: QueryCtx | MutationCtx, userId: string) => {
+async function getCredits(ctx: QueryCtx | MutationCtx, userId: string) {
   const credits = await ctx.db
     .query('customerCredits')
     .withIndex('by_userId', (index) => index.eq('userId', userId))

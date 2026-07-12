@@ -211,7 +211,7 @@ describe('GitHub OAuth response handlers', () => {
       githubLogin: 'octo-user',
       scopes: ['repo'],
     })
-    const fetchMock = vi.fn(async (url: string | URL, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url, init?) => {
       const path = String(url)
 
       if (path === 'https://github.test/login/oauth/access_token') {
@@ -307,7 +307,7 @@ describe('GitHub OAuth response handlers', () => {
     expect(missingCode.status).toBe(400)
     await expect(missingCode.text()).resolves.toBe('Missing GitHub OAuth code.')
 
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       if (String(url) === 'https://github.test/login/oauth/access_token') {
         return Response.json({
           error: 'bad_verification_code',
@@ -334,7 +334,7 @@ describe('GitHub OAuth response handlers', () => {
   })
 
   it('redirects malformed provider token responses without storing a GitHub token', async () => {
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       if (String(url) === 'https://github.test/login/oauth/access_token') {
         return new Response('<!doctype html><title>bad gateway</title>', {
           headers: { 'Content-Type': 'text/html' },
@@ -362,7 +362,7 @@ describe('GitHub OAuth response handlers', () => {
   })
 
   it('redirects malformed GitHub user responses without storing the exchanged token', async () => {
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       const path = String(url)
       if (path === 'https://github.test/login/oauth/access_token') {
         return Response.json({

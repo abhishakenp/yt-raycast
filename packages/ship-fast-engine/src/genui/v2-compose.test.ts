@@ -9,13 +9,13 @@ const mocks = ((
 ).__v2mocks ??= { generateText: vi.fn() })
 
 vi.mock('../generate.ts', () => ({
-  generateText: (...args: unknown[]) =>
+  generateText: (...args) =>
     (
       (globalThis as typeof globalThis & { __v2mocks: typeof mocks }).__v2mocks
         .generateText as unknown as (...a: unknown[]) => unknown
     )(...args),
   isHardLlmFailure: () => false,
-  formatLlmFailureMessage: (e: unknown) => String(e),
+  formatLlmFailureMessage: (e) => String(e),
 }))
 
 import { auditOpenUIProgram } from './openui-program-audit.ts'
@@ -30,7 +30,7 @@ import {
   runV2ComposedGeneration,
 } from './v2-compose.ts'
 
-const auditOk = async (src: string): Promise<true | string> => {
+async function auditOk(src: string): Promise<true | string> {
   try {
     await auditOpenUIProgram(src, { expectedRoot: 'PageSwitch' })
     return true
@@ -41,11 +41,12 @@ const auditOk = async (src: string): Promise<true | string> => {
 
 // The compose prompt lists `"<sectionId>": <Signature>` lines — extract ids so
 // the mock can answer with realistic per-section props.
-const sectionIdsFromPrompt = (user: string): string[] =>
-  [...user.matchAll(/"([a-z0-9_]+)":\s*[A-Z]/g)].map((m) => m[1])
+function sectionIdsFromPrompt(user: string): string[] {
+  return [...user.matchAll(/"([a-z0-9_]+)":\s*[A-Z]/g)].map((m) => m[1])
+}
 
-const richProps = (user: string): string =>
-  JSON.stringify(
+function richProps(user: string): string {
+  return JSON.stringify(
     Object.fromEntries(
       sectionIdsFromPrompt(user).map((id) => [
         id,
@@ -57,10 +58,11 @@ const richProps = (user: string): string =>
       ]),
     ),
   )
+}
 
 // Mock reply for the first-pass superagent call: pick the first listed vertical
 // and fill every listed section role with content (mirrors the real response).
-const superagentReply = (user: string): string => {
+function superagentReply(user: string): string {
   const family =
     (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
   const keys = [...user.matchAll(/^\s+([a-z0-9]+):\s/gm)].map((m) => m[1])
@@ -93,7 +95,7 @@ describe('v2 family discovery', () => {
     expect(cafe!.sections).toContain('Hero')
     expect(cafe!.sections).toContain('Navbar')
     // Navbar precedes Hero precedes Footer (canonical order)
-    const i = (s: string) => cafe!.sections.indexOf(s)
+    const i = (s) => cafe!.sections.indexOf(s)
     expect(i('Navbar')).toBeLessThan(i('Hero'))
     if (i('Footer') >= 0) expect(i('Hero')).toBeLessThan(i('Footer'))
   })
@@ -117,7 +119,7 @@ describe('v2 family discovery', () => {
 
   it('bespoke roles sit between head content and tail proof/close blocks', () => {
     const fs = FAMILIES.get('FashionStore')!.sections
-    const i = (s: string) => fs.indexOf(s)
+    const i = (s) => fs.indexOf(s)
     expect(i('Hero')).toBeLessThan(i('Products'))
     for (const tail of ['Footer', 'Testimonials', 'Stats']) {
       if (i(tail) >= 0) expect(i('Products')).toBeLessThan(i(tail))
@@ -165,7 +167,7 @@ describe('composePage (valid by construction, no fallback)', () => {
   beforeEach(() => mocks.generateText.mockReset())
 
   it('produces an audit-valid composed page from model JSON props', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
+    mocks.generateText.mockImplementation(async (..._a) =>
       richProps(String(_a[2])),
     )
     const family = FAMILIES.get('Crm')!
@@ -211,7 +213,7 @@ describe('composePage (valid by construction, no fallback)', () => {
   // query and returned irrelevant images. The compose system prompt must force
   // alt text to English regardless of locale.
   it('forces image alt text to English for non-English locales (Malayalam)', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
+    mocks.generateText.mockImplementation(async (..._a) =>
       richProps(String(_a[2])),
     )
     const family = FAMILIES.get('Crm')!
@@ -232,7 +234,7 @@ describe('composePage (valid by construction, no fallback)', () => {
   })
 
   it('forces image alt text to English even for the default (en) locale', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
+    mocks.generateText.mockImplementation(async (..._a) =>
       richProps(String(_a[2])),
     )
     const family = FAMILIES.get('Crm')!
@@ -272,7 +274,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('produces a valid multi-page site with theme, brand and a PageSwitch root', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       // first-pass superagent picks vertical + fills home; secondary pages request section JSON.
       if (/Candidate verticals/.test(user)) return superagentReply(user)
@@ -309,7 +311,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('keeps SaaS brand prompts on the website composer path', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -335,7 +337,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('emits target aliases and excludes full Hero sections from secondary pages', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -361,7 +363,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('keeps structural chrome out of the fullstack manifest', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -386,7 +388,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('keeps page planning meaningful across generic website prompt families', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -421,7 +423,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('plans bespoke catalog roles as real secondary pages', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -489,12 +491,12 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('is deterministic per (prompt, seed) and varies composition across seeds', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
     })
-    const run = (seed: string) =>
+    const run = (seed) =>
       runV2ComposedGeneration({
         prompt: 'a developer security tool',
         modelId: 'm',
@@ -521,7 +523,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('returns the LLM-decided title in the result', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -536,7 +538,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('uses AI navLabels for page labels instead of hardcoded defaults', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -564,7 +566,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('falls back to hardcoded labels when AI does not provide navLabels', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) {
         const family =
@@ -598,7 +600,7 @@ describe('runV2ComposedGeneration', () => {
 
   it('includes title and navLabels in cached ComposedContent', async () => {
     const capturedContent: Record<string, unknown>[] = []
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
@@ -621,7 +623,7 @@ describe('runV2ComposedGeneration', () => {
   })
 
   it('asks the superagent for title and navLabels in the prompt', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+    mocks.generateText.mockImplementation(async (..._a) => {
       const user = String(_a[2])
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)

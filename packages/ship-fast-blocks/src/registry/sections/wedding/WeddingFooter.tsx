@@ -3,22 +3,24 @@ import { z } from 'zod/v4'
 
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
-const Mark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.6"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <circle cx="9" cy="13" r="5" />
-    <circle cx="15" cy="13" r="5" />
-    <path d="M9 8c0-2 1.3-3.5 3-3.5S15 6 15 8" />
-  </svg>
-)
+function Mark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="13" r="5" />
+      <circle cx="15" cy="13" r="5" />
+      <path d="M9 8c0-2 1.3-3.5 3-3.5S15 6 15 8" />
+    </svg>
+  )
+}
 
 export const WeddingFooter = defineCapsule({
   name: 'WeddingFooter',

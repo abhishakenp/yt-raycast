@@ -208,13 +208,7 @@ export const BakeryMenu = defineCapsule({
       ),
     )
 
-    const PriceRow = ({
-      item,
-      section,
-    }: {
-      item: { name: string; description: string; price: string }
-      section: string
-    }) => (
+    const PriceRow = ({ item, section }) => (
       <div className="flex items-start justify-between gap-4">
         <div>
           <h4 className="font-semibold text-card-foreground">{item.name}</h4>

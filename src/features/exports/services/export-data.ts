@@ -7,22 +7,27 @@
 
 // ─── naming helpers ───────────────────────────────────────────
 
-const toPascalCase = (name: string): string =>
-  name
-    .replace(/[^A-Za-z0-9]+/g, ' ')
-    .trim()
-    .split(/\s+/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('') || 'Data'
+function toPascalCase(name: string): string {
+  return (
+    name
+      .replace(/[^A-Za-z0-9]+/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('') || 'Data'
+  )
+}
 
-export const queryActionName = (queryName: string): string =>
-  `get${toPascalCase(queryName)}`
+export function queryActionName(queryName: string): string {
+  return `get${toPascalCase(queryName)}`
+}
 
-export const mutationActionName = (mutationName: string): string =>
-  `${mutationName
+export function mutationActionName(mutationName: string): string {
+  return `${mutationName
     .replace(/[^A-Za-z0-9]/g, '')
     .charAt(0)
     .toLowerCase()}${mutationName.replace(/[^A-Za-z0-9]/g, '').slice(1)}Action`
+}
 
 // ─── collected data keys ──────────────────────────────────────
 
@@ -46,19 +51,20 @@ export const emptyCollections: PrecomputedCollections = {
   restaurants: [],
 }
 
-export const createDataKeys = (): DataKeys => ({
-  queries: new Set(),
-  mutations: new Set(),
-  usesAuth: false,
-  usesSignIn: false,
-  usesSignOut: false,
-})
+export function createDataKeys(): DataKeys {
+  return {
+    queries: new Set(),
+    mutations: new Set(),
+    usesAuth: false,
+    usesSignIn: false,
+    usesSignOut: false,
+  }
+}
 
 // ─── store generator (shared logic) ───────────────────────────
 
-const renderStoreCoreLogic = (
-  collections: PrecomputedCollections,
-): string => `'use client'
+function renderStoreCoreLogic(collections: PrecomputedCollections): string {
+  return `'use client'
 
 type Store = Record<string, unknown>
 type AuthState = {
@@ -249,13 +255,14 @@ const affectedQueryNames = (name: string): string[] => {
   if (/order/i.test(name)) names.add('orders')
   return [...names]
 }`
+}
 
 // ─── React store (client-side, no server) ─────────────────────
 
-export const renderReactStore = (
+export function renderReactStore(
   keys: DataKeys,
   collections: PrecomputedCollections = emptyCollections,
-): string => {
+): string {
   const queryFns = [...keys.queries]
     .map(
       (name) =>
@@ -336,10 +343,10 @@ ${invalidationFn}`
 
 // ─── Next.js store (server-side) ──────────────────────────────
 
-export const renderNextStore = (
+export function renderNextStore(
   keys: DataKeys,
   collections: PrecomputedCollections = emptyCollections,
-): string => {
+): string {
   const serverStoreSetup = `type Store = Record<string, unknown>
 type AuthState = {
   displayName: string | null
@@ -549,7 +556,7 @@ ${invalidationFn}
 
 // ─── Next.js server actions ───────────────────────────────────
 
-export const renderNextServerActions = (keys: DataKeys): string => {
+export function renderNextServerActions(keys: DataKeys): string {
   const queryImports = [...keys.queries]
     .map((name) => queryActionName(name))
     .join(', ')
@@ -612,7 +619,8 @@ ${authActions}
 
 // ─── Shoo auth integration ────────────────────────────────────
 
-export const renderShooAuthProvider = (): string => `'use client'
+export function renderShooAuthProvider(): string {
+  return `'use client'
 
 import { createContext, useContext, type PropsWithChildren } from 'react'
 
@@ -696,8 +704,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
   return <>{children}</>
 }
 `
+}
 
-export const renderShooCallbackRoute = (): string => `"use client"
+export function renderShooCallbackRoute(): string {
+  return `"use client"
 
 import { useShooAuth } from '../../../src/lib/auth'
 
@@ -706,12 +716,13 @@ export default function ShooCallback() {
   return <p>Signing in…</p>
 }
 `
+}
 
 // ─── useKeyedMutation hook ────────────────────────────────────
 
-export const renderKeyedMutationHook = (
+export function renderKeyedMutationHook(
   queryKeys: Iterable<string> = [],
-): string => {
+): string {
   const invalidations = [...new Set(queryKeys)]
     .sort()
     .map(
@@ -797,7 +808,8 @@ ${invalidations}
 
 // ─── QueryClient provider ─────────────────────────────────────
 
-export const renderQueryClientProvider = (): string => `'use client'
+export function renderQueryClientProvider(): string {
+  return `'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { PropsWithChildren } from 'react'
@@ -816,3 +828,4 @@ export function QueryProvider({ children }: PropsWithChildren) {
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }
 `
+}

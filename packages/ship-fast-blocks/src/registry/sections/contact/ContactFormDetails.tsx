@@ -182,7 +182,7 @@ export const ContactFormDetails = defineCapsule({
       ),
     }
 
-    const socialPath = (label: string) => {
+    const socialPath = (label) => {
       const l = label.toLowerCase()
       if (l.includes('linkedin'))
         return {

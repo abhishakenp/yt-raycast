@@ -67,7 +67,7 @@ export const CybersecurityHero = defineCapsule({
     const alertSubtitle = props.alertSubtitle ?? 'Ransomware attempt'
     const alertMeta = props.alertMeta ?? 'Just now • Acme Corp infrastructure'
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

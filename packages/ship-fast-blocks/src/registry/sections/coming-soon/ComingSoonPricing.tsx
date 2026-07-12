@@ -96,7 +96,7 @@ export const ComingSoonPricing = defineCapsule({
           },
         ]
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={cn('size-5 shrink-0', className)}
         fill="none"

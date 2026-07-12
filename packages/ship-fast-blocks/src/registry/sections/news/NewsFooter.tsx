@@ -13,21 +13,23 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * publication homepage. Renders fully with no props via baked-in "The
  * Chronicle" defaults.
  */
-const Masthead = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <rect x="3" y="4" width="18" height="16" rx="2" />
-    <path d="M7 8h10M7 12h10M7 16h6" />
-  </svg>
-)
+function Masthead({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M7 8h10M7 12h10M7 16h6" />
+    </svg>
+  )
+}
 
 export const NewsFooter = defineCapsule({
   name: 'NewsFooter',

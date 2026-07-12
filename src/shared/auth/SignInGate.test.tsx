@@ -33,11 +33,11 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 const RealItem = () => <div data-testid="real-item">real</div>
 const LockedItem = () => <div data-testid="locked-item">locked</div>
 
-const setAuth = (
+function setAuth(
   isLoaded: boolean,
   isSignedIn: boolean,
   clerkClientEnabled = true,
-) => {
+) {
   mockAuth.isLoaded = isLoaded
   mockAuth.isSignedIn = isSignedIn
   mockClerkClientEnabled.value = clerkClientEnabled
@@ -121,11 +121,7 @@ describe('SignInGate', () => {
 })
 
 describe('useSignInGate', () => {
-  const Probe = ({
-    onValue,
-  }: {
-    onValue: (v: ReturnType<typeof useSignInGate>) => void
-  }) => {
+  const Probe = ({ onValue }) => {
     onValue(useSignInGate())
     return null
   }

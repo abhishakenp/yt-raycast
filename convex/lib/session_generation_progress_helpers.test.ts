@@ -15,8 +15,8 @@ type TaskRecord = Doc<'tasks'>
 
 const sessionId = 'session_generation_progress' as Id<'sessions'>
 
-const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
-  ({
+function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a homepage',
@@ -24,12 +24,13 @@ const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
     status: 'queued',
     createdAt: 1,
     ...overrides,
-  }) as SessionRecord
+  } as SessionRecord
+}
 
-const generatedModuleDoc = (
+function generatedModuleDoc(
   overrides: Partial<GeneratedModuleRecord> = {},
-): GeneratedModuleRecord =>
-  ({
+): GeneratedModuleRecord {
+  return {
     _id: 'generated_module_existing' as Id<'generatedModules'>,
     _creationTime: 1,
     sessionId,
@@ -40,20 +41,21 @@ const generatedModuleDoc = (
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as GeneratedModuleRecord
+  } as GeneratedModuleRecord
+}
 
-const ctxFor = (input: {
+function ctxFor(input: {
   sessions?: SessionRecord[]
   tasks?: TaskRecord[]
   generatedModules?: GeneratedModuleRecord[]
-}) => {
+}) {
   const sessions = [...(input.sessions ?? [])]
   const tasks = [...(input.tasks ?? [])]
   const generatedModules = [...(input.generatedModules ?? [])]
   const generationEvents: GenerationEventRecord[] = []
   let nextId = 1
 
-  const rowsFor = (table: string) => {
+  const rowsFor = (table) => {
     switch (table) {
       case 'sessions':
         return sessions
@@ -68,7 +70,7 @@ const ctxFor = (input: {
     }
   }
 
-  const filterRows = (table: string, filters: Map<string, unknown>) =>
+  const filterRows = (table, filters) =>
     rowsFor(table).filter((row) =>
       Array.from(filters.entries()).every(
         ([field, value]) => (row as Record<string, unknown>)[field] === value,
@@ -76,18 +78,12 @@ const ctxFor = (input: {
     )
 
   const db = {
-    get: async (id: Id<'sessions'>) =>
-      sessions.find((session) => session._id === id) ?? null,
-    query: (table: string) => ({
-      withIndex: (
-        _indexName: string,
-        applyIndex: (index: {
-          eq: (field: string, value: unknown) => typeof index
-        }) => unknown,
-      ) => {
+    get: async (id) => sessions.find((session) => session._id === id) ?? null,
+    query: (table) => ({
+      withIndex: (_indexName, applyIndex) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field: string, value: unknown) => {
+          eq: (field, value) => {
             filters.set(field, value)
             return index
           },
@@ -99,7 +95,7 @@ const ctxFor = (input: {
         }
       },
     }),
-    insert: async (table: string, value: Record<string, unknown>) => {
+    insert: async (table, value) => {
       const row = {
         _id: `${table}_${nextId++}`,
         _creationTime: 1,
@@ -108,7 +104,7 @@ const ctxFor = (input: {
       rowsFor(table).push(row as never)
       return row._id
     },
-    patch: async (id: string, value: Record<string, unknown>) => {
+    patch: async (id, value) => {
       for (const rows of [
         sessions,
         tasks,

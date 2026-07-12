@@ -76,7 +76,7 @@ export const MentalHealthSteps = defineCapsule({
         ]
     const bookLabel = props.bookLabel ?? 'Book Session'
 
-    const Phone = ({ className }: { className?: string }) => (
+    const Phone = ({ className }) => (
       <svg
         className={className}
         fill="none"

@@ -112,7 +112,7 @@ export const DentalPricing = defineCapsule({
         }),
       ),
     )
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

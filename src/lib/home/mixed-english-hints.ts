@@ -22,7 +22,7 @@ const MIXED_ENGLISH_SLANG_KEYWORDS: Record<string, string[]> = {
   ne: ['nepali english mix'],
 }
 
-export const preferMixedEnglishBcp47FromSnippet = (snippet: string) => {
+export function preferMixedEnglishBcp47FromSnippet(snippet: string) {
   const pl = String(snippet || '').toLowerCase()
   if (/\bhinglish\b/.test(pl)) return 'hinglish'
   if (/\bmanglish\b/.test(pl)) return 'ml-en'

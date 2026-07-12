@@ -29,28 +29,28 @@ type PexelsResponse = {
   photos?: PexelsPhoto[]
 }
 
-const clampInt = (
+function clampInt(
   value: string | null,
   fallback: number,
   min: number,
   max: number,
-) => {
+) {
   const parsed = Number.parseInt(value ?? '', 10)
   if (!Number.isFinite(parsed)) return fallback
   return Math.min(Math.max(parsed, min), max)
 }
 
-const orientationFromSize = (
+function orientationFromSize(
   w: number,
   h: number,
-): 'landscape' | 'portrait' | 'square' => {
+): 'landscape' | 'portrait' | 'square' {
   const ratio = w / h
   if (ratio > 1.15) return 'landscape'
   if (ratio < 0.87) return 'portrait'
   return 'square'
 }
 
-const seedIndex = (seed: string, length: number) => {
+function seedIndex(seed: string, length: number) {
   if (length <= 1) return 0
   let hash = 0
   for (let i = 0; i < seed.length; i++) {
@@ -59,7 +59,7 @@ const seedIndex = (seed: string, length: number) => {
   return hash % length
 }
 
-const picsumUrl = (query: string, w: number, h: number) => {
+function picsumUrl(query: string, w: number, h: number) {
   const seed =
     query
       .toLowerCase()
@@ -69,11 +69,7 @@ const picsumUrl = (query: string, w: number, h: number) => {
   return `https://picsum.photos/seed/${seed}/${w}/${h}`
 }
 
-const choosePhotoUrl = (
-  photo: PexelsPhoto | undefined,
-  w: number,
-  h: number,
-) => {
+function choosePhotoUrl(photo: PexelsPhoto | undefined, w: number, h: number) {
   if (!photo?.src) return null
   if (w > 1200 || h > 1200)
     return (
@@ -113,12 +109,7 @@ type UnsplashPhoto = {
 }
 type UnsplashResponse = { results?: UnsplashPhoto[] }
 
-const searchPexels = async (
-  query: string,
-  w: number,
-  h: number,
-  seed: string,
-) => {
+async function searchPexels(query: string, w: number, h: number, seed: string) {
   if (!PEXELS_API_KEY) return null
   const pexelsUrl = new URL('https://api.pexels.com/v1/search')
   pexelsUrl.searchParams.set('query', query.slice(0, 96))
@@ -139,12 +130,12 @@ const searchPexels = async (
   }
 }
 
-const searchUnsplash = async (
+async function searchUnsplash(
   query: string,
   w: number,
   h: number,
   seed: string,
-) => {
+) {
   if (!UNSPLASH_ACCESS_KEY) return null
   const unsplashUrl = new URL('https://api.unsplash.com/search/photos')
   unsplashUrl.searchParams.set('query', query.slice(0, 96))
@@ -173,7 +164,7 @@ const searchUnsplash = async (
   }
 }
 
-const resolvePexelsUrl = async (requestUrl: string) => {
+async function resolvePexelsUrl(requestUrl: string) {
   const url = new URL(requestUrl, 'http://localhost/api/pexels')
   const query =
     (url.searchParams.get('query') ?? url.searchParams.get('q') ?? '').trim() ||
@@ -190,7 +181,7 @@ const resolvePexelsUrl = async (requestUrl: string) => {
   )
 }
 
-const normalizeModuleId = (moduleId: string) => {
+function normalizeModuleId(moduleId: string) {
   const normalized = moduleId.replaceAll('\\', '/')
   const queryIndex = normalized.indexOf('?')
   const path = queryIndex === -1 ? normalized : normalized.slice(0, queryIndex)
@@ -214,19 +205,24 @@ const normalizeModuleId = (moduleId: string) => {
   return `${isAbsolute ? '/' : ''}${parts.join('/')}${query}`
 }
 
-const isOpenUIBlocksSourceModule = (moduleId: string) =>
-  normalizeModuleId(moduleId).includes('/packages/ship-fast-blocks/src/')
+function isOpenUIBlocksSourceModule(moduleId: string) {
+  return normalizeModuleId(moduleId).includes('/packages/ship-fast-blocks/src/')
+}
 
-const isOpenUIGeneratedMetadataModule = (moduleId: string) =>
-  normalizeModuleId(moduleId).includes(
+function isOpenUIGeneratedMetadataModule(moduleId: string) {
+  return normalizeModuleId(moduleId).includes(
     '/packages/ship-fast-blocks/src/generated/',
   )
+}
 
-const isOpenUIRuntimeModule = (moduleId: string) =>
-  isOpenUIBlocksSourceModule(moduleId) &&
-  !isOpenUIGeneratedMetadataModule(moduleId)
+function isOpenUIRuntimeModule(moduleId: string) {
+  return (
+    isOpenUIBlocksSourceModule(moduleId) &&
+    !isOpenUIGeneratedMetadataModule(moduleId)
+  )
+}
 
-const getOpenUIBlocksSourcePath = (moduleId: string) => {
+function getOpenUIBlocksSourcePath(moduleId: string) {
   const normalized = normalizeModuleId(moduleId)
   const marker = '/packages/ship-fast-blocks/src/'
   const markerIndex = normalized.indexOf(marker)
@@ -234,7 +230,7 @@ const getOpenUIBlocksSourcePath = (moduleId: string) => {
   return normalized.slice(markerIndex + marker.length)
 }
 
-const isOpenUICatalogIndexModule = (moduleId: string) => {
+function isOpenUICatalogIndexModule(moduleId: string) {
   const sourcePath = getOpenUIBlocksSourcePath(moduleId)
   return (
     sourcePath === 'index.ts' ||
@@ -243,7 +239,7 @@ const isOpenUICatalogIndexModule = (moduleId: string) => {
   )
 }
 
-const isOpenUIThemeModule = (moduleId: string) => {
+function isOpenUIThemeModule(moduleId: string) {
   const sourcePath = getOpenUIBlocksSourcePath(moduleId)
   return (
     sourcePath === 'theme.ts' ||
@@ -252,7 +248,7 @@ const isOpenUIThemeModule = (moduleId: string) => {
   )
 }
 
-const isOpenUISupportModule = (moduleId: string) => {
+function isOpenUISupportModule(moduleId: string) {
   const sourcePath = getOpenUIBlocksSourcePath(moduleId)
   return Boolean(
     sourcePath?.startsWith('section-kit/') ||
@@ -261,24 +257,27 @@ const isOpenUISupportModule = (moduleId: string) => {
   )
 }
 
-const isOpenUIPrimitiveModule = (moduleId: string) =>
-  normalizeModuleId(moduleId).includes(
+function isOpenUIPrimitiveModule(moduleId: string) {
+  return normalizeModuleId(moduleId).includes(
     '/packages/ship-fast-blocks/src/registry/primitives/',
   )
+}
 
-const isOpenUISectionModule = (moduleId: string) =>
-  normalizeModuleId(moduleId).includes(
+function isOpenUISectionModule(moduleId: string) {
+  return normalizeModuleId(moduleId).includes(
     '/packages/ship-fast-blocks/src/registry/sections/',
   )
+}
 
-const sanitizeChunkName = (value: string) =>
-  value
+function sanitizeChunkName(value: string) {
+  return value
     .replace(/\.(?:tsx?|jsx?)$/, '')
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase()
+}
 
-const getPathSegmentAfter = (moduleId: string, marker: string) => {
+function getPathSegmentAfter(moduleId: string, marker: string) {
   const normalized = normalizeModuleId(moduleId)
   const markerIndex = normalized.indexOf(marker)
   if (markerIndex < 0) return null
@@ -286,26 +285,32 @@ const getPathSegmentAfter = (moduleId: string, marker: string) => {
   return rest.split('/').filter(Boolean)[0] ?? null
 }
 
-const getOpenUIFileBaseName = (moduleId: string) =>
-  sanitizeChunkName(normalizeModuleId(moduleId).split('/').at(-1) ?? 'module')
+function getOpenUIFileBaseName(moduleId: string) {
+  return sanitizeChunkName(
+    normalizeModuleId(moduleId).split('/').at(-1) ?? 'module',
+  )
+}
 
-const getOpenUICapsuleFileName = (moduleId: string) => {
+function getOpenUICapsuleFileName(moduleId: string) {
   const normalized = normalizeModuleId(moduleId)
   if (!normalized.includes('/packages/ship-fast-blocks/src/capsules/'))
     return null
   return normalized.split('/').at(-1)?.toLowerCase() ?? null
 }
 
-const isOpenUIRuntimeCoreModule = (moduleId: string) =>
-  isOpenUIRuntimeModule(moduleId) &&
-  !isOpenUICatalogIndexModule(moduleId) &&
-  !isOpenUIThemeModule(moduleId) &&
-  !isOpenUISupportModule(moduleId) &&
-  !isOpenUIPrimitiveModule(moduleId) &&
-  !isOpenUISectionModule(moduleId) &&
-  getOpenUICapsuleFileName(moduleId) === null
+function isOpenUIRuntimeCoreModule(moduleId: string) {
+  return (
+    isOpenUIRuntimeModule(moduleId) &&
+    !isOpenUICatalogIndexModule(moduleId) &&
+    !isOpenUIThemeModule(moduleId) &&
+    !isOpenUISupportModule(moduleId) &&
+    !isOpenUIPrimitiveModule(moduleId) &&
+    !isOpenUISectionModule(moduleId) &&
+    getOpenUICapsuleFileName(moduleId) === null
+  )
+}
 
-const getOpenUIRuntimeChunkName = (moduleId: string) => {
+function getOpenUIRuntimeChunkName(moduleId: string) {
   if (!isOpenUIRuntimeModule(moduleId)) return null
   if (isOpenUICatalogIndexModule(moduleId)) return null
   if (isOpenUIThemeModule(moduleId)) return 'openui-theme'
@@ -328,7 +333,7 @@ const getOpenUIRuntimeChunkName = (moduleId: string) => {
   return null
 }
 
-const isOpenUIPromptSpecModule = (moduleId: string) => {
+function isOpenUIPromptSpecModule(moduleId: string) {
   const normalized = normalizeModuleId(moduleId)
   return (
     normalized.includes('/packages/ship-fast-engine/src/genui/generated/') ||
@@ -344,39 +349,43 @@ const isOpenUIPromptSpecModule = (moduleId: string) => {
 // the free identifiers resolve to the running module's path. Only chunks that
 // actually reference the globals are touched, and any chunk that already declares
 // them is skipped to avoid a redeclaration SyntaxError.
-const cjsDirnameShim = (): Plugin => ({
-  name: 'ship-fast-cjs-dirname-shim',
-  renderChunk(code: string) {
-    if (!/(?<![.\w])__(?:filename|dirname)\b/.test(code)) return null
-    if (/(?:const|let|var)\s+__(?:filename|dirname)\b/.test(code)) return null
-    const shim =
-      "import { fileURLToPath as __shimFileURLToPath } from 'node:url'\n" +
-      'const __filename = __shimFileURLToPath(import.meta.url)\n' +
-      "const __dirname = __filename.slice(0, Math.max(0, __filename.lastIndexOf('/')))\n"
-    return { code: shim + code, map: null }
-  },
-})
+function cjsDirnameShim(): Plugin {
+  return {
+    name: 'ship-fast-cjs-dirname-shim',
+    renderChunk(code: string) {
+      if (!/(?<![.\w])__(?:filename|dirname)\b/.test(code)) return null
+      if (/(?:const|let|var)\s+__(?:filename|dirname)\b/.test(code)) return null
+      const shim =
+        "import { fileURLToPath as __shimFileURLToPath } from 'node:url'\n" +
+        'const __filename = __shimFileURLToPath(import.meta.url)\n' +
+        "const __dirname = __filename.slice(0, Math.max(0, __filename.lastIndexOf('/')))\n"
+      return { code: shim + code, map: null }
+    },
+  }
+}
 
-const pexelsDevApi = (): Plugin => ({
-  name: 'ship-fast-pexels-dev-api',
-  configureServer(server) {
-    server.middlewares.use('/api/pexels', async (req, res, next) => {
-      if (req.method !== 'GET' && req.method !== 'HEAD') {
-        next()
-        return
-      }
+function pexelsDevApi(): Plugin {
+  return {
+    name: 'ship-fast-pexels-dev-api',
+    configureServer(server) {
+      server.middlewares.use('/api/pexels', async (req, res, next) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          next()
+          return
+        }
 
-      const photoUrl = await resolvePexelsUrl(req.url ?? '')
-      res.statusCode = 302
-      res.setHeader('Location', photoUrl)
-      res.setHeader(
-        'Cache-Control',
-        'public, max-age=3600, stale-while-revalidate=86400',
-      )
-      res.end()
-    })
-  },
-})
+        const photoUrl = await resolvePexelsUrl(req.url ?? '')
+        res.statusCode = 302
+        res.setHeader('Location', photoUrl)
+        res.setHeader(
+          'Cache-Control',
+          'public, max-age=3600, stale-while-revalidate=86400',
+        )
+        res.end()
+      })
+    },
+  }
+}
 
 const config = defineConfig({
   envPrefix: [

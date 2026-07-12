@@ -5,8 +5,9 @@ import {
   createReferralStatusApiResponse,
 } from './referral-api-response'
 
-const readJson = async (response: Response) =>
-  (await response.json()) as Record<string, unknown>
+async function readJson(response: Response) {
+  return (await response.json()) as Record<string, unknown>
+}
 
 describe('referral API responses', () => {
   const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'

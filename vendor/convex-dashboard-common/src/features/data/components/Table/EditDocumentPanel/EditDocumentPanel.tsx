@@ -28,11 +28,13 @@ export const useDocumentDrafts = createGlobalState<
 // Even though we clear out drafts when editing documents,
 // we still track their state separately so that they don't clear out
 // the draft state of documents you were adding.
-const getDocumentDraftKey = (
+function getDocumentDraftKey(
   componentId: string | null,
   tableName: string,
   editingId?: string,
-) => `${editingId || 'add'}-${componentId}-${tableName}`
+) {
+  return `${editingId || 'add'}-${componentId}-${tableName}`
+}
 
 export function EditDocumentPanel({
   onClose,
@@ -66,7 +68,7 @@ export function EditDocumentPanel({
     )
   ] ?? [defaultDocumentWithoutSystemFields]
   const setDocuments = useCallback(
-    (newDocuments?: GenericDocument[]) => {
+    (newDocuments?) => {
       setDrafts((d) => ({
         ...d,
         [getDocumentDraftKey(

@@ -33,15 +33,16 @@ export type PreviewImageUrlResolutionOptions = {
   overrideGeneratedSrc?: string
 }
 
-const decodeHtmlEntities = (value: string): string =>
-  value
+function decodeHtmlEntities(value: string): string {
+  return value
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+}
 
-const readServerEnv = (...keys: string[]): string => {
+function readServerEnv(...keys: string[]): string {
   if (typeof process === 'undefined') return ''
   for (const key of keys) {
     const value = process.env?.[key]?.trim()
@@ -50,7 +51,7 @@ const readServerEnv = (...keys: string[]): string => {
   return ''
 }
 
-const readAppBaseUrl = (): string => {
+function readAppBaseUrl(): string {
   const raw = readServerEnv(
     'APP_BASE_URL',
     'SHIP_FAST_BASE_URL',
@@ -64,21 +65,21 @@ const readAppBaseUrl = (): string => {
   return vercelUrl ? `https://${vercelUrl}` : ''
 }
 
-const readImageDimension = (
+function readImageDimension(
   value: string | null,
   fallback: number,
   min = 1,
-): number => {
+): number {
   const parsed = Number.parseInt(value ?? '', 10)
   if (!Number.isFinite(parsed)) return fallback
   return Math.min(Math.max(parsed, min), 2400)
 }
 
-const choosePhotoUrl = (
+function choosePhotoUrl(
   photo: PexelsPhoto | undefined,
   w: number,
   h: number,
-): string | null => {
+): string | null {
   if (!photo?.src) return null
   if (w > 1200 || h > 1200) {
     return (
@@ -116,19 +117,16 @@ const choosePhotoUrl = (
   )
 }
 
-const resolvePexelsSearchQuery = (
-  query: string,
-  seed: string | null,
-): string => {
+function resolvePexelsSearchQuery(query: string, seed: string | null): string {
   const trimmed = query.trim() || 'nature'
   if (seed?.trim()) return trimmed.slice(0, 96)
   return searchQueryFromAlt(trimmed)
 }
 
-const readRedirectLocation = (
+function readRedirectLocation(
   response: Response,
   requestUrl: URL,
-): string | null => {
+): string | null {
   const location =
     response.headers.get('Location') ?? response.headers.get('location')
   if (location) {
@@ -148,9 +146,9 @@ const readRedirectLocation = (
   return null
 }
 
-const resolveViaPreviewImageRoute = async (
+async function resolveViaPreviewImageRoute(
   parsed: URL,
-): Promise<string | null> => {
+): Promise<string | null> {
   const appBaseUrl = readAppBaseUrl()
   if (!appBaseUrl) return null
 
@@ -178,12 +176,12 @@ const resolveViaPreviewImageRoute = async (
   }
 }
 
-const searchPexels = async (
+async function searchPexels(
   searchQuery: string,
   w: number,
   h: number,
   seed: string,
-): Promise<string | null> => {
+): Promise<string | null> {
   const pexelsApiKey = readServerEnv('PEXELS_API_KEY', 'VITE_PEXELS_API_KEY')
   if (!pexelsApiKey) return null
   const pexelsUrl = new URL('https://api.pexels.com/v1/search')
@@ -204,12 +202,12 @@ const searchPexels = async (
   }
 }
 
-const searchUnsplash = async (
+async function searchUnsplash(
   searchQuery: string,
   w: number,
   h: number,
   seed: string,
-): Promise<string | null> => {
+): Promise<string | null> {
   const unsplashAccessKey = readServerEnv(
     'UNSPLASH_ACCESS_KEY',
     'VITE_UNSPLASH_ACCESS_KEY',
@@ -242,7 +240,7 @@ const searchUnsplash = async (
   }
 }
 
-const resolvePexelsPreviewUrl = async (parsed: URL): Promise<string> => {
+async function resolvePexelsPreviewUrl(parsed: URL): Promise<string> {
   const routedImageUrl = await resolveViaPreviewImageRoute(parsed)
   if (routedImageUrl) return routedImageUrl
 
@@ -276,10 +274,10 @@ const resolvePexelsPreviewUrl = async (parsed: URL): Promise<string> => {
   )
 }
 
-export const resolvePreviewImageUrl = async (
+export async function resolvePreviewImageUrl(
   value: string,
   options: string | PreviewImageUrlResolutionOptions = {},
-): Promise<string | null> => {
+): Promise<string | null> {
   const normalizedOptions =
     typeof options === 'string' ? { fallbackAlt: options } : options
   const sourceValue = normalizedOptions.overrideGeneratedSrc ?? value
@@ -313,11 +311,11 @@ export const resolvePreviewImageUrl = async (
   )
 }
 
-const replaceAsync = async (
+async function replaceAsync(
   value: string,
   pattern: RegExp,
   replacer: (...args: string[]) => Promise<string>,
-): Promise<string> => {
+): Promise<string> {
   const replacements = await Promise.all(
     Array.from(value.matchAll(pattern), (match) => replacer(...match)),
   )
@@ -325,13 +323,11 @@ const replaceAsync = async (
   return value.replace(pattern, () => replacements[index++] ?? '')
 }
 
-export const rewritePreviewImageUrls = async (
-  html: string,
-): Promise<string> => {
+export async function rewritePreviewImageUrls(html: string): Promise<string> {
   const withAttributes = await replaceAsync(
     html,
     /(\s(?:src|poster)\s*=\s*)(["'])([^"']+)\2/gi,
-    async (match: string, prefix: string, quote: string, value: string) => {
+    async (match, prefix, quote, value) => {
       const rewritten = await resolvePreviewImageUrl(decodeHtmlEntities(value))
       return rewritten ? `${prefix}${quote}${rewritten}${quote}` : match
     },
@@ -340,7 +336,7 @@ export const rewritePreviewImageUrls = async (
   return await replaceAsync(
     withAttributes,
     /url\((["']?)([^"')]+)\1\)/gi,
-    async (match: string, quote: string, value: string) => {
+    async (match, quote, value) => {
       const rewritten = await resolvePreviewImageUrl(decodeHtmlEntities(value))
       return rewritten ? `url(${quote}${rewritten}${quote})` : match
     },

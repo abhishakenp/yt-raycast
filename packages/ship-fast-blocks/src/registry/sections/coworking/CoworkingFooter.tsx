@@ -19,14 +19,16 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * baked-in "Northside" defaults. Use as the site-wide footer for coworking
  * spaces, shared offices, flex-office providers, or business centers.
  */
-const BrandTile = ({ letter }: { letter: string }) => (
-  <span
-    className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-base font-bold text-primary-foreground shadow-sm shadow-primary/25 ring-1 ring-primary/30"
-    aria-hidden="true"
-  >
-    {letter}
-  </span>
-)
+function BrandTile({ letter }: { letter: string }) {
+  return (
+    <span
+      className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-base font-bold text-primary-foreground shadow-sm shadow-primary/25 ring-1 ring-primary/30"
+      aria-hidden="true"
+    >
+      {letter}
+    </span>
+  )
+}
 
 export const CoworkingFooter = defineCapsule({
   name: 'CoworkingFooter',

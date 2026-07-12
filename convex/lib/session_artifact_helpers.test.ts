@@ -38,8 +38,8 @@ const realConvexPreviewWithOpenUiHandoff = {
     'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
 } as const
 
-const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
-  ({
+function siteSpecDoc(overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord {
+  return {
     _id: 'site_spec_existing' as Id<'siteSpecs'>,
     _creationTime: 1,
     sessionId,
@@ -47,12 +47,13 @@ const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as SiteSpecRecord
+  } as SiteSpecRecord
+}
 
-const generatedModuleDoc = (
+function generatedModuleDoc(
   overrides: Partial<GeneratedModuleRecord> = {},
-): GeneratedModuleRecord =>
-  ({
+): GeneratedModuleRecord {
+  return {
     _id: 'generated_module_existing' as Id<'generatedModules'>,
     _creationTime: 1,
     sessionId,
@@ -62,20 +63,22 @@ const generatedModuleDoc = (
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as GeneratedModuleRecord
+  } as GeneratedModuleRecord
+}
 
-const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
-  ({
+function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
+  return {
     _id: 'session_cached' as Id<'sessions'>,
     _creationTime: 1,
     prompt: 'Build a homepage',
     workspace: 'default',
     createdAt: 1,
     ...overrides,
-  }) as SessionRecord
+  } as SessionRecord
+}
 
-const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
-  ({
+function previewDoc(overrides: Partial<PreviewRecord> = {}): PreviewRecord {
+  return {
     _id: 'preview_cached' as Id<'previews'>,
     _creationTime: 1,
     sessionId: 'session_cached' as Id<'sessions'>,
@@ -84,10 +87,11 @@ const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
     source: 'generation',
     createdAt: 1,
     ...overrides,
-  }) as PreviewRecord
+  } as PreviewRecord
+}
 
-const taskDoc = (overrides: Partial<TaskRecord> = {}): TaskRecord =>
-  ({
+function taskDoc(overrides: Partial<TaskRecord> = {}): TaskRecord {
+  return {
     _id: 'task_cached' as Id<'tasks'>,
     _creationTime: 1,
     sessionId: 'session_cached' as Id<'sessions'>,
@@ -98,28 +102,24 @@ const taskDoc = (overrides: Partial<TaskRecord> = {}): TaskRecord =>
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as TaskRecord
+  } as TaskRecord
+}
 
-const ctxFor = (
+function ctxFor(
   initialSiteSpecs: SiteSpecRecord[] = [],
   initialGeneratedModules: GeneratedModuleRecord[] = [],
-) => {
+) {
   const siteSpecs = [...initialSiteSpecs]
   const generatedModules = [...initialGeneratedModules]
   let nextSiteSpec = siteSpecs.length + 1
   let nextGeneratedModule = generatedModules.length + 1
 
   const db = {
-    query: (table: 'siteSpecs' | 'generatedModules') => ({
-      withIndex: (
-        indexName: 'by_sessionId' | 'by_sessionId_moduleKey',
-        applyIndex: (index: {
-          eq: (field: string, value: unknown) => typeof index
-        }) => unknown,
-      ) => {
+    query: (table) => ({
+      withIndex: (indexName, applyIndex) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field: string, value: unknown) => {
+          eq: (field, value) => {
             filters.set(field, value)
             return index
           },
@@ -155,10 +155,7 @@ const ctxFor = (
         }
       },
     }),
-    insert: async (
-      table: 'siteSpecs' | 'generatedModules',
-      value: Record<string, unknown>,
-    ) => {
+    insert: async (table, value) => {
       if (table === 'siteSpecs') {
         const id = `site_spec_${nextSiteSpec++}` as Id<'siteSpecs'>
         siteSpecs.push({
@@ -178,10 +175,7 @@ const ctxFor = (
       } as GeneratedModuleRecord)
       return id
     },
-    patch: async (
-      id: Id<'siteSpecs'> | Id<'generatedModules'>,
-      value: Record<string, unknown>,
-    ) => {
+    patch: async (id, value) => {
       const specIndex = siteSpecs.findIndex((siteSpec) => siteSpec._id === id)
       if (specIndex >= 0) {
         siteSpecs[specIndex] = {
@@ -209,13 +203,13 @@ const ctxFor = (
   }
 }
 
-const cloneCtxFor = (input: {
+function cloneCtxFor(input: {
   sessions?: SessionRecord[]
   previews?: PreviewRecord[]
   generatedModules?: GeneratedModuleRecord[]
   siteSpecs?: SiteSpecRecord[]
   tasks?: TaskRecord[]
-}) => {
+}) {
   const sessions = [...(input.sessions ?? [])]
   const previews = [...(input.previews ?? [])]
   const generatedModules = [...(input.generatedModules ?? [])]
@@ -229,7 +223,7 @@ const cloneCtxFor = (input: {
   }> = []
   let nextId = 1
 
-  const rowsFor = (table: string) => {
+  const rowsFor = (table) => {
     switch (table) {
       case 'sessions':
         return sessions
@@ -250,7 +244,7 @@ const cloneCtxFor = (input: {
     }
   }
 
-  const filterRows = (table: string, filters: Map<string, unknown>) => {
+  const filterRows = (table, filters) => {
     const rows = rowsFor(table)
 
     return rows.filter((row) =>
@@ -261,18 +255,12 @@ const cloneCtxFor = (input: {
   }
 
   const db = {
-    get: async (id: Id<'sessions'>) =>
-      sessions.find((session) => session._id === id) ?? null,
-    query: (table: string) => ({
-      withIndex: (
-        _indexName: string,
-        applyIndex: (index: {
-          eq: (field: string, value: unknown) => typeof index
-        }) => unknown,
-      ) => {
+    get: async (id) => sessions.find((session) => session._id === id) ?? null,
+    query: (table) => ({
+      withIndex: (_indexName, applyIndex) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field: string, value: unknown) => {
+          eq: (field, value) => {
             filters.set(field, value)
             return index
           },
@@ -280,19 +268,18 @@ const cloneCtxFor = (input: {
         applyIndex(index)
 
         const first = async () => filterRows(table, filters)[0] ?? null
-        const take = async (limit: number) =>
-          filterRows(table, filters).slice(0, limit)
+        const take = async (limit) => filterRows(table, filters).slice(0, limit)
 
         return {
           first,
           take,
-          order: (_direction: 'asc' | 'desc') => ({
+          order: (_direction) => ({
             first,
           }),
         }
       },
     }),
-    insert: async (table: string, value: Record<string, unknown>) => {
+    insert: async (table, value) => {
       const row = {
         _id: `${table}_${nextId++}`,
         _creationTime: 1,
@@ -301,7 +288,7 @@ const cloneCtxFor = (input: {
       rowsFor(table).push(row as never)
       return row._id
     },
-    patch: async (id: string, value: Record<string, unknown>) => {
+    patch: async (id, value) => {
       for (const rows of [
         sessions,
         previews,
@@ -322,11 +309,7 @@ const cloneCtxFor = (input: {
   } as unknown as Pick<MutationCtx, 'db'>['db']
 
   const scheduler = {
-    runAfter: async (
-      delayMs: number,
-      _ref: Parameters<MutationCtx['scheduler']['runAfter']>[1],
-      event: Record<string, unknown>,
-    ) => {
+    runAfter: async (delayMs, _ref, event) => {
       schedulerCalls.push({ delayMs, event })
     },
   } as unknown as Pick<MutationCtx, 'scheduler'>['scheduler']

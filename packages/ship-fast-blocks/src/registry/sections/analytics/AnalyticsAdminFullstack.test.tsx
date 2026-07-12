@@ -105,15 +105,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -144,7 +141,7 @@ function createAnalyticsAdminLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const syncNotifications = (notifications: AnalyticsNotificationInput[]) => {
+  const syncNotifications = (notifications) => {
     const nextNotifications = [...state.notifications]
 
     for (const notification of notifications) {
@@ -175,7 +172,7 @@ function createAnalyticsAdminLakebedStub() {
 
     state = { ...state, notifications: nextNotifications }
   }
-  const recordAction = (input: AnalyticsActionInput) => {
+  const recordAction = (input) => {
     state = {
       ...state,
       actions: [
@@ -191,7 +188,7 @@ function createAnalyticsAdminLakebedStub() {
       ],
     }
   }
-  const markNotificationRead = (id: string) => {
+  const markNotificationRead = (id) => {
     state = {
       ...state,
       notifications: state.notifications.map((notification) =>

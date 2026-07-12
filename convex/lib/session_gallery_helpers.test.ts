@@ -51,8 +51,8 @@ const realConvexOpenUiHandoffGalleryPreview = {
   previewVersion: 1,
 } as const
 
-const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
-  ({
+function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'SaaS analytics dashboard for product teams',
@@ -67,10 +67,11 @@ const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
     elapsed: 123,
     cost: 0,
     ...overrides,
-  }) as SessionRecord
+  } as SessionRecord
+}
 
-const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
-  ({
+function previewDoc(overrides: Partial<PreviewRecord> = {}): PreviewRecord {
+  return {
     _id: 'preview_gallery' as Id<'previews'>,
     _creationTime: 1,
     sessionId,
@@ -79,12 +80,13 @@ const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
     source: 'generation',
     createdAt: 100,
     ...overrides,
-  }) as PreviewRecord
+  } as PreviewRecord
+}
 
-const generatedModuleDoc = (
+function generatedModuleDoc(
   overrides: Partial<GeneratedModuleRecord> = {},
-): GeneratedModuleRecord =>
-  ({
+): GeneratedModuleRecord {
+  return {
     _id: 'module_gallery' as Id<'generatedModules'>,
     _creationTime: 1,
     sessionId,
@@ -94,10 +96,11 @@ const generatedModuleDoc = (
     createdAt: 100,
     updatedAt: 100,
     ...overrides,
-  }) as GeneratedModuleRecord
+  } as GeneratedModuleRecord
+}
 
-const editDoc = (overrides: Partial<EditRecord> = {}): EditRecord =>
-  ({
+function editDoc(overrides: Partial<EditRecord> = {}): EditRecord {
+  return {
     _id: 'edit_gallery' as Id<'edits'>,
     _creationTime: 1,
     sessionId,
@@ -107,10 +110,11 @@ const editDoc = (overrides: Partial<EditRecord> = {}): EditRecord =>
     afterText: 'Edited gallery headline',
     createdAt: 100,
     ...overrides,
-  }) as EditRecord
+  } as EditRecord
+}
 
-const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
-  ({
+function siteSpecDoc(overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord {
+  return {
     _id: 'site_spec_gallery' as Id<'siteSpecs'>,
     _creationTime: 1,
     sessionId,
@@ -118,9 +122,10 @@ const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
     createdAt: 100,
     updatedAt: 100,
     ...overrides,
-  }) as SiteSpecRecord
+  } as SiteSpecRecord
+}
 
-const ctxFor = (input: {
+function ctxFor(input: {
   sessions?: SessionRecord[]
   previews?: PreviewRecord[]
   generatedModules?: GeneratedModuleRecord[]
@@ -128,7 +133,7 @@ const ctxFor = (input: {
   edits?: EditRecord[]
   translationCache?: TranslationCacheRecord[]
   userId?: string | null
-}) => {
+}) {
   const sessions = [...(input.sessions ?? [])]
   const previews = [...(input.previews ?? [])]
   const generatedModules = [...(input.generatedModules ?? [])]
@@ -138,7 +143,7 @@ const ctxFor = (input: {
   const queriedTables: string[] = []
   const takeLimits: number[] = []
 
-  const rowsFor = (table: string): Array<Record<string, unknown>> => {
+  const rowsFor = (table) => {
     switch (table) {
       case 'sessions':
         return sessions as unknown as Array<Record<string, unknown>>
@@ -158,40 +163,21 @@ const ctxFor = (input: {
   }
 
   const db = {
-    normalizeId: (table: string, value: string) =>
+    normalizeId: (table, value) =>
       table === 'sessions' && sessions.some((row) => row._id === value)
         ? (value as Id<'sessions'>)
         : null,
-    get: async (id: string) =>
+    get: async (id) =>
       [...sessions, ...previews, ...generatedModules, ...siteSpecs].find(
         (row) => row._id === id,
       ) ?? null,
-    query: (
-      table:
-        | 'sessions'
-        | 'previews'
-        | 'generatedModules'
-        | 'siteSpecs'
-        | 'edits'
-        | 'translationCache',
-    ) => {
+    query: (table) => {
       queriedTables.push(table)
       const query = {
-        withIndex: (
-          _indexName:
-            | 'by_public_createdAt'
-            | 'by_sessionId_version'
-            | 'by_sessionId_moduleKey'
-            | 'by_sessionId'
-            | 'by_cacheKey'
-            | 'by_locale',
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -219,9 +205,9 @@ const ctxFor = (input: {
           }
 
           const queryResult = {
-            order: (_direction: 'asc' | 'desc') => queryResult,
+            order: (_direction) => queryResult,
             first: async () => rows()[0] ?? null,
-            take: async (limit: number) => {
+            take: async (limit) => {
               takeLimits.push(limit)
               return rows().slice(0, limit)
             },

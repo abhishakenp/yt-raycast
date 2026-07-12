@@ -22,12 +22,6 @@ vi.mock('@tanstack/react-router', () => ({
     onPointerLeave,
     preload: _preload,
     ...props
-  }: {
-    children: ReactNode
-    onPointerEnter?: PointerEventHandler<HTMLAnchorElement>
-    onPointerLeave?: PointerEventHandler<HTMLAnchorElement>
-    preload?: false | 'intent'
-    [key: string]: unknown
   }) => {
     const anchorProps = { ...props }
     delete anchorProps.params
@@ -59,7 +53,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }: { source: string }) => (
+  GeneratedModulePreview: ({ source }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))
@@ -70,9 +64,9 @@ const controllerState = {
 }
 
 vi.mock('../hooks/useGalleryController', () => ({
-  getGalleryThumbnailUrl: (session: GallerySession) =>
+  getGalleryThumbnailUrl: (session) =>
     `/api/sessions/${encodeURIComponent(session.sessionId)}/gallery-thumb?v=${encodeURIComponent(String(session.previewVersion ?? 0))}`,
-  resolveGalleryThumbnail: async (thumbnailUrl: string) => {
+  resolveGalleryThumbnail: async (thumbnailUrl) => {
     try {
       const response = await fetch(thumbnailUrl, {
         signal: new AbortController().signal,
@@ -88,11 +82,6 @@ vi.mock('../hooks/useGalleryController', () => ({
     limit = 12,
     page = 1,
     search = '',
-  }: {
-    category?: string
-    limit?: number
-    page?: number
-    search?: string
   }) => {
     if (controllerState.loading) {
       return { gallery: undefined, sessions: undefined }
@@ -172,7 +161,7 @@ const baseSessions: GallerySession[] = [
 
 let originalFetch: typeof globalThis.fetch
 
-const resetController = (sessions: GallerySession[] = baseSessions) => {
+function resetController(sessions: GallerySession[] = baseSessions) {
   controllerState.loading = false
   controllerState.sessions = sessions
 }

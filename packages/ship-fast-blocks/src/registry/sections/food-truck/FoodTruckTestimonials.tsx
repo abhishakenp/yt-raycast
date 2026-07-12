@@ -68,7 +68,7 @@ export const FoodTruckTestimonials = defineCapsule({
       ? props.pressLogos
       : ['Eater LA', 'LA Times Food', 'The Infatuation']
 
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={className}
         width="16"

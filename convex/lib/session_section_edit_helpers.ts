@@ -48,11 +48,11 @@ export type ApplySectionEditInput = {
  * homeModule.source, bump previewVersion + updatedAt, record the edit, and
  * (for OpenUI) store the AI capsule.
  */
-export const applySectionEditToArtifacts = async (
+export async function applySectionEditToArtifacts(
   ctx: MutationCtx,
   args: ApplySectionEditInput,
   now = Date.now(),
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   if (session === null) {

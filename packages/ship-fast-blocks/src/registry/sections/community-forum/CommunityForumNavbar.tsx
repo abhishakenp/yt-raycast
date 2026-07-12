@@ -41,7 +41,7 @@ export const CommunityForumNavbar = defineCapsule({
     const navCta = props.navCta ?? 'Get Started'
     const homeTarget = props.homeTarget ?? nav[0]
 
-    const BrandMark = ({ className }: { className?: string }) => (
+    const BrandMark = ({ className }) => (
       <svg
         viewBox="0 0 32 32"
         fill="currentColor"

@@ -23,8 +23,9 @@ export type CapsulePropContext = {
 
 // ─── Schema lookup ──────────────────────────────────────────────────────────
 
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-  Boolean(v) && typeof v === 'object' && !Array.isArray(v)
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return Boolean(v) && typeof v === 'object' && !Array.isArray(v)
+}
 
 /** Keys that are infrastructure, not user-editable content. */
 const RESERVED_KEYS = new Set([
@@ -37,7 +38,7 @@ const RESERVED_KEYS = new Set([
   'updatedAt',
 ])
 
-const lookupSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
+function lookupSchema(capsuleName: string): CapsuleSchemaInfo | null {
   const capsule = allCapsules.find((c) => c.client.name === capsuleName)
   if (!capsule) return null
   const propsSchema = capsule.client.props
@@ -47,17 +48,20 @@ const lookupSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
 }
 
 /** All string prop keys from merged props, excluding reserved/infrastructure keys. */
-const stringPropKeys = (mergedProps: JsonRecord): string[] =>
-  Object.entries(mergedProps)
+function stringPropKeys(mergedProps: JsonRecord): string[] {
+  return Object.entries(mergedProps)
     .filter(
       ([key, value]) =>
         !RESERVED_KEYS.has(key) && typeof value === 'string' && value.trim(),
     )
     .map(([key]) => key)
+}
 
 // ─── Matching ───────────────────────────────────────────────────────────────
 
-const normalizeText = (text: string): string => text.trim().replace(/\s+/g, ' ')
+function normalizeText(text: string): string {
+  return text.trim().replace(/\s+/g, ' ')
+}
 
 /**
  * Match a clicked element's text content to a specific capsule prop.
@@ -68,12 +72,12 @@ const normalizeText = (text: string): string => text.trim().replace(/\s+/g, ' ')
  *
  * Falls back to null when no match is found (caller should use text override path).
  */
-export const matchElementToProp = (
+export function matchElementToProp(
   element: HTMLElement,
   capsuleName: string,
   statementId: string,
   mergedProps: JsonRecord,
-): CapsulePropContext | null => {
+): CapsulePropContext | null {
   const text = normalizeText(element.textContent || '')
   if (!text) return null
 
@@ -141,11 +145,11 @@ export const matchElementToProp = (
  * The caller must provide the current items array for collection edits
  * so we can patch the specific item + field without clobbering siblings.
  */
-export const buildPropPatch = (
+export function buildPropPatch(
   context: CapsulePropContext,
   newValue: string,
   currentData: JsonRecord,
-): Partial<JsonRecord> => {
+): Partial<JsonRecord> {
   if (context.kind === 'scalar') {
     return { [context.propKey]: newValue }
   }

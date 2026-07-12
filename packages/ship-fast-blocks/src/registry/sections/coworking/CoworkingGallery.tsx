@@ -96,7 +96,7 @@ export const CoworkingGallery = defineCapsule({
           ? 'sm:grid-cols-2 lg:grid-cols-4'
           : 'sm:grid-cols-2 lg:grid-cols-3'
 
-    const captionPlate = (caption: string, visible: boolean) =>
+    const captionPlate = (caption, visible) =>
       caption ? (
         <div
           className={cn(

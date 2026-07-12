@@ -111,7 +111,7 @@ export const ElectronicsStoreFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
-    const BoltMark = ({ className }: { className?: string }) => (
+    const BoltMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-foreground text-background',

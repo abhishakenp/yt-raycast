@@ -25,7 +25,7 @@ const MAX_ATTEMPT_WINDOW_MS = 120000
  * Sign-in happens through the global Clerk modal which doesn't re-render React,
  * so we poll for a bounded window rather than relying on a hook dependency.
  */
-export const useReferralCapture = (): void => {
+export function useReferralCapture(): void {
   // 1. Capture the ref param and clean the URL.
   useEffect(() => {
     if (typeof window === 'undefined') return

@@ -485,7 +485,7 @@ export async function convertSections(
   const queue = [...sections]
   const running = new Set<Promise<void>>()
 
-  const processNext = async (): Promise<void> => {
+  const processNext = async () => {
     if (signal?.aborted) return
     const section = queue.shift()
     if (!section) return

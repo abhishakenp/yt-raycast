@@ -54,8 +54,8 @@ const realConvexStaleStreamingFailureGenerationView = {
   preferredExportTarget: 'html',
 } as const
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a generation view',
@@ -67,14 +67,15 @@ const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
     createdAt: 100,
     updatedAt: 120,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
-const taskDoc = (
+function taskDoc(
   id: string,
   order: number | undefined,
   title: string,
-): Doc<'tasks'> =>
-  ({
+): Doc<'tasks'> {
+  return {
     _id: id as Id<'tasks'>,
     _creationTime: 1,
     sessionId,
@@ -84,23 +85,25 @@ const taskDoc = (
     order,
     createdAt: 1,
     updatedAt: 1,
-  }) as Doc<'tasks'>
+  } as Doc<'tasks'>
+}
 
-const eventDoc = (
+function eventDoc(
   id: string,
   createdAt: number,
   message: string,
-): Doc<'generationEvents'> =>
-  ({
+): Doc<'generationEvents'> {
+  return {
     _id: id as Id<'generationEvents'>,
     _creationTime: createdAt,
     sessionId,
     eventType: 'status',
     message,
     createdAt,
-  }) as Doc<'generationEvents'>
+  } as Doc<'generationEvents'>
+}
 
-const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
+function ctxFor(input: Partial<Record<TableName, Row[]>>) {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     exports: [...(input.exports ?? [])],
@@ -113,29 +116,24 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
     aiCapsules: [...(input.aiCapsules ?? [])],
   }
 
-  const rowsFor = (table: TableName) => tables[table]
-  const findById = (id: string) =>
+  const rowsFor = (table) => tables[table]
+  const findById = (id) =>
     Object.values(tables)
       .flat()
       .find((row) => row._id === id) ?? null
 
   const db = {
-    normalizeId: (table: TableName, value: string) =>
+    normalizeId: (table, value) =>
       rowsFor(table).some((row) => row._id === value) ? value : null,
-    get: async (id: string) => findById(id),
-    query: (table: TableName) => {
+    get: async (id) => findById(id),
+    query: (table) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -151,7 +149,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
 
           return builder
         },
-        order: (direction: 'asc' | 'desc') => {
+        order: (direction) => {
           rows = [...rows].sort((left, right) => {
             const leftValue =
               'version' in left
@@ -169,7 +167,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
           return builder
         },
         first: async () => rows[0] ?? null,
-        take: async (limit: number) => rows.slice(0, limit),
+        take: async (limit) => rows.slice(0, limit),
       }
 
       return builder

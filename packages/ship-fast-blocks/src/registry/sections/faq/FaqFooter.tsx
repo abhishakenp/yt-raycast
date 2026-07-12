@@ -90,7 +90,7 @@ export const FaqFooter = defineCapsule({
     const statusLabel = props.statusLabel ?? 'All systems operational'
     const homeTarget = props.homeTarget ?? 'Documentation'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

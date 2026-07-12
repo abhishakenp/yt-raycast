@@ -10,19 +10,21 @@ import type {
 
 export type LogisticsLakebed = LakebedClientRuntime<typeof logisticsLakebed>
 
-export const shipmentItem = ({
+export function shipmentItem({
   destination,
   estimatedDelivery,
   origin,
   status,
   trackingId,
-}: LogisticsShipmentInput): LogisticsShipmentInput => ({
-  destination: destination ?? '',
-  estimatedDelivery: estimatedDelivery ?? '',
-  origin: origin ?? '',
-  status: status ?? '',
-  trackingId,
-})
+}: LogisticsShipmentInput): LogisticsShipmentInput {
+  return {
+    destination: destination ?? '',
+    estimatedDelivery: estimatedDelivery ?? '',
+    origin: origin ?? '',
+    status: status ?? '',
+    trackingId,
+  }
+}
 
 export function useSyncShipmentCatalog(
   lakebed: LogisticsLakebed,
@@ -51,7 +53,7 @@ export function useShipmentTracking(lakebed: LogisticsLakebed) {
   const setTrackingSearch = lakebed.useMutation('setTrackingSearch')
 
   const submitTracking = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (setTrackingSearch.isPending) return
 
@@ -67,7 +69,7 @@ export function useShipmentTracking(lakebed: LogisticsLakebed) {
   )
 
   const chooseTracking = useCallback(
-    (input: LogisticsTrackingInput) => {
+    (input) => {
       if (setTrackingSearch.isPending) return
       void setTrackingSearch(input)
     },

@@ -3,10 +3,10 @@ import { isUnsafePublicPreviewHtml } from './openui_error_html'
 
 type SessionPublicPreviewCtx = Pick<QueryCtx, 'db'>
 
-export const loadPublicPreview = async (
+export async function loadPublicPreview(
   ctx: SessionPublicPreviewCtx,
   lookup: string,
-) => {
+) {
   const sessionId = ctx.db.normalizeId('sessions', lookup)
   const directSession = sessionId === null ? null : await ctx.db.get(sessionId)
   const deployment =

@@ -45,7 +45,7 @@ export const CryptoContactCta = defineCapsule({
           'Enterprise support available',
         ]
 
-    const CheckCircle = ({ className }: { className?: string }) => (
+    const CheckCircle = ({ className }) => (
       <svg
         className={className}
         fill="currentColor"

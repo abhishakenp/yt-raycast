@@ -44,21 +44,23 @@ export type PropertyListingLakebed = LakebedClientRuntime<
   typeof propertyListingLakebed
 >
 
-export const propertyListingCatalogItem = ({
+export function propertyListingCatalogItem({
   address,
   baths,
   beds,
   price,
   sqft,
   tag,
-}: PropertyListingCatalogInput): PropertyListingCatalogInput => ({
-  address,
-  baths,
-  beds,
-  price,
-  sqft,
-  tag: tag ?? '',
-})
+}: PropertyListingCatalogInput): PropertyListingCatalogInput {
+  return {
+    address,
+    baths,
+    beds,
+    price,
+    sqft,
+    tag: tag ?? '',
+  }
+}
 
 export function PropertyListingMutationSpinner({
   className,
@@ -100,7 +102,7 @@ export function usePropertyListingSearch(lakebed: PropertyListingLakebed) {
   const setPropertySearch = lakebed.useMutation('setPropertySearch')
 
   const submitSearch = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (setPropertySearch.isPending) return
 
@@ -115,7 +117,7 @@ export function usePropertyListingSearch(lakebed: PropertyListingLakebed) {
   )
 
   const chooseSearch = useCallback(
-    async (input: PropertyListingSearchInput) => {
+    async (input) => {
       if (setPropertySearch.isPending) return undefined
       return setPropertySearch(input)
     },
@@ -136,7 +138,7 @@ export function usePropertyListingActions(lakebed: PropertyListingLakebed) {
   const selectListing = lakebed.useMutation('selectListing')
 
   const save = useCallback(
-    async (input: PropertyListingSaveInput) => {
+    async (input) => {
       const key = input.address.trim()
       if (!key) return
       await saveListing.run(key, input)
@@ -145,7 +147,7 @@ export function usePropertyListingActions(lakebed: PropertyListingLakebed) {
   )
 
   const select = useCallback(
-    async (input: PropertyListingSelectInput) => {
+    async (input) => {
       if (selectListing.isPending) return
       await selectListing(input)
     },
@@ -386,7 +388,7 @@ export function PropertyListingMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?: string) => {
+    (target?) => {
       setOpen(false)
       go(target)
     },

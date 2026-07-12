@@ -115,15 +115,12 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign(
-        (...args: MutationArgs<TMutation>) => runMutation(...args),
-        {
-          isPending: false,
-          lastError: emptyLastError,
-          pendingCount: 0,
-          reset,
-        },
-      ),
+      Object.assign((...args) => runMutation(...args), {
+        isPending: false,
+        lastError: emptyLastError,
+        pendingCount: 0,
+        reset,
+      }),
     [reset, runMutation],
   )
 
@@ -149,7 +146,7 @@ function createCommerceLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const subscribe = (listener: () => void) => {
+  const subscribe = (listener) => {
     listeners.add(listener)
     return () => {
       listeners.delete(listener)
@@ -160,11 +157,7 @@ function createCommerceLakebedStub() {
     count: state.items.reduce((total, item) => total + item.quantity, 0),
     items: state.items,
   })
-  const syncCatalogProducts = (
-    products: MutationArgs<
-      typeof commerceCartLakebed.mutations.syncCatalog
-    >[0]['products'],
-  ) => {
+  const syncCatalogProducts = (products) => {
     state = {
       ...state,
       products: products.map((product, index) => ({
@@ -179,9 +172,7 @@ function createCommerceLakebedStub() {
       })),
     }
   }
-  const addItem = async (
-    input: MutationArgs<typeof commerceCartLakebed.mutations.addItem>[0],
-  ) => {
+  const addItem = async (input) => {
     await deferred.promise
     const label = input.label.trim() || 'Item'
     const price = input.price ?? ''
@@ -379,12 +370,12 @@ function createCommerceLakebedStub() {
     createdAt: _ca,
     updatedAt: _ua,
     ...item
-  }: TestCartItem): PublicCartItem => item
+  }): PublicCartItem => item
   const publicProduct = ({
     createdAt: _ca,
     updatedAt: _ua,
     ...product
-  }: TestProduct): PublicProduct => product
+  }): PublicProduct => product
 
   return {
     completeAddItem: deferred.complete,

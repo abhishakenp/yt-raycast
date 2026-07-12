@@ -37,7 +37,7 @@ interface GenerateTextRuntime {
 
 // Dynamic import keeps the heavy engine (and its provider SDKs) out of the route's
 // static graph — same pattern as translate-response.
-const loadGenerateTextRuntime = async (): Promise<GenerateTextRuntime> => {
+async function loadGenerateTextRuntime(): Promise<GenerateTextRuntime> {
   const [{ generateText }, { DEFAULT_MODEL }] = await Promise.all([
     import('@ship-fast/engine'),
     import('@ship-fast/engine/model-list.js'),
@@ -64,7 +64,7 @@ function extractCandidates(homeHtml: string): string[] {
   const out: string[] = []
   const seen = new Set<string>()
 
-  const push = (raw: string | null | undefined) => {
+  const push = (raw) => {
     if (!raw) return
     const text = raw.replace(/\s+/g, ' ').trim()
     if (!text || text.length > MAX_CANDIDATE_CHARS) return

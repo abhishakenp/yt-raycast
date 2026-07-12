@@ -45,12 +45,13 @@ const overlayDivs = () =>
     '[data-ship-fast-inspector-overlay]',
   )
 
-const overlayByRole = (role: 'hover' | 'selected') =>
-  document.body.querySelector<HTMLDivElement>(
+function overlayByRole(role: 'hover' | 'selected') {
+  return document.body.querySelector<HTMLDivElement>(
     `[data-ship-fast-inspector-overlay][data-overlay-role="${role}"]`,
   )
+}
 
-const fireMouse = (el: Element, type: 'mousemove' | 'mouseleave') => {
+function fireMouse(el: Element, type: 'mousemove' | 'mouseleave') {
   el.dispatchEvent(
     new MouseEvent(type, {
       bubbles: true,
@@ -60,7 +61,7 @@ const fireMouse = (el: Element, type: 'mousemove' | 'mouseleave') => {
   )
 }
 
-const fireClick = (el: Element) => {
+function fireClick(el: Element) {
   el.dispatchEvent(
     new MouseEvent('click', {
       bubbles: true,
@@ -71,7 +72,7 @@ const fireClick = (el: Element) => {
   )
 }
 
-const fireCancelableClick = (el: Element) => {
+function fireCancelableClick(el: Element) {
   const event = new MouseEvent('click', {
     bubbles: true,
     cancelable: true,

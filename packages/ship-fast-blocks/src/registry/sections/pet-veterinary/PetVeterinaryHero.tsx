@@ -80,7 +80,7 @@ export const PetVeterinaryHero = defineCapsule({
           { title: 'Open 7 days', subtitle: '8AM - 8PM daily' },
         ]
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="20"
@@ -98,7 +98,7 @@ export const PetVeterinaryHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         className={className}
         width="20"
@@ -115,7 +115,7 @@ export const PetVeterinaryHero = defineCapsule({
       </svg>
     )
 
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={className}
         width="20"

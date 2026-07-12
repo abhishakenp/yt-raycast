@@ -47,20 +47,28 @@ export type LakebedAdminTable = {
   fieldTypes: Record<string, string>
 }
 
-const isJsonRecord = (value: unknown): value is JsonRecord =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+function isJsonRecord(value: unknown): value is JsonRecord {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
 
-const toCells = (value: unknown): JsonRecord =>
-  isJsonRecord(value) ? value : { value }
+function toCells(value: unknown): JsonRecord {
+  return isJsonRecord(value) ? value : { value }
+}
 
-const tableId = (capsule: string, field: string) => `${capsule}:${field}`
-const capsuleComponentName = (capsule: string): string =>
-  capsule.split(':', 1)[0] ?? capsule
+function tableId(capsule: string, field: string) {
+  return `${capsule}:${field}`
+}
+function capsuleComponentName(capsule: string): string {
+  return capsule.split(':', 1)[0] ?? capsule
+}
 
-const isStructuralChromeCapsule = (capsule: string): boolean =>
-  /(Navbar|Footer|Header|Topbar|Sidebar)$/.test(capsuleComponentName(capsule))
+function isStructuralChromeCapsule(capsule: string): boolean {
+  return /(Navbar|Footer|Header|Topbar|Sidebar)$/.test(
+    capsuleComponentName(capsule),
+  )
+}
 
-const uniqueColumns = (rows: LakebedAdminRow[]): string[] => {
+function uniqueColumns(rows: LakebedAdminRow[]): string[] {
   const columns = new Set<string>()
   for (const row of rows) {
     for (const key of Object.keys(row.cells)) {
@@ -70,14 +78,13 @@ const uniqueColumns = (rows: LakebedAdminRow[]): string[] => {
   return ['_id', ...columns]
 }
 
-const columnsFromSchema = (schema: LakebedTableSchema): string[] => [
-  '_id',
-  ...Object.keys(schema.fields),
-]
+function columnsFromSchema(schema: LakebedTableSchema): string[] {
+  return ['_id', ...Object.keys(schema.fields)]
+}
 
-const fieldTypesFromSchema = (
+function fieldTypesFromSchema(
   schema: LakebedTableSchema,
-): Record<string, string> => {
+): Record<string, string> {
   const types: Record<string, string> = {}
   for (const [name, field] of Object.entries(schema.fields)) {
     types[name] = field.kind
@@ -85,7 +92,7 @@ const fieldTypesFromSchema = (
   return types
 }
 
-const rowIdFromValue = (value: unknown, fallback: string) => {
+function rowIdFromValue(value: unknown, fallback: string) {
   if (isJsonRecord(value)) {
     const id = value._id ?? value.id
     if (typeof id === 'string' && id.trim()) return id
@@ -93,12 +100,12 @@ const rowIdFromValue = (value: unknown, fallback: string) => {
   return fallback
 }
 
-const rowFromValue = (
+function rowFromValue(
   value: unknown,
   index: number,
   key?: string,
   source?: { capsule: string; field: string },
-): LakebedAdminRow => {
+): LakebedAdminRow {
   const fallbackId = key ?? String(index + 1)
   const id = rowIdFromValue(value, fallbackId)
   return {
@@ -135,10 +142,10 @@ export function createLakebedAdminTables(
   )
 }
 
-const createSchemaTables = (
+function createSchemaTables(
   doc: LakebedSessionDataDoc,
   schema: LakebedSessionSchema,
-): LakebedAdminTable[] => {
+): LakebedAdminTable[] {
   const tables: LakebedAdminTable[] = []
 
   for (const [tableName, tableSchema] of Object.entries(schema)) {
@@ -169,9 +176,9 @@ const createSchemaTables = (
   return tables
 }
 
-const mergeCompatibleTables = (
+function mergeCompatibleTables(
   tables: LakebedAdminTable[],
-): LakebedAdminTable[] => {
+): LakebedAdminTable[] {
   const grouped = new Map<string, LakebedAdminTable[]>()
 
   for (const table of tables) {
@@ -223,8 +230,9 @@ const mergeCompatibleTables = (
   return merged
 }
 
-export const canAddRowsToTable = (table: LakebedAdminTable): boolean =>
-  table.storage !== 'value' && table.sourceCapsules.length === 1
+export function canAddRowsToTable(table: LakebedAdminTable): boolean {
+  return table.storage !== 'value' && table.sourceCapsules.length === 1
+}
 
 export function previewAdminValue(value: unknown): string {
   if (typeof value === 'string') return value

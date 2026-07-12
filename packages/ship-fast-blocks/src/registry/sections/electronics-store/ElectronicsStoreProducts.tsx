@@ -171,7 +171,7 @@ export const ElectronicsStoreProducts = defineCapsule({
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={cn('size-4', className)}
         viewBox="0 0 20 20"

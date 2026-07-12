@@ -67,7 +67,7 @@ export const KidsEducationHero = defineCapsule({
       ? props.trustPoints
       : ['No credit card required', 'Cancel anytime']
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="20"
@@ -101,7 +101,7 @@ export const KidsEducationHero = defineCapsule({
       </svg>
     )
 
-    const CheckCircle = ({ className }: { className?: string }) => (
+    const CheckCircle = ({ className }) => (
       <svg
         className={className}
         width="20"

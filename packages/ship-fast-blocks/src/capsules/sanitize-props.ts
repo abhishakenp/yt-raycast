@@ -37,14 +37,18 @@ type ZodDef = {
 
 type ZodLike = { _zod?: { def?: ZodDef }; parse?: (v: unknown) => unknown }
 
-const defOf = (schema: unknown): ZodDef | undefined =>
-  (schema as ZodLike | undefined)?._zod?.def
+function defOf(schema: unknown): ZodDef | undefined {
+  return (schema as ZodLike | undefined)?._zod?.def
+}
 
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v)
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
 
 type Coerced = { ok: boolean; value: unknown }
-const OK = (value: unknown): Coerced => ({ ok: true, value })
+function OK(value: unknown): Coerced {
+  return { ok: true, value }
+}
 const FAIL: Coerced = { ok: false, value: undefined }
 
 /** Keys whose schema is optional or has a default may be dropped safely. */

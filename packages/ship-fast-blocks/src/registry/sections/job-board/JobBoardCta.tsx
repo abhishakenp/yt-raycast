@@ -44,7 +44,7 @@ export const JobBoardCta = defineCapsule({
     const secondary = props.secondary ?? 'Post a job'
     const note = props.note ?? 'Free for job seekers. No credit card required.'
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         className={className}
         width="16"

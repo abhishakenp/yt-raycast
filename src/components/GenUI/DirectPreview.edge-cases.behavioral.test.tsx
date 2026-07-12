@@ -77,11 +77,11 @@ const { useTextEditMock, useElementInspectorMock } = vi.hoisted(() => ({
 // DirectPreview's wiring without running the full contentEditable machinery.
 vi.mock('@/features/editing/hooks/useTextEdit', () => ({
   useTextEdit: (
-    ref: unknown,
-    editMode: boolean,
-    onTextChange: unknown,
-    onImageChange: unknown,
-    onElementActivate: unknown,
+    ref,
+    editMode,
+    onTextChange,
+    onImageChange,
+    onElementActivate,
   ) => {
     useTextEditMock(
       ref,
@@ -95,11 +95,7 @@ vi.mock('@/features/editing/hooks/useTextEdit', () => ({
 }))
 
 vi.mock('@/features/editing/hooks/useElementInspector', () => ({
-  useElementInspector: (
-    ref: unknown,
-    active: boolean,
-    onSectionSelect: unknown,
-  ) => {
+  useElementInspector: (ref, active, onSectionSelect) => {
     useElementInspectorMock(ref, active, onSectionSelect)
   },
 }))
@@ -144,19 +140,21 @@ const DESKTOP_NAV_CLASS_WITH_INTERMEDIATE = 'hidden items-center gap-8 md:flex'
 // nav detector MUST recognize it just like the intermediate-class variant.
 const DESKTOP_NAV_CLASS_MINIMAL = 'hidden md:flex'
 
-const headerWithDesktopNav = (
+function headerWithDesktopNav(
   navClassName: string = DESKTOP_NAV_CLASS_WITH_INTERMEDIATE,
   extra: React.ReactNode = null,
-): React.ReactNode => (
-  <header>
-    <nav className={navClassName}>
-      <a href="#home">Home</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
-    </nav>
-    {extra}
-  </header>
-)
+): React.ReactNode {
+  return (
+    <header>
+      <nav className={navClassName}>
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      {extra}
+    </header>
+  )
+}
 
 const headerWithExistingHamburger: React.ReactNode = (
   <header>

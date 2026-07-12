@@ -10,24 +10,26 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * bottom note. Theme-token only and renders complete with no props. Use as the
  * footer for any curated-box, recurring-delivery, or membership-kit page.
  */
-const GiftBoxMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M20 12v9H4v-9" />
-    <path d="M2 7h20v5H2z" />
-    <path d="M12 22V7" />
-    <path d="M12 7C12 7 11 3 8.5 3S5 5 5 5s1.5 2 4 2" />
-    <path d="M12 7c0 0 1-4 3.5-4S19 5 19 5s-1.5 2-4 2" />
-  </svg>
-)
+function GiftBoxMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 12v9H4v-9" />
+      <path d="M2 7h20v5H2z" />
+      <path d="M12 22V7" />
+      <path d="M12 7C12 7 11 3 8.5 3S5 5 5 5s1.5 2 4 2" />
+      <path d="M12 7c0 0 1-4 3.5-4S19 5 19 5s-1.5 2-4 2" />
+    </svg>
+  )
+}
 
 export const SubscriptionBoxFooter = defineCapsule({
   name: 'SubscriptionBoxFooter',

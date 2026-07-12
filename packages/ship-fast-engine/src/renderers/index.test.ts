@@ -68,10 +68,12 @@ const siteSpec: SiteSpecProject = {
   ],
 }
 
-const getDocument = (html: string) => parseHTML(html).document
+function getDocument(html: string) {
+  return parseHTML(html).document
+}
 
 /** Assert no Tailwind CDN script is referenced and the local asset is. */
-const expectNoTailwindCdn = (document: Document) => {
+function expectNoTailwindCdn(document: Document) {
   const scripts = [...document.querySelectorAll('script[src]')]
   const srcs = scripts.map((s) => s.getAttribute('src') ?? '')
   expect(srcs.some((src) => /cdn\.tailwindcss\.com/i.test(src))).toBe(false)
@@ -79,7 +81,7 @@ const expectNoTailwindCdn = (document: Document) => {
 }
 
 /** Assert AEO metadata tags are present in the document head. */
-const expectAeoMetadata = (document: Document) => {
+function expectAeoMetadata(document: Document) {
   expect(document.querySelector('meta[name="description"]')).toBeTruthy()
   const robots = document.querySelector('meta[name="robots"]')
   expect(robots?.getAttribute('content')).toBe('index, follow')
@@ -90,12 +92,12 @@ const expectAeoMetadata = (document: Document) => {
 }
 
 /** Assert llms.txt starts with the brand heading. */
-const expectLlmsTxtHasBrand = (content: string) => {
+function expectLlmsTxtHasBrand(content: string) {
   expect(content.split('\n')[0]).toBe('# Preview Brand')
 }
 
 /** Assert robots.txt declares the sitemap URL. */
-const expectRobotsHasSitemap = (content: string) => {
+function expectRobotsHasSitemap(content: string) {
   expect(
     content
       .split('\n')
@@ -104,7 +106,7 @@ const expectRobotsHasSitemap = (content: string) => {
 }
 
 /** Assert sitemap.xml contains the home URL in a <loc> element. */
-const expectSitemapHasHomeUrl = (content: string) => {
+function expectSitemapHasHomeUrl(content: string) {
   const { document } = parseHTML(content)
   const locs = [...document.querySelectorAll('loc')].map((el) => el.textContent)
   expect(locs.some((loc) => loc === 'https://preview.example/')).toBe(true)
@@ -274,13 +276,13 @@ globalThis.__paymentResult = await createPaymentSessions("cart_123", "stripe");
       g.__medusaClient = {
         store: {
           cart: {
-            retrieve: async (cartId: string) => {
+            retrieve: async (cartId) => {
               g.__retrievedCartId = cartId
               return { cart: retrievedCart }
             },
           },
           payment: {
-            initiatePaymentSession: async (cart: unknown, options: unknown) => {
+            initiatePaymentSession: async (cart, options) => {
               g.__initiatedPaymentCart = cart
               g.__initiatedPaymentOptions = options
               return {

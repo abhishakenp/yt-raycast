@@ -43,7 +43,7 @@ export const CrowdfundingNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Back This Project'
     const ctaTarget = props.ctaTarget ?? nav[2] ?? 'Rewards'
 
-    const LeafMark = ({ className }: { className?: string }) => (
+    const LeafMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-full bg-primary text-primary-foreground',

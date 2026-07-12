@@ -78,8 +78,10 @@ export type RfxPaymentInput = {
   type?: string
 }
 
-const clean = (value: unknown) => String(value ?? '').trim()
-const num = (value: unknown, fallback = 0) => {
+function clean(value: unknown) {
+  return String(value ?? '').trim()
+}
+function num(value: unknown, fallback = 0) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : fallback
 }
@@ -308,7 +310,7 @@ export const govPortalLakebed = {
     }),
   },
   mutations: {
-    setLanguage: govPortal.mutation((ctx, lang: string) => {
+    setLanguage: govPortal.mutation((ctx, lang) => {
       const next = lang === 'hi' ? 'hi' : 'en'
       const current = ctx.db.uiState.orderBy('createdAt').all().at(0)
       if (current) {
@@ -318,7 +320,7 @@ export const govPortalLakebed = {
       }
       return { lang: next }
     }),
-    submitGrievance: govPortal.mutation((ctx, input: GrievanceInput) => {
+    submitGrievance: govPortal.mutation((ctx, input) => {
       const subject = clean(input.subject)
       const name = clean(input.name)
       if (!name || !subject) return ctx.db.grievances.orderBy('createdAt').all()
@@ -335,7 +337,7 @@ export const govPortalLakebed = {
 
       return ctx.db.grievances.orderBy('createdAt', 'desc').all()
     }),
-    registerVendor: govPortal.mutation((ctx, input: VendorInput) => {
+    registerVendor: govPortal.mutation((ctx, input) => {
       const company = clean(input.company)
       if (!company) return ctx.db.vendors.orderBy('createdAt').all()
 
@@ -363,7 +365,7 @@ export const govPortalLakebed = {
 
       return ctx.db.vendors.orderBy('createdAt', 'desc').all()
     }),
-    submitBid: govPortal.mutation((ctx, input: BidInput) => {
+    submitBid: govPortal.mutation((ctx, input) => {
       const tenderNit = clean(input.tenderNit)
       if (!tenderNit) return ctx.db.bids.orderBy('createdAt').all()
 
@@ -377,7 +379,7 @@ export const govPortalLakebed = {
 
       return ctx.db.bids.orderBy('createdAt', 'desc').all()
     }),
-    createRfxPayment: govPortal.mutation((ctx, input: RfxPaymentInput) => {
+    createRfxPayment: govPortal.mutation((ctx, input) => {
       const rfxNo = clean(input.rfxNo)
       if (!rfxNo) return ctx.db.rfxPayments.orderBy('createdAt').all()
 
@@ -392,7 +394,7 @@ export const govPortalLakebed = {
 
       return ctx.db.rfxPayments.orderBy('createdAt', 'desc').all()
     }),
-    markRfxPaid: govPortal.mutation((ctx, rfxNo: string) => {
+    markRfxPaid: govPortal.mutation((ctx, rfxNo) => {
       const ref = clean(rfxNo)
       const payment = ctx.db.rfxPayments
         .where('rfxNo', ref)

@@ -4,9 +4,8 @@ import { getRuntimeConvexUrl } from '../env/convex-runtime'
 
 const DEFAULT_CONVEX_HTTP_TIMEOUT_MS = 5000
 
-const createTimeoutFetch =
-  (timeoutMs: number): typeof fetch =>
-  async (input, init) => {
+function createTimeoutFetch(timeoutMs: number): typeof fetch {
+  return async (input, init) => {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), timeoutMs)
 
@@ -16,10 +15,12 @@ const createTimeoutFetch =
       clearTimeout(timeout)
     }
   }
+}
 
-export const createRuntimeConvexHttpClient = (
+export function createRuntimeConvexHttpClient(
   timeoutMs = DEFAULT_CONVEX_HTTP_TIMEOUT_MS,
-): ConvexHttpClient =>
-  new ConvexHttpClient(getRuntimeConvexUrl(), {
+): ConvexHttpClient {
+  return new ConvexHttpClient(getRuntimeConvexUrl(), {
     fetch: createTimeoutFetch(timeoutMs),
   })
+}

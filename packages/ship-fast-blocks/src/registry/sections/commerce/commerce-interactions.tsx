@@ -67,19 +67,21 @@ type CommerceCatalogProduct = NonNullable<
   ReturnType<typeof commerceCartLakebed.queries.productCatalog>
 >[number]
 
-export const commerceProduct = ({
+export function commerceProduct({
   imageAlt,
   itemKey,
   label,
   price,
   subtitle,
-}: CommerceCatalogProductInput): CommerceCatalogProductInput => ({
-  imageAlt: imageAlt ?? '',
-  itemKey,
-  label,
-  price: price ?? '',
-  subtitle: subtitle ?? '',
-})
+}: CommerceCatalogProductInput): CommerceCatalogProductInput {
+  return {
+    imageAlt: imageAlt ?? '',
+    itemKey,
+    label,
+    price: price ?? '',
+    subtitle: subtitle ?? '',
+  }
+}
 
 export function CommerceMutationSpinner({ className }: { className?: string }) {
   return (
@@ -176,7 +178,7 @@ export function useCommerceSearch(lakebed: CommerceLakebed) {
   }, [setCommerceSearch])
 
   const chooseSearch = useCallback(
-    (input: CommerceSearchInput) => {
+    (input) => {
       if (!input.selectedLabel) {
         latestQueryRef.current = input
         flushLatestQuery()
@@ -221,10 +223,11 @@ export function useCommerceFilteredProducts<TProduct>(
   }, [products, query, searchableText, selectedLabel])
 }
 
-const itemQuantity = (item: CommerceCartItem) =>
-  typeof item.quantity === 'number' && Number.isFinite(item.quantity)
+function itemQuantity(item: CommerceCartItem) {
+  return typeof item.quantity === 'number' && Number.isFinite(item.quantity)
     ? Math.max(1, Math.floor(item.quantity))
     : 1
+}
 
 function CommerceCartItemRow({
   item,
@@ -547,7 +550,7 @@ export function CommerceMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?: string) => {
+  const navigate = (target?) => {
     setOpen(false)
     go(target)
   }

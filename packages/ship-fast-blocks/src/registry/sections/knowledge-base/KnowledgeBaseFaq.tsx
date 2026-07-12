@@ -64,7 +64,7 @@ export const KnowledgeBaseFaq = defineCapsule({
           },
         ]
 
-    const ChevronDown = ({ className }: { className?: string }) => (
+    const ChevronDown = ({ className }) => (
       <svg
         className={className}
         width="20"

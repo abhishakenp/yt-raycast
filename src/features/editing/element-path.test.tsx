@@ -15,7 +15,7 @@ const buildDOM = () => {
   return root
 }
 
-const queryHTMLElement = (root: HTMLElement, selector: string) => {
+function queryHTMLElement(root: HTMLElement, selector: string) {
   const element = root.querySelector(selector)
   if (!(element instanceof HTMLElement)) {
     throw new Error(`Expected ${selector} to match an HTMLElement`)

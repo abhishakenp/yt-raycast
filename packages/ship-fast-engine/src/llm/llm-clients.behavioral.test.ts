@@ -257,7 +257,7 @@ describe('groq client: streaming (synthesized chunks)', () => {
     )
     const tokens: Array<{ piece: string; acc: string }> = []
     const r = await groqStream('q', {
-      onToken: (piece: string, acc: string) => tokens.push({ piece, acc }),
+      onToken: (piece, acc) => tokens.push({ piece, acc }),
     })
     expect(r.content).toBe(content)
     expect(tokens.length).toBeGreaterThan(1)
@@ -557,7 +557,7 @@ describe('claude client: request + streaming', () => {
 
     const chunks: string[] = []
     const r = await claudeStream('q', {
-      onChunk: (c: string) => chunks.push(c),
+      onChunk: (c) => chunks.push(c),
     })
     expect(r).toBe('Hello')
     expect(chunks).toEqual(['Hel', 'lo'])
@@ -648,7 +648,7 @@ describe('translator: language detection + HTML translation', () => {
   })
 
   // Helper: build a Groq chat completion Response with given content string
-  const groqResponse = (content: string) =>
+  const groqResponse = (content) =>
     new Response(
       JSON.stringify({
         choices: [{ message: { content } }],

@@ -23,13 +23,13 @@ import { describe, expect, it } from 'vitest'
  * a component is added/removed from one but not the other.
  */
 describe('library ↔ export-manifest sync', () => {
-  const libraryComponentNames = (): Set<string> => {
+  const libraryComponentNames = () => {
     const schema = library.toJSONSchema()
     const defs = (schema.$defs ?? {}) as Record<string, unknown>
     return new Set(Object.keys(defs))
   }
 
-  const manifestComponentNames = (): Set<string> => {
+  const manifestComponentNames = () => {
     if (reactExportSourcesEncoding !== 'br+base64') {
       throw new Error(
         `Unexpected manifest encoding: ${reactExportSourcesEncoding}`,

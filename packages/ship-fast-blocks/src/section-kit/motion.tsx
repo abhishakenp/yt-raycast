@@ -37,13 +37,14 @@ const useIsoLayoutEffect =
 
 const REVEAL_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
-const finiteOr = (value: unknown, fallback: number): number =>
-  Number.isFinite(value) ? Number(value) : fallback
+function finiteOr(value: unknown, fallback: number): number {
+  return Number.isFinite(value) ? Number(value) : fallback
+}
 
 /** True only on the client when IntersectionObserver exists and the user has
  *  not requested reduced motion — the gate for every fancy behavior. Flips
  *  before first paint (layout effect) so there is no visible mode switch. */
-const useMotionArmed = (): boolean => {
+function useMotionArmed(): boolean {
   const [armed, setArmed] = useState(false)
   useIsoLayoutEffect(() => {
     if (typeof window === 'undefined') return
@@ -68,7 +69,7 @@ const playedEntrances = new Set<string>()
  *  'static' = SSR / reduced motion / no IO (content plain and visible),
  *  'hidden' = armed client, waiting to intersect, 'shown' = animating in.
  *  A watchdog force-reveals if the observer never reports at all. */
-const useRevealPhase = (ref: RefObject<HTMLElement | null>): RevealPhase => {
+function useRevealPhase(ref: RefObject<HTMLElement | null>): RevealPhase {
   const [phase, setPhase] = useState<RevealPhase>('static')
 
   useIsoLayoutEffect(() => {
@@ -254,7 +255,7 @@ export function Tilt(props: {
   const max = finiteOr(props.max, 7)
   const perspective = finiteOr(props.perspective, 1200)
 
-  const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const handleMove = (event) => {
     if (event.pointerType === 'touch') return
     const el = ref.current
     if (!el) return
@@ -455,7 +456,7 @@ export function Magnetic(props: {
   const springX = useSpring(x, { stiffness: 260, damping: 18 })
   const springY = useSpring(y, { stiffness: 260, damping: 18 })
 
-  const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const handleMove = (event) => {
     if (event.pointerType === 'touch') return
     const el = ref.current
     if (!el) return
@@ -504,7 +505,7 @@ export function Marquee(props: {
   const duration = finiteOr(props.duration, 36)
   const gap = finiteOr(props.gap, 24)
 
-  const copy = (hidden: boolean) => (
+  const copy = (hidden) => (
     <div
       aria-hidden={hidden || undefined}
       className="flex shrink-0 items-stretch"
@@ -576,7 +577,7 @@ export function CountUp(props: {
     const decimals = digits.includes('.')
       ? (digits.split('.')[1]?.length ?? 0)
       : 0
-    const format = (value: number) =>
+    const format = (value) =>
       value.toLocaleString('en-US', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
@@ -634,7 +635,7 @@ export function Spotlight(props: {
   const [active, setActive] = useState(false)
   const radius = finiteOr(props.radius, 260)
 
-  const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const handleMove = (event) => {
     if (event.pointerType === 'touch') return
     const el = ref.current
     if (!el) return

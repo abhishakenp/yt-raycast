@@ -113,7 +113,7 @@ export const DentalFooter = defineCapsule({
         <path d="M14.828 14.828a4 4 0 0 1-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
       </svg>
     )
-    const LogoBadge = ({ className }: { className?: string }) => (
+    const LogoBadge = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-xl bg-primary text-primary-foreground',
@@ -124,7 +124,7 @@ export const DentalFooter = defineCapsule({
         <ToothMark />
       </span>
     )
-    const PhoneIcon = ({ className }: { className?: string }) => (
+    const PhoneIcon = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

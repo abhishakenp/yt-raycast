@@ -73,7 +73,7 @@ export const CryptoHero = defineCapsule({
       supply: 'Circulating: 200M NEX',
     }
 
-    const CheckCircle = ({ className }: { className?: string }) => (
+    const CheckCircle = ({ className }) => (
       <svg
         className={className}
         fill="currentColor"

@@ -86,7 +86,7 @@ export const CloudInfraFooter = defineCapsule({
       ? props.socials
       : ['Twitter', 'GitHub', 'Discord']
     const homeTarget = props.homeTarget ?? 'Features'
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

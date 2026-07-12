@@ -23,50 +23,59 @@ export type MedusaContainerProvision = {
   databaseName: string
 }
 
-const slugify = (value: string): string =>
-  value
+function slugify(value: string): string {
+  return value
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
 
-const dbToken = (value: string): string =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '') || 'session'
+function dbToken(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'session'
+  )
+}
 
-const shortToken = (value: string, length = 12): string =>
-  slugify(value)
-    .slice(0, length)
-    .replace(/[_-]+$/, '') || 'session'
+function shortToken(value: string, length = 12): string {
+  return (
+    slugify(value)
+      .slice(0, length)
+      .replace(/[_-]+$/, '') || 'session'
+  )
+}
 
-const generateSecret = (length = 32): string =>
-  crypto
+function generateSecret(length = 32): string {
+  return crypto
     .randomBytes(Math.ceil(length / 2))
     .toString('hex')
     .slice(0, length)
+}
 
-const isPortFree = (port: number): Promise<boolean> =>
-  new Promise((resolve) => {
+function isPortFree(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
     const server = net.createServer()
     server.unref()
     server.once('error', () => resolve(false))
     server.once('listening', () => server.close(() => resolve(true)))
     server.listen({ port, host: '0.0.0.0' })
   })
+}
 
-const findAvailablePort = async (
+async function findAvailablePort(
   startPort = PORT_RANGE_START,
-): Promise<number> => {
+): Promise<number> {
   for (let port = startPort; port < 65535; port += 1) {
     if (await isPortFree(port)) return port
   }
   throw new Error(`No available port found starting at ${startPort}`)
 }
 
-const ensureSharedInfra = async (): Promise<void> => {
+async function ensureSharedInfra(): Promise<void> {
   try {
     await execAsync(`docker inspect ${SHARED_POSTGRES_CONTAINER}`)
   } catch {
@@ -76,16 +85,16 @@ const ensureSharedInfra = async (): Promise<void> => {
   }
 }
 
-const createSessionDatabase = async (dbName: string): Promise<void> => {
+async function createSessionDatabase(dbName: string): Promise<void> {
   await execAsync(
     `docker exec ${SHARED_POSTGRES_CONTAINER} psql -U ${SHARED_DB_USER} -c "CREATE DATABASE ${dbName};"`,
   )
 }
 
-const waitForHealth = async (
+async function waitForHealth(
   backendUrl: string,
   fetchImpl: typeof fetch,
-): Promise<boolean> => {
+): Promise<boolean> {
   const deadline = Date.now() + HEALTH_CHECK_TIMEOUT_MS
   while (Date.now() < deadline) {
     try {
@@ -115,7 +124,7 @@ const waitForHealth = async (
  *
  * Returns the URLs the caller should use to talk to this tenant's Medusa.
  */
-export const provisionSessionMedusaContainer = async (
+export async function provisionSessionMedusaContainer(
   sessionId: string,
   options: {
     fetch?: typeof fetch
@@ -125,7 +134,7 @@ export const provisionSessionMedusaContainer = async (
     adminCors?: string
     authCors?: string
   } = {},
-): Promise<MedusaContainerProvision> => {
+): Promise<MedusaContainerProvision> {
   await ensureSharedInfra()
 
   const token = shortToken(sessionId, 16)
@@ -216,9 +225,9 @@ export const provisionSessionMedusaContainer = async (
  * backend URL if it is, undefined otherwise. Used to reuse an existing
  * container on re-provision instead of spinning up a new one.
  */
-export const findRunningSessionContainer = async (
+export async function findRunningSessionContainer(
   sessionId: string,
-): Promise<MedusaContainerProvision | undefined> => {
+): Promise<MedusaContainerProvision | undefined> {
   const token = shortToken(sessionId, 16)
   const containerName = `medusa-session-${token}`
 

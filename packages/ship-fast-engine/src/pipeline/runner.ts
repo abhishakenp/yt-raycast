@@ -18,17 +18,19 @@ interface SessionCtx {
   setCost?: (cost: number) => void
 }
 
-const log = (sessionCtx: SessionCtx | null | undefined) => (msg: string) => {
-  console.log(msg)
-  sessionCtx?.broadcast?.({ type: 'log', message: msg })
+function log(sessionCtx: SessionCtx | null | undefined) {
+  return (msg) => {
+    console.log(msg)
+    sessionCtx?.broadcast?.({ type: 'log', message: msg })
+  }
 }
 
-const status =
-  (sessionCtx: SessionCtx | null | undefined) =>
-  (message: string, phase: string) => {
+function status(sessionCtx: SessionCtx | null | undefined) {
+  return (message, phase) => {
     console.log(`  [${phase}] ${message}`)
     sessionCtx?.broadcast?.({ type: 'status', message, phase })
   }
+}
 
 export async function runAll({
   prompt,

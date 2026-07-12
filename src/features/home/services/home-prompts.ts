@@ -21,4 +21,6 @@ export const examplePrompts = [
   },
 ] as const
 
-export const normalizePromptDraft = (value: string): string => value.trim()
+export function normalizePromptDraft(value: string): string {
+  return value.trim()
+}

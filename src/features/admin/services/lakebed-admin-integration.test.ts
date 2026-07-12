@@ -13,7 +13,7 @@ const modules = import.meta.glob('../../../../convex/**/*.ts')
 const convexApi = api as any
 const ownerSecret = 'lakebed-owner-secret'
 
-const createSession = async (t: any, anonymousClientId: string) => {
+async function createSession(t: any, anonymousClientId: string) {
   const result = await t.mutation(api.sessions.create, {
     anonymousClientId,
     anonymousOwnerSecret: ownerSecret,

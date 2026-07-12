@@ -24,23 +24,25 @@ import { restaurantLakebed } from './restaurant-lakebed.ts'
  * trattorias, steak houses, sushi counters, or any dining brand where
  * reservations matter. Renders fully with no props.
  */
-const ForkKnifeMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M6 3v6a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3" />
-    <path d="M8 11v10" />
-    <path d="M16 3c-1.66 0-3 2.24-3 5s1.34 5 3 5" />
-    <path d="M16 3v18" />
-  </svg>
-)
+function ForkKnifeMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M6 3v6a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3" />
+      <path d="M8 11v10" />
+      <path d="M16 3c-1.66 0-3 2.24-3 5s1.34 5 3 5" />
+      <path d="M16 3v18" />
+    </svg>
+  )
+}
 
 export const RestaurantNavbar = defineCapsule({
   name: 'RestaurantNavbar',

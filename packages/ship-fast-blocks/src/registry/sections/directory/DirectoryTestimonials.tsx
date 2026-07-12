@@ -68,7 +68,7 @@ export const DirectoryTestimonials = defineCapsule({
               'Professional headshot of a young man with curly hair and friendly expression',
           },
         ]
-    const Star = ({ className }: { className?: string }) => (
+    const Star = ({ className }) => (
       <svg
         className={className}
         fill="currentColor"

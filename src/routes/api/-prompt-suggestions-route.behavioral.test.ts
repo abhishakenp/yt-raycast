@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+  createFileRoute: (path) => (options) => ({ options, path }),
 }))
 
 type RouteWithHandlers = {
@@ -16,7 +16,7 @@ type RouteWithHandlers = {
   }
 }
 
-const importRoute = async (): Promise<RouteWithHandlers> => {
+async function importRoute(): Promise<RouteWithHandlers> {
   const mod = await import('./prompt-suggestions')
   return mod.Route as unknown as RouteWithHandlers
 }
@@ -68,7 +68,7 @@ describe('prompt suggestions API route', () => {
     expect(response.status).toBe(200)
     expect(body.suggestions).toHaveLength(4)
     expect(
-      body.suggestions.every((suggestion: string) =>
+      body.suggestions.every((suggestion) =>
         suggestion.startsWith(realConvexPromptPartial),
       ),
     ).toBe(true)

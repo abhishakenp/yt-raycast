@@ -61,7 +61,7 @@ export const MembershipClubFooter = defineCapsule({
       ? props.legal
       : ['Privacy', 'Terms', 'Code of Conduct']
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

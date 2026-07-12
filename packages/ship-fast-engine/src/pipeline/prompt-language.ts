@@ -7,23 +7,24 @@ import {
 
 const DEFAULT_LANG = 'en'
 
-const normalizePreferredLanguage = (value: string | undefined) => {
+function normalizePreferredLanguage(value: string | undefined) {
   const requested = String(value || '')
     .trim()
     .toLowerCase()
   return requested || DEFAULT_LANG
 }
 
-const baseDisplayName = (languageMode: { name?: string; code?: string }) =>
-  String(languageMode?.name || languageMode?.code || 'Language')
+function baseDisplayName(languageMode: { name?: string; code?: string }) {
+  return String(languageMode?.name || languageMode?.code || 'Language')
     .replace(/\s*\(Roman\)\s*$/i, '')
     .replace(/\s*\+\s*English\s*$/i, '')
     .trim()
+}
 
-export const withLanguageEnforcementBlock = (
+export function withLanguageEnforcementBlock(
   prompt: string,
   languageMode: { name?: string; code?: string },
-) => {
+) {
   const raw = String(prompt ?? '').trim()
   const code = normalizePreferredLanguage(languageMode?.code)
   const name = baseDisplayName(languageMode)
@@ -53,7 +54,7 @@ ${quality}
 ${placeholders}`
 }
 
-export const resolvePipelineLanguage = async ({
+export async function resolvePipelineLanguage({
   prompt,
   preferredLanguage,
   workspace,
@@ -61,7 +62,7 @@ export const resolvePipelineLanguage = async ({
   prompt?: string
   preferredLanguage?: string
   workspace?: string
-} = {}) => {
+} = {}) {
   const normalizedPrompt = prompt || ''
   const workspacePreferred =
     preferredLanguage || getWorkspacePreferredLanguage(workspace)

@@ -4,7 +4,7 @@ interface MessageEventLike {
 
 type MessageHandler = ((event: MessageEventLike) => void) | null
 
-export const ensureMessageChannel = (): void => {
+export function ensureMessageChannel(): void {
   if (typeof globalThis.MessageChannel !== 'undefined') return
 
   class ScheduledMessagePort {

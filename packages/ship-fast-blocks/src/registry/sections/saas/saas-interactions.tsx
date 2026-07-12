@@ -51,25 +51,30 @@ type SaasAuthSessionSummary = ReturnType<
 
 const demoIntentPattern = /\b(book|demo|sales|contact|call|enterprise)\b/i
 
-const initialsFromName = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('') || 'ME'
+function initialsFromName(name: string) {
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || 'ME'
+  )
+}
 
-export const saasPlan = ({
+export function saasPlan({
   name,
   period,
   price,
   summary,
-}: SaasPlanInput): SaasPlanInput => ({
-  name,
-  period: period ?? '',
-  price: price ?? '',
-  summary: summary ?? '',
-})
+}: SaasPlanInput): SaasPlanInput {
+  return {
+    name,
+    period: period ?? '',
+    price: price ?? '',
+    summary: summary ?? '',
+  }
+}
 
 export function SaasMutationSpinner({ className }: { className?: string }) {
   return (
@@ -491,7 +496,7 @@ export function SaasMobileMenu({
   })
 
   const navigate = useCallback(
-    (target?: string) => {
+    (target?) => {
       setOpen(false)
       go(target)
     },

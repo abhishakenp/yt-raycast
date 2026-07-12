@@ -14,22 +14,24 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * technical product landing page. Renders fully with no props via baked-in
  * StackForge defaults. Theme-tokened throughout; no hardcoded colors.
  */
-const LogoMark = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M12 2 3 7l9 5 9-5-9-5Z" />
-    <path d="m3 12 9 5 9-5" />
-    <path d="m3 17 9 5 9-5" />
-  </svg>
-)
+function LogoMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 2 3 7l9 5 9-5-9-5Z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 17 9 5 9-5" />
+    </svg>
+  )
+}
 
 export const DocsFooter = defineCapsule({
   name: 'DocsFooter',

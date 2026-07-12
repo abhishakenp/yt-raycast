@@ -163,15 +163,18 @@ export type CapsuleLibraryInput = {
   root?: string
 }
 
-const isJsonRecord = (value: unknown): value is JsonRecord =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+function isJsonRecord(value: unknown): value is JsonRecord {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
 
-const defaultCapsuleDataKey = (
+function defaultCapsuleDataKey(
   capsuleName: string,
   statementId: string | undefined,
-) => (statementId ? `${capsuleName}:${statementId}` : capsuleName)
+) {
+  return statementId ? `${capsuleName}:${statementId}` : capsuleName
+}
 
-const sanitizeGeneratedCapsuleOutput = (output: ReactNode): ReactNode => {
+function sanitizeGeneratedCapsuleOutput(output: ReactNode): ReactNode {
   if (!isValidElement(output)) return output
 
   const element = output as ReactElement<Record<string, unknown>>
@@ -213,11 +216,11 @@ const sanitizeGeneratedCapsuleOutput = (output: ReactNode): ReactNode => {
  * set). If it's a fragment, string, array, or null, we wrap it in a `<div>`
  * carrying the attrs so the marker is always present on a stable root.
  */
-const stampCapsuleAttrs = (
+function stampCapsuleAttrs(
   output: ReactNode,
   capsuleName: string,
   statementId: string | undefined,
-): ReactNode => {
+): ReactNode {
   const safeOutput = sanitizeGeneratedCapsuleOutput(output)
   if (isValidElement(safeOutput)) {
     const element = safeOutput as ReactElement<Record<string, unknown>>
@@ -238,49 +241,38 @@ const stampCapsuleAttrs = (
   )
 }
 
-const createDefaultCapsuleLakebed = <
-  TProps extends JsonRecord,
->(): CapsuleLakebedConfig<TProps, undefined, JsonRecord> => ({
-  queries: {
-    sectionData: query((_ctx) => _ctx.data),
-    sectionProps: query((_ctx) => ({
-      ...(isJsonRecord(_ctx.props) ? _ctx.props : {}),
-      ..._ctx.data,
-    })),
-  },
-  mutations: {
-    patchSectionProps: mutation((_ctx, patch: JsonRecord) =>
-      _ctx.setData(isJsonRecord(patch) ? patch : {}),
-    ),
-    replaceSectionProps: mutation((_ctx, data: JsonRecord) =>
-      _ctx.replaceData(isJsonRecord(data) ? data : {}),
-    ),
-    setProp: mutation((_ctx, key: string, value: unknown) =>
-      _ctx.setData({ [key]: value }),
-    ),
-    appendItem: mutation((_ctx, key: string, value: unknown) => {
-      const props: JsonRecord = isJsonRecord(_ctx.props) ? _ctx.props : {}
-      const currentValue = _ctx.data[key] ?? props[key]
-      const currentItems = Array.isArray(currentValue) ? currentValue : []
-      return _ctx.setData({ [key]: [...currentItems, value] })
-    }),
-  },
-})
+function createDefaultCapsuleLakebed(): CapsuleLakebedConfig<
+  TProps,
+  undefined,
+  JsonRecord
+> {
+  return {
+    queries: {
+      sectionData: query((_ctx) => _ctx.data),
+      sectionProps: query((_ctx) => ({
+        ...(isJsonRecord(_ctx.props) ? _ctx.props : {}),
+        ..._ctx.data,
+      })),
+    },
+    mutations: {
+      patchSectionProps: mutation((_ctx, patch) =>
+        _ctx.setData(isJsonRecord(patch) ? patch : {}),
+      ),
+      replaceSectionProps: mutation((_ctx, data) =>
+        _ctx.replaceData(isJsonRecord(data) ? data : {}),
+      ),
+      setProp: mutation((_ctx, key, value) => _ctx.setData({ [key]: value })),
+      appendItem: mutation((_ctx, key, value) => {
+        const props: JsonRecord = isJsonRecord(_ctx.props) ? _ctx.props : {}
+        const currentValue = _ctx.data[key] ?? props[key]
+        const currentItems = Array.isArray(currentValue) ? currentValue : []
+        return _ctx.setData({ [key]: [...currentItems, value] })
+      }),
+    },
+  }
+}
 
-export const defineCapsule = <
-  TProps extends $ZodObject,
-  TSchema extends LakebedSessionSchema | undefined =
-    | LakebedSessionSchema
-    | undefined,
-  TData extends JsonRecord = LakebedDataFromSchema<TSchema>,
-  TQueries extends LakebedQueryMap<z.infer<TProps>, TData> = LakebedQueryMap<
-    z.infer<TProps>,
-    TData
-  >,
-  TMutations extends LakebedMutationMap<z.infer<TProps>, TData> =
-    LakebedMutationMap<z.infer<TProps>, TData>,
-  TClientResult = unknown,
->(
+export function defineCapsule(
   input: DefineCapsuleInput<
     TProps,
     TSchema,
@@ -300,7 +292,7 @@ export const defineCapsule = <
     TClientResult
   >,
   TClientResult
-> => {
+> {
   const { component, lakebed, ...openUIInput } = input
   const defaultLakebed = createDefaultCapsuleLakebed<z.infer<TProps>>()
   const effectiveLakebed = (
@@ -383,18 +375,11 @@ export const defineCapsule = <
  * `defineCapsule` applies internally; extracted here so it can be reused to
  * add Lakebed client wiring to an arbitrary component renderer.
  */
-export const withLakebed = <
-  TProps extends JsonRecord = JsonRecord,
-  TLakebed extends
-    | CapsuleLakebedConfig<TProps, any, any, any, any, any>
-    | undefined =
-    | CapsuleLakebedConfig<TProps, any, any, any, any, any>
-    | undefined,
->(
+export function withLakebed(
   renderer: CapsuleComponentRenderer<TProps, TLakebed>,
   lakebed: TLakebed,
   capsuleName: string,
-): CapsuleComponentRenderer<TProps, TLakebed> => {
+): CapsuleComponentRenderer<TProps, TLakebed> {
   const defaultLakebed = createDefaultCapsuleLakebed<TProps>()
   const effectiveLakebed = (
     lakebed
@@ -425,26 +410,33 @@ export const withLakebed = <
     }) as ReturnType<CapsuleComponentRenderer<TProps, TLakebed>>
 }
 
-export const isCapsule = (value: unknown): value is ShipFastCapsule =>
-  !!value &&
-  typeof value === 'object' &&
-  'client' in value &&
-  isDefinedComponent(value.client)
+export function isCapsule(value: unknown): value is ShipFastCapsule {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'client' in value &&
+    isDefinedComponent(value.client)
+  )
+}
 
-export const isDefinedComponent = (
+export function isDefinedComponent(
   value: unknown,
-): value is OpenUI.DefinedComponent<any> =>
-  !!value &&
-  typeof value === 'object' &&
-  'name' in value &&
-  'props' in value &&
-  'component' in value
+): value is OpenUI.DefinedComponent<any> {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'name' in value &&
+    'props' in value &&
+    'component' in value
+  )
+}
 
-export const createLibrary = ({
+export function createLibrary({
   capsules,
   root,
-}: CapsuleLibraryInput): OpenUI.Library =>
-  createOpenUILibrary({
+}: CapsuleLibraryInput): OpenUI.Library {
+  return createOpenUILibrary({
     components: capsules.map((capsule) => capsule.client),
     root: root ?? capsules[0]?.client.name,
   })
+}

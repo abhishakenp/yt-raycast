@@ -1,7 +1,4 @@
-import {
-  Debouncer,
-  type DebouncerComponentApi,
-} from '@ikhrustalev/convex-debouncer'
+import { Debouncer } from '@ikhrustalev/convex-debouncer'
 import { v } from 'convex/values'
 import { components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
@@ -81,6 +78,7 @@ import {
 import {
   createSessionExport,
   ensureExportArtifactBuild,
+  exportGeneratorRevision,
   loadOwnedExportArtifactDownload,
   loadOwnedExportBuildInput,
   loadOwnedExportForGitHubPush,
@@ -186,62 +184,67 @@ import {
 } from './lib/session_validators'
 import { loadSessionWorkspace } from './lib/session_workspace_helpers'
 
-const debouncerComponent =
-  components.debouncer as unknown as DebouncerComponentApi
-
-const editedSessionExportDebouncer = new Debouncer(debouncerComponent, {
+const editedSessionExportDebouncer = new Debouncer(components.debouncer, {
   delay: 10_000,
   mode: 'sliding',
 })
 
-const canReadSessionById = async (
+type CanReadSessionById = (
   ctx: Pick<QueryCtx, 'auth' | 'db'>,
   sessionId: Id<'sessions'>,
-): Promise<boolean> => {
+) => Promise<boolean>
+
+const canReadSessionById: CanReadSessionById = async (ctx, sessionId) => {
   const session = await ctx.db.get(sessionId)
   return session !== null && (await canReadPrivateSession(ctx, session))
 }
 
-const scheduleEditedSessionExportAutomation = async (
+type ScheduleEditedSessionExportAutomation = (
   ctx: MutationCtx,
   args: {
     sessionId: Id<'sessions'>
     previewVersion: number
   },
-) => {
-  const rebuildArgs = {
-    sessionId: args.sessionId,
-    previewVersion: args.previewVersion,
+) => Promise<void>
+
+const scheduleEditedSessionExportAutomation: ScheduleEditedSessionExportAutomation =
+  async (ctx, args) => {
+    const rebuildArgs = {
+      sessionId: args.sessionId,
+      previewVersion: args.previewVersion,
+    }
+
+    await markSessionDeploymentUpdating(ctx, rebuildArgs)
+    await editedSessionExportDebouncer.schedule(
+      ctx,
+      'edited-session-export-rebuild',
+      rebuildArgs.sessionId,
+      internal.sessions.rebuildEditedSessionExports,
+      rebuildArgs,
+    )
   }
 
-  await markSessionDeploymentUpdating(ctx, rebuildArgs)
-  await editedSessionExportDebouncer.schedule(
-    ctx,
-    'edited-session-export-rebuild',
-    rebuildArgs.sessionId,
-    internal.sessions.rebuildEditedSessionExports,
-    rebuildArgs,
-  )
-}
-
-const scheduleCurrentSessionExportAutomation = async (
+type ScheduleCurrentSessionExportAutomation = (
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
-) => {
-  const session = await ctx.db.get(sessionId)
-  if (
-    session === null ||
-    session.status !== 'preview_ready' ||
-    typeof session.previewVersion !== 'number'
-  ) {
-    return
-  }
+) => Promise<void>
 
-  await scheduleEditedSessionExportAutomation(ctx, {
-    sessionId,
-    previewVersion: session.previewVersion,
-  })
-}
+const scheduleCurrentSessionExportAutomation: ScheduleCurrentSessionExportAutomation =
+  async (ctx, sessionId) => {
+    const session = await ctx.db.get(sessionId)
+    if (
+      session === null ||
+      session.status !== 'preview_ready' ||
+      typeof session.previewVersion !== 'number'
+    ) {
+      return
+    }
+
+    await scheduleEditedSessionExportAutomation(ctx, {
+      sessionId,
+      previewVersion: session.previewVersion,
+    })
+  }
 
 // Gallery Easter egg: delete the hovered generation, scoped by authenticated
 // userId or stable anonymousClientId.
@@ -252,12 +255,18 @@ export const deleteMine = mutation({
 
 export const create = mutation({
   args: createGenerationSessionArgs,
-  handler: async (ctx, args): Promise<CreateGenerationSessionResult> =>
-    await createGenerationSession(ctx, args, {
-      startGeneration: internal.generation.startGeneration,
-      sendOperationalNotification:
-        sessionInternalReferences.sendOperationalNotification,
-    }),
+  handler: async (ctx, args) => {
+    const result: CreateGenerationSessionResult = await createGenerationSession(
+      ctx,
+      args,
+      {
+        startGeneration: internal.generation.startGeneration,
+        sendOperationalNotification:
+          sessionInternalReferences.sendOperationalNotification,
+      },
+    )
+    return result
+  },
 })
 
 export const getGenerationSession = internalQuery({
@@ -388,11 +397,13 @@ export const getLakebedDeploymentUpdateTarget = internalQuery({
 
 export const completeGeneration = internalAction({
   args: completeGenerationArgs,
-  handler: async (ctx, args): Promise<CompleteGenerationActionResult> =>
-    (await ctx.runAction(
+  handler: async (ctx, args) => {
+    const result: CompleteGenerationActionResult = await ctx.runAction(
       sessionInternalReferences.completeGenerationNode,
       args,
-    )) as CompleteGenerationActionResult,
+    )
+    return result
+  },
 })
 
 export const completeGenerationInternal = internalMutation({
@@ -476,6 +487,7 @@ export const ensureExportArtifactByLookup = mutation({
       target: args.target,
       anonymousOwnerSecret: args.anonymousOwnerSecret,
       buildExportArtifact: sessionInternalReferences.buildExportArtifact,
+      generatorRevision: exportGeneratorRevision(args.target),
     })
   },
 })

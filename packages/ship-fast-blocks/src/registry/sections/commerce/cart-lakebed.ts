@@ -26,13 +26,15 @@ export type CommerceSearchInput = {
 
 type CartItemTarget = { id?: string; itemKey?: string; label?: string }
 
-const clean = (value: unknown): string => String(value ?? '').trim()
+function clean(value: unknown): string {
+  return String(value ?? '').trim()
+}
 
-export const commerceCartItemKey = ({
+export function commerceCartItemKey({
   itemKey,
   label,
   price,
-}: CommerceCartItemInput): string => {
+}: CommerceCartItemInput): string {
   const explicit = itemKey?.trim()
   if (explicit) return explicit
 
@@ -73,20 +75,23 @@ const commerce = createLakebedDefinition({
   },
 })
 
-const findCartItem = (
+function findCartItem(
   _ctx: Parameters<Parameters<typeof commerce.mutation>[0]>[0],
   input: CartItemTarget,
-) =>
-  (input.id ? _ctx.db.items.get(input.id) : null) ??
-  (input.itemKey
-    ? _ctx.db.items.where('itemKey', input.itemKey).all().at(0)
-    : null) ??
-  (input.label ? _ctx.db.items.where('label', input.label).all().at(0) : null)
+) {
+  return (
+    (input.id ? _ctx.db.items.get(input.id) : null) ??
+    (input.itemKey
+      ? _ctx.db.items.where('itemKey', input.itemKey).all().at(0)
+      : null) ??
+    (input.label ? _ctx.db.items.where('label', input.label).all().at(0) : null)
+  )
+}
 
-const findExistingAddItem = (
+function findExistingAddItem(
   _ctx: Parameters<Parameters<typeof commerce.mutation>[0]>[0],
   input: CommerceCartItemInput,
-) => {
+) {
   const label = input.label.trim() || 'Item'
   const price = input.price ?? ''
   const itemKey = commerceCartItemKey({ ...input, label })
@@ -132,7 +137,7 @@ export const commerceCartLakebed = {
     }),
   },
   mutations: {
-    addItem: commerce.mutation((_ctx, input: CommerceCartItemInput) => {
+    addItem: commerce.mutation((_ctx, input) => {
       const label = input.label.trim() || 'Item'
       const itemKey = commerceCartItemKey({ ...input, label })
       const existing = findExistingAddItem(_ctx, input)
@@ -154,7 +159,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.items.orderBy('createdAt').all()
     }),
-    incrementItem: commerce.mutation((_ctx, input: CartItemTarget) => {
+    incrementItem: commerce.mutation((_ctx, input) => {
       const existing = findCartItem(_ctx, input)
 
       if (!existing) return _ctx.db.items.orderBy('createdAt').all()
@@ -165,7 +170,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.items.orderBy('createdAt').all()
     }),
-    decrementItem: commerce.mutation((_ctx, input: CartItemTarget) => {
+    decrementItem: commerce.mutation((_ctx, input) => {
       const existing = findCartItem(_ctx, input)
 
       if (!existing) return _ctx.db.items.orderBy('createdAt').all()
@@ -177,7 +182,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.items.orderBy('createdAt').all()
     }),
-    deleteItem: commerce.mutation((_ctx, input: CartItemTarget) => {
+    deleteItem: commerce.mutation((_ctx, input) => {
       const existing = findCartItem(_ctx, input)
 
       if (existing) {
@@ -186,7 +191,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.items.orderBy('createdAt').all()
     }),
-    removeItem: commerce.mutation((_ctx, input: CartItemTarget) => {
+    removeItem: commerce.mutation((_ctx, input) => {
       const existing = findCartItem(_ctx, input)
 
       if (!existing) return _ctx.db.items.orderBy('createdAt').all()
@@ -205,7 +210,7 @@ export const commerceCartLakebed = {
 
       return []
     }),
-    setCommerceSearch: commerce.mutation((_ctx, input: CommerceSearchInput) => {
+    setCommerceSearch: commerce.mutation((_ctx, input) => {
       const query = clean(input.query)
       const selectedLabel = clean(input.selectedLabel)
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
@@ -221,42 +226,40 @@ export const commerceCartLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncCatalog: commerce.mutation(
-      (_ctx, input: { products: CommerceCatalogProductInput[] }) => {
-        for (const product of input.products) {
-          const label = product.label.trim()
-          if (!label) continue
+    syncCatalog: commerce.mutation((_ctx, input) => {
+      for (const product of input.products) {
+        const label = product.label.trim()
+        if (!label) continue
 
-          const itemKey = product.itemKey
-            ? commerceCartItemKey({
-                itemKey: product.itemKey,
-                label,
-                price: product.price,
-              })
-            : ''
-          const existing =
-            (itemKey
-              ? _ctx.db.products.where('itemKey', itemKey).all().at(0)
-              : null) ??
-            _ctx.db.products.where('label', label).all().at(0) ??
-            null
-          const next = {
-            imageAlt: product.imageAlt ?? '',
-            itemKey,
-            label,
-            price: product.price ?? '',
-            subtitle: product.subtitle ?? '',
-          }
-
-          if (existing) {
-            _ctx.db.products.update(existing.id, next)
-          } else {
-            _ctx.db.products.insert(next)
-          }
+        const itemKey = product.itemKey
+          ? commerceCartItemKey({
+              itemKey: product.itemKey,
+              label,
+              price: product.price,
+            })
+          : ''
+        const existing =
+          (itemKey
+            ? _ctx.db.products.where('itemKey', itemKey).all().at(0)
+            : null) ??
+          _ctx.db.products.where('label', label).all().at(0) ??
+          null
+        const next = {
+          imageAlt: product.imageAlt ?? '',
+          itemKey,
+          label,
+          price: product.price ?? '',
+          subtitle: product.subtitle ?? '',
         }
 
-        return _ctx.db.products.orderBy('updatedAt', 'desc').all()
-      },
-    ),
+        if (existing) {
+          _ctx.db.products.update(existing.id, next)
+        } else {
+          _ctx.db.products.insert(next)
+        }
+      }
+
+      return _ctx.db.products.orderBy('updatedAt', 'desc').all()
+    }),
   },
 } as const

@@ -47,7 +47,7 @@ export const FurnitureStoreNavbar = defineCapsule({
       : ['Room Inspiration', 'Furniture', 'Decor', 'New Arrivals', 'Sale']
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <svg
         viewBox="0 0 24 24"
         fill="currentColor"

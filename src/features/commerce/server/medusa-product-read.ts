@@ -33,41 +33,49 @@ export type SessionMedusaProduct = {
   title: string
 }
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const normalizeBackendUrl = (backendUrl: string): string =>
-  backendUrl.replace(/\/+$/, '')
+function normalizeBackendUrl(backendUrl: string): string {
+  return backendUrl.replace(/\/+$/, '')
+}
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-const stringValue = (value: unknown): string | undefined =>
-  typeof value === 'string' && value.trim() ? value.trim() : undefined
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
 
-const numberValue = (value: unknown): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) ? value : undefined
+function numberValue(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
 
-const createClient = (clientOverride?: CommerceApiClient): CommerceApiClient =>
-  clientOverride ?? createRuntimeConvexHttpClient()
+function createClient(clientOverride?: CommerceApiClient): CommerceApiClient {
+  return clientOverride ?? createRuntimeConvexHttpClient()
+}
 
-const createTenantName = (sessionId: string): string => `Ship Fast ${sessionId}`
+function createTenantName(sessionId: string): string {
+  return `Ship Fast ${sessionId}`
+}
 
 type TenantConfig = {
   backendUrl?: string
   publishableKey?: string
 }
 
-const readTenantConfig = async (
+async function readTenantConfig(
   sessionId: string,
   clientOverride?: CommerceApiClient,
-): Promise<TenantConfig> => {
+): Promise<TenantConfig> {
   try {
     const config = await createClient(clientOverride).query(
       api.sessions.getCommerceConfig,
@@ -99,12 +107,14 @@ const readTenantConfig = async (
   }
 }
 
-const createAdminHeaders = (token: string): Record<string, string> => ({
-  authorization: `Bearer ${token}`,
-  'content-type': 'application/json',
-})
+function createAdminHeaders(token: string): Record<string, string> {
+  return {
+    authorization: `Bearer ${token}`,
+    'content-type': 'application/json',
+  }
+}
 
-const authenticateAdmin = async ({
+async function authenticateAdmin({
   backendUrl,
   fetchImpl,
   options,
@@ -112,7 +122,7 @@ const authenticateAdmin = async ({
   backendUrl: string
   fetchImpl: FetchLike
   options: MedusaProductReadOptions
-}): Promise<string | undefined> => {
+}): Promise<string | undefined> {
   const email = getMedusaAdminEmail(options.env, options.metaEnv)
   const password = getMedusaAdminPassword(options.env, options.metaEnv)
   const configuredToken = getMedusaAdminApiToken(options.env, options.metaEnv)
@@ -134,7 +144,7 @@ const authenticateAdmin = async ({
   return stringValue(payload.token)
 }
 
-const discoverTenantPublishableKey = async ({
+async function discoverTenantPublishableKey({
   backendUrl,
   fetchImpl,
   options,
@@ -144,7 +154,7 @@ const discoverTenantPublishableKey = async ({
   fetchImpl: FetchLike
   options: MedusaProductReadOptions
   sessionId: string
-}): Promise<string | undefined> => {
+}): Promise<string | undefined> {
   const token = await authenticateAdmin({ backendUrl, fetchImpl, options })
   if (token === undefined) return undefined
 
@@ -164,9 +174,10 @@ const discoverTenantPublishableKey = async ({
   return stringValue(key?.token)
 }
 
-const readProductPrice = (
-  product: Record<string, unknown>,
-): { currencyCode?: string; price?: number } => {
+function readProductPrice(product: Record<string, unknown>): {
+  currencyCode?: string
+  price?: number
+} {
   const variants = Array.isArray(product.variants) ? product.variants : []
   for (const variant of variants) {
     if (!isRecord(variant)) continue
@@ -185,7 +196,7 @@ const readProductPrice = (
   return {}
 }
 
-const readDefaultRegionId = async ({
+async function readDefaultRegionId({
   backendUrl,
   fetchImpl,
   publishableKey,
@@ -193,7 +204,7 @@ const readDefaultRegionId = async ({
   backendUrl: string
   fetchImpl: FetchLike
   publishableKey: string
-}): Promise<string | undefined> => {
+}): Promise<string | undefined> {
   const response = await fetchImpl(`${backendUrl}/store/regions`, {
     headers: { 'x-publishable-api-key': publishableKey },
   })
@@ -208,10 +219,10 @@ const readDefaultRegionId = async ({
   return region?.id
 }
 
-const normalizeProduct = (
+function normalizeProduct(
   sessionId: string,
   value: unknown,
-): SessionMedusaProduct | undefined => {
+): SessionMedusaProduct | undefined {
   if (!isRecord(value)) return undefined
 
   const metadata = isRecord(value.metadata) ? value.metadata : {}
@@ -251,11 +262,11 @@ const normalizeProduct = (
   }
 }
 
-export const createSessionMedusaProductsResponse = async (
+export async function createSessionMedusaProductsResponse(
   sessionId: string,
   options: MedusaProductReadOptions = {},
   clientOverride?: CommerceApiClient,
-): Promise<Response> => {
+): Promise<Response> {
   const fetchImpl = options.fetch ?? fetch
 
   // Resolve the per-session container URL. Priority:

@@ -43,27 +43,29 @@ type ReadLog = {
 const sessionId = 'usage_session' as Id<'sessions'>
 const otherSessionId = 'usage_other_session' as Id<'sessions'>
 
-const usageMetricDoc = (
+function usageMetricDoc(
   overrides: Partial<UsageMetricRecord> = {},
-): UsageMetricRecord => ({
-  _id: 'usage_metric_1' as Id<'usageMetrics'>,
-  _creationTime: 1,
-  sessionId,
-  eventType: 'run_completed',
-  timestamp: 100,
-  elapsedMs: 1000,
-  cost: 0.1,
-  provider: 'groq',
-  userId: 'user_1',
-  anonymousClientIdHash: 'anon_hash',
-  ...overrides,
-})
+): UsageMetricRecord {
+  return {
+    _id: 'usage_metric_1' as Id<'usageMetrics'>,
+    _creationTime: 1,
+    sessionId,
+    eventType: 'run_completed',
+    timestamp: 100,
+    elapsedMs: 1000,
+    cost: 0.1,
+    provider: 'groq',
+    userId: 'user_1',
+    anonymousClientIdHash: 'anon_hash',
+    ...overrides,
+  }
+}
 
 const mutationCtxForUsageMetrics = () => {
   const inserted: Array<{ table: string; value: Record<string, unknown> }> = []
   const ctx = {
     db: {
-      insert: async (table: string, value: Record<string, unknown>) => {
+      insert: async (table, value) => {
         inserted.push({ table, value })
         return `${table}_id`
       },
@@ -86,9 +88,9 @@ type FakeQuery = {
   take: (limit: number) => Promise<UsageMetricRecord[]>
 }
 
-const queryCtxForUsageMetrics = (metrics: UsageMetricRecord[]) => {
+function queryCtxForUsageMetrics(metrics: UsageMetricRecord[]) {
   const reads: ReadLog[] = []
-  const makeQuery = (table: 'usageMetrics'): FakeQuery => {
+  const makeQuery = (table) => {
     let indexName: string | undefined
     let direction: 'asc' | 'desc' | undefined
     const filters: Record<string, unknown> = {}

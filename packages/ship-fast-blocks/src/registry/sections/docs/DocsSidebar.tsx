@@ -209,12 +209,7 @@ export const DocsSidebar = defineCapsule({
     }> = catalog.length ? catalog : articles
     const queryValue = docsSearch.state?.query ?? ''
     const activeQuery = queryValue.toLowerCase()
-    const matchesQuery = (article: {
-      title: string
-      slug: string
-      category: string
-      content: string
-    }) => {
+    const matchesQuery = (article) => {
       const haystack = [
         article.title,
         article.slug,
@@ -228,7 +223,7 @@ export const DocsSidebar = defineCapsule({
     const matchingArticles = articleCatalog.filter(matchesQuery)
     const showingResults = activeQuery.length > 0
 
-    const SearchIcon = ({ className }: { className?: string }) => (
+    const SearchIcon = ({ className }) => (
       <svg
         className={className}
         width="20"

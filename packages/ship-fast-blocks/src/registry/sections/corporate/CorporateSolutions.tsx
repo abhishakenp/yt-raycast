@@ -177,7 +177,7 @@ export const CorporateSolutions = defineCapsule({
         <path d="M9 12l2 2 4-4" />
       </svg>,
     ]
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }) => (
       <svg
         width="16"
         height="16"
@@ -193,7 +193,7 @@ export const CorporateSolutions = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-    const sectionHead = (title: string, desc: string) => (
+    const sectionHead = (title, desc) => (
       <div className="mx-auto mb-16 max-w-3xl text-center">
         <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
           {title}

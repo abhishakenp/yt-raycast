@@ -1,14 +1,23 @@
-const readEnvBool = (name: string): boolean =>
-  typeof process !== 'undefined' &&
-  (process.env?.[name] ?? '').trim().toLowerCase() === 'true'
+function readEnvBool(name: string): boolean {
+  return (
+    typeof process !== 'undefined' &&
+    (process.env?.[name] ?? '').trim().toLowerCase() === 'true'
+  )
+}
 
-const isDevEnv = (): boolean =>
-  typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+function isDevEnv(): boolean {
+  return (
+    typeof process !== 'undefined' && process.env?.NODE_ENV === 'development'
+  )
+}
 
-const isProductionEnv = (): boolean =>
-  typeof process !== 'undefined' && process.env?.NODE_ENV === 'production'
+function isProductionEnv(): boolean {
+  return (
+    typeof process !== 'undefined' && process.env?.NODE_ENV === 'production'
+  )
+}
 
-const guardProductionOverride = (flagName: string, value: boolean): boolean => {
+function guardProductionOverride(flagName: string, value: boolean): boolean {
   if (value && isProductionEnv()) {
     console.error(
       `[dev-flags] BLOCKED: ${flagName} is set to true in production. ` +

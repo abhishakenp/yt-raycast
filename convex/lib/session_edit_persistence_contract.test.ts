@@ -11,8 +11,9 @@ const modules = import.meta.glob('../**/*.ts')
 
 const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
 
-const loadFixture = (name: string): string =>
-  readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+function loadFixture(name: string): string {
+  return readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+}
 
 // Track the active convexTest instance so afterEach can drain pending
 // scheduled functions (export_artifacts:build is scheduled by
@@ -21,9 +22,9 @@ const loadFixture = (name: string): string =>
 let activeTest: ReturnType<typeof convexTest> | null = null
 const scheduledDrainTimeoutMs = 5_000
 
-const drainScheduledFunctionsWithTimeout = async (
+async function drainScheduledFunctionsWithTimeout(
   t: ReturnType<typeof convexTest>,
-) => {
+) {
   await Promise.race([
     t.finishInProgressScheduledFunctions(),
     new Promise<void>((resolve) =>
@@ -61,12 +62,12 @@ afterEach(async () => {
  * actual multi-page PageSwitch sources with URLs in targetMaps, nested objects,
  * repeated text across navbar/hero/footer, and non-ASCII content.
  */
-const createReadySessionWithFixture = async (
+async function createReadySessionWithFixture(
   t: ReturnType<typeof sessionEditContractTest>,
   fixtureName: string,
   prompt: string,
   language = 'en',
-) => {
+) {
   const source = loadFixture(fixtureName)
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
@@ -101,7 +102,7 @@ const createReadySessionWithFixture = async (
  * positional arg of the first *Hero call), which is realistic — users edit
  * headlines in demos.
  */
-const extractHeadlineFromSource = (source: string): string | null => {
+function extractHeadlineFromSource(source: string): string | null {
   // Match: hero = XxxHero("...", "Headline text", ...
   const match = source.match(/\w+_hero\s*=\s*\w*Hero\("[^"]*",\s*"([^"]+)"/)
   return match?.[1] ?? null
@@ -112,10 +113,10 @@ const extractHeadlineFromSource = (source: string): string | null => {
  * Dashboard uses to render), then re-render the source through SSR to
  * verify the edited content is visible in the rendered HTML.
  */
-const reloadAndRender = async (
+async function reloadAndRender(
   t: ReturnType<typeof sessionEditContractTest>,
   sessionId: string,
-) => {
+) {
   const reloaded = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })

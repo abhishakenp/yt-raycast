@@ -35,21 +35,23 @@ vi.mock('../brandfetch.js', () => ({
 
 const mkWorkspace = () => mkdtempSync(join(tmpdir(), 'ship-fast-engine-edge-'))
 
-const htmlResponse = (url: string, html: string) =>
-  ({
+function htmlResponse(url: string, html: string) {
+  return {
     ok: true,
     url,
     headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
     text: async () => html,
-  }) as Response
+  } as Response
+}
 
-const missingResponse = (url: string) =>
-  ({
+function missingResponse(url: string) {
+  return {
     ok: false,
     url,
     headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
     text: async () => '',
-  }) as Response
+  } as Response
+}
 
 const completeHtml = (body = '<main><h1>Test</h1></main>') =>
   `<!DOCTYPE html>
@@ -392,8 +394,8 @@ describe('Image hints', () => {
    * Mock fetch that captures Pexels photo search queries and returns
    * controlled photo results.
    */
-  const mockPexelsFetch = (capturedQueries: string[]) =>
-    vi.fn(async (input: URL | string) => {
+  const mockPexelsFetch = (capturedQueries) =>
+    vi.fn(async (input) => {
       const url = new URL(String(input))
       if (url.hostname === 'api.pexels.com' && url.pathname === '/v1/search') {
         const query = url.searchParams.get('query') ?? ''
@@ -513,7 +515,7 @@ describe('Image hints', () => {
         prompt:
           'Online store for healthy snacks with product cards and lifestyle panels',
       },
-      { onProgress: (event: PexelsProgressEvent) => events.push(event) },
+      { onProgress: (event) => events.push(event) },
     )
 
     // At least one partial (done=false) event and a final done=true event
@@ -640,11 +642,9 @@ describe('Navfix', () => {
       const calls: string[] = []
       vi.stubGlobal(
         'fetch',
-        vi.fn(async (_url: string | URL, init?: RequestInit) => {
+        vi.fn(async (_url, init?) => {
           const body = JSON.parse(String(init?.body ?? '{}'))
-          const userMsg = body.messages?.find(
-            (m: { role: string }) => m.role === 'user',
-          )
+          const userMsg = body.messages?.find((m) => m.role === 'user')
           calls.push(userMsg?.content ?? '')
           return {
             ok: true,
@@ -724,7 +724,7 @@ describe('Navfix', () => {
       const result = await fixHomepageNav(
         'About, Contact',
         workspace,
-        (msg: string) => logs.push(msg),
+        (msg) => logs.push(msg),
         [
           { filename: 'about.html', title: 'About' },
           { filename: 'contact.html', title: 'Contact' },
@@ -904,7 +904,7 @@ describe('Brand profile', () => {
 
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (url: string | URL) => {
+      vi.fn(async (url) => {
         const href = String(url)
         // Brave search results page
         if (href.startsWith('https://search.brave.com/search')) {
@@ -936,7 +936,7 @@ describe('Brand profile', () => {
     expect(profile!.emails).toContain('hello@kaverisilks.test')
     expect(profile!.phones).toContain('+91 98765 43210')
     expect(profile!.addresses[0]).toContain('12 Silk Road')
-    expect(profile!.socials.map((s: { url: string }) => s.url)).toContain(
+    expect(profile!.socials.map((s) => s.url)).toContain(
       'https://instagram.com/kaverisilks/',
     )
     rmSync(workspace, { recursive: true, force: true })
@@ -1003,7 +1003,7 @@ describe('Context phase', () => {
       'Design brief with dark theme',
       'saas',
       workspace,
-      (msg: string) => logs.push(msg),
+      (msg) => logs.push(msg),
     )
 
     expect(result.ctx.project_name).toBe('TaskFlow')
@@ -1112,7 +1112,7 @@ describe('Context phase', () => {
       '',
       'landing',
       workspace,
-      (msg: string) => logs.push(msg),
+      (msg) => logs.push(msg),
     )
 
     // Fallback uses promptSnippet for project_name (first 40 chars of prompt)
@@ -1187,7 +1187,7 @@ describe('Design brief', () => {
     const result = await generateDesignBrief(
       'A bold SaaS landing page for a developer tool',
       workspace,
-      (msg: string) => logs.push(msg),
+      (msg) => logs.push(msg),
     )
 
     expect(result.brief).toContain('### Colors')
@@ -1299,7 +1299,7 @@ describe('Site type detection', () => {
 
       const result = await detectSiteType(
         'An online store for healthy snacks with checkout',
-        (msg: string) => logs.push(msg),
+        (msg) => logs.push(msg),
       )
 
       expect(result.siteType).toBe('ecommerce')

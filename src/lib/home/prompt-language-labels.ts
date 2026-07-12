@@ -105,7 +105,7 @@ export const SHIPFAST_TAGLINE_BY_LANG: Record<string, string> = {
   fa: 'ارسال سریع',
 }
 
-export const normalizeLanguageCode = (value: string) => {
+export function normalizeLanguageCode(value: string) {
   const v = String(value || '')
     .trim()
     .toLowerCase()
@@ -116,7 +116,7 @@ export const normalizeLanguageCode = (value: string) => {
   return v.split(/[-_]/)[0] ?? ''
 }
 
-export const getLanguageDisplayName = (code: string) => {
+export function getLanguageDisplayName(code: string) {
   const normalized = normalizeLanguageCode(code)
   if (!normalized) return 'Language'
   if (typeof Intl === 'undefined' || typeof Intl.DisplayNames === 'undefined') {
@@ -130,7 +130,7 @@ export const getLanguageDisplayName = (code: string) => {
   }
 }
 
-export const getGenerateCtaLabel = (bcp47: string) => {
+export function getGenerateCtaLabel(bcp47: string) {
   const key = normalizeLanguageCode(bcp47)
   if (!key) return SUBMIT_BTN_DEFAULT_LABEL
   const direct = GENERATE_CTA_BY_LANG[key]
@@ -139,7 +139,7 @@ export const getGenerateCtaLabel = (bcp47: string) => {
   return (base && GENERATE_CTA_BY_LANG[base]) || SUBMIT_BTN_DEFAULT_LABEL
 }
 
-export const getLogoTaglineText = (bcp47: string) => {
+export function getLogoTaglineText(bcp47: string) {
   const key = normalizeLanguageCode(bcp47)
   if (!key || key === 'en') return ''
   const direct = SHIPFAST_TAGLINE_BY_LANG[key]
@@ -162,7 +162,7 @@ export const getBrowserLanguageCandidates = () => {
     .filter((value, index, self) => self.indexOf(value) === index)
 }
 
-export const detectBrowserLanguage = (availableCodes: Set<string>) => {
+export function detectBrowserLanguage(availableCodes: Set<string>) {
   const normalizedCandidates = getBrowserLanguageCandidates()
   const supportedNonEnglishMatch = normalizedCandidates.find(
     (language) => language !== 'en' && availableCodes.has(language),

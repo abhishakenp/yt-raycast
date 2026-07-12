@@ -59,9 +59,9 @@ type MedusaHandoff = {
 
 const medusaStoreApiUnavailableWarning = 'Medusa Store API is unavailable.'
 
-const normalizeMedusaStoreApiWarning = (
+function normalizeMedusaStoreApiWarning(
   warning: string | undefined,
-): string | undefined => {
+): string | undefined {
   const normalized = warning?.trim()
   if (!normalized) return undefined
   return /^Medusa Store API is unavailable:/i.test(normalized)
@@ -69,18 +69,19 @@ const normalizeMedusaStoreApiWarning = (
     : normalized
 }
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const readJsonBody = async (
+async function readJsonBody(
   request: Request,
-): Promise<Record<string, unknown>> => {
+): Promise<Record<string, unknown>> {
   const text = await request.text()
   if (!text.trim()) return {}
   const parsed = JSON.parse(text) as unknown
@@ -89,26 +90,29 @@ const readJsonBody = async (
     : {}
 }
 
-const stringValue = (
+function stringValue(
   body: Record<string, unknown>,
   key: string,
-): string | undefined => {
+): string | undefined {
   const value = body[key]
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
-const getOwnerSecret = (
+function getOwnerSecret(
   request: Request,
   body: Record<string, unknown>,
-): string | undefined =>
-  stringValue(body, 'anonymousOwnerSecret') ??
-  stringValue(body, 'anonOwnerSecret') ??
-  request.headers.get('x-ship-fast-owner-secret') ??
-  undefined
+): string | undefined {
+  return (
+    stringValue(body, 'anonymousOwnerSecret') ??
+    stringValue(body, 'anonOwnerSecret') ??
+    request.headers.get('x-ship-fast-owner-secret') ??
+    undefined
+  )
+}
 
-const generatedProductValue = (
+function generatedProductValue(
   value: unknown,
-): GeneratedCommerceProduct | undefined => {
+): GeneratedCommerceProduct | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return undefined
   }
@@ -134,9 +138,9 @@ const generatedProductValue = (
   }
 }
 
-const getGeneratedProducts = (
+function getGeneratedProducts(
   body: Record<string, unknown>,
-): Array<GeneratedCommerceProduct> => {
+): Array<GeneratedCommerceProduct> {
   const products = body.products
   if (!Array.isArray(products)) return []
   return products
@@ -145,26 +149,27 @@ const getGeneratedProducts = (
     .slice(0, 25)
 }
 
-const createClient = (clientOverride?: CommerceApiClient): CommerceApiClient =>
-  clientOverride ?? createRuntimeConvexHttpClient()
+function createClient(clientOverride?: CommerceApiClient): CommerceApiClient {
+  return clientOverride ?? createRuntimeConvexHttpClient()
+}
 
-const isUnsupportedProductCountError = (error: unknown): boolean => {
+function isUnsupportedProductCountError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error)
   return /extra field [`"]?productCount|productCount.*validator/i.test(message)
 }
 
-const errorStatus = (error: unknown): number => {
+function errorStatus(error: unknown): number {
   const message = error instanceof Error ? error.message : String(error)
   if (/FORBIDDEN/i.test(message)) return 403
   if (/NOT_FOUND|Validator: v\.id\("sessions"\)/i.test(message)) return 404
   return 500
 }
 
-const validateMedusaStoreApi = async (
+async function validateMedusaStoreApi(
   backendUrl: string,
   publishableKey: string,
   fetchImpl: FetchLike,
-): Promise<MedusaStoreApiAvailability> => {
+): Promise<MedusaStoreApiAvailability> {
   const normalizedPublishableKey = publishableKey.trim()
 
   if (!normalizedPublishableKey) {
@@ -212,7 +217,7 @@ const validateMedusaStoreApi = async (
   }
 }
 
-const createDefaultMedusaConfigJson = (
+function createDefaultMedusaConfigJson(
   sessionId: string,
   availability: MedusaStoreApiAvailability,
   productSync?: {
@@ -224,8 +229,8 @@ const createDefaultMedusaConfigJson = (
     requested: number
     synced: number
   },
-): string =>
-  JSON.stringify({
+): string {
+  return JSON.stringify({
     provider: 'medusa',
     tenantMode: 'session',
     tenantId: sessionId,
@@ -249,15 +254,16 @@ const createDefaultMedusaConfigJson = (
       ? {}
       : { storeApiStatus: availability.status }),
   })
+}
 
-const createMedusaHandoff = (
+function createMedusaHandoff(
   sessionId: string,
   backendUrl: string | undefined,
   adminUrl: string | undefined,
   storefrontUrl: string | undefined,
   env?: MedusaEnv,
   metaEnv?: MedusaEnv,
-): MedusaHandoff | undefined => {
+): MedusaHandoff | undefined {
   if (
     !hasConfiguredMedusaBackendUrl(env, metaEnv) ||
     backendUrl === undefined ||
@@ -280,10 +286,10 @@ const createMedusaHandoff = (
   }
 }
 
-export const createSessionMedusaConfigResponse = async (
+export async function createSessionMedusaConfigResponse(
   sessionId: string,
   clientOverride?: CommerceApiClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const config = await createClient(clientOverride).query(
       api.sessions.getCommerceConfig,
@@ -303,12 +309,12 @@ export const createSessionMedusaConfigResponse = async (
   }
 }
 
-export const createSessionMedusaProvisionResponse = async (
+export async function createSessionMedusaProvisionResponse(
   sessionId: string,
   request: Request,
   clientOverride?: CommerceApiClient,
   options: MedusaProvisionOptions = {},
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const body = await readJsonBody(request)
     const generatedProducts = getGeneratedProducts(body)
@@ -402,7 +408,7 @@ export const createSessionMedusaProvisionResponse = async (
     let persisted = true
     const result = await client
       .mutation(api.sessions.upsertCommerceConfig, mutationArgs)
-      .catch(async (error: unknown) => {
+      .catch(async (error) => {
         if (isUnsupportedProductCountError(error)) {
           const { productCount: _productCount, ...compatibleArgs } =
             mutationArgs

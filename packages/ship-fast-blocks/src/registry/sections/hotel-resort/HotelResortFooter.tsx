@@ -88,7 +88,7 @@ export const HotelResortFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service', 'Accessibility']
     const homeTarget = props.homeTarget ?? 'Rooms & Suites'
 
-    const LogoMark = ({ className }: { className?: string }) => (
+    const LogoMark = ({ className }) => (
       <span
         className={cn(
           'grid place-items-center rounded-full font-light',

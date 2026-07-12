@@ -14,13 +14,16 @@ type CapsuleWithLakebed = {
   }
 }
 
-const isTableSchema = (value: unknown): value is LakebedTableSchema =>
-  Boolean(value) &&
-  typeof value === 'object' &&
-  (value as { kind?: unknown }).kind === 'table' &&
-  typeof (value as { fields?: unknown }).fields === 'object'
+function isTableSchema(value: unknown): value is LakebedTableSchema {
+  return (
+    Boolean(value) &&
+    typeof value === 'object' &&
+    (value as { kind?: unknown }).kind === 'table' &&
+    typeof (value as { fields?: unknown }).fields === 'object'
+  )
+}
 
-const extractSchema = (schema: unknown): LakebedSessionSchema => {
+function extractSchema(schema: unknown): LakebedSessionSchema {
   if (!schema || typeof schema !== 'object') return {}
   const result: LakebedSessionSchema = {}
   for (const [tableName, tableDef] of Object.entries(

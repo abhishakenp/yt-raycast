@@ -43,19 +43,21 @@ type AutoLeadSummary = ReturnType<
   typeof autoDealershipLakebed.queries.leadSummary
 >
 
-export const autoVehicle = ({
+export function autoVehicle({
   badge,
   imageAlt,
   name,
   price,
   specs,
-}: AutoVehicleInput): AutoVehicleInput => ({
-  badge: badge ?? '',
-  imageAlt: imageAlt ?? '',
-  name,
-  price: price ?? '',
-  specs: specs ?? '',
-})
+}: AutoVehicleInput): AutoVehicleInput {
+  return {
+    badge: badge ?? '',
+    imageAlt: imageAlt ?? '',
+    name,
+    price: price ?? '',
+    specs: specs ?? '',
+  }
+}
 
 export function AutoMutationSpinner({ className }: { className?: string }) {
   return (
@@ -267,7 +269,7 @@ export function AutoMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
   const navigate = useCallback(
-    (target?: string) => {
+    (target?) => {
       setOpen(false)
       go(target)
     },

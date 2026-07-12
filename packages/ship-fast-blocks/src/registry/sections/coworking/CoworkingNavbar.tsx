@@ -19,14 +19,16 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * offices, flex-office platforms, or any membership-driven workspace brand.
  * Renders fully with no props via baked-in "Northside" defaults.
  */
-const BrandTile = ({ letter }: { letter: string }) => (
-  <span
-    className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/25 ring-1 ring-primary/30"
-    aria-hidden="true"
-  >
-    {letter}
-  </span>
-)
+function BrandTile({ letter }: { letter: string }) {
+  return (
+    <span
+      className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/25 ring-1 ring-primary/30"
+      aria-hidden="true"
+    >
+      {letter}
+    </span>
+  )
+}
 
 export const CoworkingNavbar = defineCapsule({
   name: 'CoworkingNavbar',

@@ -20,7 +20,7 @@ const { makeMockBrowser } = vi.hoisted(() => {
           let html = '<html><body></body></html>'
           let failRemaining = 0
           return {
-            goto: vi.fn(async (url: string) => {
+            goto: vi.fn(async (url) => {
               currentUrl = url
               const cfg = pagesByUrl.get(url)
               html = cfg?.html ?? '<html><body></body></html>'
@@ -34,7 +34,7 @@ const { makeMockBrowser } = vi.hoisted(() => {
             url: () => currentUrl || 'https://example.com/',
             content: async () => html,
             waitForTimeout: vi.fn(async () => {}),
-            evaluate: vi.fn(async (fn: any, arg?: any) => {
+            evaluate: vi.fn(async (fn, arg?) => {
               // autoScroll: arg is { maxSteps, budgetMs }
               if (arg && typeof arg === 'object' && 'maxSteps' in arg)
                 return undefined
@@ -44,7 +44,7 @@ const { makeMockBrowser } = vi.hoisted(() => {
                 for (const p of arg) {
                   const kebab = p.replace(
                     /[A-Z]/g,
-                    (m: string) => `-${m.toLowerCase()}`,
+                    (m) => `-${m.toLowerCase()}`,
                   )
                   out[kebab] = ''
                 }
@@ -101,7 +101,7 @@ const genMocks = ((
 // Mock security.ts — no DNS resolution
 vi.mock('./security.ts', () => ({
   assertPublicUrl: vi.fn().mockResolvedValue(undefined),
-  isAllowedScheme: (url: string) => {
+  isAllowedScheme: (url) => {
     try {
       const p = new URL(url).protocol
       return p === 'http:' || p === 'https:'
@@ -113,7 +113,7 @@ vi.mock('./security.ts', () => ({
 
 // Mock generate.ts — LLM calls. Lazy: reads implementation from globalThis.
 vi.mock('../generate.ts', () => ({
-  generateText: (...args: unknown[]) =>
+  generateText: (...args) =>
     (
       (
         globalThis as typeof globalThis & {
@@ -124,7 +124,7 @@ vi.mock('../generate.ts', () => ({
       ) => unknown
     )(...args),
   isHardLlmFailure: () => false,
-  formatLlmFailureMessage: (e: unknown) => String(e),
+  formatLlmFailureMessage: (e) => String(e),
 }))
 
 // Mock playwright — browser launch returns mock browser from globalThis.
@@ -237,7 +237,7 @@ function defaultGenerateText(
     // keep defaults
   }
 
-  const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  const esc = (s) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
   return Promise.resolve(
     `${sectionVar} = Section([${sectionVar}_h, ${sectionVar}_p], "bg-background py-12 px-4")\n` +
       `${sectionVar}_h = Heading("${esc(heading)}", "1", "text-foreground")\n` +
@@ -247,7 +247,7 @@ function defaultGenerateText(
 
 // Mock fetch backed by an in-memory URL → HTML table (for crawler).
 function mockFetchTable(table: Record<string, string>): typeof fetch {
-  return (async (input: string | URL | Request): Promise<Response> => {
+  return (async (input) => {
     const url =
       typeof input === 'string'
         ? input
@@ -265,7 +265,7 @@ function mockFetchTable(table: Record<string, string>): typeof fetch {
 
 // Mock fetch for asset downloads: returns image bytes for .png/.jpg URLs, 404 otherwise.
 function mockAssetFetch(table?: Record<string, Buffer>): typeof fetch {
-  return (async (input: string | URL | Request): Promise<Response> => {
+  return (async (input) => {
     const url =
       typeof input === 'string'
         ? input

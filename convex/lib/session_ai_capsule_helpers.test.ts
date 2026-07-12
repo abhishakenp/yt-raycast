@@ -11,10 +11,8 @@ type AiCapsuleRecord = Doc<'aiCapsules'>
 
 const sessionId = 'session_ai_capsule' as Id<'sessions'>
 
-const capsuleRow = (
-  overrides: Partial<AiCapsuleRecord> = {},
-): AiCapsuleRecord =>
-  ({
+function capsuleRow(overrides: Partial<AiCapsuleRecord> = {}): AiCapsuleRecord {
+  return {
     _id: 'ai_capsule_1' as Id<'aiCapsules'>,
     _creationTime: 1,
     sessionId,
@@ -25,36 +23,32 @@ const capsuleRow = (
     createdAt: 100,
     updatedAt: 110,
     ...overrides,
-  }) as AiCapsuleRecord
+  } as AiCapsuleRecord
+}
 
-const queryCtxFor = (rows: AiCapsuleRecord[] = []) => {
+function queryCtxFor(rows: AiCapsuleRecord[] = []) {
   const indexBuilder = {
     eq: vi.fn().mockReturnThis(),
   }
   const db = {
-    query: vi.fn((table: string) => {
+    query: vi.fn((table) => {
       if (table !== 'aiCapsules') {
         throw new Error(`Unexpected table: ${table}`)
       }
       return {
-        withIndex: vi.fn(
-          (
-            _index: string,
-            apply: (q: typeof indexBuilder) => typeof indexBuilder,
-          ) => {
-            apply(indexBuilder)
-            return {
-              collect: vi.fn(async () => rows),
-            }
-          },
-        ),
+        withIndex: vi.fn((_index, apply) => {
+          apply(indexBuilder)
+          return {
+            collect: vi.fn(async () => rows),
+          }
+        }),
       }
     }),
   }
   return { db } as unknown as QueryCtx
 }
 
-const mutationCtxFor = (existing: AiCapsuleRecord[] = []) => {
+function mutationCtxFor(existing: AiCapsuleRecord[] = []) {
   const rows = [...existing]
   const inserted: AiCapsuleRecord[] = []
   const patched: Array<{
@@ -67,38 +61,31 @@ const mutationCtxFor = (existing: AiCapsuleRecord[] = []) => {
     eq: vi.fn().mockReturnThis(),
   }
   const db = {
-    query: vi.fn((table: string) => {
+    query: vi.fn((table) => {
       if (table !== 'aiCapsules') {
         throw new Error(`Unexpected table: ${table}`)
       }
       return {
-        withIndex: vi.fn(
-          (
-            _index: string,
-            apply: (q: typeof indexBuilder) => typeof indexBuilder,
-          ) => {
-            apply(indexBuilder)
-            return {
-              unique: vi.fn(async () => rows[0] ?? null),
-            }
-          },
-        ),
+        withIndex: vi.fn((_index, apply) => {
+          apply(indexBuilder)
+          return {
+            unique: vi.fn(async () => rows[0] ?? null),
+          }
+        }),
       }
     }),
-    insert: vi.fn(async (_table: string, doc: Record<string, unknown>) => {
+    insert: vi.fn(async (_table, doc) => {
       const id = `ai_capsule_${nextId++}` as Id<'aiCapsules'>
       const record = { _id: id, _creationTime: 1, ...doc } as AiCapsuleRecord
       inserted.push(record)
       rows.push(record)
       return id
     }),
-    patch: vi.fn(
-      async (id: Id<'aiCapsules'>, patch: Record<string, unknown>) => {
-        patched.push({ id, patch })
-        const row = rows.find((r) => r._id === id)
-        if (row) Object.assign(row, patch)
-      },
-    ),
+    patch: vi.fn(async (id, patch) => {
+      patched.push({ id, patch })
+      const row = rows.find((r) => r._id === id)
+      if (row) Object.assign(row, patch)
+    }),
   }
   return { db, inserted, patched } as unknown as MutationCtx & {
     inserted: AiCapsuleRecord[]

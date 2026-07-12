@@ -21,8 +21,8 @@ const context2d = () =>
     moveTo: vi.fn(),
   }) as unknown as CanvasRenderingContext2D
 
-const canvasWithContext = (ctx: CanvasRenderingContext2D | null) =>
-  ({
+function canvasWithContext(ctx: CanvasRenderingContext2D | null) {
+  return {
     clientHeight: 80,
     clientWidth: 120,
     getContext: vi.fn(() => ctx),
@@ -36,7 +36,8 @@ const canvasWithContext = (ctx: CanvasRenderingContext2D | null) =>
       width: '',
     },
     width: 0,
-  }) as unknown as HTMLCanvasElement
+  } as unknown as HTMLCanvasElement
+}
 
 describe('createWarpController', () => {
   const originalWindow = globalThis.window

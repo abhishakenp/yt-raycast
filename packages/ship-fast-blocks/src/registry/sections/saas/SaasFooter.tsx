@@ -13,14 +13,16 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * closing footer for SaaS, API, or B2B product sites. Renders fully with no
  * props via baked-in "Chronos AI" defaults.
  */
-const BrandTile = ({ brand }: { brand: string }) => (
-  <span
-    className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-base font-black text-primary-foreground"
-    aria-hidden="true"
-  >
-    {brand.charAt(0).toUpperCase()}
-  </span>
-)
+function BrandTile({ brand }: { brand: string }) {
+  return (
+    <span
+      className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-base font-black text-primary-foreground"
+      aria-hidden="true"
+    >
+      {brand.charAt(0).toUpperCase()}
+    </span>
+  )
+}
 
 export const SaasFooter = defineCapsule({
   name: 'SaasFooter',

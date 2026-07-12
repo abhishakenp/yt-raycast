@@ -97,7 +97,7 @@ export const FashionStoreLookbook = defineCapsule({
         ]
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
-    const lookbookSpan = (size?: 'feature' | 'wide' | 'small') => {
+    const lookbookSpan = (size?) => {
       if (size === 'feature') return 'col-span-2 row-span-2 aspect-[4/5]'
       if (size === 'wide') return 'col-span-2 aspect-[16/9]'
       return 'aspect-[3/4]'

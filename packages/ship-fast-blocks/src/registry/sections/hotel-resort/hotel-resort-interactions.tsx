@@ -41,19 +41,21 @@ type HotelBookingSummary = ReturnType<
   typeof hotelResortLakebed.queries.bookingSummary
 >
 
-export const hotelRoom = ({
+export function hotelRoom({
   description,
   meta,
   name,
   price,
-}: HotelRoomInput): HotelRoomInput => ({
-  description: description ?? '',
-  meta: meta ?? '',
-  name,
-  price: price ?? '',
-})
+}: HotelRoomInput): HotelRoomInput {
+  return {
+    description: description ?? '',
+    meta: meta ?? '',
+    name,
+    price: price ?? '',
+  }
+}
 
-const fieldsFromForm = (form: HTMLFormElement) => {
+function fieldsFromForm(form: HTMLFormElement) {
   const formData = new FormData(form)
   const fields: Record<string, string> = {}
 
@@ -110,7 +112,7 @@ export function useHotelAvailabilitySubmission({
   const count = summary?.count ?? 0
 
   const submitForm = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    (event) => {
       event.preventDefault()
       if (requestBooking.isPending) return
 
@@ -329,7 +331,7 @@ export function HotelMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?: string) => {
+    (target?) => {
       setOpen(false)
       go(target)
     },

@@ -14,14 +14,15 @@
  *   FIRST url so preview.html / exports degrade to a single image gracefully.
  */
 
-export const encodeMultiImageSrc = (urls: string[]): string =>
-  JSON.stringify(urls)
+export function encodeMultiImageSrc(urls: string[]): string {
+  return JSON.stringify(urls)
+}
 
 /** Parse a multi-image payload. Returns the URL list, or null when the value
  *  is not a payload (plain single URL, empty, or malformed JSON). */
-export const decodeMultiImageSrc = (
+export function decodeMultiImageSrc(
   value: string | null | undefined,
-): string[] | null => {
+): string[] | null {
   const trimmed = value?.trim()
   if (!trimmed || !trimmed.startsWith('[')) return null
   try {
@@ -38,5 +39,6 @@ export const decodeMultiImageSrc = (
 
 /** Resolve the representative single URL from a value that may be either a
  *  plain URL or a multi-image payload. */
-export const firstImageSrc = (value: string): string =>
-  decodeMultiImageSrc(value)?.[0] ?? value
+export function firstImageSrc(value: string): string {
+  return decodeMultiImageSrc(value)?.[0] ?? value
+}

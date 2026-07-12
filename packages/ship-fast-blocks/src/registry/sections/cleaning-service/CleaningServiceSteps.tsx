@@ -80,7 +80,7 @@ export const CleaningServiceSteps = defineCapsule({
           'tidied bedroom with made bed and natural light',
           'organized living room with clean surfaces and vacuumed carpet',
         ]
-    const Check = ({ className }: { className?: string }) => (
+    const Check = ({ className }) => (
       <svg
         width="20"
         height="20"
