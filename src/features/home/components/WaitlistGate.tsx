@@ -31,9 +31,10 @@ export const WaitlistGate = ({ children }: WaitlistGateProps) => {
   const isWaitlistEnabled = isClerkClientEnabled()
   const { isLoaded, isSignedIn } = useOptionalAuth()
 
-  // Bypass waitlist on localhost for development
+  // Bypass waitlist on localhost for development (skip in test environment)
   if (
     typeof window !== 'undefined' &&
+    import.meta.env.MODE !== 'test' &&
     (window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1')
   ) {
