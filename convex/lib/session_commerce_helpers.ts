@@ -4,6 +4,7 @@ import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import {
   assertCanMutateSession,
+  canReadPrivateSession,
   hashOwnerSecret,
 } from './session_access_helpers'
 
@@ -205,6 +206,11 @@ export const loadSessionCommerceConfig = async (
   ctx: CommerceQueryCtx,
   sessionId: Id<'sessions'>,
 ) => {
+  const session = await ctx.db.get(sessionId)
+  if (session === null || !(await canReadPrivateSession(ctx, session))) {
+    return null
+  }
+
   const config = await loadCommerceConfigDoc(ctx, sessionId)
   return config === null ? null : serializeCommerceConfig(config)
 }

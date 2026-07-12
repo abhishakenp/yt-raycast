@@ -225,6 +225,43 @@ const resolveExportOpenUISource = (
       preview?.html ??
       '')
 
+const isTextEditAlreadyMaterialized = (
+  source: string,
+  beforeText: string,
+  afterText: string,
+  occurrenceIndex: number | undefined,
+): boolean => {
+  if (!beforeText || !afterText.includes(beforeText)) return false
+
+  const beforeOffsets: number[] = []
+  let beforeOffset = source.indexOf(beforeText)
+  while (beforeOffset >= 0) {
+    beforeOffsets.push(beforeOffset)
+    beforeOffset = source.indexOf(beforeText, beforeOffset + beforeText.length)
+  }
+  if (beforeOffsets.length === 0) return false
+
+  const wanted =
+    occurrenceIndex !== undefined && occurrenceIndex >= 0
+      ? Math.min(occurrenceIndex, beforeOffsets.length - 1)
+      : 0
+  const targetStart = beforeOffsets[wanted]
+  const targetEnd = targetStart + beforeText.length
+
+  let afterOffset = source.indexOf(afterText)
+  while (afterOffset >= 0) {
+    if (
+      afterOffset <= targetStart &&
+      targetEnd <= afterOffset + afterText.length
+    ) {
+      return true
+    }
+    afterOffset = source.indexOf(afterText, afterOffset + afterText.length)
+  }
+
+  return false
+}
+
 /** Apply edit overrides to source before export. */
 export const applyEditsToSource = (
   source: string,
@@ -243,6 +280,16 @@ export const applyEditsToSource = (
   // Apply edits in reverse order (oldest first) so newer edits take precedence
   for (const edit of [...edits].reverse()) {
     if (edit.editType === 'text' && edit.beforeText && edit.afterText) {
+      if (
+        isTextEditAlreadyMaterialized(
+          result,
+          edit.beforeText,
+          edit.afterText,
+          edit.occurrenceIndex,
+        )
+      ) {
+        continue
+      }
       const textResult = applyPreviewTextEdit(
         result,
         edit.beforeText,

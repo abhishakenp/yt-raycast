@@ -484,6 +484,7 @@ export default defineSchema({
     canceledAt: v.optional(v.number()),
   })
     .index('by_userId', ['userId'])
+    .index('by_userId_status', ['userId', 'status'])
     .index('by_providerSubscriptionId', ['providerSubscriptionId']),
 
   webhookEvents: defineTable({

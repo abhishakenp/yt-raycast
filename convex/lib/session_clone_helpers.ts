@@ -4,7 +4,10 @@ import { internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { upsertHomeGeneratedModule } from './session_artifact_helpers'
-import { assertCanMutateSession } from './session_access_helpers'
+import {
+  assertCanMutateSession,
+  canReadPrivateSession,
+} from './session_access_helpers'
 import { scheduleOperationalNotification } from './session_operational_notifications'
 
 type OperationalNotificationReference = Parameters<
@@ -217,6 +220,11 @@ export const listSessionClonePages = async (
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
 ) => {
+  const session = await ctx.db.get(sessionId)
+  if (session === null || !(await canReadPrivateSession(ctx, session))) {
+    return []
+  }
+
   const pages = await ctx.db
     .query('clonePages')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
