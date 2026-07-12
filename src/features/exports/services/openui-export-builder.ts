@@ -23,7 +23,6 @@ import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
 import { formatExportFiles } from './format-export-files'
 import {
   buildExportSeoBundle,
-  renderJsonLdScript,
   renderNextMetadataExport,
   renderNextViewportExport,
   renderNextRobotsRoute,
@@ -1428,17 +1427,62 @@ const renderTranslatedQuery = (
   });`
 }
 
+const invalidationKeysForMutation = (mutationName: string): string[] => {
+  const exact: Record<string, string[]> = {
+    addItem: ['cartSummary', 'productCatalog'],
+    clearCart: ['cartSummary', 'productCatalog'],
+    decrementItem: ['cartSummary', 'productCatalog'],
+    deleteItem: ['cartSummary', 'productCatalog'],
+    incrementItem: ['cartSummary', 'productCatalog'],
+    setCommerceSearch: ['commerceSearchState'],
+    subscribe: ['subscriberSummary'],
+    syncCatalog: ['productCatalog'],
+  }
+  const direct = exact[mutationName]
+  if (direct) return direct
+  const normalized = mutationName.toLowerCase()
+  if (normalized.includes('cart') || normalized.includes('bag')) {
+    return ['cartSummary', 'productCatalog']
+  }
+  if (normalized.includes('product') || normalized.includes('catalog')) {
+    return ['productCatalog']
+  }
+  if (normalized.includes('subscribe') || normalized.includes('newsletter')) {
+    return ['subscriberSummary']
+  }
+  return []
+}
+
+const renderInvalidations = (
+  mutationName: string,
+  queryClientName: string,
+): string =>
+  invalidationKeysForMutation(mutationName)
+    .map(
+      (key) =>
+        `void ${queryClientName}.invalidateQueries({ queryKey: [${JSON.stringify(key)}] })`,
+    )
+    .join('\n      ')
+
 const renderTranslatedMutation = (
   variableName: string,
   mutationName: string,
 ) => {
   const actionName = mutationActionName(mutationName)
-  // Extract mutateAsync so the variable is callable, matching the original
-  // lakebed.useMutation() API where the result was a callable function
-  return `const ${variableName} = useMutation({
-    mutationFn: ${actionName},
-    onSuccess: () => queryClient.invalidateQueries(),
-  }).mutateAsync`
+  const queryClientName = `${variableName}QueryClient`
+  const mutationStateName = `${variableName}Mutation`
+  const invalidations = renderInvalidations(mutationName, queryClientName)
+  return `const ${queryClientName} = useQueryClient()
+  const ${mutationStateName} = useMutation({
+    mutationFn: (args: unknown[]) => ${actionName}(...args),
+    onSuccess: () => {
+      ${invalidations}
+    },
+  })
+  const ${variableName} = Object.assign(
+    (...args: unknown[]) => ${mutationStateName}.mutateAsync(args),
+    { isPending: ${mutationStateName}.isPending },
+  )`
 }
 
 const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
@@ -1483,11 +1527,13 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
     (_match, mutationName: string) => {
       dataKeys.mutations.add(mutationName)
       const actionName = mutationActionName(mutationName)
-      return `useMutation({ mutationFn: ${actionName} })`
+      const invalidations = renderInvalidations(mutationName, 'queryClient')
+      return `useMutation({ mutationFn: (args: unknown[]) => ${actionName}(...args), onSuccess: () => { ${invalidations} } })`
     },
   )
 
-  // Translate useKeyedLakebedMutation(lakebed, 'name') → useKeyedMutation(nameAction)
+  // Translate useKeyedLakebedMutation to the framework-native keyed hook with
+  // exact query invalidation keys computed during export.
   // Handle both `const x = useKeyedLakebedMutation(lakebed, 'name')` and inline usage
   // Also handle multi-line calls where `lakebed` and `'name'` are on separate lines
   nextBody = nextBody.replace(
@@ -1495,7 +1541,10 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
     (_match, mutationName: string) => {
       dataKeys.mutations.add(mutationName)
       const actionName = mutationActionName(mutationName)
-      return `useKeyedMutation(${actionName})`
+      const invalidationKeys = invalidationKeysForMutation(mutationName).map(
+        (key) => [key],
+      )
+      return `useKeyedMutation(${actionName}, ${JSON.stringify(invalidationKeys)})`
     },
   )
 
@@ -2173,6 +2222,191 @@ const collectBlockSourceFiles = (
   return { files, dependencies }
 }
 
+type ExportSchemaNode = {
+  $ref?: string
+  items?: ExportSchemaNode
+  properties?: Record<string, ExportSchemaNode>
+  required?: string[]
+  type?: string
+}
+
+let exportSchemaDefs: Record<string, ExportSchemaNode> | null = null
+
+const getExportSchemaDefs = (): Record<string, ExportSchemaNode> => {
+  if (exportSchemaDefs) return exportSchemaDefs
+  try {
+    const schema = library.toJSONSchema() as Record<string, unknown>
+    exportSchemaDefs = (schema.$defs ?? schema.properties ?? {}) as Record<
+      string,
+      ExportSchemaNode
+    >
+  } catch {
+    exportSchemaDefs = {}
+  }
+  return exportSchemaDefs
+}
+
+const resolveExportSchemaNode = (
+  schema: ExportSchemaNode | undefined,
+): ExportSchemaNode | undefined => {
+  const reference = schema?.$ref
+  if (!reference) return schema
+  const name = reference.split('/').at(-1)
+  return name ? (getExportSchemaDefs()[name] ?? schema) : schema
+}
+
+const schemaAcceptsValue = (
+  schema: ExportSchemaNode | undefined,
+  value: unknown,
+): boolean => {
+  const resolved = resolveExportSchemaNode(schema)
+  if (!resolved?.type) return true
+  if (resolved.type === 'array') return Array.isArray(value)
+  if (resolved.type === 'object') {
+    return value !== null && typeof value === 'object' && !Array.isArray(value)
+  }
+  return typeof value === resolved.type
+}
+
+const normalizeValueForExportSchema = (
+  value: unknown,
+  schema: ExportSchemaNode | undefined,
+): unknown => {
+  const resolved = resolveExportSchemaNode(schema)
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      normalizeValueForExportSchema(item, resolved?.items),
+    )
+  }
+  if (
+    value === null ||
+    typeof value !== 'object' ||
+    isOpenUIElementNode(value) ||
+    !resolved?.properties
+  ) {
+    return value
+  }
+
+  const source = value as Record<string, unknown>
+  const properties = resolved.properties
+  const normalized: Record<string, unknown> = {}
+  const assigned = new Set<string>()
+  const unknownEntries: Array<[string, unknown]> = []
+
+  for (const [key, entryValue] of Object.entries(source)) {
+    if (properties[key]) {
+      normalized[key] = normalizeValueForExportSchema(
+        entryValue,
+        properties[key],
+      )
+      assigned.add(key)
+    } else {
+      unknownEntries.push([key, entryValue])
+    }
+  }
+
+  const required = resolved.required ?? []
+  const candidates = [
+    ...required,
+    ...Object.keys(properties).filter((key) => !required.includes(key)),
+  ].filter((key) => !assigned.has(key))
+
+  for (const [unknownKey, entryValue] of unknownEntries) {
+    const candidateIndex = candidates.findIndex((key) =>
+      schemaAcceptsValue(properties[key], entryValue),
+    )
+    if (candidateIndex >= 0) {
+      const [key] = candidates.splice(candidateIndex, 1)
+      if (key) {
+        normalized[key] = normalizeValueForExportSchema(
+          entryValue,
+          properties[key],
+        )
+        assigned.add(key)
+      }
+      continue
+    }
+    if (/^[A-Za-z_$][A-Za-z0-9_$-]*$/.test(unknownKey)) {
+      normalized[unknownKey] = entryValue
+    }
+  }
+
+  return normalized
+}
+
+const normalizeNodePropsForExport = (value: unknown): void => {
+  if (Array.isArray(value)) {
+    value.forEach(normalizeNodePropsForExport)
+    return
+  }
+  if (!isOpenUIElementNode(value)) return
+
+  const schema = getExportSchemaDefs()[value.typeName]
+  const normalized = normalizeValueForExportSchema(value.props, schema)
+  if (
+    normalized &&
+    typeof normalized === 'object' &&
+    !Array.isArray(normalized)
+  ) {
+    for (const key of Object.keys(value.props)) delete value.props[key]
+    Object.assign(value.props, normalized)
+  }
+  for (const propValue of Object.values(value.props)) {
+    normalizeNodePropsForExport(propValue)
+  }
+}
+
+const componentRole = (value: unknown): string => {
+  if (!isOpenUIElementNode(value)) return 'section'
+  const words = value.typeName.match(
+    /[A-Z]+(?=[A-Z][a-z]|\d|$)|[A-Z]?[a-z]+|\d+/g,
+  )
+  return slugifyRoute(words?.at(-1) ?? value.typeName).replaceAll('-', '_')
+}
+
+const canonicalizeRouteStructure = (
+  value: unknown,
+  routeName: string,
+  usedAnchors = new Map<string, number>(),
+): void => {
+  if (Array.isArray(value)) {
+    value.forEach((item) =>
+      canonicalizeRouteStructure(item, routeName, usedAnchors),
+    )
+    return
+  }
+  if (!isOpenUIElementNode(value)) return
+
+  if (value.typeName === 'SectionAnchor') {
+    const base = `${slugifyRoute(routeName).replaceAll('-', '_')}_${componentRole(value.props.children)}`
+    const count = usedAnchors.get(base) ?? 0
+    usedAnchors.set(base, count + 1)
+    value.props.id = count === 0 ? base : `${base}_${count + 1}`
+    if (
+      typeof value.props.className === 'string' &&
+      /[^\x00-\x7f]/.test(value.props.className)
+    ) {
+      const amount = value.props.className.match(/\d+/g)?.at(-1) ?? '28'
+      value.props.className = `scroll-mt-${amount}`
+    }
+  }
+
+  for (const propValue of Object.values(value.props)) {
+    canonicalizeRouteStructure(propValue, routeName, usedAnchors)
+  }
+}
+
+const semanticRouteName = (
+  parsed: ParsedOpenUIProgram,
+  label: string,
+  index: number,
+): string => {
+  const mapped = parsed.targetMap[label]?.split('#')[0]?.trim()
+  if (mapped && /[A-Za-z0-9]/.test(mapped)) return mapped
+  if (/[A-Za-z0-9]/.test(label)) return label
+  return index === 0 ? 'Home' : `Page ${index + 1}`
+}
+
 const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
   const usedPaths = new Set<string>()
   const usedNames = new Set<string>()
@@ -2182,20 +2416,23 @@ const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
   const routeCount = parsed.routes.length
   return parsed.pages.slice(0, routeCount).map((page, index) => {
     unwrapSingleObjectArgProps(page)
+    normalizeNodePropsForExport(page)
     const label = parsed.routes[index] ?? `Page ${index + 1}`
+    const routeName = semanticRouteName(parsed, label, index)
+    canonicalizeRouteStructure(page, routeName)
     if (!page.typeName || page.typeName === 'PageSwitch') {
       throw new Error(
         `React export cannot render route "${label}" because it does not resolve to a page component`,
       )
     }
-    const baseName = `${toIdentifier(label)}Page`
+    const baseName = `${toIdentifier(routeName)}Page`
     const componentName = usedNames.has(baseName)
       ? `${baseName}${index + 1}`
       : baseName
     usedNames.add(componentName)
     return {
       label,
-      path: uniqueRoutePath(label, index, usedPaths),
+      path: uniqueRoutePath(routeName, index, usedPaths),
       componentName,
       node: page,
       props: page.props as Record<string, unknown>,
@@ -2892,29 +3129,30 @@ ${renderRouteNode(route.node)}
 }
 
 const dependencyVersions: Record<string, string> = {
-  '@types/node': '^22.10.2',
-  '@types/react': '^19.2.0',
-  '@types/react-dom': '^19.2.0',
-  '@tailwindcss/postcss': '^4.1.18',
-  '@tailwindcss/vite': '^4.1.18',
-  '@vitejs/plugin-react': '^6.0.1',
-  postcss: '^8.5.6',
-  vite: '^8.0.0',
-  typescript: '^6.0.2',
-  react: '^19.2.0',
-  'react-dom': '^19.2.0',
-  'react-router-dom': '^7.10.1',
-  next: '^16.0.8',
-  tailwindcss: '^4.1.18',
-  'lucide-react': '^0.577.0',
-  clsx: '^2.1.1',
-  'tailwind-merge': '^3.5.0',
-  '@radix-ui/react-slot': '^1.2.4',
-  'class-variance-authority': '^0.7.1',
-  'radix-ui': '^1.4.3',
-  '@tanstack/react-query': '^5.90.19',
-  '@shoojs/react': '^0.1.0',
-  'framer-motion': '^12.40.0',
+  '@types/node': '22.10.2',
+  '@types/react': '19.2.0',
+  '@types/react-dom': '19.2.0',
+  '@tailwindcss/postcss': '4.1.18',
+  '@tailwindcss/vite': '4.1.18',
+  '@vitejs/plugin-react': '6.0.1',
+  postcss: '8.5.6',
+  vite: '8.0.0',
+  typescript: '6.0.2',
+  react: '19.2.0',
+  'react-dom': '19.2.0',
+  'react-router-dom': '7.10.1',
+  next: '16.0.8',
+  tailwindcss: '4.1.18',
+  'lucide-react': '0.577.0',
+  clsx: '2.1.1',
+  cmdk: '1.1.1',
+  'tailwind-merge': '3.5.0',
+  '@radix-ui/react-slot': '1.2.4',
+  'class-variance-authority': '0.7.1',
+  'radix-ui': '1.4.3',
+  '@tanstack/react-query': '5.101.0',
+  '@shoojs/react': '0.1.0',
+  'framer-motion': '12.40.0',
 }
 
 const toDependencyRecord = (names: Iterable<string>): Record<string, string> =>
@@ -3353,7 +3591,7 @@ const renderNextPackageJson = (
       version: '0.0.0',
       packageManager: 'bun@1.2.5',
       scripts: {
-        dev: 'next dev',
+        dev: 'next dev --turbopack',
         build: 'NODE_ENV=production next build',
         start: 'next start',
       },
@@ -3363,6 +3601,38 @@ const renderNextPackageJson = (
     null,
     2,
   )
+
+const renderBunLock = (
+  projectName: string,
+  dependencies: Record<string, string>,
+  devDependencies: Record<string, string>,
+): string => {
+  const workspace = {
+    name: toProjectSlug(projectName),
+    dependencies,
+    devDependencies,
+  }
+  try {
+    const lock = JSON.parse(
+      readFileSync(join(process.cwd(), 'bun.lock'), 'utf8'),
+    ) as {
+      workspaces?: Record<string, unknown>
+      [key: string]: unknown
+    }
+    return JSON.stringify({ ...lock, workspaces: { '': workspace } }, null, 2)
+  } catch {
+    return JSON.stringify(
+      {
+        lockfileVersion: 1,
+        configVersion: 0,
+        workspaces: { '': workspace },
+        packages: {},
+      },
+      null,
+      2,
+    )
+  }
+}
 
 const renderViteConfig =
   (): string => `import tailwindcss from '@tailwindcss/vite'
@@ -3393,8 +3663,6 @@ const renderReadme = (
       : ['bun install', 'bun dev', 'bun run build', 'bun run start']
 
   return `# ${projectName}
-
-Generated with [ShipFast](https://ship-fast.io) 🚀.
 
 ## Run locally
 
@@ -3471,6 +3739,21 @@ const renderRouteData = (
   const propsUnion =
     componentNames.map((name) => `${name}Props`).join(' | ') ||
     'Record<string, never>'
+  const routeConstants = routes
+    .map(
+      (route) =>
+        `export const ${route.componentName}Route = ${JSON.stringify(
+          {
+            label: route.label,
+            path: route.path,
+            component: route.componentName,
+            props: route.props,
+          },
+          null,
+          2,
+        )} satisfies SiteRoute`,
+    )
+    .join('\n\n')
   return `${typeImports}
 
 export type PageProps = ${propsUnion}
@@ -3481,6 +3764,8 @@ export type SiteRoute = {
   component: ${componentNames.map((name) => JSON.stringify(name)).join(' | ') || 'never'}
   props: Record<string, unknown>
 }
+
+${routeConstants}
 
 export const routes = ${JSON.stringify(serializedRoutes, null, 2)} satisfies SiteRoute[]
 `
@@ -3497,6 +3782,41 @@ const renderExportLogoComponent = (input: OpenUIExportInput): string => {
   const logo = typeof selection?.logo === 'string' ? selection.logo.trim() : ''
   const src = icon || logo || ''
   const brandName = selection?.name ?? ''
+  if (src && !icon) {
+    return `import { cn } from '../lib/cn'
+
+type LogoProps = {
+  [key: string]: unknown
+  brand?: string
+  className?: string
+  imageClassName?: string
+  labelClassName?: string
+}
+
+export function Logo(props: LogoProps) {
+  const brand = props.brand ?? ${JSON.stringify(brandName)}
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          'inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent',
+          props.className,
+        )}
+      >
+        <img
+          alt=""
+          className={cn('block size-full object-contain', props.imageClassName)}
+          draggable={false}
+          src=${JSON.stringify(src)}
+        />
+      </span>
+      <span className={props.labelClassName}>{brand}</span>
+    </>
+  )
+}
+`
+  }
   return `import type { ReactNode } from 'react'
 import { cn } from '../lib/cn'
 
@@ -3546,35 +3866,35 @@ export function Logo({
 `
 }
 
-const renderReactApp = (
-  componentNames: string[],
-  _input: OpenUIExportInput,
-): string => {
-  const imports = componentNames
-    .map((name) => `import { ${name} } from './components/${name}'`)
+const renderReactApp = (routes: ExportRoute[]): string => {
+  const imports = routes
+    .map(
+      (route) =>
+        `import { ${route.componentName} } from './components/${route.componentName}'`,
+    )
     .join('\n')
-  const mapEntries = componentNames.map((name) => `  ${name},`).join('\n')
+  const routeImports = routes
+    .map((route) => `${route.componentName}Route`)
+    .join(', ')
+  const routeElements = routes
+    .map(
+      (route) =>
+        `<Route path={${route.componentName}Route.path} element={<${route.componentName} {...${route.componentName}Route.props} />} />`,
+    )
+    .join('\n        ')
+  const firstRoute = routes[0]
+  const fallbackPath = firstRoute
+    ? `${firstRoute.componentName}Route.path`
+    : `'/'`
   const appTree = `<BrowserRouter>
       <Routes>
-        {routes.map((route) => (
-          <Route key={route.path} path={route.path} element={<RoutePage route={route} />} />
-        ))}
-        <Route path="*" element={<Navigate to={routes[0]?.path ?? '/'} replace />} />
+        ${routeElements}
+        <Route path="*" element={<Navigate to={${fallbackPath}} replace />} />
       </Routes>
     </BrowserRouter>`
-  return `import type { ComponentType } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { routes } from './data/pages'
+  return `import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ${routeImports} } from './data/pages'
 ${imports}
-
-const components = {
-${mapEntries}
-}
-
-function RoutePage({ route }: { route: (typeof routes)[number] }) {
-  const Page = components[route.component] as ComponentType<any>
-  return <Page {...route.props} />
-}
 
 export default function App() {
   return (
@@ -3596,7 +3916,10 @@ import { createRoot } from 'react-dom/client'
 ${providerImports}import App from './App'
 import './styles.css'
 
-createRoot(document.getElementById('root')!).render(
+const root = document.getElementById('root')
+if (!root) throw new Error('Missing application root')
+
+createRoot(root).render(
   <React.StrictMode>
     ${app}
   </React.StrictMode>,
@@ -3615,24 +3938,13 @@ const renderNextRoutePage = (
   const viewportExport = routeSeo
     ? `${renderNextViewportExport(routeSeo)}\n\n`
     : ''
-  const jsonLdBlock = routeSeo ? renderJsonLdScript(routeSeo) : ''
-  // jsonLdBlock contains a module-level `const jsonLd = {...}` declaration
-  // plus a `<script>` JSX element. Split them: declaration goes before the
-  // component, script goes inside the JSX.
-  let jsonLdDecl = ''
-  let jsonLdJsx = ''
-  if (jsonLdBlock) {
-    const scriptIdx = jsonLdBlock.indexOf('<script')
-    if (scriptIdx >= 0) {
-      jsonLdDecl = `${jsonLdBlock.slice(0, scriptIdx).trim()}\n\n`
-      jsonLdJsx = `\n      ${jsonLdBlock.slice(scriptIdx).trim()}`
-    } else {
-      jsonLdJsx = `\n      ${jsonLdBlock}`
-    }
-  }
+  const jsonLd = routeSeo?.structuredDataJson?.replace(/</g, '\\u003c') ?? ''
+  const jsonLdJsx = jsonLd
+    ? `\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ${JSON.stringify(jsonLd)} }} />`
+    : ''
   return `import { ${componentName} } from '${componentImportPath}'
 
-${jsonLdDecl}${metadataExport}${viewportExport}export default function Page() {
+${metadataExport}${viewportExport}export default function Page() {
   return (
     <>
       <${componentName} />${jsonLdJsx}
@@ -3754,12 +4066,17 @@ const buildReactExport = async (
       dependencies,
       devDependencies,
     ),
+    'bun.lock': renderBunLock(
+      parsed.projectName,
+      dependencies,
+      devDependencies,
+    ),
     'index.html': indexHtml,
     'tsconfig.json': renderTsConfig(),
     'src/vite-env.d.ts': renderViteEnv(),
     'vite.config.ts': renderViteConfig(),
     'src/main.tsx': renderReactMain(usesLakebed, dataKeys.usesAuth),
-    'src/App.tsx': renderReactApp(routeComponentNames, input),
+    'src/App.tsx': renderReactApp(routes),
     'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
     'src/lib/image.tsx': renderImageHelper(imageSources),
@@ -3772,7 +4089,9 @@ const buildReactExport = async (
       dataKeys,
       extractCollections(routes),
     )
-    files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook()
+    files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook(
+      dataKeys.queries,
+    )
     files['src/lib/query-provider.tsx'] = renderQueryClientProvider()
     if (dataKeys.usesAuth) {
       files['src/lib/auth.tsx'] = renderShooAuthProvider()
@@ -3871,6 +4190,11 @@ const buildNextExport = async (
       dependencies,
       devDependencies,
     ),
+    'bun.lock': renderBunLock(
+      parsed.projectName,
+      dependencies,
+      devDependencies,
+    ),
     'postcss.config.mjs': renderNextPostcssConfig(),
     'next.config.mjs':
       'import { dirname } from "node:path"\nimport { fileURLToPath } from "node:url"\n\nconst projectRoot = dirname(fileURLToPath(import.meta.url))\n\n/** @type {import("next").NextConfig} */\nconst nextConfig = {\n  images: {\n    remotePatterns: [\n      { protocol: "https", hostname: "images.pexels.com" },\n      { protocol: "https", hostname: "picsum.photos" },\n      { protocol: "https", hostname: "images.unsplash.com" },\n    ],\n  },\n  turbopack: {\n    root: projectRoot,\n  },\n}\n\nexport default nextConfig\n',
@@ -3898,7 +4222,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
       extractCollections(routes),
     )
     files['src/lib/query-provider.tsx'] = renderQueryClientProvider()
-    files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook()
+    files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook(
+      dataKeys.queries,
+    )
     files['app/actions/server-actions.ts'] = renderNextServerActions(dataKeys)
     if (dataKeys.usesAuth) {
       files['src/lib/auth.tsx'] = renderShooAuthProvider()
