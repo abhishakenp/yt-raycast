@@ -1201,11 +1201,6 @@ export function InlineEditToolbar({
 
   if (!isOpen || !anchorRect || !activeElement) return null
 
-  // Short label for the capsule (e.g. "CoworkingHero" → "Hero").
-  // Shown as a badge in the toolbar so the user knows which capsule they're editing.
-  const capsuleShortLabel = capsuleName
-    ? capsuleName.replace(/^Coworking|^SaaS|^Blog|^Portfolio|^Startup/, '')
-    : undefined
   // Use the same logic as findTextElement — if the element can be
   // contentEditable text, it gets the full text toolbar.
   const isTextElement = isEditableTextLeaf(activeElement)
@@ -1248,14 +1243,6 @@ export function InlineEditToolbar({
             data-inline-toolbar-scroll="true"
             className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {canCapsuleEdit && capsuleShortLabel && (
-              <span
-                className="shrink-0 rounded bg-cyan-300/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-cyan-200"
-                title={`Editing ${capsuleName} (${capsuleStatementId})`}
-              >
-                {capsuleShortLabel}
-              </span>
-            )}
             {selectableParent && (
               <Tooltip>
                 <TooltipTrigger asChild>

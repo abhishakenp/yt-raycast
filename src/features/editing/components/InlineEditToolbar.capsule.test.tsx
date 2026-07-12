@@ -753,31 +753,6 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       expect(screen.queryByText('columns')).toBeNull()
     })
 
-    it('shows capsule badge label when inside a capsule', () => {
-      mockActions.sectionData = { columns: 3, features: [] }
-      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
-      renderToolbar({ activeElement: child, sessionId: 'sess-1' })
-
-      // The badge should show "Features" (CoworkingFeatures → Features)
-      expect(screen.getByText('Features')).toBeTruthy()
-    })
-
-    it('shows capsule badge label for CoworkingHero', () => {
-      mockActions.sectionData = {}
-      const child = makeChildInsideCapsule('CoworkingHero', 'home_hero')
-      renderToolbar({ activeElement: child, sessionId: 'sess-1' })
-
-      expect(screen.getByText('Hero')).toBeTruthy()
-    })
-
-    it('shows capsule badge label for CoworkingPricing', () => {
-      mockActions.sectionData = { tiers: [] }
-      const child = makeChildInsideCapsule('CoworkingPricing', 'home_pricing')
-      renderToolbar({ activeElement: child, sessionId: 'sess-1' })
-
-      expect(screen.getByText('Pricing')).toBeTruthy()
-    })
-
     it('still allows opening the full Capsule controls panel alongside inline', () => {
       mockActions.sectionData = { columns: 3, features: [] }
       const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
