@@ -31,11 +31,11 @@ import { useCapsulePropResolver } from './useCapsulePropResolver'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-const makeCapsuleElement = (
+function makeCapsuleElement(
   capsuleName: string,
   statementId: string,
   innerHTML: string,
-): HTMLElement => {
+): HTMLElement {
   const root = document.createElement('div')
   root.setAttribute('data-openui-component', capsuleName)
   root.setAttribute('data-openui-var', statementId)
@@ -44,7 +44,7 @@ const makeCapsuleElement = (
   return root
 }
 
-const removeCapsule = (el: HTMLElement) => {
+function removeCapsule(el: HTMLElement) {
   el.remove()
 }
 

@@ -11,9 +11,9 @@ export type SessionTaskStatus = 'pending' | 'running' | 'succeeded' | 'failed'
  * will never arrive, so we collapse any stale streaming status carrying an
  * errorCode into a `failed` status so the dashboard can render the error.
  */
-export const normalizeSessionStatus = (
+export function normalizeSessionStatus(
   session: Doc<'sessions'>,
-): Doc<'sessions'>['status'] => {
+): Doc<'sessions'>['status'] {
   const fallbackStatus =
     session.status ??
     (session.genuiStatus === 'done' ? 'preview_ready' : 'queued')
@@ -23,44 +23,48 @@ export const normalizeSessionStatus = (
   return fallbackStatus
 }
 
-export const serializeSession = (session: Doc<'sessions'>) => ({
-  sessionId: session._id,
-  userId: session.userId,
-  canClaimAnonymous:
-    session.userId === undefined && session.anonOwnerSecretHash !== undefined,
-  prompt: session.prompt,
-  workspace: session.workspace,
-  status: normalizeSessionStatus(session),
-  preferredLanguage: session.preferredLanguage,
-  preferredExportTarget: session.preferredExportTarget,
-  isPrivate: session.isPrivate,
-  previewVersion: session.previewVersion ?? 0,
-  elapsed: session.elapsed ?? null,
-  createdAt: session.createdAt,
-  updatedAt: session.updatedAt ?? session.createdAt,
-  errorCode: session.errorCode,
-  errorMessage: session.errorMessage,
-  deploymentSlug: session.deploymentSlug,
-  designReferenceUrls: session.designReferenceUrls ?? [],
-  designReferenceNotes: session.designReferenceNotes ?? '',
-  cloneUrl: session.cloneUrl,
-  designReferenceFingerprint: session.designReferenceFingerprint,
-  engineVersion: session.engineVersion,
-  themeOverride: (session.themeOverride as string | undefined) ?? null,
-  themeMode:
-    session.themeMode === 'light' || session.themeMode === 'dark'
-      ? session.themeMode
-      : null,
-  selectedBrandLogo: session.selectedBrandLogo ?? null,
-})
+export function serializeSession(session: Doc<'sessions'>) {
+  return {
+    sessionId: session._id,
+    userId: session.userId,
+    canClaimAnonymous:
+      session.userId === undefined && session.anonOwnerSecretHash !== undefined,
+    prompt: session.prompt,
+    workspace: session.workspace,
+    status: normalizeSessionStatus(session),
+    preferredLanguage: session.preferredLanguage,
+    preferredExportTarget: session.preferredExportTarget,
+    isPrivate: session.isPrivate,
+    previewVersion: session.previewVersion ?? 0,
+    elapsed: session.elapsed ?? null,
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt ?? session.createdAt,
+    errorCode: session.errorCode,
+    errorMessage: session.errorMessage,
+    deploymentSlug: session.deploymentSlug,
+    designReferenceUrls: session.designReferenceUrls ?? [],
+    designReferenceNotes: session.designReferenceNotes ?? '',
+    cloneUrl: session.cloneUrl,
+    designReferenceFingerprint: session.designReferenceFingerprint,
+    engineVersion: session.engineVersion,
+    themeOverride: (session.themeOverride as string | undefined) ?? null,
+    themeMode:
+      session.themeMode === 'light' || session.themeMode === 'dark'
+        ? session.themeMode
+        : null,
+    selectedBrandLogo: session.selectedBrandLogo ?? null,
+  }
+}
 
-export const toTaskStatus = (status: EngineTaskStatus): SessionTaskStatus =>
-  ({
+export function toTaskStatus(status: EngineTaskStatus): SessionTaskStatus {
+  return {
     PENDING: 'pending',
     IN_PROGRESS: 'running',
     DONE: 'succeeded',
     FAILED: 'failed',
-  })[status] as SessionTaskStatus
+  }[status] as SessionTaskStatus
+}
 
-export const toTaskKey = (engineTaskId: string): string =>
-  engineTaskId === 'home.openui' ? 'homepage' : engineTaskId
+export function toTaskKey(engineTaskId: string): string {
+  return engineTaskId === 'home.openui' ? 'homepage' : engineTaskId
+}

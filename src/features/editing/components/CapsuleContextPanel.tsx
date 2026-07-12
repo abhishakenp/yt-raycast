@@ -44,31 +44,34 @@ interface CapsuleContextPanelProps {
   handleRef?: React.MutableRefObject<CapsulePanelHandle | null>
 }
 
-export const CapsuleContextPanel = ({
+export function CapsuleContextPanel({
   capsuleName,
   statementId,
   sessionId,
   anonymousOwnerSecret,
   handleRef,
-}: CapsuleContextPanelProps) => (
-  <LakebedSessionProvider
-    sessionId={sessionId}
-    anonymousOwnerSecret={anonymousOwnerSecret}
-  >
-    <CapsuleContextPanelInner
-      capsuleName={capsuleName}
-      statementId={statementId}
-      handleRef={handleRef}
-    />
-  </LakebedSessionProvider>
-)
+}: CapsuleContextPanelProps) {
+  return (
+    <LakebedSessionProvider
+      sessionId={sessionId}
+      anonymousOwnerSecret={anonymousOwnerSecret}
+    >
+      <CapsuleContextPanelInner
+        capsuleName={capsuleName}
+        statementId={statementId}
+        handleRef={handleRef}
+      />
+    </LakebedSessionProvider>
+  )
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v)
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
 
-const lookupCapsuleSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
+function lookupCapsuleSchema(capsuleName: string): CapsuleSchemaInfo | null {
   const capsule = allCapsules.find((c) => c.client.name === capsuleName)
   if (!capsule) return null
   const propsSchema = capsule.client.props
@@ -77,12 +80,15 @@ const lookupCapsuleSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
   return hasContextInfo(info) ? info : null
 }
 
-const titleCase = (s: string) =>
-  s.charAt(0).toUpperCase() +
-  s
-    .slice(1)
-    .replace(/([A-Z])/g, ' $1')
-    .trim()
+function titleCase(s: string) {
+  return (
+    s.charAt(0).toUpperCase() +
+    s
+      .slice(1)
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+  )
+}
 
 const LONG_TEXT_KEYS = new Set([
   'description',
@@ -120,17 +126,19 @@ const SUBTITLE_FIELD_KEYS = [
   'period',
 ]
 
-const findTitleField = (itemFields: CollectionField[]): string | undefined =>
-  itemFields.find((f) => TITLE_FIELD_KEYS.includes(f.key))?.key
+function findTitleField(itemFields: CollectionField[]): string | undefined {
+  return itemFields.find((f) => TITLE_FIELD_KEYS.includes(f.key))?.key
+}
 
-const findSubtitleField = (itemFields: CollectionField[]): string | undefined =>
-  itemFields.find((f) => SUBTITLE_FIELD_KEYS.includes(f.key))?.key
+function findSubtitleField(itemFields: CollectionField[]): string | undefined {
+  return itemFields.find((f) => SUBTITLE_FIELD_KEYS.includes(f.key))?.key
+}
 
-const extractItemTitle = (
+function extractItemTitle(
   item: unknown,
   titleField: string | undefined,
   fallback: string,
-): string => {
+): string {
   if (!titleField || !isPlainObject(item)) return fallback
   const val = item[titleField]
   return typeof val === 'string' && val.trim() ? val : fallback
@@ -138,7 +146,7 @@ const extractItemTitle = (
 
 // ─── Inner panel ────────────────────────────────────────────────────────────
 
-const CapsuleContextPanelInner = ({
+function CapsuleContextPanelInner({
   capsuleName,
   statementId,
   handleRef,
@@ -146,7 +154,7 @@ const CapsuleContextPanelInner = ({
   capsuleName: string
   statementId: string
   handleRef?: React.MutableRefObject<CapsulePanelHandle | null>
-}) => {
+}) {
   const actions = useSectionCapsuleActions(capsuleName, statementId)
   const schemaInfo = useMemo(
     () => lookupCapsuleSchema(capsuleName),
@@ -216,7 +224,7 @@ const CapsuleContextPanelInner = ({
     }
   }, [handleRef, commit, discard])
 
-  const bufferedValue = (key: string, backend: unknown) =>
+  const bufferedValue = (key, backend) =>
     key in pendingScalars ? pendingScalars[key] : backend
 
   if (!schemaInfo) return null
@@ -292,7 +300,7 @@ const CapsuleContextPanelInner = ({
 
 // ─── Variant ────────────────────────────────────────────────────────────────
 
-const BentoVariant = ({
+function BentoVariant({
   variantKey,
   options,
   currentValue,
@@ -302,37 +310,39 @@ const BentoVariant = ({
   options: { value: string | number | boolean; label: string }[]
   currentValue: unknown
   onBuffer: (value: unknown) => void
-}) => (
-  <div className="col-span-3 flex items-center gap-2 rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5">
-    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-white/35">
-      {variantKey}
-    </span>
-    <div className="flex gap-0.5 rounded-md bg-black/20 p-0.5">
-      {options.map((option) => {
-        const isActive = currentValue === option.value
-        return (
-          <button
-            key={String(option.value)}
-            type="button"
-            onClick={() => onBuffer(option.value)}
-            className={cn(
-              'rounded px-2.5 py-0.5 text-xs font-semibold transition-all',
-              isActive
-                ? 'bg-cyan-300/20 text-cyan-100'
-                : 'text-white/40 hover:text-white',
-            )}
-          >
-            {option.label}
-          </button>
-        )
-      })}
+}) {
+  return (
+    <div className="col-span-3 flex items-center gap-2 rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5">
+      <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-white/35">
+        {variantKey}
+      </span>
+      <div className="flex gap-0.5 rounded-md bg-black/20 p-0.5">
+        {options.map((option) => {
+          const isActive = currentValue === option.value
+          return (
+            <button
+              key={String(option.value)}
+              type="button"
+              onClick={() => onBuffer(option.value)}
+              className={cn(
+                'rounded px-2.5 py-0.5 text-xs font-semibold transition-all',
+                isActive
+                  ? 'bg-cyan-300/20 text-cyan-100'
+                  : 'text-white/40 hover:text-white',
+              )}
+            >
+              {option.label}
+            </button>
+          )
+        })}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 // ─── Collection ─────────────────────────────────────────────────────────────
 
-const BentoCollection = ({
+function BentoCollection({
   collectionKey,
   itemFields,
   items,
@@ -358,7 +368,7 @@ const BentoCollection = ({
   pendingRemoves: number[]
   onReorderLocal: (order: number[]) => void
   onRemoveLocal: (index: number) => void
-}) => {
+}) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
   const [draftItem, setDraftItem] = useState<Record<string, unknown> | null>(
     null,
@@ -398,7 +408,7 @@ const BentoCollection = ({
   const cancelDraft = useCallback(() => setDraftItem(null), [])
 
   const handleReorder = useCallback(
-    (fromIndex: number, toIndex: number) => {
+    (fromIndex, toIndex) => {
       // Buffer reorder in parent state — only persist on Apply, discard on close
       const nextOrder = [...sortableItems]
       const [moved] = nextOrder.splice(fromIndex, 1)
@@ -408,7 +418,7 @@ const BentoCollection = ({
     [sortableItems, onReorderLocal],
   )
 
-  const getItemValue = (i: number) => String(i)
+  const getItemValue = (i) => String(i)
 
   return (
     <div className="col-span-3 flex flex-col gap-1.5 rounded-md border border-white/8 bg-white/[0.03] p-2.5">
@@ -635,13 +645,13 @@ const BentoCollection = ({
 
 // ─── Delete with confirmation dialog ────────────────────────────────────────
 
-const DeleteWithConfirm = ({
+function DeleteWithConfirm({
   itemLabel,
   onConfirm,
 }: {
   itemLabel: string
   onConfirm: () => void
-}) => {
+}) {
   const [open, setOpen] = useState(false)
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -707,7 +717,7 @@ const GripIcon = () => (
 
 // ─── Field input (inside collection items — inline editing) ─────────────────
 
-const FieldInput = ({
+function FieldInput({
   field,
   value,
   onChange,
@@ -715,7 +725,7 @@ const FieldInput = ({
   field: CollectionField
   value: unknown
   onChange: (value: unknown) => void
-}) => {
+}) {
   const isWide = field.type === 'array-string' || LONG_TEXT_KEYS.has(field.key)
   const labelText = titleCase(field.key)
 
@@ -797,7 +807,7 @@ const FieldInput = ({
 
 // ─── Scalar ─────────────────────────────────────────────────────────────────
 
-const BentoScalar = ({
+function BentoScalar({
   scalarKey,
   type,
   currentValue,
@@ -807,7 +817,7 @@ const BentoScalar = ({
   type: 'string' | 'number' | 'boolean'
   currentValue: unknown
   onBuffer: (value: unknown) => void
-}) => {
+}) {
   const placeholder = titleCase(scalarKey)
   const isLong = LONG_TEXT_KEYS.has(scalarKey)
 

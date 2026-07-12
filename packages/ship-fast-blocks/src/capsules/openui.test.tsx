@@ -262,7 +262,7 @@ describe('withLakebed', () => {
 
   it('wraps a renderer and provides a lakebed client with expected runtime shape', () => {
     let capturedLakebed: Record<string, unknown> | undefined
-    const mockRenderer = (input: { lakebed: Record<string, unknown> }) => {
+    const mockRenderer = (input) => {
       capturedLakebed = input.lakebed
       return null
     }

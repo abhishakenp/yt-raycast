@@ -152,7 +152,7 @@ const BLOCKED_REGEX = [
   /\bf[a@]gg[o0]t[s]?\b/i,
 ]
 
-const applyLeet = (s: string) => {
+function applyLeet(s: string) {
   let out = ''
   for (const ch of s) {
     const low = ch.toLowerCase()
@@ -161,7 +161,7 @@ const applyLeet = (s: string) => {
   return out
 }
 
-export const normalizePolicyText = (raw: unknown) => {
+export function normalizePolicyText(raw: unknown) {
   const t = String(raw ?? '')
     .normalize('NFKC')
     .toLowerCase()
@@ -172,7 +172,7 @@ export const normalizePolicyText = (raw: unknown) => {
   return { spaced, leetSpaced, collapsed }
 }
 
-export const checkPromptContentPolicy = (raw: unknown) => {
+export function checkPromptContentPolicy(raw: unknown) {
   const text = typeof raw === 'string' ? raw.trim() : ''
   if (!text) return { ok: true as const }
   const { spaced, leetSpaced, collapsed } = normalizePolicyText(text)

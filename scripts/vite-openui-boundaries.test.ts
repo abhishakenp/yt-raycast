@@ -23,16 +23,21 @@ const codeSplitting = Array.isArray(rolldownOutput)
 
 const groups = (codeSplitting?.groups ?? []) as CodeSplittingGroup[]
 
-const findGroup = (name: string) => groups.find((g) => g.name === name) ?? null
+function findGroup(name: string) {
+  return groups.find((g) => g.name === name) ?? null
+}
 
 const runtimeGroup = groups.find((g) => typeof g.name === 'function') as
   | CodeSplittingGroup
   | undefined
 
-const runtimeChunkName = (moduleId: string) =>
-  (runtimeGroup?.name as (moduleId: string) => string | null)(moduleId)
+function runtimeChunkName(moduleId: string) {
+  return (runtimeGroup?.name as (moduleId: string) => string | null)(moduleId)
+}
 
-const runtimeTest = (moduleId: string) => runtimeGroup?.test(moduleId) ?? false
+function runtimeTest(moduleId: string) {
+  return runtimeGroup?.test(moduleId) ?? false
+}
 
 describe('Vite OpenUI chunk boundaries', () => {
   it('keeps generated metadata out of the browser runtime chunk group', () => {

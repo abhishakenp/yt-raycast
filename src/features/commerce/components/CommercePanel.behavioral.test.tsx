@@ -43,17 +43,19 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: () => undefined,
 }))
 
-const okResponse = (body: unknown): Response =>
-  ({
+function okResponse(body: unknown): Response {
+  return {
     ok: true,
     json: async () => body,
-  }) as Response
+  } as Response
+}
 
-const errorResponse = (body: unknown): Response =>
-  ({
+function errorResponse(body: unknown): Response {
+  return {
     ok: false,
     json: async () => body,
-  }) as Response
+  } as Response
+}
 
 describe('CommercePanel (behavioral)', () => {
   beforeEach(() => {
@@ -73,7 +75,7 @@ describe('CommercePanel (behavioral)', () => {
       )
     vi.stubGlobal(
       'fetch',
-      vi.fn((...args: unknown[]) => {
+      vi.fn((...args) => {
         void args
         return fetchState.impl?.()
       }),

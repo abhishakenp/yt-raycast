@@ -100,18 +100,20 @@ type FlightHudInput = {
   boosting: boolean
 }
 
-export const getFlightHudReadout = ({
+export function getFlightHudReadout({
   altitude,
   headingRadians,
   speedUnits,
   thrusting,
   boosting,
-}: FlightHudInput) => ({
-  altitude: altitude.toFixed(1),
-  heading: String(Math.round(((headingRadians * 180) / Math.PI + 360) % 360)),
-  speed: (speedUnits * 3.6).toFixed(0),
-  throttle: String(boosting ? 300 : thrusting ? 100 : 0),
-})
+}: FlightHudInput) {
+  return {
+    altitude: altitude.toFixed(1),
+    heading: String(Math.round(((headingRadians * 180) / Math.PI + 360) % 360)),
+    speed: (speedUnits * 3.6).toFixed(0),
+    throttle: String(boosting ? 300 : thrusting ? 100 : 0),
+  }
+}
 
 /**
  * FlightSimulator — a single-player Three.js flight sim.
@@ -283,17 +285,17 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
               initializeGame()
             },
             undefined,
-            (url: string) => {
+            (url) => {
               console.error('Failed to load ' + url)
               if (!disposed) setError('Failed to load: ' + url)
             },
           )
 
           const gltfLoader = new GLTFLoader(loadingManager)
-          gltfLoader.load(MODEL_URL, (gltf: { scene: THREE.Object3D }) => {
+          gltfLoader.load(MODEL_URL, (gltf) => {
             loadedModelTemplate = gltf.scene
             loadedModelTemplate.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE)
-            loadedModelTemplate.traverse((child: THREE.Object3D) => {
+            loadedModelTemplate.traverse((child) => {
               if ((child as THREE.Mesh).isMesh) {
                 ;(child as THREE.Mesh).castShadow = true
               }
@@ -302,7 +304,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
           })
 
           const textureLoader = new THREE.TextureLoader(loadingManager)
-          textureLoader.load(ROAD_TEXTURE_URL, (texture: THREE.Texture) => {
+          textureLoader.load(ROAD_TEXTURE_URL, (texture) => {
             texture.wrapS = THREE.RepeatWrapping
             texture.wrapT = THREE.RepeatWrapping
             roadTexture = texture
@@ -904,7 +906,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
         }
 
         function createBlimp() {
-          const makeBlimp = (color: number) => {
+          const makeBlimp = (color) => {
             const group = new THREE.Group()
             const bodyGeo = new THREE.SphereGeometry(20, 32, 32)
             bodyGeo.scale(1, 1, 2.7)
@@ -1005,9 +1007,9 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
           playerVelocity = new THREE.Vector3()
           playerAngularVelocity = new THREE.Vector3()
 
-          const glslVec3FromHex = (hex: string, mult = 1) => {
+          const glslVec3FromHex = (hex, mult = 1) => {
             const c = hex.replace('#', '')
-            const f = (i: number) =>
+            const f = (i) =>
               Math.min(255, parseInt(c.slice(i, i + 2), 16) * mult) / 255
             return `vec3(${f(0).toFixed(3)}, ${f(2).toFixed(3)}, ${f(4).toFixed(3)})`
           }
@@ -1017,7 +1019,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
           // produced `vec3(NaN, NaN, NaN)`, which fails shader compilation and
           // makes the whole aircraft invisible. Only recolor on a real 3/6-digit
           // hex; otherwise keep the model's natural materials.
-          const normalizeHex = (v: unknown): string | null => {
+          const normalizeHex = (v) => {
             if (typeof v !== 'string') return null
             const c = v.trim().replace(/^#/, '')
             if (/^[0-9a-fA-F]{6}$/.test(c)) return `#${c}`
@@ -1034,7 +1036,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
                   ? child.material[0]
                   : child.material
 
-                mat.onBeforeCompile = (shader: any) => {
+                mat.onBeforeCompile = (shader) => {
                   shader.fragmentShader = shader.fragmentShader.replace(
                     '#include <dithering_fragment>',
                     `
@@ -1157,40 +1159,37 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
 
         // --- Clouds ---
         function createClouds() {
-          new THREE.TextureLoader().load(
-            CLOUD_TEXTURE_URL,
-            (cloudTexture: THREE.Texture) => {
-              if (disposed) return
-              const geo = new THREE.BufferGeometry()
-              const positions: number[] = []
-              for (let i = 0; i < CLOUD_COUNT; i++) {
-                positions.push(
-                  (Math.random() - 0.5) * CLOUD_AREA_XZ,
-                  Math.random() * (CLOUD_ALTITUDE_MAX - CLOUD_ALTITUDE_MIN) +
-                    CLOUD_ALTITUDE_MIN,
-                  (Math.random() - 0.5) * CLOUD_AREA_XZ,
-                )
-              }
-              geo.setAttribute(
-                'position',
-                new THREE.Float32BufferAttribute(positions, 3),
+          new THREE.TextureLoader().load(CLOUD_TEXTURE_URL, (cloudTexture) => {
+            if (disposed) return
+            const geo = new THREE.BufferGeometry()
+            const positions: number[] = []
+            for (let i = 0; i < CLOUD_COUNT; i++) {
+              positions.push(
+                (Math.random() - 0.5) * CLOUD_AREA_XZ,
+                Math.random() * (CLOUD_ALTITUDE_MAX - CLOUD_ALTITUDE_MIN) +
+                  CLOUD_ALTITUDE_MIN,
+                (Math.random() - 0.5) * CLOUD_AREA_XZ,
               )
-              clouds = new THREE.Points(
-                geo,
-                new THREE.PointsMaterial({
-                  size: CLOUD_SIZE,
-                  map: cloudTexture,
-                  blending: THREE.AdditiveBlending,
-                  depthWrite: false,
-                  transparent: true,
-                  opacity: 0.6,
-                  sizeAttenuation: true,
-                  color: 0xeeeeff,
-                }),
-              )
-              scene.add(clouds)
-            },
-          )
+            }
+            geo.setAttribute(
+              'position',
+              new THREE.Float32BufferAttribute(positions, 3),
+            )
+            clouds = new THREE.Points(
+              geo,
+              new THREE.PointsMaterial({
+                size: CLOUD_SIZE,
+                map: cloudTexture,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                transparent: true,
+                opacity: 0.6,
+                sizeAttenuation: true,
+                color: 0xeeeeff,
+              }),
+            )
+            scene.add(clouds)
+          })
         }
 
         // --- Roads ---
@@ -1257,7 +1256,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
 
         // --- Controls ---
         function setupControls() {
-          onKeyDown = (e: KeyboardEvent) => {
+          onKeyDown = (e) => {
             switch (e.code) {
               case 'KeyW':
               case 'ArrowUp':
@@ -1294,7 +1293,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
                 break
             }
           }
-          onKeyUp = (e: KeyboardEvent) => {
+          onKeyUp = (e) => {
             switch (e.code) {
               case 'KeyW':
               case 'ArrowUp':

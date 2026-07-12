@@ -7,7 +7,7 @@ import { getWorkspacePreferredLanguage } from './session-prefs'
 
 const workspaces: string[] = []
 
-const makeWorkspace = (contents?: string) => {
+function makeWorkspace(contents?: string) {
   const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-session-prefs-'))
   workspaces.push(workspace)
   if (contents !== undefined) {

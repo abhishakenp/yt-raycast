@@ -56,7 +56,7 @@ function getFactory(): ChromeTranslatorFactory | null {
 const availabilityCache = new Map<string, Promise<TranslatorAvailability>>()
 const translatorCache = new Map<string, Promise<ChromeTranslator | null>>()
 
-const normalizeNativeLocaleForBrowser = (locale: string): string => {
+function normalizeNativeLocaleForBrowser(locale: string): string {
   const c = String(locale || '').trim()
   if (!c) return ''
   try {

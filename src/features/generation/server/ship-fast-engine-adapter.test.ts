@@ -5,8 +5,9 @@ import { describe, expect, it } from 'vitest'
 import { createShipFastEngineAdapter } from '@/features/generation/server/ship-fast-engine-adapter'
 import type { RunShipFastEngine } from '@/features/generation/server/ship-fast-engine-adapter'
 
-const createTempRoot = (): string =>
-  mkdtempSync(join(tmpdir(), 'ship-fast-v2-adapter-'))
+function createTempRoot(): string {
+  return mkdtempSync(join(tmpdir(), 'ship-fast-v2-adapter-'))
+}
 
 describe('ship fast engine adapter', () => {
   const dbObservedPrompt =

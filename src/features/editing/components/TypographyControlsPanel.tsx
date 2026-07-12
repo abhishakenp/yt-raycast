@@ -88,7 +88,7 @@ export function TypographyControlsPanel({
     onModified?.()
   }
 
-  const applyLiveStyle = (prop: string, value: string) => {
+  const applyLiveStyle = (prop, value) => {
     if (activeElement) {
       activeElement.style.setProperty(prop, value)
       markModified()

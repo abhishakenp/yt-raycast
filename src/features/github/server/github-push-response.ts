@@ -62,28 +62,33 @@ type AuthDisabledEnv = {
   VITE_DISABLE_CLERK?: string
 }
 
-const isAuthDisabled = (env: AuthDisabledEnv = process.env): boolean =>
-  (env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+function isAuthDisabled(env: AuthDisabledEnv = process.env): boolean {
+  return (env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+}
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const readUnknownJson = async (response: Response): Promise<unknown> =>
-  await response.json()
+async function readUnknownJson(response: Response): Promise<unknown> {
+  return await response.json()
+}
 
-const normalizeString = (value: unknown): string =>
-  typeof value === 'string' ? value.trim() : ''
+function normalizeString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
 
-const isGitHubPushBody = (value: unknown): value is GitHubPushBody =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+function isGitHubPushBody(value: unknown): value is GitHubPushBody {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-const normalizeTarget = (value: unknown): GitHubExportTarget | null => {
+function normalizeTarget(value: unknown): GitHubExportTarget | null {
   switch (value) {
     case 'html':
     case 'react':
@@ -95,34 +100,39 @@ const normalizeTarget = (value: unknown): GitHubExportTarget | null => {
   }
 }
 
-const getBearerToken = (request: Request): string | null => {
+function getBearerToken(request: Request): string | null {
   const match = (request.headers.get('authorization') ?? '').match(
     /^Bearer\s+(.+)$/i,
   )
   return match?.[1]?.trim() || null
 }
 
-const getGithubApiBase = (env: GitHubPushEnv): string =>
-  (env.SHIP_FAST_GITHUB_API_BASE || DEFAULT_GITHUB_API_BASE).replace(/\/+$/, '')
+function getGithubApiBase(env: GitHubPushEnv): string {
+  return (env.SHIP_FAST_GITHUB_API_BASE || DEFAULT_GITHUB_API_BASE).replace(
+    /\/+$/,
+    '',
+  )
+}
 
-const sanitizeRepoName = (value: string): string =>
-  value
+function sanitizeRepoName(value: string): string {
+  return value
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, '-')
     .replace(/-{2,}/g, '-')
     .replace(/^[.-]+|[.-]+$/g, '')
     .slice(0, 90)
+}
 
-const deriveRepoName = (prompt: string, target: GitHubExportTarget): string => {
+function deriveRepoName(prompt: string, target: GitHubExportTarget): string {
   const fromPrompt = sanitizeRepoName(prompt).split('-').slice(0, 5).join('-')
   return fromPrompt ? `${fromPrompt}-${target}` : `ship-fast-export-${target}`
 }
 
-const responseError = (
+function responseError(
   code: GitHubPushErrorCode,
   message: string,
   status: number,
-) => {
+) {
   const error = new Error(message) as Error & {
     status?: number
     code?: GitHubPushErrorCode
@@ -132,9 +142,9 @@ const responseError = (
   return error
 }
 
-const loadPrebuiltFiles = async (
+async function loadPrebuiltFiles(
   url: string | null | undefined,
-): Promise<Record<string, string> | null> => {
+): Promise<Record<string, string> | null> {
   if (!url) return null
   const response = await fetch(url)
   if (!response.ok) return null
@@ -161,10 +171,10 @@ const LAKEBED_REQUIRED_ENTRYPOINTS = ['client/index.tsx', 'server/index.ts']
 // here would wrongly reject every Next.js GitHub push.
 const NEXT_REQUIRED_ENTRYPOINTS = ['package.json', 'app/layout.tsx']
 
-const validateExportFiles = (
+function validateExportFiles(
   target: GitHubExportTarget,
   files: Record<string, string>,
-): string | null => {
+): string | null {
   if (target === 'lakebed') {
     const missingEntry = LAKEBED_REQUIRED_ENTRYPOINTS.find(
       (entrypoint) => !files[entrypoint],
@@ -213,13 +223,13 @@ const defaultGitHubTokenResolver: GitHubTokenResolver = async (
     : []
 }
 
-const resolveGitHubAccessToken = async (
+async function resolveGitHubAccessToken(
   appToken: string,
   env: GitHubPushEnv,
   tokenResolver: GitHubTokenResolver,
   client: GitHubPushConvexClient,
   anonymousClientId?: string,
-): Promise<string> => {
+): Promise<string> {
   const tokens = await tokenResolver(appToken, env, client, anonymousClientId)
   if (tokens.length === 0) {
     throw responseError(
@@ -310,14 +320,14 @@ async function githubRequest<T>(
   return response.status === 404 ? null : (data as T)
 }
 
-const createRepository = async (
+async function createRepository(
   env: GitHubPushEnv,
   fetchFn: FetchFn,
   token: string,
   name: string,
   target: GitHubExportTarget,
-) =>
-  await githubRequest<GitHubRepo>('/user/repos', {
+) {
+  return await githubRequest<GitHubRepo>('/user/repos', {
     env,
     fetchFn,
     token,
@@ -330,15 +340,16 @@ const createRepository = async (
       description: `Generated with Ship Fast as a ${target} export.`,
     },
   })
+}
 
-const getBranchRef = async (
+async function getBranchRef(
   env: GitHubPushEnv,
   fetchFn: FetchFn,
   token: string,
   repoFullName: string,
   branch: string,
-) =>
-  await githubRequest<GitHubRef>(
+) {
+  return await githubRequest<GitHubRef>(
     `/repos/${repoFullName}/git/ref/heads/${encodeURIComponent(branch)}`,
     {
       env,
@@ -347,55 +358,64 @@ const getBranchRef = async (
       expectedStatus: [200, 404],
     },
   )
+}
 
-const seedRepository = async (
+async function seedRepository(
   env: GitHubPushEnv,
   fetchFn: FetchFn,
   token: string,
   repoFullName: string,
   branch: string,
-) =>
-  await githubRequest(`/repos/${repoFullName}/contents/.shipfast-bootstrap`, {
-    env,
-    fetchFn,
-    token,
-    method: 'PUT',
-    expectedStatus: [201],
-    body: {
-      message: 'Ship Fast bootstrap commit',
-      branch,
-      content: Buffer.from('Ship Fast repository bootstrap.\n').toString(
-        'base64',
-      ),
+) {
+  return await githubRequest(
+    `/repos/${repoFullName}/contents/.shipfast-bootstrap`,
+    {
+      env,
+      fetchFn,
+      token,
+      method: 'PUT',
+      expectedStatus: [201],
+      body: {
+        message: 'Ship Fast bootstrap commit',
+        branch,
+        content: Buffer.from('Ship Fast repository bootstrap.\n').toString(
+          'base64',
+        ),
+      },
     },
-  })
+  )
+}
 
-const createTree = async (
+async function createTree(
   env: GitHubPushEnv,
   fetchFn: FetchFn,
   token: string,
   repoFullName: string,
   files: Record<string, string>,
-) =>
-  await githubRequest<{ sha: string }>(`/repos/${repoFullName}/git/trees`, {
-    env,
-    fetchFn,
-    token,
-    method: 'POST',
-    expectedStatus: [201],
-    body: {
-      tree: Object.entries(files)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([path, content]) => ({
-          path,
-          mode: '100644',
-          type: 'blob',
-          content,
-        })),
+) {
+  return await githubRequest<{ sha: string }>(
+    `/repos/${repoFullName}/git/trees`,
+    {
+      env,
+      fetchFn,
+      token,
+      method: 'POST',
+      expectedStatus: [201],
+      body: {
+        tree: Object.entries(files)
+          .sort(([left], [right]) => left.localeCompare(right))
+          .map(([path, content]) => ({
+            path,
+            mode: '100644',
+            type: 'blob',
+            content,
+          })),
+      },
     },
-  })
+  )
+}
 
-const createCommit = async (
+async function createCommit(
   env: GitHubPushEnv,
   fetchFn: FetchFn,
   token: string,
@@ -403,29 +423,33 @@ const createCommit = async (
   treeSha: string,
   parentSha: string,
   target: GitHubExportTarget,
-) =>
-  await githubRequest<{ sha: string }>(`/repos/${repoFullName}/git/commits`, {
-    env,
-    fetchFn,
-    token,
-    method: 'POST',
-    expectedStatus: [201],
-    body: {
-      message: `Ship Fast export (${target})`,
-      tree: treeSha,
-      parents: [parentSha],
+) {
+  return await githubRequest<{ sha: string }>(
+    `/repos/${repoFullName}/git/commits`,
+    {
+      env,
+      fetchFn,
+      token,
+      method: 'POST',
+      expectedStatus: [201],
+      body: {
+        message: `Ship Fast export (${target})`,
+        tree: treeSha,
+        parents: [parentSha],
+      },
     },
-  })
+  )
+}
 
-const updateBranchRef = async (
+async function updateBranchRef(
   env: GitHubPushEnv,
   fetchFn: FetchFn,
   token: string,
   repoFullName: string,
   branch: string,
   commitSha: string,
-) =>
-  await githubRequest(
+) {
+  return await githubRequest(
     `/repos/${repoFullName}/git/refs/heads/${encodeURIComponent(branch)}`,
     {
       env,
@@ -436,15 +460,16 @@ const updateBranchRef = async (
       body: { sha: commitSha, force: false },
     },
   )
+}
 
-const ensureRepository = async (
+async function ensureRepository(
   env: GitHubPushEnv,
   fetchFn: FetchFn,
   token: string,
   prompt: string,
   target: GitHubExportTarget,
   sessionId: string,
-): Promise<{ repo: GitHubRepo; created: boolean }> => {
+): Promise<{ repo: GitHubRepo; created: boolean }> {
   const baseRepoName = deriveRepoName(prompt, target)
   const attempts = [
     baseRepoName,
@@ -469,9 +494,9 @@ const ensureRepository = async (
   throw new Error('Unable to create a GitHub repository for this export.')
 }
 
-const getConvexErrorPayload = (
+function getConvexErrorPayload(
   message: string,
-): { code?: string; message?: string } | null => {
+): { code?: string; message?: string } | null {
   const match = message.match(/\{.*\}/)
   if (!match) return null
   try {
@@ -489,7 +514,7 @@ const getConvexErrorPayload = (
   }
 }
 
-const convexStatus = (error: unknown): number => {
+function convexStatus(error: unknown): number {
   const message = error instanceof Error ? error.message : String(error)
   if (/AUTH_REQUIRED|Sign in/i.test(message)) return 401
   if (/PAYMENT_REQUIRED|Subscribe|purchase/i.test(message)) return 402

@@ -13,7 +13,7 @@ import { renderOpenUIToHTML } from '../openui-ssr'
  *  - SSR-safe stub providers in `openui-ssr.js` (so data-backed capsules render
  *    without a live Convex/Lakebed runtime).
  */
-const expectRenders = async (source: string, locale = 'en') => {
+async function expectRenders(source: string, locale = 'en') {
   const html = await renderOpenUIToHTML(source, undefined, locale)
   expect(html.toLowerCase()).not.toContain('openui-error')
   expect(html.toLowerCase()).not.toContain('failed to render')

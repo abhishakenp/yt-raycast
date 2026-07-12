@@ -6,13 +6,14 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
-const makeGroqResponse = (content: unknown) =>
-  ({
+function makeGroqResponse(content: unknown) {
+  return {
     ok: true,
     json: async () => ({
       choices: [{ message: { content: JSON.stringify(content) } }],
     }),
-  }) as Response
+  } as Response
+}
 
 describe('customLanguages', () => {
   const previousGroqKey = process.env.GROQ_API_KEY

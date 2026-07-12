@@ -1,9 +1,9 @@
-const transformOutsideQuotedStrings = (
+function transformOutsideQuotedStrings(
   source: string,
   transform: (segment: string) => string,
-): string => {
+): string {
   const quotedSegments: string[] = []
-  const tokenFor = (index: number) => `\uE000${index}\uE001`
+  const tokenFor = (index) => `\uE000${index}\uE001`
   let masked = ''
 
   let index = 0
@@ -47,8 +47,8 @@ const transformOutsideQuotedStrings = (
   )
 }
 
-const stripActionCalls = (source: string): string =>
-  transformOutsideQuotedStrings(source, (masked) => {
+function stripActionCalls(source: string): string {
+  return transformOutsideQuotedStrings(source, (masked) => {
     const actionPattern = /\bAction\s*\(/g
     let result = ''
     let cursor = 0
@@ -78,6 +78,7 @@ const stripActionCalls = (source: string): string =>
 
     return result
   })
+}
 
 export function stripNullsFromArrays(code: string): string {
   return transformOutsideQuotedStrings(code, (segment) =>
@@ -367,7 +368,7 @@ function forceGaplessSectionBandStack(code: string): string {
   if (anchors.size === 0) return code
   return code.replace(
     /^(\s*[A-Za-z_$][\w$]*\s*=\s*)Stack\(\s*\[([^[\]]*)\]\s*\)(\s*)$/gm,
-    (match, prefix: string, inner: string, tail: string) => {
+    (match, prefix, inner, tail) => {
       const children = inner
         .split(',')
         .map((c) => c.trim())

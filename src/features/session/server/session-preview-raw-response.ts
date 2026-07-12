@@ -6,9 +6,9 @@ import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
  * Serve a public session's stored preview HTML as a standalone document.
  * Used as the screenshot target for gallery thumbnail capture.
  */
-export const createSessionPreviewRawResponse = async (
+export async function createSessionPreviewRawResponse(
   sessionId: string,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const client = createRuntimeConvexHttpClient()
     const session = await client.query(api.sessions.getPublicGallerySession, {

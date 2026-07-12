@@ -64,22 +64,21 @@ function useAccountDropdownContext() {
   return ctx
 }
 
-const initialsFromName = (name: string) =>
-  name
+function initialsFromName(name: string) {
+  return name
     .split(' ')
     .map((part) => part[0])
     .filter(Boolean)
     .slice(0, 2)
     .join('')
     .toUpperCase()
+}
 
-const AccountDropdown = ({
+function AccountDropdown({
   auth,
   children,
   ...props
-}: { auth: AccountDropdownAuth } & React.ComponentProps<
-  typeof DropdownMenu
->) => {
+}: { auth: AccountDropdownAuth } & React.ComponentProps<typeof DropdownMenu>) {
   const authState = auth.useAuth()
   const isAuthed = authState.isAuthenticated && !authState.user?.isGuest
   return (

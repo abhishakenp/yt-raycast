@@ -62,7 +62,7 @@ const metadataFields = new Set(['id', 'createdAt', 'updatedAt'])
 
 const now = () => new Date().toISOString()
 
-const compareValues = (left: unknown, right: unknown) => {
+function compareValues(left: unknown, right: unknown) {
   if (left === right) return 0
   if (typeof left === 'number' && typeof right === 'number') {
     return left > right ? 1 : -1
@@ -71,9 +71,11 @@ const compareValues = (left: unknown, right: unknown) => {
   return String(left) > String(right) ? 1 : -1
 }
 
-const cloneRow = <TRow extends JsonRecord>(row: TRow): TRow => ({ ...row })
+function cloneRow(row: TRow): TRow {
+  return { ...row }
+}
 
-const fieldDefault = (field: Field<unknown> | undefined) => {
+function fieldDefault(field: Field<unknown> | undefined) {
   if (!field || !Object.prototype.hasOwnProperty.call(field, 'defaultValue')) {
     return undefined
   }
@@ -83,12 +85,12 @@ const fieldDefault = (field: Field<unknown> | undefined) => {
     : field.defaultValue
 }
 
-const assertFieldValue = (
+function assertFieldValue(
   tableName: string,
   fieldName: string,
   field: Field<unknown> | undefined,
   value: unknown,
-) => {
+) {
   if (value === undefined) {
     throw new Error(`Missing value for ${tableName}.${fieldName}`)
   }
@@ -288,10 +290,10 @@ class ObjectTableApi<
   }
 }
 
-const normalizeTables = (
+function normalizeTables(
   data: JsonRecord,
   schema: LakebedSessionSchema | undefined,
-) => {
+) {
   const tableNames = new Set<string>(Object.keys(schema ?? {}))
 
   for (const [key, value] of Object.entries(data)) {
@@ -350,7 +352,7 @@ export function createLakebedObjectRuntime<TData extends JsonRecord>({
     ]),
   ) as unknown as LakebedDbFromData<TData>
 
-  const getPatch = (): TData => {
+  const getPatch = () => {
     const patch: JsonRecord = {}
 
     for (const tableName of stateCell.changedTables) {

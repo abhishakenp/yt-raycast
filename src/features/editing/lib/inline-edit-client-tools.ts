@@ -45,15 +45,17 @@ type InlineEditClientToolContext = InlineEditCommandContext & {
   resolveStockImage?: ResolveInlineStockImage
 }
 
-const runInlineEditCommand = (
+function runInlineEditCommand(
   ctx: InlineEditClientToolContext,
   command: InlineEditPersistenceCommand,
-) => ctx.convex.mutation(command.mutation, command.args)
+) {
+  return ctx.convex.mutation(command.mutation, command.args)
+}
 
-const stockDimension = (
+function stockDimension(
   value: number | string | undefined,
   fallback: number,
-): number => {
+): number {
   const numeric =
     typeof value === 'number'
       ? value
@@ -65,10 +67,10 @@ const stockDimension = (
     : fallback
 }
 
-const resolveImageReplaceInput = async (
+async function resolveImageReplaceInput(
   ctx: InlineEditClientToolContext,
   input: Parameters<typeof buildImageReplaceCommand>[0],
-): Promise<Parameters<typeof buildImageReplaceCommand>[0]> => {
+): Promise<Parameters<typeof buildImageReplaceCommand>[0]> {
   if (input.src || !input.query) return input
 
   const resolveStockImage = ctx.resolveStockImage ?? defaultResolveStockImage
@@ -81,45 +83,48 @@ const resolveImageReplaceInput = async (
   return { ...input, src: resolved.imageUrl }
 }
 
-export const createInlineEditClientTools = (
-  ctx: InlineEditClientToolContext,
-) => [
-  textRewriteToolDefinition.client((input) =>
-    runInlineEditCommand(ctx, buildTextRewriteCommand(input, ctx)),
-  ),
-  styleApplyToolDefinition.client((input) =>
-    runInlineEditCommand(ctx, buildStyleApplyCommand(input, ctx)),
-  ),
-  imageReplaceToolDefinition.client(async (input) =>
-    runInlineEditCommand(
-      ctx,
-      buildImageReplaceCommand(await resolveImageReplaceInput(ctx, input), ctx),
+export function createInlineEditClientTools(ctx: InlineEditClientToolContext) {
+  return [
+    textRewriteToolDefinition.client((input) =>
+      runInlineEditCommand(ctx, buildTextRewriteCommand(input, ctx)),
     ),
-  ),
-  imageRemoveToolDefinition.client((input) =>
-    runInlineEditCommand(ctx, buildImageRemoveCommand(input, ctx)),
-  ),
-  linkEditToolDefinition.client(async (input) => {
-    const currentSource = ctx.currentSource ?? (await ctx.getSource?.())
-    return runInlineEditCommand(
-      ctx,
-      buildLinkEditCommand(input, { ...ctx, currentSource }),
-    )
-  }),
-  elementDeleteToolDefinition.client((input) =>
-    runInlineEditCommand(ctx, buildElementDeleteCommand(input, ctx)),
-  ),
-  sectionMoveToolDefinition.client(async (input) => {
-    const currentSource = ctx.currentSource ?? (await ctx.getSource?.())
-    return runInlineEditCommand(
-      ctx,
-      buildSectionMoveCommand(input, { ...ctx, currentSource }),
-    )
-  }),
-  sectionRewriteToolDefinition.client((input) =>
-    runInlineEditCommand(ctx, buildSectionRewriteCommand(input, ctx)),
-  ),
-  undoLastEditToolDefinition.client((input) =>
-    runInlineEditCommand(ctx, buildUndoCommand(input, ctx)),
-  ),
-]
+    styleApplyToolDefinition.client((input) =>
+      runInlineEditCommand(ctx, buildStyleApplyCommand(input, ctx)),
+    ),
+    imageReplaceToolDefinition.client(async (input) =>
+      runInlineEditCommand(
+        ctx,
+        buildImageReplaceCommand(
+          await resolveImageReplaceInput(ctx, input),
+          ctx,
+        ),
+      ),
+    ),
+    imageRemoveToolDefinition.client((input) =>
+      runInlineEditCommand(ctx, buildImageRemoveCommand(input, ctx)),
+    ),
+    linkEditToolDefinition.client(async (input) => {
+      const currentSource = ctx.currentSource ?? (await ctx.getSource?.())
+      return runInlineEditCommand(
+        ctx,
+        buildLinkEditCommand(input, { ...ctx, currentSource }),
+      )
+    }),
+    elementDeleteToolDefinition.client((input) =>
+      runInlineEditCommand(ctx, buildElementDeleteCommand(input, ctx)),
+    ),
+    sectionMoveToolDefinition.client(async (input) => {
+      const currentSource = ctx.currentSource ?? (await ctx.getSource?.())
+      return runInlineEditCommand(
+        ctx,
+        buildSectionMoveCommand(input, { ...ctx, currentSource }),
+      )
+    }),
+    sectionRewriteToolDefinition.client((input) =>
+      runInlineEditCommand(ctx, buildSectionRewriteCommand(input, ctx)),
+    ),
+    undoLastEditToolDefinition.client((input) =>
+      runInlineEditCommand(ctx, buildUndoCommand(input, ctx)),
+    ),
+  ]
+}

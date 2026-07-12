@@ -325,10 +325,10 @@ export async function resolveMobbinAppByName(
 
   const norm = normAppName(name)
   const apps = await fetchSearchableApps(platform)
-  const direct = apps.find((app: any) => normAppName(app?.appName) === norm)
+  const direct = apps.find((app) => normAppName(app?.appName) === norm)
   if (direct) return direct
 
-  const fuzzy = apps.find((app: any) => {
+  const fuzzy = apps.find((app) => {
     const candidate = normAppName(app?.appName)
     return candidate.includes(norm) || norm.includes(candidate)
   })
@@ -336,7 +336,7 @@ export async function resolveMobbinAppByName(
 
   const appId = await autocompleteMobbinApp(name, { platform })
   if (!appId) return null
-  return apps.find((app: any) => app?.id === appId) || null
+  return apps.find((app) => app?.id === appId) || null
 }
 
 /**
@@ -363,9 +363,7 @@ export async function validateMobbinSession({
 
   const sampleApps = [
     ...new Set(
-      apps
-        .map((entry: any) => entry?.app_name || entry?.appName)
-        .filter(Boolean),
+      apps.map((entry) => entry?.app_name || entry?.appName).filter(Boolean),
     ),
   ].slice(0, 6)
   const screens = flattenPopularScreens(apps, 3)
@@ -386,7 +384,7 @@ export async function fetchLiveScreensForApp(
   const previews = Array.isArray(app?.previewScreens) ? app.previewScreens : []
   return previews
     .slice(0, limit)
-    .map((screen: any) => mapPreviewScreen(app?.appName || name, screen))
+    .map((screen) => mapPreviewScreen(app?.appName || name, screen))
 }
 
 export async function mobbinSessionStatus() {

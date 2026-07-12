@@ -55,8 +55,8 @@ const realConvexOpenUiHandoffPreview = {
   version: 1,
 } as const
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a deployable site',
@@ -68,12 +68,13 @@ const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
     createdAt: 100,
     updatedAt: 140,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
-const deploymentDoc = (
+function deploymentDoc(
   overrides: Partial<Doc<'deployments'>> = {},
-): Doc<'deployments'> =>
-  ({
+): Doc<'deployments'> {
+  return {
     _id: 'deployment_read' as Id<'deployments'>,
     _creationTime: 1,
     sessionId,
@@ -84,12 +85,11 @@ const deploymentDoc = (
     createdAt: 120,
     updatedAt: 150,
     ...overrides,
-  }) as Doc<'deployments'>
+  } as Doc<'deployments'>
+}
 
-const previewDoc = (
-  overrides: Partial<Doc<'previews'>> = {},
-): Doc<'previews'> =>
-  ({
+function previewDoc(overrides: Partial<Doc<'previews'>> = {}): Doc<'previews'> {
+  return {
     _id: 'preview_deployment' as Id<'previews'>,
     _creationTime: 1,
     sessionId,
@@ -97,9 +97,10 @@ const previewDoc = (
     html: '<html><body><h1>Ready</h1></body></html>',
     createdAt: 110,
     ...overrides,
-  }) as Doc<'previews'>
+  } as Doc<'previews'>
+}
 
-const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
+function ctxFor(input: Partial<Record<TableName, Row[]>>) {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     deployments: [...(input.deployments ?? [])],
@@ -112,26 +113,21 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
     translationCache: [...(input.translationCache ?? [])],
   }
 
-  const rowsFor = (table: TableName) => tables[table]
+  const rowsFor = (table) => tables[table]
 
   const db = {
-    get: async (id: string) =>
+    get: async (id) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table: TableName) => {
+    query: (table) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -147,7 +143,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
 
           return builder
         },
-        order: (direction: 'asc' | 'desc') => {
+        order: (direction) => {
           rows = [...rows].sort((left, right) => {
             const leftVersion =
               typeof (left as Record<string, unknown>).version === 'number'
@@ -164,7 +160,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
           return builder
         },
         first: async () => rows[0] ?? null,
-        take: async (limit: number) => rows.slice(0, limit),
+        take: async (limit) => rows.slice(0, limit),
         collect: async () => rows,
       }
 
@@ -183,7 +179,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
   }
 }
 
-const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
+function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     deployments: [...(input.deployments ?? [])],
@@ -200,23 +196,18 @@ const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
     []
 
   const db = {
-    get: async (id: string) =>
+    get: async (id) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table: TableName) => {
+    query: (table) => {
       let rows = [...tables[table]]
 
       const builder = {
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -232,7 +223,7 @@ const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
 
           return builder
         },
-        order: (direction: 'asc' | 'desc') => {
+        order: (direction) => {
           rows = [...rows].sort((a, b) => {
             const left =
               'version' in a && typeof a.version === 'number'
@@ -253,7 +244,7 @@ const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
 
       return builder
     },
-    insert: async (table: TableName, value: Record<string, unknown>) => {
+    insert: async (table, value) => {
       inserted.push({ table, value })
       const id = `${table}_${inserted.length}` as Id<
         'deployments' | 'generationEvents'
@@ -265,7 +256,7 @@ const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
       } as Row)
       return id
     },
-    patch: async (id: string, patch: Record<string, unknown>) => {
+    patch: async (id, patch) => {
       patches.push({ id, patch })
       const row = Object.values(tables)
         .flat()

@@ -15,22 +15,32 @@ const mobileHiddenClassPattern = /(?:^|\s)(?:md|lg|xl):hidden(?:\s|$)/
 
 const navCandidateTags = new Set(['DIV', 'NAV', 'UL'])
 
-const getClassName = (element: Element): string =>
-  typeof element.className === 'string' ? element.className : ''
+function getClassName(element: Element): string {
+  return typeof element.className === 'string' ? element.className : ''
+}
 
-const isDesktopOnlyNavGroup = (element: Element): element is HTMLElement =>
-  navCandidateTags.has(element.tagName) &&
-  desktopNavClassPattern.test(getClassName(element))
+function isDesktopOnlyNavGroup(element: Element): element is HTMLElement {
+  return (
+    navCandidateTags.has(element.tagName) &&
+    desktopNavClassPattern.test(getClassName(element))
+  )
+}
 
-const isMobileToggle = (element: Element): element is HTMLButtonElement =>
-  element.tagName === 'BUTTON' &&
-  mobileHiddenClassPattern.test(getClassName(element))
+function isMobileToggle(element: Element): element is HTMLButtonElement {
+  return (
+    element.tagName === 'BUTTON' &&
+    mobileHiddenClassPattern.test(getClassName(element))
+  )
+}
 
-const isGeneratedNode = (element: Element): boolean =>
-  element.hasAttribute('data-generated-mobile-nav-button') ||
-  element.hasAttribute('data-generated-mobile-nav-panel')
+function isGeneratedNode(element: Element): boolean {
+  return (
+    element.hasAttribute('data-generated-mobile-nav-button') ||
+    element.hasAttribute('data-generated-mobile-nav-panel')
+  )
+}
 
-const getNavSourceItems = (header: HTMLElement): HTMLElement[] => {
+function getNavSourceItems(header: HTMLElement): HTMLElement[] {
   const desktopNavs = [...header.querySelectorAll('*')].filter(
     isDesktopOnlyNavGroup,
   )
@@ -49,10 +59,11 @@ const getNavSourceItems = (header: HTMLElement): HTMLElement[] => {
   )
 }
 
-const getPrimaryDesktopNav = (header: HTMLElement): HTMLElement | null =>
-  [...header.querySelectorAll('*')].find(isDesktopOnlyNavGroup) ?? null
+function getPrimaryDesktopNav(header: HTMLElement): HTMLElement | null {
+  return [...header.querySelectorAll('*')].find(isDesktopOnlyNavGroup) ?? null
+}
 
-const createGeneratedButton = (document: Document): HTMLButtonElement => {
+function createGeneratedButton(document: Document): HTMLButtonElement {
   const button = document.createElement('button')
   button.type = 'button'
   button.className = 'genui-generated-mobile-nav-button'
@@ -69,10 +80,10 @@ const createGeneratedButton = (document: Document): HTMLButtonElement => {
   return button
 }
 
-const createPanelItem = (
+function createPanelItem(
   source: HTMLElement,
   document: Document,
-): HTMLButtonElement => {
+): HTMLButtonElement {
   const item = document.createElement('button')
   item.type = 'button'
   item.className = 'genui-generated-mobile-nav-item'
@@ -81,10 +92,10 @@ const createPanelItem = (
   return item
 }
 
-const createGeneratedPanel = (
+function createGeneratedPanel(
   sourceItems: HTMLElement[],
   document: Document,
-): HTMLElement => {
+): HTMLElement {
   const panel = document.createElement('div')
   panel.className = 'genui-generated-mobile-nav-panel'
   panel.hidden = true
@@ -97,8 +108,8 @@ const createGeneratedPanel = (
   return panel
 }
 
-const hasExistingMobilePanel = (header: HTMLElement): boolean =>
-  [...header.querySelectorAll('*')].some((element) => {
+function hasExistingMobilePanel(header: HTMLElement): boolean {
+  return [...header.querySelectorAll('*')].some((element) => {
     if (element.hasAttribute('data-generated-mobile-nav-panel')) return true
 
     const className = getClassName(element)
@@ -109,18 +120,19 @@ const hasExistingMobilePanel = (header: HTMLElement): boolean =>
       element.querySelector('a, button')
     )
   })
+}
 
-const togglePanel = (button: HTMLButtonElement, panel: HTMLElement): void => {
+function togglePanel(button: HTMLButtonElement, panel: HTMLElement): void {
   const nextOpen = button.getAttribute('aria-expanded') !== 'true'
   button.setAttribute('aria-expanded', String(nextOpen))
   panel.hidden = !nextOpen
 }
 
-const createFallbackPanelForExistingButton = (
+function createFallbackPanelForExistingButton(
   header: HTMLElement,
   button: HTMLButtonElement,
   sourceItems: HTMLElement[],
-): void => {
+): void {
   const schedule = header.ownerDocument.defaultView?.setTimeout ?? setTimeout
 
   schedule(() => {
@@ -134,7 +146,7 @@ const createFallbackPanelForExistingButton = (
   }, 0)
 }
 
-const enhanceHeader = (header: HTMLElement): void => {
+function enhanceHeader(header: HTMLElement): void {
   if (enhancements.has(header) || hasExistingMobilePanel(header)) return
 
   const sourceItems = getNavSourceItems(header)
@@ -178,7 +190,7 @@ const enhanceHeader = (header: HTMLElement): void => {
   })
 }
 
-export const cleanupGeneratedMobileNavs = (root: HTMLElement): void => {
+export function cleanupGeneratedMobileNavs(root: HTMLElement): void {
   root
     .querySelectorAll<HTMLElement>('header[data-generated-mobile-nav-host]')
     .forEach((header) => {
@@ -201,10 +213,10 @@ export const cleanupGeneratedMobileNavs = (root: HTMLElement): void => {
     .forEach((element) => element.remove())
 }
 
-export const enhanceGeneratedMobileNavs = (
+export function enhanceGeneratedMobileNavs(
   root: HTMLElement,
   deviceMode: PreviewDeviceMode,
-): void => {
+): void {
   if (deviceMode !== 'mobile') {
     cleanupGeneratedMobileNavs(root)
     return
@@ -213,10 +225,10 @@ export const enhanceGeneratedMobileNavs = (
   root.querySelectorAll<HTMLElement>('header').forEach(enhanceHeader)
 }
 
-export const observeGeneratedMobileNavs = (
+export function observeGeneratedMobileNavs(
   root: HTMLElement,
   deviceMode: PreviewDeviceMode,
-): (() => void) => {
+): () => void {
   enhanceGeneratedMobileNavs(root, deviceMode)
 
   if (deviceMode !== 'mobile') {

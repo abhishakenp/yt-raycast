@@ -20,8 +20,8 @@ type Row =
 
 const sessionId = 'session_readiness' as Id<'sessions'>
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a readiness page',
@@ -33,14 +33,15 @@ const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
     createdAt: 100,
     updatedAt: 120,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
-const taskDoc = (
+function taskDoc(
   id: string,
   status: Doc<'tasks'>['status'],
   order: number | undefined,
-): Doc<'tasks'> =>
-  ({
+): Doc<'tasks'> {
+  return {
     _id: id as Id<'tasks'>,
     _creationTime: 1,
     sessionId,
@@ -50,10 +51,11 @@ const taskDoc = (
     order,
     createdAt: 1,
     updatedAt: 1,
-  }) as Doc<'tasks'>
+  } as Doc<'tasks'>
+}
 
-const previewDoc = (id: string, version: number): Doc<'previews'> =>
-  ({
+function previewDoc(id: string, version: number): Doc<'previews'> {
+  return {
     _id: id as Id<'previews'>,
     _creationTime: version,
     sessionId,
@@ -61,22 +63,24 @@ const previewDoc = (id: string, version: number): Doc<'previews'> =>
     html: `<main>Preview ${version}</main>`,
     createdAt: version,
     source: 'generation',
-  }) as Doc<'previews'>
+  } as Doc<'previews'>
+}
 
-const siteSpecDoc = (): Doc<'siteSpecs'> =>
-  ({
+function siteSpecDoc(): Doc<'siteSpecs'> {
+  return {
     _id: 'site_spec_readiness' as Id<'siteSpecs'>,
     _creationTime: 1,
     sessionId,
     specJson: '{"projectName":"Readiness"}',
     createdAt: 1,
     updatedAt: 1,
-  }) as Doc<'siteSpecs'>
+  } as Doc<'siteSpecs'>
+}
 
-const generatedModuleDoc = (
+function generatedModuleDoc(
   status: Doc<'generatedModules'>['status'],
-): Doc<'generatedModules'> =>
-  ({
+): Doc<'generatedModules'> {
+  return {
     _id: 'module_readiness' as Id<'generatedModules'>,
     _creationTime: 1,
     sessionId,
@@ -85,9 +89,10 @@ const generatedModuleDoc = (
     status,
     createdAt: 1,
     updatedAt: 1,
-  }) as Doc<'generatedModules'>
+  } as Doc<'generatedModules'>
+}
 
-const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
+function ctxFor(input: Partial<Record<TableName, Row[]>>) {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     tasks: [...(input.tasks ?? [])],
@@ -96,28 +101,23 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
     generatedModules: [...(input.generatedModules ?? [])],
   }
 
-  const rowsFor = (table: TableName) => tables[table]
+  const rowsFor = (table) => tables[table]
 
   const db = {
-    normalizeId: (table: TableName, value: string) =>
+    normalizeId: (table, value) =>
       rowsFor(table).some((row) => row._id === value) ? value : null,
-    get: async (id: string) =>
+    get: async (id) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table: TableName) => {
+    query: (table) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -133,7 +133,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
 
           return builder
         },
-        order: (direction: 'asc' | 'desc') => {
+        order: (direction) => {
           rows = [...rows].sort((left, right) => {
             const leftVersion = (left as { version?: number }).version ?? 0
             const rightVersion = (right as { version?: number }).version ?? 0
@@ -145,7 +145,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
           return builder
         },
         first: async () => rows[0] ?? null,
-        take: async (limit: number) => rows.slice(0, limit),
+        take: async (limit) => rows.slice(0, limit),
       }
 
       return builder

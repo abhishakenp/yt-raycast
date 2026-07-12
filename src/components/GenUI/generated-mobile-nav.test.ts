@@ -6,13 +6,15 @@ import {
   observeGeneratedMobileNavs,
 } from './generated-mobile-nav'
 
-const previewDom = (html: string) =>
-  new JSDOM(`<div class="genui-preview">${html}</div>`, {
+function previewDom(html: string) {
+  return new JSDOM(`<div class="genui-preview">${html}</div>`, {
     pretendToBeVisual: true,
   })
+}
 
-const rootFrom = (dom: JSDOM) =>
-  dom.window.document.querySelector('.genui-preview') as HTMLElement
+function rootFrom(dom: JSDOM) {
+  return dom.window.document.querySelector('.genui-preview') as HTMLElement
+}
 
 const headerWithDesktopNav = () => `
   <header>

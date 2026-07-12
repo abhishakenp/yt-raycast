@@ -29,13 +29,13 @@ type GenerationViewCtx = Parameters<typeof resolveGenerationViewSessionId>[0]
 
 // A minimal in-memory db that mirrors how resolveGenerationViewSessionId uses
 // normalizeId/get/query to resolve a lookup string to a session id.
-const makeDb = (
+function makeDb(
   overrides: {
     sessions?: Record<string, Id<'sessions'>>
     exports?: Record<string, { sessionId: Id<'sessions'> }>
     deployments?: Record<string, { sessionId: Id<'sessions'> }>
   } = {},
-): MockDb => {
+): MockDb {
   const sessions = overrides.sessions ?? {}
   const exportsTable = overrides.exports ?? {}
   const deployments = overrides.deployments ?? {}
@@ -60,7 +60,9 @@ const makeDb = (
   }
 }
 
-const makeCtx = (db: MockDb) => ({ db }) as unknown as GenerationViewCtx
+function makeCtx(db: MockDb) {
+  return { db } as unknown as GenerationViewCtx
+}
 
 describe('dashboard session lookup', () => {
   it('resolves a direct session id arg without touching the db', async () => {
@@ -146,11 +148,11 @@ describe('dashboard session lookup', () => {
   it('hydrates and clears ready session preview cache entries by session id', () => {
     const store = new Map<string, string>()
     const storage = {
-      getItem: (key: string) => store.get(key) ?? null,
-      setItem: (key: string, value: string) => {
+      getItem: (key) => store.get(key) ?? null,
+      setItem: (key, value) => {
         store.set(key, value)
       },
-      removeItem: (key: string) => {
+      removeItem: (key) => {
         store.delete(key)
       },
     }
@@ -184,11 +186,11 @@ describe('dashboard session lookup', () => {
   it('rejects expired or malformed ready session preview cache entries', () => {
     const store = new Map<string, string>()
     const storage = {
-      getItem: (key: string) => store.get(key) ?? null,
-      setItem: (key: string, value: string) => {
+      getItem: (key) => store.get(key) ?? null,
+      setItem: (key, value) => {
         store.set(key, value)
       },
-      removeItem: (key: string) => {
+      removeItem: (key) => {
         store.delete(key)
       },
     }

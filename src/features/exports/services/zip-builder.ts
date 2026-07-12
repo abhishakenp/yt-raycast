@@ -8,7 +8,7 @@ const crcTable = new Uint32Array(256).map((_, n) => {
   return c >>> 0
 })
 
-const crc32 = (buffer: Buffer): number => {
+function crc32(buffer: Buffer): number {
   let crc = 0xffffffff
   for (const byte of buffer) {
     crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8)
@@ -28,9 +28,9 @@ const dosDateTime = (date = new Date()) => {
   }
 }
 
-export const createZipBuffer = (
+export function createZipBuffer(
   files: Record<string, string | Buffer>,
-): Buffer => {
+): Buffer {
   const localParts: Buffer[] = []
   const centralParts: Buffer[] = []
   const names = Object.keys(files)

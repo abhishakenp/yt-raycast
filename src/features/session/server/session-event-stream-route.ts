@@ -29,7 +29,7 @@ type SessionEventStreamConvexClient = {
   setAuth?: (token: string) => void
 }
 
-const parseSince = (request: Request): number | undefined => {
+function parseSince(request: Request): number | undefined {
   const url = new URL(request.url)
   const raw =
     url.searchParams.get('since') ?? request.headers.get('Last-Event-ID')
@@ -39,7 +39,7 @@ const parseSince = (request: Request): number | undefined => {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
 }
 
-const getOwnerSecret = (request: Request): string | undefined => {
+function getOwnerSecret(request: Request): string | undefined {
   const url = new URL(request.url)
   return (
     request.headers.get('x-ship-fast-owner-secret') ??
@@ -49,16 +49,17 @@ const getOwnerSecret = (request: Request): string | undefined => {
   )
 }
 
-const getBearerToken = (request: Request): string | null => {
+function getBearerToken(request: Request): string | null {
   const auth = request.headers.get('authorization') ?? ''
   const match = auth.match(/^Bearer\s+(.+)$/i)
   return match?.[1]?.trim() || null
 }
 
-const sseLine = (field: string, value: string) =>
-  `${field}: ${value.replace(/\r?\n/g, '\n')}\n`
+function sseLine(field: string, value: string) {
+  return `${field}: ${value.replace(/\r?\n/g, '\n')}\n`
+}
 
-const serializeSseEvent = (event: GenerationEvent): string => {
+function serializeSseEvent(event: GenerationEvent): string {
   const payload = {
     type: event.eventType,
     eventType: event.eventType,
@@ -81,8 +82,8 @@ const serializeSseEvent = (event: GenerationEvent): string => {
   ].join('')
 }
 
-const createSseResponse = (body: string, init?: ResponseInit) =>
-  new Response(body, {
+function createSseResponse(body: string, init?: ResponseInit) {
+  return new Response(body, {
     ...init,
     headers: {
       'Cache-Control': 'no-cache, no-transform',
@@ -91,12 +92,13 @@ const createSseResponse = (body: string, init?: ResponseInit) =>
       ...init?.headers,
     },
   })
+}
 
-export const createSessionEventStreamResponse = async (
+export async function createSessionEventStreamResponse(
   sessionId: string,
   request: Request,
   clientOverride?: SessionEventStreamConvexClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const client =
       clientOverride ??

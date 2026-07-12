@@ -26,10 +26,12 @@ const tenantConfig = {
   updatedAt: 100,
 }
 
-const createClient = (tenant: unknown = tenantConfig) => ({
-  mutation: vi.fn().mockResolvedValue({ deploymentSlug: 'deployed-store' }),
-  query: vi.fn().mockResolvedValue(tenant),
-})
+function createClient(tenant: unknown = tenantConfig) {
+  return {
+    mutation: vi.fn().mockResolvedValue({ deploymentSlug: 'deployed-store' }),
+    query: vi.fn().mockResolvedValue(tenant),
+  }
+}
 
 const productsPayload = {
   products: [
@@ -154,7 +156,7 @@ describe('deployment Medusa tenant API responses', () => {
 
   it('rejects invalid owners before provisioning a Medusa tenant', async () => {
     const mutation = vi.fn()
-    const query = vi.fn(async (_reference: unknown, args: unknown) => {
+    const query = vi.fn(async (_reference, args) => {
       if (
         typeof args === 'object' &&
         args !== null &&
@@ -290,7 +292,7 @@ describe('deployment Medusa tenant API responses', () => {
   it('manual pull rejects invalid owners before reading Medusa products', async () => {
     const fetchImpl = vi.fn()
     const mutation = vi.fn()
-    const query = vi.fn(async (_reference: unknown, args: unknown) => {
+    const query = vi.fn(async (_reference, args) => {
       if (
         typeof args === 'object' &&
         args !== null &&
@@ -394,7 +396,7 @@ describe('deployment Medusa tenant API responses', () => {
   it('webhook pull rejects invalid tenant webhook secrets before reading Medusa products', async () => {
     const fetchImpl = vi.fn()
     const mutation = vi.fn()
-    const query = vi.fn(async (_reference: unknown, args: unknown) => {
+    const query = vi.fn(async (_reference, args) => {
       if (
         typeof args === 'object' &&
         args !== null &&

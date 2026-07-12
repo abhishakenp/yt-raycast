@@ -62,7 +62,7 @@ const ACCEPTED_TYPES = [
 ]
 const PAGE_SIZE = 5
 
-const domainFromUrl = (value: string | undefined): string => {
+function domainFromUrl(value: string | undefined): string {
   if (!value) return ''
   try {
     return new URL(value).hostname.replace(/^www\./, '')
@@ -71,10 +71,10 @@ const domainFromUrl = (value: string | undefined): string => {
   }
 }
 
-const validateImageFile = (file: {
+function validateImageFile(file: {
   type: string
   size: number
-}): string | null => {
+}): string | null {
   if (!ACCEPTED_TYPES.includes(file.type)) {
     return `Unsupported file type: ${file.type}`
   }
@@ -84,14 +84,14 @@ const validateImageFile = (file: {
   return null
 }
 
-export const BrandMediaPanel = ({
+export function BrandMediaPanel({
   sessionId,
   prompt = '',
   cloneUrl,
   designReferenceNotes = '',
   designReferenceUrls = [],
   onSelectBrand,
-}: BrandMediaPanelProps) => {
+}: BrandMediaPanelProps) {
   const initialQuery = useMemo(
     () =>
       domainFromUrl(cloneUrl || designReferenceUrls[0]) ||
@@ -125,7 +125,7 @@ export const BrandMediaPanel = ({
   ) as UploadedImage[] | undefined
 
   const loadBrands = useCallback(
-    async (cursor: string | null, mode: 'replace' | 'append') => {
+    async (cursor, mode) => {
       const query = brandQuery.trim()
       if (query.length < 2) {
         setResults([])
@@ -203,7 +203,7 @@ export const BrandMediaPanel = ({
   }, [loadMore])
 
   const uploadFile = useCallback(
-    async (file: File) => {
+    async (file) => {
       if (!sessionId) {
         setUploadError('Open a session before uploading images.')
         return

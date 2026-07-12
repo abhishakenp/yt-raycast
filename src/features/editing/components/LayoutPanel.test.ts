@@ -35,12 +35,13 @@ const installPointerCapturePolyfill = () => {
   }
 }
 
-const renderPanel = (activeElement: HTMLElement) =>
-  render(createElement(LayoutPanel, { activeElement, onModified }))
+function renderPanel(activeElement: HTMLElement) {
+  return render(createElement(LayoutPanel, { activeElement, onModified }))
+}
 
-const makeComputed = (
+function makeComputed(
   overrides: Partial<Record<string, string>> = {},
-): CSSStyleDeclaration => {
+): CSSStyleDeclaration {
   const values = {
     display: 'block',
     flexDirection: 'row',
@@ -52,7 +53,7 @@ const makeComputed = (
   }
   return {
     ...values,
-    getPropertyValue: (property: string) =>
+    getPropertyValue: (property) =>
       values[property as keyof typeof values] ?? '',
   } as CSSStyleDeclaration
 }
@@ -208,10 +209,7 @@ describe('LayoutPanel', () => {
     expect(activeElement.style.flexWrap).toBe('wrap')
   })
 
-  const selectPosition = (
-    getByRole: ReturnType<typeof render>['getByRole'],
-    name: string,
-  ) => {
+  const selectPosition = (getByRole, name) => {
     const trigger = getByRole('combobox', { name: 'Position' })
     fireEvent.pointerDown(trigger, {
       button: 0,

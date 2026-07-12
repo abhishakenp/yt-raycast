@@ -10,13 +10,7 @@ const ownedMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    ...props
-  }: {
-    children: ReactNode
-    [key: string]: unknown
-  }) => {
+  Link: ({ children, ...props }) => {
     const anchorProps = { ...props }
     delete anchorProps.params
     delete anchorProps.to
@@ -52,7 +46,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }: { source: string }) => (
+  GeneratedModulePreview: ({ source }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))
@@ -67,7 +61,7 @@ const controllerState = {
 }
 
 vi.mock('../hooks/useGalleryController', () => ({
-  getGalleryThumbnailUrl: (session: GallerySession) =>
+  getGalleryThumbnailUrl: (session) =>
     `/api/sessions/${session.sessionId}/thumbnail`,
   resolveGalleryThumbnail: vi.fn(async () => undefined),
   useOwnedGalleryController: ({
@@ -75,11 +69,6 @@ vi.mock('../hooks/useGalleryController', () => ({
     limit = 12,
     page = 1,
     search = '',
-  }: {
-    category?: string
-    limit?: number
-    page?: number
-    search?: string
   }) => {
     if (controllerState.loading) {
       return { gallery: undefined, sessions: undefined }
@@ -172,7 +161,7 @@ const realPrivatePetWellnessSessions: GallerySession[] = [
 
 let originalFetch: typeof globalThis.fetch
 
-const resetController = (sessions: GallerySession[] = baseSessions) => {
+function resetController(sessions: GallerySession[] = baseSessions) {
   controllerState.loading = false
   controllerState.sessions = sessions
 }

@@ -5,13 +5,14 @@ import type { ActionCtx } from '../_generated/server'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import type { EngineTaskInput } from './session_task_helpers'
 
-const escapeHtml = (value: string): string =>
-  value
+function escapeHtml(value: string): string {
+  return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
+}
 
 /**
  * Build a minimal client-renderable HTML shell when SSR fails in the Convex
@@ -20,11 +21,12 @@ const escapeHtml = (value: string): string =>
  * placeholder — it uses a different script id and omits the
  * `data-openui-ready="source"` marker so it passes the safety checks.
  */
-const buildClientRenderableShell = (
+function buildClientRenderableShell(
   source: string,
   locale: string,
   brand: string,
-): string => `<!doctype html>
+): string {
+  return `<!doctype html>
 <html lang="${escapeHtml(locale)}">
 <head>
   <meta charset="utf-8" />
@@ -38,6 +40,7 @@ const buildClientRenderableShell = (
   <script src="/scripts/openui-preview-client.js"></script>
 </body>
 </html>`
+}
 
 type RunQueryReference = Parameters<ActionCtx['runQuery']>[0]
 type RunMutationReference = Parameters<ActionCtx['runMutation']>[0]
@@ -78,12 +81,13 @@ export type CompleteGenerationActionResult = {
   reason?: 'preview_already_exists'
 }
 
-const shouldRenderOpenUISource = (
+function shouldRenderOpenUISource(
   openUiSource: string | undefined,
-): openUiSource is string =>
-  openUiSource !== undefined && openUiSource.trim().length > 0
+): openUiSource is string {
+  return openUiSource !== undefined && openUiSource.trim().length > 0
+}
 
-const safeParseSiteSpecBrand = (siteSpecJson: string): string => {
+function safeParseSiteSpecBrand(siteSpecJson: string): string {
   try {
     const spec = JSON.parse(siteSpecJson) as { brand?: string }
     return typeof spec.brand === 'string' ? spec.brand : ''
@@ -92,11 +96,11 @@ const safeParseSiteSpecBrand = (siteSpecJson: string): string => {
   }
 }
 
-export const completeGenerationAction = async (
+export async function completeGenerationAction(
   ctx: Pick<ActionCtx, 'runMutation' | 'runQuery'>,
   args: CompleteGenerationActionInput,
   references: CompleteGenerationActionReferences,
-): Promise<CompleteGenerationActionResult> => {
+): Promise<CompleteGenerationActionResult> {
   const session = (await ctx.runQuery(references.getGenerationSession, {
     sessionId: args.sessionId,
   })) as Doc<'sessions'> | null

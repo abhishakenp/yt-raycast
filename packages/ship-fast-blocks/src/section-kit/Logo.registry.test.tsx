@@ -22,7 +22,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
       user: null,
     }),
     useMutation: () => vi.fn(),
-    useQuery: (name: string) => {
+    useQuery: (na) => {
       if (/(?:Catalog|notifications|orders|Listings|Articles)$/i.test(name)) {
         return []
       }
@@ -57,25 +57,28 @@ const copyrightOnlyBrandComponents = new Set([
   'FilmDirectorFooter',
 ])
 
-const brandShellCapsules = (): ShipFastCapsule[] =>
-  Object.values(registry)
+function brandShellCapsules(): ShipFastCapsule[] {
+  return Object.values(registry)
     .filter((value): value is ShipFastCapsule => isCapsule(value))
     .filter((capsule) => /(Navbar|Footer|Sidebar)$/.test(capsule.client.name))
+}
 
-const RenderCapsule = ({ capsule }: { capsule: ShipFastCapsule }) =>
-  capsule.client.component({
+function RenderCapsule({ capsule }: { capsule: ShipFastCapsule }) {
+  return capsule.client.component({
     props: { brand: 'Acme Labs' },
     statementId: `${capsule.client.name}-logo-regression`,
   } as ComponentRenderProps<{ brand: string }>) as ReactElement
+}
 
-const renderCapsuleWithBrand = (
+function renderCapsuleWithBrand(
   capsule: ShipFastCapsule,
-): ReturnType<typeof render> =>
-  render(
+): ReturnType<typeof render> {
+  return render(
     <BrandLogoProvider value={selectedLogo}>
       <RenderCapsule capsule={capsule} />
     </BrandLogoProvider>,
   )
+}
 
 afterEach(() => {
   cleanup()

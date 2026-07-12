@@ -34,27 +34,29 @@ type MedusaProductDefaults = {
   tenant: MedusaTenant
 }
 
-const normalizeBackendUrl = (backendUrl: string): string =>
-  backendUrl.replace(/\/+$/, '')
+function normalizeBackendUrl(backendUrl: string): string {
+  return backendUrl.replace(/\/+$/, '')
+}
 
-const slugify = (value: string): string =>
-  value
+function slugify(value: string): string {
+  return value
     .trim()
     .toLowerCase()
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
 
-export const createSessionScopedProductHandle = (
+export function createSessionScopedProductHandle(
   sessionId: string,
   product: Pick<GeneratedCommerceProduct, 'handle' | 'title'>,
-): string => {
+): string {
   const tenant = slugify(sessionId) || 'session'
   const productHandle = slugify(product.handle || product.title) || 'product'
   return `ship-fast-${tenant}-${productHandle}`.slice(0, 120)
 }
 
-export const parsePriceToMedusaAmount = (price: number | string): number => {
+export function parsePriceToMedusaAmount(price: number | string): number {
   const numericPrice =
     typeof price === 'number'
       ? price
@@ -63,32 +65,41 @@ export const parsePriceToMedusaAmount = (price: number | string): number => {
   return Math.max(0, numericPrice)
 }
 
-const readJson = async <T>(response: Response): Promise<T> =>
-  (await response.json()) as T
+async function readJson(response: Response): Promise<T> {
+  return (await response.json()) as T
+}
 
-const createAdminHeaders = (token: string): Record<string, string> => ({
-  authorization: `Bearer ${token}`,
-  'content-type': 'application/json',
-})
+function createAdminHeaders(token: string): Record<string, string> {
+  return {
+    authorization: `Bearer ${token}`,
+    'content-type': 'application/json',
+  }
+}
 
-const firstStringId = (
+function firstStringId(
   items: Array<{ id?: unknown }> | undefined,
-): string | undefined => {
+): string | undefined {
   const match = items?.find((item): item is { id: string } => {
     return typeof item.id === 'string'
   })
   return match?.id
 }
 
-const createTenantName = (sessionId: string): string => `Ship Fast ${sessionId}`
+function createTenantName(sessionId: string): string {
+  return `Ship Fast ${sessionId}`
+}
 
-const hasSalesChannel = (
+function hasSalesChannel(
   key: { sales_channels?: Array<{ id?: unknown }> },
   salesChannelId: string,
-): boolean =>
-  key.sales_channels?.some((channel) => channel.id === salesChannelId) ?? false
+): boolean {
+  return (
+    key.sales_channels?.some((channel) => channel.id === salesChannelId) ??
+    false
+  )
+}
 
-const authenticateAdmin = async ({
+async function authenticateAdmin({
   adminApiToken,
   adminEmail,
   adminPassword,
@@ -100,7 +111,7 @@ const authenticateAdmin = async ({
   adminPassword?: string
   backendUrl: string
   fetchImpl: FetchLike
-}): Promise<AdminAuth | undefined> => {
+}): Promise<AdminAuth | undefined> {
   if (!adminEmail?.trim() || !adminPassword?.trim()) {
     return adminApiToken?.trim() ? { token: adminApiToken.trim() } : undefined
   }
@@ -124,7 +135,7 @@ const authenticateAdmin = async ({
     : undefined
 }
 
-const loadProductDefaults = async ({
+async function loadProductDefaults({
   backendUrl,
   fetchImpl,
   sessionId,
@@ -134,7 +145,7 @@ const loadProductDefaults = async ({
   fetchImpl: FetchLike
   sessionId: string
   token: string
-}): Promise<MedusaProductDefaults> => {
+}): Promise<MedusaProductDefaults> {
   const headers = createAdminHeaders(token)
   const tenantName = createTenantName(sessionId)
   const [profilesResponse, channelsResponse, apiKeysResponse] =
@@ -244,7 +255,7 @@ const loadProductDefaults = async ({
   }
 }
 
-const createTenantSalesChannel = async ({
+async function createTenantSalesChannel({
   backendUrl,
   fetchImpl,
   headers,
@@ -256,7 +267,7 @@ const createTenantSalesChannel = async ({
   headers: Record<string, string>
   sessionId: string
   tenantName: string
-}): Promise<string> => {
+}): Promise<string> {
   const response = await fetchImpl(`${backendUrl}/admin/sales-channels`, {
     body: JSON.stringify({
       description: `Ship Fast generated storefront tenant ${sessionId}`,
@@ -278,7 +289,7 @@ const createTenantSalesChannel = async ({
   return salesChannelId
 }
 
-const createTenantPublishableKey = async ({
+async function createTenantPublishableKey({
   backendUrl,
   fetchImpl,
   headers,
@@ -292,7 +303,7 @@ const createTenantPublishableKey = async ({
   id: string
   sales_channels?: Array<{ id?: unknown }>
   token: string
-}> => {
+}> {
   const response = await fetchImpl(`${backendUrl}/admin/api-keys`, {
     body: JSON.stringify({
       title: tenantName,
@@ -327,7 +338,7 @@ const createTenantPublishableKey = async ({
   }
 }
 
-const findExistingProductId = async ({
+async function findExistingProductId({
   backendUrl,
   fetchImpl,
   handle,
@@ -337,7 +348,7 @@ const findExistingProductId = async ({
   fetchImpl: FetchLike
   handle: string
   token: string
-}): Promise<string | undefined> => {
+}): Promise<string | undefined> {
   const response = await fetchImpl(
     `${backendUrl}/admin/products?handle=${encodeURIComponent(handle)}&limit=1`,
     { headers: createAdminHeaders(token) },
@@ -354,7 +365,7 @@ const findExistingProductId = async ({
   return typeof productId === 'string' ? productId : undefined
 }
 
-const createProductBody = ({
+function createProductBody({
   currencyCode,
   defaults,
   handle,
@@ -366,36 +377,38 @@ const createProductBody = ({
   handle: string
   product: GeneratedCommerceProduct
   sessionId: string
-}) => ({
-  title: product.title,
-  handle,
-  ...(product.description === undefined
-    ? {}
-    : { description: product.description }),
-  metadata: {
-    ship_fast_generated_handle: product.handle,
-    ship_fast_generated_product: true,
-    ship_fast_session_id: sessionId,
-  },
-  options: [{ title: 'Default', values: ['Default'] }],
-  shipping_profile_id: defaults.shippingProfileId,
-  sales_channels: [{ id: defaults.tenant.salesChannelId }],
-  status: 'published',
-  variants: [
-    {
-      title: 'Default',
-      options: { Default: 'Default' },
-      prices: [
-        {
-          amount: parsePriceToMedusaAmount(product.price),
-          currency_code: currencyCode,
-        },
-      ],
+}) {
+  return {
+    title: product.title,
+    handle,
+    ...(product.description === undefined
+      ? {}
+      : { description: product.description }),
+    metadata: {
+      ship_fast_generated_handle: product.handle,
+      ship_fast_generated_product: true,
+      ship_fast_session_id: sessionId,
     },
-  ],
-})
+    options: [{ title: 'Default', values: ['Default'] }],
+    shipping_profile_id: defaults.shippingProfileId,
+    sales_channels: [{ id: defaults.tenant.salesChannelId }],
+    status: 'published',
+    variants: [
+      {
+        title: 'Default',
+        options: { Default: 'Default' },
+        prices: [
+          {
+            amount: parsePriceToMedusaAmount(product.price),
+            currency_code: currencyCode,
+          },
+        ],
+      },
+    ],
+  }
+}
 
-export const syncGeneratedProductsToMedusa = async ({
+export async function syncGeneratedProductsToMedusa({
   adminApiToken,
   adminEmail,
   adminPassword,
@@ -404,7 +417,7 @@ export const syncGeneratedProductsToMedusa = async ({
   fetch: fetchOverride,
   products,
   sessionId,
-}: SyncGeneratedProductsToMedusaInput): Promise<SyncGeneratedProductsToMedusaResult> => {
+}: SyncGeneratedProductsToMedusaInput): Promise<SyncGeneratedProductsToMedusaResult> {
   const syncProducts = products.slice(0, 25)
   if (syncProducts.length === 0) return { synced: 0 }
 

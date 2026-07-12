@@ -20,8 +20,8 @@ const completeGenerationInternalRef =
     ActionCtx['runMutation']
   >[0]
 
-const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
-  ({
+function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a homepage',
@@ -30,21 +30,24 @@ const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
     preferredLanguage: 'fr',
     createdAt: 1,
     ...overrides,
-  }) as SessionRecord
+  } as SessionRecord
+}
 
-const actionInput = (
+function actionInput(
   overrides: Partial<CompleteGenerationActionInput> = {},
-): CompleteGenerationActionInput => ({
-  sessionId,
-  html: '<html><body><main>handoff</main></body></html>',
-  siteSpecJson: '{"title":"Handoff"}',
-  openUiSource: '$page = "Home"',
-  tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
-  elapsed: 123,
-  cost: 0.5,
-  provider: 'groq',
-  ...overrides,
-})
+): CompleteGenerationActionInput {
+  return {
+    sessionId,
+    html: '<html><body><main>handoff</main></body></html>',
+    siteSpecJson: '{"title":"Handoff"}',
+    openUiSource: '$page = "Home"',
+    tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+    elapsed: 123,
+    cost: 0.5,
+    provider: 'groq',
+    ...overrides,
+  }
+}
 
 const dbObservedBreweryGeneration = {
   brand: 'Craft Beer Brewery',
@@ -73,17 +76,17 @@ const dbObservedOpenUiHandoffHtml = `<!doctype html>
 </body>
 </html>`
 
-const ctxFor = (session: SessionRecord | null) => {
+function ctxFor(session: SessionRecord | null) {
   const queryCalls: Array<{ ref: unknown; args: unknown }> = []
   const mutationCalls: Array<{ ref: unknown; args: Record<string, unknown> }> =
     []
 
   const ctx = {
-    runQuery: async (ref: unknown, args: unknown) => {
+    runQuery: async (ref, args) => {
       queryCalls.push({ ref, args })
       return session
     },
-    runMutation: async (ref: unknown, args: Record<string, unknown>) => {
+    runMutation: async (ref, args) => {
       mutationCalls.push({ ref, args })
     },
   } as unknown as Pick<ActionCtx, 'runMutation' | 'runQuery'>
@@ -91,19 +94,21 @@ const ctxFor = (session: SessionRecord | null) => {
   return { ctx, queryCalls, mutationCalls }
 }
 
-const referencesFor = (
+function referencesFor(
   overrides: Partial<CompleteGenerationActionReferences> = {},
-): CompleteGenerationActionReferences => ({
-  getGenerationSession: getGenerationSessionRef,
-  completeGenerationInternal: completeGenerationInternalRef,
-  loadOpenUISSR: async () => ({
-    renderOpenUIToHTMLWithTheme: async (source, _theme, language) => ({
-      html: `<main data-lang="${language}">${source}</main>`,
-      cssVars: '',
+): CompleteGenerationActionReferences {
+  return {
+    getGenerationSession: getGenerationSessionRef,
+    completeGenerationInternal: completeGenerationInternalRef,
+    loadOpenUISSR: async () => ({
+      renderOpenUIToHTMLWithTheme: async (source, _theme, language) => ({
+        html: `<main data-lang="${language}">${source}</main>`,
+        cssVars: '',
+      }),
     }),
-  }),
-  ...overrides,
-})
+    ...overrides,
+  }
+}
 
 describe('completeGenerationAction', () => {
   afterEach(() => {

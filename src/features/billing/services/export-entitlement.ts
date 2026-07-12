@@ -35,16 +35,19 @@ const activeSubscriptionStatuses = new Set([
   'authenticated',
 ])
 
-const normalizeCredits = (credits: number | null | undefined): number =>
-  Number.isFinite(credits) ? Math.max(0, Math.floor(Number(credits))) : 0
+function normalizeCredits(credits: number | null | undefined): number {
+  return Number.isFinite(credits) ? Math.max(0, Math.floor(Number(credits))) : 0
+}
 
-export const hasExportSubscriptionAccess = (
+export function hasExportSubscriptionAccess(
   status: SubscriptionStatus,
-): boolean => activeSubscriptionStatuses.has(String(status))
+): boolean {
+  return activeSubscriptionStatuses.has(String(status))
+}
 
-export const resolveExportEntitlement = (
+export function resolveExportEntitlement(
   input: ExportEntitlementInput,
-): ExportEntitlementDecision => {
+): ExportEntitlementDecision {
   if (input.paywallDisabled === true) {
     return {
       canDownload: true,

@@ -22,12 +22,15 @@ const installPointerCapturePolyfill = () => {
   }
 }
 
-const renderPanel = (activeElement: HTMLElement) =>
-  render(createElement(TypographyControlsPanel, { activeElement, onModified }))
+function renderPanel(activeElement: HTMLElement) {
+  return render(
+    createElement(TypographyControlsPanel, { activeElement, onModified }),
+  )
+}
 
-const makeComputed = (
+function makeComputed(
   overrides: Partial<Record<string, string>> = {},
-): CSSStyleDeclaration => {
+): CSSStyleDeclaration {
   const values = {
     fontFamily: 'system-ui, sans-serif',
     lineHeight: 'normal',
@@ -38,7 +41,7 @@ const makeComputed = (
   }
   return {
     ...values,
-    getPropertyValue: (property: string) =>
+    getPropertyValue: (property) =>
       values[property as keyof typeof values] ?? '',
   } as CSSStyleDeclaration
 }

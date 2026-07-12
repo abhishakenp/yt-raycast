@@ -10,15 +10,17 @@ interface Ctrl {
   restoreVersion: (v: number) => Promise<void>
 }
 
-const makeCtrl = (overrides: Partial<Ctrl> = {}): Ctrl => ({
-  edits: overrides.edits ?? [],
-  history: overrides.history ?? [],
-  restoreVersion:
-    overrides.restoreVersion ??
-    (async (v: number) => {
-      void v
-    }),
-})
+function makeCtrl(overrides: Partial<Ctrl> = {}): Ctrl {
+  return {
+    edits: overrides.edits ?? [],
+    history: overrides.history ?? [],
+    restoreVersion:
+      overrides.restoreVersion ??
+      (async (v) => {
+        void v
+      }),
+  }
+}
 
 describe('useUndoRedo (behavioral)', () => {
   it('1. initial state: empty undo/redo stacks', () => {
@@ -38,7 +40,7 @@ describe('useUndoRedo (behavioral)', () => {
   })
 
   it("3. undo: pops undo, pushes to redo, calls restoreVersion with the pre-edit version (regression: previously restored to the edit's own version, i.e. currentVersion — a no-op)", async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const ctrl = makeCtrl({
@@ -58,7 +60,7 @@ describe('useUndoRedo (behavioral)', () => {
   })
 
   it('4. redo: pops redo, pushes to undo, calls restoreVersion', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const ctrl = makeCtrl({
@@ -79,7 +81,7 @@ describe('useUndoRedo (behavioral)', () => {
   })
 
   it('5. new edit after undo clears redo stack', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     let edits = [{ previewVersion: 2 }, { previewVersion: 1 }]
@@ -110,7 +112,7 @@ describe('useUndoRedo (behavioral)', () => {
   })
 
   it('6. cannot undo when stack empty', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const { result } = renderHook(() =>
@@ -124,7 +126,7 @@ describe('useUndoRedo (behavioral)', () => {
   })
 
   it('7. cannot redo when stack empty', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const ctrl = makeCtrl({

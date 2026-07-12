@@ -46,7 +46,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }: { children: ReactNode; to: string }) => (
+  Link: ({ children, to }) => (
     <a href={typeof to === 'string' ? to : '#'}>{children}</a>
   ),
   useNavigate: () => vi.fn(),
@@ -120,16 +120,16 @@ describe('HomePage — secondary features', () => {
 
     // jsdom lacks requestAnimationFrame / matchMedia; provide no-op shims.
     if (typeof window.requestAnimationFrame !== 'function') {
-      window.requestAnimationFrame = ((cb: FrameRequestCallback) =>
+      window.requestAnimationFrame = ((cb) =>
         window.setTimeout(
           () => cb(Date.now()),
           0,
         )) as unknown as typeof window.requestAnimationFrame
-      window.cancelAnimationFrame = ((handle: number) =>
+      window.cancelAnimationFrame = ((handle) =>
         window.clearTimeout(handle)) as typeof window.cancelAnimationFrame
     }
     if (!window.matchMedia) {
-      window.matchMedia = ((query: string) => ({
+      window.matchMedia = ((query) => ({
         matches: false,
         media: query,
         onchange: null,
@@ -360,7 +360,7 @@ describe('HomePage — secondary features', () => {
 
     // Helper: advance one 34ms typing tick and flush React so the chained
     // effect re-runs and schedules the next timeout.
-    const tick = (ms: number) =>
+    const tick = (ms) =>
       act(() => {
         vi.advanceTimersByTime(ms)
       })

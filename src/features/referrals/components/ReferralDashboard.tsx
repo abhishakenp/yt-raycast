@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useReferralStatus } from '@/features/referrals/hooks/useReferralStatus'
 import { requestClerkSignIn } from '@/shared/auth/use-optional-auth'
 
-const buildReferralLink = (code: string | null): string => {
+function buildReferralLink(code: string | null): string {
   if (!code) return ''
   if (typeof window === 'undefined') return `https://ship-fast.io/?ref=${code}`
   return `${window.location.origin}/?ref=${code}`

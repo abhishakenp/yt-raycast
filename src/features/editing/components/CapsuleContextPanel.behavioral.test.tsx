@@ -21,7 +21,7 @@ vi.mock('../hooks/useSectionCapsuleActions', () => ({
 
 // Mock LakebedSessionProvider as a pass-through.
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }: { children: React.ReactNode }) =>
+  LakebedSessionProvider: ({ children }) =>
     createElement('div', { 'data-testid': 'provider' }, children),
 }))
 
@@ -43,7 +43,7 @@ vi.mock('#/components/ui/sortable', () => {
     contentRef: React.MutableRefObject<HTMLElement | null>
   } | null>(null)
 
-  const Sortable = ({ value, onMove, children }: any) => {
+  const Sortable = ({ value, onMove, children }) => {
     const startIndex = React.useRef<number | null>(null)
     const contentRef = React.useRef<HTMLElement | null>(null)
     return (
@@ -54,14 +54,14 @@ vi.mock('#/components/ui/sortable', () => {
       </SortableContext.Provider>
     )
   }
-  const SortableContent = ({ children, ...props }: any) => {
+  const SortableContent = ({ children, ...props }) => {
     return (
       <div data-sortable-content {...props}>
         {children}
       </div>
     )
   }
-  const SortableItem = ({ value, children, asChild }: any) => {
+  const SortableItem = ({ value, children, asChild }) => {
     const ctx = React.useContext(SortableContext)
     // Store the item's index in a data attribute so the handle can read it
     // value may be string or number; compare loosely
@@ -70,12 +70,12 @@ vi.mock('#/components/ui/sortable', () => {
       : -1
     return <div data-sortable-idx={idx}>{children}</div>
   }
-  const SortableItemHandle = ({ children, ...props }: any) => {
+  const SortableItemHandle = ({ children, ...props }) => {
     const ctx = React.useContext(SortableContext)
-    const refCallback = (el: HTMLElement | null) => {
+    const refCallback = (el) => {
       if (!el) return
       if (!ctx) return
-      const onDown = (e: Event) => {
+      const onDown = (e) => {
         const item = el.closest('[data-sortable-idx]')
         if (item && ctx) {
           ctx.startIndex.current = parseInt(
@@ -84,7 +84,7 @@ vi.mock('#/components/ui/sortable', () => {
           )
         }
       }
-      const onUp = (e: Event) => {
+      const onUp = (e) => {
         if (!ctx || ctx.startIndex.current === null) return
         const content = el.closest('[data-sortable-content]')
         if (!content) return

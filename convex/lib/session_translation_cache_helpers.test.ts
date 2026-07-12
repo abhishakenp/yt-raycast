@@ -7,22 +7,17 @@ import {
   loadCachedTranslationsForSource,
 } from './session_translation_cache_helpers'
 
-const ctxWithTranslations = (
+function ctxWithTranslations(
   rows: Array<{ locale: string; sourceText: string; translation: string }>,
-) =>
-  ({
+) {
+  return {
     db: {
-      query: (table: string) => ({
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+      query: (table) => ({
+        withIndex: (_indexName, applyIndex) => {
           expect(table).toBe('translationCache')
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -35,7 +30,8 @@ const ctxWithTranslations = (
         },
       }),
     },
-  }) as unknown as Pick<QueryCtx, 'db'>
+  } as unknown as Pick<QueryCtx, 'db'>
+}
 
 describe('session translation cache helpers', () => {
   it('extracts user-visible OpenUI string literals without URLs', () => {

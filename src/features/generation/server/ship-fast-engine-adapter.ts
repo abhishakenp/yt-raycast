@@ -63,64 +63,64 @@ export type ShipFastEngineAdapterOptions = {
   ) => void | Promise<void>
 }
 
-const createSessionContext = (
+function createSessionContext(
   sessionId: string,
   emit: (event: ShipFastEngineSessionEvent) => void,
-): ShipFastEngineSessionContext => ({
-  id: sessionId,
-  broadcast: (payload) => emit({ type: 'broadcast', payload }),
-  setPrompt: (message) => emit({ type: 'log', message }),
-  setTasks: (tasks) => emit({ type: 'tasks', tasks }),
-  updateTask: (task) => emit({ type: 'task', task }),
-  signalHomepageReady: () => emit({ type: 'preview_ready' }),
-  signalOpenuiReady: () => emit({ type: 'openui_ready' }),
-  setElapsed: (elapsed) =>
-    emit({ type: 'status', message: String(elapsed), phase: 'elapsed' }),
-  setCost: (cost) =>
-    emit({ type: 'status', message: String(cost), phase: 'cost' }),
-})
+): ShipFastEngineSessionContext {
+  return {
+    id: sessionId,
+    broadcast: (payload) => emit({ type: 'broadcast', payload }),
+    setPrompt: (message) => emit({ type: 'log', message }),
+    setTasks: (tasks) => emit({ type: 'tasks', tasks }),
+    updateTask: (task) => emit({ type: 'task', task }),
+    signalHomepageReady: () => emit({ type: 'preview_ready' }),
+    signalOpenuiReady: () => emit({ type: 'openui_ready' }),
+    setElapsed: (elapsed) =>
+      emit({ type: 'status', message: String(elapsed), phase: 'elapsed' }),
+    setCost: (cost) =>
+      emit({ type: 'status', message: String(cost), phase: 'cost' }),
+  }
+}
 
-export const createShipFastEngineAdapter = ({
+export function createShipFastEngineAdapter({
   runAll,
   workspaceRoot,
   now = Date.now,
   onEvent,
-}: ShipFastEngineAdapterOptions) => ({
-  generate: async ({
-    sessionId,
-    prompt,
-    preferredLanguage,
-  }: ShipFastEngineAdapterInput): Promise<ShipFastEngineAdapterResult> => {
-    const startedAt = now()
-    const events: ShipFastEngineSessionEvent[] = []
-    const pendingEventWrites: Promise<void>[] = []
-    const workspace = createEngineWorkspacePath(workspaceRoot, sessionId)
-    const emit = (event: ShipFastEngineSessionEvent) => {
-      events.push(event)
+}: ShipFastEngineAdapterOptions) {
+  return {
+    generate: async ({ sessionId, prompt, preferredLanguage }) => {
+      const startedAt = now()
+      const events: ShipFastEngineSessionEvent[] = []
+      const pendingEventWrites: Promise<void>[] = []
+      const workspace = createEngineWorkspacePath(workspaceRoot, sessionId)
+      const emit = (event) => {
+        events.push(event)
 
-      if (onEvent) {
-        pendingEventWrites.push(
-          Promise.resolve(
-            onEvent(event, { sessionId, prompt, workspace }),
-          ).catch(() => undefined),
-        )
+        if (onEvent) {
+          pendingEventWrites.push(
+            Promise.resolve(
+              onEvent(event, { sessionId, prompt, workspace }),
+            ).catch(() => undefined),
+          )
+        }
       }
-    }
 
-    prepareEngineWorkspace(workspace)
-    await runAll({
-      prompt,
-      workspace,
-      sessionCtx: createSessionContext(sessionId, emit),
-      preferredLanguage,
-    })
-    await Promise.all(pendingEventWrites)
+      prepareEngineWorkspace(workspace)
+      await runAll({
+        prompt,
+        workspace,
+        sessionCtx: createSessionContext(sessionId, emit),
+        preferredLanguage,
+      })
+      await Promise.all(pendingEventWrites)
 
-    return {
-      ...readEngineWorkspaceArtifacts(workspace),
-      workspace,
-      events,
-      elapsedMs: now() - startedAt,
-    }
-  },
-})
+      return {
+        ...readEngineWorkspaceArtifacts(workspace),
+        workspace,
+        events,
+        elapsedMs: now() - startedAt,
+      }
+    },
+  }
+}

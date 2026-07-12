@@ -80,84 +80,91 @@ export type SyncMedusaProductsInput = {
   }>
 }
 
-export const serializeCommerceConfig = (config: Doc<'commerceConfigs'>) => ({
-  configId: config._id,
-  status: config.status,
-  backendUrl: config.backendUrl,
-  adminUrl: config.adminUrl,
-  storefrontUrl: config.storefrontUrl,
-  productCount: config.productCount,
-  configJson: config.configJson,
-  errorMessage: config.errorMessage,
-  createdAt: config.createdAt,
-  updatedAt: config.updatedAt,
-})
+export function serializeCommerceConfig(config: Doc<'commerceConfigs'>) {
+  return {
+    configId: config._id,
+    status: config.status,
+    backendUrl: config.backendUrl,
+    adminUrl: config.adminUrl,
+    storefrontUrl: config.storefrontUrl,
+    productCount: config.productCount,
+    configJson: config.configJson,
+    errorMessage: config.errorMessage,
+    createdAt: config.createdAt,
+    updatedAt: config.updatedAt,
+  }
+}
 
-export const serializeCommerceTenant = (tenant: Doc<'commerceTenants'>) => ({
-  tenantId: tenant._id,
-  deploymentId: tenant.deploymentId,
-  deploymentSlug: tenant.deploymentSlug,
-  sessionId: tenant.sessionId,
-  provider: tenant.provider,
-  providerTenantId: tenant.providerTenantId,
-  status: tenant.status,
-  syncStatus: tenant.syncStatus,
-  backendUrl: tenant.backendUrl,
-  adminUrl: tenant.adminUrl,
-  storefrontUrl: tenant.storefrontUrl,
-  publishableKey: tenant.publishableKey,
-  productCount: tenant.productCount,
-  lastPullAt: tenant.lastPullAt,
-  lastWebhookAt: tenant.lastWebhookAt,
-  lastHealthCheckAt: tenant.lastHealthCheckAt,
-  errorMessage: tenant.errorMessage,
-  createdAt: tenant.createdAt,
-  updatedAt: tenant.updatedAt,
-})
+export function serializeCommerceTenant(tenant: Doc<'commerceTenants'>) {
+  return {
+    tenantId: tenant._id,
+    deploymentId: tenant.deploymentId,
+    deploymentSlug: tenant.deploymentSlug,
+    sessionId: tenant.sessionId,
+    provider: tenant.provider,
+    providerTenantId: tenant.providerTenantId,
+    status: tenant.status,
+    syncStatus: tenant.syncStatus,
+    backendUrl: tenant.backendUrl,
+    adminUrl: tenant.adminUrl,
+    storefrontUrl: tenant.storefrontUrl,
+    publishableKey: tenant.publishableKey,
+    productCount: tenant.productCount,
+    lastPullAt: tenant.lastPullAt,
+    lastWebhookAt: tenant.lastWebhookAt,
+    lastHealthCheckAt: tenant.lastHealthCheckAt,
+    errorMessage: tenant.errorMessage,
+    createdAt: tenant.createdAt,
+    updatedAt: tenant.updatedAt,
+  }
+}
 
-const loadCommerceConfigDoc = async (
+async function loadCommerceConfigDoc(
   ctx: CommerceQueryCtx,
   sessionId: Id<'sessions'>,
-) =>
-  await ctx.db
+) {
+  return await ctx.db
     .query('commerceConfigs')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
     .first()
+}
 
-const loadDeploymentDocBySlug = async (
+async function loadDeploymentDocBySlug(
   ctx: CommerceQueryCtx,
   deploymentSlug: string,
-) =>
-  await ctx.db
+) {
+  return await ctx.db
     .query('deployments')
     .withIndex('by_slug', (index) => index.eq('slug', deploymentSlug))
     .first()
+}
 
-const loadCommerceTenantByDeploymentId = async (
+async function loadCommerceTenantByDeploymentId(
   ctx: CommerceQueryCtx,
   deploymentId: Id<'deployments'>,
-) =>
-  await ctx.db
+) {
+  return await ctx.db
     .query('commerceTenants')
     .withIndex('by_deploymentId', (index) =>
       index.eq('deploymentId', deploymentId),
     )
     .first()
+}
 
-const loadDeploymentTenantPair = async (
+async function loadDeploymentTenantPair(
   ctx: CommerceQueryCtx,
   deploymentSlug: string,
-) => {
+) {
   const deployment = await loadDeploymentDocBySlug(ctx, deploymentSlug)
   if (deployment === null) return { deployment: null, tenant: null }
   const tenant = await loadCommerceTenantByDeploymentId(ctx, deployment._id)
   return { deployment, tenant }
 }
 
-export const upsertSessionCommerceConfig = async (
+export async function upsertSessionCommerceConfig(
   ctx: CommerceMutationCtx,
   args: UpsertSessionCommerceConfigInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -202,10 +209,10 @@ export const upsertSessionCommerceConfig = async (
   return { sessionId: args.sessionId }
 }
 
-export const loadSessionCommerceConfig = async (
+export async function loadSessionCommerceConfig(
   ctx: CommerceQueryCtx,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const session = await ctx.db.get(sessionId)
   if (session === null || !(await canReadPrivateSession(ctx, session))) {
     return null
@@ -215,18 +222,18 @@ export const loadSessionCommerceConfig = async (
   return config === null ? null : serializeCommerceConfig(config)
 }
 
-export const loadDeploymentCommerceTenantBySlug = async (
+export async function loadDeploymentCommerceTenantBySlug(
   ctx: CommerceQueryCtx,
   deploymentSlug: string,
-) => {
+) {
   const { tenant } = await loadDeploymentTenantPair(ctx, deploymentSlug)
   return tenant === null ? null : serializeCommerceTenant(tenant)
 }
 
-export const authorizeDeploymentCommerceTenantProvision = async (
+export async function authorizeDeploymentCommerceTenantProvision(
   ctx: CommerceQueryCtx,
   args: OwnedDeploymentCommerceTenantInput,
-): Promise<AuthorizedDeploymentCommerceTenantProvision> => {
+): Promise<AuthorizedDeploymentCommerceTenantProvision> {
   const deployment = await loadDeploymentDocBySlug(ctx, args.deploymentSlug)
   deployment !== null ||
     (() => {
@@ -254,10 +261,10 @@ export const authorizeDeploymentCommerceTenantProvision = async (
   }
 }
 
-const assertDeploymentCommerceTenantWebhookSecret = async (
+async function assertDeploymentCommerceTenantWebhookSecret(
   tenant: Doc<'commerceTenants'>,
   webhookSecret: string | undefined,
-) => {
+) {
   const webhookSecretHash =
     webhookSecret === undefined
       ? undefined
@@ -274,10 +281,10 @@ const assertDeploymentCommerceTenantWebhookSecret = async (
   }
 }
 
-export const loadOwnedDeploymentCommerceTenantBySlug = async (
+export async function loadOwnedDeploymentCommerceTenantBySlug(
   ctx: CommerceQueryCtx,
   args: OwnedDeploymentCommerceTenantInput,
-) => {
+) {
   const { deployment, tenant } = await loadDeploymentTenantPair(
     ctx,
     args.deploymentSlug,
@@ -299,10 +306,10 @@ export const loadOwnedDeploymentCommerceTenantBySlug = async (
   return serializeCommerceTenant(tenant)
 }
 
-export const loadDeploymentCommerceTenantBySlugForWebhook = async (
+export async function loadDeploymentCommerceTenantBySlugForWebhook(
   ctx: CommerceQueryCtx,
   args: WebhookDeploymentCommerceTenantInput,
-) => {
+) {
   const { deployment, tenant } = await loadDeploymentTenantPair(
     ctx,
     args.deploymentSlug,
@@ -315,10 +322,10 @@ export const loadDeploymentCommerceTenantBySlugForWebhook = async (
   return serializeCommerceTenant(tenant)
 }
 
-export const upsertDeploymentCommerceTenant = async (
+export async function upsertDeploymentCommerceTenant(
   ctx: CommerceMutationCtx,
   args: UpsertDeploymentCommerceTenantInput,
-) => {
+) {
   const deployment = await loadDeploymentDocBySlug(ctx, args.deploymentSlug)
   const now = Date.now()
 
@@ -381,10 +388,10 @@ export const upsertDeploymentCommerceTenant = async (
   }
 }
 
-export const recordDeploymentCommerceTenantPull = async (
+export async function recordDeploymentCommerceTenantPull(
   ctx: CommerceMutationCtx,
   args: RecordDeploymentCommerceTenantPullInput,
-) => {
+) {
   const { deployment, tenant } = await loadDeploymentTenantPair(
     ctx,
     args.deploymentSlug,
@@ -445,10 +452,10 @@ export const recordDeploymentCommerceTenantPull = async (
   }
 }
 
-export const provisionSessionMedusaTenant = async (
+export async function provisionSessionMedusaTenant(
   ctx: CommerceMutationCtx,
   args: ProvisionMedusaTenantInput,
-) => {
+) {
   const now = Date.now()
   const existingConfig = await loadCommerceConfigDoc(ctx, args.sessionId)
 
@@ -475,10 +482,10 @@ export const provisionSessionMedusaTenant = async (
   return { success: true }
 }
 
-export const syncSessionMedusaProducts = async (
+export async function syncSessionMedusaProducts(
   ctx: CommerceMutationCtx,
   args: SyncMedusaProductsInput,
-) => {
+) {
   const config = await loadCommerceConfigDoc(ctx, args.sessionId)
 
   if (config === null) {

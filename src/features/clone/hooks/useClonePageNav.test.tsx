@@ -47,7 +47,7 @@ const realTvnlStorageBackedHomePage = {
   truncated: false,
 }
 
-const getState = (): CloneHookState => {
+function getState(): CloneHookState {
   const testGlobal = globalThis as typeof globalThis & {
     __shipFastCloneHookState?: CloneHookState
   }
@@ -60,7 +60,7 @@ const getState = (): CloneHookState => {
 }
 
 vi.mock('convex/react', () => ({
-  useQuery: (query: unknown, args: unknown) => {
+  useQuery: (query, args) => {
     const state = getState()
     state.queryArgs.push(args)
     if (args === 'skip') return undefined

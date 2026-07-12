@@ -53,7 +53,7 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
   useOptionalAuth: () => authState,
 }))
 
-const setExportTargets = (targets: ExportTargetTuple[]) => {
+function setExportTargets(targets: ExportTargetTuple[]) {
   exportTargetsState.value = { targets }
   exportTargetsState.queryResult = { targets }
 }
@@ -62,36 +62,38 @@ const setLoading = () => {
   exportTargetsState.queryResult = undefined
 }
 
-const target = (
+function target(
   overrides: Partial<ExportTargetTuple> & {
     target: ExportTargetTuple['target']
   },
-): ExportTargetTuple => ({
-  label:
-    overrides.target === 'html'
-      ? 'HTML'
-      : overrides.target === 'react'
-        ? 'React'
-        : overrides.target === 'next'
-          ? 'Next.js'
-          : 'Lakebed',
-  ready: false,
-  status: 'available',
-  requiresPayment: false,
-  fileCount: null,
-  artifactReady: false,
-  artifactStatus: 'not_ready',
-  downloadUrl: null,
-  ...overrides,
-})
+): ExportTargetTuple {
+  return {
+    label:
+      overrides.target === 'html'
+        ? 'HTML'
+        : overrides.target === 'react'
+          ? 'React'
+          : overrides.target === 'next'
+            ? 'Next.js'
+            : 'Lakebed',
+    ready: false,
+    status: 'available',
+    requiresPayment: false,
+    fileCount: null,
+    artifactReady: false,
+    artifactStatus: 'not_ready',
+    downloadUrl: null,
+    ...overrides,
+  }
+}
 
 const installLocalStorage = () => {
   const values = new Map<string, string>()
   const storage = {
     clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    removeItem: vi.fn((key: string) => values.delete(key)),
-    setItem: vi.fn((key: string, value: string) => {
+    getItem: vi.fn((key) => values.get(key) ?? null),
+    removeItem: vi.fn((key) => values.delete(key)),
+    setItem: vi.fn((key, value) => {
       values.set(key, value)
     }),
   }
@@ -214,7 +216,7 @@ describe('ExportPanel behavioral', () => {
       }),
     ])
     const pending = deferred()
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       if (String(url).endsWith('/export')) return pending.promise
       return new Response('zip-bytes')
     })
@@ -247,7 +249,7 @@ describe('ExportPanel behavioral', () => {
       }),
     ])
     const pending = deferred()
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       if (String(url).endsWith('/export')) return pending.promise
       return new Response('zip-bytes')
     })
@@ -436,7 +438,7 @@ describe('ExportPanel behavioral', () => {
     ])
     silenceAnchorClick()
     installUrlMocks()
-    const fetchMock = vi.fn(async (url: string | URL, _init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url, _init) => {
       const path = String(url)
       if (path.endsWith('/download/html')) {
         return new Response('zip-bytes', {
@@ -500,7 +502,7 @@ describe('ExportPanel behavioral', () => {
         downloadUrl: null,
       }),
     ])
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       const path = String(url)
       if (path.endsWith('/export')) {
         return Response.json({ ok: true })
@@ -581,7 +583,7 @@ describe('ExportPanel behavioral', () => {
         downloadUrl: '/api/sessions/session_123/download/lakebed',
       }),
     ])
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       const path = String(url)
       if (path.endsWith('/export')) {
         return Response.json({ ok: true })
@@ -625,7 +627,7 @@ describe('ExportPanel behavioral', () => {
       }),
     ])
     const pending = deferred()
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       if (String(url).endsWith('/export')) return pending.promise
       return new Response('zip-bytes')
     })
@@ -656,7 +658,7 @@ describe('ExportPanel behavioral', () => {
       }),
     ])
     const pendingQueued = deferred()
-    fetchMock.mockImplementation(async (url: string | URL) => {
+    fetchMock.mockImplementation(async (url) => {
       if (String(url).endsWith('/export')) return pendingQueued.promise
       return new Response('zip-bytes')
     })
@@ -678,7 +680,7 @@ describe('ExportPanel behavioral', () => {
       }),
     ])
     const pendingBuilding = deferred()
-    fetchMock.mockImplementation(async (url: string | URL) => {
+    fetchMock.mockImplementation(async (url) => {
       if (String(url).endsWith('/export')) return pendingBuilding.promise
       return new Response('zip-bytes')
     })
@@ -735,7 +737,7 @@ describe('ExportPanel behavioral', () => {
     const clickMock = silenceAnchorClick()
     installUrlMocks()
     const fetchedUrls: string[] = []
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       const path = String(url)
       fetchedUrls.push(path)
       return new Response('zip-bytes', {

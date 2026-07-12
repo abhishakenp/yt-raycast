@@ -101,11 +101,12 @@ export type InlineCreateEditCommandInput = Omit<
   'sessionId' | 'anonymousOwnerSecret'
 >
 
-const cssPropertyName = (value: string): string =>
-  value
+function cssPropertyName(value: string): string {
+  return value
     .trim()
     .replace(/_/g, '-')
     .replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)
+}
 
 const CSS_NUMBER_UNITLESS_PROPERTIES = new Set([
   'animation-iteration-count',
@@ -130,7 +131,7 @@ const CSS_NUMBER_UNITLESS_PROPERTIES = new Set([
 // so the same numeric input persists the same magnitude either way.
 const CSS_EM_DEFAULT_PROPERTIES = new Set(['letter-spacing', 'word-spacing'])
 
-const cssNumericValue = (property: string, value: number): string => {
+function cssNumericValue(property: string, value: number): string {
   if (value === 0 || CSS_NUMBER_UNITLESS_PROPERTIES.has(property)) {
     return String(value)
   }
@@ -148,7 +149,7 @@ const CSS_IMAGE_KEYWORDS = new Set([
   'revert',
 ])
 
-const cssImageValue = (value: string): string => {
+function cssImageValue(value: string): string {
   const trimmed = value.trim()
   if (CSS_IMAGE_KEYWORDS.has(trimmed.toLowerCase())) {
     return trimmed
@@ -159,7 +160,7 @@ const cssImageValue = (value: string): string => {
   return `url("${trimmed.replace(/"/g, '\\"')}")`
 }
 
-const styleDeclaration = (property: string, value: unknown): string[] => {
+function styleDeclaration(property: string, value: unknown): string[] {
   if (
     typeof value !== 'string' &&
     !(typeof value === 'number' && Number.isFinite(value))
@@ -178,37 +179,42 @@ const styleDeclaration = (property: string, value: unknown): string[] => {
   return [`${cssProperty}: ${textValue}`]
 }
 
-export const serializeInlineStyle = (
+export function serializeInlineStyle(
   style: string | Record<string, unknown>,
-): string =>
-  typeof style === 'string'
+): string {
+  return typeof style === 'string'
     ? style.trim()
     : Object.entries(style)
         .flatMap(([property, value]) => styleDeclaration(property, value))
         .join('; ')
+}
 
-const commandBase = (ctx: InlineEditCommandContext) => ({
-  sessionId: ctx.sessionId as Id<'sessions'>,
-  anonymousOwnerSecret: ctx.anonymousOwnerSecret,
-})
+function commandBase(ctx: InlineEditCommandContext) {
+  return {
+    sessionId: ctx.sessionId as Id<'sessions'>,
+    anonymousOwnerSecret: ctx.anonymousOwnerSecret,
+  }
+}
 
-export const buildCreateEditCommand = (
+export function buildCreateEditCommand(
   input: InlineCreateEditCommandInput,
   ctx: InlineEditCommandContext,
-): CreateInlineEditCommand => ({
-  kind: 'createEdit',
-  mutation: api.sessions.createEdit,
-  args: {
-    ...commandBase(ctx),
-    ...input,
-    instruction: input.instruction ?? ctx.instruction,
-  },
-})
+): CreateInlineEditCommand {
+  return {
+    kind: 'createEdit',
+    mutation: api.sessions.createEdit,
+    args: {
+      ...commandBase(ctx),
+      ...input,
+      instruction: input.instruction ?? ctx.instruction,
+    },
+  }
+}
 
-const occurrenceIndex = (
+function occurrenceIndex(
   input: { occurrenceIndex?: string | number },
   ctx: InlineEditCommandContext,
-): number | undefined => {
+): number | undefined {
   if (typeof input.occurrenceIndex === 'number') return input.occurrenceIndex
   if (typeof input.occurrenceIndex === 'string') {
     const parsed = Number(input.occurrenceIndex)
@@ -217,9 +223,7 @@ const occurrenceIndex = (
   return ctx.occurrenceIndex
 }
 
-const booleanish = (
-  value: boolean | string | undefined,
-): boolean | undefined => {
+function booleanish(value: boolean | string | undefined): boolean | undefined {
   if (typeof value === 'boolean') return value
   if (typeof value !== 'string') return undefined
   const normalized = value.trim().toLowerCase()
@@ -228,13 +232,13 @@ const booleanish = (
   return undefined
 }
 
-const linkRel = ({
+function linkRel({
   openInNewTab,
   noindex,
 }: {
   openInNewTab: boolean
   noindex: boolean | undefined
-}): string => {
+}): string {
   const tokens = new Set<string>()
   if (openInNewTab) {
     tokens.add('noopener')
@@ -244,10 +248,10 @@ const linkRel = ({
   return Array.from(tokens).join(' ')
 }
 
-export const buildTextRewriteCommand = (
+export function buildTextRewriteCommand(
   input: TextRewriteInput,
   ctx: InlineEditCommandContext,
-): CreateInlineEditCommand => {
+): CreateInlineEditCommand {
   const beforeText = input.beforeText ?? ctx.selectedText
   return buildCreateEditCommand(
     {
@@ -261,10 +265,10 @@ export const buildTextRewriteCommand = (
   )
 }
 
-export const buildStyleApplyCommand = (
+export function buildStyleApplyCommand(
   input: StyleApplyInput,
   ctx: InlineEditCommandContext,
-): CreateInlineEditCommand => {
+): CreateInlineEditCommand {
   const sourceAnchor =
     input.sourceAnchor ?? input.className ?? input.selector ?? ctx.sourceAnchor
   return buildCreateEditCommand(
@@ -279,13 +283,13 @@ export const buildStyleApplyCommand = (
   )
 }
 
-const isBackgroundImageScope = (
+function isBackgroundImageScope(
   input: Pick<
     ImageReplaceInput | ImageRemoveInput,
     'targetScope' | 'sourceAnchor'
   >,
   ctx: Pick<InlineEditCommandContext, 'selectedTag'>,
-): boolean => {
+): boolean {
   if (input.targetScope && input.targetScope !== 'element') return true
   // ctx.selectedTag describes the ONE element the user had selected when
   // opening AI edit. It's only a valid signal for THIS call when the AI
@@ -305,10 +309,10 @@ const isBackgroundImageScope = (
   return false
 }
 
-export const buildImageReplaceCommand = (
+export function buildImageReplaceCommand(
   input: ImageReplaceInput,
   ctx: InlineEditCommandContext,
-): CreateInlineEditCommand => {
+): CreateInlineEditCommand {
   if (!input.src) {
     throw new Error(
       'imageReplace requires a resolved image URL before persistence',
@@ -343,10 +347,10 @@ export const buildImageReplaceCommand = (
   )
 }
 
-export const buildImageRemoveCommand = (
+export function buildImageRemoveCommand(
   input: ImageRemoveInput,
   ctx: InlineEditCommandContext,
-): CreateInlineEditCommand => {
+): CreateInlineEditCommand {
   if (isBackgroundImageScope(input, ctx)) {
     return buildStyleApplyCommand(
       {
@@ -376,10 +380,10 @@ export const buildImageRemoveCommand = (
   )
 }
 
-export const buildLinkEditCommand = (
+export function buildLinkEditCommand(
   input: LinkEditInput,
   ctx: InlineEditCommandContext,
-): CreateInlineEditCommand => {
+): CreateInlineEditCommand {
   const oldHref = input.oldHref ?? ctx.linkHref ?? ctx.sourceAnchor
   if (!oldHref) {
     throw new Error('linkEdit requires the current link href')
@@ -432,11 +436,11 @@ export const buildLinkEditCommand = (
   )
 }
 
-export const buildElementDeleteCommand = (
+export function buildElementDeleteCommand(
   input: ElementDeleteInput,
   ctx: InlineEditCommandContext,
-): CreateInlineEditCommand =>
-  buildStyleApplyCommand(
+): CreateInlineEditCommand {
+  return buildStyleApplyCommand(
     {
       sourceAnchor: input.sourceAnchor,
       targetScope: input.targetScope,
@@ -445,10 +449,9 @@ export const buildElementDeleteCommand = (
     },
     ctx,
   )
+}
 
-const openUiVarFromAnchor = (
-  anchor: string | undefined,
-): string | undefined => {
+function openUiVarFromAnchor(anchor: string | undefined): string | undefined {
   const trimmed = anchor?.trim()
   if (!trimmed) return undefined
   const dataVar = trimmed.match(/^\[data-openui-var=(["'])(.*?)\1\]$/)?.[2]
@@ -456,10 +459,10 @@ const openUiVarFromAnchor = (
   return /^[A-Za-z_$][\w$]*$/.test(trimmed) ? trimmed : undefined
 }
 
-export const buildSectionMoveCommand = (
+export function buildSectionMoveCommand(
   input: SectionMoveInput,
   ctx: InlineEditCommandContext,
-): CreateInlineEditCommand => {
+): CreateInlineEditCommand {
   const varName =
     input.varName ?? ctx.openuiVar ?? openUiVarFromAnchor(ctx.sourceAnchor)
   if (!varName) {
@@ -491,10 +494,10 @@ export const buildSectionMoveCommand = (
   )
 }
 
-export const buildSectionRewriteCommand = (
+export function buildSectionRewriteCommand(
   input: SectionRewriteInput,
   ctx: InlineEditCommandContext,
-): ApplySectionEditCommand => {
+): ApplySectionEditCommand {
   if (input.replacementOpenUiSource !== undefined && !ctx.openuiVar) {
     throw new Error(
       'sectionRewrite requires a known OpenUI section variable to safely apply replacementOpenUiSource — reselect a section and try again',
@@ -519,10 +522,10 @@ export const buildSectionRewriteCommand = (
   }
 }
 
-export const buildUndoCommand = (
+export function buildUndoCommand(
   _input: UndoLastEditInput,
   ctx: InlineEditCommandContext,
-): RestorePreviewVersionCommand => {
+): RestorePreviewVersionCommand {
   if (ctx.currentPreviewVersion === undefined) {
     throw new Error('undoLastEdit requires the current preview version')
   }

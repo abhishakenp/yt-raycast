@@ -1,7 +1,8 @@
 export const GALLERY_PAGE_SIZE = 12
 
-export const publicGalleryQueryKey = (page: number) =>
-  ['sf-public-gallery', page, GALLERY_PAGE_SIZE] as const
+export function publicGalleryQueryKey(page: number) {
+  return ['sf-public-gallery', page, GALLERY_PAGE_SIZE] as const
+}
 
 export type PublicGalleryPayload = {
   items: unknown[]
@@ -42,19 +43,19 @@ export type PublicGallerySessionSummary = {
 
 export type GalleryPageMeta = Omit<PublicGalleryPayload, 'items'>
 
-const positiveInt = (value: unknown, fallback: number): number => {
+function positiveInt(value: unknown, fallback: number): number {
   const n = Number(value)
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback
 }
 
-const nonNegativeInt = (value: unknown, fallback: number): number => {
+function nonNegativeInt(value: unknown, fallback: number): number {
   const n = Number(value)
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback
 }
 
-export const normalizeGalleryMeta = (
+export function normalizeGalleryMeta(
   raw: Partial<GalleryPageMeta> | null | undefined,
-): GalleryPageMeta => {
+): GalleryPageMeta {
   const limit = positiveInt(raw?.limit, GALLERY_PAGE_SIZE)
   const total = nonNegativeInt(raw?.total, 0)
   const totalPages = Math.max(
@@ -73,9 +74,9 @@ export const normalizeGalleryMeta = (
   }
 }
 
-export const fetchPublicGalleryPage = async (
+export async function fetchPublicGalleryPage(
   page: number,
-): Promise<PublicGalleryFetchResult> => {
+): Promise<PublicGalleryFetchResult> {
   const r = await fetch(`/api/gallery?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
   if (!r.ok) throw new Error('recent-sessions')
   let data: PublicGalleryPayload

@@ -12,12 +12,13 @@ const OWNER_SECRET = 'owner-secret-must-not-leak'
 const INTERNAL_PROMPT = 'Confidential acquisition launch prompt'
 const INTERNAL_ERROR = `ConvexError: session ${SESSION_ID} owner ${OWNER_SECRET} failed while editing ${INTERNAL_PROMPT}`
 
-const jsonRequest = (body: unknown) =>
-  new Request('https://ship-fast.test/api/session-edit', {
+function jsonRequest(body: unknown) {
+  return new Request('https://ship-fast.test/api/session-edit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+}
 
 const rejectingClient = () => ({
   query: async () => null,
@@ -26,7 +27,7 @@ const rejectingClient = () => ({
   },
 })
 
-const expectSanitizedFailure = async (response: Response) => {
+async function expectSanitizedFailure(response: Response) {
   expect(response.status).toBe(500)
   expect(response.headers.get('content-type')).toContain('application/json')
 

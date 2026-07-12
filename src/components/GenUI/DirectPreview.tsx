@@ -47,8 +47,9 @@ type TextOverride = {
   occurrenceIndex?: number
 }
 
-const normalizeSelectionText = (value: string | null | undefined) =>
-  value?.trim().replace(/\s+/g, ' ') ?? ''
+function normalizeSelectionText(value: string | null | undefined) {
+  return value?.trim().replace(/\s+/g, ' ') ?? ''
+}
 
 const TEXT_OVERRIDE_SKIP_SELECTOR =
   'script, style, textarea, input, [data-ship-fast-inline-editing="true"], [contenteditable="true"], [contenteditable="plaintext-only"]'
@@ -56,7 +57,7 @@ const TEXT_OVERRIDE_SKIP_SELECTOR =
 const INLINE_EDITOR_ARTIFACT_SELECTOR =
   '[data-ship-fast-inline-editing], [contenteditable="true"], [contenteditable="plaintext-only"]'
 
-const stripInlineEditorArtifacts = (root: HTMLElement) => {
+function stripInlineEditorArtifacts(root: HTMLElement) {
   const elements = root.matches(INLINE_EDITOR_ARTIFACT_SELECTOR)
     ? [
         root,
@@ -77,7 +78,7 @@ const stripInlineEditorArtifacts = (root: HTMLElement) => {
   }
 }
 
-const collectMutableTextNodes = (root: HTMLElement): Text[] => {
+function collectMutableTextNodes(root: HTMLElement): Text[] {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
       const parent = node.parentElement
@@ -94,10 +95,10 @@ const collectMutableTextNodes = (root: HTMLElement): Text[] => {
   return nodes
 }
 
-const findStyleOverrideTargets = (
+function findStyleOverrideTargets(
   root: HTMLElement,
   anchor: string,
-): HTMLElement[] => {
+): HTMLElement[] {
   if (!anchor) return []
   const attributeAnchor = anchor.match(
     /^\[(data-openui-var|data-openui-component|data-sf-export-page)=(["'])(.*?)\2\]$/,
@@ -127,11 +128,11 @@ const findStyleOverrideTargets = (
   })
 }
 
-const findAppliedRange = (
+function findAppliedRange(
   value: string,
   afterText: string,
   index: number,
-): { start: number; end: number } | null => {
+): { start: number; end: number } | null {
   if (!afterText) return null
   let start = value.indexOf(afterText)
   while (start !== -1) {
@@ -142,11 +143,11 @@ const findAppliedRange = (
   return null
 }
 
-const findSupersedingRange = (
+function findSupersedingRange(
   value: string,
   afterTexts: string[],
   index: number,
-): { start: number; end: number } | null => {
+): { start: number; end: number } | null {
   for (const afterText of afterTexts) {
     const range = findAppliedRange(value, afterText, index)
     if (range) return range
@@ -154,11 +155,11 @@ const findSupersedingRange = (
   return null
 }
 
-const applyTextOverrideToValues = (
+function applyTextOverrideToValues(
   values: string[],
   { beforeText, afterText, occurrenceIndex = 0 }: TextOverride,
   supersedingAfterTexts: string[] = [],
-): void => {
+): void {
   if (!beforeText) return
 
   let seen = 0
@@ -197,10 +198,10 @@ const applyTextOverrideToValues = (
   }
 }
 
-const applyTextOverrides = (
+function applyTextOverrides(
   root: HTMLElement,
   textOverrides: TextOverride[] | undefined,
-): void => {
+): void {
   if (!textOverrides || textOverrides.length === 0) return
   const nodes = collectMutableTextNodes(root)
   const nextValues = nodes.map((node) => node.nodeValue ?? '')
@@ -225,10 +226,10 @@ const applyTextOverrides = (
   }
 }
 
-const createPreviewSelection = (
+function createPreviewSelection(
   root: HTMLElement,
   target: HTMLElement,
-): PreviewSelection => {
+): PreviewSelection {
   const selectedText = normalizeSelectionText(target.textContent).slice(0, 500)
   const label =
     target.getAttribute('aria-label') ||
@@ -329,7 +330,7 @@ const DirectPreview = forwardRef<
     const capsuleResolver = useCapsulePropResolver()
 
     const setRootRef = useCallback(
-      (node: HTMLDivElement | null) => {
+      (node) => {
         if (internalRef.current === node) return
 
         internalRef.current = node
@@ -346,7 +347,7 @@ const DirectPreview = forwardRef<
 
     // Wrap onElementActivate to track the active capsule for prop resolution.
     const handleElementActivate = useCallback(
-      (element: HTMLElement, rect: DOMRect) => {
+      (element, rect) => {
         capsuleResolver.setActiveElement(element)
         onElementActivate?.(element, rect)
       },
@@ -357,12 +358,7 @@ const DirectPreview = forwardRef<
     // matches a capsule prop value, the change carries a `capsuleProp` field
     // so the parent can route the edit through Lakebed instead of text overrides.
     const handleTextChange = useCallback(
-      (change: {
-        oldText: string
-        newText: string
-        element: HTMLElement
-        occurrenceIndex: number
-      }) => {
+      (change) => {
         const propContext = capsuleResolver.resolveProp(change.element)
         onTextChange?.({
           ...change,
@@ -503,7 +499,7 @@ const DirectPreview = forwardRef<
         return
       }
 
-      const handleClick = (event: MouseEvent) => {
+      const handleClick = (event) => {
         const target = event.target
         if (!(target instanceof HTMLElement) || !currentRoot.contains(target)) {
           return

@@ -8,7 +8,7 @@
  * Only full documents (`<!doctype html>` / `<html>`) are flagged so that bare
  * error fragments used as fallback placeholders are left untouched.
  */
-export const isOpenUiErrorHtml = (html: string | undefined | null): boolean => {
+export function isOpenUiErrorHtml(html: string | undefined | null): boolean {
   if (typeof html !== 'string' || html.length === 0) return false
   const isFullDocument =
     /^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html)
@@ -19,9 +19,7 @@ export const isOpenUiErrorHtml = (html: string | undefined | null): boolean => {
   )
 }
 
-export const isOpenUiHandoffHtml = (
-  html: string | undefined | null,
-): boolean => {
+export function isOpenUiHandoffHtml(html: string | undefined | null): boolean {
   if (typeof html !== 'string' || html.length === 0) return false
   const isFullDocument =
     /^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html)
@@ -33,18 +31,20 @@ export const isOpenUiHandoffHtml = (
   )
 }
 
-export const isUnsafePublicPreviewHtml = (
+export function isUnsafePublicPreviewHtml(
   html: string | undefined | null,
-): boolean => isOpenUiErrorHtml(html) || isOpenUiHandoffHtml(html)
+): boolean {
+  return isOpenUiErrorHtml(html) || isOpenUiHandoffHtml(html)
+}
 
 /**
  * Detect OpenUI handoff markers in arbitrary text (e.g. bundled source files)
  * without requiring a full HTML document. Used to scan export artifacts for
  * leaked handoff placeholders before publishing.
  */
-export const containsOpenUiHandoffMarkers = (
+export function containsOpenUiHandoffMarkers(
   text: string | undefined | null,
-): boolean => {
+): boolean {
   if (typeof text !== 'string' || text.length === 0) return false
   return (
     /id=["']ship-fast-openui-source["']/i.test(text) ||

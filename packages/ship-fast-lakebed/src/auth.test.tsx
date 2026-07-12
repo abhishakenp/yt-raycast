@@ -6,7 +6,7 @@ type MemoryStorage = Storage & {
   entries: Map<string, string>
 }
 
-const createMemoryStorage = (): MemoryStorage => {
+function createMemoryStorage(): MemoryStorage {
   const entries = new Map<string, string>()
   return {
     entries,
@@ -14,26 +14,28 @@ const createMemoryStorage = (): MemoryStorage => {
       return entries.size
     },
     clear: () => entries.clear(),
-    getItem: (key: string) => entries.get(key) ?? null,
-    key: (index: number) => Array.from(entries.keys())[index] ?? null,
-    removeItem: (key: string) => entries.delete(key),
-    setItem: (key: string, value: string) => entries.set(key, String(value)),
+    getItem: (key) => entries.get(key) ?? null,
+    key: (index) => Array.from(entries.keys())[index] ?? null,
+    removeItem: (key) => entries.delete(key),
+    setItem: (key, value) => entries.set(key, String(value)),
   } as MemoryStorage
 }
 
-const encodeBase64Url = (value: string) =>
-  Buffer.from(value)
+function encodeBase64Url(value: string) {
+  return Buffer.from(value)
     .toString('base64')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/g, '')
+}
 
-const createToken = (claims: Record<string, unknown>) =>
-  [
+function createToken(claims: Record<string, unknown>) {
+  return [
     encodeBase64Url(JSON.stringify({ alg: 'none', typ: 'JWT' })),
     encodeBase64Url(JSON.stringify(claims)),
     'signature',
   ].join('.')
+}
 
 function installBrowser(
   url = 'https://app.example.com/base/dashboard?x=1#top',
@@ -43,7 +45,7 @@ function installBrowser(
   const sessionStorage = createMemoryStorage()
   const assign = vi.fn()
   const replace = vi.fn()
-  const replaceState = vi.fn((_: unknown, __: string, nextUrl: string) => {
+  const replaceState = vi.fn((_, __, nextUrl) => {
     const next = new URL(nextUrl)
     Object.assign(location, {
       hash: next.hash,
@@ -149,7 +151,7 @@ describe('lakebed browser auth', () => {
       name: 'Grace Hopper',
       pairwise_sub: 'pairwise-456',
     })
-    const fetchMock = vi.fn(async (_url: URL, _init: RequestInit) => ({
+    const fetchMock = vi.fn(async (_url, _init) => ({
       json: async () => ({
         expires_in: 3600,
         id_token: token,

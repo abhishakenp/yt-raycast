@@ -18,9 +18,12 @@ type OpenUIRenderResult = { html: string; cssVars?: string }
 const TAILWIND_BROWSER_SCRIPT_RELATIVE = 'scripts/tailwind-browser.js'
 const RENDERER_DIR = dirname(fileURLToPath(import.meta.url))
 
-const isOpenUIErrorHtml = (html: string): boolean =>
-  /class=["'][^"']*\bopenui-error\b/i.test(html) ||
-  /Failed to render:/i.test(html)
+function isOpenUIErrorHtml(html: string): boolean {
+  return (
+    /class=["'][^"']*\bopenui-error\b/i.test(html) ||
+    /Failed to render:/i.test(html)
+  )
+}
 
 function readTailwindBrowserScript(): string {
   const candidatePaths = [
@@ -297,7 +300,7 @@ export function buildThemeHeadFromTokens(
   tokens: ExtractedTokens,
   _brand: string,
 ): string {
-  const ch = (hex: string) => hexToRgbChannels(hex)
+  const ch = (hex) => hexToRgbChannels(hex)
   const bg = ch(tokens.background)
   const fg = ch(tokens.foreground)
   const primary = ch(tokens.primary)
@@ -312,7 +315,7 @@ export function buildThemeHeadFromTokens(
   // background (≈40% toward bg) so secondary/caption text on muted surfaces is
   // legibly softer, confirming theme application across content bands. Structural,
   // palette-agnostic: works on light and dark grounds alike.
-  const mutedFg = ((): string => {
+  const mutedFg = (() => {
     const f = tokens.foreground.match(/^#([0-9a-f]{6})$/i)
     const b = tokens.background.match(/^#([0-9a-f]{6})$/i)
     if (!f || !b) return fg
@@ -599,7 +602,7 @@ function renderItems(items: any[] = []): string {
         : ''
       const features = Array.isArray(item?.features)
         ? `<ul class="mt-4 space-y-2 text-sm text-zinc-300">${item.features
-            .map((feature: unknown) => `<li>+ ${escapeHtml(feature)}</li>`)
+            .map((feature) => `<li>+ ${escapeHtml(feature)}</li>`)
             .join('')}</ul>`
         : ''
       return `<article class="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">${value}<h3 class="text-xl font-bold text-white">${title}</h3>${body ? `<p class="mt-3 text-sm leading-6 text-zinc-300">${body}</p>` : ''}${features}</article>`
@@ -614,10 +617,10 @@ function renderStaticHomepage(
 ): string {
   const home = Array.isArray(spec.pages) ? spec.pages[0] : null
   const sections = Array.isArray(home?.sections) ? home.sections : []
-  const nav = sections.find((section: any) => section?.type === 'navbar')
+  const nav = sections.find((section) => section?.type === 'navbar')
   const links = Array.isArray(nav?.links) ? nav.links : []
   const bodySections = sections.filter(
-    (section: any) => section?.type !== 'navbar' && section?.type !== 'footer',
+    (section) => section?.type !== 'navbar' && section?.type !== 'footer',
   )
 
   return `
@@ -627,7 +630,7 @@ function renderStaticHomepage(
         ${links
           .slice(0, 6)
           .map(
-            (link: any) =>
+            (link) =>
               `<a class="hover:text-white" href="${escapeHtml(link?.href || '#')}">${escapeHtml(link?.label || 'Link')}</a>`,
           )
           .join('')}
@@ -639,7 +642,7 @@ function renderStaticHomepage(
           <p class="mb-5 inline-flex rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-emerald-200">Generated preview</p>
           <h1 class="text-5xl font-black leading-[0.95] tracking-tight text-white md:text-7xl">${escapeHtml(brand)}</h1>
           <p class="mt-6 max-w-2xl text-lg leading-8 text-zinc-300">${escapeHtml(tagline)}</p>
-          ${renderActions(sections.find((section: any) => section?.type === 'hero')?.actions || nav?.actions || [])}
+          ${renderActions(sections.find((section) => section?.type === 'hero')?.actions || nav?.actions || [])}
         </div>
         <div class="rounded-[2rem] border border-white/10 bg-gradient-to-br from-violet-500/20 via-zinc-900 to-emerald-400/20 p-6 shadow-2xl shadow-emerald-950/30">
           <div class="rounded-3xl bg-zinc-950/80 p-5">
@@ -653,8 +656,8 @@ function renderStaticHomepage(
         </div>
       </section>
       ${bodySections
-        .filter((section: any) => section?.type !== 'hero')
-        .map((section: any) => {
+        .filter((section) => section?.type !== 'hero')
+        .map((section) => {
           const headline = escapeHtml(
             section?.headline || section?.title || section?.type || '',
           )
@@ -691,12 +694,10 @@ export function renderProject(
     spec.modules && typeof spec.modules === 'object'
       ? spec.modules
       : Object.fromEntries(
-          (Array.isArray(spec.pages) ? spec.pages : []).map(
-            (page: any, index: number) => [
-              page.id || page.route || `page-${index + 1}`,
-              page.title || page.name || page.route || `Page ${index + 1}`,
-            ],
-          ),
+          (Array.isArray(spec.pages) ? spec.pages : []).map((page, index) => [
+            page.id || page.route || `page-${index + 1}`,
+            page.title || page.name || page.route || `Page ${index + 1}`,
+          ]),
         )
   const moduleNames = Object.keys(modules)
 

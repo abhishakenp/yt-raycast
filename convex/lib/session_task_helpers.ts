@@ -12,13 +12,13 @@ export type EngineTaskInput = {
   status: EngineTaskStatus
 }
 
-export const upsertTask = async (
+export async function upsertTask(
   ctx: Pick<MutationCtx, 'db'>,
   sessionId: Id<'sessions'>,
   task: EngineTaskInput,
   order: number,
   now: number,
-) => {
+) {
   const taskKey = toTaskKey(task.id)
   const existingTask = await ctx.db
     .query('tasks')

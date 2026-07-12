@@ -26,7 +26,7 @@ const maxChars = () => {
   return Math.min(120000, n)
 }
 
-export const getPublicDesignExemplarPath = (siteType: string): string => {
+export function getPublicDesignExemplarPath(siteType: string): string {
   const st = String(siteType || '').toLowerCase()
   if (st === 'game' || st === 'blog') return ''
   const file =
@@ -45,11 +45,11 @@ interface ExemplarAppendixArgs {
   designRef?: DesignRefHint | null
 }
 
-export const publicDesignExemplarAppendix = ({
+export function publicDesignExemplarAppendix({
   siteType = '',
   hasDesignReferenceUrls = false,
   designRef = null,
-}: ExemplarAppendixArgs = {}): string => {
+}: ExemplarAppendixArgs = {}): string {
   if (hasDesignReferenceUrls) return ''
   let st = String(siteType || '').toLowerCase()
   if (!st && designRef?.stashName) {

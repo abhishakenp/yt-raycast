@@ -28,23 +28,25 @@ type ExportPanelProps = {
   sessionId: string
 }
 
-const targetLabel = (target: ExportTarget['target']): string =>
-  target === 'html'
+function targetLabel(target: ExportTarget['target']): string {
+  return target === 'html'
     ? 'HTML'
     : target === 'react'
       ? 'React'
       : target === 'next'
         ? 'Next.js'
         : 'Lakebed'
+}
 
-const targetSummary = (target: ExportTarget['target']): string =>
-  target === 'html'
+function targetSummary(target: ExportTarget['target']): string {
+  return target === 'html'
     ? 'Static preview (no live data)'
     : target === 'react'
       ? 'React client-only app'
       : target === 'next'
         ? 'Next.js full-stack project'
         : 'Lakebed project bundle'
+}
 
 const exportTargetNames: Array<ExportTarget['target']> = [
   'html',
@@ -65,7 +67,7 @@ const loadingTargets: ExportTarget[] = exportTargetNames.map((target) => ({
   downloadUrl: null,
 }))
 
-const statusLabel = (target: ExportTarget): string => {
+function statusLabel(target: ExportTarget): string {
   if (target.requiresPayment) return 'Payment required'
   if (target.status === 'stale') {
     return target.currentPreviewVersion === null ||
@@ -77,8 +79,8 @@ const statusLabel = (target: ExportTarget): string => {
   return target.status.replaceAll('_', ' ')
 }
 
-const artifactProgressPercent = (target: ExportTarget) =>
-  target.artifactReady
+function artifactProgressPercent(target: ExportTarget) {
+  return target.artifactReady
     ? 100
     : target.artifactStatus === 'building'
       ? 72
@@ -89,22 +91,25 @@ const artifactProgressPercent = (target: ExportTarget) =>
           : target.ready
             ? 100
             : 0
+}
 
-const readOwnerSecret = (sessionId: string): string | undefined =>
-  typeof window === 'undefined'
+function readOwnerSecret(sessionId: string): string | undefined {
+  return typeof window === 'undefined'
     ? undefined
     : readAnonymousOwnerSecret(window.localStorage, sessionId)
+}
 
-const readDownloadFilename = (response: Response, fallback: string): string => {
+function readDownloadFilename(response: Response, fallback: string): string {
   const disposition = response.headers.get('content-disposition') ?? ''
   const match = disposition.match(/filename="([^"]+)"/i)
   return match?.[1] ?? fallback
 }
 
-const isDownloadResult = (value: unknown): value is { downloadUrl?: unknown } =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+function isDownloadResult(value: unknown): value is { downloadUrl?: unknown } {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
+export function ExportPanel({ sessionId }: ExportPanelProps) {
   const { getToken, isSignedIn } = useOptionalAuth()
   const exportTargets = useQuery(api.sessions.getExportTargets, {
     lookup: sessionId,
@@ -114,7 +119,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
   const [downloadingTarget, setDownloadingTarget] =
     useState<ExportTarget['target']>()
 
-  const createAuthHeaders = async (): Promise<Record<string, string>> => {
+  const createAuthHeaders = async () => {
     const headers: Record<string, string> = {}
     const ownerSecret = readOwnerSecret(sessionId)
     if (ownerSecret) headers['x-ship-fast-owner-secret'] = ownerSecret
@@ -127,10 +132,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     return headers
   }
 
-  const downloadFromUrl = async (
-    downloadUrl: string,
-    target: ExportTarget['target'],
-  ) => {
+  const downloadFromUrl = async (downloadUrl, target) => {
     setDownloadingTarget(target)
     try {
       const response = await fetch(downloadUrl, {
@@ -175,7 +177,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     }
   }
 
-  const createExport = async (target: ExportTarget['target']) => {
+  const createExport = async (target) => {
     setError(undefined)
     setActiveTarget(target)
     try {
@@ -209,7 +211,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     }
   }
 
-  const downloadExport = async (targetConfig: ExportTarget) => {
+  const downloadExport = async (targetConfig) => {
     if (!targetConfig.downloadUrl || targetConfig.requiresPayment) return
 
     setError(undefined)
@@ -224,7 +226,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     }
   }
 
-  const runTargetAction = async (targetConfig: ExportTarget) => {
+  const runTargetAction = async (targetConfig) => {
     if (targetConfig.requiresPayment) {
       await createExport(targetConfig.target)
       return

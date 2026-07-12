@@ -4,21 +4,23 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { useUndoRedo } from './useUndoRedo'
 
-const makeController = (
+function makeController(
   overrides: Partial<{
     edits: Array<{ previewVersion: number }>
     history: Array<{ version: number }>
     restoreVersion: (v: number) => Promise<void>
   }> = {},
-) => ({
-  edits: overrides.edits ?? [],
-  history: overrides.history ?? [],
-  restoreVersion:
-    overrides.restoreVersion ??
-    (async (v: number) => {
-      void v
-    }),
-})
+) {
+  return {
+    edits: overrides.edits ?? [],
+    history: overrides.history ?? [],
+    restoreVersion:
+      overrides.restoreVersion ??
+      (async (v) => {
+        void v
+      }),
+  }
+}
 
 describe('useUndoRedo', () => {
   it('initial state: no edits → canUndo=false, canRedo=false', () => {
@@ -49,7 +51,7 @@ describe('useUndoRedo', () => {
   })
 
   it('undo calls restoreVersion with the version BEFORE the most recent edit (regression: previously restored to the version the edit itself produced, i.e. the current version — a pure no-op)', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const ctrl = makeController({
@@ -68,7 +70,7 @@ describe('useUndoRedo', () => {
   })
 
   it('undo enables canRedo', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const ctrl = makeController({
@@ -85,7 +87,7 @@ describe('useUndoRedo', () => {
   })
 
   it('redo after undo restores correctly', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const ctrl = makeController({
@@ -109,7 +111,7 @@ describe('useUndoRedo', () => {
   })
 
   it('undo when canUndo=false does nothing', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const ctrl = makeController({ restoreVersion })
@@ -121,7 +123,7 @@ describe('useUndoRedo', () => {
   })
 
   it('redo when canRedo=false does nothing', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
     const ctrl = makeController({
@@ -154,7 +156,7 @@ describe('useUndoRedo', () => {
       { version: 2 },
       { version: 3 },
     ]
-    const restoreVersion = vi.fn(async (_v: number) => {
+    const restoreVersion = vi.fn(async (_v) => {
       const nextVersion = Math.max(...historyState.map((h) => h.version)) + 1
       historyState = [...historyState, { version: nextVersion }]
     })
@@ -196,19 +198,16 @@ describe('useUndoRedo', () => {
   })
 
   it("does not double-push the undo stack when edits transition from empty to populated in one update (regression: separate init and growth-detection blocks both fired on the same render, so a session's very first edit required TWO undo clicks to exhaust the stack instead of one)", async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
+    const restoreVersion = vi.fn(async (v) => {
       void v
     })
-    const { result, rerender } = renderHook(
-      (ctrl: ReturnType<typeof makeController>) => useUndoRedo(ctrl),
-      {
-        initialProps: makeController({
-          edits: [],
-          history: [],
-          restoreVersion,
-        }),
-      },
-    )
+    const { result, rerender } = renderHook((ctrl) => useUndoRedo(ctrl), {
+      initialProps: makeController({
+        edits: [],
+        history: [],
+        restoreVersion,
+      }),
+    })
     expect(result.current.canUndo).toBe(false)
 
     rerender(

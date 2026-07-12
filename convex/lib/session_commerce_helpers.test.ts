@@ -72,10 +72,10 @@ const sessionDoc = async (ownerSecret = 'owner-secret') =>
     anonOwnerSecretHash: await hashOwnerSecret(ownerSecret),
   }) as Doc<'sessions'>
 
-const commerceDoc = (
+function commerceDoc(
   overrides: Partial<CommerceConfigDoc> = {},
-): CommerceConfigDoc =>
-  ({
+): CommerceConfigDoc {
+  return {
     _id: 'commerce_config' as Id<'commerceConfigs'>,
     _creationTime: 1,
     sessionId,
@@ -87,10 +87,11 @@ const commerceDoc = (
     createdAt: 100,
     updatedAt: 100,
     ...overrides,
-  }) as CommerceConfigDoc
+  } as CommerceConfigDoc
+}
 
-const deploymentDoc = (overrides: Partial<DeploymentDoc> = {}): DeploymentDoc =>
-  ({
+function deploymentDoc(overrides: Partial<DeploymentDoc> = {}): DeploymentDoc {
+  return {
     _id: deploymentId,
     _creationTime: 1,
     sessionId,
@@ -102,12 +103,13 @@ const deploymentDoc = (overrides: Partial<DeploymentDoc> = {}): DeploymentDoc =>
     createdAt: 100,
     updatedAt: 100,
     ...overrides,
-  }) as DeploymentDoc
+  } as DeploymentDoc
+}
 
-const commerceTenantDoc = (
+function commerceTenantDoc(
   overrides: Partial<CommerceTenantDoc> = {},
-): CommerceTenantDoc =>
-  ({
+): CommerceTenantDoc {
+  return {
     _id: 'commerce_tenant' as Id<'commerceTenants'>,
     _creationTime: 1,
     deploymentId,
@@ -124,23 +126,24 @@ const commerceTenantDoc = (
     createdAt: 100,
     updatedAt: 100,
     ...overrides,
-  }) as CommerceTenantDoc
+  } as CommerceTenantDoc
+}
 
-const ctxFor = async (
+async function ctxFor(
   options: {
     session?: Doc<'sessions'> | null
     configs?: CommerceConfigDoc[]
     deployments?: DeploymentDoc[]
     tenants?: CommerceTenantDoc[]
   } = {},
-) => {
+) {
   const session =
     options.session === undefined ? await sessionDoc() : options.session
   const configs = [...(options.configs ?? [])]
   const deployments = [...(options.deployments ?? [])]
   const tenants = [...(options.tenants ?? [])]
 
-  const queryFirst = async (table: string, field: string, value: unknown) => {
+  const queryFirst = async (table, field, value) => {
     if (table === 'commerceConfigs') {
       return configs.find((config) => config.sessionId === value) ?? null
     }
@@ -173,7 +176,7 @@ const ctxFor = async (
       getUserIdentity: async () => null,
     },
     db: {
-      get: async (id: string) => {
+      get: async (id) => {
         if (id === sessionId) return session
         const deployment = deployments.find((item) => item._id === id)
         if (deployment !== undefined) return deployment
@@ -181,20 +184,9 @@ const ctxFor = async (
         if (tenant !== undefined) return tenant
         return configs.find((config) => config._id === id) ?? null
       },
-      query: (table: string) => {
+      query: (table) => {
         return {
-          withIndex: (
-            indexName: string,
-            applyIndex: (index: {
-              eq: (
-                fieldName: string,
-                fieldValue: unknown,
-              ) => {
-                field: string
-                value: unknown
-              }
-            }) => { field: string; value: unknown },
-          ) => {
+          withIndex: (indexName, applyIndex) => {
             const { field, value } = applyIndex({
               eq: (fieldName, fieldValue) => ({
                 field: fieldName,
@@ -208,7 +200,7 @@ const ctxFor = async (
           },
         }
       },
-      insert: async (table: string, value: Record<string, unknown>) => {
+      insert: async (table, value) => {
         if (table === 'commerceConfigs') {
           const config = {
             _id: `commerce_config_${configs.length + 1}` as Id<'commerceConfigs'>,
@@ -227,10 +219,7 @@ const ctxFor = async (
         tenants.push(tenant)
         return tenant._id
       },
-      patch: async (
-        id: Id<'commerceConfigs'> | Id<'commerceTenants'>,
-        patch: Partial<CommerceConfigDoc> | Partial<CommerceTenantDoc>,
-      ) => {
+      patch: async (id, patch) => {
         const index = configs.findIndex((config) => config._id === id)
         if (index >= 0) {
           configs[index] = {

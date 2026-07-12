@@ -21,8 +21,9 @@ import {
 
 const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
 
-const loadFixture = (name: string): string =>
-  readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+function loadFixture(name: string): string {
+  return readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+}
 
 const cleanFixtures = [
   'food-blog',

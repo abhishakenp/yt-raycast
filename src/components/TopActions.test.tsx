@@ -9,33 +9,17 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const topActionMocks = vi.hoisted(() => ({
-  authControls: vi.fn(
-    ({
-      autoOpen,
-      wrapProvider,
-    }: {
-      autoOpen?: boolean
-      wrapProvider?: boolean
-    }) => (
-      <div
-        data-testid="homepage-auth-controls"
-        data-auto-open={String(autoOpen)}
-        data-wrap-provider={String(wrapProvider)}
-      />
-    ),
-  ),
+  authControls: vi.fn(({ autoOpen, wrapProvider }) => (
+    <div
+      data-testid="homepage-auth-controls"
+      data-auto-open={String(autoOpen)}
+      data-wrap-provider={String(wrapProvider)}
+    />
+  )),
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    to,
-    ...props
-  }: {
-    children: React.ReactNode
-    to: string
-    [key: string]: unknown
-  }) => (
+  Link: ({ children, to, ...props }) => (
     <a href={to} {...props}>
       {children}
     </a>
@@ -47,14 +31,12 @@ vi.mock('@/components/HomepageAuthControls', () => ({
 }))
 
 vi.mock('@clerk/tanstack-react-start', () => ({
-  Show: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  SignInButton: ({ children }: { children?: React.ReactNode }) => (
-    <span>{children ?? 'Sign in'}</span>
-  ),
+  Show: ({ children }) => <>{children}</>,
+  SignInButton: ({ children }) => <span>{children ?? 'Sign in'}</span>,
   UserButton: () => <span>Account</span>,
 }))
 
-const importTopActions = async (publishableKey: string | undefined) => {
+async function importTopActions(publishableKey: string | undefined) {
   vi.resetModules()
   vi.unstubAllEnvs()
   vi.stubEnv('VITE_DISABLE_CLERK', '')

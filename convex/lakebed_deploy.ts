@@ -33,14 +33,15 @@ type LakebedProjectFiles = {
   projectName: string
 }
 
-const errorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error)
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
 
-const logLakebedDeploy = (
+function logLakebedDeploy(
   sessionId: string,
   message: string,
   details: Record<string, unknown> = {},
-) => {
+) {
   console.log(
     `[lakebed_deploy:deploy] ${message}`,
     JSON.stringify({
@@ -50,54 +51,57 @@ const logLakebedDeploy = (
   )
 }
 
-const successArgs = (
+function successArgs(
   prepared: PreparedLakebedDeployment,
   requestedSlug: string | undefined,
   deployed: LakebedDeployResult,
-) => ({
-  sessionId: prepared.sessionId,
-  requestedSlug,
-  previewVersion: prepared.previewVersion,
-  url: deployed.url,
-  deployId: deployed.deployId,
-  claimUrl: deployed.claimUrl,
-  artifactHash: deployed.artifactHash,
-  clientBundleHash: deployed.clientBundleHash,
-  clientBundleBytes: deployed.clientBundleBytes,
-  requestBodyBytes: deployed.requestBodyBytes,
-  serverBundleBytes: deployed.serverBundleBytes,
-  sourceFileCount: deployed.sourceFileCount,
-  expiresAt: deployed.expiresAt,
-  inspectPolicy: deployed.inspectPolicy,
-})
+) {
+  return {
+    sessionId: prepared.sessionId,
+    requestedSlug,
+    previewVersion: prepared.previewVersion,
+    url: deployed.url,
+    deployId: deployed.deployId,
+    claimUrl: deployed.claimUrl,
+    artifactHash: deployed.artifactHash,
+    clientBundleHash: deployed.clientBundleHash,
+    clientBundleBytes: deployed.clientBundleBytes,
+    requestBodyBytes: deployed.requestBodyBytes,
+    serverBundleBytes: deployed.serverBundleBytes,
+    sourceFileCount: deployed.sourceFileCount,
+    expiresAt: deployed.expiresAt,
+    inspectPolicy: deployed.inspectPolicy,
+  }
+}
 
-const isPrebuiltLakebedArtifact = (
-  value: unknown,
-): value is {
+function isPrebuiltLakebedArtifact(value: unknown): value is {
   sessionId: Id<'sessions'>
   prompt: string
   previewVersion: number
   status: string
   filesUrl?: string | null
-} =>
-  value !== null &&
-  typeof value === 'object' &&
-  !Array.isArray(value) &&
-  'sessionId' in value &&
-  'prompt' in value &&
-  'previewVersion' in value &&
-  'status' in value &&
-  typeof value.sessionId === 'string' &&
-  typeof value.prompt === 'string' &&
-  typeof value.previewVersion === 'number' &&
-  typeof value.status === 'string' &&
-  (!('filesUrl' in value) ||
-    typeof value.filesUrl === 'string' ||
-    value.filesUrl === null)
+} {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    'sessionId' in value &&
+    'prompt' in value &&
+    'previewVersion' in value &&
+    'status' in value &&
+    typeof value.sessionId === 'string' &&
+    typeof value.prompt === 'string' &&
+    typeof value.previewVersion === 'number' &&
+    typeof value.status === 'string' &&
+    (!('filesUrl' in value) ||
+      typeof value.filesUrl === 'string' ||
+      value.filesUrl === null)
+  )
+}
 
-const readProjectFiles = async (
+async function readProjectFiles(
   url: string,
-): Promise<Record<string, string> | null> => {
+): Promise<Record<string, string> | null> {
   const response = await fetch(url)
   if (!response.ok) return null
   const parsed = (await response.json()) as unknown
@@ -114,7 +118,7 @@ const readProjectFiles = async (
 
 export const deploy = action({
   args: publishPreviewArgs,
-  handler: async (ctx, args): Promise<unknown> => {
+  handler: async (ctx, args) => {
     const startedAt = Date.now()
     let prepared: PreparedLakebedDeployment | null = null
     try {
@@ -297,7 +301,7 @@ export const deployByLookup = action({
     anonymousOwnerSecret: v.optional(v.string()),
     requestedSlug: v.optional(v.string()),
   },
-  handler: async (ctx, args): Promise<unknown> => {
+  handler: async (ctx, args) => {
     const artifactResult = await ctx.runQuery(
       api.sessions.getOwnedLakebedDeploymentArtifactByLookup,
       args,

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 
 vi.mock('#/lib/use-navigate.tsx', () => ({
-  RoutesContext: ({ children }: { children: React.ReactNode }) => children,
+  RoutesContext: ({ children }) => children,
   useNavigate: () => vi.fn(),
 }))
 
@@ -57,8 +57,9 @@ import { ChurchNavbar } from '#/registry/sections/church/ChurchNavbar.tsx'
 import { ChurchFaq } from '#/registry/sections/church/ChurchFaq.tsx'
 import { ChurchStats } from '#/registry/sections/church/ChurchStats.tsx'
 
-const renderCapsule = <P,>(Component: CapsuleRenderer<P>, props: P) =>
-  render(<Component props={props} statementId="invariant-test" />)
+function renderCapsule(Component: CapsuleRenderer<P>, props: P) {
+  return render(<Component props={props} statementId="invariant-test" />)
+}
 
 afterEach(() => {
   cleanup()
@@ -79,7 +80,7 @@ describe('registry capsule invariants', () => {
     // uses IntersectionObserver at activation time; jsdom provides neither.
     vi.stubGlobal(
       'matchMedia',
-      vi.fn().mockImplementation((query: string) => ({
+      vi.fn().mockImplementation((query) => ({
         matches: false,
         media: query,
         onchange: null,

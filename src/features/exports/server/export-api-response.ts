@@ -8,28 +8,30 @@ type ExportApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
 type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 
-const isJsonObject = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const readJsonBody = async (
+async function readJsonBody(
   request: Request,
-): Promise<Record<string, unknown>> => {
+): Promise<Record<string, unknown>> {
   const text = await request.text()
   if (!text.trim()) return {}
   const parsed: unknown = JSON.parse(text)
   return isJsonObject(parsed) ? parsed : {}
 }
 
-const normalizeTarget = (value: unknown): ExportTarget | null => {
+function normalizeTarget(value: unknown): ExportTarget | null {
   switch (value) {
     case 'html':
     case 'react':
@@ -41,35 +43,36 @@ const normalizeTarget = (value: unknown): ExportTarget | null => {
   }
 }
 
-const getOwnerSecret = (
+function getOwnerSecret(
   request: Request,
   body: Record<string, unknown>,
-): string | undefined => {
+): string | undefined {
   const bodySecret = body.anonymousOwnerSecret ?? body.anonOwnerSecret
   return typeof bodySecret === 'string'
     ? bodySecret
     : (request.headers.get('x-ship-fast-owner-secret') ?? undefined)
 }
 
-const createClient = (clientOverride?: ExportApiClient): ExportApiClient =>
-  clientOverride ?? createRuntimeConvexHttpClient()
+function createClient(clientOverride?: ExportApiClient): ExportApiClient {
+  return clientOverride ?? createRuntimeConvexHttpClient()
+}
 
-const getBearerToken = (request: Request): string | null => {
+function getBearerToken(request: Request): string | null {
   const auth = request.headers.get('authorization') ?? ''
   const match = auth.match(/^Bearer\s+(.+)$/i)
   return match?.[1]?.trim() || null
 }
 
-const setClientAuth = (client: ExportApiClient, request: Request) => {
+function setClientAuth(client: ExportApiClient, request: Request) {
   const token = getBearerToken(request)
   if (token !== null) client.setAuth?.(token)
 }
 
-export const createSessionExportResponse = async (
+export async function createSessionExportResponse(
   sessionId: string,
   request: Request,
   clientOverride?: ExportApiClient,
-): Promise<Response> => {
+): Promise<Response> {
   let body: Record<string, unknown>
   try {
     body = await readJsonBody(request)
@@ -103,11 +106,11 @@ export const createSessionExportResponse = async (
   }
 }
 
-export const createSessionDownloadResponse = async (
+export async function createSessionDownloadResponse(
   sessionId: string,
   target: string,
   requestOrClient?: Request | ExportApiClient,
-): Promise<Response> => {
+): Promise<Response> {
   const normalizedTarget = normalizeTarget(target)
   if (normalizedTarget === null) {
     return new Response('Unsupported export target', {

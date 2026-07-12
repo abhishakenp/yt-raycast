@@ -139,7 +139,7 @@ describe('applyReferralDiscountForUser', () => {
   })
 
   it('attaches the coupon and records it for an unlocked Stripe subscriber', async () => {
-    const fetchMock = vi.fn(async (url: unknown) => {
+    const fetchMock = vi.fn(async (url) => {
       const u = String(url)
       if (u.endsWith('/coupons')) {
         return new Response(JSON.stringify({ id: 'shipfast_ref_50_forever' }), {
@@ -182,7 +182,7 @@ describe('applyReferralDiscountForUser', () => {
   it('never throws — returns provider_rejected on a failed attach', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (url: unknown) =>
+      vi.fn(async (url) =>
         String(url).endsWith('/coupons')
           ? new Response(JSON.stringify({ id: 'shipfast_ref_50_forever' }), {
               status: 200,

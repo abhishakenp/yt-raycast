@@ -18,21 +18,23 @@ type BillingStatus =
   | 'past_due'
   | 'cancelled'
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const toHex = (bytes: ArrayBuffer): string =>
-  Array.from(new Uint8Array(bytes), (byte) =>
+function toHex(bytes: ArrayBuffer): string {
+  return Array.from(new Uint8Array(bytes), (byte) =>
     byte.toString(16).padStart(2, '0'),
   ).join('')
+}
 
-const hmacSha256 = async (secret: string, payload: string): Promise<string> => {
+async function hmacSha256(secret: string, payload: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),
@@ -45,7 +47,7 @@ const hmacSha256 = async (secret: string, payload: string): Promise<string> => {
   )
 }
 
-const timingSafeEqual = (left: string, right: string): boolean => {
+function timingSafeEqual(left: string, right: string): boolean {
   if (left.length !== right.length) return false
   let diff = 0
   for (let i = 0; i < left.length; i += 1) {
@@ -54,11 +56,11 @@ const timingSafeEqual = (left: string, right: string): boolean => {
   return diff === 0
 }
 
-const verifyStripeSignature = async (
+async function verifyStripeSignature(
   rawBody: string,
   signatureHeader: string,
   secret: string,
-): Promise<boolean> => {
+): Promise<boolean> {
   const parts = Object.fromEntries(
     signatureHeader
       .split(',')
@@ -70,33 +72,34 @@ const verifyStripeSignature = async (
   return timingSafeEqual(expected, parts.v1)
 }
 
-const verifyRazorpaySignature = async (
+async function verifyRazorpaySignature(
   rawBody: string,
   signatureHeader: string,
   secret: string,
-): Promise<boolean> => {
+): Promise<boolean> {
   const expected = await hmacSha256(secret, rawBody)
   return timingSafeEqual(expected, signatureHeader)
 }
 
-const normalizeStripeStatus = (status: unknown): BillingStatus => {
+function normalizeStripeStatus(status: unknown): BillingStatus {
   if (status === 'trialing') return 'trialing'
   if (status === 'past_due') return 'past_due'
   if (status === 'canceled' || status === 'cancelled') return 'cancelled'
   return 'active'
 }
 
-const normalizeRazorpayStatus = (status: unknown): BillingStatus => {
+function normalizeRazorpayStatus(status: unknown): BillingStatus {
   if (status === 'authenticated') return 'authenticated'
   if (status === 'cancelled' || status === 'canceled') return 'cancelled'
   if (status === 'past_due') return 'past_due'
   return 'active'
 }
 
-const creditsForPack = (packId: string): number =>
-  packId === '10_credits' ? 10 : packId === '3_credits' ? 3 : 0
+function creditsForPack(packId: string): number {
+  return packId === '10_credits' ? 10 : packId === '3_credits' ? 3 : 0
+}
 
-const stripePayloadToMutation = (event: any) => {
+function stripePayloadToMutation(event: any) {
   const object = event?.data?.object ?? {}
   const metadata = object.metadata ?? {}
   const userId = metadata.userId ?? object.client_reference_id
@@ -131,7 +134,7 @@ const stripePayloadToMutation = (event: any) => {
   }
 }
 
-const razorpayPayloadToMutation = (event: any) => {
+function razorpayPayloadToMutation(event: any) {
   const subscription = event?.payload?.subscription?.entity
   if (subscription) {
     const notes = subscription.notes ?? {}
@@ -165,13 +168,13 @@ const razorpayPayloadToMutation = (event: any) => {
     : null
 }
 
-export const createWebhookApiResponse = async (
+export async function createWebhookApiResponse(
   request: Request,
   provider: Provider,
   env: BillingWebhookEnv = process.env,
   clientOverride?: WebhookConvexClient,
   applyDiscount: ApplyReferralDiscount = applyReferralDiscountForUser,
-): Promise<Response> => {
+): Promise<Response> {
   const rawBody = await request.text()
   const providerSecret =
     provider === 'stripe'

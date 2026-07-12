@@ -24,7 +24,7 @@ afterEach(() => {
   navigate.mockReset()
 })
 
-const renderMalformed = (ui: React.ReactElement) => {
+function renderMalformed(ui: React.ReactElement) {
   expect(() => render(ui)).not.toThrow()
 }
 

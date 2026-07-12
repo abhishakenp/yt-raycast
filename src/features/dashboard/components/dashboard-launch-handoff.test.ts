@@ -11,18 +11,18 @@ import {
 } from '@/features/session/services/generation-launch-handoff'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 
-const makeStorage = (): Map<string, string> & {
+function makeStorage(): Map<string, string> & {
   getItem: (key: string) => string | null
   setItem: (key: string, value: string) => void
   removeItem: (key: string) => void
-} => {
+} {
   const store = new Map<string, string>()
   return Object.assign(store, {
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => {
+    getItem: (key) => store.get(key) ?? null,
+    setItem: (key, value) => {
       store.set(key, value)
     },
-    removeItem: (key: string) => {
+    removeItem: (key) => {
       store.delete(key)
     },
   }) as Map<string, string> & {

@@ -42,11 +42,14 @@ export class AppError extends Error {
   }
 }
 
-export const createAppError = (code: AppErrorCode, message: string) =>
-  new AppError(code, message)
+export function createAppError(code: AppErrorCode, message: string) {
+  return new AppError(code, message)
+}
 
-export const toAppErrorShape = (error: AppError): AppErrorShape => ({
-  code: error.code,
-  message: error.message,
-  status: error.status,
-})
+export function toAppErrorShape(error: AppError): AppErrorShape {
+  return {
+    code: error.code,
+    message: error.message,
+    status: error.status,
+  }
+}

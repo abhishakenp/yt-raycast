@@ -18,7 +18,7 @@ vi.mock('esbuild', async () => {
   const actual = await vi.importActual<typeof import('esbuild')>('esbuild')
   return {
     ...actual,
-    build: async (options: import('esbuild').BuildOptions) => {
+    build: async (options) => {
       ;(
         globalThis as { __esbuildBuildCalls?: import('esbuild').BuildOptions[] }
       ).__esbuildBuildCalls ??= []
@@ -70,7 +70,7 @@ const restoreStockImageEnv = () => {
   }
 }
 
-const expectNoStockProviderCredentialsOrProxy = (artifact: string) => {
+function expectNoStockProviderCredentialsOrProxy(artifact: string) {
   expect(artifact).not.toContain('PEXELS_API_KEY')
   expect(artifact).not.toContain('VITE_PEXELS_API_KEY')
   expect(artifact).not.toContain('api.pexels.com')
@@ -78,10 +78,10 @@ const expectNoStockProviderCredentialsOrProxy = (artifact: string) => {
   expect(artifact).not.toContain('ship-fast.io/api/pexels')
 }
 
-const writeProjectFiles = async (
+async function writeProjectFiles(
   directory: string,
   files: Record<string, string>,
-) => {
+) {
   for (const [path, source] of Object.entries(files)) {
     const absolutePath = join(directory, path)
     await mkdir(join(absolutePath, '..'), { recursive: true })
@@ -89,7 +89,7 @@ const writeProjectFiles = async (
   }
 }
 
-const renderStaticProjectClient = async (files: Record<string, string>) => {
+async function renderStaticProjectClient(files: Record<string, string>) {
   const directory = await mkdtemp(join(tmpdir(), 'static-lakebed-client-'))
 
   try {
@@ -119,7 +119,7 @@ render(h(App, {}), document.getElementById("app"));
       url: 'https://example.test/',
     })
     const errors: unknown[] = []
-    dom.window.addEventListener('error', (event: ErrorEvent) => {
+    dom.window.addEventListener('error', (event) => {
       errors.push(event.error ?? event.message)
     })
     dom.window.eval(bundled.outputFiles[0]?.text ?? '')
@@ -134,9 +134,7 @@ render(h(App, {}), document.getElementById("app"));
   }
 }
 
-const loadAnonymousDeployServerCapsule = async (
-  files: Record<string, string>,
-) => {
+async function loadAnonymousDeployServerCapsule(files: Record<string, string>) {
   const deployRequest = await buildLakebedAnonymousDeployRequest(files)
   const payload = JSON.parse(deployRequest.requestBody) as {
     artifact?: {
@@ -165,10 +163,10 @@ const loadAnonymousDeployServerCapsule = async (
   return mod.default
 }
 
-const executeAnonymousDeployClientBundle = async (
+async function executeAnonymousDeployClientBundle(
   files: Record<string, string>,
   path = '/',
-) => {
+) {
   const deployRequest = await buildLakebedAnonymousDeployRequest(files)
   const clientBundle = Buffer.from(
     deployRequest.clientBundle,
@@ -185,19 +183,16 @@ const executeAnonymousDeployClientBundle = async (
   })
   const errors: unknown[] = []
   const originalConsoleError = dom.window.console.error
-  dom.window.console.error = (...args: unknown[]) => {
+  dom.window.console.error = (...args) => {
     errors.push(args.map(String).join(' '))
     originalConsoleError(...args)
   }
-  dom.window.addEventListener('error', (event: ErrorEvent) => {
+  dom.window.addEventListener('error', (event) => {
     errors.push(event.error ?? event.message)
   })
-  dom.window.addEventListener(
-    'unhandledrejection',
-    (event: Event & { reason?: unknown }) => {
-      errors.push(event.reason ?? event)
-    },
-  )
+  dom.window.addEventListener('unhandledrejection', (event) => {
+    errors.push(event.reason ?? event)
+  })
   Object.defineProperty(dom.window, 'fetch', {
     configurable: true,
     value: async () =>
@@ -258,16 +253,18 @@ const validClientSource = `export function App() {
 const validSharedSource = `export const title = "Edge Case";
 `
 
-const validFiles = (): Record<string, string> => ({
-  'server/index.ts': validServerSource,
-  'client/index.tsx': validClientSource,
-  'shared/content.ts': validSharedSource,
-})
+function validFiles(): Record<string, string> {
+  return {
+    'server/index.ts': validServerSource,
+    'client/index.tsx': validClientSource,
+    'shared/content.ts': validSharedSource,
+  }
+}
 
 // Server source that embeds a forbidden token inside an uncalled function so
 // esbuild can still bundle it (the token is present in source for the scanner).
-const serverWithForbidden = (token: string): string =>
-  `import { capsule, query, string, table } from "lakebed/server";
+function serverWithForbidden(token: string): string {
+  return `import { capsule, query, string, table } from "lakebed/server";
 
 function __forbiddenEdgeCase() {
   ${token}
@@ -280,6 +277,7 @@ export default capsule({
   mutations: {},
 });
 `
+}
 
 // ---------------------------------------------------------------------------
 // Lakebed deploy service
@@ -660,7 +658,7 @@ export default capsule({
   describe('Lakebed API URL resolution', () => {
     it('builds the deploy URL from a custom HTTPS origin', async () => {
       const requests: Array<{ url: string }> = []
-      const fetchImpl = (async (url: RequestInfo | URL) => {
+      const fetchImpl = (async (url) => {
         requests.push({ url: String(url) })
         return new Response(
           JSON.stringify({ deployId: 'd1', url: 'https://site.lakebed.app' }),
@@ -681,7 +679,7 @@ export default capsule({
 
     it('rewrites the canonical api.lakebed.app origin to the release deploy URL', async () => {
       const requests: Array<{ url: string }> = []
-      const fetchImpl = (async (url: RequestInfo | URL) => {
+      const fetchImpl = (async (url) => {
         requests.push({ url: String(url) })
         return new Response(
           JSON.stringify({ deployId: 'd2', url: 'https://site.lakebed.app' }),
@@ -948,7 +946,7 @@ describe('Lakebed static project builder', () => {
 // ---------------------------------------------------------------------------
 
 describe('Lakebed publish response', () => {
-  const requestFor = (body: unknown = {}, auth = 'Bearer app-token') =>
+  const requestFor = (body = {}, auth = 'Bearer app-token') =>
     new Request(
       'https://ship-fast.test/api/sessions/session_edge/deploy/lakebed',
       {
@@ -1107,23 +1105,20 @@ type MockGithubState = {
   githubConnections: GithubRow[]
 }
 
-const createGithubMockCtx = (
+function createGithubMockCtx(
   state: MockGithubState,
   identity: { tokenIdentifier: string; subject: string } | null,
-) => {
+) {
   const deleted = new Set<string>()
   const tables: Record<string, GithubRow[]> = {
     githubOAuthStates: state.githubOAuthStates,
     githubConnections: state.githubConnections,
   }
   let idSeq = 0
-  const query = (table: string): any => ({
-    withIndex: (
-      _index: string,
-      fn: (q: any) => { field: string; value: unknown },
-    ): any => {
+  const query = (table) => ({
+    withIndex: (_index, fn) => {
       const filter = fn({
-        eq: (field: string, value: unknown) => ({ field, value }),
+        eq: (field, value) => ({ field, value }),
       })
       const rows = tables[table].filter(
         (r) => !deleted.has(r._id) && r[filter.field] === filter.value,
@@ -1141,18 +1136,18 @@ const createGithubMockCtx = (
     },
     db: {
       query: vi.fn(query),
-      insert: vi.fn(async (table: string, doc: Record<string, unknown>) => {
+      insert: vi.fn(async (table, doc) => {
         const id = `${table}_${++idSeq}`
         tables[table].push({ _id: id, ...doc })
         return id
       }),
-      patch: vi.fn(async (id: string, patch: Record<string, unknown>) => {
+      patch: vi.fn(async (id, patch) => {
         for (const rows of Object.values(tables)) {
           const row = rows.find((r) => r._id === id)
           if (row) Object.assign(row, patch)
         }
       }),
-      delete: vi.fn(async (id: string) => {
+      delete: vi.fn(async (id) => {
         deleted.add(id)
       }),
     },
@@ -1160,14 +1155,17 @@ const createGithubMockCtx = (
   }
 }
 
-const handler = (fn: unknown): any =>
-  (fn as any)._handler ?? (fn as any).handler ?? fn
+function handler(fn: unknown): any {
+  return (fn as any)._handler ?? (fn as any).handler ?? fn
+}
 
 const ISS = 'https://clerk.test'
-const identity = (user: string) => ({
-  tokenIdentifier: `${ISS}|${user}`,
-  subject: user,
-})
+function identity(user: string) {
+  return {
+    tokenIdentifier: `${ISS}|${user}`,
+    subject: user,
+  }
+}
 
 describe('GitHub OAuth', () => {
   describe('createOAuthState', () => {

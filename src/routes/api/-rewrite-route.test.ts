@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 const generateTextMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+  createFileRoute: (path) => (options) => ({ options, path }),
 }))
 
 vi.mock('@ship-fast/engine', () => ({
@@ -26,7 +26,7 @@ type RouteWithHandlers = {
   }
 }
 
-const importRoute = async (): Promise<RouteWithHandlers> => {
+async function importRoute(): Promise<RouteWithHandlers> {
   const { Route } = await import('./rewrite')
   return Route as unknown as RouteWithHandlers
 }

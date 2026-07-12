@@ -9,7 +9,7 @@ type Controls = ReturnType<typeof useAITextEdit>
 
 const rect = new DOMRect(10, 20, 100, 24)
 
-const selectNodeText = (node: Node, start: number, end: number) => {
+function selectNodeText(node: Node, start: number, end: number) {
   const range = document.createRange()
   range.setStart(node, start)
   range.setEnd(node, end)
@@ -26,7 +26,7 @@ const dispatchSelectionChange = () => {
   })
 }
 
-const Probe = ({
+function Probe({
   aiEditMode,
   onSelect,
   onControls,
@@ -34,7 +34,7 @@ const Probe = ({
   aiEditMode: boolean
   onSelect: Parameters<typeof useAITextEdit>[2]
   onControls?: (controls: Controls) => void
-}) => {
+}) {
   const ref = useRef<HTMLDivElement | null>(null)
   const controls = useAITextEdit(ref, aiEditMode, onSelect)
 

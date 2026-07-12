@@ -22,11 +22,11 @@ const AnonymousSessionClaimer = () => {
   return null
 }
 
-export const ClerkConvexProvider = ({
+export function ClerkConvexProvider({
   children,
   clerkPublishableKey,
   convexUrl,
-}: ClerkConvexProviderProps) => {
+}: ClerkConvexProviderProps) {
   const convexClient = useMemo(
     () => new ConvexReactClient(convexUrl, { logger: false }),
     [convexUrl],

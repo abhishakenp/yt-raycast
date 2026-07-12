@@ -8,19 +8,21 @@ import {
   createPreviewRestoreResponse,
 } from './session-preview-edit-response'
 
-const jsonRequest = (body: unknown, headers?: HeadersInit) =>
-  new Request('http://localhost/api', {
+function jsonRequest(body: unknown, headers?: HeadersInit) {
+  return new Request('http://localhost/api', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify(body),
   })
+}
 
-const rawPostRequest = (body: string) =>
-  new Request('http://localhost/api', {
+function rawPostRequest(body: string) {
+  return new Request('http://localhost/api', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body,
   })
+}
 
 const realConvexRendererErrorPreviewHtml = {
   sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',

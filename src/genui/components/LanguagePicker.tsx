@@ -35,7 +35,7 @@ export interface LanguagePickerProps {
  * fields (code, name, nativeName, keywords). Case-insensitive, works for both
  * Roman and native-script input.
  */
-const matchesEntry = (input: string, entry: LanguageEntry): boolean => {
+function matchesEntry(input: string, entry: LanguageEntry): boolean {
   const needle = input.trim().toLowerCase()
   if (!needle) return false
   if (entry.code.toLowerCase() === needle) return true
@@ -49,10 +49,10 @@ const matchesEntry = (input: string, entry: LanguageEntry): boolean => {
  * Search the merged language list for an exact match of the typed text. Returns
  * the matching language code, or null when no known/custom language matches.
  */
-const findExistingLanguage = (
+function findExistingLanguage(
   input: string,
   languages: LanguageEntry[],
-): string | null => {
+): string | null {
   const trimmed = input.trim()
   if (!trimmed) return null
   for (const entry of languages) {
@@ -61,7 +61,7 @@ const findExistingLanguage = (
   return null
 }
 
-const languageDisplayScore = (entry: LanguageEntry): number => {
+function languageDisplayScore(entry: LanguageEntry): number {
   const nativeName = entry.nativeName.trim().toLowerCase()
   const name = entry.name.trim().toLowerCase()
   let score = 0
@@ -76,18 +76,19 @@ const languageDisplayScore = (entry: LanguageEntry): number => {
   return score
 }
 
-const chooseBetterLanguageEntry = (
+function chooseBetterLanguageEntry(
   current: LanguageEntry,
   candidate: LanguageEntry,
-): LanguageEntry =>
-  languageDisplayScore(candidate) > languageDisplayScore(current)
+): LanguageEntry {
+  return languageDisplayScore(candidate) > languageDisplayScore(current)
     ? candidate
     : current
+}
 
-const mergeLanguageEntries = (
+function mergeLanguageEntries(
   known: LanguageEntry[],
   custom: LanguageEntry[],
-): LanguageEntry[] => {
+): LanguageEntry[] {
   const byKey = new Map<string, LanguageEntry>()
   const order: string[] = []
 
@@ -212,7 +213,7 @@ export default function LanguagePicker({
     [customLanguages, repairedCustomLanguages, supersededCustomCodes],
   )
 
-  const submitCustom = async (e: React.FormEvent) => {
+  const submitCustom = async (e) => {
     e.preventDefault()
     const trimmed = customLanguage.trim()
     if (!trimmed || isResolving) return

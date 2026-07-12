@@ -37,15 +37,17 @@ const RESERVED_DATA_KEYS = new Set([
   'updatedAt',
 ])
 
-const isPlainRecord = (value: unknown): value is JsonRecord =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+function isPlainRecord(value: unknown): value is JsonRecord {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
 
 const GENERATED_PROPS_KEY = 'shipFastGeneratedProps'
 
-const jsonEqual = (left: unknown, right: unknown): boolean =>
-  JSON.stringify(left) === JSON.stringify(right)
+function jsonEqual(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right)
+}
 
-const generatedSeedProps = (generatedProps: JsonRecord): JsonRecord => {
+function generatedSeedProps(generatedProps: JsonRecord): JsonRecord {
   const seedProps: JsonRecord = {}
   for (const [key, value] of Object.entries(generatedProps)) {
     if (RESERVED_DATA_KEYS.has(key)) continue
@@ -55,9 +57,9 @@ const generatedSeedProps = (generatedProps: JsonRecord): JsonRecord => {
   return seedProps
 }
 
-const seedSnapshotFromLiveData = (
+function seedSnapshotFromLiveData(
   liveData: JsonRecord | null,
-): JsonRecord | null => {
+): JsonRecord | null {
   if (!liveData) return null
   const snapshot = liveData[GENERATED_PROPS_KEY]
   return isPlainRecord(snapshot) ? snapshot : null
@@ -70,10 +72,10 @@ const seedSnapshotFromLiveData = (
  * lets the generic admin panel introspect scalars as editable `value` tables
  * and arrays (e.g. `stats`) as editable `array` tables with zero panel changes.
  */
-export const buildSectionSeedPatch = (
+export function buildSectionSeedPatch(
   generatedProps: JsonRecord,
   liveData: JsonRecord | null,
-): JsonRecord => {
+): JsonRecord {
   const patch: JsonRecord = {}
   const seedProps = generatedSeedProps(generatedProps)
   const previousSeedProps = seedSnapshotFromLiveData(liveData)
@@ -111,10 +113,10 @@ export const buildSectionSeedPatch = (
  * win; reserved bookkeeping keys are dropped. Generated props that were never
  * persisted (e.g. defaulted-undefined) still pass through from `generatedProps`.
  */
-export const mergeSectionProps = (
+export function mergeSectionProps(
   generatedProps: JsonRecord,
   liveData: JsonRecord | null,
-): JsonRecord => {
+): JsonRecord {
   if (!liveData) return generatedProps
   const merged: JsonRecord = { ...generatedProps }
   const previousSeedProps = seedSnapshotFromLiveData(liveData)

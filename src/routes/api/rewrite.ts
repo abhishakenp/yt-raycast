@@ -1,13 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
 const loadRewriteRuntime = async () => {
   const [{ generateText }, { DEFAULT_MODEL }] = await Promise.all([

@@ -16,10 +16,10 @@ const generateAdminRouteApi = getRouteApi('/generate/$sessionId/admin')
  * `/generate/<sessionId>/pricing` → 'pricing'
  * `/generate/<sessionId>/blog/post-1` → 'blog' (first segment only)
  */
-export const extractSlugFromPath = (
+export function extractSlugFromPath(
   pathname: string,
   sessionId: string,
-): string | null => {
+): string | null {
   const prefix = `/generate/${sessionId}/`
   if (!pathname.startsWith(prefix)) return null
   const rest = pathname.slice(prefix.length)
@@ -53,7 +53,7 @@ export const GenerateRoute = () => {
   }, [sessionId])
 
   const navigateToPage = useCallback(
-    (pageSlug: string | null) => {
+    (pageSlug) => {
       const baseUrl = `/generate/${sessionId}`
       const targetUrl = pageSlug ? `${baseUrl}/${pageSlug}` : baseUrl
       // pushState does NOT fire popstate — TanStack Router won't intervene,

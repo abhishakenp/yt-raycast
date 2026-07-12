@@ -37,10 +37,11 @@ const MAX_BROWSER_TRANSLATION_BATCH_TEXTS = 20
 const MAX_BROWSER_TRANSLATION_BATCH_CHARS = 1800
 const MAX_SIMULTANEOUS_SHIMMER_NODES = 24
 
-const translationCacheKey = (locale: string, text: string): string =>
-  `${locale.trim().toLowerCase()}\n${text.trim()}`
+function translationCacheKey(locale: string, text: string): string {
+  return `${locale.trim().toLowerCase()}\n${text.trim()}`
+}
 
-const getCachedTranslation = (locale: string, text: string): string | null => {
+function getCachedTranslation(locale: string, text: string): string | null {
   const key = translationCacheKey(locale, text)
   const memory = memoryTranslationCache.get(key)
   if (memory !== undefined) return memory
@@ -57,11 +58,11 @@ const getCachedTranslation = (locale: string, text: string): string | null => {
   return null
 }
 
-export const setCachedTranslation = (
+export function setCachedTranslation(
   locale: string,
   text: string,
   translation: string,
-): void => {
+): void {
   const key = translationCacheKey(locale, text)
   memoryTranslationCache.set(key, translation)
   if (typeof window === 'undefined') return
@@ -72,10 +73,10 @@ export const setCachedTranslation = (
   }
 }
 
-const persistTranslationEntries = async (
+async function persistTranslationEntries(
   locale: string,
   entries: Array<{ text: string; translation: string }>,
-): Promise<void> => {
+): Promise<void> {
   const changedEntries = entries.filter(
     (entry) =>
       entry.text.trim() &&
@@ -273,10 +274,10 @@ if (
 
 const shimmerTemporaryClasses = new WeakMap<HTMLElement, string[]>()
 
-const addTemporaryShimmerClass = (
+function addTemporaryShimmerClass(
   element: HTMLElement,
   className: string,
-): void => {
+): void {
   if (element.classList.contains(className)) return
   element.classList.add(className)
   const current = shimmerTemporaryClasses.get(element) ?? []
@@ -313,7 +314,7 @@ export function applyTranslationResult(
   }
 }
 
-const addTranslationShimmer = (node: Text): void => {
+function addTranslationShimmer(node: Text): void {
   const parent = node.parentElement
   if (!parent) return
   addTemporaryShimmerClass(parent, 'shimmer')
@@ -348,10 +349,10 @@ type AccessibleLabelTranslationJob = {
   translatedVisibleText: string
 }
 
-const splitLinkedAccessibleLabel = (
+function splitLinkedAccessibleLabel(
   label: string,
   visibleText: string,
-): LinkedAccessibleLabel | null => {
+): LinkedAccessibleLabel | null {
   const normalizedLabel = label.trim()
   const normalizedVisibleText = visibleText.trim()
   if (!normalizedLabel || !normalizedVisibleText) return null
@@ -380,7 +381,7 @@ const splitLinkedAccessibleLabel = (
   return null
 }
 
-const linkedAccessibleLabelFallback = ({
+function linkedAccessibleLabelFallback({
   linkedLabel,
   translatedVisibleText,
   locale,
@@ -388,7 +389,7 @@ const linkedAccessibleLabelFallback = ({
   linkedLabel: LinkedAccessibleLabel
   translatedVisibleText: string
   locale: string
-}): string => {
+}): string {
   const leadingContext = transliterateLatinFallback(
     linkedLabel.leadingContext,
     locale,
@@ -408,10 +409,10 @@ const linkedAccessibleLabelFallback = ({
     .trim()
 }
 
-const preserveOuterWhitespace = (
+function preserveOuterWhitespace(
   originalText: string,
   translatedText: string,
-): string => {
+): string {
   const leadingWhitespace = originalText.match(/^\s*/)?.[0] ?? ''
   const trailingWhitespace = originalText.match(/\s*$/)?.[0] ?? ''
   return `${leadingWhitespace}${translatedText.trim()}${trailingWhitespace}`
@@ -420,7 +421,7 @@ const preserveOuterWhitespace = (
 const ACTIVE_TEXT_EDIT_SELECTOR =
   '[data-ship-fast-inline-editing="true"], [contenteditable="true"], [contenteditable="plaintext-only"]'
 
-const isInsideActiveTextEdit = (node: Node): boolean => {
+function isInsideActiveTextEdit(node: Node): boolean {
   const parent =
     node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement
   return Boolean(parent?.closest(ACTIVE_TEXT_EDIT_SELECTOR))
@@ -452,7 +453,7 @@ export function T({ children }: React.PropsWithChildren) {
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | undefined
 
-    const sourceTextForNode = (node: Text): string => {
+    const sourceTextForNode = (node) => {
       const current = node.textContent ?? ''
       const state = textStateRef.current.get(node)
       if (state?.translatedText && current === state.translatedText) {
@@ -520,9 +521,7 @@ export function T({ children }: React.PropsWithChildren) {
       }, 0)
     }
 
-    const translateAccessibleLabels = async (
-      jobs: AccessibleLabelTranslationJob[],
-    ) => {
+    const translateAccessibleLabels = async (jobs) => {
       const compositeJobs = jobs.filter(
         ({ linkedLabel }) =>
           linkedLabel.leadingContext || linkedLabel.trailingContext,

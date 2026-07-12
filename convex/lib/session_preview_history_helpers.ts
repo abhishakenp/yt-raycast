@@ -9,17 +9,19 @@ import {
 import { assertCanMutateSession } from './session_access_helpers'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
 
-export const serializePreviewHistoryItem = (preview: Doc<'previews'>) => ({
-  previewId: preview._id,
-  version: preview.version,
-  source: preview.source,
-  createdAt: preview.createdAt,
-})
+export function serializePreviewHistoryItem(preview: Doc<'previews'>) {
+  return {
+    previewId: preview._id,
+    version: preview.version,
+    source: preview.source,
+    createdAt: preview.createdAt,
+  }
+}
 
-export const listSessionPreviewHistory = async (
+export async function listSessionPreviewHistory(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const previews = await ctx.db
     .query('previews')
     .withIndex('by_sessionId_version', (index) =>
@@ -31,24 +33,26 @@ export const listSessionPreviewHistory = async (
   return previews.map(serializePreviewHistoryItem)
 }
 
-export const serializeSessionEdit = (edit: Doc<'edits'>) => ({
-  editId: edit._id,
-  editType: edit.editType,
-  targetLabel: edit.targetLabel,
-  beforeText: edit.beforeText,
-  afterText: edit.afterText,
-  afterHtml: edit.afterHtml,
-  instruction: edit.instruction,
-  occurrenceIndex: edit.occurrenceIndex,
-  previewVersion: edit.previewVersion,
-  createdAt: edit.createdAt,
-  userId: edit.userId,
-})
+export function serializeSessionEdit(edit: Doc<'edits'>) {
+  return {
+    editId: edit._id,
+    editType: edit.editType,
+    targetLabel: edit.targetLabel,
+    beforeText: edit.beforeText,
+    afterText: edit.afterText,
+    afterHtml: edit.afterHtml,
+    instruction: edit.instruction,
+    occurrenceIndex: edit.occurrenceIndex,
+    previewVersion: edit.previewVersion,
+    createdAt: edit.createdAt,
+    userId: edit.userId,
+  }
+}
 
-export const listSessionEdits = async (
+export async function listSessionEdits(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const edits = await ctx.db
     .query('edits')
     .withIndex('by_sessionId_createdAt', (index) =>
@@ -60,7 +64,7 @@ export const listSessionEdits = async (
   return edits.map(serializeSessionEdit)
 }
 
-export const restorePreviewHistoryVersion = async (
+export async function restorePreviewHistoryVersion(
   ctx: Pick<MutationCtx, 'db'>,
   args: {
     sessionId: Id<'sessions'>
@@ -69,7 +73,7 @@ export const restorePreviewHistoryVersion = async (
     restoredVersion: number
     now: number
   },
-) => {
+) {
   const nextPreviewVersion =
     (args.session.previewVersion ?? args.preview.version) + 1
 
@@ -128,14 +132,14 @@ export const restorePreviewHistoryVersion = async (
   }
 }
 
-export const restoreOwnedPreviewVersion = async (
+export async function restoreOwnedPreviewVersion(
   ctx: MutationCtx,
   args: {
     sessionId: Id<'sessions'>
     anonymousOwnerSecret?: string
     version: number
   },
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 

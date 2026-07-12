@@ -5,7 +5,7 @@ import { buildOpenUIHtmlExport } from './openui-html-export-builder'
 
 const siteSpecJson = JSON.stringify({ projectName: 'Kit Render' })
 
-const renderSource = async (source: string) => {
+async function renderSource(source: string) {
   const result = await buildOpenUIHtmlExport({
     source,
     siteSpecJson,
@@ -44,7 +44,7 @@ describe('section-kit renders through the OpenUI runtime', () => {
       url: 'http://localhost/',
     })
     if (!script) throw new Error('Expected exported HTML to include runtime')
-    dom.window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+    dom.window.requestAnimationFrame = (callback) => {
       dom.window.setTimeout(() => callback(Date.now()), 0)
       return 1
     }
@@ -87,7 +87,7 @@ lookbookText = Text("Lookbook page")
       url: 'http://localhost/',
     })
     if (!script) throw new Error('Expected exported HTML to include runtime')
-    dom.window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+    dom.window.requestAnimationFrame = (callback) => {
       dom.window.setTimeout(() => callback(Date.now()), 0)
       return 1
     }

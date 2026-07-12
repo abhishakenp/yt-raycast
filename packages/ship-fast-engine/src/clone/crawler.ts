@@ -315,7 +315,7 @@ export async function crawlSite(
   let reservedPages = 0
 
   // Helper to add node to graph
-  const addNode = (url: string, normalized: string) => {
+  const addNode = (url, normalized) => {
     if (!state.graph.nodes.has(normalized)) {
       state.graph.nodes.set(normalized, {
         url,
@@ -327,7 +327,7 @@ export async function crawlSite(
   }
 
   // Helper to add edge to graph
-  const addEdge = (from: string, to: string) => {
+  const addEdge = (from, to) => {
     state.graph.edges.push({ from, to })
     const fromNode = state.graph.nodes.get(from)
     const toNode = state.graph.nodes.get(to)
@@ -343,7 +343,7 @@ export async function crawlSite(
   const processing = new Set<Promise<void>>()
   let nextIndex = 0
 
-  const processNext = async (): Promise<void> => {
+  const processNext = async () => {
     if (signal?.aborted) throw new DOMException('aborted', 'AbortError')
     if (nextIndex >= state.queue.length) {
       return

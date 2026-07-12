@@ -61,7 +61,7 @@ export function pageComponentName(page: any = undefined): string {
   const base = String(page?.name || page?.route || 'Page')
     .split(/[^a-zA-Z0-9]+/)
     .filter(Boolean)
-    .map((part: string) => part[0].toUpperCase() + part.slice(1))
+    .map((part) => part[0].toUpperCase() + part.slice(1))
     .join('')
   return `${base || 'Page'}Page`
 }
@@ -74,7 +74,7 @@ export function slimSiteSpecForBundle(siteSpec: any): any {
   if (!siteSpec?.pages?.length) return siteSpec
   return {
     ...siteSpec,
-    pages: siteSpec.pages.map((page: any) => {
+    pages: siteSpec.pages.map((page) => {
       if (!page?.renderBlueprint) return page
       const rb = { ...page.renderBlueprint }
       delete rb.originalHtmlDocument
@@ -98,9 +98,9 @@ function readmeRoutes(siteSpec: any): string[] {
   const routes: string[] = Array.from(
     new Set(
       (siteSpec?.pages || [])
-        .map((page: any) => String(page?.route || '').trim())
+        .map((page) => String(page?.route || '').trim())
         .filter(Boolean)
-        .map((route: string) =>
+        .map((route) =>
           route === '/' ? '/' : route.startsWith('/') ? route : `/${route}`,
         ),
     ),
@@ -870,7 +870,7 @@ export function renderSectionHtml(section: any, siteSpec: any = {}): string {
         !shouldUseSwiper(siteSpec) &&
         siteSpec.siteType === 'ecommerce' &&
         items.length > 0
-      const productCardHtml = (item: any, dup: boolean) => `
+      const productCardHtml = (item, dup) => `
                   <article class="card product-card product-card--retail product-card--carousel"${dup ? ' aria-hidden="true"' : ''}>
                     ${productFigureHtml(item, { emptyAlt: dup })}
                     ${retailProductCardInnerHtml(item)}

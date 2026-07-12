@@ -36,8 +36,9 @@ import { patchOpenUiSourceWithAiCapsule } from './section-edit-response'
 
 const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
 
-const loadFixture = (name: string): string =>
-  readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+function loadFixture(name: string): string {
+  return readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+}
 
 /**
  * Simulates a section edit by replacing a section assignment line with a
@@ -48,13 +49,13 @@ const loadFixture = (name: string): string =>
  * Matches `varName = CapsuleName(...)` and replaces the first 1-2 string
  * literal arguments with the provided new values.
  */
-const simulateSectionEdit = (
+function simulateSectionEdit(
   source: string,
   varName: string,
   capsuleName: string,
   newFirstArg: string,
   newSecondArg?: string,
-): string => {
+): string {
   // Match the full section line: `varName = CapsuleName("first", "second", ...`
   // We replace the first (and optionally second) string literal argument.
   const linePattern = new RegExp(
@@ -76,10 +77,11 @@ const simulateSectionEdit = (
   return patched
 }
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
-const expectParses = (source: string) => {
+function expectParses(source: string) {
   const parsed = parseOpenUIForExport(source)
   expect(parsed.root).toBeDefined()
   expect(parsed.pages.length).toBeGreaterThan(0)
@@ -87,7 +89,7 @@ const expectParses = (source: string) => {
   return parsed
 }
 
-const expectRenders = async (source: string): Promise<string> => {
+async function expectRenders(source: string): Promise<string> {
   const html = await renderOpenUIToHTML(source)
   expect(html.toLowerCase()).not.toContain('openui-error')
   expect(html.toLowerCase()).not.toContain('failed to render')
@@ -95,7 +97,7 @@ const expectRenders = async (source: string): Promise<string> => {
   return html
 }
 
-const expectExports = async (source: string, sessionId: string) => {
+async function expectExports(source: string, sessionId: string) {
   const exported = await buildOpenUIExport({
     source,
     sessionId,

@@ -28,7 +28,7 @@ type ToolCallState = {
   arguments: string
 }
 
-const parseToolInput = (value: string): unknown => {
+function parseToolInput(value: string): unknown {
   const trimmed = value.trim()
   if (!trimmed) return {}
   try {

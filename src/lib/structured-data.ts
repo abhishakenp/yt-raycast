@@ -5,7 +5,7 @@ import {
   SITE_URL,
 } from './site-config'
 
-export const homeStructuredDataJson = (descriptionOverride?: string) => {
+export function homeStructuredDataJson(descriptionOverride?: string) {
   const desc = descriptionOverride ?? HOME_DESCRIPTION
   const ogImage = `${SITE_URL}${OG_IMAGE_PATH}`
   return JSON.stringify([

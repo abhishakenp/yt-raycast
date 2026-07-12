@@ -52,9 +52,9 @@ const TRANSLATION_MODEL = 'llama-3.3-70b-versatile'
 const QUALITY_TARGET_SCORE = 11
 const MAX_QUALITY_REWRITE_ATTEMPTS = 3
 
-const resolveTargetLanguage = (
+function resolveTargetLanguage(
   languageMode: LanguageMode | undefined,
-): TargetLanguage | null => {
+): TargetLanguage | null {
   const language = languageMode?.language || languageMode
   if (!language || String(language.code || '').toLowerCase() === 'en')
     return null
@@ -79,16 +79,18 @@ const resolveTargetLanguage = (
   }
 }
 
-const buildTextRecords = (texts: string[]): TextRecord[] =>
-  texts.map((text, index) => ({ id: `t${index}`, text }))
+function buildTextRecords(texts: string[]): TextRecord[] {
+  return texts.map((text, index) => ({ id: `t${index}`, text }))
+}
 
-const buildPageContext = (texts: string[]): string =>
-  texts.join('\n').slice(0, 6000)
+function buildPageContext(texts: string[]): string {
+  return texts.join('\n').slice(0, 6000)
+}
 
-const parseTranslationResponse = (
+function parseTranslationResponse(
   content: string,
   records: TextRecord[],
-): TranslationMap => {
+): TranslationMap {
   const jsonMatch = String(content || '').match(/\{[\s\S]*\}/)
   if (!jsonMatch) return {}
 
@@ -136,12 +138,12 @@ function extractTextNodes(html: string): string[] {
   return texts
 }
 
-const countMatches = (text: string, regex: RegExp): number => {
+function countMatches(text: string, regex: RegExp): number {
   const matches = text.match(regex)
   return matches ? matches.length : 0
 }
 
-const countScriptLetters = (text: string, script: string): number => {
+function countScriptLetters(text: string, script: string): number {
   if (!script || script === 'Latin') return 0
   try {
     return countMatches(text, new RegExp(`\\p{Script=${script}}`, 'gu'))
@@ -150,10 +152,10 @@ const countScriptLetters = (text: string, script: string): number => {
   }
 }
 
-const isAlreadyLocalized = (
+function isAlreadyLocalized(
   texts: string[],
   language: TargetLanguage,
-): boolean => {
+): boolean {
   if (!language.script || language.script === 'Latin') return false
   const visibleText = texts.join(' ')
   const targetScriptLetters = countScriptLetters(visibleText, language.script)
@@ -222,13 +224,11 @@ async function polishTranslations(
 ): Promise<TranslationMap> {
   const records = buildTextRecords(texts)
   const items = records
-    .map(
-      (record): TranslationItem => ({
-        id: record.id,
-        source: record.text,
-        draft: draftTranslations[record.text],
-      }),
-    )
+    .map((record) => ({
+      id: record.id,
+      source: record.text,
+      draft: draftTranslations[record.text],
+    }))
     .filter((item) => typeof item.draft === 'string' && item.draft.trim())
 
   if (items.length === 0) return draftTranslations
@@ -275,19 +275,18 @@ Expected response shape:
   }
 }
 
-const buildTranslationItems = (
+function buildTranslationItems(
   texts: string[],
   translations: TranslationMap,
-): TranslationItem[] =>
-  buildTextRecords(texts)
-    .map(
-      (record): TranslationItem => ({
-        id: record.id,
-        source: record.text,
-        draft: translations[record.text],
-      }),
-    )
+): TranslationItem[] {
+  return buildTextRecords(texts)
+    .map((record) => ({
+      id: record.id,
+      source: record.text,
+      draft: translations[record.text],
+    }))
     .filter((item) => typeof item.draft === 'string' && item.draft.trim())
+}
 
 async function scoreTranslations(
   texts: string[],
@@ -350,13 +349,14 @@ Return ONLY valid JSON with:
   }
 }
 
-const applySuggestedTranslations = (
+function applySuggestedTranslations(
   translations: TranslationMap,
   suggestions: TranslationMap | undefined,
-): TranslationMap =>
-  suggestions && Object.keys(suggestions).length > 0
+): TranslationMap {
+  return suggestions && Object.keys(suggestions).length > 0
     ? { ...translations, ...suggestions }
     : translations
+}
 
 async function rewriteWeakTranslations(
   texts: string[],
@@ -374,13 +374,11 @@ async function rewriteWeakTranslations(
   )
   const items = records
     .filter((record) => weakIds.has(record.id))
-    .map(
-      (record): TranslationItem => ({
-        id: record.id,
-        source: record.text,
-        draft: translations[record.text],
-      }),
-    )
+    .map((record) => ({
+      id: record.id,
+      source: record.text,
+      draft: translations[record.text],
+    }))
     .filter((item) => typeof item.draft === 'string' && item.draft.trim())
 
   if (items.length === 0) return translations
@@ -429,7 +427,7 @@ function replaceVisibleTextNodes(
   const placeholderPrefix = `__SHIP_FAST_TRANSLATION_BLOCK_${Date.now()}_`
   const withoutProtectedBlocks = html.replace(
     /<(script|style)[\s\S]*?<\/\1>/gi,
-    (block: string) => {
+    (block) => {
       const placeholder = `${placeholderPrefix}${protectedBlocks.length}__`
       protectedBlocks.push(block)
       return placeholder
@@ -438,7 +436,7 @@ function replaceVisibleTextNodes(
 
   const translated = withoutProtectedBlocks.replace(
     />([^<]+)</g,
-    (_match: string, text: string) => {
+    (_match, text) => {
       let replaced = text
       for (const [original, replacement] of Object.entries(translations)) {
         if (!replacement || replacement === original) continue

@@ -6,26 +6,29 @@ export interface HtmlExportFilesOptions {
   siteUrl?: string
 }
 
-const stripTags = (value: string): string =>
-  value
+function stripTags(value: string): string {
+  return value
     .replace(/<script\b[\s\S]*?<\/script>/gi, '')
     .replace(/<style\b[\s\S]*?<\/style>/gi, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
 
-const decodeBasicEntities = (value: string): string =>
-  value
+function decodeBasicEntities(value: string): string {
+  return value
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+}
 
-const matchContent = (html: string, pattern: RegExp): string =>
-  decodeBasicEntities(stripTags(html.match(pattern)?.[1] ?? ''))
+function matchContent(html: string, pattern: RegExp): string {
+  return decodeBasicEntities(stripTags(html.match(pattern)?.[1] ?? ''))
+}
 
-export const extractExportMetadata = (html: string) => {
+export function extractExportMetadata(html: string) {
   const title =
     matchContent(html, /<title\b[^>]*>([\s\S]*?)<\/title>/i) ||
     matchContent(html, /<h1\b[^>]*>([\s\S]*?)<\/h1>/i) ||
@@ -49,9 +52,9 @@ export const extractExportMetadata = (html: string) => {
   }
 }
 
-export const normalizeSiteUrl = (
+export function normalizeSiteUrl(
   value: string | undefined,
-): string | undefined => {
+): string | undefined {
   if (!value) return undefined
   try {
     const url = new URL(value)
@@ -66,10 +69,11 @@ export const normalizeSiteUrl = (
   }
 }
 
-const createCanonicalUrl = (siteUrl: string | undefined): string | undefined =>
-  siteUrl === undefined ? undefined : `${siteUrl}/`
+function createCanonicalUrl(siteUrl: string | undefined): string | undefined {
+  return siteUrl === undefined ? undefined : `${siteUrl}/`
+}
 
-const ensureLlmsDiscoveryLink = (html: string): string => {
+function ensureLlmsDiscoveryLink(html: string): string {
   if (/href=["']\/?llms\.txt["']/i.test(html)) return html
   const link =
     '<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary">'
@@ -80,7 +84,7 @@ const ensureLlmsDiscoveryLink = (html: string): string => {
 const internalImageUrlPattern =
   /(?:https?:\/\/[^\s"'(),<>]+)?\/api\/(?:pexels|images?)(?:\?[^\s"'(),<>]*)?/gi
 
-const portableImageUrl = (value: string): string => {
+function portableImageUrl(value: string): string {
   const decoded = decodeBasicEntities(value)
   let parsed: URL
   try {
@@ -104,25 +108,29 @@ const portableImageUrl = (value: string): string => {
   )
 }
 
-const materializePortableImageUrls = (html: string): string =>
-  html.replace(internalImageUrlPattern, portableImageUrl)
+function materializePortableImageUrls(html: string): string {
+  return html.replace(internalImageUrlPattern, portableImageUrl)
+}
 
-export const createRobotsTxt = (siteUrl: string): string =>
-  `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`
+export function createRobotsTxt(siteUrl: string): string {
+  return `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`
+}
 
-export const createSitemapXml = (siteUrl: string): string =>
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${siteUrl}/</loc>\n  </url>\n</urlset>\n`
+export function createSitemapXml(siteUrl: string): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${siteUrl}/</loc>\n  </url>\n</urlset>\n`
+}
 
-export const createLlmsTxt = (
+export function createLlmsTxt(
   siteUrl: string,
   metadata: { title: string; description: string },
-): string =>
-  `# ${metadata.title}\n\n> ${metadata.description}\n\n- Site URL: ${siteUrl}/\n- Primary page: /\n- Export includes robots.txt, sitemap.xml, and this llms.txt summary for answer engines and crawlers.\n`
+): string {
+  return `# ${metadata.title}\n\n> ${metadata.description}\n\n- Site URL: ${siteUrl}/\n- Primary page: /\n- Export includes robots.txt, sitemap.xml, and this llms.txt summary for answer engines and crawlers.\n`
+}
 
-const createPackageJson = (
+function createPackageJson(
   sessionId: string,
   target: 'html' | 'react' | 'next',
-): string => {
+): string {
   const base = {
     name: `ship-fast-export-${sessionId}`,
     version: '1.0.0',
@@ -176,8 +184,8 @@ const createPackageJson = (
   return JSON.stringify(base, null, 2)
 }
 
-const createViteConfig = (): string =>
-  `import { defineConfig } from 'vite'
+function createViteConfig(): string {
+  return `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
@@ -186,14 +194,16 @@ export default defineConfig({
     port: 3000,
   },
 })`
+}
 
-const createNextConfig = (): string =>
-  `/** @type {import('next').NextConfig} */
+function createNextConfig(): string {
+  return `/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
 }
 
 module.exports = nextConfig`
+}
 
 const shipFastReadmeLine = 'Generated with [ShipFast](https://ship-fast.io) 🚀.'
 

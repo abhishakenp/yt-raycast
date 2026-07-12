@@ -70,7 +70,7 @@ vi.mock('@/features/session/services/session-create-payload', () => ({
   createAnonymousClientId: () => 'anon_test_client',
 }))
 
-const setExportTargets = (targets: MockGitHubTarget[]) => {
+function setExportTargets(targets: MockGitHubTarget[]) {
   exportTargetsState.value = { targets }
 }
 
@@ -82,9 +82,9 @@ const createStorage = () => {
   const values = new Map<string, string>()
   return {
     clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    removeItem: vi.fn((key: string) => values.delete(key)),
-    setItem: vi.fn((key: string, value: string) => {
+    getItem: vi.fn((key) => values.get(key) ?? null),
+    removeItem: vi.fn((key) => values.delete(key)),
+    setItem: vi.fn((key, value) => {
       values.set(key, value)
     }),
   }
@@ -105,28 +105,30 @@ const installBrowserStorage = () => {
   vi.stubGlobal('sessionStorage', session)
 }
 
-const readyTarget = (
+function readyTarget(
   overrides: Partial<MockGitHubTarget> = {},
-): MockGitHubTarget => ({
-  target: 'html',
-  label: 'HTML',
-  ready: true,
-  status: 'ready',
-  requiresPayment: false,
-  fileCount: 5,
-  artifactReady: true,
-  artifactStatus: 'ready',
-  ...overrides,
-})
+): MockGitHubTarget {
+  return {
+    target: 'html',
+    label: 'HTML',
+    ready: true,
+    status: 'ready',
+    requiresPayment: false,
+    fileCount: 5,
+    artifactReady: true,
+    artifactStatus: 'ready',
+    ...overrides,
+  }
+}
 
 const pushOkResponse = () =>
   Response.json({ repoUrl: 'https://github.com/acme/site' })
 
-const pushFlowFetch = (overrides?: {
+function pushFlowFetch(overrides?: {
   push?: (init?: RequestInit) => Response
   export?: (init?: RequestInit) => Response
-}) =>
-  vi.fn(async (url: string | URL, init?: RequestInit) => {
+}) {
+  return vi.fn(async (url, init) => {
     const path = String(url)
     if (path.endsWith('/export')) {
       return overrides?.export
@@ -138,6 +140,7 @@ const pushFlowFetch = (overrides?: {
     }
     return Response.json({ error: `Unexpected ${path}` }, { status: 500 })
   })
+}
 
 describe('GitHubPanel (behavioral)', () => {
   beforeEach(() => {
@@ -335,7 +338,7 @@ describe('GitHubPanel (behavioral)', () => {
     const pushPromise = new Promise<Response>((resolve) => {
       resolvePush = resolve
     })
-    const fetchMock = vi.fn(async (url: string | URL) => {
+    const fetchMock = vi.fn(async (url) => {
       const path = String(url)
       if (path.endsWith('/github/push')) return pushPromise
       return Response.json({ ok: true })

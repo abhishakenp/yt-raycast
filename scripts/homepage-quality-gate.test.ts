@@ -14,15 +14,15 @@ type RunResult = {
 
 const tempDirs: string[] = []
 
-const createWorkspace = (html: string) => {
+function createWorkspace(html: string) {
   const dir = mkdtempSync(join(tmpdir(), 'ship-fast-homepage-gate-'))
   tempDirs.push(dir)
   writeFileSync(join(dir, 'index.html'), html)
   return dir
 }
 
-const runGate = (args: string[]) =>
-  new Promise<RunResult>((resolve, reject) => {
+function runGate(args: string[]) {
+  return new Promise<RunResult>((resolve, reject) => {
     const child = spawn(process.execPath, [scriptPath.pathname, ...args], {
       stdio: ['ignore', 'pipe', 'pipe'],
     })
@@ -39,6 +39,7 @@ const runGate = (args: string[]) =>
     child.on('error', reject)
     child.on('close', (code) => resolve({ code, stderr, stdout }))
   })
+}
 
 const passingHtml = () => `
 <!doctype html>
@@ -130,14 +131,13 @@ describe('homepage-quality-gate script', () => {
     expect(payload.ok).toBe(false)
     expect(payload.errors).toContain('quality.no_runtime_failures failed')
     const runtimeCheck = payload.checks.find(
-      (check: { name: string }) => check.name === 'quality.no_runtime_failures',
+      (check) => check.name === 'quality.no_runtime_failures',
     )
     expect(runtimeCheck.failureLeaks).toEqual(
       expect.arrayContaining(['cannot read properties', 'typeerror:']),
     )
     const placeholderCheck = payload.checks.find(
-      (check: { name: string }) =>
-        check.name === 'quality.no_placeholder_leaks',
+      (check) => check.name === 'quality.no_placeholder_leaks',
     )
     expect(placeholderCheck.placeholderLeaks).toContain(
       'waiting for generated module',

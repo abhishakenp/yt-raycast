@@ -46,14 +46,15 @@ export type OperationalNotificationSendResult =
       telegram: NotificationSendResult
     }
 
-const fetchFailedReason = (error: unknown): string =>
-  error instanceof Error ? error.message : 'fetch_failed'
+function fetchFailedReason(error: unknown): string {
+  return error instanceof Error ? error.message : 'fetch_failed'
+}
 
-const postJson = async (
+async function postJson(
   fetchImpl: FetchLike,
   url: string,
   payload: Record<string, unknown>,
-): Promise<NotificationSendResult> => {
+): Promise<NotificationSendResult> {
   try {
     await fetchImpl(url, {
       method: 'POST',
@@ -69,21 +70,24 @@ const postJson = async (
   }
 }
 
-export const shouldNotifyOperationalEvent = (
+export function shouldNotifyOperationalEvent(
   event: Pick<
     OperationalNotificationPayload,
     'cacheHit' | 'cost' | 'error' | 'eventType' | 'quotaHit'
   >,
-): boolean =>
-  event.error !== undefined ||
-  event.eventType === 'generation_failed' ||
-  event.quotaHit === true ||
-  event.cacheHit === true ||
-  (event.cost ?? 0) > 0
+): boolean {
+  return (
+    event.error !== undefined ||
+    event.eventType === 'generation_failed' ||
+    event.quotaHit === true ||
+    event.cacheHit === true ||
+    (event.cost ?? 0) > 0
+  )
+}
 
-export const formatOperationalNotification = (
+export function formatOperationalNotification(
   event: OperationalNotificationPayload,
-): string => {
+): string {
   const details = [
     `event=${event.eventType}`,
     `session=${event.sessionId}`,
@@ -100,14 +104,14 @@ export const formatOperationalNotification = (
     .join('\n')
 }
 
-export const sendSlackOperationalMessage = async (
+export async function sendSlackOperationalMessage(
   args: {
     message: string
     webhookUrl?: string
   },
   env: NotificationEnv = process.env,
   fetchImpl: FetchLike = fetch,
-): Promise<NotificationSendResult> => {
+): Promise<NotificationSendResult> {
   const webhookUrl = args.webhookUrl || env.SLACK_WEBHOOK_URL
 
   if (webhookUrl === undefined || webhookUrl.trim().length === 0) {
@@ -117,7 +121,7 @@ export const sendSlackOperationalMessage = async (
   return postJson(fetchImpl, webhookUrl, { text: args.message })
 }
 
-export const sendTelegramOperationalMessage = async (
+export async function sendTelegramOperationalMessage(
   args: {
     message: string
     botToken?: string
@@ -125,7 +129,7 @@ export const sendTelegramOperationalMessage = async (
   },
   env: NotificationEnv = process.env,
   fetchImpl: FetchLike = fetch,
-): Promise<NotificationSendResult> => {
+): Promise<NotificationSendResult> {
   const botToken = args.botToken || env.TELEGRAM_BOT_TOKEN
   const chatId = args.chatId || env.TELEGRAM_CHAT_ID
 
@@ -148,11 +152,11 @@ export const sendTelegramOperationalMessage = async (
   )
 }
 
-export const sendOperationalNotificationAdapters = async (
+export async function sendOperationalNotificationAdapters(
   args: OperationalNotificationPayload,
   env: NotificationEnv = process.env,
   fetchImpl: FetchLike = fetch,
-): Promise<OperationalNotificationSendResult> => {
+): Promise<OperationalNotificationSendResult> {
   if (!shouldNotifyOperationalEvent(args)) {
     return {
       sent: false,
@@ -186,21 +190,21 @@ export const sendOperationalNotificationAdapters = async (
   }
 }
 
-export const scheduleOperationalNotification = async (
+export async function scheduleOperationalNotification(
   ctx: Pick<MutationCtx, 'scheduler'>,
   event: OperationalNotificationPayload,
   sendOperationalNotification: OperationalNotificationReference,
-): Promise<void> => {
+): Promise<void> {
   if (!shouldNotifyOperationalEvent(event)) return
 
   await ctx.scheduler.runAfter(0, sendOperationalNotification, event)
 }
 
-export const recordOperationalGenerationEvent = async (
+export async function recordOperationalGenerationEvent(
   ctx: OperationalNotificationCtx,
   args: RecordOperationalGenerationEventInput,
   sendOperationalNotification: OperationalNotificationReference,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
   const now = args.createdAt ?? Date.now()
 

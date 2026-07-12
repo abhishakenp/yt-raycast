@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+  createFileRoute: (path) => (options) => ({ options, path }),
 }))
 
 type RouteWithHandlers = {
@@ -13,7 +13,7 @@ type RouteWithHandlers = {
   }
 }
 
-const importRoute = async (path: string): Promise<RouteWithHandlers> => {
+async function importRoute(path: string): Promise<RouteWithHandlers> {
   const mod = await import(path)
   return mod.Route as unknown as RouteWithHandlers
 }

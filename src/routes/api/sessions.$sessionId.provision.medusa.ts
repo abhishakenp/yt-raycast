@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { createSessionMedusaProvisionResponse } from '@/features/commerce/server/commerce-api-response'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
-const isForbiddenOwnerError = (error: unknown): boolean => {
+function isForbiddenOwnerError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error)
   return /FORBIDDEN|own/i.test(message)
 }
@@ -13,16 +13,13 @@ type ConvexMutation = ReturnType<
 >['mutation']
 type ConvexQuery = ReturnType<typeof createRuntimeConvexHttpClient>['query']
 
-const createProvisionClient = (sessionId: string, body: string) => {
+function createProvisionClient(sessionId: string, body: string) {
   const client = createRuntimeConvexHttpClient()
   const hasProducts = /"products"\s*:\s*\[/.test(body)
 
   return {
     query: client.query.bind(client) as ConvexQuery,
-    mutation: (async (
-      mutation: Parameters<ConvexMutation>[0],
-      ...args: any[]
-    ) => {
+    mutation: (async (mutation, ...args) => {
       try {
         return await client.mutation(mutation, ...(args as [any, any?]))
       } catch (error) {
@@ -40,13 +37,7 @@ export const Route = createFileRoute(
 )({
   server: {
     handlers: {
-      POST: async ({
-        params,
-        request,
-      }: {
-        params: { sessionId: string }
-        request: Request
-      }) => {
+      POST: async ({ params, request }) => {
         const body = await request.text()
         const replayRequest = new Request(request.url, {
           body: body.trim() ? body : undefined,

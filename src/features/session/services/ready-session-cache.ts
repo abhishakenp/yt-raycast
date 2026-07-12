@@ -66,20 +66,24 @@ export type ReadySessionPreviewCacheEntry = {
   createdAt: number
 }
 
-const normalizeLanguage = (value: string) =>
-  String(value || 'en')
-    .trim()
-    .toLowerCase() || 'en'
+function normalizeLanguage(value: string) {
+  return (
+    String(value || 'en')
+      .trim()
+      .toLowerCase() || 'en'
+  )
+}
 
-const normalizePromptForCache = (value: string) =>
-  normalizePromptDraft(value).toLowerCase()
+function normalizePromptForCache(value: string) {
+  return normalizePromptDraft(value).toLowerCase()
+}
 
-const withTimeout = async <T>(
+async function withTimeout(
   promise: Promise<T>,
   timeoutMs: number,
   onTimeout?: () => void,
-): Promise<T> =>
-  await new Promise<T>((resolve, reject) => {
+): Promise<T> {
+  return await new Promise<T>((resolve, reject) => {
     const timer = globalThis.setTimeout(() => {
       onTimeout?.()
       reject(new Error('ready_session_verify_timeout'))
@@ -96,19 +100,21 @@ const withTimeout = async <T>(
       },
     )
   })
+}
 
-export const getReadySessionCacheKey = (
+export function getReadySessionCacheKey(
   prompt: string,
   preferredLanguage = 'en',
-): string =>
-  `${READY_SESSION_CACHE_PREFIX}${normalizeLanguage(preferredLanguage)}:${normalizePromptDraft(
+): string {
+  return `${READY_SESSION_CACHE_PREFIX}${normalizeLanguage(preferredLanguage)}:${normalizePromptDraft(
     prompt,
   )
     .toLowerCase()
     .replace(/[^a-z0-9\p{L}\p{N}]+/gu, ' ')
     .trim()}`
+}
 
-export const rememberReadySession = (
+export function rememberReadySession(
   storage: Pick<Storage, 'setItem'>,
   input: {
     sessionId: string
@@ -116,7 +122,7 @@ export const rememberReadySession = (
     preferredLanguage?: string
     now?: number
   },
-) => {
+) {
   const prompt = normalizePromptDraft(input.prompt)
   const sessionId = input.sessionId.trim()
   if (!prompt || !sessionId) return
@@ -140,10 +146,10 @@ export const rememberReadySession = (
   }
 }
 
-export const readReadySessionCache = (
+export function readReadySessionCache(
   storage: Pick<Storage, 'getItem' | 'removeItem'>,
   input: { prompt: string; preferredLanguage?: string; now?: number },
-): ReadySessionCacheEntry | null => {
+): ReadySessionCacheEntry | null {
   const key = getReadySessionCacheKey(input.prompt, input.preferredLanguage)
   const raw = storage.getItem(key)
   if (!raw) return null
@@ -179,27 +185,29 @@ export const readReadySessionCache = (
   }
 }
 
-export const forgetReadySession = (
+export function forgetReadySession(
   storage: Pick<Storage, 'removeItem'>,
   input: { prompt: string; preferredLanguage?: string },
-) => {
+) {
   storage.removeItem(
     getReadySessionCacheKey(input.prompt, input.preferredLanguage),
   )
 }
 
-const getReadySessionPreviewCacheKey = (sessionId: string): string =>
-  `${READY_SESSION_PREVIEW_CACHE_PREFIX}${sessionId.trim()}`
+function getReadySessionPreviewCacheKey(sessionId: string): string {
+  return `${READY_SESSION_PREVIEW_CACHE_PREFIX}${sessionId.trim()}`
+}
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
-export const rememberReadySessionPreview = (
+export function rememberReadySessionPreview(
   storage: Pick<Storage, 'setItem'>,
   input: Omit<ReadySessionPreviewCacheEntry, 'createdAt'> & {
     createdAt?: number
   },
-) => {
+) {
   const sessionId = input.sessionId.trim()
   const prompt = normalizePromptDraft(input.prompt)
   const preferredLanguage = normalizeLanguage(input.preferredLanguage)
@@ -243,10 +251,10 @@ export const rememberReadySessionPreview = (
   }
 }
 
-export const readReadySessionPreview = (
+export function readReadySessionPreview(
   storage: Pick<Storage, 'getItem' | 'removeItem'>,
   input: { sessionId: string; now?: number },
-): ReadySessionPreviewCacheEntry | null => {
+): ReadySessionPreviewCacheEntry | null {
   const sessionId = input.sessionId.trim()
   if (!sessionId) return null
 
@@ -281,14 +289,14 @@ export const readReadySessionPreview = (
   }
 }
 
-export const forgetReadySessionPreview = (
+export function forgetReadySessionPreview(
   storage: Pick<Storage, 'removeItem'>,
   input: { sessionId: string },
-) => {
+) {
   storage.removeItem(getReadySessionPreviewCacheKey(input.sessionId))
 }
 
-export const verifyReadySession = async (
+export async function verifyReadySession(
   input: {
     sessionId: string
     prompt: string
@@ -296,7 +304,7 @@ export const verifyReadySession = async (
     timeoutMs?: number
   },
   fetchSession: typeof fetch = fetch,
-): Promise<string | null> => {
+): Promise<string | null> {
   const sessionId = input.sessionId.trim()
   if (!sessionId) return null
 

@@ -54,23 +54,25 @@ const githubTargets: Array<GitHubTarget['target']> = [
   'lakebed',
 ]
 
-const targetLabel = (target: GitHubTarget['target']): string =>
-  target === 'html'
+function targetLabel(target: GitHubTarget['target']): string {
+  return target === 'html'
     ? 'HTML'
     : target === 'react'
       ? 'React'
       : target === 'next'
         ? 'Next.js'
         : 'Lakebed'
+}
 
-const targetSummary = (target: GitHubTarget['target']): string =>
-  target === 'html'
+function targetSummary(target: GitHubTarget['target']): string {
+  return target === 'html'
     ? 'Static site project'
     : target === 'react'
       ? 'React client project'
       : target === 'next'
         ? 'Next.js full-stack project'
         : 'Lakebed full-stack repository'
+}
 
 const loadingTargets: GitHubTarget[] = githubTargets.map((target) => ({
   target,
@@ -83,7 +85,7 @@ const loadingTargets: GitHubTarget[] = githubTargets.map((target) => ({
   artifactStatus: 'loading',
 }))
 
-const statusLabel = (target: GitHubTarget): string => {
+function statusLabel(target: GitHubTarget): string {
   if (target.requiresPayment) return 'Payment required'
   if (target.status === 'stale') {
     return target.currentPreviewVersion === null ||
@@ -95,8 +97,8 @@ const statusLabel = (target: GitHubTarget): string => {
   return target.status.replaceAll('_', ' ')
 }
 
-const artifactProgressPercent = (target: GitHubTarget) =>
-  target.artifactReady
+function artifactProgressPercent(target: GitHubTarget) {
+  return target.artifactReady
     ? 100
     : target.artifactStatus === 'building'
       ? 72
@@ -107,37 +109,46 @@ const artifactProgressPercent = (target: GitHubTarget) =>
           : target.ready
             ? 100
             : 0
+}
 
-const isGitHubTarget = (target: ExportTargetResponse): target is GitHubTarget =>
-  target.target === 'html' ||
-  target.target === 'react' ||
-  target.target === 'next' ||
-  target.target === 'lakebed'
+function isGitHubTarget(target: ExportTargetResponse): target is GitHubTarget {
+  return (
+    target.target === 'html' ||
+    target.target === 'react' ||
+    target.target === 'next' ||
+    target.target === 'lakebed'
+  )
+}
 
-const readOwnerSecret = (sessionId: string): string | undefined =>
-  typeof window === 'undefined'
+function readOwnerSecret(sessionId: string): string | undefined {
+  return typeof window === 'undefined'
     ? undefined
     : readAnonymousOwnerSecret(window.localStorage, sessionId)
+}
 
-const readAnonymousClientId = (): string | undefined =>
-  typeof window === 'undefined'
+function readAnonymousClientId(): string | undefined {
+  return typeof window === 'undefined'
     ? undefined
     : createAnonymousClientId(window.localStorage)
+}
 
-const isPendingPushRecord = (
+function isPendingPushRecord(
   value: unknown,
-): value is { sessionId?: unknown; target?: unknown } =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+): value is { sessionId?: unknown; target?: unknown } {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-const pendingPushPayload = (
+function pendingPushPayload(
   sessionId: string,
   target: GitHubTarget['target'],
-): string => JSON.stringify({ sessionId, target })
+): string {
+  return JSON.stringify({ sessionId, target })
+}
 
-const storePendingPush = (
+function storePendingPush(
   sessionId: string,
   target: GitHubTarget['target'],
-): void => {
+): void {
   if (typeof window === 'undefined') return
   window.sessionStorage.setItem(
     GITHUB_PENDING_PUSH_KEY,
@@ -145,9 +156,7 @@ const storePendingPush = (
   )
 }
 
-const consumePendingPush = (
-  sessionId: string,
-): GitHubTarget['target'] | null => {
+function consumePendingPush(sessionId: string): GitHubTarget['target'] | null {
   if (typeof window === 'undefined') return null
   const raw = window.sessionStorage.getItem(GITHUB_PENDING_PUSH_KEY)
   if (!raw) return null
@@ -172,7 +181,7 @@ const consumePendingPush = (
   return null
 }
 
-export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
+export function GitHubPanel({ sessionId }: GitHubPanelProps) {
   const auth = useOptionalAuth()
   const clerk = useOptionalClerk()
   const exportTargets = useQuery(api.sessions.getExportTargets, {
@@ -206,10 +215,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
     [exportTargets?.targets],
   )
 
-  const startGitHubConnection = async (
-    target: GitHubTarget['target'],
-    appToken?: string,
-  ) => {
+  const startGitHubConnection = async (target, appToken?) => {
     if (!isClerkDisabled() && !auth.isSignedIn) {
       void clerk.openSignIn?.()
       return
@@ -245,9 +251,9 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
   }
 
   const createExportForGitHub = async (
-    target: GitHubTarget['target'],
-    appToken: string,
-    anonymousOwnerSecret: string | undefined,
+    target,
+    appToken,
+    anonymousOwnerSecret,
   ) => {
     const response = await fetch(`/api/sessions/${sessionId}/export`, {
       method: 'POST',
@@ -267,7 +273,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
       )
   }
 
-  const pushTarget = async (targetConfig: GitHubTarget) => {
+  const pushTarget = async (targetConfig) => {
     setError(undefined)
 
     const existingRepoUrl =

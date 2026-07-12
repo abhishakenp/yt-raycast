@@ -31,7 +31,7 @@ let activeSubscriptionLookupForTest:
   | ((uid: string) => boolean | Promise<boolean>)
   | null = null
 
-const getConvexClient = (): AnyConvexClient => {
+function getConvexClient(): AnyConvexClient {
   if (convex) return convex
 
   const deploymentUrl =
@@ -50,7 +50,7 @@ const getConvexClient = (): AnyConvexClient => {
 
 let billingDir: string | null = null
 
-const ensureBillingDir = (): string | null => {
+function ensureBillingDir(): string | null {
   if (billingDir) return billingDir
   const sessionsDir = process.env.SESSIONS_DIR
   if (!sessionsDir) {
@@ -76,13 +76,13 @@ const STRIPE_EARLY_ADOPTER_PRICE_ID =
 
 type EarlyAdopterData = { count: number; users: string[] }
 
-const getEarlyAdopterCountFile = (): string | null => {
+function getEarlyAdopterCountFile(): string | null {
   const dir = ensureBillingDir()
   if (!dir) return null
   return join(dir, '_early_adopter_count.json')
 }
 
-const readEarlyAdopterCountFromFile = (): EarlyAdopterData => {
+function readEarlyAdopterCountFromFile(): EarlyAdopterData {
   const filePath = getEarlyAdopterCountFile()
   if (!filePath || !existsSync(filePath)) return { count: 0, users: [] }
   try {
@@ -92,7 +92,7 @@ const readEarlyAdopterCountFromFile = (): EarlyAdopterData => {
   }
 }
 
-const readEarlyAdopterCount = async (): Promise<EarlyAdopterData> => {
+async function readEarlyAdopterCount(): Promise<EarlyAdopterData> {
   try {
     const data = await getConvexClient().query('billing:getEarlyAdopterStatus')
     return { count: data.count || 0, users: data.users || [] }
@@ -105,10 +105,10 @@ const readEarlyAdopterCount = async (): Promise<EarlyAdopterData> => {
   }
 }
 
-export const getUserGenerationQuota = async (
+export async function getUserGenerationQuota(
   userId: string | null | undefined,
   clientIp: string | null | undefined,
-) => {
+) {
   if (userId) {
     const currentMonthly = (userMonthlyHits.get(userId) || []).filter(
       (t) => Date.now() - t < MONTHLY_WINDOW_MS,
@@ -139,9 +139,7 @@ export const getUserGenerationQuota = async (
   }
 }
 
-export const incrementEarlyAdopterCount = async (
-  uid: string,
-): Promise<void> => {
+export async function incrementEarlyAdopterCount(uid: string): Promise<void> {
   try {
     await getConvexClient().mutation('billing:incrementEarlyAdopterCount', {
       userId: uid,
@@ -154,7 +152,7 @@ export const incrementEarlyAdopterCount = async (
   }
 }
 
-export const isEarlyAdopterSlotAvailable = async (): Promise<boolean> => {
+export async function isEarlyAdopterSlotAvailable(): Promise<boolean> {
   try {
     return await getConvexClient().query('billing:isEarlyAdopterSlotAvailable')
   } catch (err: unknown) {
@@ -257,7 +255,7 @@ const GEO_HEADERS = [
   'cloudfront-viewer-country',
 ]
 
-const normalizeCountryCode = (rawValue: unknown): string | null => {
+function normalizeCountryCode(rawValue: unknown): string | null {
   if (!rawValue) return null
   const normalized = String(rawValue).trim().toUpperCase()
   if (!normalized || normalized === 'GLOBAL') return 'GLOBAL'
@@ -266,7 +264,7 @@ const normalizeCountryCode = (rawValue: unknown): string | null => {
   return null
 }
 
-const deriveCountryFromAcceptLanguage = (rawValue: unknown): string | null => {
+function deriveCountryFromAcceptLanguage(rawValue: unknown): string | null {
   if (!rawValue) return null
   const parts = String(rawValue)
     .split(',')
@@ -283,9 +281,9 @@ const deriveCountryFromAcceptLanguage = (rawValue: unknown): string | null => {
   return null
 }
 
-const resolveCountryCodeFromHeaders = (
+function resolveCountryCodeFromHeaders(
   headers: Record<string, string | undefined> = {},
-): string | null => {
+): string | null {
   for (const headerName of GEO_HEADERS) {
     const country = normalizeCountryCode(headers[headerName])
     if (country) return country
@@ -297,7 +295,7 @@ const resolveCountryCodeFromHeaders = (
   return null
 }
 
-export const resolveCountryCode = (
+export function resolveCountryCode(
   req:
     | {
         headers?: Record<string, string | undefined>
@@ -305,7 +303,7 @@ export const resolveCountryCode = (
       }
     | null
     | undefined,
-): string => {
+): string {
   const country = resolveCountryCodeFromHeaders(req?.headers ?? {})
   if (country) return country
   const queryCountry = normalizeCountryCode(req?.query?.countryHint)
@@ -313,9 +311,9 @@ export const resolveCountryCode = (
   return 'GLOBAL'
 }
 
-export const hasActiveSubscription = async (
+export async function hasActiveSubscription(
   uid: string | null | undefined,
-): Promise<boolean> => {
+): Promise<boolean> {
   if (!uid) return false
   if (activeSubscriptionLookupForTest)
     return activeSubscriptionLookupForTest(uid)
@@ -332,15 +330,15 @@ export const hasActiveSubscription = async (
   }
 }
 
-export const setActiveSubscriptionLookupForTest = (
+export function setActiveSubscriptionLookupForTest(
   lookup: ((uid: string) => boolean | Promise<boolean>) | null,
-): void => {
+): void {
   activeSubscriptionLookupForTest = lookup
 }
 
-export const getUserCredits = async (
+export async function getUserCredits(
   uid: string | null | undefined,
-): Promise<number> => {
+): Promise<number> {
   if (!uid) return 0
   try {
     return await getConvexClient().query('billing:getUserCredits', {
@@ -352,11 +350,11 @@ export const getUserCredits = async (
   }
 }
 
-export const addUserCredits = async (
+export async function addUserCredits(
   uid: string | null | undefined,
   amount: number,
   paymentRef: string | null = null,
-): Promise<void> => {
+): Promise<void> {
   if (!uid) return
   try {
     await getConvexClient().mutation('billing:addUserCredits', {
@@ -369,9 +367,9 @@ export const addUserCredits = async (
   }
 }
 
-export const consumeUserCredit = async (
+export async function consumeUserCredit(
   uid: string | null | undefined,
-): Promise<boolean> => {
+): Promise<boolean> {
   if (!uid) return false
   try {
     return await getConvexClient().mutation('billing:consumeUserCredit', {
@@ -386,9 +384,9 @@ export const consumeUserCredit = async (
   }
 }
 
-export const zeroUserCredits = async (
+export async function zeroUserCredits(
   uid: string | null | undefined,
-): Promise<void> => {
+): Promise<void> {
   if (!uid) return
   try {
     await getConvexClient().mutation('billing:zeroUserCredits', { userId: uid })
@@ -407,9 +405,9 @@ type ExportZipAccess = {
 
 type Session = { id?: string; userId?: string | null }
 
-const resolveExportZipAccess = async (
+async function resolveExportZipAccess(
   session: Session | null | undefined,
-): Promise<ExportZipAccess> => {
+): Promise<ExportZipAccess> {
   if (PAYWALL_DISABLED) {
     return {
       canDownload: true,
@@ -469,11 +467,11 @@ const resolveExportZipAccess = async (
   }
 }
 
-const logExportAccessDebug = (
+function logExportAccessDebug(
   session: Session | null | undefined,
   target: string | null | undefined,
   payload: Record<string, unknown>,
-): void => {
+): void {
   if (process.env.NODE_ENV !== 'development') return
   const uid = session?.userId
   console.log(
@@ -487,10 +485,10 @@ const logExportAccessDebug = (
   )
 }
 
-export const getDownloadAccessDecision = async (
+export async function getDownloadAccessDecision(
   session: Session | null | undefined,
   target: string | null | undefined,
-) => {
+) {
   if (PAYWALL_DISABLED) {
     logExportAccessDebug(session, target, {
       allowed: true,
@@ -542,10 +540,10 @@ export const getDownloadAccessDecision = async (
   }
 }
 
-export const decorateExportTargetsForRequest = async (
+export async function decorateExportTargetsForRequest(
   session: Session | null | undefined,
   targets: Record<string, unknown>[],
-) => {
+) {
   if (PAYWALL_DISABLED) {
     return targets.map((targetEntry) => ({
       ...targetEntry,
@@ -573,10 +571,10 @@ type PaymentDetailsOptions = {
   headers?: Record<string, string | undefined>
 }
 
-export const getSessionPaymentDetails = async (
+export async function getSessionPaymentDetails(
   session: Session | null | undefined,
   options: PaymentDetailsOptions = {},
-) => {
+) {
   const { ip = null, countryCode = null, headers = {} } = options
   const resolvedCountry =
     countryCode || resolveCountryCodeFromHeaders(headers) || 'GLOBAL'

@@ -90,39 +90,45 @@ type WebhookOptions = {
   fetch?: FetchLike
 }
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const createClient = (clientOverride?: CommerceApiClient): CommerceApiClient =>
-  clientOverride ?? createRuntimeConvexHttpClient()
+function createClient(clientOverride?: CommerceApiClient): CommerceApiClient {
+  return clientOverride ?? createRuntimeConvexHttpClient()
+}
 
-const trim = (value: string | undefined): string | undefined => {
+function trim(value: string | undefined): string | undefined {
   const trimmed = value?.trim()
   return trimmed ? trimmed : undefined
 }
 
-const normalizeBackendUrl = (backendUrl: string): string =>
-  backendUrl.replace(/\/+$/, '')
+function normalizeBackendUrl(backendUrl: string): string {
+  return backendUrl.replace(/\/+$/, '')
+}
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-const stringValue = (value: unknown): string | undefined =>
-  typeof value === 'string' && value.trim() ? value.trim() : undefined
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
 
-const numberValue = (value: unknown): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) ? value : undefined
+function numberValue(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
 
-const interpolateTenantTemplate = (
+function interpolateTenantTemplate(
   template: string,
   deploymentSlug: string,
-): string => {
+): string {
   const encodedSlug = encodeURIComponent(deploymentSlug)
   return template
     .replaceAll('{deploymentSlug}', encodedSlug)
@@ -130,12 +136,12 @@ const interpolateTenantTemplate = (
     .replaceAll('{tenantId}', encodedSlug)
 }
 
-const readTenantEnvValue = (
+function readTenantEnvValue(
   env: MedusaEnv,
   deploymentSlug: string,
   templateKey: string,
   valueKey: string,
-): string | undefined => {
+): string | undefined {
   const template = trim(env[templateKey])
   if (template !== undefined) {
     return interpolateTenantTemplate(template, deploymentSlug)
@@ -143,35 +149,39 @@ const readTenantEnvValue = (
   return trim(env[valueKey])
 }
 
-const errorCodeValue = (error: unknown): string | undefined => {
+function errorCodeValue(error: unknown): string | undefined {
   if (!isRecord(error) || !isRecord(error.data)) return undefined
   return stringValue(error.data.code)
 }
 
-const isAccessDeniedError = (error: unknown): boolean => {
+function isAccessDeniedError(error: unknown): boolean {
   const code = errorCodeValue(error)
   return code === 'AUTH_REQUIRED' || code === 'FORBIDDEN'
 }
 
-const isNotFoundError = (error: unknown): boolean =>
-  errorCodeValue(error) === 'NOT_FOUND'
+function isNotFoundError(error: unknown): boolean {
+  return errorCodeValue(error) === 'NOT_FOUND'
+}
 
-const readJsonBody = async (
+async function readJsonBody(
   request: Request,
-): Promise<Record<string, unknown>> => {
+): Promise<Record<string, unknown>> {
   const text = await request.text()
   if (!text.trim()) return {}
   const parsed = JSON.parse(text) as unknown
   return isRecord(parsed) ? parsed : {}
 }
 
-const createWebhookSecret = (): string =>
-  globalThis.crypto?.randomUUID?.() ??
-  `medusa-webhook-${Date.now()}-${Math.random().toString(16).slice(2)}`
+function createWebhookSecret(): string {
+  return (
+    globalThis.crypto?.randomUUID?.() ??
+    `medusa-webhook-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  )
+}
 
-const generatedProductValue = (
+function generatedProductValue(
   value: unknown,
-): GeneratedCommerceProduct | undefined => {
+): GeneratedCommerceProduct | undefined {
   if (!isRecord(value)) return undefined
 
   const title = stringValue(value.title)
@@ -189,9 +199,9 @@ const generatedProductValue = (
   }
 }
 
-const readGeneratedProducts = (
+function readGeneratedProducts(
   body: Record<string, unknown>,
-): Array<GeneratedCommerceProduct> => {
+): Array<GeneratedCommerceProduct> {
   const products = body.products
   if (!Array.isArray(products)) return []
   return products
@@ -200,65 +210,70 @@ const readGeneratedProducts = (
     .slice(0, 25)
 }
 
-const publicTenantConfig = (
+function publicTenantConfig(
   tenant: CommerceTenantConfig,
-): CommerceTenantConfig => ({
-  tenantId: tenant.tenantId,
-  deploymentId: tenant.deploymentId,
-  deploymentSlug: tenant.deploymentSlug,
-  sessionId: tenant.sessionId,
-  provider: tenant.provider,
-  providerTenantId: tenant.providerTenantId,
-  status: tenant.status,
-  syncStatus: tenant.syncStatus,
-  backendUrl: tenant.backendUrl,
-  adminUrl: tenant.adminUrl,
-  storefrontUrl: tenant.storefrontUrl,
-  publishableKey: tenant.publishableKey,
-  productCount: tenant.productCount,
-  lastPullAt: tenant.lastPullAt,
-  lastWebhookAt: tenant.lastWebhookAt,
-  lastHealthCheckAt: tenant.lastHealthCheckAt,
-  errorMessage: tenant.errorMessage,
-  createdAt: tenant.createdAt,
-  updatedAt: tenant.updatedAt,
-})
+): CommerceTenantConfig {
+  return {
+    tenantId: tenant.tenantId,
+    deploymentId: tenant.deploymentId,
+    deploymentSlug: tenant.deploymentSlug,
+    sessionId: tenant.sessionId,
+    provider: tenant.provider,
+    providerTenantId: tenant.providerTenantId,
+    status: tenant.status,
+    syncStatus: tenant.syncStatus,
+    backendUrl: tenant.backendUrl,
+    adminUrl: tenant.adminUrl,
+    storefrontUrl: tenant.storefrontUrl,
+    publishableKey: tenant.publishableKey,
+    productCount: tenant.productCount,
+    lastPullAt: tenant.lastPullAt,
+    lastWebhookAt: tenant.lastWebhookAt,
+    lastHealthCheckAt: tenant.lastHealthCheckAt,
+    errorMessage: tenant.errorMessage,
+    createdAt: tenant.createdAt,
+    updatedAt: tenant.updatedAt,
+  }
+}
 
-const loadTenantConfig = async (
+async function loadTenantConfig(
   deploymentSlug: string,
   clientOverride?: CommerceApiClient,
-): Promise<CommerceTenantConfig | null> =>
-  (await createClient(clientOverride).query(
+): Promise<CommerceTenantConfig | null> {
+  return (await createClient(clientOverride).query(
     api.sessions.getCommerceTenantByDeploymentSlug,
     { deploymentSlug },
   )) as CommerceTenantConfig | null
+}
 
-const loadOwnedTenantConfig = async (
+async function loadOwnedTenantConfig(
   deploymentSlug: string,
   anonymousOwnerSecret: string | undefined,
   clientOverride?: CommerceApiClient,
-): Promise<CommerceTenantConfig | null> =>
-  (await createClient(clientOverride).query(
+): Promise<CommerceTenantConfig | null> {
+  return (await createClient(clientOverride).query(
     api.sessions.getOwnedCommerceTenantByDeploymentSlug,
     { anonymousOwnerSecret, deploymentSlug },
   )) as CommerceTenantConfig | null
+}
 
-const loadWebhookTenantConfig = async (
+async function loadWebhookTenantConfig(
   deploymentSlug: string,
   webhookSecret: string | undefined,
   clientOverride?: CommerceApiClient,
-): Promise<CommerceTenantConfig | null> =>
-  (await createClient(clientOverride).query(
+): Promise<CommerceTenantConfig | null> {
+  return (await createClient(clientOverride).query(
     api.sessions.getCommerceTenantByDeploymentSlugForWebhook,
     { deploymentSlug, webhookSecret },
   )) as CommerceTenantConfig | null
+}
 
-const loadPullTenantConfig = async (
+async function loadPullTenantConfig(
   deploymentSlug: string,
   options: PullOptions,
   clientOverride?: CommerceApiClient,
-): Promise<CommerceTenantConfig | null> =>
-  options.source === 'manual'
+): Promise<CommerceTenantConfig | null> {
+  return options.source === 'manual'
     ? await loadOwnedTenantConfig(
         deploymentSlug,
         options.anonymousOwnerSecret,
@@ -269,15 +284,17 @@ const loadPullTenantConfig = async (
         options.webhookSecret,
         clientOverride,
       )
+}
 
-const accessDeniedStatusFor = (source: PullSource): number =>
-  source === 'webhook' ? 401 : 403
+function accessDeniedStatusFor(source: PullSource): number {
+  return source === 'webhook' ? 401 : 403
+}
 
-const createAccessDeniedPullResponse = (
+function createAccessDeniedPullResponse(
   deploymentSlug: string,
   source: PullSource,
-) =>
-  json(
+) {
+  return json(
     {
       deploymentSlug,
       error: 'Commerce tenant access denied.',
@@ -285,17 +302,19 @@ const createAccessDeniedPullResponse = (
     },
     { status: accessDeniedStatusFor(source) },
   )
+}
 
-const createAccessDeniedProvisionResponse = (deploymentSlug: string) =>
-  json(
+function createAccessDeniedProvisionResponse(deploymentSlug: string) {
+  return json(
     {
       deploymentSlug,
       error: 'Commerce tenant access denied.',
     },
     { status: 403 },
   )
+}
 
-const readDefaultRegionId = async ({
+async function readDefaultRegionId({
   backendUrl,
   fetchImpl,
   publishableKey,
@@ -303,7 +322,7 @@ const readDefaultRegionId = async ({
   backendUrl: string
   fetchImpl: FetchLike
   publishableKey: string
-}): Promise<string | undefined> => {
+}): Promise<string | undefined> {
   const response = await fetchImpl(`${backendUrl}/store/regions`, {
     headers: { 'x-publishable-api-key': publishableKey },
   })
@@ -318,9 +337,10 @@ const readDefaultRegionId = async ({
   return region?.id
 }
 
-const readProductPrice = (
-  product: Record<string, unknown>,
-): { currencyCode?: string; price?: number } => {
+function readProductPrice(product: Record<string, unknown>): {
+  currencyCode?: string
+  price?: number
+} {
   const variants = Array.isArray(product.variants) ? product.variants : []
   for (const variant of variants) {
     if (!isRecord(variant)) continue
@@ -339,9 +359,7 @@ const readProductPrice = (
   return {}
 }
 
-const normalizeTenantProduct = (
-  value: unknown,
-): DeploymentProduct | undefined => {
+function normalizeTenantProduct(value: unknown): DeploymentProduct | undefined {
   if (!isRecord(value)) return undefined
 
   const title = stringValue(value.title)
@@ -358,13 +376,13 @@ const normalizeTenantProduct = (
   }
 }
 
-const readTenantProducts = async ({
+async function readTenantProducts({
   fetchImpl,
   tenant,
 }: {
   fetchImpl: FetchLike
   tenant: CommerceTenantConfig
-}): Promise<Array<DeploymentProduct>> => {
+}): Promise<Array<DeploymentProduct>> {
   const publishableKey = trim(tenant.publishableKey)
   if (publishableKey === undefined) {
     throw new Error('Medusa tenant publishable key is not configured.')
@@ -403,10 +421,10 @@ const readTenantProducts = async ({
     .filter((product) => product !== undefined)
 }
 
-const externalProvisionResultValue = (
+function externalProvisionResultValue(
   value: unknown,
   deploymentSlug: string,
-): MedusaTenantProvisionResult | undefined => {
+): MedusaTenantProvisionResult | undefined {
   if (!isRecord(value)) return undefined
 
   const backendUrl = stringValue(value.backendUrl)
@@ -427,7 +445,7 @@ const externalProvisionResultValue = (
   }
 }
 
-const provisionExternalMedusaTenant = async ({
+async function provisionExternalMedusaTenant({
   deploymentSlug,
   fetchImpl,
   provisionToken,
@@ -437,7 +455,7 @@ const provisionExternalMedusaTenant = async ({
   fetchImpl: FetchLike
   provisionToken?: string
   provisionUrl: string
-}): Promise<MedusaTenantProvisionResult> => {
+}): Promise<MedusaTenantProvisionResult> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   }
@@ -466,87 +484,89 @@ const provisionExternalMedusaTenant = async ({
   return result
 }
 
-export const createConfiguredMedusaTenantProvisioner = (
+export function createConfiguredMedusaTenantProvisioner(
   env: MedusaEnv = {},
-): MedusaTenantProvisioner => ({
-  provision: async ({ deploymentSlug, fetch: fetchImpl }) => {
-    const provisionUrl = trim(env.MEDUSA_TENANT_PROVISION_URL)
-    if (provisionUrl !== undefined) {
-      return await provisionExternalMedusaTenant({
+): MedusaTenantProvisioner {
+  return {
+    provision: async ({ deploymentSlug, fetch: fetchImpl }) => {
+      const provisionUrl = trim(env.MEDUSA_TENANT_PROVISION_URL)
+      if (provisionUrl !== undefined) {
+        return await provisionExternalMedusaTenant({
+          deploymentSlug,
+          fetchImpl: fetchImpl ?? fetch,
+          provisionToken: trim(env.MEDUSA_TENANT_PROVISION_TOKEN),
+          provisionUrl,
+        })
+      }
+
+      const backendUrl = readTenantEnvValue(
+        env,
         deploymentSlug,
-        fetchImpl: fetchImpl ?? fetch,
-        provisionToken: trim(env.MEDUSA_TENANT_PROVISION_TOKEN),
-        provisionUrl,
-      })
-    }
+        'MEDUSA_TENANT_BACKEND_URL_TEMPLATE',
+        'MEDUSA_TENANT_BACKEND_URL',
+      )
+      const adminUrl = readTenantEnvValue(
+        env,
+        deploymentSlug,
+        'MEDUSA_TENANT_ADMIN_URL_TEMPLATE',
+        'MEDUSA_TENANT_ADMIN_URL',
+      )
+      const storefrontUrl = readTenantEnvValue(
+        env,
+        deploymentSlug,
+        'MEDUSA_TENANT_STOREFRONT_URL_TEMPLATE',
+        'MEDUSA_TENANT_STOREFRONT_URL',
+      )
 
-    const backendUrl = readTenantEnvValue(
-      env,
-      deploymentSlug,
-      'MEDUSA_TENANT_BACKEND_URL_TEMPLATE',
-      'MEDUSA_TENANT_BACKEND_URL',
-    )
-    const adminUrl = readTenantEnvValue(
-      env,
-      deploymentSlug,
-      'MEDUSA_TENANT_ADMIN_URL_TEMPLATE',
-      'MEDUSA_TENANT_ADMIN_URL',
-    )
-    const storefrontUrl = readTenantEnvValue(
-      env,
-      deploymentSlug,
-      'MEDUSA_TENANT_STOREFRONT_URL_TEMPLATE',
-      'MEDUSA_TENANT_STOREFRONT_URL',
-    )
+      if (
+        backendUrl === undefined ||
+        adminUrl === undefined ||
+        storefrontUrl === undefined
+      ) {
+        throw new Error('Configured Medusa tenant URLs are not available.')
+      }
 
-    if (
-      backendUrl === undefined ||
-      adminUrl === undefined ||
-      storefrontUrl === undefined
-    ) {
-      throw new Error('Configured Medusa tenant URLs are not available.')
-    }
-
-    return {
-      adminUrl,
-      backendUrl,
-      databaseRef: trim(env.MEDUSA_TENANT_DATABASE_REF),
-      provider: 'configured-medusa',
-      providerTenantId: deploymentSlug,
-      publishableKey: trim(env.MEDUSA_TENANT_PUBLISHABLE_KEY),
-      secretRef: trim(env.MEDUSA_TENANT_SECRET_REF),
-      storefrontUrl,
-      webhookSecret: trim(env.MEDUSA_TENANT_WEBHOOK_SECRET),
-    }
-  },
-  syncInitialProducts: async ({
-    deploymentSlug,
-    fetch: fetchImpl,
-    products,
-    tenant,
-  }) => {
-    if (products.length === 0) return { synced: 0 }
-    const result = await syncGeneratedProductsToMedusa({
-      adminApiToken: getMedusaAdminApiToken(env, {}),
-      adminEmail: getMedusaAdminEmail(env, {}),
-      adminPassword: getMedusaAdminPassword(env, {}),
-      backendUrl: tenant.backendUrl,
+      return {
+        adminUrl,
+        backendUrl,
+        databaseRef: trim(env.MEDUSA_TENANT_DATABASE_REF),
+        provider: 'configured-medusa',
+        providerTenantId: deploymentSlug,
+        publishableKey: trim(env.MEDUSA_TENANT_PUBLISHABLE_KEY),
+        secretRef: trim(env.MEDUSA_TENANT_SECRET_REF),
+        storefrontUrl,
+        webhookSecret: trim(env.MEDUSA_TENANT_WEBHOOK_SECRET),
+      }
+    },
+    syncInitialProducts: async ({
+      deploymentSlug,
       fetch: fetchImpl,
       products,
-      sessionId: deploymentSlug,
-    })
+      tenant,
+    }) => {
+      if (products.length === 0) return { synced: 0 }
+      const result = await syncGeneratedProductsToMedusa({
+        adminApiToken: getMedusaAdminApiToken(env, {}),
+        adminEmail: getMedusaAdminEmail(env, {}),
+        adminPassword: getMedusaAdminPassword(env, {}),
+        backendUrl: tenant.backendUrl,
+        fetch: fetchImpl,
+        products,
+        sessionId: deploymentSlug,
+      })
 
-    return {
-      publishableKey: result.tenant?.publishableKey,
-      synced: result.synced,
-    }
-  },
-})
+      return {
+        publishableKey: result.tenant?.publishableKey,
+        synced: result.synced,
+      }
+    },
+  }
+}
 
-export const createDeploymentMedusaConfigResponse = async (
+export async function createDeploymentMedusaConfigResponse(
   deploymentSlug: string,
   clientOverride?: CommerceApiClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const config = await loadTenantConfig(deploymentSlug, clientOverride)
 
@@ -563,14 +583,14 @@ export const createDeploymentMedusaConfigResponse = async (
   }
 }
 
-export const createDeploymentMedusaProvisionResponse = async (
+export async function createDeploymentMedusaProvisionResponse(
   deploymentSlug: string,
   request: Request,
   clientOverride?: CommerceApiClient,
   provisioner: MedusaTenantProvisioner = createConfiguredMedusaTenantProvisioner(
     process.env,
   ),
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const body = await readJsonBody(request)
     const anonymousOwnerSecret = stringValue(body.anonymousOwnerSecret)
@@ -643,11 +663,11 @@ export const createDeploymentMedusaProvisionResponse = async (
   }
 }
 
-export const createDeploymentMedusaProductsResponse = async (
+export async function createDeploymentMedusaProductsResponse(
   deploymentSlug: string,
   options: { fetch?: FetchLike } = {},
   clientOverride?: CommerceApiClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const tenant = await loadTenantConfig(deploymentSlug, clientOverride)
     if (tenant === null || tenant.status !== 'ready') {
@@ -676,11 +696,11 @@ export const createDeploymentMedusaProductsResponse = async (
   }
 }
 
-export const createDeploymentMedusaPullResponse = async (
+export async function createDeploymentMedusaPullResponse(
   deploymentSlug: string,
   options: PullOptions,
   clientOverride?: CommerceApiClient,
-): Promise<Response> => {
+): Promise<Response> {
   let tenant: CommerceTenantConfig | null
 
   try {
@@ -754,12 +774,12 @@ export const createDeploymentMedusaPullResponse = async (
   }
 }
 
-export const createDeploymentMedusaWebhookResponse = async (
+export async function createDeploymentMedusaWebhookResponse(
   deploymentSlug: string,
   request: Request,
   clientOverride?: CommerceApiClient,
   options: WebhookOptions = {},
-): Promise<Response> => {
+): Promise<Response> {
   const expectedSecret = trim(options.env?.MEDUSA_WEBHOOK_SECRET)
   const receivedSecret = trim(
     request.headers.get('x-ship-fast-commerce-webhook-secret') ?? undefined,

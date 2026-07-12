@@ -33,14 +33,15 @@ type CommerceHandoff = {
 
 const minimumTransformMs = 1800
 
-const wait = (ms: number) =>
-  new Promise((resolve) => window.setTimeout(resolve, ms))
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
 
 const medusaStoreApiUnavailableWarning = 'Medusa Store API is unavailable.'
 
-const normalizeCommerceWarning = (
+function normalizeCommerceWarning(
   warning: string | undefined,
-): string | undefined => {
+): string | undefined {
   const normalized = warning?.trim()
   if (!normalized) return undefined
   return /^Medusa Store API is unavailable:/i.test(normalized)
@@ -48,9 +49,9 @@ const normalizeCommerceWarning = (
     : normalized
 }
 
-const readCommerceWarning = (
+function readCommerceWarning(
   configJson: string | undefined,
-): string | undefined => {
+): string | undefined {
   if (!configJson?.trim()) return undefined
   try {
     const parsed = JSON.parse(configJson) as unknown
@@ -65,11 +66,11 @@ const readCommerceWarning = (
   }
 }
 
-const createPersistedCommerceHandoff = (
+function createPersistedCommerceHandoff(
   sessionId: string,
   config: CommerceConfig | null | undefined,
   warning?: string,
-): CommerceHandoff | undefined => {
+): CommerceHandoff | undefined {
   if (config?.status !== 'ready' || !config.adminUrl || !config.storefrontUrl) {
     return undefined
   }
@@ -89,12 +90,12 @@ const createPersistedCommerceHandoff = (
   }
 }
 
-export const CommercePanel = ({
+export function CommercePanel({
   sessionId,
   onTransformingChange,
   visualProductCount,
   visualProducts = [],
-}: CommercePanelProps) => {
+}: CommercePanelProps) {
   const {
     commerceError,
     commerceHandoff,

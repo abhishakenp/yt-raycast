@@ -35,7 +35,7 @@ type UseReferralStatus = {
   reload: () => Promise<void>
 }
 
-export const useReferralStatus = (): UseReferralStatus => {
+export function useReferralStatus(): UseReferralStatus {
   const [status, setStatus] = useState<ReferralStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

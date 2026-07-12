@@ -31,7 +31,7 @@ vi.mock('../hooks/useSectionCapsuleActions', () => ({
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }: { children: React.ReactNode }) =>
+  LakebedSessionProvider: ({ children }) =>
     createElement('div', { 'data-testid': 'provider' }, children),
 }))
 
@@ -59,13 +59,11 @@ vi.mock('../../../../convex/_generated/api', () => ({
 
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: vi.fn(async () => []),
-  buildBackgroundImageUrl: (
-    r: { baseUrl?: string; imageUrl: string },
-    res: string,
-  ) => (r.baseUrl ? `${r.baseUrl}?res=${res}` : r.imageUrl),
+  buildBackgroundImageUrl: (r, res) =>
+    r.baseUrl ? `${r.baseUrl}?res=${res}` : r.imageUrl,
 }))
 vi.mock('@/lib/image-context', () => ({
-  generateContextAwareQuery: vi.fn((alt: string) => alt),
+  generateContextAwareQuery: vi.fn((alt) => alt),
 }))
 vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: vi.fn(() => undefined),
@@ -98,31 +96,31 @@ vi.mock('#/components/ui/alert-dialog', () => {
     open: false,
     setOpen: () => {},
   })
-  const AlertDialog = ({ children, open, onOpenChange }: any) =>
+  const AlertDialog = ({ children, open, onOpenChange }) =>
     React.createElement(
       Ctx.Provider,
       { value: { open, setOpen: onOpenChange } },
       children,
     )
-  const AlertDialogTrigger = ({ children }: any) =>
+  const AlertDialogTrigger = ({ children }) =>
     React.createElement('button', { type: 'button' }, children)
-  const AlertDialogContent = ({ children }: any) => {
+  const AlertDialogContent = ({ children }) => {
     const { open } = React.useContext(Ctx)
     return open
       ? React.createElement('div', { role: 'alertdialog' }, children)
       : null
   }
-  const AlertDialogHeader = ({ children }: any) =>
+  const AlertDialogHeader = ({ children }) =>
     React.createElement('div', null, children)
-  const AlertDialogFooter = ({ children }: any) =>
+  const AlertDialogFooter = ({ children }) =>
     React.createElement('div', null, children)
-  const AlertDialogTitle = ({ children }: any) =>
+  const AlertDialogTitle = ({ children }) =>
     React.createElement('h2', null, children)
-  const AlertDialogDescription = ({ children }: any) =>
+  const AlertDialogDescription = ({ children }) =>
     React.createElement('p', null, children)
-  const AlertDialogCancel = ({ children }: any) =>
+  const AlertDialogCancel = ({ children }) =>
     React.createElement('button', { type: 'button' }, children)
-  const AlertDialogAction = ({ children, onClick }: any) =>
+  const AlertDialogAction = ({ children, onClick }) =>
     React.createElement('button', { type: 'button', onClick }, children)
   return {
     AlertDialog,
@@ -140,21 +138,21 @@ vi.mock('#/components/ui/alert-dialog', () => {
 // Radix Select → native select
 vi.mock('#/components/ui/select', () => {
   const React = require('react') as typeof import('react')
-  const SelectContent = ({ children }: any) => children
-  const Select = ({ value, onValueChange, children }: any) =>
+  const SelectContent = ({ children }) => children
+  const Select = ({ value, onValueChange, children }) =>
     React.createElement(
       'select',
-      { value, onChange: (e: any) => onValueChange?.(e.target.value) },
+      { value, onChange: (e) => onValueChange?.(e.target.value) },
       children,
     )
-  const SelectTrigger = ({ children }: any) =>
+  const SelectTrigger = ({ children }) =>
     React.createElement('div', null, children)
-  const SelectValue = ({ placeholder }: any) =>
+  const SelectValue = ({ placeholder }) =>
     React.createElement('span', null, placeholder)
-  const SelectItem = ({ value, children }: any) =>
+  const SelectItem = ({ value, children }) =>
     React.createElement('option', { value }, children)
-  const SelectGroup = ({ children }: any) => children
-  const SelectLabel = ({ children }: any) => children
+  const SelectGroup = ({ children }) => children
+  const SelectLabel = ({ children }) => children
   const SelectScrollUpButton = () => null
   const SelectScrollDownButton = () => null
   return {
@@ -177,13 +175,13 @@ vi.mock('#/components/ui/toggle-group', () => {
     value: string | undefined
     onValueChange: ((v: string) => void) | undefined
   }>({ value: undefined, onValueChange: undefined })
-  const ToggleGroup = ({ value, onValueChange, children }: any) =>
+  const ToggleGroup = ({ value, onValueChange, children }) =>
     React.createElement(
       ToggleGroupContext.Provider,
       { value: { value, onValueChange } },
       children,
     )
-  const ToggleGroupItem = ({ value, children, pressed }: any) =>
+  const ToggleGroupItem = ({ value, children, pressed }) =>
     React.createElement(
       'button',
       { type: 'button', 'data-value': value, 'aria-pressed': pressed },
@@ -193,30 +191,29 @@ vi.mock('#/components/ui/toggle-group', () => {
 })
 
 vi.mock('#/components/ui/tooltip', () => ({
-  Tooltip: ({ children }: any) => children,
-  TooltipTrigger: ({ children }: any) => children,
-  TooltipContent: ({ children }: any) =>
+  Tooltip: ({ children }) => children,
+  TooltipTrigger: ({ children }) => children,
+  TooltipContent: ({ children }) =>
     createElement('span', { 'data-testid': 'tooltip' }, children),
-  TooltipProvider: ({ children }: any) => children,
+  TooltipProvider: ({ children }) => children,
 }))
 
 vi.mock('#/components/ui/button', () => ({
-  Button: ({ children, ...props }: any) =>
-    createElement('button', props, children),
+  Button: ({ children, ...props }) => createElement('button', props, children),
 }))
 
 vi.mock('#/components/ui/input-group', () => ({
-  InputGroup: ({ children }: any) => createElement('div', null, children),
-  InputGroupAddon: ({ children }: any) => createElement('div', null, children),
-  InputGroupInput: (props: any) => createElement('input', props),
-  InputGroupText: ({ children }: any) => createElement('span', null, children),
+  InputGroup: ({ children }) => createElement('div', null, children),
+  InputGroupAddon: ({ children }) => createElement('div', null, children),
+  InputGroupInput: (props) => createElement('input', props),
+  InputGroupText: ({ children }) => createElement('span', null, children),
 }))
 
 vi.mock('#/components/ui/popover', () => ({
-  Popover: ({ children }: any) => children,
-  PopoverTrigger: ({ children }: any) => children,
-  PopoverContent: ({ children }: any) => createElement('div', null, children),
-  PopoverAnchor: ({ children }: any) => children,
+  Popover: ({ children }) => children,
+  PopoverTrigger: ({ children }) => children,
+  PopoverContent: ({ children }) => createElement('div', null, children),
+  PopoverAnchor: ({ children }) => children,
 }))
 
 vi.mock('#/components/ui/separator', () => ({

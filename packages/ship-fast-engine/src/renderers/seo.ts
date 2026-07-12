@@ -42,8 +42,8 @@ export function buildSitemapEntries(siteSpec: SiteSpecLike | null | undefined) {
     : new Date().toISOString()
 
   const pageEntries = (siteSpec?.pages || [])
-    .filter((page: SitePageLike) => page?.seo?.noIndex !== true)
-    .map((page: SitePageLike) =>
+    .filter((page) => page?.seo?.noIndex !== true)
+    .map((page) =>
       cleanObject({
         url: joinUrl(siteUrl, page.route || '/'),
         lastModified,
@@ -53,9 +53,9 @@ export function buildSitemapEntries(siteSpec: SiteSpecLike | null | undefined) {
     )
 
   const pages = siteSpec?.pages || []
-  const hasRoute = (path: string) => {
+  const hasRoute = (path) => {
     const n = normalizePath(path)
-    return pages.some((p: SitePageLike) => normalizePath(p?.route) === n)
+    return pages.some((p) => normalizePath(p?.route) === n)
   }
 
   if (siteSpec?.siteType === 'ecommerce') {

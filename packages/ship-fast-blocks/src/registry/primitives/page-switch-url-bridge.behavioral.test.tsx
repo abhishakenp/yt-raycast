@@ -14,9 +14,9 @@ vi.mock('@openuidev/react-lang', async (importOriginal) => {
   const { useState, useCallback } = await import('react')
   return {
     ...actual,
-    useStateField: (_key: string, initial: string) => {
+    useStateField: (_key, initial) => {
       const [value, setValue] = useState(initial)
-      const stableSetValue = useCallback((next: string) => {
+      const stableSetValue = useCallback((next) => {
         setValue(next)
         openUiState.setValue(next)
       }, [])
@@ -36,15 +36,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
 // Mock defineCapsule to bypass lakebed client creation (which needs Convex).
 // We only need the component function for these tests.
 vi.mock('#/capsules/openui.ts', () => ({
-  defineCapsule: (config: {
-    name: string
-    description: string
-    props: unknown
-    component: (input: {
-      props: Record<string, unknown>
-      renderNode: (node: unknown) => ReactNode
-    }) => ReactNode
-  }) => ({
+  defineCapsule: (config) => ({
     name: config.name,
     description: config.description,
     props: config.props,
@@ -58,7 +50,7 @@ import type { PreviewUrlBridgeValue } from '#/lib/preview-url-bridge.tsx'
 
 import { PageSwitch } from './page-switch.tsx'
 
-const renderNode = (node: unknown): ReactNode => {
+function renderNode(node: unknown): ReactNode {
   if (
     node !== null &&
     typeof node === 'object' &&
@@ -74,11 +66,13 @@ const renderNode = (node: unknown): ReactNode => {
   return null
 }
 
-const makePageNode = (label: string) => ({
-  type: 'element',
-  typeName: label,
-  props: {},
-})
+function makePageNode(label: string) {
+  return {
+    type: 'element',
+    typeName: label,
+    props: {},
+  }
+}
 
 function PageSwitchHost({
   routes,

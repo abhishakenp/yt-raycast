@@ -36,7 +36,7 @@ interface CloneEngine {
 
 // Dynamic import keeps the engine (playwright, provider SDKs) out of the route's
 // static module graph.
-const loadCloneEngine = async (): Promise<CloneEngine> => {
+async function loadCloneEngine(): Promise<CloneEngine> {
   const [
     { assertPublicUrl },
     { crawlSite, normalizeUrl },
@@ -98,17 +98,7 @@ export async function runCloneJob(input: {
   if (bearer) client.setAuth?.(bearer)
 
   const sid = sessionId as Id<'sessions'>
-  const writePage = (args: {
-    pathname: string
-    title?: string
-    html?: string
-    storageId?: Id<'_storage'>
-    isHome: boolean
-    failed: boolean
-    order: number
-    byteLength: number
-    truncated?: boolean
-  }) =>
+  const writePage = (args) =>
     client.mutation(api.sessions.writeClonePageDoc, {
       sessionId: sid,
       anonymousOwnerSecret,
@@ -122,16 +112,7 @@ export async function runCloneJob(input: {
   const STORAGE_THRESHOLD_BYTES = 900_000
 
   // Persist one self-contained page: inline html when small, else file storage.
-  const persistPage = async (page: {
-    pathname: string
-    title?: string
-    html: string
-    isHome: boolean
-    failed: boolean
-    order: number
-    byteLength: number
-    truncated?: boolean
-  }): Promise<void> => {
+  const persistPage = async (page) => {
     if (page.byteLength > STORAGE_THRESHOLD_BYTES) {
       const uploadUrl = await client.mutation(
         api.sessions.generateCloneUploadUrl,
@@ -179,8 +160,7 @@ export async function runCloneJob(input: {
 
     // The url we hand to capturePage must be a real, absolute url. crawlSite keys by
     // normalized url which IS absolute; for the seed-fallback use the raw seed.
-    const urlFor = (key: string, isHome: boolean): string =>
-      isHome && !pages.has(key) ? seedUrl : key
+    const urlFor = (key, isHome) => (isHome && !pages.has(key) ? seedUrl : key)
 
     // 2. Capture HOME FIRST (sequential), self-contain, write, finalize — so the
     //    preview paints the moment home lands, before the rest stream in.
@@ -254,7 +234,7 @@ export async function runCloneJob(input: {
     //    doc and never aborts the batch.
     const restKeys = orderedKeys.slice(1)
     let cursor = 0
-    const captureRest = async (): Promise<void> => {
+    const captureRest = async () => {
       while (!controller.signal.aborted) {
         const i = cursor++
         if (i >= restKeys.length) return

@@ -220,7 +220,7 @@ async function fetchHttpsFontBytesWithInsecureTls(
 
   return await new Promise<Buffer | null>((resolve) => {
     let settled = false
-    const finish = (value: Buffer | null) => {
+    const finish = (value) => {
       if (settled) return
       settled = true
       resolve(value)
@@ -244,7 +244,7 @@ async function fetchHttpsFontBytesWithInsecureTls(
         }
         const chunks: Buffer[] = []
         let total = 0
-        res.on('data', (chunk: Buffer) => {
+        res.on('data', (chunk) => {
           total += chunk.length
           if (total > MAX_FONT_BYTES) {
             req.destroy()

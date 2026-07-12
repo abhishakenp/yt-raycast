@@ -1,12 +1,13 @@
-const escapeHtml = (value: string): string =>
-  value
+function escapeHtml(value: string): string {
+  return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
+}
 
-export const buildOpenUiHandoffHtml = ({
+export function buildOpenUiHandoffHtml({
   source,
   locale,
   brand,
@@ -16,7 +17,8 @@ export const buildOpenUiHandoffHtml = ({
   locale: string
   brand: string
   prompt: string
-}): string => `<!doctype html>
+}): string {
+  return `<!doctype html>
 <html lang="${escapeHtml(locale)}">
 <head>
   <meta charset="utf-8" />
@@ -35,3 +37,4 @@ export const buildOpenUiHandoffHtml = ({
   <script type="application/json" id="ship-fast-openui-source">${escapeHtml(JSON.stringify(source))}</script>
 </body>
 </html>`
+}

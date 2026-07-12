@@ -77,34 +77,36 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
 // so commerce helper logic can be exercised without hashing owner secrets.
 vi.mock('../../../convex/lib/session_access_helpers', () => ({
   assertCanMutateSession: vi.fn(async () => undefined),
-  hashOwnerSecret: vi.fn(async (secret: string) => `hash:${secret}`),
+  hashOwnerSecret: vi.fn(async (secret) => `hash:${secret}`),
 }))
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-const okResponse = (body: unknown): Response =>
-  ({
+function okResponse(body: unknown): Response {
+  return {
     ok: true,
     json: async () => body,
-  }) as Response
+  } as Response
+}
 
-const errorResponse = (body: unknown): Response =>
-  ({
+function errorResponse(body: unknown): Response {
+  return {
     ok: false,
     json: async () => body,
-  }) as Response
+  } as Response
+}
 
 type CommerceConfigDoc = Doc<'commerceConfigs'>
 
 const sessionId = 'session_edge' as Id<'sessions'>
 const configId = 'commerce_config_edge' as Id<'commerceConfigs'>
 
-const commerceDoc = (
+function commerceDoc(
   overrides: Partial<CommerceConfigDoc> = {},
-): CommerceConfigDoc =>
-  ({
+): CommerceConfigDoc {
+  return {
     _id: configId,
     _creationTime: 1,
     sessionId,
@@ -116,14 +118,15 @@ const commerceDoc = (
     createdAt: 100,
     updatedAt: 100,
     ...overrides,
-  }) as CommerceConfigDoc
+  } as CommerceConfigDoc
+}
 
 type CtxOptions = {
   session?: Doc<'sessions'> | null
   configs?: CommerceConfigDoc[]
 }
 
-const ctxFor = (options: CtxOptions = {}) => {
+function ctxFor(options: CtxOptions = {}) {
   const session =
     options.session === undefined
       ? ({ _id: sessionId, _creationTime: 1 } as Doc<'sessions'>)
@@ -137,22 +140,14 @@ const ctxFor = (options: CtxOptions = {}) => {
 
   const ctx = {
     db: {
-      get: async (id: string) => {
+      get: async (id) => {
         if (id === sessionId) return session
         return configs.find((c) => c._id === id) ?? null
       },
-      query: (table: string) => {
+      query: (table) => {
         expect(table).toBe('commerceConfigs')
         return {
-          withIndex: (
-            indexName: string,
-            applyIndex: (index: {
-              eq: (
-                field: string,
-                value: unknown,
-              ) => { field: string; value: unknown }
-            }) => { field: string; value: unknown },
-          ) => {
+          withIndex: (indexName, applyIndex) => {
             expect(indexName).toBe('by_sessionId')
             const { field, value } = applyIndex({
               eq: (fieldName, fieldValue) => ({
@@ -168,7 +163,7 @@ const ctxFor = (options: CtxOptions = {}) => {
           },
         }
       },
-      insert: async (table: string, value: Record<string, unknown>) => {
+      insert: async (table, value) => {
         expect(table).toBe('commerceConfigs')
         const doc = {
           _id: `commerce_config_${configs.length + 1}` as Id<'commerceConfigs'>,
@@ -179,10 +174,7 @@ const ctxFor = (options: CtxOptions = {}) => {
         inserts.push(value)
         return doc._id
       },
-      patch: async (
-        id: Id<'commerceConfigs'>,
-        patch: Record<string, unknown>,
-      ) => {
+      patch: async (id, patch) => {
         const index = configs.findIndex((c) => c._id === id)
         expect(index).toBeGreaterThanOrEqual(0)
         configs[index] = { ...configs[index], ...patch } as CommerceConfigDoc
@@ -216,7 +208,7 @@ describe('CommercePanel edge cases (UI)', () => {
       )
     vi.stubGlobal(
       'fetch',
-      vi.fn((...args: unknown[]) => {
+      vi.fn((...args) => {
         void args
         return fetchState.impl?.()
       }),
@@ -482,7 +474,7 @@ describe('session commerce helpers edge cases (real functions)', () => {
 /* 11-18. medusa-preview-sync                                                 */
 /* -------------------------------------------------------------------------- */
 
-const makeProductDom = (html: string): HTMLElement => {
+function makeProductDom(html: string): HTMLElement {
   const container = document.createElement('div')
   container.innerHTML = html
   return container

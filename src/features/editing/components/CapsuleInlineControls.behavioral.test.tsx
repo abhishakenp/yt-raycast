@@ -21,7 +21,7 @@ vi.mock('../hooks/useSectionCapsuleActions', () => ({
 
 // Mock LakebedSessionProvider as a pass-through.
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }: { children: React.ReactNode }) =>
+  LakebedSessionProvider: ({ children }) =>
     createElement('div', { 'data-testid': 'provider' }, children),
 }))
 
@@ -36,11 +36,13 @@ import {
   type CapsuleInlineHandle,
 } from './CapsuleInlineControls'
 
-const makeHandleRef = (): MutableRefObject<CapsuleInlineHandle | null> => ({
-  current: null,
-})
+function makeHandleRef(): MutableRefObject<CapsuleInlineHandle | null> {
+  return {
+    current: null,
+  }
+}
 
-const makeCapsuleElementWithArticles = (labels: string[]) => {
+function makeCapsuleElementWithArticles(labels: string[]) {
   const section = document.createElement('section')
   const grid = document.createElement('div')
   for (const label of labels) {
@@ -53,10 +55,11 @@ const makeCapsuleElementWithArticles = (labels: string[]) => {
   return { section, grid }
 }
 
-const childTextOrder = (element: HTMLElement) =>
-  Array.from(element.children)
+function childTextOrder(element: HTMLElement) {
+  return Array.from(element.children)
     .map((child) => child.textContent)
     .join('|')
+}
 
 describe('CapsuleInlineControls', () => {
   beforeEach(() => {

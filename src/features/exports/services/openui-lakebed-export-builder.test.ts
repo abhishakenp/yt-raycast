@@ -34,18 +34,15 @@ afterEach(() => {
   }
 })
 
-const collectWindowRuntimeErrors = (dom: JSDOM) => {
+function collectWindowRuntimeErrors(dom: JSDOM) {
   const errors: unknown[] = []
 
-  dom.window.addEventListener('error', (event: ErrorEvent) => {
+  dom.window.addEventListener('error', (event) => {
     errors.push(event.error ?? event.message)
   })
-  dom.window.addEventListener(
-    'unhandledrejection',
-    (event: Event & { reason?: unknown }) => {
-      errors.push(event.reason ?? event)
-    },
-  )
+  dom.window.addEventListener('unhandledrejection', (event) => {
+    errors.push(event.reason ?? event)
+  })
 
   return errors
 }
@@ -55,16 +52,13 @@ const flushWindowPromises = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 }
 
-const flushDomEffects = async (dom: JSDOM) => {
+async function flushDomEffects(dom: JSDOM) {
   await flushWindowPromises()
   await new Promise((resolve) => dom.window.setTimeout(resolve, 10))
   await flushWindowPromises()
 }
 
-const writeProjectFiles = (
-  directory: string,
-  files: Record<string, string>,
-) => {
+function writeProjectFiles(directory: string, files: Record<string, string>) {
   for (const [path, source] of Object.entries(files)) {
     const absolutePath = join(directory, path)
     mkdirSync(join(absolutePath, '..'), { recursive: true })
@@ -72,10 +66,10 @@ const writeProjectFiles = (
   }
 }
 
-const renderLakebedClientEntryText = async (
+async function renderLakebedClientEntryText(
   files: Record<string, string>,
   entrySource: string,
-): Promise<string> => {
+): Promise<string> {
   const directory = mkdtempSync(join(tmpdir(), 'lakebed-client-runtime-'))
 
   try {
@@ -147,10 +141,10 @@ export function signOut() {}
   }
 }
 
-const renderLakebedClientEntryHtml = async (
+async function renderLakebedClientEntryHtml(
   files: Record<string, string>,
   entrySource: string,
-): Promise<{ errors: unknown[]; html: string; text: string }> => {
+): Promise<{ errors: unknown[]; html: string; text: string }> {
   const directory = mkdtempSync(join(tmpdir(), 'lakebed-client-html-'))
 
   try {
@@ -230,7 +224,7 @@ export function signOut() {}
   }
 }
 
-const evaluateLakebedServerCapsule = async (files: Record<string, string>) => {
+async function evaluateLakebedServerCapsule(files: Record<string, string>) {
   const directory = mkdtempSync(join(tmpdir(), 'lakebed-server-runtime-'))
 
   try {
@@ -300,10 +294,10 @@ export function mutation(handler) {
   }
 }
 
-const renderLakebedAppAtPath = async (
+async function renderLakebedAppAtPath(
   files: Record<string, string>,
   path: string,
-) => {
+) {
   const directory = mkdtempSync(join(tmpdir(), 'lakebed-app-runtime-'))
 
   try {
@@ -2036,7 +2030,7 @@ export const WebhookHero = defineCapsule({
       ],
     ])
     const requests: Array<{ init?: RequestInit; url: string }> = []
-    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+    globalThis.fetch = (async (url, init?) => {
       requests.push({ init, url: String(url) })
       const parsed = new URL(String(url))
       if (parsed.origin !== 'https://ship-fast.test') {
@@ -2164,7 +2158,7 @@ export const WebhookHero = defineCapsule({
     const stalePreviewImage =
       'https://images.pexels.com/photos/9999999/pexels-photo-9999999.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
     const requests: string[] = []
-    globalThis.fetch = (async (url: RequestInfo | URL) => {
+    globalThis.fetch = (async (url) => {
       requests.push(String(url))
       const parsed = new URL(String(url))
       const query = parsed.searchParams.get('query')
@@ -2232,7 +2226,7 @@ render(h(Image, {
   it('resolves missing generated image alts through Pexels at build time', async () => {
     process.env.PEXELS_API_KEY = 'pexels_test_key'
     const requests: string[] = []
-    globalThis.fetch = (async (url: RequestInfo | URL) => {
+    globalThis.fetch = (async (url) => {
       requests.push(String(url))
       return new Response(
         JSON.stringify({
@@ -2292,7 +2286,7 @@ render(h(Image, {
     delete process.env.PEXELS_API_KEY
     process.env.VITE_PEXELS_API_KEY = 'vite_pexels_test_key'
     const requests: Array<{ auth?: string; url: string }> = []
-    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+    globalThis.fetch = (async (url, init?) => {
       requests.push({
         auth: (init?.headers as Record<string, string> | undefined)
           ?.Authorization,

@@ -5,7 +5,7 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
-const createGeneratedSession = async (
+async function createGeneratedSession(
   t: ReturnType<typeof convexTest>,
   {
     prompt,
@@ -16,7 +16,7 @@ const createGeneratedSession = async (
     isPrivate?: boolean
     anonymousClientId: string
   },
-) => {
+) {
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
@@ -136,7 +136,7 @@ test("listOwnedSessions returns the caller's public AND private sessions (anonym
 test("listOwnedSessions returns the caller's sessions (signed-in owner) and excludes others", async () => {
   const t = convexTest(schema, modules)
   const ISS = 'https://clerk.test'
-  const asUser = (tt: typeof t, user: string) =>
+  const asUser = (tt, user) =>
     tt.withIdentity({
       tokenIdentifier: `${ISS}|${user}`,
       subject: user,
@@ -248,7 +248,7 @@ test('listOwnedSessions returns sessions sorted newest-first by createdAt', asyn
 test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed-in userId and skips already-owned', async () => {
   const t = convexTest(schema, modules)
   const ISS = 'https://clerk.test'
-  const asUser = (tt: typeof t, user: string) =>
+  const asUser = (tt, user) =>
     tt.withIdentity({
       tokenIdentifier: `${ISS}|${user}`,
       subject: user,

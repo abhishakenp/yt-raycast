@@ -12,9 +12,9 @@ export const EXPORT_PRETTIER_OPTIONS = {
   trailingComma: 'all' as const,
 }
 
-const parserForPath = (
+function parserForPath(
   path: string,
-): 'babel-ts' | 'babel' | 'json' | 'css' | 'markdown' | null => {
+): 'babel-ts' | 'babel' | 'json' | 'css' | 'markdown' | null {
   if (path.endsWith('.ts') || path.endsWith('.tsx')) return 'babel-ts'
   if (path.endsWith('.mjs') || path.endsWith('.js')) return 'babel'
   if (path.endsWith('.json')) return 'json'
@@ -28,9 +28,9 @@ const parserForPath = (
  * prettier config. Files prettier cannot parse (or any per-file failure) fall
  * back to their original content so a single bad file never breaks an export.
  */
-export const formatExportFiles = async (
+export async function formatExportFiles(
   files: Record<string, string>,
-): Promise<Record<string, string>> => {
+): Promise<Record<string, string>> {
   const formatted = await Promise.all(
     Object.entries(files).map(async ([path, content]) => {
       const parser = parserForPath(path)

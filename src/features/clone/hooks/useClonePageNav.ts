@@ -66,7 +66,7 @@ export function useClonePageNav(
   }, [rows, homePath, currentPath])
 
   useEffect(() => {
-    const onMessage = (event: MessageEvent) => {
+    const onMessage = (event) => {
       const data = event.data as CloneNavMessage | null
       if (!data || data.type !== 'ship-clone-nav') return
       const path = data.path

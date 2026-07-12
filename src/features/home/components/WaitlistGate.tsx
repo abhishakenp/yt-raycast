@@ -27,7 +27,7 @@ const WaitlistLoading = () => (
  * A loading state is shown while Clerk resolves auth state to prevent a flash
  * of the waitlist form for signed-in users.
  */
-export const WaitlistGate = ({ children }: WaitlistGateProps) => {
+export function WaitlistGate({ children }: WaitlistGateProps) {
   const isWaitlistEnabled = isClerkClientEnabled()
   const { isLoaded, isSignedIn } = useOptionalAuth()
 

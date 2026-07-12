@@ -16,29 +16,77 @@ import { injectSyncEndpoint } from './openui-lakebed-export-builder'
 
 type Row = Record<string, unknown> & { id: string }
 
-const makeTable = (initial: Row[] = []) => {
+function makeTable(initial: Row[] = []) {
   let rows = [...initial]
   let counter = 0
+
+  function all() {
+    return rows
+  }
+
+  function deleteRow(id: string) {
+    rows = rows.filter((row) => row.id !== id)
+  }
+
+  function insert(row: Record<string, unknown>) {
+    counter += 1
+    const stored = { ...row, id: `id-${counter}` }
+    rows.push(stored)
+    return stored
+  }
+
+  function currentRows() {
+    return rows
+  }
+
   return {
     api: {
-      all: () => rows,
-      delete: (id: string) => {
-        rows = rows.filter((r) => r.id !== id)
-      },
-      insert: (row: Record<string, unknown>) => {
-        counter += 1
-        const stored = { ...row, id: `id-${counter}` }
-        rows.push(stored)
-        return stored
-      },
+      all,
+      delete: deleteRow,
+      insert,
     },
-    rows: () => rows,
+    rows: currentRows,
   }
+}
+
+type SyncContext = {
+  db: Record<string, ReturnType<typeof makeTable>['api']>
+}
+
+type SyncRequest = {
+  headers: { get(name: string): string | null }
+  json(): Promise<unknown>
+  text(): Promise<string>
+}
+
+type SyncResponse = {
+  body: unknown
+  status: number
+}
+
+type SyncHandler = (ctx: SyncContext, req: SyncRequest) => Promise<SyncResponse>
+
+type Callable = (...args: unknown[]) => unknown
+
+function isCallable(value: unknown): value is Callable {
+  return typeof value === 'function'
+}
+
+function parseSyncResponse(value: unknown): SyncResponse {
+  if (typeof value !== 'object' || value === null) {
+    throw new Error('generated sync handler returned a non-object response')
+  }
+  const body = Reflect.get(value, 'body')
+  const status = Reflect.get(value, 'status')
+  if (typeof status !== 'number') {
+    throw new Error('generated sync handler response has no numeric status')
+  }
+  return { body, status }
 }
 
 // Evaluate the generated endpoint source into a callable handler, stubbing the
 // lakebed `endpoint`/`json` helpers.
-const buildHandler = (secret?: string) => {
+function buildHandler(secret?: string): SyncHandler {
   const tableFields = new Map<string, string[]>([
     ['tenders', ['nitNo', 'title', 'date']],
   ])
@@ -48,30 +96,50 @@ const buildHandler = (secret?: string) => {
     'json',
     `return (${source}).__lakebedSync`,
   )
-  return factory(
-    (_route: unknown, handler: unknown) => handler,
-    (body: unknown, opts?: { status?: number }) => ({
-      body,
-      status: opts?.status ?? 200,
-    }),
-  ) as (
-    ctx: { db: Record<string, ReturnType<typeof makeTable>['api']> },
-    req: {
-      headers: { get(name: string): string | null }
-      json(): Promise<unknown>
-    },
-  ) => Promise<{ body: unknown; status: number }>
+
+  function endpoint(_route: unknown, endpointHandler: unknown) {
+    return endpointHandler
+  }
+
+  function json(body: unknown, opts?: { status?: number }) {
+    return { body, status: opts?.status ?? 200 }
+  }
+
+  const candidate: unknown = factory(endpoint, json)
+  if (!isCallable(candidate)) {
+    throw new Error('generated sync endpoint is not callable')
+  }
+  const callable = candidate
+
+  async function handler(ctx: SyncContext, req: SyncRequest) {
+    return parseSyncResponse(await callable(ctx, req))
+  }
+
+  return handler
 }
 
-const reqWith = (auth: string | null, payload: unknown) => ({
-  headers: { get: (name: string) => (name === 'authorization' ? auth : null) },
-  json: async () => payload,
-})
+function reqWith(auth: string | null, payload: unknown): SyncRequest {
+  function get(name: string) {
+    return name === 'authorization' ? auth : null
+  }
+
+  async function json() {
+    return payload
+  }
+
+  async function text() {
+    return JSON.stringify(payload)
+  }
+
+  return { headers: { get }, json, text }
+}
 
 describe('generated /__lakebed/sync endpoint', () => {
   it('is omitted when no syncSecret is provided', () => {
     expect(injectSyncEndpoint('{\n}', new Map(), undefined)).toBe('{\n}')
-    expect(injectSyncEndpoint('{\n}', new Map(), 's')).toContain('__lakebedSync')
+    expect(injectSyncEndpoint('{\n}', new Map(), 's')).toContain(
+      '__lakebedSync',
+    )
   })
 
   it('rejects a request without the correct bearer secret (401)', async () => {
@@ -115,7 +183,7 @@ describe('generated /__lakebed/sync endpoint', () => {
     )
 
     expect(res.status).toBe(200)
-    expect((res.body as { ok: boolean }).ok).toBe(true)
+    expect(res.body).toMatchObject({ ok: true })
     // old row replaced; exactly one new row
     const rows = tenders.rows()
     expect(rows).toHaveLength(1)

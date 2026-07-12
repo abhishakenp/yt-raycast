@@ -3,11 +3,11 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { Image, ImageContextProvider } from './img'
 import { encodeMultiImageSrc } from './multi-image-src'
 
-const srcOf = (markup: string): string => {
+function srcOf(markup: string): string {
   const m = markup.match(/src="([^"]*)"/)
   return m ? m[1].replace(/&amp;/g, '&') : ''
 }
-const queryOf = (markup: string): string => {
+function queryOf(markup: string): string {
   const src = srcOf(markup)
   const url = new URL(src, 'http://x')
   return url.searchParams.get('query') ?? ''

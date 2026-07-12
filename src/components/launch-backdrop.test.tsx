@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LaunchBackdrop } from './launch-backdrop'
 
-const installMatchMedia = (matches: boolean) => {
+function installMatchMedia(matches: boolean) {
   window.matchMedia = vi.fn().mockReturnValue({
     matches,
     media: '(prefers-reduced-motion: reduce)',

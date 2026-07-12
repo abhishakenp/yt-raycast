@@ -134,7 +134,7 @@ const selectedBrandLogo = {
   logo: 'https://cdn.brandfetch.io/idwTkaYgXe/logo.svg',
 }
 
-const expectNoStockProviderCredentialsOrProxy = (artifact: string) => {
+function expectNoStockProviderCredentialsOrProxy(artifact: string) {
   expect(artifact).not.toContain('PEXELS_API_KEY')
   expect(artifact).not.toContain('VITE_PEXELS_API_KEY')
   expect(artifact).not.toContain('api.pexels.com')
@@ -167,10 +167,10 @@ afterEach(() => {
   }
 })
 
-const renderGeneratedRouteText = async (
+async function renderGeneratedRouteText(
   files: Record<string, string>,
   routeComponent: string,
-): Promise<string> => {
+): Promise<string> {
   const directory = mkdtempSync(join(tmpdir(), 'openui-artifact-route-'))
 
   try {

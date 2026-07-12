@@ -18,8 +18,9 @@ export function loadDesignRef(name: string): LoadedDesignRef | null {
   return { name, content: readFileSync(path, 'utf-8') }
 }
 
-export const getAuroraDesignRef = (): LoadedDesignRef | null =>
-  loadDesignRef('aurora')
+export function getAuroraDesignRef(): LoadedDesignRef | null {
+  return loadDesignRef('aurora')
+}
 
 export function stashDesignRefName(workspace: string, name: string): void {
   if (!workspace || !name) return

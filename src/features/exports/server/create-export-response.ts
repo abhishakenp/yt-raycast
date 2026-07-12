@@ -45,7 +45,7 @@ type ExportBuildInputPayload = {
   selectedBrandLogo?: OpenUIExportInput['selectedBrandLogo']
 }
 
-const normalizeTarget = (target: string): ExportTarget | null => {
+function normalizeTarget(target: string): ExportTarget | null {
   if (
     target === 'html' ||
     target === 'react' ||
@@ -57,22 +57,26 @@ const normalizeTarget = (target: string): ExportTarget | null => {
   return null
 }
 
-const createDownloadHeaders = (contentType: string, filename: string) => ({
-  'content-type': contentType,
-  'content-disposition': `attachment; filename="${filename}"`,
-})
+function createDownloadHeaders(contentType: string, filename: string) {
+  return {
+    'content-type': contentType,
+    'content-disposition': `attachment; filename="${filename}"`,
+  }
+}
 
-const isExportConvexClient = (
+function isExportConvexClient(
   value: Request | ExportConvexClient | undefined,
-): value is ExportConvexClient => value !== undefined && 'query' in value
+): value is ExportConvexClient {
+  return value !== undefined && 'query' in value
+}
 
-const getBearerToken = (request: Request): string | null => {
+function getBearerToken(request: Request): string | null {
   const auth = request.headers.get('authorization') ?? ''
   const match = auth.match(/^Bearer\s+(.+)$/i)
   return match?.[1]?.trim() || null
 }
 
-const getOwnerSecret = (request?: Request): string | undefined => {
+function getOwnerSecret(request?: Request): string | undefined {
   if (!request) return undefined
   const url = new URL(request.url)
   return (
@@ -83,12 +87,13 @@ const getOwnerSecret = (request?: Request): string | undefined => {
   )
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-const isArtifactDownloadPayload = (
+function isArtifactDownloadPayload(
   value: unknown,
-): value is ArtifactDownloadPayload => {
+): value is ArtifactDownloadPayload {
   if (!isRecord(value) || !isRecord(value.export)) return false
   const artifact = value.artifact
   return (
@@ -119,31 +124,34 @@ const isArtifactDownloadPayload = (
   )
 }
 
-const isExportBuildInputPayload = (
+function isExportBuildInputPayload(
   value: unknown,
-): value is ExportBuildInputPayload =>
-  isRecord(value) &&
-  typeof value.sessionId === 'string' &&
-  typeof value.target === 'string' &&
-  normalizeTarget(value.target) !== null &&
-  typeof value.source === 'string' &&
-  typeof value.html === 'string' &&
-  (value.siteSpecJson === undefined ||
-    typeof value.siteSpecJson === 'string') &&
-  (value.themeName === undefined || typeof value.themeName === 'string') &&
-  (value.isDark === undefined || typeof value.isDark === 'boolean') &&
-  (value.locale === undefined || typeof value.locale === 'string') &&
-  (value.selectedBrandLogo === undefined ||
-    value.selectedBrandLogo === null ||
-    isRecord(value.selectedBrandLogo))
+): value is ExportBuildInputPayload {
+  return (
+    isRecord(value) &&
+    typeof value.sessionId === 'string' &&
+    typeof value.target === 'string' &&
+    normalizeTarget(value.target) !== null &&
+    typeof value.source === 'string' &&
+    typeof value.html === 'string' &&
+    (value.siteSpecJson === undefined ||
+      typeof value.siteSpecJson === 'string') &&
+    (value.themeName === undefined || typeof value.themeName === 'string') &&
+    (value.isDark === undefined || typeof value.isDark === 'boolean') &&
+    (value.locale === undefined || typeof value.locale === 'string') &&
+    (value.selectedBrandLogo === undefined ||
+      value.selectedBrandLogo === null ||
+      isRecord(value.selectedBrandLogo))
+  )
+}
 
-const setClientAuth = (client: ExportConvexClient, request?: Request) => {
+function setClientAuth(client: ExportConvexClient, request?: Request) {
   if (!request) return
   const token = getBearerToken(request)
   if (token !== null) client.setAuth?.(token)
 }
 
-const errorStatus = (error: unknown): number => {
+function errorStatus(error: unknown): number {
   const message = error instanceof Error ? error.message : String(error)
   if (/FORBIDDEN|own/i.test(message)) return 403
   if (/AUTH_REQUIRED|Sign in/i.test(message)) return 401
@@ -153,17 +161,18 @@ const errorStatus = (error: unknown): number => {
   return 500
 }
 
-const textErrorResponse = (error: unknown) =>
-  new Response(
+function textErrorResponse(error: unknown) {
+  return new Response(
     error instanceof Error ? error.message : 'Export failed. Please try again.',
     {
       status: errorStatus(error),
       headers: { 'content-type': 'text/plain' },
     },
   )
+}
 
-const buildingResponse = (artifactStatus?: string) =>
-  new Response(
+function buildingResponse(artifactStatus?: string) {
+  return new Response(
     JSON.stringify({
       status: artifactStatus ?? 'queued',
       message: 'Export is still being prepared.',
@@ -173,12 +182,13 @@ const buildingResponse = (artifactStatus?: string) =>
       headers: { 'content-type': 'application/json' },
     },
   )
+}
 
-const responseFromBuiltExport = (download: {
+function responseFromBuiltExport(download: {
   body: string | Uint8Array
   contentType: string
   filename: string
-}): Response => {
+}): Response {
   const body = (() => {
     if (typeof download.body === 'string') return download.body
     const arrayBuffer = new ArrayBuffer(download.body.byteLength)
@@ -191,12 +201,12 @@ const responseFromBuiltExport = (download: {
   })
 }
 
-const buildExportOnDemand = async (
+async function buildExportOnDemand(
   client: ExportConvexClient,
   sessionId: string,
   target: ExportTarget,
   anonymousOwnerSecret?: string,
-): Promise<Response | null> => {
+): Promise<Response | null> {
   const buildInputResult = await client.query(
     api.sessions.getOwnedExportBuildInputByLookup,
     {
@@ -243,12 +253,12 @@ const buildExportOnDemand = async (
   return responseFromBuiltExport(download)
 }
 
-export const createExportResponse = async (
+export async function createExportResponse(
   sessionId: string,
   target: string,
   requestOrClient?: Request | ExportConvexClient,
   clientOverride?: ExportConvexClient,
-): Promise<Response> => {
+): Promise<Response> {
   const normalizedTarget = normalizeTarget(target)
   if (normalizedTarget === null) {
     return new Response('Unsupported export target', {

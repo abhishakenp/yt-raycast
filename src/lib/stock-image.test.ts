@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const originalEnv = { ...process.env }
 
-const loadStockImage = async (env: Record<string, string | undefined> = {}) => {
+async function loadStockImage(env: Record<string, string | undefined> = {}) {
   vi.resetModules()
   delete process.env.PEXELS_API_KEY
   delete process.env.VITE_PEXELS_API_KEY
@@ -167,7 +167,7 @@ describe('resolveStockImage', () => {
 
 describe('searchStockImages', () => {
   it('returns multiple results interleaved from both providers', async () => {
-    const fetch = vi.fn().mockImplementation((url: string) => {
+    const fetch = vi.fn().mockImplementation((url) => {
       if (url.includes('pexels')) {
         return Promise.resolve({
           ok: true,
@@ -284,7 +284,7 @@ describe('searchStockImages', () => {
   })
 
   it('handles one provider failing gracefully', async () => {
-    const fetch = vi.fn().mockImplementation((url: string) => {
+    const fetch = vi.fn().mockImplementation((url) => {
       if (url.includes('pexels')) {
         return Promise.resolve({ ok: false, json: async () => ({}) })
       }
@@ -338,7 +338,7 @@ describe('searchStockImages', () => {
   })
 
   it('carries a hi-res baseUrl (Pexels original, Unsplash raw) for later upscaling', async () => {
-    const fetch = vi.fn().mockImplementation((url: string) => {
+    const fetch = vi.fn().mockImplementation((url) => {
       if (url.includes('pexels')) {
         return Promise.resolve({
           ok: true,

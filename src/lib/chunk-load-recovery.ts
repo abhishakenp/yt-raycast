@@ -19,7 +19,7 @@ const dynamicImportErrorPatterns = [
   'chunkloaderror',
 ]
 
-const readErrorText = (reason: unknown): string => {
+function readErrorText(reason: unknown): string {
   if (reason instanceof Error)
     return `${reason.name} ${reason.message}`.toLowerCase()
   if (typeof reason === 'string') return reason.toLowerCase()
@@ -30,17 +30,17 @@ const readErrorText = (reason: unknown): string => {
   return ''
 }
 
-export const isDynamicImportLoadError = (reason: unknown): boolean => {
+export function isDynamicImportLoadError(reason: unknown): boolean {
   const text = readErrorText(reason)
   return dynamicImportErrorPatterns.some((pattern) => text.includes(pattern))
 }
 
-export const recoverFromDynamicImportLoadError = ({
+export function recoverFromDynamicImportLoadError({
   href,
   reason,
   reload,
   storage,
-}: RecoverOptions): boolean => {
+}: RecoverOptions): boolean {
   if (!isDynamicImportLoadError(reason)) return false
 
   const previousHref = storage.getItem(recoveryKey)
@@ -51,8 +51,8 @@ export const recoverFromDynamicImportLoadError = ({
   return true
 }
 
-export const installDynamicImportRecovery = (window: Window): (() => void) => {
-  const recover = (reason: unknown): boolean =>
+export function installDynamicImportRecovery(window: Window): () => void {
+  const recover = (reason) =>
     recoverFromDynamicImportLoadError({
       href: window.location.href,
       reason,
@@ -60,13 +60,13 @@ export const installDynamicImportRecovery = (window: Window): (() => void) => {
       storage: window.sessionStorage,
     })
 
-  const handleRejection = (event: PromiseRejectionEvent) => {
+  const handleRejection = (event) => {
     if (recover(event.reason)) {
       event.preventDefault()
     }
   }
 
-  const handleError = (event: ErrorEvent) => {
+  const handleError = (event) => {
     recover(event.error ?? event.message)
   }
 

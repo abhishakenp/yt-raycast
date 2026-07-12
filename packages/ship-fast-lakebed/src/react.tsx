@@ -134,14 +134,15 @@ const lakebedMutationCoordinators = new Map<
   LakebedMutationCoordinator
 >()
 
-const mutationCoordinatorKey = ({
+function mutationCoordinatorKey({
   anonymousOwnerSecret,
   capsule,
   sessionId,
-}: LakebedSessionContextValue & { capsule: string }) =>
-  `${sessionId}:${anonymousOwnerSecret ?? ''}:${capsule}`
+}: LakebedSessionContextValue & { capsule: string }) {
+  return `${sessionId}:${anonymousOwnerSecret ?? ''}:${capsule}`
+}
 
-const mutationCoordinatorFor = (key: string): LakebedMutationCoordinator => {
+function mutationCoordinatorFor(key: string): LakebedMutationCoordinator {
   const existing = lakebedMutationCoordinators.get(key)
   if (existing) return existing
 
@@ -153,7 +154,7 @@ const mutationCoordinatorFor = (key: string): LakebedMutationCoordinator => {
   return coordinator
 }
 
-const slugForSeedRow = (value: unknown, fallback: string) => {
+function slugForSeedRow(value: unknown, fallback: string) {
   const source = (() => {
     if (typeof value !== 'object' || value === null) return undefined
 
@@ -178,21 +179,18 @@ const slugForSeedRow = (value: unknown, fallback: string) => {
   )
 }
 
-const defaultFieldValue = (field: {
-  kind?: string
-  defaultValue?: unknown
-}) => {
+function defaultFieldValue(field: { kind?: string; defaultValue?: unknown }) {
   if ('defaultValue' in field) return field.defaultValue
   if (field.kind === 'boolean') return false
   if (field.kind === 'number') return 0
   return ''
 }
 
-const seedRowsFromProp = (
+function seedRowsFromProp(
   tableName: string,
   table: LakebedSessionSchema[string],
   propValue: unknown,
-) => {
+) {
   const sourceRows = Array.isArray(propValue)
     ? propValue
     : typeof propValue === 'object' &&
@@ -306,15 +304,17 @@ export function useOptionalLakebedSession(): LakebedSessionContextValue | null {
   return useContext(LakebedSessionContext)
 }
 
-const lakebedSessionArgs = ({
+function lakebedSessionArgs({
   anonymousOwnerSecret,
   capsule,
   sessionId,
-}: LakebedSessionContextValue & { capsule: string }) => ({
-  ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
-  capsule,
-  sessionId,
-})
+}: LakebedSessionContextValue & { capsule: string }) {
+  return {
+    ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
+    capsule,
+    sessionId,
+  }
+}
 
 export function useSessionState<TData extends JsonRecord = JsonRecord>(
   capsule: string,
@@ -400,7 +400,7 @@ export function useMergeSessionData<TData extends JsonRecord = JsonRecord>(
   const mergeSessionData = useConvexMutation(lakebedApi.mergeSessionData)
 
   return useCallback(
-    async (patch: Partial<TData>) =>
+    async (patch) =>
       (await mergeSessionData({
         ...lakebedSessionArgs({ ...session, capsule }),
         patch,
@@ -416,7 +416,7 @@ export function useReplaceSessionData<TData extends JsonRecord = JsonRecord>(
   const replaceSessionData = useConvexMutation(lakebedApi.replaceSessionData)
 
   return useCallback(
-    async (data: TData) =>
+    async (data) =>
       (await replaceSessionData({
         data,
         ...lakebedSessionArgs({ ...session, capsule }),
@@ -541,10 +541,7 @@ export function useKeyedLakebedMutation<
   }, [])
 
   const run = useCallback(
-    async (
-      key: string,
-      ...args: MutationArgs<LakebedMutationsOf<NonNullable<TDefinition>>[TName]>
-    ) => {
+    async (key, ...args) => {
       if (queuedKeySetRef.current.has(key)) return undefined
 
       queuedKeySetRef.current.add(key)
@@ -578,7 +575,7 @@ export function useKeyedLakebedMutation<
   )
 
   const isPending = useCallback(
-    (key: string) => pendingKeys.includes(key),
+    (key) => pendingKeys.includes(key),
     [pendingKeys],
   )
 
@@ -721,10 +718,7 @@ export function createLakebedClient<
       >[typeof name]
 
       const runMutationWithLifecycle = useCallback(
-        async (
-          lifecycle: LakebedMutationLifecycle | undefined,
-          ...args: MutationArgs<ActiveMutation>
-        ): Promise<MutationResult<ActiveMutation>> => {
+        async (lifecycle, ...args) => {
           setLastError(null)
 
           if (!handler) {
@@ -743,16 +737,12 @@ export function createLakebedClient<
                 const baseData = (coordinator.data ??
                   data ??
                   {}) as LakebedDataOf<NonNullable<TDefinition>>
-                const rememberMergedData = async (
-                  patch: Partial<LakebedDataOf<NonNullable<TDefinition>>>,
-                ) => {
+                const rememberMergedData = async (patch) => {
                   const nextData = await setData(patch)
                   coordinator.data = nextData as JsonRecord
                   return nextData
                 }
-                const rememberReplacedData = async (
-                  nextData: LakebedDataOf<NonNullable<TDefinition>>,
-                ) => {
+                const rememberReplacedData = async (nextData) => {
                   const replacedData = await replaceData(nextData)
                   coordinator.data = replacedData as JsonRecord
                   return replacedData
@@ -815,8 +805,7 @@ export function createLakebedClient<
         setLastError(null)
       }, [])
       const mutation = useMemo(() => {
-        const run = (...args: MutationArgs<ActiveMutation>) =>
-          runMutationWithLifecycle(undefined, ...args)
+        const run = (...args) => runMutationWithLifecycle(undefined, ...args)
         const mutationState: Pick<
           LakebedMutationFunction<ActiveMutation>,
           | 'isPending'
@@ -829,10 +818,8 @@ export function createLakebedClient<
           lastError: null,
           pendingCount: 0,
           reset,
-          runWithLifecycle: (
-            lifecycle: LakebedMutationLifecycle,
-            ...args: MutationArgs<ActiveMutation>
-          ) => runMutationWithLifecycle(lifecycle, ...args),
+          runWithLifecycle: (lifecycle, ...args) =>
+            runMutationWithLifecycle(lifecycle, ...args),
         }
         return Object.assign(run, mutationState)
       }, [reset, runMutationWithLifecycle])

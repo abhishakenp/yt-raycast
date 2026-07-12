@@ -35,8 +35,8 @@ const realConvexOpenUiHandoffHistoryPreview = {
   version: 1,
 } as const
 
-const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
-  ({
+function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a homepage',
@@ -44,10 +44,11 @@ const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
     createdAt: 1,
     previewVersion: 4,
     ...overrides,
-  }) as SessionRecord
+  } as SessionRecord
+}
 
-const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
-  ({
+function previewDoc(overrides: Partial<PreviewRecord> = {}): PreviewRecord {
+  return {
     _id: 'preview_history_3' as Id<'previews'>,
     _creationTime: 1,
     sessionId,
@@ -58,10 +59,11 @@ const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
     source: 'generation',
     createdAt: 300,
     ...overrides,
-  }) as PreviewRecord
+  } as PreviewRecord
+}
 
-const editDoc = (overrides: Partial<EditRecord> = {}): EditRecord =>
-  ({
+function editDoc(overrides: Partial<EditRecord> = {}): EditRecord {
+  return {
     _id: 'edit_history_1' as Id<'edits'>,
     _creationTime: 1,
     sessionId,
@@ -75,15 +77,16 @@ const editDoc = (overrides: Partial<EditRecord> = {}): EditRecord =>
     createdAt: 400,
     userId: 'user_history',
     ...overrides,
-  }) as EditRecord
+  } as EditRecord
+}
 
-const ctxFor = (input: {
+function ctxFor(input: {
   sessions: SessionRecord[]
   previews?: PreviewRecord[]
   generatedModules?: GeneratedModuleRecord[]
   siteSpecs?: SiteSpecRecord[]
   userId?: string | null
-}) => {
+}) {
   const sessions = [...input.sessions]
   const previews: PreviewRecord[] = [...(input.previews ?? [])]
   const generatedModules = [...(input.generatedModules ?? [])]
@@ -91,7 +94,7 @@ const ctxFor = (input: {
   const generationEvents: GenerationEventRecord[] = []
   let nextId = 1
 
-  const rowsFor = (table: string) => {
+  const rowsFor = (table) => {
     switch (table) {
       case 'sessions':
         return sessions
@@ -108,7 +111,7 @@ const ctxFor = (input: {
     }
   }
 
-  const filterRows = (table: string, filters: Map<string, unknown>) =>
+  const filterRows = (table, filters) =>
     rowsFor(table).filter((row) =>
       Array.from(filters.entries()).every(
         ([field, value]) => (row as Record<string, unknown>)[field] === value,
@@ -116,20 +119,15 @@ const ctxFor = (input: {
     )
 
   const db = {
-    get: async (id: string) =>
+    get: async (id) =>
       [...sessions, ...previews, ...generatedModules, ...siteSpecs].find(
         (row) => row._id === id,
       ) ?? null,
-    query: (table: string) => ({
-      withIndex: (
-        _indexName: string,
-        applyIndex: (index: {
-          eq: (field: string, value: unknown) => typeof index
-        }) => unknown,
-      ) => {
+    query: (table) => ({
+      withIndex: (_indexName, applyIndex) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field: string, value: unknown) => {
+          eq: (field, value) => {
             filters.set(field, value)
             return index
           },
@@ -141,7 +139,7 @@ const ctxFor = (input: {
         }
       },
     }),
-    insert: async (table: string, value: Record<string, unknown>) => {
+    insert: async (table, value) => {
       const row = {
         _id: `${table}_${nextId++}`,
         _creationTime: 1,
@@ -150,7 +148,7 @@ const ctxFor = (input: {
       rowsFor(table).push(row as never)
       return row._id
     },
-    patch: async (id: string, value: Record<string, unknown>) => {
+    patch: async (id, value) => {
       for (const rows of [sessions, previews, generatedModules, siteSpecs]) {
         const rowIndex = rows.findIndex((row) => row._id === id)
         if (rowIndex >= 0) {
@@ -185,24 +183,19 @@ const ctxFor = (input: {
   }
 }
 
-const queryCtxFor = (input: {
+function queryCtxFor(input: {
   edits?: EditRecord[]
   previews?: PreviewRecord[]
-}) => {
+}) {
   const db = {
-    query: (table: 'edits' | 'previews') => {
+    query: (table) => {
       let rows: Array<EditRecord | PreviewRecord> =
         table === 'edits'
           ? [...(input.edits ?? [])]
           : [...(input.previews ?? [])]
 
       const builder = {
-        withIndex: (
-          indexName: 'by_sessionId_createdAt' | 'by_sessionId_version',
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (indexName, applyIndex) => {
           expect(indexName).toBe(
             table === 'edits'
               ? 'by_sessionId_createdAt'
@@ -210,7 +203,7 @@ const queryCtxFor = (input: {
           )
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -223,7 +216,7 @@ const queryCtxFor = (input: {
 
           return builder
         },
-        order: (direction: 'asc' | 'desc') => {
+        order: (direction) => {
           rows = [...rows].sort((left, right) =>
             direction === 'desc'
               ? sortValue(table, right) - sortValue(table, left)
@@ -232,7 +225,7 @@ const queryCtxFor = (input: {
 
           return builder
         },
-        take: async (limit: number) => rows.slice(0, limit),
+        take: async (limit) => rows.slice(0, limit),
       }
 
       return builder
@@ -242,13 +235,14 @@ const queryCtxFor = (input: {
   return { db } as Pick<QueryCtx, 'db'>
 }
 
-const sortValue = (
+function sortValue(
   table: 'edits' | 'previews',
   row: EditRecord | PreviewRecord,
-) =>
-  table === 'edits'
+) {
+  return table === 'edits'
     ? (row as EditRecord).createdAt
     : (row as PreviewRecord).version
+}
 
 describe('session preview history helpers', () => {
   afterEach(() => {

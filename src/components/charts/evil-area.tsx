@@ -12,7 +12,7 @@ function chartFrameClass(frame?: string) {
 type ChartFrame = 'default' | 'flush' | 'emphasis' | undefined
 
 // Placeholder chart components — contract props stay valid for weak-model generation.
-export const EvilArea = ({
+export function EvilArea({
   height,
   chartFrame,
 }: {
@@ -21,16 +21,18 @@ export const EvilArea = ({
   series?: unknown
   height?: number
   chartFrame?: ChartFrame
-}) => (
-  <div
-    style={{ height: height || 200 }}
-    className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
-  >
-    <span className="text-gray-500 text-sm">Area Chart Placeholder</span>
-  </div>
-)
+}) {
+  return (
+    <div
+      style={{ height: height || 200 }}
+      className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
+    >
+      <span className="text-gray-500 text-sm">Area Chart Placeholder</span>
+    </div>
+  )
+}
 
-export const EvilBar = ({
+export function EvilBar({
   height,
   stacked,
   chartFrame,
@@ -41,18 +43,20 @@ export const EvilBar = ({
   height?: number
   stacked?: boolean
   chartFrame?: ChartFrame
-}) => (
-  <div
-    style={{ height: height || 200 }}
-    className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
-  >
-    <span className="text-gray-500 text-sm">
-      Bar Chart Placeholder{stacked ? ' (stacked)' : ''}
-    </span>
-  </div>
-)
+}) {
+  return (
+    <div
+      style={{ height: height || 200 }}
+      className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
+    >
+      <span className="text-gray-500 text-sm">
+        Bar Chart Placeholder{stacked ? ' (stacked)' : ''}
+      </span>
+    </div>
+  )
+}
 
-export const EvilLine = ({
+export function EvilLine({
   height,
   chartFrame,
 }: {
@@ -61,16 +65,18 @@ export const EvilLine = ({
   series?: unknown
   height?: number
   chartFrame?: ChartFrame
-}) => (
-  <div
-    style={{ height: height || 200 }}
-    className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
-  >
-    <span className="text-gray-500 text-sm">Line Chart Placeholder</span>
-  </div>
-)
+}) {
+  return (
+    <div
+      style={{ height: height || 200 }}
+      className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
+    >
+      <span className="text-gray-500 text-sm">Line Chart Placeholder</span>
+    </div>
+  )
+}
 
-export const EvilPie = ({
+export function EvilPie({
   height,
   donut,
   chartFrame,
@@ -79,18 +85,20 @@ export const EvilPie = ({
   height?: number
   donut?: boolean
   chartFrame?: ChartFrame
-}) => (
-  <div
-    style={{ height: height || 200 }}
-    className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
-  >
-    <span className="text-gray-500 text-sm">
-      Pie Chart Placeholder{donut ? ' (donut)' : ''}
-    </span>
-  </div>
-)
+}) {
+  return (
+    <div
+      style={{ height: height || 200 }}
+      className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
+    >
+      <span className="text-gray-500 text-sm">
+        Pie Chart Placeholder{donut ? ' (donut)' : ''}
+      </span>
+    </div>
+  )
+}
 
-export const EvilRadar = ({
+export function EvilRadar({
   height,
   chartFrame,
 }: {
@@ -99,11 +107,13 @@ export const EvilRadar = ({
   series?: unknown
   height?: number
   chartFrame?: ChartFrame
-}) => (
-  <div
-    style={{ height: height || 200 }}
-    className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
-  >
-    <span className="text-gray-500 text-sm">Radar Chart Placeholder</span>
-  </div>
-)
+}) {
+  return (
+    <div
+      style={{ height: height || 200 }}
+      className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
+    >
+      <span className="text-gray-500 text-sm">Radar Chart Placeholder</span>
+    </div>
+  )
+}

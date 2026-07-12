@@ -9,14 +9,15 @@ type PreviewEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 
 type JsonBody = Record<string, unknown>
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
 class MalformedJsonError extends Error {
   constructor() {
@@ -25,10 +26,11 @@ class MalformedJsonError extends Error {
   }
 }
 
-const isMalformedJsonError = (error: unknown): error is MalformedJsonError =>
-  error instanceof MalformedJsonError
+function isMalformedJsonError(error: unknown): error is MalformedJsonError {
+  return error instanceof MalformedJsonError
+}
 
-const readJsonBody = async (request: Request): Promise<JsonBody> => {
+async function readJsonBody(request: Request): Promise<JsonBody> {
   const text = await request.text()
   if (!text.trim()) return {}
 
@@ -43,10 +45,11 @@ const readJsonBody = async (request: Request): Promise<JsonBody> => {
     : {}
 }
 
-const asSessionId = (sessionId: string): Id<'sessions'> =>
-  sessionId as Id<'sessions'>
+function asSessionId(sessionId: string): Id<'sessions'> {
+  return sessionId as Id<'sessions'>
+}
 
-const getString = (body: JsonBody, keys: string[]): string | undefined => {
+function getString(body: JsonBody, keys: string[]): string | undefined {
   for (const key of keys) {
     const value = body[key]
     if (typeof value === 'string') return value
@@ -54,15 +57,19 @@ const getString = (body: JsonBody, keys: string[]): string | undefined => {
   return undefined
 }
 
-const getOwnerSecret = (request: Request, body: JsonBody): string | undefined =>
-  getString(body, ['anonymousOwnerSecret', 'anonOwnerSecret']) ??
-  request.headers.get('x-ship-fast-owner-secret') ??
-  undefined
+function getOwnerSecret(request: Request, body: JsonBody): string | undefined {
+  return (
+    getString(body, ['anonymousOwnerSecret', 'anonOwnerSecret']) ??
+    request.headers.get('x-ship-fast-owner-secret') ??
+    undefined
+  )
+}
 
-const createClient = (clientOverride?: PreviewEditClient): PreviewEditClient =>
-  clientOverride ?? createRuntimeConvexHttpClient()
+function createClient(clientOverride?: PreviewEditClient): PreviewEditClient {
+  return clientOverride ?? createRuntimeConvexHttpClient()
+}
 
-const isInvalidSessionIdError = (error: unknown): boolean => {
+function isInvalidSessionIdError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error)
   return (
     message.includes('ArgumentValidationError') &&
@@ -70,12 +77,13 @@ const isInvalidSessionIdError = (error: unknown): boolean => {
   )
 }
 
-const getErrorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : 'Preview edit request failed'
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Preview edit request failed'
+}
 
-const getConvexErrorPayload = (
+function getConvexErrorPayload(
   message: string,
-): { code?: string; message?: string } | null => {
+): { code?: string; message?: string } | null {
   const match = message.match(/\{.*\}/)
   if (!match) return null
 
@@ -100,7 +108,7 @@ const getConvexErrorPayload = (
   }
 }
 
-const isTextNotFoundError = (error: unknown): boolean => {
+function isTextNotFoundError(error: unknown): boolean {
   const message = getErrorMessage(error)
   return (
     message.includes('TEXT_NOT_FOUND') ||
@@ -108,7 +116,7 @@ const isTextNotFoundError = (error: unknown): boolean => {
   )
 }
 
-const errorResponse = (error: unknown) => {
+function errorResponse(error: unknown) {
   if (isMalformedJsonError(error)) {
     return json({ error: error.message }, { status: 400 })
   }
@@ -124,10 +132,10 @@ const errorResponse = (error: unknown) => {
   return json({ error: 'Preview edit request failed' }, { status: 500 })
 }
 
-export const createPreviewHistoryResponse = async (
+export async function createPreviewHistoryResponse(
   sessionId: string,
   clientOverride?: PreviewEditClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const history = await createClient(clientOverride).query(
       api.sessions.listPreviewHistory,
@@ -139,12 +147,12 @@ export const createPreviewHistoryResponse = async (
   }
 }
 
-export const createPreviewRestoreResponse = async (
+export async function createPreviewRestoreResponse(
   sessionId: string,
   version: string,
   request: Request,
   clientOverride?: PreviewEditClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const body = await readJsonBody(request)
     const parsedVersion = Number(version)
@@ -167,11 +175,11 @@ export const createPreviewRestoreResponse = async (
   }
 }
 
-export const createPreviewHtmlSaveResponse = async (
+export async function createPreviewHtmlSaveResponse(
   sessionId: string,
   request: Request,
   clientOverride?: PreviewEditClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const body = await readJsonBody(request)
     const html = getString(body, ['html', 'previewHtml', 'homepageHtml'])
@@ -206,11 +214,11 @@ export const createPreviewHtmlSaveResponse = async (
   }
 }
 
-export const createInlineTextEditResponse = async (
+export async function createInlineTextEditResponse(
   sessionId: string,
   request: Request,
   clientOverride?: PreviewEditClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const body = await readJsonBody(request)
     const beforeText = getString(body, ['beforeText', 'oldText', 'text'])
@@ -241,11 +249,11 @@ export const createInlineTextEditResponse = async (
   }
 }
 
-export const createInlineStyleEditResponse = async (
+export async function createInlineStyleEditResponse(
   sessionId: string,
   request: Request,
   clientOverride?: PreviewEditClient,
-): Promise<Response> => {
+): Promise<Response> {
   try {
     const body = await readJsonBody(request)
     const afterHtml = getString(body, ['afterHtml', 'html', 'fragmentHtml'])

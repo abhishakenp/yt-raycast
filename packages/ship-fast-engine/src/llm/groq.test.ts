@@ -19,7 +19,7 @@ interface MockUsage {
   prompt_tokens_details?: { cached_tokens?: number }
 }
 
-const completion = (content: string, usage: MockUsage = {}): Response => {
+function completion(content: string, usage: MockUsage = {}): Response {
   return new Response(
     JSON.stringify({
       usage: {
@@ -34,7 +34,7 @@ const completion = (content: string, usage: MockUsage = {}): Response => {
   )
 }
 
-const errorCompletion = (message: string): Response => {
+function errorCompletion(message: string): Response {
   return new Response(JSON.stringify({ error: { message } }))
 }
 
@@ -130,8 +130,7 @@ describe('groqStream', () => {
     const chunks: Array<{ piece: string; accumulated: string }> = []
 
     const result = await groqStream('Prompt', {
-      onToken: (piece: string, accumulated: string) =>
-        chunks.push({ piece, accumulated }),
+      onToken: (piece, accumulated) => chunks.push({ piece, accumulated }),
     })
 
     expect(result.content).toBe('abcdefghijklmnopqrstuvwxyz')
@@ -164,9 +163,7 @@ describe('groqParallel', () => {
       { model: 'model-default' },
     )
 
-    expect(
-      results.map((result: { content: string }) => result.content),
-    ).toEqual(['First', 'Second'])
+    expect(results.map((result) => result.content)).toEqual(['First', 'Second'])
     expect(
       JSON.parse(
         (vi.mocked(fetch).mock.calls[0] as [string, { body: string }])[1].body,

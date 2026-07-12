@@ -21,7 +21,7 @@ type MemoryStorage = Storage & {
   entries: Map<string, string>
 }
 
-const createMemoryStorage = (): MemoryStorage => {
+function createMemoryStorage(): MemoryStorage {
   const entries = new Map<string, string>()
   return {
     entries,
@@ -29,10 +29,10 @@ const createMemoryStorage = (): MemoryStorage => {
       return entries.size
     },
     clear: () => entries.clear(),
-    getItem: (key: string) => entries.get(key) ?? null,
-    key: (index: number) => Array.from(entries.keys())[index] ?? null,
-    removeItem: (key: string) => entries.delete(key),
-    setItem: (key: string, value: string) => entries.set(key, String(value)),
+    getItem: (key) => entries.get(key) ?? null,
+    key: (index) => Array.from(entries.keys())[index] ?? null,
+    removeItem: (key) => entries.delete(key),
+    setItem: (key, value) => entries.set(key, String(value)),
   } as MemoryStorage
 }
 
@@ -146,7 +146,7 @@ describe('lakebed behavioral', () => {
           priority: number().default(0),
         }),
       })
-      const handler = def.mutation(async (ctx, text: string) => {
+      const handler = def.mutation(async (ctx, text) => {
         return ctx.db.todos.insert({ text, done: false, priority: 1 })
       })
       const { context } = createLakebedHandlerContext({
@@ -319,7 +319,7 @@ describe('lakebed behavioral', () => {
           text: string(),
         }),
       })
-      const handler = def.mutation(async (ctx, id: string) => {
+      const handler = def.mutation(async (ctx, id) => {
         ctx.db.todos.update(id, { done: true })
         const updated = ctx.db.todos.get(id)
         ctx.db.todos.delete(id)

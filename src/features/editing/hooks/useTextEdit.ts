@@ -275,7 +275,7 @@ export function useTextEdit(
     }
     cancelEditRef.current = cancelEdit
 
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = (e) => {
       if (!editModeRef.current) return
 
       const target = e.target as HTMLElement
@@ -431,7 +431,7 @@ export function useTextEdit(
       })
     }
 
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e) => {
       if (
         activeEditRef.current &&
         (e.ctrlKey || e.metaKey) &&
@@ -543,7 +543,7 @@ export function useTextEdit(
       }
     }
 
-    const handleBeforeInput = (e: InputEvent) => {
+    const handleBeforeInput = (e) => {
       const active = activeEditRef.current
       if (!active || !active.lockedChildren) return
       const sel = window.getSelection()

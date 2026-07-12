@@ -13,10 +13,10 @@ export type ReferralQualificationResult = {
   qualifiedCount: number
 }
 
-const countQualifiedReferrals = async (
+async function countQualifiedReferrals(
   ctx: MutationCtx,
   referrerUserId: string,
-): Promise<number> => {
+): Promise<number> {
   const qualified = await ctx.db
     .query('referrals')
     .withIndex('by_referrer_status', (index) =>
@@ -30,10 +30,10 @@ const countQualifiedReferrals = async (
  * Recompute and persist a referrer's reward state from their qualified count.
  * Unlock is permanent (monotonic): once unlocked it never reverts here.
  */
-export const refreshReferralReward = async (
+export async function refreshReferralReward(
   ctx: MutationCtx,
   referrerUserId: string,
-): Promise<ReferralQualificationResult> => {
+): Promise<ReferralQualificationResult> {
   const qualifiedCount = await countQualifiedReferrals(ctx, referrerUserId)
   const existing = await ctx.db
     .query('referralRewards')
@@ -77,10 +77,10 @@ export const refreshReferralReward = async (
  * just transitioned to unlocked (so the caller can apply the provider discount);
  * otherwise returns null.
  */
-export const qualifyReferralOnPayment = async (
+export async function qualifyReferralOnPayment(
   ctx: MutationCtx,
   payerUserId: string,
-): Promise<ReferralQualificationResult | null> => {
+): Promise<ReferralQualificationResult | null> {
   const referral = await ctx.db
     .query('referrals')
     .withIndex('by_referred', (index) =>

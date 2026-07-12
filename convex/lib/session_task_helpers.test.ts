@@ -8,8 +8,8 @@ type TaskRecord = Doc<'tasks'>
 
 const sessionId = 'session_tasks' as Id<'sessions'>
 
-const taskDoc = (overrides: Partial<TaskRecord> = {}): TaskRecord =>
-  ({
+function taskDoc(overrides: Partial<TaskRecord> = {}): TaskRecord {
+  return {
     _id: 'task_existing' as Id<'tasks'>,
     _creationTime: 1,
     sessionId,
@@ -20,26 +20,22 @@ const taskDoc = (overrides: Partial<TaskRecord> = {}): TaskRecord =>
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as TaskRecord
+  } as TaskRecord
+}
 
-const ctxFor = (initialTasks: TaskRecord[] = []) => {
+function ctxFor(initialTasks: TaskRecord[] = []) {
   const tasks = [...initialTasks]
   let nextTask = tasks.length + 1
 
   const db = {
-    query: (table: 'tasks') => ({
-      withIndex: (
-        indexName: 'by_sessionId_taskKey',
-        applyIndex: (index: {
-          eq: (field: string, value: unknown) => typeof index
-        }) => unknown,
-      ) => {
+    query: (table) => ({
+      withIndex: (indexName, applyIndex) => {
         expect(table).toBe('tasks')
         expect(indexName).toBe('by_sessionId_taskKey')
 
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field: string, value: unknown) => {
+          eq: (field, value) => {
             filters.set(field, value)
             return index
           },
@@ -57,13 +53,13 @@ const ctxFor = (initialTasks: TaskRecord[] = []) => {
         }
       },
     }),
-    insert: async (table: 'tasks', value: Record<string, unknown>) => {
+    insert: async (table, value) => {
       expect(table).toBe('tasks')
       const id = `task_${nextTask++}` as Id<'tasks'>
       tasks.push({ _id: id, _creationTime: 1, ...value } as TaskRecord)
       return id
     },
-    patch: async (id: Id<'tasks'>, value: Record<string, unknown>) => {
+    patch: async (id, value) => {
       const taskIndex = tasks.findIndex((task) => task._id === id)
       expect(taskIndex).toBeGreaterThanOrEqual(0)
       tasks[taskIndex] = { ...tasks[taskIndex], ...value } as TaskRecord

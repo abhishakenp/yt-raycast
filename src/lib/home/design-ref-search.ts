@@ -46,9 +46,9 @@ const SITE_SEARCH_DB: SiteEntry[] = [
 
 export type DesignRefResolution = { url: string; title: string }
 
-export const resolveDesignRefSearch = (
+export function resolveDesignRefSearch(
   raw: string,
-): DesignRefResolution | null => {
+): DesignRefResolution | null {
   const trimmed = raw.trim().toLowerCase()
   if (!trimmed) return null
   if (

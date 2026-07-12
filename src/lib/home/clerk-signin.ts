@@ -43,7 +43,7 @@ type BindHomepageClerkSignInInput = {
   doc: AuthDocument
 }
 
-const showFallbackOverlay = (doc: AuthDocument): void => {
+function showFallbackOverlay(doc: AuthDocument): void {
   const overlay = doc.getElementById('auth-overlay')
   overlay?.classList?.remove?.('hidden')
   overlay?.setAttribute?.('aria-hidden', 'false')
@@ -52,41 +52,42 @@ const showFallbackOverlay = (doc: AuthDocument): void => {
 
 const CLERK_SINGLE_SESSION_ERROR_CODE = 'cannot_render_single_session_enabled'
 
-const hasActiveClerkSession = (clerk: ClerkAuth | undefined): boolean =>
-  Boolean(
+function hasActiveClerkSession(clerk: ClerkAuth | undefined): boolean {
+  return Boolean(
     clerk?.user || clerk?.session || (clerk?.client?.sessions?.length ?? 0) > 0,
   )
+}
 
-const isClerkSingleSessionError = (error: unknown): boolean =>
-  typeof error === 'object' &&
-  error !== null &&
-  'code' in error &&
-  (error as { code?: unknown }).code === CLERK_SINGLE_SESSION_ERROR_CODE
+function isClerkSingleSessionError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: unknown }).code === CLERK_SINGLE_SESSION_ERROR_CODE
+  )
+}
 
-const setElementDisplay = (
-  element: AuthElement | null,
-  display: string,
-): void => {
+function setElementDisplay(element: AuthElement | null, display: string): void {
   if (element?.style) {
     element.style.display = display
   }
 }
 
-export const bindHomepageClerkSignIn = ({
+export function bindHomepageClerkSignIn({
   win,
   doc,
-}: BindHomepageClerkSignInInput): (() => void) => {
+}: BindHomepageClerkSignInInput): () => void {
   const signInButton = doc.getElementById('signin-btn')
   const signOutButton = doc.getElementById('signout-btn')
-  const syncSignedInControls = (): void => {
+  const syncSignedInControls = () => {
     setElementDisplay(signInButton, 'none')
     setElementDisplay(signOutButton, 'inline-flex')
   }
-  const syncSignedOutControls = (): void => {
+  const syncSignedOutControls = () => {
     setElementDisplay(signInButton, 'inline-flex')
     setElementDisplay(signOutButton, 'none')
   }
-  const syncAuthControls = (): void => {
+  const syncAuthControls = () => {
     if (hasActiveClerkSession(win.Clerk)) {
       syncSignedInControls()
       return
@@ -94,16 +95,16 @@ export const bindHomepageClerkSignIn = ({
 
     syncSignedOutControls()
   }
-  const openUserProfile = (): void => {
+  const openUserProfile = () => {
     if (typeof win.Clerk?.openUserProfile === 'function') {
       void win.Clerk.openUserProfile()
     }
   }
-  const handleAlreadySignedIn = (): void => {
+  const handleAlreadySignedIn = () => {
     syncSignedInControls()
     openUserProfile()
   }
-  const openSignIn = (event?: Event): void => {
+  const openSignIn = (event?) => {
     event?.preventDefault()
 
     if (hasActiveClerkSession(win.Clerk)) {
@@ -127,7 +128,7 @@ export const bindHomepageClerkSignIn = ({
 
     showFallbackOverlay(doc)
   }
-  const openSignUp = (event?: Event): void => {
+  const openSignUp = (event?) => {
     event?.preventDefault()
 
     if (hasActiveClerkSession(win.Clerk)) {
@@ -151,7 +152,7 @@ export const bindHomepageClerkSignIn = ({
 
     openSignIn()
   }
-  const signOut = (event?: Event): void => {
+  const signOut = (event?) => {
     event?.preventDefault()
 
     const result = win.Clerk?.signOut?.()
@@ -177,7 +178,7 @@ export const bindHomepageClerkSignIn = ({
     (element): element is AuthElement => element !== null,
   )
 
-  const handleDocumentClick = (event: Event): void => {
+  const handleDocumentClick = (event) => {
     const target = event.target as AuthElement | null
     if (
       target?.closest?.(

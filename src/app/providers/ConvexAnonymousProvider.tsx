@@ -7,10 +7,10 @@ type ConvexAnonymousProviderProps = {
   convexUrl: string
 }
 
-export const ConvexAnonymousProvider = ({
+export function ConvexAnonymousProvider({
   children,
   convexUrl,
-}: ConvexAnonymousProviderProps) => {
+}: ConvexAnonymousProviderProps) {
   const convexClient = useMemo(
     () => new ConvexReactClient(convexUrl, { logger: false }),
     [convexUrl],

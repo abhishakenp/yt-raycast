@@ -8,7 +8,7 @@ interface MockResponseInit {
   json?: unknown | (() => Promise<unknown>)
 }
 
-const mockResponse = (init: MockResponseInit): Response => {
+function mockResponse(init: MockResponseInit): Response {
   const headers = new Map<string, string>()
   if (init.contentType !== undefined) {
     headers.set('content-type', init.contentType)
@@ -20,7 +20,7 @@ const mockResponse = (init: MockResponseInit): Response => {
 
   return {
     headers: {
-      get: (name: string) => headers.get(name.toLowerCase()) ?? null,
+      get: (name) => headers.get(name.toLowerCase()) ?? null,
     },
     text: vi.fn(textImpl) as unknown as Response['text'],
     json: vi.fn(jsonImpl) as unknown as Response['json'],

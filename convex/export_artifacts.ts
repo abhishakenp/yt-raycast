@@ -36,34 +36,36 @@ type PreparedExportArtifact = {
 
 const textEncoder = new TextEncoder()
 
-const errorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error)
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
 
-const bodyBytes = (body: string | Uint8Array): Uint8Array =>
-  typeof body === 'string' ? textEncoder.encode(body) : body
+function bodyBytes(body: string | Uint8Array): Uint8Array {
+  return typeof body === 'string' ? textEncoder.encode(body) : body
+}
 
-const hashBytes = (bytes: Uint8Array): string =>
-  createHash('sha256').update(bytes).digest('hex')
+function hashBytes(bytes: Uint8Array): string {
+  return createHash('sha256').update(bytes).digest('hex')
+}
 
-const storeText = async (ctx: ActionCtx, text: string, contentType: string) =>
-  await ctx.storage.store(new Blob([text], { type: contentType }))
+async function storeText(ctx: ActionCtx, text: string, contentType: string) {
+  return await ctx.storage.store(new Blob([text], { type: contentType }))
+}
 
-const storeBytes = async (
+async function storeBytes(
   ctx: ActionCtx,
   bytes: Uint8Array,
   contentType: string,
-) => {
+) {
   const arrayBuffer = new ArrayBuffer(bytes.byteLength)
   new Uint8Array(arrayBuffer).set(bytes)
   return await ctx.storage.store(new Blob([arrayBuffer], { type: contentType }))
 }
 
-const buildGitHubFiles = async (
-  prepared: PreparedExportArtifact,
-): Promise<{
+async function buildGitHubFiles(prepared: PreparedExportArtifact): Promise<{
   files: Record<string, string>
   download?: BuiltExport
-}> => {
+}> {
   try {
     const { buildOpenUIArtifactFiles } =
       await import('../src/features/exports/services/openui-artifact-files')
@@ -95,13 +97,13 @@ const buildGitHubFiles = async (
   }
 }
 
-const buildDownload = async (
+async function buildDownload(
   prepared: PreparedExportArtifact,
   artifact: {
     files: Record<string, string>
     download?: BuiltExport
   },
-): Promise<BuiltExport> => {
+): Promise<BuiltExport> {
   const { buildDownloadFromArtifactFiles } =
     await import('../src/features/exports/services/openui-artifact-files')
   return await buildDownloadFromArtifactFiles(
@@ -123,11 +125,11 @@ const buildDownload = async (
   )
 }
 
-const deployLakebedIfRequested = async (
+async function deployLakebedIfRequested(
   ctx: ActionCtx,
   prepared: PreparedExportArtifact,
   files: Record<string, string>,
-) => {
+) {
   if (prepared.target !== 'lakebed' || prepared.isPrivate) {
     return
   }

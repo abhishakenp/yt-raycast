@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 const webhookResponseMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+  createFileRoute: (path) => (options) => ({ options, path }),
 }))
 
 vi.mock('@/features/billing/server/webhook-api-response', () => ({
@@ -22,7 +22,7 @@ type RouteWithHandlers = {
   }
 }
 
-const importRoute = async (name: string): Promise<RouteWithHandlers> => {
+async function importRoute(name: string): Promise<RouteWithHandlers> {
   const mod = await import(name)
   return mod.Route as unknown as RouteWithHandlers
 }

@@ -19,12 +19,11 @@ afterEach(() => {
   }
 })
 
-const loadFixture = (name: string): string =>
-  readFileSync(join(fixturesDir, `${name}.openui`), 'utf8')
+function loadFixture(name: string): string {
+  return readFileSync(join(fixturesDir, `${name}.openui`), 'utf8')
+}
 
-const unzipExportFiles = (
-  body: string | Uint8Array,
-): Record<string, string> => {
+function unzipExportFiles(body: string | Uint8Array): Record<string, string> {
   const bytes = typeof body === 'string' ? Buffer.from(body) : body
   const entries = unzipSync(new Uint8Array(bytes))
   const files: Record<string, string> = {}
@@ -34,8 +33,8 @@ const unzipExportFiles = (
   return files
 }
 
-const createMockFetch = (requests: Array<{ body: string; url: string }>) =>
-  (async (url: RequestInfo | URL, init?: RequestInit) => {
+function createMockFetch(requests: Array<{ body: string; url: string }>) {
+  return (async (url, init?) => {
     requests.push({ body: String(init?.body ?? ''), url: String(url) })
     return new Response(
       JSON.stringify({
@@ -47,8 +46,9 @@ const createMockFetch = (requests: Array<{ body: string; url: string }>) =>
       { status: 200, headers: { 'content-type': 'application/json' } },
     )
   }) as typeof fetch
+}
 
-const deployFixture = async (fixtureName: string) => {
+async function deployFixture(fixtureName: string) {
   // Pexels image resolution hits the network when the key is present; force the
   // offline fallback (picsum) so the contract test is hermetic.
   delete process.env.PEXELS_API_KEY

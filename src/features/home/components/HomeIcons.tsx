@@ -60,7 +60,7 @@ export const ZapIcon = () => (
   </svg>
 )
 
-export const ShareIcon = ({
+export function ShareIcon({
   children,
   className,
   id,
@@ -74,26 +74,28 @@ export const ShareIcon = ({
   label: string
   title: string
   onClick?: () => void
-}) => (
-  <button
-    type="button"
-    className={cn(
-      'grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-white/75 shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-all duration-200 hover:-translate-y-px hover:bg-white/[0.1] hover:text-white',
-      className,
-    )}
-    id={id}
-    title={title}
-    aria-label={label}
-    onClick={onClick}
-  >
-    <svg
-      className="size-[18px]"
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      aria-hidden="true"
+}) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        'grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-white/75 shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-all duration-200 hover:-translate-y-px hover:bg-white/[0.1] hover:text-white',
+        className,
+      )}
+      id={id}
+      title={title}
+      aria-label={label}
+      onClick={onClick}
     >
-      {children}
-    </svg>
-  </button>
-)
+      <svg
+        className="size-[18px]"
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        aria-hidden="true"
+      >
+        {children}
+      </svg>
+    </button>
+  )
+}

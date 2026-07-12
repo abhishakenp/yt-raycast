@@ -3,20 +3,24 @@ import { describe, expect, it } from 'vitest'
 import { extractTokens, looksSerif, tokensToThemeVars } from './tokens.ts'
 import type { CapturedPage } from './types.ts'
 
-const stylesMap = (
+function stylesMap(
   entries: Array<[string, Record<string, string>]>,
-): Map<string, Record<string, string>> => new Map(entries)
+): Map<string, Record<string, string>> {
+  return new Map(entries)
+}
 
-const captured = (
+function captured(
   computedStyles: Map<string, Record<string, string>>,
-): CapturedPage => ({
-  url: 'https://example.com/',
-  normalizedUrl: 'https://example.com/',
-  html: '<html><body></body></html>',
-  computedStyles,
-  bboxes: new Map(),
-  assetUrls: [],
-})
+): CapturedPage {
+  return {
+    url: 'https://example.com/',
+    normalizedUrl: 'https://example.com/',
+    html: '<html><body></body></html>',
+    computedStyles,
+    bboxes: new Map(),
+    assetUrls: [],
+  }
+}
 
 describe('clone token extraction', () => {
   it('extracts palette, font, radius, and spacing from captured computed styles', () => {

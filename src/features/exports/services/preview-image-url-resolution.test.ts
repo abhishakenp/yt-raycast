@@ -54,7 +54,7 @@ describe('preview image URL resolution', () => {
   it('reuses the dashboard preview route resolved image instead of re-searching Pexels', async () => {
     process.env.APP_BASE_URL = 'https://ship-fast.test'
     process.env.PEXELS_API_KEY = 'pexels-key'
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const fetchMock = vi.fn(async (input) => {
       const url = new URL(String(input))
       if (url.origin === 'https://ship-fast.test') {
         return new Response(null, {

@@ -63,21 +63,23 @@ const blockedPolicyPatterns = [
   /\b(malware|ransomware|keylogger|trojan|botnet)\b[\s\S]{0,40}\b(site|website|landing|download|builder|dashboard|panel)\b/i,
 ]
 
-export const normalizeSpaces = (value: string): string =>
-  value.replace(/\s+/g, ' ').trim()
+export function normalizeSpaces(value: string): string {
+  return value.replace(/\s+/g, ' ').trim()
+}
 
-export const normalizePromptCacheKey = (
+export function normalizePromptCacheKey(
   prompt: string,
   preferredLanguage = 'en',
-): string =>
-  `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(
+): string {
+  return `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(
     prompt,
   )
     .toLowerCase()
     .replace(/[^a-z0-9\p{L}\p{N}]+/gu, ' ')
     .trim()}`
+}
 
-export const isLikelyGibberishPrompt = (prompt: string): boolean => {
+export function isLikelyGibberishPrompt(prompt: string): boolean {
   const text = normalizeSpaces(prompt)
   if (text.length < 8) return true
   const letters = (text.match(/[\p{L}]/gu) ?? []).length
@@ -112,7 +114,7 @@ export const isLikelyGibberishPrompt = (prompt: string): boolean => {
   return collapsed.length >= 8 && /(.)\1{5,}/.test(collapsed)
 }
 
-export const assertContentPolicy = (prompt: string) => {
+export function assertContentPolicy(prompt: string) {
   blockedPolicyPatterns.some((pattern) => pattern.test(prompt)) &&
     (() => {
       throw new ConvexError({
@@ -122,10 +124,10 @@ export const assertContentPolicy = (prompt: string) => {
     })()
 }
 
-export const normalizeOptionalHttpsUrl = (
+export function normalizeOptionalHttpsUrl(
   value: string | undefined,
   label: string,
-): string | undefined => {
+): string | undefined {
   const raw = value?.trim()
   if (!raw) return undefined
   try {
@@ -141,7 +143,7 @@ export const normalizeOptionalHttpsUrl = (
   }
 }
 
-export const createFingerprint = (values: string[]): string | undefined => {
+export function createFingerprint(values: string[]): string | undefined {
   const input = values.filter(Boolean).join('\n')
   if (!input) return undefined
   let hash = 2166136261
@@ -152,7 +154,7 @@ export const createFingerprint = (values: string[]): string | undefined => {
   return (hash >>> 0).toString(16).padStart(8, '0')
 }
 
-export const assertPrompt = (prompt: string): void => {
+export function assertPrompt(prompt: string): void {
   prompt.trim().length > 0 ||
     (() => {
       throw new ConvexError({

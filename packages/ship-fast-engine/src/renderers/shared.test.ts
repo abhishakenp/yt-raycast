@@ -41,7 +41,7 @@ let routeToNextSegments: SharedModule['routeToNextSegments']
 let serializeModule: SharedModule['serializeModule']
 let slimSiteSpecForBundle: SharedModule['slimSiteSpecForBundle']
 
-const evaluateCloneRuntime = (source: string) => {
+function evaluateCloneRuntime(source: string) {
   const dom = new JSDOM(
     '<!doctype html><html data-before="yes"><head><title>Before</title></head><body></body></html>',
   )
@@ -58,7 +58,7 @@ const evaluateCloneRuntime = (source: string) => {
   return { dom, exports }
 }
 
-const installDomGlobals = (dom: JSDOM) => {
+function installDomGlobals(dom: JSDOM) {
   const previous = {
     document: globalThis.document,
     Element: globalThis.Element,
@@ -80,10 +80,10 @@ const installDomGlobals = (dom: JSDOM) => {
   }
 }
 
-const compileExactCloneComponent = async (
+async function compileExactCloneComponent(
   source: string,
   mode: 'react' | 'nextjs',
-) => {
+) {
   const runtimeId = '../lib/clone-runtime'
   const routerId = mode === 'react' ? 'react-router-dom' : 'next/navigation'
   const result = await build({
@@ -149,7 +149,7 @@ const compileExactCloneComponent = async (
     module,
     // eslint-disable-next-line import/no-commonjs
     module.exports,
-    (specifier: string) => {
+    (specifier) => {
       if (specifier === 'react') return React
       if (specifier === 'react/jsx-runtime') return ReactJsxRuntime
       throw new Error(`Unexpected import: ${specifier}`)
@@ -166,10 +166,10 @@ const compileExactCloneComponent = async (
   return Component as React.ComponentType<{ page: Record<string, unknown> }>
 }
 
-const renderExactCloneAndClickLinks = async (
+async function renderExactCloneAndClickLinks(
   mode: 'react' | 'nextjs',
   navigate: ReturnType<typeof vi.fn>,
-) => {
+) {
   const dom = new JSDOM(
     '<!doctype html><html><head><title>Before</title></head><body><div data-sf-clone-ssr>SSR fallback</div></body></html>',
     { url: 'https://ship-fast.test/' },
@@ -203,7 +203,7 @@ const renderExactCloneAndClickLinks = async (
     for (const id of ['hash', 'mail', 'external']) {
       dom.window.document
         .getElementById(id)
-        ?.addEventListener('click', (event: Event) => event.preventDefault())
+        ?.addEventListener('click', (event) => event.preventDefault())
     }
 
     fireEvent.click(dom.window.document.getElementById('internal')!)

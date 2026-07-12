@@ -81,18 +81,17 @@ function withSSRProviders(
   )
 }
 
-const openUiErrorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : String(error)
+function openUiErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
+}
 
-const openUiErrorStack = (error: unknown) =>
-  error instanceof Error && typeof error.stack === 'string'
+function openUiErrorStack(error: unknown) {
+  return error instanceof Error && typeof error.stack === 'string'
     ? error.stack
     : undefined
+}
 
-const openUiRenderDiagnostics = (
-  source: string,
-  preprocessed: string | null,
-) => {
+function openUiRenderDiagnostics(source: string, preprocessed: string | null) {
   try {
     return {
       sourceLength: source.length,

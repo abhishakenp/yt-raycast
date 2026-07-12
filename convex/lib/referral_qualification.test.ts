@@ -14,45 +14,53 @@ import {
 type ReferralDoc = Doc<'referrals'>
 type ReferralRewardDoc = Doc<'referralRewards'>
 
-const referralId = (suffix: string) => `ref_${suffix}` as Id<'referrals'>
-const rewardId = (suffix: string) => `reward_${suffix}` as Id<'referralRewards'>
+function referralId(suffix: string) {
+  return `ref_${suffix}` as Id<'referrals'>
+}
+function rewardId(suffix: string) {
+  return `reward_${suffix}` as Id<'referralRewards'>
+}
 
-const referralDoc = (
+function referralDoc(
   overrides: Partial<ReferralDoc> & {
     referrerUserId: string
     referredUserId: string
   },
-): ReferralDoc => ({
-  _id: referralId(`${overrides.referredUserId}`),
-  _creationTime: 1,
-  code: 'TESTCODE',
-  status: 'pending',
-  createdAt: 1,
-  updatedAt: 1,
-  ...overrides,
-})
+): ReferralDoc {
+  return {
+    _id: referralId(`${overrides.referredUserId}`),
+    _creationTime: 1,
+    code: 'TESTCODE',
+    status: 'pending',
+    createdAt: 1,
+    updatedAt: 1,
+    ...overrides,
+  }
+}
 
-const rewardDoc = (
+function rewardDoc(
   overrides: Partial<ReferralRewardDoc> & { userId: string },
-): ReferralRewardDoc => ({
-  _id: rewardId(overrides.userId),
-  _creationTime: 1,
-  unlocked: false,
-  qualifiedCount: 0,
-  discountPercent: REFERRAL_DISCOUNT_PERCENT,
-  updatedAt: 1,
-  ...overrides,
-})
+): ReferralRewardDoc {
+  return {
+    _id: rewardId(overrides.userId),
+    _creationTime: 1,
+    unlocked: false,
+    qualifiedCount: 0,
+    discountPercent: REFERRAL_DISCOUNT_PERCENT,
+    updatedAt: 1,
+    ...overrides,
+  }
+}
 
 /**
  * Build a mock MutationCtx that supports the db operations used by the
  * referral qualification helpers: query().withIndex().collect()/first(),
  * insert(), and patch().
  */
-const mockCtx = (input: {
+function mockCtx(input: {
   referrals?: ReferralDoc[]
   rewards?: ReferralRewardDoc[]
-}) => {
+}) {
   const referrals = [...(input.referrals ?? [])]
   const rewards = [...(input.rewards ?? [])]
   const inserts: Array<{ table: string; doc: Record<string, unknown> }> = []
@@ -60,22 +68,17 @@ const mockCtx = (input: {
 
   const db = {
     get: async () => null,
-    query: (table: 'referrals' | 'referralRewards') => {
+    query: (table) => {
       const rows =
         table === 'referrals'
           ? (referrals as Array<Record<string, unknown>>)
           : (rewards as Array<Record<string, unknown>>)
 
       const builder = {
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -95,14 +98,14 @@ const mockCtx = (input: {
       }
       return builder
     },
-    insert: async (table: string, doc: Record<string, unknown>) => {
+    insert: async (table, doc) => {
       inserts.push({ table, doc })
       if (table === 'referralRewards') {
         rewards.push(doc as ReferralRewardDoc)
       }
       return `inserted_${table}_${rewards.length}` as Id<'referralRewards'>
     },
-    patch: async (id: string, patch: Record<string, unknown>) => {
+    patch: async (id, patch) => {
       patches.push({ id, patch })
       // Apply the patch to the in-memory store so subsequent reads see it.
       const reward = rewards.find((r) => r._id === id)

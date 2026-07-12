@@ -6,8 +6,8 @@ const DB_OBSERVED_PROMPT =
   'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.'
 const DB_OBSERVED_SESSION_ID = 'k571fbfbggczv4pfz2evtrxdzx89qqbb'
 
-const textStream = (chunks: string[]) =>
-  new ReadableStream<Uint8Array>({
+function textStream(chunks: string[]) {
+  return new ReadableStream<Uint8Array>({
     start(controller) {
       const encoder = new TextEncoder()
       for (const chunk of chunks) {
@@ -16,18 +16,20 @@ const textStream = (chunks: string[]) =>
       controller.close()
     },
   })
+}
 
-const throwingStream = (error: Error) =>
-  new ReadableStream<Uint8Array>({
+function throwingStream(error: Error) {
+  return new ReadableStream<Uint8Array>({
     pull() {
       throw error
     },
   })
+}
 
-const collect = async (
+async function collect(
   user = DB_OBSERVED_PROMPT,
   signal = new AbortController().signal,
-): Promise<TalaasChunk[]> => {
+): Promise<TalaasChunk[]> {
   const chunks: TalaasChunk[] = []
   for await (const chunk of talaasChat(
     'llama3.1-8B',

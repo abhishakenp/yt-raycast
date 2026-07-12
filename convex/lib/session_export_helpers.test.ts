@@ -82,7 +82,7 @@ const restoreEnv = () => {
 }
 
 if (viCompat.setSystemTime === undefined) {
-  viCompat.setSystemTime = (time: string | number | Date) => {
+  viCompat.setSystemTime = (time) => {
     const timestamp =
       time instanceof Date
         ? time.getTime()
@@ -94,7 +94,7 @@ if (viCompat.setSystemTime === undefined) {
   }
 }
 if (viCompat.stubEnv === undefined) {
-  viCompat.stubEnv = (name: string, value: string | boolean | undefined) => {
+  viCompat.stubEnv = (name, value) => {
     if (value === undefined) {
       delete process.env[name]
     } else {
@@ -111,8 +111,8 @@ if (viCompat.unstubAllEnvs === undefined) {
   }
 }
 
-const exportDoc = (overrides: Partial<ExportRecord> = {}): ExportRecord =>
-  ({
+function exportDoc(overrides: Partial<ExportRecord> = {}): ExportRecord {
+  return {
     _id: 'export_html' as Id<'exports'>,
     _creationTime: 1,
     sessionId,
@@ -125,12 +125,13 @@ const exportDoc = (overrides: Partial<ExportRecord> = {}): ExportRecord =>
     createdAt: 100,
     updatedAt: 120,
     ...overrides,
-  }) as ExportRecord
+  } as ExportRecord
+}
 
-const exportArtifactDoc = (
+function exportArtifactDoc(
   overrides: Partial<ExportArtifactRecord> = {},
-): ExportArtifactRecord =>
-  ({
+): ExportArtifactRecord {
+  return {
     _id: 'export_artifact_html' as Id<'exportArtifacts'>,
     _creationTime: 1,
     sessionId,
@@ -146,10 +147,11 @@ const exportArtifactDoc = (
     createdAt: 100,
     updatedAt: 120,
     ...overrides,
-  }) as ExportArtifactRecord
+  } as ExportArtifactRecord
+}
 
-const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
-  ({
+function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
+  return {
     _id: sessionId,
     _creationTime: 1,
     workspace: 'workspace',
@@ -163,10 +165,11 @@ const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
     updatedAt: 120,
     userId,
     ...overrides,
-  }) as SessionRecord
+  } as SessionRecord
+}
 
-const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
-  ({
+function previewDoc(overrides: Partial<PreviewRecord> = {}): PreviewRecord {
+  return {
     _id: 'preview_export_helpers' as Id<'previews'>,
     _creationTime: 1,
     sessionId,
@@ -176,12 +179,13 @@ const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
     source: 'generation',
     createdAt: 110,
     ...overrides,
-  }) as PreviewRecord
+  } as PreviewRecord
+}
 
-const generatedModuleDoc = (
+function generatedModuleDoc(
   overrides: Partial<GeneratedModuleRecord> = {},
-): GeneratedModuleRecord =>
-  ({
+): GeneratedModuleRecord {
+  return {
     _id: 'generated_home_export_helpers' as Id<'generatedModules'>,
     _creationTime: 1,
     sessionId,
@@ -191,10 +195,11 @@ const generatedModuleDoc = (
     createdAt: 110,
     updatedAt: 120,
     ...overrides,
-  }) as GeneratedModuleRecord
+  } as GeneratedModuleRecord
+}
 
-const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
-  ({
+function siteSpecDoc(overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord {
+  return {
     _id: 'site_spec_export_helpers' as Id<'siteSpecs'>,
     _creationTime: 1,
     sessionId,
@@ -202,10 +207,11 @@ const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
     createdAt: 110,
     updatedAt: 120,
     ...overrides,
-  }) as SiteSpecRecord
+  } as SiteSpecRecord
+}
 
-const editDoc = (overrides: Partial<EditRecord> = {}): EditRecord =>
-  ({
+function editDoc(overrides: Partial<EditRecord> = {}): EditRecord {
+  return {
     _id: 'edit_export_helpers' as Id<'edits'>,
     _creationTime: 1,
     sessionId,
@@ -215,12 +221,13 @@ const editDoc = (overrides: Partial<EditRecord> = {}): EditRecord =>
     afterText: 'Launch',
     createdAt: 130,
     ...overrides,
-  }) as EditRecord
+  } as EditRecord
+}
 
-const subscriptionDoc = (
+function subscriptionDoc(
   overrides: Partial<SubscriptionRecord> = {},
-): SubscriptionRecord =>
-  ({
+): SubscriptionRecord {
+  return {
     _id: 'subscription_active' as Id<'subscriptions'>,
     _creationTime: 1,
     userId,
@@ -230,30 +237,32 @@ const subscriptionDoc = (
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as SubscriptionRecord
+  } as SubscriptionRecord
+}
 
-const creditDoc = (
+function creditDoc(
   overrides: Partial<CustomerCreditsRecord> = {},
-): CustomerCreditsRecord =>
-  ({
+): CustomerCreditsRecord {
+  return {
     _id: 'credit_balance' as Id<'customerCredits'>,
     _creationTime: 1,
     userId,
     remaining: 2,
     updatedAt: 1,
     ...overrides,
-  }) as CustomerCreditsRecord
+  } as CustomerCreditsRecord
+}
 
-const ctxFor = (input: {
+function ctxFor(input: {
   subscriptions?: SubscriptionRecord[]
   customerCredits?: CustomerCreditsRecord[]
-}) => {
+}) {
   const subscriptions = [...(input.subscriptions ?? [])]
   const customerCredits = [...(input.customerCredits ?? [])]
   const creditLedger: CreditLedgerRecord[] = []
   let nextLedgerId = 1
 
-  const rowsFor = (table: string) => {
+  const rowsFor = (table) => {
     switch (table) {
       case 'subscriptions':
         return subscriptions
@@ -265,16 +274,11 @@ const ctxFor = (input: {
   }
 
   const db = {
-    query: (table: 'subscriptions' | 'customerCredits') => ({
-      withIndex: (
-        _indexName: 'by_userId',
-        applyIndex: (index: {
-          eq: (field: string, value: unknown) => typeof index
-        }) => unknown,
-      ) => {
+    query: (table) => ({
+      withIndex: (_indexName, applyIndex) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field: string, value: unknown) => {
+          eq: (field, value) => {
             filters.set(field, value)
             return index
           },
@@ -286,15 +290,12 @@ const ctxFor = (input: {
           rowsFor(table).filter((row) => row.userId === filters.get('userId'))
 
         return {
-          take: async (limit: number) => matches().slice(0, limit),
+          take: async (limit) => matches().slice(0, limit),
           first: async () => matches()[0] ?? null,
         }
       },
     }),
-    patch: async (
-      id: Id<'customerCredits'>,
-      value: Partial<CustomerCreditsRecord>,
-    ) => {
+    patch: async (id, value) => {
       const index = customerCredits.findIndex((credit) => credit._id === id)
       expect(index).toBeGreaterThanOrEqual(0)
       customerCredits[index] = {
@@ -302,10 +303,7 @@ const ctxFor = (input: {
         ...value,
       } as CustomerCreditsRecord
     },
-    insert: async (
-      table: 'creditLedger',
-      value: Omit<CreditLedgerRecord, '_id' | '_creationTime'>,
-    ) => {
+    insert: async (table, value) => {
       expect(table).toBe('creditLedger')
       const id = `credit_ledger_${nextLedgerId++}` as Id<'creditLedger'>
       creditLedger.push({
@@ -324,21 +322,16 @@ const ctxFor = (input: {
   }
 }
 
-const queryCtxFor = (exportRows: ExportRecord[]) => {
+function queryCtxFor(exportRows: ExportRecord[]) {
   const db = {
-    query: (table: 'exports') => {
+    query: (table) => {
       expect(table).toBe('exports')
 
       return {
-        withIndex: (
-          _indexName: 'by_sessionId_target',
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -362,7 +355,7 @@ const queryCtxFor = (exportRows: ExportRecord[]) => {
   return { db } as Pick<QueryCtx, 'db'>
 }
 
-const workflowCtxFor = (input: {
+function workflowCtxFor(input: {
   identityUserId?: string
   sessions?: SessionRecord[]
   previews?: PreviewRecord[]
@@ -379,7 +372,7 @@ const workflowCtxFor = (input: {
   }>
   subscriptions?: SubscriptionRecord[]
   customerCredits?: CustomerCreditsRecord[]
-}) => {
+}) {
   const sessions = [...(input.sessions ?? [sessionDoc()])]
   const previews = [...(input.previews ?? [previewDoc()])]
   const generatedModules = [
@@ -409,7 +402,7 @@ const workflowCtxFor = (input: {
   let nextLedgerId = 1
   let nextEventId = 1
 
-  const rowsFor = (table: string) => {
+  const rowsFor = (table) => {
     switch (table) {
       case 'previews':
         return previews
@@ -434,14 +427,11 @@ const workflowCtxFor = (input: {
     }
   }
 
-  const matchesFilters = (
-    row: Record<string, unknown>,
-    filters: Map<string, unknown>,
-  ) =>
+  const matchesFilters = (row, filters) =>
     Array.from(filters.entries()).every(
       ([field, value]) => row[field] === value,
     )
-  const orderValue = (row: Record<string, unknown>) =>
+  const orderValue = (row) =>
     typeof row.version === 'number'
       ? row.version
       : typeof row._creationTime === 'number'
@@ -449,18 +439,12 @@ const workflowCtxFor = (input: {
         : 0
 
   const db = {
-    get: async (id: Id<'sessions'>) =>
-      sessions.find((session) => session._id === id) ?? null,
-    query: (table: string) => ({
-      withIndex: (
-        _indexName: string,
-        applyIndex: (index: {
-          eq: (field: string, value: unknown) => typeof index
-        }) => unknown,
-      ) => {
+    get: async (id) => sessions.find((session) => session._id === id) ?? null,
+    query: (table) => ({
+      withIndex: (_indexName, applyIndex) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field: string, value: unknown) => {
+          eq: (field, value) => {
             filters.set(field, value)
             return index
           },
@@ -474,9 +458,9 @@ const workflowCtxFor = (input: {
           )
         const queryResult = {
           first: async () => matchingRows()[0] ?? null,
-          take: async (limit: number) => matchingRows().slice(0, limit),
+          take: async (limit) => matchingRows().slice(0, limit),
           collect: async () => matchingRows(),
-          order: (direction: 'asc' | 'desc') => ({
+          order: (direction) => ({
             first: async () => {
               const rows = [...matchingRows()]
               rows.sort((left, right) => {
@@ -498,7 +482,7 @@ const workflowCtxFor = (input: {
         return queryResult
       },
     }),
-    insert: async (table: string, value: Record<string, unknown>) => {
+    insert: async (table, value) => {
       if (table === 'exports') {
         const id = `export_created_${nextExportId++}` as Id<'exports'>
         exportRows.push({
@@ -542,7 +526,7 @@ const workflowCtxFor = (input: {
 
       throw new Error(`Unexpected insert table ${table}`)
     },
-    patch: async (id: string, value: Record<string, unknown>) => {
+    patch: async (id, value) => {
       const exportIndex = exportRows.findIndex((row) => row._id === id)
       if (exportIndex >= 0) {
         exportRows[exportIndex] = {
@@ -585,22 +569,11 @@ const workflowCtxFor = (input: {
   } as unknown as MutationCtx['auth'] & QueryCtx['auth']
 
   const storage = {
-    getUrl: async (storageId: Id<'_storage'>) =>
-      `https://storage.test/${storageId}`,
+    getUrl: async (storageId) => `https://storage.test/${storageId}`,
   } as QueryCtx['storage']
 
   const scheduler = {
-    runAfter: async (
-      delayMs: number,
-      _reference: Parameters<MutationCtx['scheduler']['runAfter']>[1],
-      args: {
-        sessionId: Id<'sessions'>
-        target: string
-        previewVersion: number
-        autoDeployPublic?: boolean
-        buildStartedAt?: number
-      },
-    ) => {
+    runAfter: async (delayMs, _reference, args) => {
       scheduledBuilds.push({ delayMs, args })
     },
   } as unknown as MutationCtx['scheduler']

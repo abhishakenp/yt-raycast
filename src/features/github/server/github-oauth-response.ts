@@ -28,53 +28,63 @@ const OAUTH_STATE_TTL_MS = 10 * 60 * 1000
 const GITHUB_REPO_SCOPE = 'repo'
 const VALID_TARGETS = new Set(['html', 'react', 'next', 'lakebed'])
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const normalizeString = (value: unknown): string =>
-  typeof value === 'string' ? value.trim() : ''
+function normalizeString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
 
-const getBearerToken = (request: Request): string | null => {
+function getBearerToken(request: Request): string | null {
   const match = (request.headers.get('authorization') ?? '').match(
     /^Bearer\s+(.+)$/i,
   )
   return match?.[1]?.trim() || null
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
 
-const getGitHubClientId = (env: GitHubOAuthEnv): string =>
-  normalizeString(env.GITHUB_CLIENT_ID)
+function getGitHubClientId(env: GitHubOAuthEnv): string {
+  return normalizeString(env.GITHUB_CLIENT_ID)
+}
 
-const getGitHubClientSecret = (env: GitHubOAuthEnv): string =>
-  normalizeString(env.GITHUB_CLIENT_SECRET)
+function getGitHubClientSecret(env: GitHubOAuthEnv): string {
+  return normalizeString(env.GITHUB_CLIENT_SECRET)
+}
 
-const getGitHubAuthorizeUrl = (env: GitHubOAuthEnv): string =>
-  normalizeString(env.GITHUB_OAUTH_AUTHORIZE_URL) || DEFAULT_AUTHORIZE_URL
+function getGitHubAuthorizeUrl(env: GitHubOAuthEnv): string {
+  return (
+    normalizeString(env.GITHUB_OAUTH_AUTHORIZE_URL) || DEFAULT_AUTHORIZE_URL
+  )
+}
 
-const getGitHubTokenUrl = (env: GitHubOAuthEnv): string =>
-  normalizeString(env.GITHUB_OAUTH_TOKEN_URL) || DEFAULT_TOKEN_URL
+function getGitHubTokenUrl(env: GitHubOAuthEnv): string {
+  return normalizeString(env.GITHUB_OAUTH_TOKEN_URL) || DEFAULT_TOKEN_URL
+}
 
-const getGitHubApiBase = (env: GitHubOAuthEnv): string =>
-  (
+function getGitHubApiBase(env: GitHubOAuthEnv): string {
+  return (
     normalizeString(env.SHIP_FAST_GITHUB_API_BASE) || DEFAULT_GITHUB_API_BASE
   ).replace(/\/+$/, '')
+}
 
-const getCallbackUrl = (request: Request, env: GitHubOAuthEnv): string => {
+function getCallbackUrl(request: Request, env: GitHubOAuthEnv): string {
   const configured = normalizeString(env.GITHUB_OAUTH_REDIRECT_URI)
   if (configured) return configured
   const url = new URL(request.url)
   return `${url.origin}/api/github/connect/callback`
 }
 
-const safeReturnTo = (value: unknown, requestUrl: string): string => {
+function safeReturnTo(value: unknown, requestUrl: string): string {
   const fallback = '/'
   const raw = normalizeString(value)
   if (!raw) return fallback
@@ -85,11 +95,11 @@ const safeReturnTo = (value: unknown, requestUrl: string): string => {
   return `${parsed.pathname}${parsed.search}${parsed.hash}` || fallback
 }
 
-const appendGitHubStatus = (
+function appendGitHubStatus(
   returnTo: string,
   requestUrl: string,
   status: 'connected' | 'cancelled' | 'error',
-): string => {
+): string {
   const requestOrigin = new URL(requestUrl).origin
   const parsed = new URL(returnTo, requestOrigin)
   if (parsed.origin !== requestOrigin) return '/'
@@ -97,20 +107,21 @@ const appendGitHubStatus = (
   return `${parsed.pathname}${parsed.search}${parsed.hash}`
 }
 
-const redirect = (location: string): Response =>
-  new Response(null, {
+function redirect(location: string): Response {
+  return new Response(null, {
     status: 302,
     headers: { Location: location },
   })
+}
 
-const createState = (): string => {
+function createState(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID()
   }
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
-const readJsonBody = async (request: Request): Promise<GitHubConnectBody> => {
+async function readJsonBody(request: Request): Promise<GitHubConnectBody> {
   try {
     const body = (await request.json()) as unknown
     return isRecord(body) ? body : {}
@@ -119,13 +130,14 @@ const readJsonBody = async (request: Request): Promise<GitHubConnectBody> => {
   }
 }
 
-const parseScopes = (value: unknown): string[] =>
-  normalizeString(value)
+function parseScopes(value: unknown): string[] {
+  return normalizeString(value)
     .split(',')
     .map((scope) => scope.trim().toLowerCase())
     .filter(Boolean)
+}
 
-const parseTokenResponse = (payload: unknown): GitHubTokenPayload => {
+function parseTokenResponse(payload: unknown): GitHubTokenPayload {
   if (!isRecord(payload)) {
     throw new Error('GitHub authorization did not return a token.')
   }
@@ -146,7 +158,7 @@ const parseTokenResponse = (payload: unknown): GitHubTokenPayload => {
   }
 }
 
-const parseGitHubUser = (payload: unknown): GitHubUser => {
+function parseGitHubUser(payload: unknown): GitHubUser {
   if (!isRecord(payload)) throw new Error('Unable to load GitHub user.')
   const id = payload.id
   const login = normalizeString(payload.login)
@@ -156,12 +168,12 @@ const parseGitHubUser = (payload: unknown): GitHubUser => {
   return { id, login }
 }
 
-const exchangeCodeForToken = async (
+async function exchangeCodeForToken(
   code: string,
   request: Request,
   env: GitHubOAuthEnv,
   fetchFn: FetchFn,
-): Promise<GitHubTokenPayload> => {
+): Promise<GitHubTokenPayload> {
   const clientId = getGitHubClientId(env)
   const clientSecret = getGitHubClientSecret(env)
   if (!clientId || !clientSecret) {
@@ -186,11 +198,11 @@ const exchangeCodeForToken = async (
   return parseTokenResponse(await response.json())
 }
 
-const fetchGitHubUser = async (
+async function fetchGitHubUser(
   token: string,
   env: GitHubOAuthEnv,
   fetchFn: FetchFn,
-): Promise<GitHubUser> => {
+): Promise<GitHubUser> {
   const response = await fetchFn(`${getGitHubApiBase(env)}/user`, {
     headers: {
       Authorization: `Bearer ${token}`,

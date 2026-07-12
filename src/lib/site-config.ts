@@ -1,4 +1,6 @@
-const trimSlash = (u: string) => u.replace(/\/+$/, '')
+function trimSlash(u: string) {
+  return u.replace(/\/+$/, '')
+}
 
 export const SITE_NAME = (
   process.env.NEXT_PUBLIC_SITE_NAME ?? 'Ship Fast'

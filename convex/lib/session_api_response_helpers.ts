@@ -15,14 +15,15 @@ export type SessionApiResponseArtifacts = {
   siteSpec?: Doc<'siteSpecs'> | null
 }
 
-const isCompletedTask = (task: Doc<'tasks'>): boolean =>
-  task.status === 'succeeded' || task.status === 'failed'
+function isCompletedTask(task: Doc<'tasks'>): boolean {
+  return task.status === 'succeeded' || task.status === 'failed'
+}
 
-const serializeDeployment = (
+function serializeDeployment(
   session: Doc<'sessions'>,
   deployment: Doc<'deployments'> | null,
-) =>
-  deployment === null
+) {
+  return deployment === null
     ? session.deploymentSlug !== undefined &&
       session.deploymentUrl !== undefined
       ? {
@@ -36,11 +37,12 @@ const serializeDeployment = (
         url: deployment.url,
         status: deployment.status,
       }
+}
 
-export const serializeSessionApiResponse = (
+export function serializeSessionApiResponse(
   session: Doc<'sessions'>,
   artifacts: SessionApiResponseArtifacts,
-) => {
+) {
   const sortedTasks = [...artifacts.tasks].sort(
     (left, right) => (left.order ?? 0) - (right.order ?? 0),
   )
@@ -121,10 +123,10 @@ export const serializeSessionApiResponse = (
   }
 }
 
-export const loadSessionApiResponse = async (
+export async function loadSessionApiResponse(
   ctx: SessionApiResponseCtx,
   lookup: string,
-) => {
+) {
   const sessionId: Id<'sessions'> | null = ctx.db.normalizeId(
     'sessions',
     lookup,

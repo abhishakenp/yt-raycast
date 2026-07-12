@@ -19,7 +19,7 @@ import { IntroTyping } from './IntroTyping'
 import { IntroMediaChips } from './IntroMediaChips'
 
 // ─── helpers ───────────────────────────────────────────────────────────────
-const installMatchMedia = (matches: boolean) => {
+function installMatchMedia(matches: boolean) {
   vi.stubGlobal(
     'matchMedia',
     vi.fn().mockReturnValue({
@@ -67,7 +67,7 @@ const STATUS_LINES = [
   'MATERIALIZING COMPONENTS',
 ] as const
 
-const logoContainer = (): HTMLElement => {
+function logoContainer(): HTMLElement {
   const img = document.querySelector(
     'img[alt="Ship Fast Logo"]',
   ) as HTMLImageElement | null
@@ -75,13 +75,13 @@ const logoContainer = (): HTMLElement => {
   return img.parentElement?.parentElement as HTMLElement
 }
 
-const overlayEl = (): HTMLElement => {
+function overlayEl(): HTMLElement {
   const el = screen.getByRole('status')
   if (!el) throw new Error('intro overlay not found')
   return el as HTMLElement
 }
 
-const statusLineText = (): string | null => {
+function statusLineText(): string | null {
   const overlay = overlayEl()
   const candidates = Array.from(overlay.querySelectorAll('div'))
   const line = candidates.find((div) => {

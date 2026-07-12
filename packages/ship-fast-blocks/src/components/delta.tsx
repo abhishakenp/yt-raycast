@@ -110,7 +110,7 @@ function DeltaIcon({
 
   const mergedClassName = cn(className)
 
-  const shell = (node: React.ReactElement) =>
+  const shell = (node) =>
     filled ? <FilledShell value={resolvedValue}>{node}</FilledShell> : node
 
   const slotProps = filled ? {} : { 'data-slot': 'delta-icon' as const }

@@ -22,24 +22,29 @@ export type PreviewState = {
   versions: PreviewVersion[]
 }
 
-export const createEmptyPreviewState = (): PreviewState => ({
-  currentVersion: 0,
-  versions: [],
-})
+export function createEmptyPreviewState(): PreviewState {
+  return {
+    currentVersion: 0,
+    versions: [],
+  }
+}
 
-export const getCurrentPreview = (
+export function getCurrentPreview(
   state: PreviewState,
-): PreviewVersion | undefined =>
-  state.versions.find((version) => version.version === state.currentVersion)
+): PreviewVersion | undefined {
+  return state.versions.find(
+    (version) => version.version === state.currentVersion,
+  )
+}
 
-export const appendPreviewVersion = (
+export function appendPreviewVersion(
   state: PreviewState,
   input: {
     html: string
     source: PreviewSource
     createdAt: number
   },
-): PreviewState => {
+): PreviewState {
   const nextVersion = state.currentVersion + 1
 
   return {
@@ -56,11 +61,11 @@ export const appendPreviewVersion = (
   }
 }
 
-export const restorePreviewVersion = (
+export function restorePreviewVersion(
   state: PreviewState,
   version: number,
   createdAt: number,
-): PreviewState => {
+): PreviewState {
   const preview = state.versions.find(
     (candidate) => candidate.version === version,
   )

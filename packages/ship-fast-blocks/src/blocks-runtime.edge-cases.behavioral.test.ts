@@ -66,8 +66,9 @@ function MedusaProbe() {
   )
 }
 
-const readProbe = (container: HTMLElement): Record<string, unknown> =>
-  JSON.parse(container.textContent ?? '{}')
+function readProbe(container: HTMLElement): Record<string, unknown> {
+  return JSON.parse(container.textContent ?? '{}')
+}
 
 // The optional style tokens that not every preset defines (fonts, shadow
 // matrix, letter-spacing, spacing, radius). THEME_VAR_KEYS (44) minus these 12

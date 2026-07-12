@@ -69,10 +69,11 @@ let authInitPromise: Promise<void> | null = null
 let authInitialized = false
 const authListeners = new Set<(value: LakebedAuthValue) => void>()
 
-const browserWindow = (): LakebedWindow | null =>
-  typeof window === 'undefined' ? null : (window as LakebedWindow)
+function browserWindow(): LakebedWindow | null {
+  return typeof window === 'undefined' ? null : (window as LakebedWindow)
+}
 
-const browserStorage = (): Storage | null => {
+function browserStorage(): Storage | null {
   try {
     return browserWindow()?.localStorage ?? null
   } catch {
@@ -80,7 +81,7 @@ const browserStorage = (): Storage | null => {
   }
 }
 
-const browserSessionStorage = (): Storage | null => {
+function browserSessionStorage(): Storage | null {
   try {
     return browserWindow()?.sessionStorage ?? null
   } catch {
@@ -88,7 +89,7 @@ const browserSessionStorage = (): Storage | null => {
   }
 }
 
-const parseJson = (value: string | null): unknown => {
+function parseJson(value: string | null): unknown {
   try {
     return value ? JSON.parse(value) : null
   } catch {
@@ -105,7 +106,7 @@ const currentGuestName = () => {
   )
 }
 
-const normalizeBasePathValue = (value: unknown): string => {
+function normalizeBasePathValue(value: unknown): string {
   const clean = String(value ?? '').replace(/\/+$/g, '')
   return clean === '/' ? '' : clean
 }
@@ -123,7 +124,7 @@ const currentRoute = () => {
 
 const currentPath = () => browserWindow()?.location.pathname ?? '/'
 
-const normalizeReturnTo = (value: string | undefined | null): string | null => {
+function normalizeReturnTo(value: string | undefined | null): string | null {
   const win = browserWindow()
   if (!win || !value) return null
 
@@ -141,14 +142,16 @@ const normalizeReturnTo = (value: string | undefined | null): string | null => {
 
 const fallbackRoute = () => basePath() || '/'
 
-const deriveRedirectUri = (path: string) =>
-  new URL(
+function deriveRedirectUri(path: string) {
+  return new URL(
     path,
     browserWindow()?.location.origin ?? 'http://localhost',
   ).toString()
+}
 
-const deriveClientIdFromRedirectUri = (redirectUri: string) =>
-  `origin:${new URL(redirectUri).origin}`
+function deriveClientIdFromRedirectUri(redirectUri: string) {
+  return `origin:${new URL(redirectUri).origin}`
+}
 
 function resolveGoogleAuthOptions(
   options: GoogleAuthOptions = {},
@@ -187,7 +190,7 @@ const randomString = (length = 64) => {
   return value
 }
 
-const bytesToBase64Url = (bytes: Uint8Array) => {
+function bytesToBase64Url(bytes: Uint8Array) {
   let binary = ''
   for (const byte of bytes) {
     binary += String.fromCharCode(byte)
@@ -543,7 +546,7 @@ export function SignInWithGoogle({
     {
       ...props,
       disabled,
-      onClick: (event: MouseEvent<HTMLButtonElement>) => {
+      onClick: (event) => {
         onClick?.(event)
         if (event.defaultPrevented || disabled) return
 

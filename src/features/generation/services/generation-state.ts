@@ -47,26 +47,28 @@ const previewEvents: readonly GenerationEvent['type'][] = [
   'preview_ready',
 ]
 
-export const createInitialGenerationState = (): GenerationState => ({
-  status: 'created',
-  previewVersion: 0,
-  tasks: [],
-})
+export function createInitialGenerationState(): GenerationState {
+  return {
+    status: 'created',
+    previewVersion: 0,
+    tasks: [],
+  }
+}
 
-export const canTransitionGenerationStatus = (
+export function canTransitionGenerationStatus(
   from: GenerationStatus,
   to: GenerationStatus,
-): boolean => {
+): boolean {
   // Fail closed for unknown/persisted-legacy statuses instead of crashing
   // when `transitionRules[from]` is undefined.
   const allowed = transitionRules[from]
   return Array.isArray(allowed) ? allowed.includes(to) : false
 }
 
-export const applyGenerationEvent = (
+export function applyGenerationEvent(
   state: GenerationState,
   event: GenerationEvent,
-): GenerationState => {
+): GenerationState {
   const nextStatus = nextStatusByEvent[event.type]
   const canTransition = canTransitionGenerationStatus(state.status, nextStatus)
 

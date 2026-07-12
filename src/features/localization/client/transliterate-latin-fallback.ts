@@ -55,8 +55,8 @@ const DEVANAGARI_VOWEL_MARKS: Record<string, string> = {
   u: 'ु',
 }
 
-const englishSpellingToPhoneticHindi = (word: string): string =>
-  word
+function englishSpellingToPhoneticHindi(word: string): string {
+  return word
     .toLowerCase()
     .replace(/^cho(?=co)/, 'chQ')
     .replace(/tch/g, 'ch')
@@ -72,8 +72,9 @@ const englishSpellingToPhoneticHindi = (word: string): string =>
     .replace(/c(?!h)/g, 'k')
     .replace(/q/g, 'k')
     .replace(/x/g, 'ks')
+}
 
-const latinWordToDevanagari = (word: string): string => {
+function latinWordToDevanagari(word: string): string {
   const phonetic = englishSpellingToPhoneticHindi(word)
   let output = ''
   let index = 0
@@ -125,10 +126,10 @@ const latinWordToDevanagari = (word: string): string => {
  * Network/browser translation remains authoritative; this only prevents mixed
  * Latin/native accessible names when a translator echoes the source text.
  */
-export const transliterateLatinFallback = (
+export function transliterateLatinFallback(
   text: string,
   locale: string,
-): string => {
+): string {
   const language = locale.trim().toLowerCase().split(/[-_]/)[0]
   if (language !== 'hi') return text
   return text.replace(/[A-Za-z]+/g, latinWordToDevanagari)

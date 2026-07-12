@@ -21,13 +21,11 @@ import { renderOpenUIToHTML } from '../openui-ssr'
 
 const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
 
-const loadFixture = (name: string): string =>
-  readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+function loadFixture(name: string): string {
+  return readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
+}
 
-const expectRenders = async (
-  source: string,
-  locale = 'en',
-): Promise<string> => {
+async function expectRenders(source: string, locale = 'en'): Promise<string> {
   const html = await renderOpenUIToHTML(source, undefined, locale)
   expect(html.toLowerCase()).not.toContain('openui-error')
   expect(html.toLowerCase()).not.toContain('failed to render')

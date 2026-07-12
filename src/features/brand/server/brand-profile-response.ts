@@ -16,16 +16,17 @@ type BrandProfileResolver = (input: {
 
 const MAX_BRAND_QUERY_LENGTH = 160
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const normalizeBrandQuery = (request: Request): string => {
+function normalizeBrandQuery(request: Request): string {
   const url = new URL(request.url)
   const query =
     url.searchParams.get('query') ??
@@ -40,30 +41,28 @@ const normalizeBrandQuery = (request: Request): string => {
     .slice(0, MAX_BRAND_QUERY_LENGTH)
 }
 
-const providerStatus = (value: number | undefined): number =>
-  value !== undefined && value >= 400 && value < 500 ? value : 502
+function providerStatus(value: number | undefined): number {
+  return value !== undefined && value >= 400 && value < 500 ? value : 502
+}
 
-const sanitizeProviderWarning = (
-  warning: unknown,
-): { status: number } | null => {
+function sanitizeProviderWarning(warning: unknown): { status: number } | null {
   if (!warning || typeof warning !== 'object') return null
   const status = (warning as { status?: unknown }).status
   if (typeof status !== 'number') return null
   return { status }
 }
 
-const loadDefaultBrandProfileResolver =
-  async (): Promise<BrandProfileResolver> => {
-    const { resolveBrandfetchBrandProfile } =
-      await import('@ship-fast/engine/brandfetch.js')
+async function loadDefaultBrandProfileResolver(): Promise<BrandProfileResolver> {
+  const { resolveBrandfetchBrandProfile } =
+    await import('@ship-fast/engine/brandfetch.js')
 
-    return resolveBrandfetchBrandProfile
-  }
+  return resolveBrandfetchBrandProfile
+}
 
-export const createBrandProfileResponse = async (
+export async function createBrandProfileResponse(
   request: Request,
   resolver?: BrandProfileResolver,
-): Promise<Response> => {
+): Promise<Response> {
   const query = normalizeBrandQuery(request)
 
   if (query.length < 2) {

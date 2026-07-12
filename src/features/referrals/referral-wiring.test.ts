@@ -36,32 +36,31 @@ vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 })
 const modules = import.meta.glob('../../../convex/**/*.ts')
 
 const ISS = 'https://clerk.test'
-const id = (user: string): string => `${ISS}|${user}`
+function id(user: string): string {
+  return `${ISS}|${user}`
+}
 const SECRET = 'test-billing-secret'
 
 type TestDataModel = DataModelFromSchemaDefinition<typeof schema>
 type TestCtx = TestConvex<typeof schema>
 type TestCtxWithIdentity = TestConvexForDataModel<TestDataModel>
 
-const asUser = (
-  t: TestCtx,
-  user: string,
-  email?: string,
-): TestCtxWithIdentity =>
-  t.withIdentity({
+function asUser(t: TestCtx, user: string, email?: string): TestCtxWithIdentity {
+  return t.withIdentity({
     tokenIdentifier: id(user),
     subject: user,
     issuer: ISS,
     ...(email ? { email } : {}),
   })
+}
 
-const paySubscription = (
+function paySubscription(
   t: TestCtx,
   user: string,
   providerSubscriptionId: string,
   idempotencyKey: string,
-) =>
-  t.mutation(api.billing.applyBillingWebhook, {
+) {
+  return t.mutation(api.billing.applyBillingWebhook, {
     secret: SECRET,
     provider: 'stripe',
     idempotencyKey,
@@ -72,18 +71,20 @@ const paySubscription = (
       providerSubscriptionId,
     },
   })
+}
 
-const okResponse = (body: unknown): Response =>
-  new Response(JSON.stringify(body), {
+function okResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   })
+}
 
-const setClerk = (clerk: unknown): void => {
+function setClerk(clerk: unknown): void {
   ;(window as unknown as { Clerk?: unknown }).Clerk = clerk
 }
 
-const clearClerk = (): void => {
+function clearClerk(): void {
   delete (window as unknown as { Clerk?: unknown }).Clerk
 }
 

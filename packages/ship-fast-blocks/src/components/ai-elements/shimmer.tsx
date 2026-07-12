@@ -19,7 +19,7 @@ const motionComponentCache = new Map<
   React.ComponentType<MotionHTMLProps>
 >()
 
-const getMotionComponent = (element: keyof JSX.IntrinsicElements) => {
+function getMotionComponent(element: keyof JSX.IntrinsicElements) {
   let component = motionComponentCache.get(element)
   if (!component) {
     component = motion.create(element)
@@ -36,13 +36,13 @@ export interface TextShimmerProps {
   spread?: number
 }
 
-const ShimmerComponent = ({
+function ShimmerComponent({
   children,
   as: Component = 'p',
   className,
   duration = 2,
   spread = 2,
-}: TextShimmerProps) => {
+}: TextShimmerProps) {
   const MotionComponent = getMotionComponent(
     Component as keyof JSX.IntrinsicElements,
   )

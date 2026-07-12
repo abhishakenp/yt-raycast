@@ -6,10 +6,10 @@ import { serializeSession } from './session_serialization_helpers'
 
 type SessionWorkspaceCtx = Pick<QueryCtx, 'db'>
 
-export const loadSessionWorkspace = async (
+export async function loadSessionWorkspace(
   ctx: SessionWorkspaceCtx,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const session = await ctx.db.get(sessionId)
   if (session === null || !(await canReadPrivateSession(ctx, session))) {
     return null

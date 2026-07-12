@@ -10,10 +10,10 @@ const modules = import.meta.glob('../../../../convex/**/*.ts')
 
 type SerializedSession = ReturnType<typeof serializeSession>
 
-const mockSession = (
+function mockSession(
   overrides: Partial<Parameters<typeof serializeSession>[0]> = {},
-): Parameters<typeof serializeSession>[0] =>
-  ({
+): Parameters<typeof serializeSession>[0] {
+  return {
     _id: 'session-1' as unknown as Id<'sessions'>,
     prompt: 'A themed website',
     preferredLanguage: 'en',
@@ -21,7 +21,8 @@ const mockSession = (
     isPrivate: false,
     createdAt: 100,
     ...overrides,
-  }) as Parameters<typeof serializeSession>[0]
+  } as Parameters<typeof serializeSession>[0]
+}
 
 describe('Theme persistence', () => {
   describe('serializeSession', () => {

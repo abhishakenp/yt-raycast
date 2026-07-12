@@ -13,21 +13,25 @@ export type SessionActor = {
   anonOwnerSecret?: string
 }
 
-export const hashOwnerSecret = (secret: string): string =>
-  createHash('sha256').update(secret).digest('hex')
+export function hashOwnerSecret(secret: string): string {
+  return createHash('sha256').update(secret).digest('hex')
+}
 
-export const canReadSession = (
+export function canReadSession(
   session: SessionOwnerState,
   actor: SessionActor,
-): boolean =>
-  session.userId === undefined ||
-  session.userId === actor.userId ||
-  session.anonOwnerSecretHash === hashOwnerSecret(actor.anonOwnerSecret ?? '')
+): boolean {
+  return (
+    session.userId === undefined ||
+    session.userId === actor.userId ||
+    session.anonOwnerSecretHash === hashOwnerSecret(actor.anonOwnerSecret ?? '')
+  )
+}
 
-export const assertCanMutateSession = (
+export function assertCanMutateSession(
   session: SessionOwnerState,
   actor: SessionActor,
-): void => {
+): void {
   if (devFlags.disablePaywall) return
 
   const isUserOwner =
@@ -44,10 +48,10 @@ export const assertCanMutateSession = (
     })()
 }
 
-export const claimAnonymousSession = (
+export function claimAnonymousSession(
   session: SessionOwnerState,
   actor: Required<Pick<SessionActor, 'userId' | 'anonOwnerSecret'>>,
-): SessionOwnerState => {
+): SessionOwnerState {
   const secretMatches =
     session.anonOwnerSecretHash === hashOwnerSecret(actor.anonOwnerSecret)
 

@@ -22,14 +22,6 @@ vi.mock('@tanstack/react-router', () => ({
     preload,
     to,
     ...props
-  }: {
-    children: ReactNode
-    params?: { sessionId?: string }
-    preload?: false | 'intent'
-    onPointerEnter?: PointerEventHandler<HTMLAnchorElement>
-    onPointerLeave?: PointerEventHandler<HTMLAnchorElement>
-    to: string
-    [key: string]: unknown
   }) => {
     const anchorProps = { ...props }
     const href =
@@ -56,7 +48,7 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }: { source: string }) => (
+  GeneratedModulePreview: ({ source }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))
@@ -77,7 +69,7 @@ const emptyGallery: GalleryPayload = {
   totalPages: 1,
 }
 
-const createMemoryStorage = (): Storage => {
+function createMemoryStorage(): Storage {
   const entries = new Map<string, string>()
 
   return {
@@ -101,7 +93,7 @@ const ensureLocalStorage = () => {
   })
 }
 
-const GalleryControllerProbe = ({ search }: { search: string }) => {
+function GalleryControllerProbe({ search }: { search: string }) {
   const { gallery } = useGalleryController({ search })
   return <span data-testid="gallery-total">{gallery?.total ?? 'loading'}</span>
 }

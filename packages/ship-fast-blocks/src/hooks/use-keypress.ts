@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 const MODS = ['ctrl', 'alt', 'shift', 'meta'] as const
 
-const isMod = (p: string): boolean => (MODS as readonly string[]).includes(p)
+function isMod(p: string): boolean {
+  return (MODS as readonly string[]).includes(p)
+}
 
 const IGNORE_FOCUS = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
 
@@ -70,7 +72,7 @@ export function useKeypress({
   )
 
   const onKeyDown = useCallback(
-    (ev: Event) => {
+    (ev) => {
       const e = ev as KeyboardEvent
       const el = e.target as HTMLElement | undefined
       if (IGNORE_FOCUS.has(el?.tagName ?? '') || el?.isContentEditable) {

@@ -35,31 +35,33 @@ const creditPacks = {
   },
 } as const
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const getBearerToken = (request: Request): string | null => {
+function getBearerToken(request: Request): string | null {
   const match = (request.headers.get('authorization') ?? '').match(
     /^Bearer\s+(.+)$/i,
   )
   return match?.[1]?.trim() || null
 }
 
-const normalizeString = (value: unknown): string =>
-  typeof value === 'string' ? value.trim() : ''
+function normalizeString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
 
-const getOrigin = (request: Request): string => {
+function getOrigin(request: Request): string {
   const url = new URL(request.url)
   return `${url.protocol}//${url.host}`
 }
 
-const getCheckoutUrls = (request: Request, sessionId: string) => {
+function getCheckoutUrls(request: Request, sessionId: string) {
   const origin = getOrigin(request)
   const sessionPath = sessionId
     ? `/generate/${encodeURIComponent(sessionId)}`
@@ -70,7 +72,7 @@ const getCheckoutUrls = (request: Request, sessionId: string) => {
   }
 }
 
-const formBody = (entries: Record<string, string>): URLSearchParams => {
+function formBody(entries: Record<string, string>): URLSearchParams {
   const params = new URLSearchParams()
   for (const [key, value] of Object.entries(entries)) {
     if (value) params.set(key, value)
@@ -78,13 +80,13 @@ const formBody = (entries: Record<string, string>): URLSearchParams => {
   return params
 }
 
-const fetchStripeCheckout = async (
+async function fetchStripeCheckout(
   env: CheckoutEnv,
   request: Request,
   body: CheckoutBody,
   userId: string,
   referralCouponId: string | null,
-) => {
+) {
   const mode = normalizeString(body.mode)
   const tier = normalizeString(body.tier) || 'pro'
   const packId = normalizeString(body.packId)
@@ -174,12 +176,12 @@ const fetchStripeCheckout = async (
   })
 }
 
-const fetchRazorpayCheckout = async (
+async function fetchRazorpayCheckout(
   env: CheckoutEnv,
   body: CheckoutBody,
   userId: string,
   referralOfferId: string | null,
-) => {
+) {
   const mode = normalizeString(body.mode)
   const tier = normalizeString(body.tier) || 'pro'
   const packId = normalizeString(body.packId) as keyof typeof creditPacks
@@ -318,11 +320,11 @@ const fetchRazorpayCheckout = async (
   })
 }
 
-export const createCheckoutApiResponse = async (
+export async function createCheckoutApiResponse(
   request: Request,
   env: CheckoutEnv = process.env,
   clientOverride?: CheckoutConvexClient,
-): Promise<Response> => {
+): Promise<Response> {
   const token = getBearerToken(request)
   if (token === null) {
     return json({ error: 'Sign in before checkout.' }, { status: 401 })

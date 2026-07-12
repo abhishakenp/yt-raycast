@@ -66,8 +66,9 @@ function click(el: Element) {
   })
 }
 
-const activeEditee = (container: HTMLElement) =>
-  container.querySelector('[data-ship-fast-inline-editing]')
+function activeEditee(container: HTMLElement) {
+  return container.querySelector('[data-ship-fast-inline-editing]')
+}
 
 afterEach(() => {
   document.body.innerHTML = ''

@@ -62,7 +62,7 @@ type GeneratedModulePreviewProps = {
 
 const LazyOpenUIViewer = lazy(() => import('@/island/openui/OpenUIViewer'))
 
-export const isHtmlDocumentSource = (source: string): boolean => {
+export function isHtmlDocumentSource(source: string): boolean {
   const trimmed = source.trim()
   return (
     /^<!doctype\s+html/i.test(trimmed) ||
@@ -73,9 +73,9 @@ export const isHtmlDocumentSource = (source: string): boolean => {
 
 /** Best-effort brand/tagline descriptor from the persisted site spec, used as
  *  extra image-search context alongside the prompt. */
-const parseSiteSpecBrand = (
+function parseSiteSpecBrand(
   siteSpecJson: string | undefined,
-): string | undefined => {
+): string | undefined {
   if (!siteSpecJson) return undefined
   try {
     const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
@@ -90,9 +90,9 @@ const parseSiteSpecBrand = (
   }
 }
 
-const parseSiteSpecTheme = (
+function parseSiteSpecTheme(
   siteSpecJson: string | undefined,
-): Record<string, string> | null => {
+): Record<string, string> | null {
   if (!siteSpecJson) return null
 
   try {

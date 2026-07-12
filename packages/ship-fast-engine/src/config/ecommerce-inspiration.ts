@@ -17,15 +17,16 @@ export const ECOMMERCE_CURATED_STYLE_ANCHORS =
 export const DESIGN_REFERENCE_LEGAL_BLOCK =
   'Produce original UI: do not copy third-party logos, marks, photography, or distinctive proprietary artwork. Links inform abstract structure, hierarchy, spacing, and mood only.'
 
-const humanizePathSegment = (s: unknown) =>
-  decodeURIComponent(String(s || ''))
+function humanizePathSegment(s: unknown) {
+  return decodeURIComponent(String(s || ''))
     .replace(/[-_]+/g, ' ')
     .replace(/[^a-z0-9\s]/gi, ' ')
     .trim()
     .replace(/\s+/g, ' ')
     .slice(0, 140)
+}
 
-export const inferPathHintFromReferenceUrl = (rawUrl: unknown) => {
+export function inferPathHintFromReferenceUrl(rawUrl: unknown) {
   try {
     const u = new URL(String(rawUrl).trim())
     const path = u.pathname.replace(/\/+$/, '')
@@ -42,10 +43,10 @@ export const inferPathHintFromReferenceUrl = (rawUrl: unknown) => {
   return ''
 }
 
-export const formatDesignReferenceUrlsForPrompt = (
+export function formatDesignReferenceUrlsForPrompt(
   urls: unknown = [],
   notes: string = '',
-) => {
+) {
   const list = (Array.isArray(urls) ? urls : [])
     .map((u) => String(u || '').trim())
     .filter(Boolean)

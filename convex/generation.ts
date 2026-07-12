@@ -42,7 +42,7 @@ type GenUIArtifact = {
   contentJson: string
 }
 
-const parseArtifactContent = (artifact: GenUIArtifact): unknown => {
+function parseArtifactContent(artifact: GenUIArtifact): unknown {
   try {
     return JSON.parse(artifact.contentJson)
   } catch {
@@ -50,9 +50,9 @@ const parseArtifactContent = (artifact: GenUIArtifact): unknown => {
   }
 }
 
-const artifactsByKey = (
+function artifactsByKey(
   artifacts: GenUIArtifact[] | undefined,
-): Record<string, unknown> | undefined => {
+): Record<string, unknown> | undefined {
   if (!artifacts || artifacts.length === 0) return undefined
   return Object.fromEntries(
     artifacts.map((artifact) => [artifact.key, parseArtifactContent(artifact)]),
@@ -93,7 +93,7 @@ export const createGenerationTimeoutController = () => {
   }
 }
 
-const eventMessage = (event: GenUIEvent): string | undefined => {
+function eventMessage(event: GenUIEvent): string | undefined {
   switch (event.type) {
     case 'status':
       return event.message
@@ -119,13 +119,13 @@ const eventMessage = (event: GenUIEvent): string | undefined => {
   }
 }
 
-const engineAdapterEventMessage = (event: {
+function engineAdapterEventMessage(event: {
   type: string
   message?: string
   phase?: string
   task?: unknown
   tasks?: unknown[]
-}): string | undefined => {
+}): string | undefined {
   switch (event.type) {
     case 'status':
     case 'log':
@@ -149,7 +149,7 @@ const engineAdapterEventMessage = (event: {
   }
 }
 
-const buildGenerationPrompt = (session: Doc<'sessions'>): string => {
+function buildGenerationPrompt(session: Doc<'sessions'>): string {
   if (session.cloneBrief && session.cloneBrief.trim().length > 0) {
     return session.cloneBrief
   }
@@ -183,7 +183,7 @@ const buildGenerationPrompt = (session: Doc<'sessions'>): string => {
   ].join('\n')
 }
 
-const buildGenerationSiteSpecMetadata = (
+function buildGenerationSiteSpecMetadata(
   session: Doc<'sessions'>,
   result: {
     brand: string
@@ -194,7 +194,7 @@ const buildGenerationSiteSpecMetadata = (
     category?: string
     artifacts?: GenUIArtifact[]
   },
-) => {
+) {
   const generatedArtifacts = artifactsByKey(result.artifacts)
 
   return {
@@ -236,7 +236,7 @@ const buildGenerationSiteSpecMetadata = (
   }
 }
 
-const completeGenerationFromNode = async (
+async function completeGenerationFromNode(
   ctx: ActionCtx,
   input: {
     sessionId: Id<'sessions'>
@@ -249,20 +249,21 @@ const completeGenerationFromNode = async (
     cost?: number
     provider?: string
   },
-): Promise<CompleteGenerationActionResult> =>
-  await completeGenerationAction(ctx, input, {
+): Promise<CompleteGenerationActionResult> {
+  return await completeGenerationAction(ctx, input, {
     getGenerationSession: internalFunctions.sessions.getGenerationSession,
     completeGenerationInternal:
       internalFunctions.sessions.completeGenerationInternal,
     loadOpenUISSR,
   })
+}
 
-const recordGenerationFailure = async (
+async function recordGenerationFailure(
   ctx: ActionCtx,
   args: { sessionId: Id<'sessions'>; anonymousOwnerSecret?: string },
   message: string,
   elapsed: number,
-) => {
+) {
   try {
     await ctx.runMutation(internalFunctions.sessions.failGeneration, {
       sessionId: args.sessionId,
@@ -302,7 +303,7 @@ export const startGeneration = internalAction({
     sessionId: v.id('sessions'),
     anonymousOwnerSecret: v.optional(v.string()),
   },
-  handler: async (ctx, args): Promise<StartGenerationResult> => {
+  handler: async (ctx, args) => {
     const startedAt = Date.now()
 
     try {

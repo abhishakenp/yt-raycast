@@ -38,10 +38,7 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
 }))
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: vi.fn(async () => []),
-  buildBackgroundImageUrl: (
-    result: { imageUrl: string; baseUrl?: string },
-    resolution: string,
-  ) =>
+  buildBackgroundImageUrl: (result, resolution) =>
     result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 
@@ -49,12 +46,15 @@ import { StyleControlsPanel } from './StyleControlsPanel'
 
 const onModified = vi.fn<() => void>()
 
-const renderPanel = (activeElement: HTMLElement) =>
-  render(createElement(StyleControlsPanel, { activeElement, onModified }))
+function renderPanel(activeElement: HTMLElement) {
+  return render(
+    createElement(StyleControlsPanel, { activeElement, onModified }),
+  )
+}
 
-const makeComputed = (
+function makeComputed(
   overrides: Partial<Record<string, string>> = {},
-): CSSStyleDeclaration => {
+): CSSStyleDeclaration {
   const values = {
     paddingTop: '10px',
     paddingRight: '10px',
@@ -76,7 +76,7 @@ const makeComputed = (
   }
   return {
     ...values,
-    getPropertyValue: (property: string) =>
+    getPropertyValue: (property) =>
       values[property as keyof typeof values] ?? '',
   } as CSSStyleDeclaration
 }

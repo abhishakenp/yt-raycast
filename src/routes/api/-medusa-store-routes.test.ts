@@ -7,7 +7,7 @@ const medusaEnvMock = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+  createFileRoute: (path) => (options) => ({ options, path }),
 }))
 
 vi.mock('@/features/commerce/server/medusa-store-env', () => ({
@@ -24,20 +24,23 @@ type RouteWithHandlers = {
   }
 }
 
-const readJson = async (response: Response) => ({
-  body: await response.json(),
-  contentType: response.headers.get('content-type'),
-  status: response.status,
-})
+async function readJson(response: Response) {
+  return {
+    body: await response.json(),
+    contentType: response.headers.get('content-type'),
+    status: response.status,
+  }
+}
 
-const jsonResponse = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function jsonResponse(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()

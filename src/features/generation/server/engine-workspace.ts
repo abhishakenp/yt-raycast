@@ -18,23 +18,26 @@ export type EngineWorkspaceArtifacts = {
   tasks: EngineWorkspaceTask[]
 }
 
-const safeWorkspaceSegment = (value: string): string =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80) || 'session'
+function safeWorkspaceSegment(value: string): string {
+  return (
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80) || 'session'
+  )
+}
 
-const readOptionalTextFile = (
+function readOptionalTextFile(
   workspace: string,
   fileName: string,
-): string | undefined => {
+): string | undefined {
   const filePath = join(workspace, fileName)
 
   return existsSync(filePath) ? readFileSync(filePath, 'utf8') : undefined
 }
 
-const parseTasks = (rawTasks: string | undefined): EngineWorkspaceTask[] => {
+function parseTasks(rawTasks: string | undefined): EngineWorkspaceTask[] {
   if (!rawTasks) return []
 
   const parsed = JSON.parse(rawTasks) as { tasks?: EngineWorkspaceTask[] }
@@ -42,19 +45,21 @@ const parseTasks = (rawTasks: string | undefined): EngineWorkspaceTask[] => {
   return Array.isArray(parsed.tasks) ? parsed.tasks : []
 }
 
-export const createEngineWorkspacePath = (
+export function createEngineWorkspacePath(
   workspaceRoot: string,
   sessionId: string,
-): string => join(workspaceRoot, safeWorkspaceSegment(sessionId))
+): string {
+  return join(workspaceRoot, safeWorkspaceSegment(sessionId))
+}
 
-export const prepareEngineWorkspace = (workspace: string): void => {
+export function prepareEngineWorkspace(workspace: string): void {
   rmSync(workspace, { force: true, recursive: true })
   mkdirSync(workspace, { recursive: true })
 }
 
-export const readEngineWorkspaceArtifacts = (
+export function readEngineWorkspaceArtifacts(
   workspace: string,
-): EngineWorkspaceArtifacts => {
+): EngineWorkspaceArtifacts {
   const html = readOptionalTextFile(workspace, 'index.html')
 
   if (!html) {

@@ -8,28 +8,19 @@ import {
 type MutationCallPayload = Record<string, unknown>
 type InlineEditGenerateWithToolsMock = ReturnType<typeof vi.fn>
 
-const generateWithCodeModeProgram = (typescriptCode: string) =>
-  vi.fn(
-    async (
-      _model,
-      _system,
-      _user,
-      tools: Array<{
-        name: string
-        execute?: (input: { typescriptCode: string }) => Promise<unknown>
-      }>,
-    ) => {
-      const codeModeTool = tools.find(
-        (tool) => tool.name === 'execute_typescript',
-      )
-      if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
-      return codeModeTool.execute({ typescriptCode })
-    },
-  )
+function generateWithCodeModeProgram(typescriptCode: string) {
+  return vi.fn(async (_model, _system, _user, tools) => {
+    const codeModeTool = tools.find(
+      (tool) => tool.name === 'execute_typescript',
+    )
+    if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
+    return codeModeTool.execute({ typescriptCode })
+  })
+}
 
-const expectOnlyCodeModeTool = (
+function expectOnlyCodeModeTool(
   generateWithTools: InlineEditGenerateWithToolsMock,
-) => {
+) {
   const tools = (
     generateWithTools.mock.calls as unknown as Array<
       [
@@ -214,29 +205,19 @@ describe('createSectionEditResponse', () => {
     const generate = vi.fn(async () => {
       throw new Error('fallback capsule generation should not run')
     })
-    const generateWithTools = vi.fn(
-      async (
-        _model,
-        system: string,
-        _user,
-        tools: Array<{
-          name: string
-          execute?: (input: { typescriptCode: string }) => Promise<unknown>
-        }>,
-      ) => {
-        if (
-          system.includes('Return the complete TSX module') ||
-          !system.includes('For visual styling requests, call styleApply')
-        ) {
-          return { text: 'no tool calls', toolCalls: [] }
-        }
-        const codeModeTool = tools.find(
-          (tool) => tool.name === 'execute_typescript',
-        )
-        if (!codeModeTool?.execute)
-          throw new Error('execute_typescript missing')
-        return codeModeTool.execute({
-          typescriptCode: `
+    const generateWithTools = vi.fn(async (_model, system, _user, tools) => {
+      if (
+        system.includes('Return the complete TSX module') ||
+        !system.includes('For visual styling requests, call styleApply')
+      ) {
+        return { text: 'no tool calls', toolCalls: [] }
+      }
+      const codeModeTool = tools.find(
+        (tool) => tool.name === 'execute_typescript',
+      )
+      if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
+      return codeModeTool.execute({
+        typescriptCode: `
             await external_styleApply({
               sourceAnchor: 'inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90',
               style: { backgroundColor: 'yellow', borderRadius: 4 },
@@ -244,9 +225,8 @@ describe('createSectionEditResponse', () => {
             })
             return { ok: true }
           `,
-        })
-      },
-    )
+      })
+    })
 
     const response = await createSectionEditResponse(
       'session_openui_component_tool_first',
@@ -383,26 +363,16 @@ describe('createSectionEditResponse', () => {
     const generate = vi.fn(async () => {
       throw new Error('fallback capsule generation should not run')
     })
-    const generateWithTools = vi.fn(
-      async (
-        _model,
-        system: string,
-        _user,
-        tools: Array<{
-          name: string
-          execute?: (input: { typescriptCode: string }) => Promise<unknown>
-        }>,
-      ) => {
-        if (!system.includes('image')) {
-          return { text: 'no image tool guidance', toolCalls: [] }
-        }
-        const codeModeTool = tools.find(
-          (tool) => tool.name === 'execute_typescript',
-        )
-        if (!codeModeTool?.execute)
-          throw new Error('execute_typescript missing')
-        return codeModeTool.execute({
-          typescriptCode: `
+    const generateWithTools = vi.fn(async (_model, system, _user, tools) => {
+      if (!system.includes('image')) {
+        return { text: 'no image tool guidance', toolCalls: [] }
+      }
+      const codeModeTool = tools.find(
+        (tool) => tool.name === 'execute_typescript',
+      )
+      if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
+      return codeModeTool.execute({
+        typescriptCode: `
             await external_imageReplace({
               query: 'premium product showcase',
               alt: 'Premium product showcase',
@@ -412,9 +382,8 @@ describe('createSectionEditResponse', () => {
             })
             return { ok: true }
           `,
-        })
-      },
-    )
+      })
+    })
 
     const response = await createSectionEditResponse(
       'session_openui_component_image_tool_first',
@@ -1379,34 +1348,23 @@ home = Stack([home_hero_anchor, home_nav_anchor, home_pricing_anchor])`
 
   it('executes sectionRewrite through AI Code Mode when the model needs to rebuild the selected section', async () => {
     const mutation = vi.fn(async () => ({ saved: true, previewVersion: 99 }))
-    const generateWithTools = vi.fn(
-      async (
-        _model,
-        system: string,
-        _user,
-        tools: Array<{
-          name: string
-          execute?: (input: { typescriptCode: string }) => Promise<unknown>
-        }>,
-      ) => {
-        if (!system.includes('section rewrite operations')) {
-          return { text: 'no rewrite tool guidance', toolCalls: [] }
-        }
-        const codeModeTool = tools.find(
-          (tool) => tool.name === 'execute_typescript',
-        )
-        if (!codeModeTool?.execute)
-          throw new Error('execute_typescript missing')
-        return codeModeTool.execute({
-          typescriptCode: `
+    const generateWithTools = vi.fn(async (_model, system, _user, tools) => {
+      if (!system.includes('section rewrite operations')) {
+        return { text: 'no rewrite tool guidance', toolCalls: [] }
+      }
+      const codeModeTool = tools.find(
+        (tool) => tool.name === 'execute_typescript',
+      )
+      if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
+      return codeModeTool.execute({
+        typescriptCode: `
             await external_sectionRewrite({
               replacementOpenUiSource: 'home_hero = Hero({ title: "Sharper hero" })'
             })
             return { ok: true }
           `,
-        })
-      },
-    )
+      })
+    })
 
     const response = await createSectionEditResponse(
       'session_code_mode_rewrite_rejected',

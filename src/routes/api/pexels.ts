@@ -24,31 +24,34 @@ type UnsplashPhoto = {
 }
 type UnsplashResponse = { results?: UnsplashPhoto[] }
 
-const readServerEnv = (key: string): string =>
-  typeof process !== 'undefined' ? (process.env?.[key]?.trim() ?? '') : ''
+function readServerEnv(key: string): string {
+  return typeof process !== 'undefined'
+    ? (process.env?.[key]?.trim() ?? '')
+    : ''
+}
 
-const clampInt = (
+function clampInt(
   value: string | null,
   fallback: number,
   min: number,
   max: number,
-) => {
+) {
   const parsed = Number.parseInt(value ?? '', 10)
   if (!Number.isFinite(parsed)) return fallback
   return Math.min(Math.max(parsed, min), max)
 }
 
-const orientationFromSize = (
+function orientationFromSize(
   w: number,
   h: number,
-): 'landscape' | 'portrait' | 'square' => {
+): 'landscape' | 'portrait' | 'square' {
   const ratio = w / h
   if (ratio > 1.15) return 'landscape'
   if (ratio < 0.87) return 'portrait'
   return 'square'
 }
 
-const seedIndex = (seed: string, length: number) => {
+function seedIndex(seed: string, length: number) {
   if (length <= 1) return 0
   let hash = 0
   for (let i = 0; i < seed.length; i++) {
@@ -57,7 +60,7 @@ const seedIndex = (seed: string, length: number) => {
   return hash % length
 }
 
-const picsumUrl = (query: string, w: number, h: number) => {
+function picsumUrl(query: string, w: number, h: number) {
   const seed =
     query
       .toLowerCase()
@@ -67,20 +70,17 @@ const picsumUrl = (query: string, w: number, h: number) => {
   return `https://picsum.photos/seed/${seed}/${w}/${h}`
 }
 
-const redirect = (url: string, status = 302) =>
-  new Response(null, {
+function redirect(url: string, status = 302) {
+  return new Response(null, {
     status,
     headers: {
       Location: url,
       'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
     },
   })
+}
 
-const choosePhotoUrl = (
-  photo: PexelsPhoto | undefined,
-  w: number,
-  h: number,
-) => {
+function choosePhotoUrl(photo: PexelsPhoto | undefined, w: number, h: number) {
   if (!photo?.src) return null
   if (w > 1200 || h > 1200)
     return (
@@ -115,10 +115,10 @@ const choosePhotoUrl = (
   )
 }
 
-export const resolvePexelsSearchQuery = (
+export function resolvePexelsSearchQuery(
   query: string,
   seed: string | null,
-): string => {
+): string {
   const trimmed = query.trim() || 'nature'
   if (seed?.trim()) return trimmed.slice(0, 96)
   return searchQueryFromAlt(trimmed)
@@ -133,7 +133,7 @@ export const resolvePexelsSearchQuery = (
  * "onam sarrik festive shopping" → ["onam sarrik festive shopping",
  * "onam sarrik festive", "onam sarrik", "onam"]
  */
-const progressiveQueries = (query: string): string[] => {
+function progressiveQueries(query: string): string[] {
   const words = query.trim().split(/\s+/).filter(Boolean)
   if (words.length <= 1) return [query.trim()]
   const variants: string[] = []
@@ -143,17 +143,17 @@ const progressiveQueries = (query: string): string[] => {
   return [...new Set(variants)]
 }
 
-const searchPexels = async (
+async function searchPexels(
   searchQuery: string,
   w: number,
   h: number,
   seed: string,
-): Promise<string | null> => {
+): Promise<string | null> {
   const pexelsApiKey = readServerEnv('PEXELS_API_KEY')
   if (!pexelsApiKey) return null
   const orientation = orientationFromSize(w, h)
 
-  const trySearch = async (q: string): Promise<PexelsPhoto[] | null> => {
+  const trySearch = async (q) => {
     const pexelsUrl = new URL('https://api.pexels.com/v1/search')
     pexelsUrl.searchParams.set('query', q.slice(0, 96))
     pexelsUrl.searchParams.set('per_page', '15')
@@ -186,17 +186,17 @@ const searchPexels = async (
   return null
 }
 
-const searchUnsplash = async (
+async function searchUnsplash(
   searchQuery: string,
   w: number,
   h: number,
   seed: string,
-): Promise<string | null> => {
+): Promise<string | null> {
   const unsplashAccessKey = readServerEnv('UNSPLASH_ACCESS_KEY')
   if (!unsplashAccessKey) return null
   const orientation = orientationFromSize(w, h)
 
-  const trySearch = async (q: string): Promise<UnsplashPhoto[] | null> => {
+  const trySearch = async (q) => {
     const unsplashUrl = new URL('https://api.unsplash.com/search/photos')
     unsplashUrl.searchParams.set('query', q.slice(0, 96))
     unsplashUrl.searchParams.set('per_page', '15')

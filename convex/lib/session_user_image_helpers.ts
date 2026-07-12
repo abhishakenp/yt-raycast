@@ -7,10 +7,10 @@ import {
   isSessionOwner,
 } from './session_access_helpers'
 
-const assertSessionExists = async (
+async function assertSessionExists(
   ctx: Pick<MutationCtx, 'db'>,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const session = await ctx.db.get(sessionId)
   if (!session) {
     throw new ConvexError({
@@ -24,10 +24,10 @@ const assertSessionExists = async (
 /** Generate a signed upload URL for user-uploaded images. The client POSTs
  *  the file to this URL, receives a storageId, then calls saveUserImage to
  *  record the metadata. Same ownership check as clone uploads. */
-export const generateUserImageUploadUrl = async (
+export async function generateUserImageUploadUrl(
   ctx: MutationCtx,
   args: { sessionId: Id<'sessions'>; anonymousOwnerSecret?: string },
-) => {
+) {
   const session = await assertSessionExists(ctx, args.sessionId)
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
   return await ctx.storage.generateUploadUrl()
@@ -35,7 +35,7 @@ export const generateUserImageUploadUrl = async (
 
 /** After the client uploads the file to the signed URL, save the metadata
  *  so we can list and display uploaded images in the image picker. */
-export const saveUserImage = async (
+export async function saveUserImage(
   ctx: MutationCtx,
   args: {
     sessionId: Id<'sessions'>
@@ -45,7 +45,7 @@ export const saveUserImage = async (
     contentType: string
     size: number
   },
-) => {
+) {
   const session = await assertSessionExists(ctx, args.sessionId)
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
@@ -69,10 +69,10 @@ export const saveUserImage = async (
 
 /** List all user-uploaded images for a session, newest first, with their
  *  resolved storage URLs. */
-export const listUserImages = async (
+export async function listUserImages(
   ctx: QueryCtx,
   args: { sessionId: Id<'sessions'> },
-) => {
+) {
   // Suppress uploaded images for private sessions when the caller is not
   // the owner (unauthenticated list queries return an empty array).
   const session = await ctx.db.get(args.sessionId)

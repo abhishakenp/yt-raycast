@@ -48,7 +48,7 @@ vi.mock('convex/react', () => ({
   },
 }))
 
-const setExportTargets = (targets: MockDeploymentTarget[]) => {
+function setExportTargets(targets: MockDeploymentTarget[]) {
   convexState.exportTargets = {
     isPrivate: false,
     targets,
@@ -56,7 +56,7 @@ const setExportTargets = (targets: MockDeploymentTarget[]) => {
   convexState.queryCallCount = 0
 }
 
-const setDeploymentStatus = (status: MockDeploymentStatus | null) => {
+function setDeploymentStatus(status: MockDeploymentStatus | null) {
   convexState.deploymentStatuses.clear()
   if (status) convexState.deploymentStatuses.set('current', status)
   convexState.queryCallCount = 0
@@ -66,9 +66,9 @@ const installLocalStorage = () => {
   const values = new Map<string, string>()
   const storage = {
     clear: vi.fn(() => values.clear()),
-    getItem: vi.fn((key: string) => values.get(key) ?? null),
-    removeItem: vi.fn((key: string) => values.delete(key)),
-    setItem: vi.fn((key: string, value: string) => {
+    getItem: vi.fn((key) => values.get(key) ?? null),
+    removeItem: vi.fn((key) => values.delete(key)),
+    setItem: vi.fn((key, value) => {
       values.set(key, value)
     }),
   }

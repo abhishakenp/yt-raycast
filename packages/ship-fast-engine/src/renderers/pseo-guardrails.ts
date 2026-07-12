@@ -45,7 +45,7 @@ export interface SiteSpec {
 
 function collectLinkedRoutes(siteSpec: SiteSpec): Set<string> {
   const set = new Set<string>()
-  const addHref = (href: string | undefined): void => {
+  const addHref = (href) => {
     const h = String(href || '').trim()
     if (!h.startsWith('/')) return
     const pathOnly = h.split('?')[0].split('#')[0]
@@ -94,9 +94,7 @@ export function applyGeneratedSitePseoGuardrails(siteSpec: SiteSpec): SiteSpec {
 
   for (const [, group] of byPrefix) {
     if (group.length <= THIN_FAMILY_MAX_INDEXABLE) continue
-    group.sort((a: PageSpec, b: PageSpec) =>
-      String(a.route).localeCompare(String(b.route)),
-    )
+    group.sort((a, b) => String(a.route).localeCompare(String(b.route)))
     for (let i = THIN_FAMILY_MAX_INDEXABLE; i < group.length; i++) {
       const page = group[i]
       const desc = String(
@@ -121,9 +119,7 @@ export function applyGeneratedSitePseoGuardrails(siteSpec: SiteSpec): SiteSpec {
       siteSpec.navigation = { global: [], footer: [], ctas: [] }
     const footer = [...(siteSpec.navigation.footer || [])]
     const seen = new Set(
-      footer.map((x: NavLink) =>
-        normalizePath(String(x?.href || '').split('?')[0]),
-      ),
+      footer.map((x) => normalizePath(String(x?.href || '').split('?')[0])),
     )
     for (const page of missing) {
       const href = normalizePath(page.route || '/')

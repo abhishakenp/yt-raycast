@@ -11,13 +11,15 @@ export type CustomLanguageEntry = {
   keywords: string[]
 }
 
-const toEntry = (doc: Doc<'customLanguages'>): CustomLanguageEntry => ({
-  code: doc.code,
-  name: doc.name,
-  nativeName: doc.nativeName,
-  fontFamily: doc.fontFamily,
-  keywords: doc.keywords,
-})
+function toEntry(doc: Doc<'customLanguages'>): CustomLanguageEntry {
+  return {
+    code: doc.code,
+    name: doc.name,
+    nativeName: doc.nativeName,
+    fontFamily: doc.fontFamily,
+    keywords: doc.keywords,
+  }
+}
 
 /**
  * All custom languages, newest first. Bounded so the picker can merge them
@@ -113,14 +115,17 @@ export const add = mutation({
   },
 })
 
-const slugify = (name: string): string =>
-  name
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 32) || 'custom'
+function slugify(name: string): string {
+  return (
+    name
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 32) || 'custom'
+  )
+}
 
 const GROQ_HOST = process.env.GROQ_HOST ?? 'https://api.groq.com'
 const GROQ_AUX_MODEL =
@@ -175,18 +180,20 @@ const CANONICAL_LANGUAGE_METADATA: Record<
   },
 }
 
-const canonicalLanguageMetadata = (value: string) =>
-  CANONICAL_LANGUAGE_METADATA[value.trim().toLowerCase().replace(/\s+/g, ' ')]
+function canonicalLanguageMetadata(value: string) {
+  return CANONICAL_LANGUAGE_METADATA[
+    value.trim().toLowerCase().replace(/\s+/g, ' ')
+  ]
+}
 
-const isStaleCanonicalAlias = (doc: Doc<'customLanguages'>): boolean =>
-  [doc.name, doc.nativeName, doc.code, ...doc.keywords].some((value) => {
+function isStaleCanonicalAlias(doc: Doc<'customLanguages'>): boolean {
+  return [doc.name, doc.nativeName, doc.code, ...doc.keywords].some((value) => {
     const canonical = canonicalLanguageMetadata(value)
     return Boolean(canonical && doc.code !== canonical.code)
   })
+}
 
-const normalizeAiLocaleCode = (
-  value: string | undefined,
-): string | undefined => {
+function normalizeAiLocaleCode(value: string | undefined): string | undefined {
   const code = value?.trim()
   if (!code) return undefined
   if (/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(code)) {
@@ -199,10 +206,10 @@ const normalizeAiLocaleCode = (
   return undefined
 }
 
-const withCanonicalLanguageMetadata = (
+function withCanonicalLanguageMetadata(
   languageInput: string,
   ai: AiLanguageResult,
-): AiLanguageResult & { code: string } => {
+): AiLanguageResult & { code: string } {
   const canonical =
     canonicalLanguageMetadata(languageInput) ??
     canonicalLanguageMetadata(ai.name)
@@ -217,10 +224,10 @@ const withCanonicalLanguageMetadata = (
   }
 }
 
-const needsCanonicalRepair = (
+function needsCanonicalRepair(
   entry: CustomLanguageEntry,
   languageInput: string,
-): boolean => {
+): boolean {
   const canonical =
     canonicalLanguageMetadata(languageInput) ??
     canonicalLanguageMetadata(entry.name)
@@ -312,7 +319,7 @@ Rules:
   }
 
   // Normalize keys — models may return snake_case or PascalCase variants.
-  const pick = (keys: string[]): string | undefined => {
+  const pick = (keys) => {
     for (const k of keys) {
       const value = obj[k]
       if (typeof value === 'string' && value.trim()) return value.trim()
@@ -368,7 +375,7 @@ Rules:
  */
 export const resolveOrCreate = action({
   args: { languageInput: v.string() },
-  handler: async (ctx, args): Promise<CustomLanguageEntry | null> => {
+  handler: async (ctx, args) => {
     const input = args.languageInput.trim()
     if (!input) {
       throw new Error('Language input is empty.')

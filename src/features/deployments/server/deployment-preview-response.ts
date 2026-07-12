@@ -13,7 +13,7 @@ type DeploymentPreviewClient = Pick<ConvexHttpClient, 'query'>
 const DEPLOYMENT_PREVIEW_CSS_MARKER = 'data-ship-fast-preview-css="1"'
 const DEPLOYMENT_PREVIEW_CSS_URL = '/styles/openui-preview-tailwind.css'
 
-const readDeploymentPreviewCss = (): string => {
+function readDeploymentPreviewCss(): string {
   try {
     return readFileSync(
       join(process.cwd(), 'public', 'styles', 'openui-preview-tailwind.css'),
@@ -26,7 +26,7 @@ const readDeploymentPreviewCss = (): string => {
 
 const deploymentPreviewCss = readDeploymentPreviewCss()
 
-const injectDeploymentPreviewCss = (html: string): string => {
+function injectDeploymentPreviewCss(html: string): string {
   if (html.includes(DEPLOYMENT_PREVIEW_CSS_MARKER)) return html
 
   const stylesheet = deploymentPreviewCss
@@ -40,18 +40,19 @@ const injectDeploymentPreviewCss = (html: string): string => {
   return `${stylesheet}${html}`
 }
 
-const normalizeSlug = (value: string): string =>
-  value
+function normalizeSlug(value: string): string {
+  return value
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 64)
+}
 
-const getRequestCanonicalUrl = (
+function getRequestCanonicalUrl(
   request: Request | undefined,
   fallbackUrl: string | undefined,
-): string | undefined => {
+): string | undefined {
   if (fallbackUrl !== undefined) return `${fallbackUrl.replace(/\/+$/, '')}/`
   if (request === undefined) return undefined
 
@@ -61,11 +62,11 @@ const getRequestCanonicalUrl = (
   return url.toString()
 }
 
-export const createDeploymentPreviewResponse = async (
+export async function createDeploymentPreviewResponse(
   slug: string,
   request?: Request,
   clientOverride?: DeploymentPreviewClient,
-): Promise<Response> => {
+): Promise<Response> {
   const normalizedSlug = normalizeSlug(slug)
 
   if (normalizedSlug.length === 0) {

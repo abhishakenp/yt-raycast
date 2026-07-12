@@ -10,8 +10,8 @@ import { InlineEditToolbar } from './InlineEditToolbar'
  * only reads `left`/`top`, so a plain object is enough and avoids relying on
  * jsdom geometry support.
  */
-const makeRect = (): DOMRect =>
-  ({
+function makeRect(): DOMRect {
+  return {
     left: 100,
     top: 200,
     right: 200,
@@ -21,21 +21,22 @@ const makeRect = (): DOMRect =>
     x: 100,
     y: 200,
     toJSON: () => ({}),
-  }) as DOMRect
+  } as DOMRect
+}
 
 /**
  * Fake computed style returned for the edited element. The toolbar reads only a
  * handful of properties, so a partial object cast to CSSStyleDeclaration is
  * sufficient and keeps the test independent of jsdom's style resolver.
  */
-const makeComputed = (
+function makeComputed(
   overrides: Partial<{
     textAlign: string
     textDecorationLine: string
     textDecoration: string
   }> = {},
-): CSSStyleDeclaration =>
-  ({
+): CSSStyleDeclaration {
+  return {
     fontSize: '16px',
     fontWeight: '400',
     fontStyle: 'normal',
@@ -44,7 +45,8 @@ const makeComputed = (
     textDecorationLine: 'none',
     textDecoration: 'none',
     ...overrides,
-  }) as CSSStyleDeclaration
+  } as CSSStyleDeclaration
+}
 
 const onStyleApply =
   vi.fn<
@@ -57,8 +59,8 @@ const onStyleApply =
 const onCommitText = vi.fn()
 const onClose = vi.fn()
 
-const renderToolbar = (activeElement: HTMLElement) =>
-  render(
+function renderToolbar(activeElement: HTMLElement) {
+  return render(
     createElement(InlineEditToolbar, {
       isOpen: true,
       anchorRect: makeRect(),
@@ -70,6 +72,7 @@ const renderToolbar = (activeElement: HTMLElement) =>
       isForking: false,
     }),
   )
+}
 
 describe('InlineEditToolbar — behavioral', () => {
   let activeElement: HTMLElement
@@ -94,7 +97,7 @@ describe('InlineEditToolbar — behavioral', () => {
     // after the initial computed-style read effect, enabling the live-preview
     // effect when the user later modifies a control.
     originalRequestAnimationFrame = globalThis.requestAnimationFrame
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    vi.stubGlobal('requestAnimationFrame', (cb) => {
       cb(0)
       return 0
     })
@@ -222,7 +225,7 @@ describe('InlineEditToolbar — font size control', () => {
     )
 
     originalRequestAnimationFrame = globalThis.requestAnimationFrame
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    vi.stubGlobal('requestAnimationFrame', (cb) => {
       cb(0)
       return 0
     })
@@ -316,7 +319,7 @@ describe('InlineEditToolbar — font size control', () => {
     }
     if (!globalCss.CSS) globalCss.CSS = {} as { escape: (s: string) => string }
     if (!globalCss.CSS!.escape) {
-      globalCss.CSS!.escape = (str: string) => str.replace(/[^\w-]/g, '\\$&')
+      globalCss.CSS!.escape = (str) => str.replace(/[^\w-]/g, '\\$&')
     }
 
     renderToolbar(activeElement)
@@ -503,7 +506,7 @@ describe('InlineEditToolbar — copy/paste style', () => {
     )
 
     originalRequestAnimationFrame = globalThis.requestAnimationFrame
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    vi.stubGlobal('requestAnimationFrame', (cb) => {
       cb(0)
       return 0
     })

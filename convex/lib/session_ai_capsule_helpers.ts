@@ -15,10 +15,10 @@ export type UpsertAiCapsuleInput = {
  * List all AI-generated capsules for a session. Used by the OpenUIViewer to
  * dynamically register AI capsules in the library before rendering.
  */
-export const listSessionAiCapsules = async (
+export async function listSessionAiCapsules(
   ctx: QueryCtx,
   sessionId: Id<'sessions'>,
-): Promise<AiCapsuleRow[]> => {
+): Promise<AiCapsuleRow[]> {
   const rows = await ctx.db
     .query('aiCapsules')
     .withIndex('by_sessionId', (q) => q.eq('sessionId', sessionId))
@@ -31,10 +31,10 @@ export const listSessionAiCapsules = async (
  * the same sessionId + capsuleName already exists (re-edit), update it in
  * place. Otherwise insert a new row.
  */
-export const upsertSessionAiCapsule = async (
+export async function upsertSessionAiCapsule(
   ctx: MutationCtx,
   input: UpsertAiCapsuleInput,
-): Promise<Id<'aiCapsules'>> => {
+): Promise<Id<'aiCapsules'>> {
   const now = Date.now()
   const existing = await ctx.db
     .query('aiCapsules')

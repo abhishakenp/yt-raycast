@@ -56,8 +56,8 @@ const realConvexStaleStreamingFailureSession = {
   preferredExportTarget: 'html',
 } as const
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a session API response',
@@ -68,16 +68,17 @@ const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
     createdAt: 100,
     updatedAt: 120,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
-const taskDoc = (
+function taskDoc(
   id: string,
   status: Doc<'tasks'>['status'],
   order: number | undefined,
   title: string,
   errorMessage?: string,
-): Doc<'tasks'> =>
-  ({
+): Doc<'tasks'> {
+  return {
     _id: id as Id<'tasks'>,
     _creationTime: 1,
     sessionId,
@@ -88,13 +89,14 @@ const taskDoc = (
     errorMessage,
     createdAt: 1,
     updatedAt: 1,
-  }) as Doc<'tasks'>
+  } as Doc<'tasks'>
+}
 
-const exportDoc = (
+function exportDoc(
   id: string,
   target: Doc<'exports'>['target'],
-): Doc<'exports'> =>
-  ({
+): Doc<'exports'> {
+  return {
     _id: id as Id<'exports'>,
     _creationTime: 1,
     sessionId,
@@ -102,12 +104,13 @@ const exportDoc = (
     status: 'ready',
     createdAt: 1,
     updatedAt: 1,
-  }) as Doc<'exports'>
+  } as Doc<'exports'>
+}
 
-const deploymentDoc = (
+function deploymentDoc(
   overrides: Partial<Doc<'deployments'>> = {},
-): Doc<'deployments'> =>
-  ({
+): Doc<'deployments'> {
+  return {
     _id: 'deployment_api_response' as Id<'deployments'>,
     _creationTime: 1,
     sessionId,
@@ -117,12 +120,13 @@ const deploymentDoc = (
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as Doc<'deployments'>
+  } as Doc<'deployments'>
+}
 
-const generatedModuleDoc = (
+function generatedModuleDoc(
   overrides: Partial<Doc<'generatedModules'>> = {},
-): Doc<'generatedModules'> =>
-  ({
+): Doc<'generatedModules'> {
+  return {
     _id: 'generated_module_api_response' as Id<'generatedModules'>,
     _creationTime: 1,
     sessionId,
@@ -132,12 +136,11 @@ const generatedModuleDoc = (
     createdAt: 1,
     updatedAt: 200,
     ...overrides,
-  }) as Doc<'generatedModules'>
+  } as Doc<'generatedModules'>
+}
 
-const previewDoc = (
-  overrides: Partial<Doc<'previews'>> = {},
-): Doc<'previews'> =>
-  ({
+function previewDoc(overrides: Partial<Doc<'previews'>> = {}): Doc<'previews'> {
+  return {
     _id: 'preview_api_response' as Id<'previews'>,
     _creationTime: 1,
     sessionId,
@@ -148,12 +151,13 @@ const previewDoc = (
     createdAt: 210,
     source: 'generation',
     ...overrides,
-  }) as Doc<'previews'>
+  } as Doc<'previews'>
+}
 
-const siteSpecDoc = (
+function siteSpecDoc(
   overrides: Partial<Doc<'siteSpecs'>> = {},
-): Doc<'siteSpecs'> =>
-  ({
+): Doc<'siteSpecs'> {
+  return {
     _id: 'site_spec_api_response' as Id<'siteSpecs'>,
     _creationTime: 1,
     sessionId,
@@ -161,12 +165,13 @@ const siteSpecDoc = (
     createdAt: 205,
     updatedAt: 206,
     ...overrides,
-  }) as Doc<'siteSpecs'>
+  } as Doc<'siteSpecs'>
+}
 
-const ctxFor = (
+function ctxFor(
   input: Partial<Record<TableName, Row[]>>,
   options: { userId?: string } = {},
-): SessionApiCtx => {
+): SessionApiCtx {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     tasks: [...(input.tasks ?? [])],
@@ -177,28 +182,23 @@ const ctxFor = (
     siteSpecs: [...(input.siteSpecs ?? [])],
   }
 
-  const rowsFor = (table: TableName) => tables[table]
+  const rowsFor = (table) => tables[table]
 
   const db = {
-    normalizeId: (table: TableName, value: string) =>
+    normalizeId: (table, value) =>
       rowsFor(table).some((row) => row._id === value) ? value : null,
-    get: async (id: string) =>
+    get: async (id) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table: TableName) => {
+    query: (table) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -214,7 +214,7 @@ const ctxFor = (
 
           return builder
         },
-        order: (direction: 'asc' | 'desc') => {
+        order: (direction) => {
           rows = [...rows].sort((left, right) => {
             const leftTime = (left as { updatedAt?: number }).updatedAt ?? 0
             const rightTime = (right as { updatedAt?: number }).updatedAt ?? 0
@@ -226,7 +226,7 @@ const ctxFor = (
           return builder
         },
         first: async () => rows[0] ?? null,
-        take: async (limit: number) => rows.slice(0, limit),
+        take: async (limit) => rows.slice(0, limit),
       }
 
       return builder

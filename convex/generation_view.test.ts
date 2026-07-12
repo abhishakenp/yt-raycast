@@ -38,17 +38,17 @@ afterEach(async () => {
   }
 })
 
-const requireEventStream = <T>(stream: T | null): T => {
+function requireEventStream(stream: T | null): T {
   if (stream === null) throw new Error('Expected event stream')
   return stream
 }
 
-const persistGeneratedPreview = (
+function persistGeneratedPreview(
   t: ReturnType<typeof convexTest>,
   sessionId: Id<'sessions'>,
   prompt: string,
-) =>
-  t.action(internal.sessions.completeGeneration, {
+) {
+  return t.action(internal.sessions.completeGeneration, {
     sessionId,
     html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
@@ -60,6 +60,7 @@ const persistGeneratedPreview = (
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
     elapsed: 1000,
   })
+}
 
 test('getGenerationView accepts lookup-only session ids', async () => {
   const t = generationConvexTest()

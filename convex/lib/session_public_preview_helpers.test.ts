@@ -9,8 +9,8 @@ type Row = Doc<'sessions'> | Doc<'deployments'> | Doc<'previews'>
 
 const sessionId = 'session_public_preview' as Id<'sessions'>
 
-const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
-  ({
+function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
+  return {
     _id: sessionId,
     _creationTime: 1,
     prompt: 'Build a public preview',
@@ -23,12 +23,13 @@ const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
     createdAt: 100,
     updatedAt: 120,
     ...overrides,
-  }) as Doc<'sessions'>
+  } as Doc<'sessions'>
+}
 
-const deploymentDoc = (
+function deploymentDoc(
   overrides: Partial<Doc<'deployments'>> = {},
-): Doc<'deployments'> =>
-  ({
+): Doc<'deployments'> {
+  return {
     _id: 'deployment_public_preview' as Id<'deployments'>,
     _creationTime: 1,
     sessionId,
@@ -39,14 +40,15 @@ const deploymentDoc = (
     createdAt: 1,
     updatedAt: 1,
     ...overrides,
-  }) as Doc<'deployments'>
+  } as Doc<'deployments'>
+}
 
-const previewDoc = (
+function previewDoc(
   id: string,
   version: number,
   overrides: Partial<Doc<'previews'>> = {},
-): Doc<'previews'> =>
-  ({
+): Doc<'previews'> {
+  return {
     _id: id as Id<'previews'>,
     _creationTime: version,
     sessionId,
@@ -55,7 +57,8 @@ const previewDoc = (
     createdAt: version,
     source: 'generation',
     ...overrides,
-  }) as Doc<'previews'>
+  } as Doc<'previews'>
+}
 
 const realConvexPreviewWithRendererError = {
   previewId: 'ns70q8624bp2dk2qvehc0dc8jd89mdvb',
@@ -76,35 +79,30 @@ const realConvexPreviewWithOpenUiHandoff = {
   html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
 } as const
 
-const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
+function ctxFor(input: Partial<Record<TableName, Row[]>>) {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     deployments: [...(input.deployments ?? [])],
     previews: [...(input.previews ?? [])],
   }
 
-  const rowsFor = (table: TableName) => tables[table]
+  const rowsFor = (table) => tables[table]
 
   const db = {
-    normalizeId: (table: TableName, value: string) =>
+    normalizeId: (table, value) =>
       rowsFor(table).some((row) => row._id === value) ? value : null,
-    get: async (id: string) =>
+    get: async (id) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table: TableName) => {
+    query: (table) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (
-          _indexName: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-          }) => unknown,
-        ) => {
+        withIndex: (_indexName, applyIndex) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field: string, value: unknown) => {
+            eq: (field, value) => {
               filters.set(field, value)
               return index
             },
@@ -120,7 +118,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
 
           return builder
         },
-        order: (direction: 'asc' | 'desc') => {
+        order: (direction) => {
           rows = [...rows].sort((left, right) => {
             const leftVersion = (left as { version?: number }).version ?? 0
             const rightVersion = (right as { version?: number }).version ?? 0

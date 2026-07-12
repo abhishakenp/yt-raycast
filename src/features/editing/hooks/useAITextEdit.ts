@@ -80,7 +80,7 @@ export function useAITextEdit(
       setTimeout(handleSelectionChange, 50)
     }
 
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e) => {
       if (!aiEditMode) return
       const target = e.target as Node
       const containerEl = containerRef.current

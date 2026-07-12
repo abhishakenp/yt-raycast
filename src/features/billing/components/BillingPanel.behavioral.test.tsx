@@ -26,19 +26,21 @@ const authed = {
   isLoaded: true,
 }
 
-const overviewResponse = (body: Overview, ok = true) =>
-  ({
+function overviewResponse(body: Overview, ok = true) {
+  return {
     ok,
     status: ok ? 200 : 400,
     json: async () => body,
-  }) as unknown as Response
+  } as unknown as Response
+}
 
-const checkoutResponse = (body: Record<string, unknown>, ok = true) =>
-  ({
+function checkoutResponse(body: Record<string, unknown>, ok = true) {
+  return {
     ok,
     status: ok ? 200 : 400,
     json: async () => body,
-  }) as unknown as Response
+  } as unknown as Response
+}
 
 describe('BillingPanel: behavioral', () => {
   let fetchMock: ReturnType<typeof vi.fn>

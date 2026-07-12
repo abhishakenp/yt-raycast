@@ -45,11 +45,11 @@ class SilentErrorBoundary extends Component<
   }
 }
 
-const DeleteMineProvider = ({
+function DeleteMineProvider({
   mutationRef,
 }: {
   mutationRef: RefObject<DeleteMineFn | null>
-}) => {
+}) {
   const deleteMine = useMutation(api.sessions.deleteMine)
   mutationRef.current = deleteMine as DeleteMineFn
   return null
@@ -113,19 +113,22 @@ export type GalleryPayload = {
   availableCategories?: GalleryCategoryOption[]
 }
 
-const getPromptTitle = (prompt?: string) => {
+function getPromptTitle(prompt?: string) {
   const cleaned = prompt?.trim()
   if (cleaned === undefined || cleaned.length === 0) return 'Generated website'
 
   return cleaned
 }
 
-const isEditableElement = (element: Element | null): boolean =>
-  element instanceof HTMLTextAreaElement ||
-  element instanceof HTMLInputElement ||
-  (element as HTMLElement | null)?.isContentEditable === true
+function isEditableElement(element: Element | null): boolean {
+  return (
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLInputElement ||
+    (element as HTMLElement | null)?.isContentEditable === true
+  )
+}
 
-const formatGenerationTime = (elapsed?: number | null) => {
+function formatGenerationTime(elapsed?: number | null) {
   if (typeof elapsed !== 'number' || !Number.isFinite(elapsed) || elapsed < 0)
     return undefined
 
@@ -149,7 +152,7 @@ const formatGenerationTime = (elapsed?: number | null) => {
   return `${minutes}m ${remainingSeconds}s`
 }
 
-const getGalleryCardAriaLabel = (session: GallerySession): string => {
+function getGalleryCardAriaLabel(session: GallerySession): string {
   const title = getPromptTitle(session.prompt)
   const generationTime = formatGenerationTime(session.elapsed)
   return generationTime
@@ -157,7 +160,7 @@ const getGalleryCardAriaLabel = (session: GallerySession): string => {
     : `Open ${title}`
 }
 
-export const getGalleryImageUrl = (session: GallerySession): string => {
+export function getGalleryImageUrl(session: GallerySession): string {
   if (getPreviewDocument(session.html) !== undefined) return ''
 
   // PNG `imageUrl` is intentionally never used as a gallery preview source.
@@ -165,7 +168,7 @@ export const getGalleryImageUrl = (session: GallerySession): string => {
   return getGalleryThumbnailUrl(session)
 }
 
-const getPreviewDocument = (html?: string | null) => {
+function getPreviewDocument(html?: string | null) {
   const cleaned = html?.trim()
   if (!cleaned?.length) return undefined
   if (
@@ -184,7 +187,7 @@ const getPreviewDocument = (html?: string | null) => {
   return cleaned
 }
 
-export const GalleryCategoryTabs = ({
+export function GalleryCategoryTabs({
   category,
   categories,
   onChange,
@@ -192,7 +195,7 @@ export const GalleryCategoryTabs = ({
   category: GalleryCategory
   categories?: GalleryCategoryOption[]
   onChange: (category: GalleryCategory) => void
-}) => {
+}) {
   if (categories === undefined) {
     return (
       <div
@@ -238,7 +241,7 @@ export const GalleryCategoryTabs = ({
   )
 }
 
-const GalleryPreview = ({ session }: { session: GallerySession }) => {
+function GalleryPreview({ session }: { session: GallerySession }) {
   const title = getPromptTitle(session.prompt)
   const previewDocument = getPreviewDocument(session.html)
   const imageSrc =
@@ -298,7 +301,7 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
   )
 }
 
-const GalleryCard = ({
+function GalleryCard({
   onHoverEnd,
   onHoverStart,
   session,
@@ -306,7 +309,7 @@ const GalleryCard = ({
   onHoverEnd: (sessionId: string) => void
   onHoverStart: (sessionId: string) => void
   session: GallerySession
-}) => {
+}) {
   const generationTime = formatGenerationTime(session.elapsed)
 
   return (
@@ -353,50 +356,52 @@ const GalleryCard = ({
   )
 }
 
-const GallerySkeletonCard = ({ index }: { index: number }) => (
-  <div
-    className={cn(
-      'overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.22)]',
-      index % 3 === 1 && 'opacity-90',
-      index % 3 === 2 && 'opacity-80',
-    )}
-  >
-    <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
-      <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.18),transparent_32%),radial-gradient(circle_at_80%_26%,rgba(168,85,247,0.18),transparent_35%),linear-gradient(135deg,#050816,#111827)]" />
-      <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
-        <div className="h-2 w-24 rounded-full bg-white/15" />
-        <div className="flex gap-1.5">
-          <span className="size-2 rounded-full bg-white/18" />
-          <span className="size-2 rounded-full bg-white/18" />
-          <span className="size-2 rounded-full bg-white/18" />
+function GallerySkeletonCard({ index }: { index: number }) {
+  return (
+    <div
+      className={cn(
+        'overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.22)]',
+        index % 3 === 1 && 'opacity-90',
+        index % 3 === 2 && 'opacity-80',
+      )}
+    >
+      <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
+        <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.18),transparent_32%),radial-gradient(circle_at_80%_26%,rgba(168,85,247,0.18),transparent_35%),linear-gradient(135deg,#050816,#111827)]" />
+        <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
+          <div className="h-2 w-24 rounded-full bg-white/15" />
+          <div className="flex gap-1.5">
+            <span className="size-2 rounded-full bg-white/18" />
+            <span className="size-2 rounded-full bg-white/18" />
+            <span className="size-2 rounded-full bg-white/18" />
+          </div>
+        </div>
+        <div className="absolute left-5 top-14 h-5 w-2/3 rounded bg-white/14" />
+        <div className="absolute bottom-4 left-5 right-5 grid grid-cols-3 gap-2">
+          <span className="h-8 rounded-md bg-white/10" />
+          <span className="h-8 rounded-md bg-white/10" />
+          <span className="h-8 rounded-md bg-white/10" />
         </div>
       </div>
-      <div className="absolute left-5 top-14 h-5 w-2/3 rounded bg-white/14" />
-      <div className="absolute bottom-4 left-5 right-5 grid grid-cols-3 gap-2">
-        <span className="h-8 rounded-md bg-white/10" />
-        <span className="h-8 rounded-md bg-white/10" />
-        <span className="h-8 rounded-md bg-white/10" />
+      <div className="space-y-3 p-4">
+        <div className="h-3 w-28 rounded bg-white/12" />
+        <div className="h-4 w-full rounded bg-white/10" />
+        <div className="h-4 w-4/5 rounded bg-white/10" />
+        <div className="flex justify-between">
+          <div className="h-5 w-24 rounded-full bg-white/10" />
+          <div className="h-3 w-8 rounded bg-white/10" />
+        </div>
       </div>
     </div>
-    <div className="space-y-3 p-4">
-      <div className="h-3 w-28 rounded bg-white/12" />
-      <div className="h-4 w-full rounded bg-white/10" />
-      <div className="h-4 w-4/5 rounded bg-white/10" />
-      <div className="flex justify-between">
-        <div className="h-5 w-24 rounded-full bg-white/10" />
-        <div className="h-3 w-8 rounded bg-white/10" />
-      </div>
-    </div>
-  </div>
-)
+  )
+}
 
 type GalleryEmptyStateVariant = 'filtered' | 'gallery' | 'home'
 
-const GalleryEmptyState = ({
+function GalleryEmptyState({
   variant = 'gallery',
 }: {
   variant?: GalleryEmptyStateVariant
-}) => {
+}) {
   const isFilteredVariant = variant === 'filtered'
   const isHomeVariant = variant === 'home'
 
@@ -434,7 +439,7 @@ const GalleryEmptyState = ({
   )
 }
 
-export const GalleryGrid = ({
+export function GalleryGrid({
   className,
   emptyStateVariant = 'gallery',
   gallery,
@@ -444,7 +449,7 @@ export const GalleryGrid = ({
   emptyStateVariant?: GalleryEmptyStateVariant
   gallery?: GalleryPayload
   skeletonCount?: number
-}) => {
+}) {
   const deleteMineRef = useRef<DeleteMineFn | null>(null)
 
   return (
@@ -463,7 +468,7 @@ export const GalleryGrid = ({
   )
 }
 
-const GalleryGridInner = ({
+function GalleryGridInner({
   className,
   emptyStateVariant = 'gallery',
   gallery,
@@ -475,24 +480,24 @@ const GalleryGridInner = ({
   gallery?: GalleryPayload
   skeletonCount?: number
   deleteMineRef: RefObject<DeleteMineFn | null>
-}) => {
+}) {
   const hoveredSessionIdRef = useRef<string | null>(null)
   const [deletedSessionIds, setDeletedSessionIds] = useState<Set<string>>(
     () => new Set(),
   )
 
-  const handleCardHoverStart = useCallback((sessionId: string) => {
+  const handleCardHoverStart = useCallback((sessionId) => {
     hoveredSessionIdRef.current = sessionId
   }, [])
 
-  const handleCardHoverEnd = useCallback((sessionId: string) => {
+  const handleCardHoverEnd = useCallback((sessionId) => {
     if (hoveredSessionIdRef.current === sessionId) {
       hoveredSessionIdRef.current = null
     }
   }, [])
 
   const deleteHoveredSession = useCallback(
-    (sessionId: string) => {
+    (sessionId) => {
       const deleteMine = deleteMineRef.current
       if (!deleteMine) return
       const anonymousClientId = createAnonymousClientId(window.localStorage)
@@ -517,7 +522,7 @@ const GalleryGridInner = ({
   )
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = (event) => {
       if (
         event.key.toLowerCase() !== 'd' ||
         event.altKey ||
@@ -594,7 +599,7 @@ const GalleryGridInner = ({
     </div>
   )
 }
-export const GalleryPagination = ({
+export function GalleryPagination({
   hasNext,
   hasPrev,
   onNext,
@@ -608,38 +613,40 @@ export const GalleryPagination = ({
   onPrev: () => void
   page: number
   totalPages: number
-}) => (
-  <nav
-    className="flex flex-wrap items-center justify-between gap-3"
-    aria-label="Gallery pages"
-  >
-    <p className="text-sm text-white/48">
-      Page {page} of {totalPages}
-    </p>
-    <div className="flex items-center gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        className="border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
-        disabled={!hasPrev}
-        onClick={onPrev}
-      >
-        <ChevronLeft className="size-4" />
-        Previous
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        className="border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
-        disabled={!hasNext}
-        onClick={onNext}
-      >
-        Next
-        <ChevronRight className="size-4" />
-      </Button>
-    </div>
-  </nav>
-)
+}) {
+  return (
+    <nav
+      className="flex flex-wrap items-center justify-between gap-3"
+      aria-label="Gallery pages"
+    >
+      <p className="text-sm text-white/48">
+        Page {page} of {totalPages}
+      </p>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+          disabled={!hasPrev}
+          onClick={onPrev}
+        >
+          <ChevronLeft className="size-4" />
+          Previous
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+          disabled={!hasNext}
+          onClick={onNext}
+        >
+          Next
+          <ChevronRight className="size-4" />
+        </Button>
+      </div>
+    </nav>
+  )
+}
 
 export const HomeGallerySection = () => {
   const { gallery } = useGalleryController({ limit: 12 })

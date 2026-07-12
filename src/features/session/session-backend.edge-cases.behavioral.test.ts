@@ -29,24 +29,24 @@ import {
 const createMockStore = () => {
   const values = new Map<string, string>()
   return {
-    getItem: (key: string): string | null => values.get(key) ?? null,
-    setItem: (key: string, value: string): void => {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => {
       values.set(key, value)
     },
-    removeItem: (key: string): void => {
+    removeItem: (key) => {
       values.delete(key)
     },
-    _has: (key: string): boolean => values.has(key),
+    _has: (key) => values.has(key),
   }
 }
 
 /** Deterministic random-bytes filler for owner secret generation tests. */
-const fillWith =
-  (byte: number) =>
-  (bytes: Uint8Array): Uint8Array => {
+function fillWith(byte: number) {
+  return (bytes) => {
     bytes.fill(byte)
     return bytes
   }
+}
 
 // ---------------------------------------------------------------------------
 // Mock ctx for loadSessionEventStream (Convex helper)
@@ -76,100 +76,98 @@ type MockEvent = {
   createdAt: number
 }
 
-const createMockEventStreamCtx = (
+function createMockEventStreamCtx(
   sessions: MockSession[],
   events: MockEvent[],
   userId?: string,
-) => ({
-  auth: {
-    getUserIdentity: async () =>
-      userId === undefined
-        ? null
-        : { subject: userId, tokenIdentifier: userId, issuer: 'https://test' },
-  },
-  db: {
-    normalizeId: (table: string, value: string): string | null =>
-      table === 'sessions' && sessions.some((s) => s._id === value)
-        ? value
-        : null,
-    get: async (id: string): Promise<MockSession | null> =>
-      sessions.find((s) => s._id === id) ?? null,
-    query: (table: string) => {
-      let rows: MockEvent[] = table === 'generationEvents' ? [...events] : []
-
-      const builder = {
-        withIndex: (
-          _name: string,
-          applyIndex: (index: {
-            eq: (field: string, value: unknown) => typeof index
-            gt: (field: string, value: number) => typeof index
-          }) => unknown,
-        ) => {
-          const eqFilters = new Map<string, unknown>()
-          const gtFilters = new Map<string, number>()
-          const index = {
-            eq: (field: string, value: unknown) => {
-              eqFilters.set(field, value)
-              return index
+) {
+  return {
+    auth: {
+      getUserIdentity: async () =>
+        userId === undefined
+          ? null
+          : {
+              subject: userId,
+              tokenIdentifier: userId,
+              issuer: 'https://test',
             },
-            gt: (field: string, value: number) => {
-              gtFilters.set(field, value)
-              return index
-            },
-          }
-          applyIndex(index)
-          rows = rows.filter((row) => {
-            const r = row as unknown as Record<string, unknown>
-            return (
-              Array.from(eqFilters.entries()).every(([f, v]) => r[f] === v) &&
-              Array.from(gtFilters.entries()).every(
-                ([f, v]) => (r[f] as number) > v,
-              )
-            )
-          })
-          return builder
-        },
-        order: (direction: 'asc' | 'desc') => {
-          rows = [...rows].sort((a, b) =>
-            direction === 'desc'
-              ? b.createdAt - a.createdAt
-              : a.createdAt - b.createdAt,
-          )
-          return builder
-        },
-        take: async (limit: number): Promise<MockEvent[]> =>
-          rows.slice(0, limit),
-      }
-      return builder
     },
-  },
-})
+    db: {
+      normalizeId: (table, value) =>
+        table === 'sessions' && sessions.some((s) => s._id === value)
+          ? value
+          : null,
+      get: async (id) => sessions.find((s) => s._id === id) ?? null,
+      query: (table) => {
+        let rows: MockEvent[] = table === 'generationEvents' ? [...events] : []
 
-const mockSession = (overrides: Partial<MockSession> = {}): MockSession => ({
-  _id: 'session_test',
-  _creationTime: 1,
-  prompt: 'Build a test site',
-  workspace: 'default',
-  status: 'streaming',
-  preferredLanguage: 'en',
-  preferredExportTarget: 'html',
-  createdAt: 100,
-  updatedAt: 120,
-  ...overrides,
-})
+        const builder = {
+          withIndex: (_name, applyIndex) => {
+            const eqFilters = new Map<string, unknown>()
+            const gtFilters = new Map<string, number>()
+            const index = {
+              eq: (field, value) => {
+                eqFilters.set(field, value)
+                return index
+              },
+              gt: (field, value) => {
+                gtFilters.set(field, value)
+                return index
+              },
+            }
+            applyIndex(index)
+            rows = rows.filter((row) => {
+              const r = row as unknown as Record<string, unknown>
+              return (
+                Array.from(eqFilters.entries()).every(([f, v]) => r[f] === v) &&
+                Array.from(gtFilters.entries()).every(
+                  ([f, v]) => (r[f] as number) > v,
+                )
+              )
+            })
+            return builder
+          },
+          order: (direction) => {
+            rows = [...rows].sort((a, b) =>
+              direction === 'desc'
+                ? b.createdAt - a.createdAt
+                : a.createdAt - b.createdAt,
+            )
+            return builder
+          },
+          take: async (limit) => rows.slice(0, limit),
+        }
+        return builder
+      },
+    },
+  }
+}
 
-const mockEvent = (
-  id: string,
-  createdAt: number,
-  message: string,
-): MockEvent => ({
-  _id: id,
-  _creationTime: createdAt,
-  sessionId: 'session_test',
-  eventType: 'status',
-  message,
-  createdAt,
-})
+function mockSession(overrides: Partial<MockSession> = {}): MockSession {
+  return {
+    _id: 'session_test',
+    _creationTime: 1,
+    prompt: 'Build a test site',
+    workspace: 'default',
+    status: 'streaming',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    createdAt: 100,
+    updatedAt: 120,
+    ...overrides,
+  }
+}
+
+function mockEvent(id: string, createdAt: number, message: string): MockEvent {
+  return {
+    _id: id,
+    _creationTime: createdAt,
+    sessionId: 'session_test',
+    eventType: 'status',
+    message,
+    createdAt,
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Tests — session admission policy

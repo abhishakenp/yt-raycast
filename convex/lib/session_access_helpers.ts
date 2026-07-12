@@ -9,13 +9,17 @@ import {
 
 const textEncoder = new TextEncoder()
 
-const toHex = (bytes: ArrayBuffer): string =>
-  Array.from(new Uint8Array(bytes), (byte) =>
+function toHex(bytes: ArrayBuffer): string {
+  return Array.from(new Uint8Array(bytes), (byte) =>
     byte.toString(16).padStart(2, '0'),
   ).join('')
+}
 
-export const hashOwnerSecret = async (ownerSecret: string): Promise<string> =>
-  toHex(await crypto.subtle.digest('SHA-256', textEncoder.encode(ownerSecret)))
+export async function hashOwnerSecret(ownerSecret: string): Promise<string> {
+  return toHex(
+    await crypto.subtle.digest('SHA-256', textEncoder.encode(ownerSecret)),
+  )
+}
 
 type AuthIdentity = {
   tokenIdentifier?: string
@@ -72,24 +76,22 @@ export type SetSessionBrandLogoInput = {
   brandLogo: SessionBrandLogoSelection | null
 }
 
-export const getUserId = async (ctx: AuthCtx) => {
+export async function getUserId(ctx: AuthCtx) {
   const identity = await ctx.auth.getUserIdentity()
   return identity?.tokenIdentifier ?? identity?.subject
 }
 
-export const getUserEmail = async (
-  ctx: AuthCtx,
-): Promise<string | undefined> => {
+export async function getUserEmail(ctx: AuthCtx): Promise<string | undefined> {
   const identity = await ctx.auth.getUserIdentity()
   const email = identity?.email?.trim().toLowerCase()
   return email && email.includes('@') ? email : undefined
 }
 
-export const isSessionOwner = async (
+export async function isSessionOwner(
   ctx: AuthCtx,
   session: { userId?: string; anonOwnerSecretHash?: string },
   anonymousOwnerSecret?: string,
-): Promise<boolean> => {
+): Promise<boolean> {
   const userId = await getUserId(ctx)
   const anonymousOwnerSecretHash =
     anonymousOwnerSecret === undefined
@@ -104,11 +106,11 @@ export const isSessionOwner = async (
   )
 }
 
-export const assertCanReadOwnedSession = async (
+export async function assertCanReadOwnedSession(
   ctx: AuthCtx,
   session: { userId?: string; anonOwnerSecretHash?: string },
   anonymousOwnerSecret?: string,
-) => {
+) {
   if (isAuthDisabled()) return
   ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
     (() => {
@@ -119,7 +121,7 @@ export const assertCanReadOwnedSession = async (
     })()
 }
 
-export const canReadPrivateSession = async (
+export async function canReadPrivateSession(
   ctx: OptionalAuthCtx,
   session: {
     isPrivate?: boolean
@@ -127,13 +129,13 @@ export const canReadPrivateSession = async (
     anonOwnerSecretHash?: string
   },
   anonymousOwnerSecret?: string,
-): Promise<boolean> => {
+): Promise<boolean> {
   if (session.isPrivate !== true || isAuthDisabled()) return true
   if (!('auth' in ctx)) return false
   return isSessionOwner(ctx, session, anonymousOwnerSecret)
 }
 
-export const assertCanReadPrivateSession = async (
+export async function assertCanReadPrivateSession(
   ctx: AuthCtx,
   session: {
     isPrivate?: boolean
@@ -141,7 +143,7 @@ export const assertCanReadPrivateSession = async (
     anonOwnerSecretHash?: string
   },
   anonymousOwnerSecret?: string,
-) => {
+) {
   if (await canReadPrivateSession(ctx, session, anonymousOwnerSecret)) return
 
   throw new ConvexError({
@@ -150,11 +152,11 @@ export const assertCanReadPrivateSession = async (
   })
 }
 
-export const assertCanMutateSession = async (
+export async function assertCanMutateSession(
   ctx: AuthCtx,
   session: { userId?: string; anonOwnerSecretHash?: string },
   anonymousOwnerSecret?: string,
-) => {
+) {
   if (areExportPaywallsDisabled() || isAuthDisabled()) return
   ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
     (() => {
@@ -165,10 +167,10 @@ export const assertCanMutateSession = async (
     })()
 }
 
-export const deleteOwnedSessions = async (
+export async function deleteOwnedSessions(
   ctx: MutationCtx,
   args: DeleteOwnedSessionsInput,
-) => {
+) {
   const userId = await getUserId(ctx)
 
   if (args.sessionId !== undefined) {
@@ -214,10 +216,10 @@ export const deleteOwnedSessions = async (
   return { deleted: sessions.length }
 }
 
-export const claimAnonymousSession = async (
+export async function claimAnonymousSession(
   ctx: MutationCtx,
   args: ClaimAnonymousSessionInput,
-) => {
+) {
   const userId = await getUserId(ctx)
   const session = await ctx.db.get(args.sessionId)
   const anonymousOwnerSecretHash = await hashOwnerSecret(
@@ -269,10 +271,10 @@ export const claimAnonymousSession = async (
 // to their signed-in userId. Called once on sign-in so the user's /mine view
 // and ownership checks follow them across the anon→authenticated transition.
 // Skips sessions already owned by anyone (including the caller). Idempotent.
-export const claimAnonymousSessionsByClientId = async (
+export async function claimAnonymousSessionsByClientId(
   ctx: MutationCtx,
   args: ClaimAnonymousSessionsByClientIdInput,
-) => {
+) {
   const userId = await getUserId(ctx)
   if (userId === undefined) {
     throw new ConvexError({
@@ -304,10 +306,10 @@ export const claimAnonymousSessionsByClientId = async (
   return { claimed }
 }
 
-export const setSessionThemeOverride = async (
+export async function setSessionThemeOverride(
   ctx: MutationCtx,
   args: SetSessionThemeOverrideInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   session !== null ||
@@ -330,10 +332,10 @@ export const setSessionThemeOverride = async (
   })
 }
 
-export const setSessionPreferredLanguage = async (
+export async function setSessionPreferredLanguage(
   ctx: MutationCtx,
   args: SetSessionPreferredLanguageInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   session !== null ||
@@ -352,10 +354,10 @@ export const setSessionPreferredLanguage = async (
   })
 }
 
-export const setSessionBrandLogo = async (
+export async function setSessionBrandLogo(
   ctx: MutationCtx,
   args: SetSessionBrandLogoInput,
-) => {
+) {
   const session = await ctx.db.get(args.sessionId)
 
   session !== null ||

@@ -18,19 +18,22 @@ export type GalleryQueryOptions = {
   search?: string
 }
 
-const normalizeGalleryParam = (value: string | number | undefined): string =>
-  String(value ?? '').trim()
+function normalizeGalleryParam(value: string | number | undefined): string {
+  return String(value ?? '').trim()
+}
 
-const emptyGalleryPayload = (page: number, limit: number): GalleryPayload => ({
-  items: [],
-  page,
-  limit,
-  total: 0,
-  totalPages: 1,
-  hasNext: false,
-  hasPrev: false,
-  availableCategories: [],
-})
+function emptyGalleryPayload(page: number, limit: number): GalleryPayload {
+  return {
+    items: [],
+    page,
+    limit,
+    total: 0,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+    availableCategories: [],
+  }
+}
 
 const GALLERY_PAYLOAD_CACHE_TTL_MS = 30_000
 
@@ -40,11 +43,11 @@ const galleryPayloadCache = new Map<
 >()
 const galleryPayloadRequests = new Map<string, Promise<GalleryPayload>>()
 
-const fetchGalleryPayload = async (
+async function fetchGalleryPayload(
   requestUrl: string,
   page: number,
   limit: number,
-): Promise<GalleryPayload> => {
+): Promise<GalleryPayload> {
   const cached = galleryPayloadCache.get(requestUrl)
   if (cached && Date.now() - cached.createdAt < GALLERY_PAYLOAD_CACHE_TTL_MS) {
     return cached.payload
@@ -77,12 +80,12 @@ const fetchGalleryPayload = async (
   return request
 }
 
-const buildGalleryRequestUrl = ({
+function buildGalleryRequestUrl({
   category = '',
   limit = 12,
   page = 1,
   search = '',
-}: GalleryQueryOptions = {}): string => {
+}: GalleryQueryOptions = {}): string {
   const params = new URLSearchParams()
   params.set('limit', normalizeGalleryParam(limit))
   params.set('page', normalizeGalleryParam(page))
@@ -93,9 +96,9 @@ const buildGalleryRequestUrl = ({
   return `/api/sessions/recent?${params.toString()}`
 }
 
-export const prewarmGalleryPayload = (
+export function prewarmGalleryPayload(
   options: GalleryQueryOptions = {},
-): Promise<GalleryPayload> => {
+): Promise<GalleryPayload> {
   const { limit = 12, page = 1 } = options
   return fetchGalleryPayload(buildGalleryRequestUrl(options), page, limit)
 }
@@ -103,17 +106,19 @@ export const prewarmGalleryPayload = (
 // Gallery previews must come from server-rendered HTML or a local gradient
 // placeholder — never from fetched PNG thumbnails. Prewarming thumbnails is a
 // no-op so we never trigger thumbnail blob fetches.
-export const prewarmGalleryThumbnails = async (
+export async function prewarmGalleryThumbnails(
   _gallery: GalleryPayload,
   _limit = 0,
-): Promise<void> => undefined
+): Promise<void> {
+  return undefined
+}
 
-export const useGalleryController = ({
+export function useGalleryController({
   category = '',
   limit = 12,
   page = 1,
   search = '',
-}: GalleryQueryOptions = {}) => {
+}: GalleryQueryOptions = {}) {
   const [gallery, setGallery] = useState<GalleryPayload | undefined>()
 
   const requestUrl = useMemo(
@@ -151,13 +156,13 @@ export type OwnedGalleryQueryOptions = GalleryQueryOptions & {
 // or the localStorage anonymousClientId), including private ones. Skips the
 // query entirely until an anonymousClientId is resolved so anonymous first-time
 // visitors don't trigger an empty backend round-trip with no identity.
-export const useOwnedGalleryController = ({
+export function useOwnedGalleryController({
   category = '',
   limit = 12,
   page = 1,
   search = '',
   anonymousClientId,
-}: OwnedGalleryQueryOptions = {}) => {
+}: OwnedGalleryQueryOptions = {}) {
   const gallery = useQuery(
     api.sessions.listOwnedSessions,
     anonymousClientId === undefined
@@ -180,5 +185,6 @@ export const useOwnedGalleryController = ({
 // Resolve the stable anonymousClientId from localStorage (creating it on first
 // call). Used by the /mine page to scope the owned-sessions query for
 // not-signed-in visitors.
-export const getOwnedAnonymousClientId = (): string =>
-  createAnonymousClientId(window.localStorage)
+export function getOwnedAnonymousClientId(): string {
+  return createAnonymousClientId(window.localStorage)
+}

@@ -42,12 +42,14 @@ const contentTypes: Record<PublicMetadataKind, string> = {
   sitemap: 'application/xml; charset=utf-8',
 }
 
-const responseHeaders = (kind: PublicMetadataKind): HeadersInit => ({
-  'cache-control': 'public, max-age=60, stale-while-revalidate=300',
-  'content-type': contentTypes[kind],
-})
+function responseHeaders(kind: PublicMetadataKind): HeadersInit {
+  return {
+    'cache-control': 'public, max-age=60, stale-while-revalidate=300',
+    'content-type': contentTypes[kind],
+  }
+}
 
-const normalizeSlug = (value: string | undefined): string | undefined => {
+function normalizeSlug(value: string | undefined): string | undefined {
   const slug = String(value ?? '')
     .trim()
     .toLowerCase()
@@ -57,15 +59,15 @@ const normalizeSlug = (value: string | undefined): string | undefined => {
   return slug || undefined
 }
 
-const requestHostname = (request: Request): string => {
+function requestHostname(request: Request): string {
   const forwardedHost = request.headers.get('x-forwarded-host')
   const rawHost = forwardedHost ?? new URL(request.url).host
   return rawHost.split(',')[0]?.trim().split(':')[0]?.toLowerCase() ?? ''
 }
 
-export const getDeploymentSlugFromRequest = (
+export function getDeploymentSlugFromRequest(
   request: Request,
-): string | undefined => {
+): string | undefined {
   const hostname = requestHostname(request)
   const baseDomain = BASE_DOMAIN.toLowerCase().replace(/^\.+|\.+$/g, '')
   if (!hostname || !baseDomain) return undefined
@@ -82,10 +84,11 @@ export const getDeploymentSlugFromRequest = (
   return normalizeSlug(label)
 }
 
-const createAppLlmsTxt = (): string =>
-  `# ${SITE_NAME}\n\n> ${HOME_DESCRIPTION}\n\n- Site URL: ${SITE_URL}/\n- Primary page: /\n- Public gallery: /gallery\n- Pricing: /pricing\n- Generated deployments expose robots.txt, sitemap.xml, and llms.txt metadata from their published preview.\n`
+function createAppLlmsTxt(): string {
+  return `# ${SITE_NAME}\n\n> ${HOME_DESCRIPTION}\n\n- Site URL: ${SITE_URL}/\n- Primary page: /\n- Public gallery: /gallery\n- Pricing: /pricing\n- Generated deployments expose robots.txt, sitemap.xml, and llms.txt metadata from their published preview.\n`
+}
 
-const createAppSitemapXml = (): string => {
+function createAppSitemapXml(): string {
   const pages = ['/', '/gallery', '/pricing', '/privacy', '/terms']
   const body = pages
     .map((path) => `  <url>\n    <loc>${SITE_URL}${path}</loc>\n  </url>`)
@@ -94,27 +97,27 @@ const createAppSitemapXml = (): string => {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`
 }
 
-const appMetadataBody = (kind: PublicMetadataKind): string => {
+function appMetadataBody(kind: PublicMetadataKind): string {
   if (kind === 'robots') return createRobotsTxt(SITE_URL)
   if (kind === 'sitemap') return createAppSitemapXml()
   return createAppLlmsTxt()
 }
 
-const deploymentMetadataBody = (
+function deploymentMetadataBody(
   kind: PublicMetadataKind,
   siteUrl: string,
   previewHtml: string,
-): string => {
+): string {
   if (kind === 'robots') return createRobotsTxt(siteUrl)
   if (kind === 'sitemap') return createSitemapXml(siteUrl)
   return createLlmsTxt(siteUrl, extractExportMetadata(previewHtml))
 }
 
-export const createPublicMetadataResponse = async (
+export async function createPublicMetadataResponse(
   kind: PublicMetadataKind,
   request: Request,
   options: PublicMetadataOptions = {},
-): Promise<Response> => {
+): Promise<Response> {
   const slug =
     normalizeSlug(options.slug) ?? getDeploymentSlugFromRequest(request)
 

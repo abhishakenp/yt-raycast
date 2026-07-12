@@ -11,44 +11,51 @@ type LakebedPublishBody = {
   anonymousOwnerSecret?: string
 }
 
-const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
+function json(body: unknown, init?: ResponseInit) {
+  return new Response(JSON.stringify(body), {
     ...init,
     headers: {
       'content-type': 'application/json',
       ...init?.headers,
     },
   })
+}
 
-const getBearerToken = (request: Request): string | null => {
+function getBearerToken(request: Request): string | null {
   const auth = request.headers.get('authorization') ?? ''
   const match = auth.match(/^Bearer\s+(.+)$/i)
   return match?.[1]?.trim() || null
 }
 
-const isLakebedPublishBody = (value: unknown): value is LakebedPublishBody =>
-  value !== null &&
-  typeof value === 'object' &&
-  !Array.isArray(value) &&
-  (!('anonymousOwnerSecret' in value) ||
-    typeof value.anonymousOwnerSecret === 'string')
+function isLakebedPublishBody(value: unknown): value is LakebedPublishBody {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    (!('anonymousOwnerSecret' in value) ||
+      typeof value.anonymousOwnerSecret === 'string')
+  )
+}
 
-const isLakebedArtifactStatus = (
+function isLakebedArtifactStatus(
   value: unknown,
-): value is { status?: string; filesUrl?: string | null } =>
-  value !== null &&
-  typeof value === 'object' &&
-  !Array.isArray(value) &&
-  (!('status' in value) || typeof value.status === 'string') &&
-  (!('filesUrl' in value) ||
-    typeof value.filesUrl === 'string' ||
-    value.filesUrl === null)
+): value is { status?: string; filesUrl?: string | null } {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    (!('status' in value) || typeof value.status === 'string') &&
+    (!('filesUrl' in value) ||
+      typeof value.filesUrl === 'string' ||
+      value.filesUrl === null)
+  )
+}
 
-export const createLakebedPublishResponse = async (
+export async function createLakebedPublishResponse(
   request: Request,
   sessionId: string,
   clientOverride?: LakebedPublishClient,
-): Promise<Response> => {
+): Promise<Response> {
   let body: LakebedPublishBody = {}
 
   try {

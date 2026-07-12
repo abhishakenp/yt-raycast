@@ -15,18 +15,18 @@ const productNamePropertyPattern =
 const productPricePropertyPattern = /(?:^|[,\s])["']?price["']?\s*:/
 const maxGeneratedProducts = 25
 
-const isEscaped = (value: string, index: number): boolean => {
+function isEscaped(value: string, index: number): boolean {
   let backslashes = 0
   for (let cursor = index - 1; cursor >= 0 && value[cursor] === '\\'; cursor--)
     backslashes += 1
   return backslashes % 2 === 1
 }
 
-const readDirectObjectText = (
+function readDirectObjectText(
   source: string,
   start: number,
   end: number,
-): string => {
+): string {
   let quote: '"' | "'" | '`' | null = null
   let nestedDepth = 0
   let direct = ''
@@ -62,11 +62,14 @@ const readDirectObjectText = (
   return direct
 }
 
-const isProductObjectText = (directObjectText: string): boolean =>
-  productNamePropertyPattern.test(directObjectText) &&
-  productPricePropertyPattern.test(directObjectText)
+function isProductObjectText(directObjectText: string): boolean {
+  return (
+    productNamePropertyPattern.test(directObjectText) &&
+    productPricePropertyPattern.test(directObjectText)
+  )
+}
 
-const hasCommerceObjectContext = (source: string, start: number): boolean => {
+function hasCommerceObjectContext(source: string, start: number): boolean {
   const prefix = source.slice(Math.max(0, start - 320), start)
   return (
     /(?:products?|catalog|collections?|inventory|merchandise)\s*[:=]\s*(?:\{|\[|\()/i.test(
@@ -78,16 +81,17 @@ const hasCommerceObjectContext = (source: string, start: number): boolean => {
   )
 }
 
-const slugifyProductHandle = (value: string): string =>
-  value
+function slugifyProductHandle(value: string): string {
+  return value
     .trim()
     .toLowerCase()
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80)
+}
 
-const parsePrice = (value: unknown): number | undefined => {
+function parsePrice(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) return value
   if (typeof value !== 'string') return undefined
 
@@ -98,10 +102,10 @@ const parsePrice = (value: unknown): number | undefined => {
   return Number.isFinite(parsed) ? parsed : undefined
 }
 
-const readStringProperty = (
+function readStringProperty(
   directObjectText: string,
   key: string,
-): string | undefined => {
+): string | undefined {
   const pattern = new RegExp(
     `(?:^|[,\\s])["']?${key}["']?\\s*:\\s*(['"\`])([^'"\`]*?)\\1`,
   )
@@ -109,7 +113,7 @@ const readStringProperty = (
   return value ? value : undefined
 }
 
-const readPriceProperty = (directObjectText: string): number | undefined => {
+function readPriceProperty(directObjectText: string): number | undefined {
   const stringPrice = readStringProperty(directObjectText, 'price')
   if (stringPrice !== undefined) return parsePrice(stringPrice)
 
@@ -119,9 +123,9 @@ const readPriceProperty = (directObjectText: string): number | undefined => {
   return parsePrice(numericPrice)
 }
 
-const productFromObjectText = (
+function productFromObjectText(
   directObjectText: string,
-): GeneratedCommerceProduct | undefined => {
+): GeneratedCommerceProduct | undefined {
   const title =
     readStringProperty(directObjectText, 'title') ??
     readStringProperty(directObjectText, 'name') ??
@@ -144,9 +148,9 @@ const productFromObjectText = (
   }
 }
 
-const dedupeProducts = (
+function dedupeProducts(
   products: Array<GeneratedCommerceProduct>,
-): Array<GeneratedCommerceProduct> => {
+): Array<GeneratedCommerceProduct> {
   const seen = new Set<string>()
   const deduped: Array<GeneratedCommerceProduct> = []
 
@@ -160,9 +164,9 @@ const dedupeProducts = (
   return deduped
 }
 
-const extractOpenUiSourceProducts = (
+function extractOpenUiSourceProducts(
   source: string | undefined,
-): Array<GeneratedCommerceProduct> => {
+): Array<GeneratedCommerceProduct> {
   if (!source?.trim()) return []
 
   const objectStarts: number[] = []
@@ -203,19 +207,23 @@ const extractOpenUiSourceProducts = (
   return dedupeProducts(products)
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value)
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
-const isSiteSpecProduct = (value: unknown): value is Record<string, unknown> =>
-  isRecord(value) &&
-  typeof value.price !== 'undefined' &&
-  (typeof value.name === 'string' ||
-    typeof value.title === 'string' ||
-    typeof value.handle === 'string')
+function isSiteSpecProduct(value: unknown): value is Record<string, unknown> {
+  return (
+    isRecord(value) &&
+    typeof value.price !== 'undefined' &&
+    (typeof value.name === 'string' ||
+      typeof value.title === 'string' ||
+      typeof value.handle === 'string')
+  )
+}
 
-const productFromSiteSpec = (
+function productFromSiteSpec(
   value: Record<string, unknown>,
-): GeneratedCommerceProduct | undefined => {
+): GeneratedCommerceProduct | undefined {
   const rawTitle = value.title ?? value.name ?? value.handle
   const title = typeof rawTitle === 'string' ? rawTitle.trim() : undefined
   const price = parsePrice(value.price)
@@ -237,9 +245,9 @@ const productFromSiteSpec = (
   }
 }
 
-const extractSiteSpecProductsFromValue = (
+function extractSiteSpecProductsFromValue(
   value: unknown,
-): Array<GeneratedCommerceProduct> => {
+): Array<GeneratedCommerceProduct> {
   if (Array.isArray(value)) {
     const directProducts = value
       .filter(isSiteSpecProduct)
@@ -260,9 +268,9 @@ const extractSiteSpecProductsFromValue = (
   })
 }
 
-const extractSiteSpecJsonProducts = (
+function extractSiteSpecJsonProducts(
   siteSpecJson: string | undefined,
-): Array<GeneratedCommerceProduct> => {
+): Array<GeneratedCommerceProduct> {
   if (!siteSpecJson?.trim()) return []
   try {
     return dedupeProducts(
@@ -273,19 +281,19 @@ const extractSiteSpecJsonProducts = (
   }
 }
 
-export const extractGeneratedCommerceProducts = ({
+export function extractGeneratedCommerceProducts({
   source,
   siteSpecJson,
-}: CountGeneratedCommerceProductsInput): Array<GeneratedCommerceProduct> => {
+}: CountGeneratedCommerceProductsInput): Array<GeneratedCommerceProduct> {
   const siteSpecProducts = extractSiteSpecJsonProducts(siteSpecJson)
   return siteSpecProducts.length > 0
     ? siteSpecProducts
     : extractOpenUiSourceProducts(source)
 }
 
-export const countGeneratedCommerceProducts = ({
+export function countGeneratedCommerceProducts({
   source,
   siteSpecJson,
-}: CountGeneratedCommerceProductsInput): number => {
+}: CountGeneratedCommerceProductsInput): number {
   return extractGeneratedCommerceProducts({ source, siteSpecJson }).length
 }

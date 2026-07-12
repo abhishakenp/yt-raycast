@@ -6,8 +6,8 @@ const BASE_LANGUAGE_CODES =
     .split(/\s+/)
     .filter(Boolean)
 
-const normalizeLabel = (value: string): string =>
-  value
+function normalizeLabel(value: string): string {
+  return value
     .trim()
     .toLowerCase()
     .normalize('NFKD')
@@ -16,8 +16,9 @@ const normalizeLabel = (value: string): string =>
     .replace(/[^a-z0-9]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
 
-const canonicalLocale = (value: string): string | null => {
+function canonicalLocale(value: string): string | null {
   const trimmed = value.trim()
   if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(trimmed)) return null
   try {
@@ -27,11 +28,7 @@ const canonicalLocale = (value: string): string | null => {
   }
 }
 
-const displayName = (
-  code: string,
-  locale: string,
-  fallback: string,
-): string => {
+function displayName(code: string, locale: string, fallback: string): string {
   try {
     return (
       new Intl.DisplayNames([locale], { type: 'language' }).of(code)?.trim() ||
@@ -73,7 +70,7 @@ const SCRIPT_FONT_BY_CODE: Record<string, string> = {
   Tibt: 'Noto Sans Tibetan, sans-serif',
 }
 
-const scriptFontForLocale = (code: string): string => {
+function scriptFontForLocale(code: string): string {
   try {
     const script = new Intl.Locale(code).maximize().script
     if (!script) return 'Inter, system-ui, sans-serif'
@@ -83,7 +80,7 @@ const scriptFontForLocale = (code: string): string => {
   }
 }
 
-const languageEntryForLocale = (code: string): LanguageEntry => {
+function languageEntryForLocale(code: string): LanguageEntry {
   const name = displayName(code, 'en', code).replace(/\b\w/g, (char) =>
     char.toUpperCase(),
   )
@@ -193,9 +190,9 @@ const REGION_CODES = [
   'UZ',
 ].filter((value, index, array) => array.indexOf(value) === index)
 
-const buildLanguageNameIndex = (): Map<string, string[]> => {
+function buildLanguageNameIndex(): Map<string, string[]> {
   const index = new Map<string, string[]>()
-  const add = (label: string, code: string) => {
+  const add = (label, code) => {
     const key = normalizeLabel(label)
     if (!key) return
     const existing = index.get(key)
@@ -243,7 +240,7 @@ const buildLanguageNameIndex = (): Map<string, string[]> => {
 
 let languageNameIndex: Map<string, string[]> | null = null
 
-export const findBrowserNativeLocaleCandidates = (input: string): string[] => {
+export function findBrowserNativeLocaleCandidates(input: string): string[] {
   const direct = canonicalLocale(input)
   if (direct && direct !== 'en') return [direct]
 

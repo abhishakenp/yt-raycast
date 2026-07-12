@@ -99,7 +99,7 @@ export async function cloneSite(
       const missing = urls.filter((u) => !have.has(normalizeUrl(u)))
       // Always re-attempt home first; cap the retry batch so a huge crawl can't
       // double its capture cost.
-      const retryHomeFirst = (a: string, b: string): number => {
+      const retryHomeFirst = (a, b) => {
         const an = normalizeUrl(a) === normalizeUrl(seedUrl) ? -1 : 0
         const bn = normalizeUrl(b) === normalizeUrl(seedUrl) ? -1 : 0
         return an - bn
@@ -287,12 +287,7 @@ export async function cloneSite(
     // `section_${kind}_${newIndex}` (keeping index === ClonedSection.index), and
     // return the re-keyed ClonedSection. Sections never reference each other, so
     // replacing the var's own name globally in the program is sufficient.
-    const rekeySection = (
-      base: ClonedSectionWithSource,
-      kind: ClonedSection['kind'],
-      url: string,
-      newIndex: number,
-    ): ClonedSectionWithSource => {
+    const rekeySection = (base, kind, url, newIndex) => {
       const oldVar = `section_${kind}_${base.index}`
       const newVar = `section_${kind}_${newIndex}`
       // Match the section var AND any derived helper var (`section_kind_N_h`,
@@ -313,7 +308,7 @@ export async function cloneSite(
     // Convert one page's deduped sections, reusing the cross-page cache. Cache
     // identity is the structural hash, threaded explicitly per section (no
     // reverse-matching on startIndex for the emit path).
-    const convertPage = async (url: string): Promise<ClonedPage> => {
+    const convertPage = async (url) => {
       const sections = dedupedPageSections.get(url) ?? []
 
       // Structural hash per section, in page order — the single source of truth

@@ -71,7 +71,7 @@ export function LinkEditPopover({
   }, [activeElement])
 
   // Apply "open in new tab" changes directly to the element.
-  const handleToggleNewTab = (next: boolean) => {
+  const handleToggleNewTab = (next) => {
     setOpenInNewTab(next)
     if (!activeElement) return
     if (next) {
@@ -99,7 +99,7 @@ export function LinkEditPopover({
 
   // Apply "noindex" (nofollow) changes directly to the element, appending to
   // the existing rel attribute rather than overwriting it.
-  const handleToggleNoindex = (next: boolean) => {
+  const handleToggleNoindex = (next) => {
     setNoindex(next)
     if (!activeElement) return
     const existingRel = activeElement.getAttribute('rel') ?? ''

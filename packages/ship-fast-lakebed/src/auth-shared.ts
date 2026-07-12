@@ -43,23 +43,28 @@ export type StoredIdentityResult = {
   userId: string | null
 }
 
-export const normalizeShooBaseUrl = (value: unknown): string =>
-  String(value ?? DEFAULT_SHOO_BASE_URL).replace(/\/+$/g, '')
+export function normalizeShooBaseUrl(value: unknown): string {
+  return String(value ?? DEFAULT_SHOO_BASE_URL).replace(/\/+$/g, '')
+}
 
-export const toGuestName = (name: unknown): string =>
-  String(name ?? 'local')
-    .replace(/^guest:/, '')
-    .trim()
-    .replace(/[^a-zA-Z0-9_.-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase() || 'local'
+export function toGuestName(name: unknown): string {
+  return (
+    String(name ?? 'local')
+      .replace(/^guest:/, '')
+      .trim()
+      .replace(/[^a-zA-Z0-9_.-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase() || 'local'
+  )
+}
 
-export const toDisplayName = (name: unknown): string =>
-  toGuestName(name)
+export function toDisplayName(name: unknown): string {
+  return toGuestName(name)
     .split(/[-_\s.]+/)
     .filter(Boolean)
     .map((part) => `${part[0]?.toUpperCase() ?? ''}${part.slice(1)}`)
     .join(' ')
+}
 
 export function withAuthUser(auth: AuthContext): LakebedAuthContext {
   const user = {
@@ -95,7 +100,7 @@ export function withAuthLoading<TAuth extends LakebedAuthContext>(
   return { ...auth, isLoading }
 }
 
-const parseJson = (value: string): unknown => {
+function parseJson(value: string): unknown {
   try {
     return JSON.parse(value)
   } catch {
@@ -135,8 +140,9 @@ export function decodeIdentityClaims(
     : null
 }
 
-export const isExpiredClaims = (claims: IdentityClaims | null): boolean =>
-  typeof claims?.exp === 'number' && claims.exp * 1000 <= Date.now()
+export function isExpiredClaims(claims: IdentityClaims | null): boolean {
+  return typeof claims?.exp === 'number' && claims.exp * 1000 <= Date.now()
+}
 
 export function createGoogleAuthFromToken(
   token: string | null | undefined,

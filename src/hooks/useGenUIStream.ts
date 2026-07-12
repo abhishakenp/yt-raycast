@@ -118,7 +118,7 @@ export function useGenUIStream() {
   const [state, setState] = useState<GenUIState>(INITIAL)
   const ctrl = useRef<AbortController | null>(null)
 
-  const start = useCallback(async (prompt: string, model?: string) => {
+  const start = useCallback(async (prompt, model?) => {
     ctrl.current?.abort()
     const ac = new AbortController()
     ctrl.current = ac

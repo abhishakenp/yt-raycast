@@ -4,7 +4,7 @@ import { string, table } from '@ship-fast/lakebed/server'
 import { createGoogleAuthFromToken } from '../../../packages/ship-fast-lakebed/src/auth-shared.ts'
 import { defineCapsule } from '../../../packages/ship-fast-blocks/src/capsules/openui.ts'
 
-const encodeTokenPayload = (payload: Record<string, unknown>) => {
+function encodeTokenPayload(payload: Record<string, unknown>) {
   const encoded = btoa(JSON.stringify(payload))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')

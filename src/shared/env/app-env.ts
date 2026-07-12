@@ -32,8 +32,8 @@ export type AppEnv = z.infer<typeof appEnvSchema>
 
 export type RawAppEnv = Record<string, string | undefined>
 
-export const parseAppEnv = (rawEnv: RawAppEnv): AppEnv =>
-  appEnvSchema.parse({
+export function parseAppEnv(rawEnv: RawAppEnv): AppEnv {
+  return appEnvSchema.parse({
     APP_BASE_URL: rawEnv.APP_BASE_URL,
     VITE_CLERK_PUBLISHABLE_KEY: rawEnv.VITE_CLERK_PUBLISHABLE_KEY,
     VITE_CONVEX_URL: rawEnv.VITE_CONVEX_URL,
@@ -60,6 +60,8 @@ export const parseAppEnv = (rawEnv: RawAppEnv): AppEnv =>
     VITE_MEDUSA_BACKEND_URL: rawEnv.VITE_MEDUSA_BACKEND_URL,
     VITE_MEDUSA_PUBLISHABLE_KEY: rawEnv.VITE_MEDUSA_PUBLISHABLE_KEY,
   })
+}
 
-export const hasConfiguredValue = (value: string | undefined): boolean =>
-  !isEmpty(value?.trim())
+export function hasConfiguredValue(value: string | undefined): boolean {
+  return !isEmpty(value?.trim())
+}

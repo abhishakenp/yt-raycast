@@ -1,10 +1,11 @@
-const isGroqModel = (model: string): boolean =>
-  !/^gemini[-/]/i.test(model.trim())
+function isGroqModel(model: string): boolean {
+  return !/^gemini[-/]/i.test(model.trim())
+}
 
 const modelConfigurationHelp =
   'Configure it in Convex/Doppler environment variables, redeploy if needed, and generate again.'
 
-export const getModelConfigurationFailure = (): string | null => {
+export function getModelConfigurationFailure(): string | null {
   const homepageModel = (
     process.env.OPENUI_HOME_MODEL ||
     process.env.HOMEPAGE_MODEL ||

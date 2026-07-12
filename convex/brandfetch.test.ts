@@ -23,12 +23,13 @@ type BrandfetchSearchHandler = (
   isDone: boolean
 }>
 
-const runSearch = (args: Parameters<BrandfetchSearchHandler>[1]) =>
-  (
+function runSearch(args: Parameters<BrandfetchSearchHandler>[1]) {
+  return (
     search as unknown as {
       _handler: BrandfetchSearchHandler
     }
   )._handler({}, args)
+}
 
 const originalFetch = globalThis.fetch
 const originalApiKey = process.env.BRANDFETCH_API_KEY

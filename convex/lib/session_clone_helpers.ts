@@ -14,10 +14,10 @@ type OperationalNotificationReference = Parameters<
   MutationCtx['scheduler']['runAfter']
 >[1]
 
-const assertSessionExists = async (
+async function assertSessionExists(
   ctx: Pick<MutationCtx, 'db'> & Pick<MutationCtx, 'auth'>,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const session = await ctx.db.get(sessionId)
 
   session !== null ||
@@ -49,19 +49,19 @@ export type WriteClonePageInput = {
 
 // Owned-session guard + upload-url for the large-doc file-storage path. Mirrors
 // writeClonePageDoc's ownership check so anonymous owners can upload too.
-export const generateCloneUploadUrl = async (
+export async function generateCloneUploadUrl(
   ctx: MutationCtx,
   args: { sessionId: Id<'sessions'>; anonymousOwnerSecret?: string },
-) => {
+) {
   const session = await assertSessionExists(ctx, args.sessionId)
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
   return await ctx.storage.generateUploadUrl()
 }
 
-export const writeSessionClonePage = async (
+export async function writeSessionClonePage(
   ctx: MutationCtx,
   args: WriteClonePageInput,
-) => {
+) {
   const session = await assertSessionExists(ctx, args.sessionId)
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
@@ -107,10 +107,10 @@ export type ApplyCloneBriefInput = {
   themeOverride?: unknown
 }
 
-export const applyCloneBriefAndGenerate = async (
+export async function applyCloneBriefAndGenerate(
   ctx: MutationCtx,
   args: ApplyCloneBriefInput,
-) => {
+) {
   const session = await assertSessionExists(ctx, args.sessionId)
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
@@ -136,10 +136,10 @@ export type FinalizeClonePreviewInput = {
   sendOperationalNotification: OperationalNotificationReference
 }
 
-export const finalizeSessionClonePreview = async (
+export async function finalizeSessionClonePreview(
   ctx: MutationCtx,
   args: FinalizeClonePreviewInput,
-) => {
+) {
   const session = await assertSessionExists(ctx, args.sessionId)
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
@@ -216,10 +216,10 @@ export const finalizeSessionClonePreview = async (
   return { sessionId: args.sessionId, previewVersion }
 }
 
-export const listSessionClonePages = async (
+export async function listSessionClonePages(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
-) => {
+) {
   const session = await ctx.db.get(sessionId)
   if (session === null || !(await canReadPrivateSession(ctx, session))) {
     return []
@@ -247,11 +247,11 @@ export const listSessionClonePages = async (
 // Resolve the home clone page's renderable content. Returns BOTH a possible
 // inline `html` (small docs → iframe srcDoc) and a `url` (large docs in file
 // storage → iframe src); the client picks `url` when present, else `html`.
-export const loadClonePagePreview = async (
+export async function loadClonePagePreview(
   ctx: Pick<QueryCtx, 'db' | 'storage'>,
   lookup: string,
   pathname?: string,
-) => {
+) {
   const sessionId = ctx.db.normalizeId('sessions', lookup)
   const session = sessionId === null ? null : await ctx.db.get(sessionId)
   if (session === null) return null

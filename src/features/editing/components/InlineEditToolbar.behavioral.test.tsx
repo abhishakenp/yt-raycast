@@ -52,8 +52,7 @@ if (
     'function'
 ) {
   const cssShim: { escape: (s: string) => string } = {
-    escape: (s: string) =>
-      String(s).replace(/[^a-zA-Z0-9_-]/g, (ch) => `\\${ch}`),
+    escape: (s) => String(s).replace(/[^a-zA-Z0-9_-]/g, (ch) => `\\${ch}`),
   }
   ;(globalThis as { CSS?: { escape?: unknown } }).CSS = {
     ...((globalThis as { CSS?: { escape?: unknown } }).CSS ?? {}),
@@ -92,11 +91,11 @@ vi.mock('../../../../convex/_generated/api', () => ({
 
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: searchStockImagesMock,
-  buildBackgroundImageUrl: (result: StockImageResult, resolution: string) =>
+  buildBackgroundImageUrl: (result, resolution) =>
     result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 vi.mock('@/lib/image-context', () => ({
-  generateContextAwareQuery: vi.fn((alt: string) => alt),
+  generateContextAwareQuery: vi.fn((alt) => alt),
 }))
 vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: vi.fn(() => undefined),
@@ -127,7 +126,7 @@ vi.mock('#/components/ui/alert-dialog', () => {
     open: boolean
     setOpen: (b: boolean) => void
   }>({ open: false, setOpen: () => {} })
-  const AlertDialog = ({ children }: { children: React.ReactNode }) => {
+  const AlertDialog = ({ children }) => {
     const [open, setOpen] = React.useState(false)
     return React.createElement(
       Ctx.Provider,
@@ -135,27 +134,20 @@ vi.mock('#/components/ui/alert-dialog', () => {
       children,
     )
   }
-  const AlertDialogTrigger = ({
-    children,
-    asChild: _asChild,
-    ...rest
-  }: {
-    children: React.ReactElement
-    asChild?: boolean
-  } & Record<string, unknown>) => {
+  const AlertDialogTrigger = ({ children, asChild: _asChild, ...rest }) => {
     const ctx = React.useContext(Ctx)
     const child = React.Children.only(children) as React.ReactElement<{
       onClick?: (e: React.MouseEvent) => void
     }>
     return React.cloneElement(child, {
       ...rest,
-      onClick: (e: React.MouseEvent) => {
+      onClick: (e) => {
         child.props.onClick?.(e)
         ctx.setOpen(true)
       },
     })
   }
-  const AlertDialogContent = ({ children }: { children: React.ReactNode }) => {
+  const AlertDialogContent = ({ children }) => {
     const ctx = React.useContext(Ctx)
     if (!ctx.open) return null
     return React.createElement(
@@ -164,33 +156,22 @@ vi.mock('#/components/ui/alert-dialog', () => {
       children,
     )
   }
-  const AlertDialogPortal = ({ children }: { children: React.ReactNode }) =>
-    children
-  const AlertDialogHeader = ({ children }: { children: React.ReactNode }) =>
+  const AlertDialogPortal = ({ children }) => children
+  const AlertDialogHeader = ({ children }) =>
     React.createElement('div', null, children)
-  const AlertDialogTitle = ({ children }: { children: React.ReactNode }) =>
+  const AlertDialogTitle = ({ children }) =>
     React.createElement('h2', null, children)
-  const AlertDialogDescription = ({
-    children,
-  }: {
-    children: React.ReactNode
-  }) => React.createElement('p', null, children)
-  const AlertDialogFooter = ({ children }: { children: React.ReactNode }) =>
+  const AlertDialogDescription = ({ children }) =>
+    React.createElement('p', null, children)
+  const AlertDialogFooter = ({ children }) =>
     React.createElement('div', null, children)
-  const AlertDialogCancel = ({
-    children,
-    onClick,
-    ...rest
-  }: {
-    children: React.ReactNode
-    onClick?: (e: React.MouseEvent) => void
-  } & Record<string, unknown>) => {
+  const AlertDialogCancel = ({ children, onClick, ...rest }) => {
     const ctx = React.useContext(Ctx)
     return React.createElement(
       'button',
       {
         ...rest,
-        onClick: (e: React.MouseEvent) => {
+        onClick: (e) => {
           onClick?.(e)
           ctx.setOpen(false)
         },
@@ -198,20 +179,13 @@ vi.mock('#/components/ui/alert-dialog', () => {
       children,
     )
   }
-  const AlertDialogAction = ({
-    children,
-    onClick,
-    ...rest
-  }: {
-    children: React.ReactNode
-    onClick?: (e: React.MouseEvent) => void
-  } & Record<string, unknown>) => {
+  const AlertDialogAction = ({ children, onClick, ...rest }) => {
     const ctx = React.useContext(Ctx)
     return React.createElement(
       'button',
       {
         ...rest,
-        onClick: (e: React.MouseEvent) => {
+        onClick: (e) => {
           onClick?.(e)
           ctx.setOpen(false)
         },
@@ -236,22 +210,16 @@ vi.mock('#/components/ui/alert-dialog', () => {
 // Radix Select → native <select> so panel dropdowns are jsdom-interactable.
 vi.mock('#/components/ui/select', () => {
   const React = require('react') as typeof import('react')
-  const SelectContent = ({ children }: { children: React.ReactNode }) =>
-    children
+  const SelectContent = ({ children }) => children
   const Select = ({
     value,
     defaultValue,
     onValueChange,
     children,
     ...rest
-  }: {
-    value?: string
-    defaultValue?: string
-    onValueChange?: (v: string) => void
-    children: React.ReactNode
-  } & Record<string, unknown>) => {
+  }) => {
     const content = React.Children.toArray(children).find(
-      (c: React.ReactNode) =>
+      (c) =>
         React.isValidElement(c) &&
         (c as React.ReactElement).type === SelectContent,
     )
@@ -260,23 +228,17 @@ vi.mock('#/components/ui/select', () => {
       {
         ...rest,
         value: value ?? defaultValue ?? '',
-        onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
-          onValueChange?.(e.target.value),
+        onChange: (e) => onValueChange?.(e.target.value),
       },
       content,
     )
   }
   const SelectTrigger = () => null
   const SelectValue = () => null
-  const SelectItem = ({
-    value,
-    children,
-  }: {
-    value: string
-    children: React.ReactNode
-  }) => React.createElement('option', { value }, children)
-  const SelectGroup = ({ children }: { children: React.ReactNode }) => children
-  const SelectLabel = ({ children }: { children: React.ReactNode }) =>
+  const SelectItem = ({ value, children }) =>
+    React.createElement('option', { value }, children)
+  const SelectGroup = ({ children }) => children
+  const SelectLabel = ({ children }) =>
     React.createElement('span', null, children)
   const SelectSeparator = () => null
   const SelectScrollUpButton = () => null
@@ -302,29 +264,13 @@ vi.mock('#/components/ui/toggle-group', () => {
     value: string | undefined
     onValueChange: ((value: string) => void) | undefined
   }>({ value: undefined, onValueChange: undefined })
-  const ToggleGroup = ({
-    children,
-    value,
-    onValueChange,
-    ...rest
-  }: {
-    children: React.ReactNode
-    value?: string
-    onValueChange?: (value: string) => void
-  } & Record<string, unknown>) =>
+  const ToggleGroup = ({ children, value, onValueChange, ...rest }) =>
     React.createElement(
       ToggleGroupContext.Provider,
       { value: { value, onValueChange } },
       React.createElement('div', { ...rest, role: 'group' }, children),
     )
-  const ToggleGroupItem = ({
-    value,
-    children,
-    ...rest
-  }: {
-    value: string
-    children: React.ReactNode
-  } & Record<string, unknown>) => {
+  const ToggleGroupItem = ({ value, children, ...rest }) => {
     const group = React.useContext(ToggleGroupContext)
     return React.createElement(
       'button',
@@ -398,7 +344,7 @@ beforeEach(async () => {
   )
   originalRaf = globalThis.requestAnimationFrame
   // Run rAF callbacks synchronously so styleReadCompleteRef flips immediately.
-  globalThis.requestAnimationFrame = ((cb: FrameRequestCallback) => {
+  globalThis.requestAnimationFrame = ((cb) => {
     cb(0)
     return 0
   }) as typeof requestAnimationFrame
@@ -827,7 +773,7 @@ describe('InlineEditToolbar (behavioral)', () => {
   // toolbar reads (font size/weight, etc.) still comes from fakeComputedStyle.
   function useReflectiveComputedStyle() {
     vi.mocked(window.getComputedStyle).mockImplementation(
-      (el: Element) =>
+      (el) =>
         ({
           ...fakeComputedStyle,
           zIndex: (el as HTMLElement).style?.zIndex || 'auto',
@@ -3131,9 +3077,7 @@ describe('InlineEditToolbar (behavioral)', () => {
 
     renderToolbar({ activeElement: pageRoot, onSelectParent: vi.fn() })
 
-    expect(
-      screen.queryByRole('button', { name: 'Select parent' }),
-    ).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Select parent' })).toBeNull()
     preview.remove()
   })
 
@@ -3145,9 +3089,7 @@ describe('InlineEditToolbar (behavioral)', () => {
 
     renderToolbar({ activeElement: child })
 
-    expect(
-      screen.queryByRole('button', { name: 'Select parent' }),
-    ).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Select parent' })).toBeNull()
     wrapper.remove()
   })
 })

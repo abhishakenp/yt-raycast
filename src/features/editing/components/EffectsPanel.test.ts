@@ -35,13 +35,14 @@ import { EffectsPanel } from './EffectsPanel'
 
 const onModified = vi.fn<() => void>()
 
-const renderPanel = (activeElement: HTMLElement) =>
-  render(createElement(EffectsPanel, { activeElement, onModified }))
+function renderPanel(activeElement: HTMLElement) {
+  return render(createElement(EffectsPanel, { activeElement, onModified }))
+}
 
-const makeComputed = (
+function makeComputed(
   overrides: Partial<Record<string, string>> = {},
-): CSSStyleDeclaration =>
-  ({
+): CSSStyleDeclaration {
+  return {
     opacity: '1',
     filter: 'none',
     transform: 'none',
@@ -50,7 +51,8 @@ const makeComputed = (
     getPropertyValue(prop: string) {
       return (this as unknown as Record<string, string>)[prop] ?? ''
     },
-  }) as CSSStyleDeclaration
+  } as CSSStyleDeclaration
+}
 
 describe('EffectsPanel', () => {
   let activeElement: HTMLElement

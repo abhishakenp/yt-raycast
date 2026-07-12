@@ -53,6 +53,8 @@ export type GenerationStatus = (typeof generationStatusValues)[number]
 export type SessionSummary = z.infer<typeof sessionSummarySchema>
 export type SessionTask = z.infer<typeof sessionTaskSchema>
 
-export const parseCreateGenerationInput = (
+export function parseCreateGenerationInput(
   input: unknown,
-): CreateGenerationInput => createGenerationInputSchema.parse(input)
+): CreateGenerationInput {
+  return createGenerationInputSchema.parse(input)
+}

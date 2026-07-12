@@ -25,9 +25,9 @@ export type CapsuleTextChange = {
 const NON_REALTIME_PATTERN = /(Navbar|Footer)$/
 
 /** Resolve the capsule name + statementId from an element's nearest capsule ancestor. */
-const resolveCapsuleAncestor = (
+function resolveCapsuleAncestor(
   element: HTMLElement | null,
-): { capsuleName: string; statementId: string } | null => {
+): { capsuleName: string; statementId: string } | null {
   if (!element) return null
   const capsuleEl = element.closest('[data-openui-component]')
   const name = capsuleEl?.getAttribute('data-openui-component')
@@ -59,7 +59,7 @@ export const useCapsulePropResolver = () => {
     activeCapsuleKey || '__none__',
   )
 
-  const setActiveElement = useCallback((element: HTMLElement | null) => {
+  const setActiveElement = useCallback((element) => {
     activeElementRef.current = element
     const ancestor = resolveCapsuleAncestor(element)
     if (ancestor) {
@@ -70,7 +70,7 @@ export const useCapsulePropResolver = () => {
   }, [])
 
   const resolveProp = useCallback(
-    (element: HTMLElement): CapsulePropContext | null => {
+    (element) => {
       if (!data || !activeCapsuleKey) return null
       const ancestor = resolveCapsuleAncestor(element)
       if (!ancestor) return null
@@ -85,7 +85,7 @@ export const useCapsulePropResolver = () => {
   )
 
   const getPatch = useCallback(
-    (context: CapsulePropContext, newValue: string): Partial<JsonRecord> => {
+    (context, newValue) => {
       if (!data) return {}
       return buildPropPatch(context, newValue, data)
     },

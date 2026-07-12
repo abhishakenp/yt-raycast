@@ -5,8 +5,9 @@ import {
   buildPrePushPlan,
 } from './git-hook-quality-gate.mjs'
 
-const commandNames = (files: string[]) =>
-  buildPreCommitPlan(files).map((step) => step.name)
+function commandNames(files: string[]) {
+  return buildPreCommitPlan(files).map((step) => step.name)
+}
 
 describe('git hook quality gate planning', () => {
   it('skips checks when no files are staged', () => {

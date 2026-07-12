@@ -3,13 +3,12 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@openuidev/lang-core', () => ({
-  mergeStatements: (prev: string, patch: string) =>
-    [prev, patch].filter(Boolean).join('\n'),
+  mergeStatements: (prev, patch) => [prev, patch].filter(Boolean).join('\n'),
 }))
 
 import { useGenUIStream } from './useGenUIStream'
 
-const sseResponse = (events: unknown[]) => {
+function sseResponse(events: unknown[]) {
   const encoder = new TextEncoder()
   return new Response(
     new ReadableStream({
@@ -26,7 +25,7 @@ const sseResponse = (events: unknown[]) => {
   )
 }
 
-const rawSseResponse = (chunks: string[]) => {
+function rawSseResponse(chunks: string[]) {
   const encoder = new TextEncoder()
   return new Response(
     new ReadableStream({
@@ -148,7 +147,7 @@ describe('useGenUIStream', () => {
     const holder: { signal: AbortSignal | null } = { signal: null }
     vi.stubGlobal(
       'fetch',
-      vi.fn((_url: string, init: RequestInit) => {
+      vi.fn((_url, init) => {
         holder.signal = init.signal ?? null
         return new Promise<Response>(() => {})
       }),

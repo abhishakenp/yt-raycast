@@ -175,7 +175,7 @@ export async function capturePage(
     // stay under the ~1 MiB per-page storage limit. Cross-origin sheets throw on
     // cssRules and are skipped (browser still loads their fonts via absolute url).
     await page.evaluate(() => {
-      const minify = (css: string): string =>
+      const minify = (css) =>
         css
           .replace(/\/\*[\s\S]*?\*\//g, '')
           .replace(/\s+/g, ' ')
@@ -221,7 +221,7 @@ export async function capturePage(
       })
       const id = `${base}@${styleIdx++}`
       const styles = await el.evaluate(
-        (e, props: string[]) => {
+        (e, props) => {
           const computed = window.getComputedStyle(e)
           const out: Record<string, string> = {}
           for (const prop of props) {
@@ -241,7 +241,7 @@ export async function capturePage(
     // foreground, font-family, border-radius, gap). LAYOUT_SELECTOR does not
     // include <body>, so capture it explicitly under the "body" key.
     const bodyStyles = await page.evaluate(
-      (props: string[]) => {
+      (props) => {
         const computed = window.getComputedStyle(document.body)
         const out: Record<string, string> = {}
         for (const prop of props) {
@@ -385,7 +385,7 @@ export async function capturePages(
     const queue = [...urls]
     const running = new Set<Promise<void>>()
 
-    const processNext = async (): Promise<void> => {
+    const processNext = async () => {
       if (signal?.aborted) return
       const url = queue.shift()
       if (!url) return

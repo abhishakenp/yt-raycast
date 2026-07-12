@@ -19,9 +19,7 @@ type ExportArtifactBuildReference = Parameters<
   MutationCtx['scheduler']['runAfter']
 >[1]
 
-const assertSessionExists = (
-  session: Doc<'sessions'> | null,
-): Doc<'sessions'> => {
+function assertSessionExists(session: Doc<'sessions'> | null): Doc<'sessions'> {
   session !== null ||
     (() => {
       throw new ConvexError({
@@ -33,7 +31,7 @@ const assertSessionExists = (
   return session
 }
 
-export const completeGeneratedSession = async (
+export async function completeGeneratedSession(
   ctx: GenerationStateCtx,
   args: {
     sessionId: Id<'sessions'>
@@ -48,7 +46,7 @@ export const completeGeneratedSession = async (
     sendOperationalNotification: OperationalNotificationReference
     buildExportArtifact: ExportArtifactBuildReference
   },
-) => {
+) {
   const session = assertSessionExists(await ctx.db.get(args.sessionId))
   const cost = args.cost ?? 0
   const provider = args.provider ?? 'ship-fast-engine'
@@ -154,7 +152,7 @@ export const completeGeneratedSession = async (
   return { sessionId: args.sessionId, previewVersion }
 }
 
-export const failGeneratedSession = async (
+export async function failGeneratedSession(
   ctx: GenerationStateCtx,
   args: {
     sessionId: Id<'sessions'>
@@ -163,7 +161,7 @@ export const failGeneratedSession = async (
     now: number
     sendOperationalNotification: OperationalNotificationReference
   },
-) => {
+) {
   const session = assertSessionExists(await ctx.db.get(args.sessionId))
 
   if ((session.previewVersion ?? 0) > 0) {

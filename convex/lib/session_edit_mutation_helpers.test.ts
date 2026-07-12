@@ -27,10 +27,10 @@ afterEach(async () => {
   }
 })
 
-const createReadySession = async (
+async function createReadySession(
   t: ReturnType<typeof sessionEditConvexTest>,
   prompt = 'Original headline',
-) => {
+) {
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',

@@ -102,7 +102,7 @@ const PROMPT_FRENCH_LEXICON = new Set(
   ),
 )
 
-const promptLatinEnglishLean = (text: string) => {
+function promptLatinEnglishLean(text: string) {
   const words = String(text || '')
     .toLowerCase()
     .match(/\b[a-z]{2,}\b/g)
@@ -118,7 +118,7 @@ const promptLatinEnglishLean = (text: string) => {
   return { lean, en, hi, n: words.length }
 }
 
-const promptFrenchScore = (text: string) => {
+function promptFrenchScore(text: string) {
   const lower = String(text || '').toLowerCase()
   const accented = /[àâçéèêëîïôûùüÿœæ]/i.test(lower)
   const words = lower.match(/\b[a-zàâçéèêëîïôûùüÿœæ]{2,}\b/g) || []
@@ -134,7 +134,7 @@ const promptFrenchScore = (text: string) => {
   }
 }
 
-const preferFrenchCode3ForPrompt = (snippet: string, code3: string) => {
+function preferFrenchCode3ForPrompt(snippet: string, code3: string) {
   const french = promptFrenchScore(snippet)
   if (french.hits >= 3 && french.score >= 0.18) return 'fra'
   if (french.accented && french.hits >= 2 && french.words >= 4) return 'fra'
@@ -142,7 +142,7 @@ const preferFrenchCode3ForPrompt = (snippet: string, code3: string) => {
   return code3
 }
 
-const resolveFrancCode3ForPrompt = (snippet: string, code3: string) => {
+function resolveFrancCode3ForPrompt(snippet: string, code3: string) {
   code3 = preferFrenchCode3ForPrompt(snippet, code3)
   if (!code3 || code3 === 'und') return code3
   if (code3 === 'eng' || PROMPT_DETECT_INDIAN_FRANC.has(code3)) return code3
@@ -152,10 +152,7 @@ const resolveFrancCode3ForPrompt = (snippet: string, code3: string) => {
   return code3
 }
 
-const resolveFrancCode3HinglishPreference = (
-  snippet: string,
-  code3: string,
-) => {
+function resolveFrancCode3HinglishPreference(snippet: string, code3: string) {
   if (!code3 || code3 === 'und') return code3
   if (code3 === 'urd') return code3
   if (PROMPT_DETECT_INDIAN_FRANC.has(code3) && code3 !== 'hin') return code3
@@ -173,12 +170,12 @@ const resolveFrancCode3HinglishPreference = (
   return code3
 }
 
-const detectExplicitLanguageKeyword = (text: string) => {
+function detectExplicitLanguageKeyword(text: string) {
   const lower = String(text || '').toLowerCase()
   const ordered = [...PROMPT_DETECT_LANGUAGES].sort(
     (a, b) =>
-      Math.max(...b.keywords.map((k: string) => k.length), b.name.length) -
-      Math.max(...a.keywords.map((k: string) => k.length), a.name.length),
+      Math.max(...b.keywords.map((k) => k.length), b.name.length) -
+      Math.max(...a.keywords.map((k) => k.length), a.name.length),
   )
   for (const language of ordered) {
     const keywords = [language.code, language.name, ...language.keywords]
@@ -197,7 +194,7 @@ const detectExplicitLanguageKeyword = (text: string) => {
   return null
 }
 
-export const detectSnippetLanguageBcp47 = async (fullText: string) => {
+export async function detectSnippetLanguageBcp47(fullText: string) {
   const snippet = String(fullText || '').slice(
     0,
     PROMPT_LANG_DETECT_SNIPPET_MAX,
@@ -227,7 +224,7 @@ export const detectSnippetLanguageBcp47 = async (fullText: string) => {
   }
   code3 = resolveFrancCode3HinglishPreference(snippet, code3)
   if (!code3 || code3 === 'und') return null
-  const toBcp47 = (resolved: string) =>
+  const toBcp47 = (resolved) =>
     resolved === 'hinglish' ? 'hinglish' : FRANC_ISO639_3_TO_BCP47[resolved]
   return toBcp47(code3) || null
 }

@@ -5,20 +5,23 @@ type ClerkRuntimeEnv = {
   VITE_DISABLE_CLERK?: string | boolean
 }
 
-const configuredString = (value: string | boolean | undefined) =>
-  typeof value === 'string' && value.trim().length > 0 ? value : undefined
+function configuredString(value: string | boolean | undefined) {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value
+    : undefined
+}
 
-export const isClerkDisabled = (
+export function isClerkDisabled(
   env: ClerkRuntimeEnv = import.meta.env,
-): boolean => {
+): boolean {
   const value = env.VITE_DISABLE_CLERK
   if (typeof value === 'boolean') return value
   return /^(1|true|yes)$/i.test(value?.trim() ?? '')
 }
 
-export const getClerkPublishableKey = (
+export function getClerkPublishableKey(
   env: ClerkRuntimeEnv = import.meta.env,
-): string | undefined => {
+): string | undefined {
   if (isClerkDisabled(env)) return undefined
   return (
     configuredString(env.VITE_CLERK_PUBLISHABLE_KEY) ??
@@ -26,6 +29,8 @@ export const getClerkPublishableKey = (
   )
 }
 
-export const isClerkClientEnabled = (
+export function isClerkClientEnabled(
   env: ClerkRuntimeEnv = import.meta.env,
-): boolean => getClerkPublishableKey(env) !== undefined
+): boolean {
+  return getClerkPublishableKey(env) !== undefined
+}
