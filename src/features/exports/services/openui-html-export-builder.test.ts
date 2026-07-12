@@ -1,0 +1,114 @@
+import { parseHTML } from 'linkedom'
+import { describe, expect, it } from 'vitest'
+
+import { buildOpenUIHtmlExport } from './openui-html-export-builder'
+import type { OpenUIExportInput } from './openui-export-types'
+
+const baseInput = (
+  overrides: Partial<OpenUIExportInput>,
+): OpenUIExportInput => ({
+  source: '',
+  sessionId: 'export-test-session',
+  target: 'html',
+  ...overrides,
+})
+
+const parseDoc = (html: string) => parseHTML(html).document
+
+const findBadge = (html: string) => {
+  const doc = parseDoc(html)
+  return doc.querySelector('[data-ship-fast-export-badge]')
+}
+
+describe('buildOpenUIHtmlExport — HTML document source passthrough', () => {
+  it('returns a full HTML document source verbatim (trimmed) with html content type', async () => {
+    const source =
+      '<!doctype html><html><head><title>Doc</title></head><body><h1>Hi</h1></body></html>'
+    const result = await buildOpenUIHtmlExport(baseInput({ source }))
+
+    expect(result.contentType).toBe('text/html; charset=utf-8')
+    expect(result.filename).toBe('index.html')
+    expect(result.fileCount).toBe(1)
+    // The document-source branch returns the trimmed source directly (no badge
+    // injection), because the source is already a complete HTML document.
+    expect(result.body).toBe(source)
+  })
+
+  it('treats a leading <html> tag (no doctype) as a document source', async () => {
+    const source = '<html><body><p>No doctype</p></body></html>'
+    const result = await buildOpenUIHtmlExport(baseInput({ source }))
+
+    expect(result.body).toBe(source)
+  })
+
+  it('does not double-process a document source even when previewHtml is provided', async () => {
+    const source = '<!doctype html><html><body><h1>Real Doc</h1></body></html>'
+    const result = await buildOpenUIHtmlExport(
+      baseInput({ source, previewHtml: '<div>preview</div>' }),
+    )
+
+    expect(result.body).toBe(source)
+  })
+})
+
+describe('buildOpenUIHtmlExport — HTML-like fragment source', () => {
+  it('wraps an HTML-like fragment in the export shell with a badge by default', async () => {
+    const source = '<div><h1>Fragment</h1></div>'
+    const result = await buildOpenUIHtmlExport(baseInput({ source }))
+
+    expect(result.contentType).toBe('text/html; charset=utf-8')
+    expect(result.filename).toBe('index.html')
+    const html = typeof result.body === 'string' ? result.body : ''
+    expect(html).toContain('<h1>Fragment</h1>')
+    expect(findBadge(html)).not.toBeNull()
+  })
+
+  it('uses the previewHtml when it is usable and present', async () => {
+    const source = '<div>raw source</div>'
+    const previewHtml =
+      '<div id="openui-root"><div class="hero-title">Preview Content</div></div>'
+    const result = await buildOpenUIHtmlExport(
+      baseInput({ source, previewHtml }),
+    )
+
+    const html = typeof result.body === 'string' ? result.body : ''
+    expect(html).toContain('Preview Content')
+  })
+
+  it('falls back to the source when previewHtml is an error placeholder', async () => {
+    const source = '<div>real source fragment</div>'
+    const previewHtml = '<div class="openui-error">failed to render</div>'
+    const result = await buildOpenUIHtmlExport(
+      baseInput({ source, previewHtml }),
+    )
+
+    const html = typeof result.body === 'string' ? result.body : ''
+    expect(html).toContain('real source fragment')
+    expect(html).not.toContain('openui-error')
+  })
+
+  it('omits the badge when includeBadge is false', async () => {
+    const source = '<div><h1>No Badge</h1></div>'
+    const result = await buildOpenUIHtmlExport(
+      baseInput({ source, includeBadge: false }),
+    )
+
+    const html = typeof result.body === 'string' ? result.body : ''
+    expect(findBadge(html)).toBeNull()
+    expect(html).toContain('No Badge')
+  })
+})
+
+describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
+  it('rejects an empty non-HTML source with an OpenUI parser error', async () => {
+    await expect(
+      buildOpenUIHtmlExport(baseInput({ source: '' })),
+    ).rejects.toThrow(/OpenUI source/)
+  })
+
+  it('rejects a plain-text (non-HTML, non-OpenUI) source with a parser error', async () => {
+    await expect(
+      buildOpenUIHtmlExport(baseInput({ source: 'just some plain text' })),
+    ).rejects.toThrow(/OpenUI source/)
+  })
+})

@@ -753,7 +753,7 @@ const replaceRanges = (
 }
 
 const rewriteImportModule = (
-  statement: ts.ImportDeclaration,
+  statement: ts.ImportDeclaration | ts.ExportDeclaration,
   sourceFile: ts.SourceFile,
   moduleName: string,
   nextModuleName: string,
@@ -799,11 +799,18 @@ const removeImportDeclarations = (
 ): string =>
   replaceRanges(
     source,
-    sourceFile.statements.filter(ts.isImportDeclaration).map((statement) => ({
-      start: statement.getFullStart(),
-      end: statement.end,
-      text: '',
-    })),
+    sourceFile.statements
+      .filter(
+        (statement) =>
+          ts.isImportDeclaration(statement) ||
+          (ts.isExportDeclaration(statement) &&
+            statement.moduleSpecifier !== undefined),
+      )
+      .map((statement) => ({
+        start: statement.getFullStart(),
+        end: statement.end,
+        text: '',
+      })),
   )
 
 const transformComponentImports = (
@@ -817,11 +824,19 @@ const transformComponentImports = (
   const dependencies = new Set<string>()
   const blockSources = new Set<string>()
   for (const statement of sourceFile.statements) {
-    if (!ts.isImportDeclaration(statement)) continue
-    const specifier = statement.moduleSpecifier
-    if (!ts.isStringLiteral(specifier)) continue
+    const isImport = ts.isImportDeclaration(statement)
+    const isExportFrom =
+      ts.isExportDeclaration(statement) &&
+      statement.moduleSpecifier !== undefined
+    if (!isImport && !isExportFrom) continue
+    const specifier = isImport
+      ? (statement as ts.ImportDeclaration).moduleSpecifier
+      : (statement as ts.ExportDeclaration).moduleSpecifier
+    if (!specifier || !ts.isStringLiteral(specifier)) continue
     const moduleName = specifier.text
-    const importClause = statement.importClause
+    const importClause = isImport
+      ? (statement as ts.ImportDeclaration).importClause
+      : undefined
 
     if (
       moduleName === '@ship-fast/lakebed/react' ||

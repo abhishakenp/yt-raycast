@@ -520,8 +520,15 @@ export function toEndpointResponse(value: unknown): Response {
 export function readAuthValue(): AuthState { return readAuth() }
 export function signInDemoAuth(): AuthState { return writeAuth(createDemoAuth()) }
 export function signOutAuth(): AuthState { return writeAuth(guestAuth) }
+export function useAuth(): AuthState { return readAuth() }
+export async function signInWithGoogle(): Promise<AuthState> { return writeAuth(createDemoAuth()) }
+export function signOut(): void { writeAuth(guestAuth) }
 `
-    : ''
+    : `
+export function useAuth(): AuthState { return guestAuth }
+export async function signInWithGoogle(): Promise<AuthState> { return createDemoAuth() }
+export function signOut(): void { /* no-op in local mode */ }
+`
 
   const invalidationFn =
     keys.mutations.size > 0
