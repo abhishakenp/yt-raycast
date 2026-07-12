@@ -31,11 +31,17 @@ import {
   SortableOverlay,
 } from '#/components/ui/sortable'
 
+export type CapsulePanelHandle = {
+  commit: () => Promise<void>
+  discard: () => void
+}
+
 interface CapsuleContextPanelProps {
   capsuleName: string
   statementId: string
   sessionId: string
   anonymousOwnerSecret?: string
+  handleRef?: React.MutableRefObject<CapsulePanelHandle | null>
 }
 
 export const CapsuleContextPanel = ({
@@ -43,6 +49,7 @@ export const CapsuleContextPanel = ({
   statementId,
   sessionId,
   anonymousOwnerSecret,
+  handleRef,
 }: CapsuleContextPanelProps) => (
   <LakebedSessionProvider
     sessionId={sessionId}
@@ -51,6 +58,7 @@ export const CapsuleContextPanel = ({
     <CapsuleContextPanelInner
       capsuleName={capsuleName}
       statementId={statementId}
+      handleRef={handleRef}
     />
   </LakebedSessionProvider>
 )
@@ -133,15 +141,83 @@ const extractItemTitle = (
 const CapsuleContextPanelInner = ({
   capsuleName,
   statementId,
+  handleRef,
 }: {
   capsuleName: string
   statementId: string
+  handleRef?: React.MutableRefObject<CapsulePanelHandle | null>
 }) => {
   const actions = useSectionCapsuleActions(capsuleName, statementId)
   const schemaInfo = useMemo(
     () => lookupCapsuleSchema(capsuleName),
     [capsuleName],
   )
+
+  // Buffer variant/scalar edits locally — only persist on Apply (via
+  // handleRef.commit), discard on close (via handleRef.discard).
+  const [pendingScalars, setPendingScalars] = useState<Record<string, unknown>>(
+    {},
+  )
+  const pendingScalarsRef = useRef(pendingScalars)
+  pendingScalarsRef.current = pendingScalars
+
+  // Buffered button reorders: keyed by collectionKey → ordered array of raw indices
+  const [pendingOrders, setPendingOrders] = useState<Record<string, number[]>>(
+    {},
+  )
+  const pendingOrdersRef = useRef(pendingOrders)
+  pendingOrdersRef.current = pendingOrders
+
+  // Buffered removes: keyed by collectionKey → array of indices to remove
+  const [pendingRemoves, setPendingRemoves] = useState<
+    Record<string, number[]>
+  >({})
+  const pendingRemovesRef = useRef(pendingRemoves)
+  pendingRemovesRef.current = pendingRemoves
+
+  const actionsRef = useRef(actions)
+  actionsRef.current = actions
+
+  const commit = useCallback(async () => {
+    const act = actionsRef.current
+    const scalars = pendingScalarsRef.current
+    for (const [key, value] of Object.entries(scalars)) {
+      await act.setProp(key, value)
+    }
+    for (const [key, order] of Object.entries(pendingOrdersRef.current)) {
+      const identity = order.map((_, i) => i)
+      if (order.join(',') === identity.join(',')) continue
+      await act.reorderItem(key, order[0], order[1])
+    }
+    for (const [key, indices] of Object.entries(pendingRemovesRef.current)) {
+      // Remove in descending order so indices don't shift
+      const sorted = [...indices].sort((a, b) => b - a)
+      for (const idx of sorted) {
+        await act.removeItem(key, idx)
+      }
+    }
+    setPendingScalars({})
+    setPendingOrders({})
+    setPendingRemoves({})
+  }, [])
+
+  const discard = useCallback(() => {
+    setPendingScalars({})
+    setPendingOrders({})
+    setPendingRemoves({})
+  }, [])
+
+  useEffect(() => {
+    if (handleRef) {
+      handleRef.current = { commit, discard }
+      return () => {
+        handleRef.current = null
+      }
+    }
+  }, [handleRef, commit, discard])
+
+  const bufferedValue = (key: string, backend: unknown) =>
+    key in pendingScalars ? pendingScalars[key] : backend
 
   if (!schemaInfo) return null
   if (!actions.canEdit) {
@@ -163,8 +239,13 @@ const CapsuleContextPanelInner = ({
           key={variant.key}
           variantKey={variant.key}
           options={variant.options}
-          currentValue={actions.sectionData?.[variant.key]}
-          onSet={actions.setProp}
+          currentValue={bufferedValue(
+            variant.key,
+            actions.sectionData?.[variant.key],
+          )}
+          onBuffer={(value) =>
+            setPendingScalars((prev) => ({ ...prev, [variant.key]: value }))
+          }
         />
       ))}
 
@@ -175,9 +256,19 @@ const CapsuleContextPanelInner = ({
           itemFields={collection.itemFields}
           items={actions.sectionData?.[collection.key]}
           onAdd={actions.addItem}
-          onRemove={actions.removeItem}
           onReorder={actions.reorderItem}
           onEdit={actions.editItem}
+          pendingOrder={pendingOrders[collection.key] ?? null}
+          pendingRemoves={pendingRemoves[collection.key] ?? []}
+          onReorderLocal={(order) =>
+            setPendingOrders((prev) => ({ ...prev, [collection.key]: order }))
+          }
+          onRemoveLocal={(index) =>
+            setPendingRemoves((prev) => ({
+              ...prev,
+              [collection.key]: [...(prev[collection.key] ?? []), index],
+            }))
+          }
         />
       ))}
 
@@ -186,8 +277,13 @@ const CapsuleContextPanelInner = ({
           key={scalar.key}
           scalarKey={scalar.key}
           type={scalar.type}
-          currentValue={actions.sectionData?.[scalar.key]}
-          onSet={actions.setProp}
+          currentValue={bufferedValue(
+            scalar.key,
+            actions.sectionData?.[scalar.key],
+          )}
+          onBuffer={(value) =>
+            setPendingScalars((prev) => ({ ...prev, [scalar.key]: value }))
+          }
         />
       ))}
     </div>
@@ -200,12 +296,12 @@ const BentoVariant = ({
   variantKey,
   options,
   currentValue,
-  onSet,
+  onBuffer,
 }: {
   variantKey: string
   options: { value: string | number | boolean; label: string }[]
   currentValue: unknown
-  onSet: (key: string, value: unknown) => Promise<void>
+  onBuffer: (value: unknown) => void
 }) => (
   <div className="col-span-3 flex items-center gap-2 rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5">
     <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-white/35">
@@ -218,7 +314,7 @@ const BentoVariant = ({
           <button
             key={String(option.value)}
             type="button"
-            onClick={() => void onSet(variantKey, option.value)}
+            onClick={() => onBuffer(option.value)}
             className={cn(
               'rounded px-2.5 py-0.5 text-xs font-semibold transition-all',
               isActive
@@ -241,21 +337,27 @@ const BentoCollection = ({
   itemFields,
   items,
   onAdd,
-  onRemove,
   onReorder,
   onEdit,
+  pendingOrder,
+  pendingRemoves,
+  onReorderLocal,
+  onRemoveLocal,
 }: {
   collectionKey: string
   itemFields: CollectionField[]
   items: unknown
   onAdd: (key: string, item: Record<string, unknown>) => Promise<void>
-  onRemove: (key: string, index: number) => Promise<void>
   onReorder: (key: string, fromIndex: number, toIndex: number) => Promise<void>
   onEdit: (
     key: string,
     index: number,
     patch: Record<string, unknown>,
   ) => Promise<void>
+  pendingOrder: number[] | null
+  pendingRemoves: number[]
+  onReorderLocal: (order: number[]) => void
+  onRemoveLocal: (index: number) => void
 }) => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
   const [draftItem, setDraftItem] = useState<Record<string, unknown> | null>(
@@ -265,23 +367,18 @@ const BentoCollection = ({
     null,
   )
   const rawItems = Array.isArray(items) ? items : []
-  const [localOrder, setLocalOrder] = useState<number[] | null>(null)
   const label = titleCase(collectionKey)
 
-  // When rawItems reference changes (backend update), clear local order
-  // since the backend now reflects the new order
-  const prevRawItems = useRef(rawItems)
-  useEffect(() => {
-    if (prevRawItems.current !== rawItems) {
-      setLocalOrder(null)
-      prevRawItems.current = rawItems
-    }
-  }, [rawItems])
+  // Use pendingOrder from parent (lifted state) instead of local state
+  const localOrder = pendingOrder
 
-  // Apply local order if present, otherwise use raw items as-is
-  const itemArray = localOrder
-    ? localOrder.map((i) => rawItems[i]).filter((x) => x !== undefined)
-    : rawItems
+  // Apply buffered ordering and hide staged removals without mutating the backend.
+  const sortableItems = (localOrder ?? rawItems.map((_, i) => i)).filter(
+    (index) => !pendingRemoves.includes(index),
+  )
+  const itemArray = sortableItems
+    .map((index) => rawItems[index])
+    .filter((item) => item !== undefined)
 
   const titleField = findTitleField(itemFields)
   const subtitleField = findSubtitleField(itemFields)
@@ -302,23 +399,15 @@ const BentoCollection = ({
 
   const handleReorder = useCallback(
     (fromIndex: number, toIndex: number) => {
-      // Optimistic: update local order immediately
-      const currentOrder = localOrder ?? rawItems.map((_, i) => i)
-      const nextOrder = [...currentOrder]
+      // Buffer reorder in parent state — only persist on Apply, discard on close
+      const nextOrder = [...sortableItems]
       const [moved] = nextOrder.splice(fromIndex, 1)
       nextOrder.splice(toIndex, 0, moved)
-      setLocalOrder(nextOrder)
-      // Backend sync
-      void onReorder(collectionKey, fromIndex, toIndex)
+      onReorderLocal(nextOrder)
     },
-    [localOrder, rawItems, onReorder, collectionKey],
+    [sortableItems, onReorderLocal],
   )
 
-  // Sortable values: the raw indices in their current display order.
-  // e.g. if localOrder is [1, 2, 0, 3, 4], sortableItems is [1, 2, 0, 3, 4].
-  // This lets dnd-kit track items by their stable raw index ID and
-  // detect when the order changes.
-  const sortableItems = localOrder ?? rawItems.map((_, i) => i)
   const getItemValue = (i: number) => String(i)
 
   return (
@@ -351,6 +440,13 @@ const BentoCollection = ({
           value={sortableItems}
           getItemValue={getItemValue}
           onMove={(event) => {
+            // Drag reorder persists immediately
+            void onReorder(
+              collectionKey,
+              sortableItems[event.activeIndex],
+              sortableItems[event.overIndex],
+            )
+            // Also update local order for visual consistency
             handleReorder(event.activeIndex, event.overIndex)
           }}
           orientation="vertical"
@@ -431,7 +527,7 @@ const BentoCollection = ({
                       </Button>
                       <DeleteWithConfirm
                         itemLabel={title}
-                        onConfirm={() => void onRemove(collectionKey, index)}
+                        onConfirm={() => onRemoveLocal(rawIndex)}
                       />
                     </div>
 
@@ -545,36 +641,46 @@ const DeleteWithConfirm = ({
 }: {
   itemLabel: string
   onConfirm: () => void
-}) => (
-  <AlertDialog>
-    <AlertDialogTrigger asChild>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-xs"
-        className="shrink-0 text-red-400/50 hover:bg-red-500/15 hover:text-red-300"
-        title={`Remove ${itemLabel}`}
-      >
-        <Trash2 className="size-3" />
-      </Button>
-    </AlertDialogTrigger>
-    <AlertDialogContent size="sm">
-      <AlertDialogHeader>
-        <AlertDialogTitle>Remove {itemLabel}?</AlertDialogTitle>
-        <AlertDialogDescription>
-          This will permanently remove this item from the collection. This
-          action cannot be undone.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <AlertDialogAction variant="destructive" onClick={onConfirm}>
-          Remove
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-)
+}) => {
+  const [open, setOpen] = useState(false)
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => setOpen(true)}
+          className="shrink-0 text-red-400/50 hover:bg-red-500/15 hover:text-red-300"
+          title={`Remove ${itemLabel}`}
+        >
+          <Trash2 className="size-3" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent size="sm">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove {itemLabel}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently remove this item from the collection. This
+            action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() => {
+              onConfirm()
+              setOpen(false)
+            }}
+          >
+            Remove
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
 
 // ─── Grip icon (drag handle) ─────────────────────────────────────────────────
 
@@ -695,12 +801,12 @@ const BentoScalar = ({
   scalarKey,
   type,
   currentValue,
-  onSet,
+  onBuffer,
 }: {
   scalarKey: string
   type: 'string' | 'number' | 'boolean'
   currentValue: unknown
-  onSet: (key: string, value: unknown) => Promise<void>
+  onBuffer: (value: unknown) => void
 }) => {
   const placeholder = titleCase(scalarKey)
   const isLong = LONG_TEXT_KEYS.has(scalarKey)
@@ -711,7 +817,7 @@ const BentoScalar = ({
         <input
           type="checkbox"
           checked={currentValue === true}
-          onChange={(e) => void onSet(scalarKey, e.target.checked)}
+          onChange={(e) => onBuffer(e.target.checked)}
           className="size-3.5 accent-cyan-300"
         />
         {placeholder}
@@ -726,7 +832,7 @@ const BentoScalar = ({
         value={typeof currentValue === 'number' ? currentValue : ''}
         onChange={(e) => {
           const n = Number(e.target.value)
-          void onSet(scalarKey, Number.isFinite(n) ? n : 0)
+          onBuffer(Number.isFinite(n) ? n : 0)
         }}
         placeholder={placeholder}
         className="col-span-1 w-full rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/30 focus:border-cyan-300/40"
@@ -738,7 +844,7 @@ const BentoScalar = ({
     <input
       type="text"
       value={typeof currentValue === 'string' ? currentValue : ''}
-      onChange={(e) => void onSet(scalarKey, e.target.value)}
+      onChange={(e) => onBuffer(e.target.value)}
       placeholder={placeholder}
       className={cn(
         'w-full rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/30 focus:border-cyan-300/40',

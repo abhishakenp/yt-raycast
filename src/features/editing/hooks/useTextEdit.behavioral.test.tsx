@@ -906,12 +906,18 @@ describe('useTextEdit: translated text replacement', () => {
       )
     })
 
-    const textNode = heading.firstChild as Text
+    const textNode = heading.firstChild
+    expect(textNode).toBeInstanceOf(Text)
+    if (!(textNode instanceof Text)) {
+      throw new Error('Editable heading did not contain a text node')
+    }
     const interiorCaretOffset = 'स्वीट क्र'.length
     const range = document.createRange()
     range.setStart(textNode, interiorCaretOffset)
     range.collapse(true)
-    const selection = window.getSelection()!
+    const selection = window.getSelection()
+    expect(selection).not.toBeNull()
+    if (!selection) throw new Error('Browser selection was unavailable')
     selection.removeAllRanges()
     selection.addRange(range)
 
@@ -931,9 +937,14 @@ describe('useTextEdit: translated text replacement', () => {
       result.current.commitEdit()
     })
 
-    const persistedText = onTextChange.mock.calls[0]?.[0]?.newText as
-      | string
-      | undefined
+    const emittedChange: unknown = onTextChange.mock.calls[0]?.[0]
+    const persistedText =
+      typeof emittedChange === 'object' &&
+      emittedChange !== null &&
+      'newText' in emittedChange &&
+      typeof emittedChange.newText === 'string'
+        ? emittedChange.newText
+        : undefined
     unmount()
     container.remove()
 

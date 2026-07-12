@@ -23,6 +23,7 @@ const mockActions = vi.hoisted(() => ({
   reorderItem: vi.fn(async () => {}),
   editItem: vi.fn(async () => {}),
   setProp: vi.fn(async () => {}),
+  mergeData: vi.fn(async () => {}),
 }))
 
 vi.mock('../hooks/useSectionCapsuleActions', () => ({
@@ -319,6 +320,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
     mockActions.reorderItem.mockClear()
     mockActions.editItem.mockClear()
     mockActions.setProp.mockClear()
+    mockActions.mergeData.mockClear()
   })
 
   afterEach(() => {
@@ -598,7 +600,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
   // ── Panel interactions propagate to hook ─────────────────────────────────
 
   describe('Panel interactions call hook actions', () => {
-    it('clicking variant option calls setProp', () => {
+    it('clicking variant option in Manage Section Content does not persist before Apply', () => {
       mockActions.sectionData = { columns: 2 }
       const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
@@ -606,6 +608,135 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
       fireEvent.click(screen.getByRole('button', { name: '4' }))
 
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+    })
+
+    it('closing Manage Section Content discards scalar edits without persisting', async () => {
+      mockActions.sectionData = {
+        eyebrow: 'Old eyebrow',
+        headingLead: 'Work',
+      }
+      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      renderToolbar({ activeElement: section, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
+      const eyebrowInput = screen.getByPlaceholderText(
+        'Eyebrow',
+      ) as HTMLInputElement
+
+      await act(async () => {
+        fireEvent.change(eyebrowInput, { target: { value: 'New eyebrow' } })
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+    })
+
+    it('closing Manage Section Content discards reorder without persisting', () => {
+      mockActions.sectionData = {
+        images: [{ alt: 'A' }, { alt: 'B' }],
+      }
+      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      renderToolbar({ activeElement: section, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
+      fireEvent.click(screen.getAllByTitle('Move down')[0]!)
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+      expect(mockActions.reorderItem).not.toHaveBeenCalled()
+    })
+
+    it('pressing Escape discards Manage Section Content scalar edits without persisting', async () => {
+      mockActions.sectionData = {
+        eyebrow: 'Old eyebrow',
+        headingLead: 'Work',
+      }
+      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      renderToolbar({ activeElement: section, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
+      const eyebrowInput = screen.getByPlaceholderText(
+        'Eyebrow',
+      ) as HTMLInputElement
+
+      await act(async () => {
+        fireEvent.change(eyebrowInput, { target: { value: 'Escape draft' } })
+      })
+      fireEvent.keyDown(document, { key: 'Escape' })
+
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+    })
+
+    it('clicking outside discards Manage Section Content scalar edits without persisting', async () => {
+      mockActions.sectionData = {
+        eyebrow: 'Old eyebrow',
+        headingLead: 'Work',
+      }
+      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      renderToolbar({ activeElement: section, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
+      const eyebrowInput = screen.getByPlaceholderText(
+        'Eyebrow',
+      ) as HTMLInputElement
+
+      await act(async () => {
+        fireEvent.change(eyebrowInput, { target: { value: 'Outside draft' } })
+      })
+      fireEvent.mouseDown(document.body)
+
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+    })
+
+    it('pressing Escape discards Manage Section Content reorder without persisting', () => {
+      mockActions.sectionData = {
+        images: [{ alt: 'A' }, { alt: 'B' }],
+      }
+      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      renderToolbar({ activeElement: section, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
+      fireEvent.click(screen.getAllByTitle('Move down')[0]!)
+      fireEvent.keyDown(document, { key: 'Escape' })
+
+      expect(mockActions.reorderItem).not.toHaveBeenCalled()
+    })
+
+    it('Manage Section Content scalar edits persist only after Apply', async () => {
+      mockActions.sectionData = {
+        eyebrow: 'Old eyebrow',
+        headingLead: 'Work',
+      }
+      const section = makeCapsuleSectionEl('CoworkingHero', 'home_hero')
+      renderToolbar({ activeElement: section, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
+      const eyebrowInput = screen.getByPlaceholderText(
+        'Eyebrow',
+      ) as HTMLInputElement
+
+      await act(async () => {
+        fireEvent.change(eyebrowInput, { target: { value: 'Applied eyebrow' } })
+      })
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+      expect(mockActions.setProp).toHaveBeenCalledWith(
+        'eyebrow',
+        'Applied eyebrow',
+      )
+    })
+
+    it('Manage Section Content variant changes persist only after Apply', () => {
+      mockActions.sectionData = { columns: 2, images: [] }
+      const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
+      renderToolbar({ activeElement: section, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
+      fireEvent.click(screen.getByRole('button', { name: '4' }))
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
       expect(mockActions.setProp).toHaveBeenCalledWith('columns', 4)
     })
 
@@ -631,12 +762,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       })
     })
 
-    // TODO: The trash button click doesn't trigger the React onClick handler
-    // in jsdom. The button is found but fireEvent.click doesn't propagate.
-    // This is likely a jsdom event propagation issue with deeply nested
-    // SVG elements. The removeItem behavior is tested directly in the
-    // CapsuleContextPanel.behavioral.test.tsx where it passes.
-    it.skip('clicking remove button calls removeItem', async () => {
+    it('opening remove confirmation does not persist before confirmation or Apply', async () => {
       mockActions.sectionData = {
         images: [{ alt: 'A' }, { alt: 'B' }],
       }
@@ -655,7 +781,7 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
         fireEvent.click(trashBtn!)
       })
 
-      expect(mockActions.removeItem).toHaveBeenCalledWith('images', 0)
+      expect(mockActions.removeItem).not.toHaveBeenCalled()
     })
   })
 
@@ -725,13 +851,53 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       expect(screen.getByRole('button', { name: /Add/ })).toBeTruthy()
     })
 
-    it('calls setProp when a variant button is clicked in the inline panel', () => {
+    it('inline panel variant changes wait for Apply before persisting', () => {
       mockActions.sectionData = { columns: 3, features: [] }
       const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
       renderToolbar({ activeElement: child, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: '4' }))
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
       expect(mockActions.setProp).toHaveBeenCalledWith('columns', 4)
+    })
+
+    it('inline panel variant changes are discarded on Escape before Apply', () => {
+      mockActions.sectionData = { columns: 3, features: [] }
+      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      renderToolbar({ activeElement: child, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: '4' }))
+      fireEvent.keyDown(document, { key: 'Escape' })
+
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+    })
+
+    it('inline panel variant changes are discarded on outside click before Apply', () => {
+      mockActions.sectionData = { columns: 3, features: [] }
+      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      renderToolbar({ activeElement: child, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: '4' }))
+      fireEvent.mouseDown(document.body)
+
+      expect(mockActions.setProp).not.toHaveBeenCalled()
+    })
+
+    it('inline panel Add waits for Apply before persisting a new collection item', () => {
+      mockActions.sectionData = { features: [] }
+      const child = makeChildInsideCapsule('CoworkingFeatures', 'home_features')
+      renderToolbar({ activeElement: child, sessionId: 'sess-1' })
+
+      fireEvent.click(screen.getByRole('button', { name: /Add/ }))
+      expect(mockActions.addItem).not.toHaveBeenCalled()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+      expect(mockActions.addItem).toHaveBeenCalledWith('features', {
+        title: '',
+        description: '',
+      })
     })
 
     it('does not auto-open inline panel for Navbar capsules', () => {

@@ -31,7 +31,157 @@ vi.mock('@ship-fast/lakebed/server', async (importOriginal) => {
   return { ...actual }
 })
 
+// Mock Sortable — dnd-kit doesn't work in jsdom (no layout engine).
+// Replace with a simple component that calls onMove when a pointer drag
+// sequence is fired on a handle element.
+vi.mock('#/components/ui/sortable', () => {
+  const React = require('react') as typeof import('react')
+  const SortableContext = React.createContext<{
+    items: unknown[]
+    onMove: (event: { activeIndex: number; overIndex: number }) => void
+    startIndex: React.MutableRefObject<number | null>
+    contentRef: React.MutableRefObject<HTMLElement | null>
+  } | null>(null)
+
+  const Sortable = ({ value, onMove, children }: any) => {
+    const startIndex = React.useRef<number | null>(null)
+    const contentRef = React.useRef<HTMLElement | null>(null)
+    return (
+      <SortableContext.Provider
+        value={{ items: value, onMove, startIndex, contentRef }}
+      >
+        {children}
+      </SortableContext.Provider>
+    )
+  }
+  const SortableContent = ({ children, ...props }: any) => {
+    return (
+      <div data-sortable-content {...props}>
+        {children}
+      </div>
+    )
+  }
+  const SortableItem = ({ value, children, asChild }: any) => {
+    const ctx = React.useContext(SortableContext)
+    // Store the item's index in a data attribute so the handle can read it
+    // value may be string or number; compare loosely
+    const idx = ctx
+      ? ctx.items.findIndex((v) => String(v) === String(value))
+      : -1
+    return <div data-sortable-idx={idx}>{children}</div>
+  }
+  const SortableItemHandle = ({ children, ...props }: any) => {
+    const ctx = React.useContext(SortableContext)
+    const refCallback = (el: HTMLElement | null) => {
+      if (!el) return
+      if (!ctx) return
+      const onDown = (e: Event) => {
+        const item = el.closest('[data-sortable-idx]')
+        if (item && ctx) {
+          ctx.startIndex.current = parseInt(
+            item.getAttribute('data-sortable-idx')!,
+            10,
+          )
+        }
+      }
+      const onUp = (e: Event) => {
+        if (!ctx || ctx.startIndex.current === null) return
+        const content = el.closest('[data-sortable-content]')
+        if (!content) return
+        const items = Array.from(
+          content.querySelectorAll('[data-sortable-idx]'),
+        ) as HTMLElement[]
+        let overIdx = ctx.startIndex.current
+        const pe = e as PointerEvent
+        for (let i = 0; i < items.length; i++) {
+          const rect = items[i].getBoundingClientRect()
+          if (pe.clientY >= rect.top && pe.clientY <= rect.bottom) {
+            overIdx = parseInt(items[i].getAttribute('data-sortable-idx')!, 10)
+            break
+          }
+        }
+        if (overIdx !== ctx.startIndex.current) {
+          ctx.onMove({
+            activeIndex: ctx.startIndex.current,
+            overIndex: overIdx,
+          })
+        }
+        ctx.startIndex.current = null
+      }
+      el.addEventListener('pointerdown', onDown)
+      el.addEventListener('pointerup', onUp)
+    }
+    return (
+      <div ref={refCallback} aria-label={props['aria-label']} {...props}>
+        {children}
+      </div>
+    )
+  }
+  const SortableOverlay = () => null
+  return {
+    Sortable,
+    SortableContent,
+    SortableItem,
+    SortableItemHandle,
+    SortableOverlay,
+  }
+})
+
 import { CapsuleContextPanel } from './CapsuleContextPanel'
+
+// Save original once at module level so afterEach can restore it
+const originalGetBoundingClientRect = Element.prototype.getBoundingClientRect
+
+// Shared setup: mock getBoundingClientRect so jsdom has layout for drag tests
+function setupBoundingClientRectMock() {
+  Element.prototype.getBoundingClientRect = function () {
+    const rect = originalGetBoundingClientRect.call(this)
+    // For sortable items, use their data-sortable-idx attribute to compute position
+    const idxAttr = this.getAttribute?.('data-sortable-idx')
+    if (idxAttr !== null && idxAttr !== undefined) {
+      const idx = parseInt(idxAttr, 10)
+      if (idx >= 0) {
+        return {
+          top: idx * 60,
+          bottom: idx * 60 + 50,
+          left: 0,
+          right: 300,
+          width: 300,
+          height: 50,
+          x: 0,
+          y: idx * 60,
+          toJSON: () => {},
+        }
+      }
+    }
+    // For other elements, approximate: stack children vertically
+    if (rect.top === 0 && rect.left === 0 && rect.width === 0) {
+      const parent = this.parentElement
+      if (parent) {
+        const siblings = Array.from(parent.children)
+        const idx = siblings.indexOf(this)
+        if (idx >= 0) {
+          return {
+            top: idx * 60,
+            bottom: idx * 60 + 50,
+            left: 0,
+            right: 300,
+            width: 300,
+            height: 50,
+            x: 0,
+            y: idx * 60,
+            toJSON: () => {},
+          }
+        }
+      }
+    }
+    return rect
+  }
+}
+
+function restoreBoundingClientRectMock() {
+  Element.prototype.getBoundingClientRect = originalGetBoundingClientRect
+}
 
 describe('CapsuleContextPanel', () => {
   beforeEach(() => {
@@ -43,9 +193,11 @@ describe('CapsuleContextPanel', () => {
     mockActions.reorderItem.mockClear()
     mockActions.editItem.mockClear()
     mockActions.setProp.mockClear()
+    setupBoundingClientRectMock()
   })
 
   afterEach(() => {
+    restoreBoundingClientRectMock()
     cleanup()
   })
 
@@ -97,7 +249,7 @@ describe('CapsuleContextPanel', () => {
     expect(screen.getByText('Photo 2')).toBeTruthy()
   })
 
-  it('clicking variant option calls setProp', async () => {
+  it('clicking variant option previews locally without persisting immediately', async () => {
     mockActions.sectionData = { columns: 2 }
 
     render(
@@ -113,7 +265,7 @@ describe('CapsuleContextPanel', () => {
       fireEvent.click(fourButtons[0]!)
     })
 
-    expect(mockActions.setProp).toHaveBeenCalledWith('columns', 4)
+    expect(mockActions.setProp).not.toHaveBeenCalled()
   })
 
   it('clicking Add button calls addItem with default item', async () => {
@@ -230,7 +382,7 @@ describe('CapsuleContextPanel', () => {
     expect(screen.getByPlaceholderText('Caption')).toBeTruthy()
   })
 
-  it('remove button calls removeItem after confirmation', async () => {
+  it('confirming remove stages deletion instead of persisting immediately', async () => {
     mockActions.sectionData = {
       images: [{ alt: 'A' }, { alt: 'B' }],
     }
@@ -256,7 +408,30 @@ describe('CapsuleContextPanel', () => {
       fireEvent.click(confirmButton)
     })
 
-    expect(mockActions.removeItem).toHaveBeenCalledWith('images', 0)
+    expect(mockActions.removeItem).not.toHaveBeenCalled()
+  })
+
+  it('canceling remove keeps the collection unchanged without persisting', async () => {
+    mockActions.sectionData = {
+      images: [{ alt: 'A' }, { alt: 'B' }],
+    }
+
+    render(
+      createElement(CapsuleContextPanel, {
+        capsuleName: 'CoworkingGallery',
+        statementId: 'gallery_1',
+        sessionId: 'sess-1',
+      }),
+    )
+
+    await act(async () => {
+      fireEvent.click(screen.getByTitle('Remove A'))
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    })
+
+    expect(mockActions.removeItem).not.toHaveBeenCalled()
   })
 })
 
@@ -272,9 +447,11 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     mockActions.reorderItem.mockClear()
     mockActions.editItem.mockClear()
     mockActions.setProp.mockClear()
+    setupBoundingClientRectMock()
   })
 
   afterEach(() => {
+    restoreBoundingClientRectMock()
     cleanup()
   })
 
@@ -318,7 +495,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     expect(screen.getAllByText(/Tiers/).length).toBeGreaterThan(0)
   })
 
-  it('clicking different variant option calls setProp with that value', async () => {
+  it('clicking different variant option does not call setProp before Apply', async () => {
     mockActions.sectionData = { columns: 2, images: [] }
 
     render(
@@ -334,7 +511,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
       fireEvent.click(threeBtn)
     })
 
-    expect(mockActions.setProp).toHaveBeenCalledWith('columns', 3)
+    expect(mockActions.setProp).not.toHaveBeenCalled()
   })
 
   // ── Collection expand/collapse ────────────────────────────────────────────
@@ -572,7 +749,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     expect(handle2).toBeTruthy()
   })
 
-  it('reorderItem is called when onMove fires', async () => {
+  it('drag reorder is wired to reorder the collection instead of only rendering handles', async () => {
     mockActions.sectionData = {
       images: [{ alt: 'A' }, { alt: 'B' }, { alt: 'C' }],
     }
@@ -585,12 +762,16 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
       }),
     )
 
-    // dnd-kit drag simulation in jsdom is unreliable, so we verify
-    // the Sortable component is wired by checking drag handles exist
-    // and the hook's reorderItem function is the one passed to onMove.
-    // The actual drag behavior is covered by @dnd-kit's own tests.
-    expect(screen.getByLabelText('Drag A')).toBeTruthy()
-    expect(mockActions.reorderItem).not.toHaveBeenCalled()
+    const dragA = screen.getByLabelText('Drag A')
+    const dragB = screen.getByLabelText('Drag B')
+
+    await act(async () => {
+      fireEvent.pointerDown(dragA, { clientX: 10, clientY: 10, buttons: 1 })
+      fireEvent.pointerMove(dragA, { clientX: 10, clientY: 80, buttons: 1 })
+      fireEvent.pointerUp(dragB, { clientX: 10, clientY: 80 })
+    })
+
+    expect(mockActions.reorderItem).toHaveBeenCalledWith('images', 0, 1)
   })
 
   // ── Empty collection ──────────────────────────────────────────────────────
@@ -634,21 +815,88 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
   // ── Multiple collections ──────────────────────────────────────────────────
 
   it('renders multiple collections in same capsule', () => {
-    // Use a capsule with multiple collections if available
     mockActions.sectionData = {
-      tiers: [{ name: 'Basic', price: '$10' }],
+      countdown: [
+        { value: '12', unit: 'Hours' },
+        { value: '30', unit: 'Minutes' },
+      ],
+      items: [
+        {
+          title: 'Camera Kit',
+          subtitle: 'Starter bundle',
+          price: '$499',
+          was: '$599',
+          discount: 'Save $100',
+          imageAlt: 'Camera bundle',
+        },
+        {
+          title: 'Audio Kit',
+          subtitle: 'Creator audio',
+          price: '$199',
+          was: '$249',
+          discount: 'Save $50',
+          imageAlt: 'Microphone bundle',
+        },
+      ],
     }
 
     render(
       createElement(CapsuleContextPanel, {
-        capsuleName: 'CoworkingPricing',
-        statementId: 'pricing_1',
+        capsuleName: 'ElectronicsStoreDeals',
+        statementId: 'deals_1',
         sessionId: 'sess-1',
       }),
     )
 
-    // CoworkingPricing has one collection (tiers)
-    expect(screen.getAllByText(/Tiers/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Countdown/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Items/).length).toBeGreaterThan(0)
+    expect(screen.getByText('Countdown 1')).toBeTruthy()
+    expect(screen.getByText('Camera Kit')).toBeTruthy()
+    expect(screen.getAllByRole('button', { name: /Add/ }).length).toBe(2)
+    expect(screen.getAllByTitle('Move down').length).toBe(4)
+  })
+
+  it('editing an item in the second collection saves with the second collection key', async () => {
+    mockActions.sectionData = {
+      countdown: [{ value: '12', unit: 'Hours' }],
+      items: [
+        {
+          title: 'Camera Kit',
+          subtitle: 'Starter bundle',
+          price: '$499',
+          was: '$599',
+          discount: 'Save $100',
+          imageAlt: 'Camera bundle',
+        },
+      ],
+    }
+
+    render(
+      createElement(CapsuleContextPanel, {
+        capsuleName: 'ElectronicsStoreDeals',
+        statementId: 'deals_1',
+        sessionId: 'sess-1',
+      }),
+    )
+
+    fireEvent.click(screen.getByText('Camera Kit'))
+    const priceInput = screen.getByPlaceholderText('Price') as HTMLInputElement
+
+    await act(async () => {
+      fireEvent.change(priceInput, { target: { value: '$449' } })
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    })
+
+    expect(mockActions.editItem).toHaveBeenCalledWith('items', 0, {
+      title: 'Camera Kit',
+      subtitle: 'Starter bundle',
+      price: '$449',
+      was: '$599',
+      discount: 'Save $100',
+      imageAlt: 'Camera bundle',
+    })
   })
 
   // ── Scalar fields ─────────────────────────────────────────────────────────
@@ -681,7 +929,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     expect(headingLeadInput.value).toBe('Work')
   })
 
-  it('editing scalar field calls setProp', async () => {
+  it('editing scalar field updates the local preview without persisting immediately', async () => {
     mockActions.sectionData = {
       eyebrow: 'Old text',
     }
@@ -705,7 +953,8 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
       fireEvent.blur(eyebrowInput)
     })
 
-    expect(mockActions.setProp).toHaveBeenCalledWith('eyebrow', 'New text')
+    expect(eyebrowInput.value).toBe('New text')
+    expect(mockActions.setProp).not.toHaveBeenCalled()
   })
 
   // ── Missing sessionId ─────────────────────────────────────────────────────
