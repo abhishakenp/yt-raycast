@@ -316,32 +316,116 @@ function sanitizePartialImages(code: string): string {
   return stripNullsFromArrays(replaced)
 }
 
+const transformOutsideQuotedStrings = (
+  source: string,
+  transform: (segment: string) => string,
+): string => {
+  const quotedSegments: string[] = []
+  const tokenFor = (index: number) => `\uE000${index}\uE001`
+  let masked = ''
+  let index = 0
+
+  while (index < source.length) {
+    const quote = source[index]
+    if (quote !== '"' && quote !== "'") {
+      masked += quote
+      index += 1
+      continue
+    }
+
+    const start = index
+    let escaped = false
+    index += 1
+    while (index < source.length) {
+      const char = source[index]
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === quote) {
+        index += 1
+        break
+      } else if (
+        char === '\n' &&
+        /^\s*[$A-Za-z_][\w$]*\s*=/.test(source.slice(index + 1))
+      ) {
+        break
+      }
+      index += 1
+    }
+
+    const token = tokenFor(quotedSegments.length)
+    quotedSegments.push(source.slice(start, index))
+    masked += token
+  }
+
+  return quotedSegments.reduce(
+    (result, segment, segmentIndex) =>
+      result.replaceAll(tokenFor(segmentIndex), segment),
+    transform(masked),
+  )
+}
+
+const stripActionCalls = (source: string): string =>
+  transformOutsideQuotedStrings(source, (masked) => {
+    const actionPattern = /\bAction\s*\(/g
+    let result = ''
+    let cursor = 0
+
+    while (cursor < masked.length) {
+      actionPattern.lastIndex = cursor
+      const match = actionPattern.exec(masked)
+      if (!match) return result + masked.slice(cursor)
+
+      result += masked.slice(cursor, match.index) + 'null'
+      const openParenthesis = match.index + match[0].lastIndexOf('(')
+      let depth = 0
+      let end = openParenthesis
+      for (; end < masked.length; end += 1) {
+        if (masked[end] === '(') {
+          depth += 1
+        } else if (masked[end] === ')') {
+          depth -= 1
+          if (depth === 0) {
+            end += 1
+            break
+          }
+        }
+      }
+      cursor = end
+    }
+
+    return result
+  })
+
 function stripNullsFromArrays(code: string): string {
   // Aggressive null stripping for streaming: remove all null values from arrays
   // to prevent "Cannot read properties of null" errors when components map over
   // incomplete arrays during progressive rendering.
   // Also removes objects with only null/empty properties that came from incomplete Image() calls.
-  let result = code
+  return transformOutsideQuotedStrings(code, (source) => {
+    let result = source
 
-  // First pass: simple null removal in arrays
-  result = result
-    .replace(/,\s*null\s*(?=[,\]])/g, '') // null followed by comma or ]
-    .replace(/(?<=[,\[])\s*null\s*,/g, ',') // null preceded by comma or [
-    .replace(/^\s*null\s*$/gm, '') // standalone null on a line
+    // First pass: simple null removal in arrays
+    result = result
+      .replace(/,\s*null\s*(?=[,\]])/g, '') // null followed by comma or ]
+      .replace(/(?<=[,\[])\s*null\s*,/g, ',') // null preceded by comma or [
+      .replace(/^\s*null\s*$/gm, '') // standalone null on a line
 
-  // Second pass: remove empty objects and arrays that might have resulted from null replacements
-  result = result.replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '') // empty {}
-  result = result.replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',') // empty {} with comma
-  result = result.replace(/,\s*\[\s*\]\s*(?=[,\]])/g, '') // empty []
-  result = result.replace(/(?<=[,\[])\s*\[\s*\]\s*,/g, ',') // empty [] with comma
+    // Second pass: remove empty objects and arrays that might have resulted from null replacements
+    result = result.replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '') // empty {}
+    result = result.replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',') // empty {} with comma
+    result = result.replace(/,\s*\[\s*\]\s*(?=[,\]])/g, '') // empty []
+    result = result.replace(/(?<=[,\[])\s*\[\s*\]\s*,/g, ',') // empty [] with comma
 
-  // Third pass: clean up resulting double commas and edge cases
-  result = result
-    .replace(/,\s*,/g, ',') // Fix double commas
-    .replace(/^\s*,\s*/gm, '') // Remove leading comma
-    .replace(/,\s*$/gm, '') // Remove trailing comma
+    // Third pass: clean up resulting double commas and edge cases
+    result = result
+      .replace(/,\s*,/g, ',') // Fix double commas
+      .replace(/^\s*,\s*/gm, '') // Remove leading comma
+      .replace(/,\s*$/gm, '') // Remove trailing comma
 
-  return result
+    return result
+  })
 }
 
 function nextNonWhitespaceChar(code: string, start: number): string {
@@ -593,10 +677,11 @@ export function preprocessOpenUIResponse(
   // got 66"), so well-formed named-reference output is rejected. Keep the named
   // form server-side — it both validates and renders correctly.
   const { resolveRefs = true } = options
-  let result = String(s || '')
-    .replace(/^```[a-z-]*\n?/i, '')
-    .replace(/\n?```\s*$/, '')
-    .replace(/Action\([^)]*\)/g, 'null')
+  let result = stripActionCalls(
+    String(s || '')
+      .replace(/^```[a-z-]*\n?/i, '')
+      .replace(/\n?```\s*$/, ''),
+  )
 
   // Repair truncated mid-program statements before any ref resolution so a
   // broken statement can't swallow the ones after it (which leak as raw text).

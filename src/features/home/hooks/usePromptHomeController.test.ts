@@ -117,6 +117,37 @@ describe('usePromptHomeController submit guard', () => {
     ).toBe('1')
   }, 15_000)
 
+  it('does not replay both session transports after one rejected launch', async () => {
+    const state = getTestState()
+    state.createSession.mockRejectedValue(
+      new Error('Convex launch request rejected'),
+    )
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a release demo website')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    const publicCreateCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) => input === '/api/sessions/create')
+    expect({
+      convexCreateRequests: state.createSession.mock.calls.length,
+      publicCreateRequests: publicCreateCalls.length,
+    }).toEqual({
+      convexCreateRequests: 1,
+      publicCreateRequests: 1,
+    })
+    expect(state.navigate).not.toHaveBeenCalled()
+    expect(result.current.errorMessage).toBe(
+      'Generation could not start. Try again.',
+    )
+  }, 15_000)
+
   it('does not request public cache replay for private or v2 submissions', async () => {
     const state = getTestState()
     const first = renderHook(() => usePromptHomeController())

@@ -1,15 +1,98 @@
+const transformOutsideQuotedStrings = (
+  source: string,
+  transform: (segment: string) => string,
+): string => {
+  const quotedSegments: string[] = []
+  const tokenFor = (index: number) => `\uE000${index}\uE001`
+  let masked = ''
+
+  let index = 0
+  while (index < source.length) {
+    const quote = source[index]
+    if (quote !== '"' && quote !== "'") {
+      masked += quote
+      index += 1
+      continue
+    }
+
+    const start = index
+    let escaped = false
+    index += 1
+    while (index < source.length) {
+      const char = source[index]
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === quote) {
+        index += 1
+        break
+      } else if (
+        char === '\n' &&
+        /^\s*[$A-Za-z_][\w$]*\s*=/.test(source.slice(index + 1))
+      ) {
+        break
+      }
+      index += 1
+    }
+
+    const token = tokenFor(quotedSegments.length)
+    quotedSegments.push(source.slice(start, index))
+    masked += token
+  }
+
+  return quotedSegments.reduce(
+    (result, segment, index) => result.replaceAll(tokenFor(index), segment),
+    transform(masked),
+  )
+}
+
+const stripActionCalls = (source: string): string =>
+  transformOutsideQuotedStrings(source, (masked) => {
+    const actionPattern = /\bAction\s*\(/g
+    let result = ''
+    let cursor = 0
+
+    while (cursor < masked.length) {
+      actionPattern.lastIndex = cursor
+      const match = actionPattern.exec(masked)
+      if (!match) return result + masked.slice(cursor)
+
+      result += masked.slice(cursor, match.index) + 'null'
+      const openParenthesis = match.index + match[0].lastIndexOf('(')
+      let depth = 0
+      let end = openParenthesis
+      for (; end < masked.length; end += 1) {
+        if (masked[end] === '(') {
+          depth += 1
+        } else if (masked[end] === ')') {
+          depth -= 1
+          if (depth === 0) {
+            end += 1
+            break
+          }
+        }
+      }
+      cursor = end
+    }
+
+    return result
+  })
+
 export function stripNullsFromArrays(code: string): string {
-  return code
-    .replace(/,\s*null\s*(?=[,\]])/g, '')
-    .replace(/(?<=\[)\s*null\s*,\s*/g, '')
-    .replace(/^\s*null\s*$/gm, '')
-    .replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '')
-    .replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',')
-    .replace(/,\s*\[\s*\]\s*(?=[,\]])/g, '')
-    .replace(/(?<=[,\[])\s*\[\s*\]\s*,/g, ',')
-    .replace(/,\s*,/g, ',')
-    .replace(/^\s*,\s*/gm, '')
-    .replace(/,\s*$/gm, '')
+  return transformOutsideQuotedStrings(code, (segment) =>
+    segment
+      .replace(/,\s*null\s*(?=[,\]])/g, '')
+      .replace(/(?<=\[)\s*null\s*,\s*/g, '')
+      .replace(/^\s*null\s*$/gm, '')
+      .replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '')
+      .replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',')
+      .replace(/,\s*\[\s*\]\s*(?=[,\]])/g, '')
+      .replace(/(?<=[,\[])\s*\[\s*\]\s*,/g, ',')
+      .replace(/,\s*,/g, ',')
+      .replace(/^\s*,\s*/gm, '')
+      .replace(/,\s*$/gm, ''),
+  )
 }
 
 export function sanitizePartialImages(code: string): string {
@@ -297,10 +380,11 @@ function forceGaplessSectionBandStack(code: string): string {
 }
 
 export function preprocessOpenUIRuntimeResponse(source: string): string {
-  const withoutFences = String(source || '')
-    .replace(/^```[a-z-]*\n?/i, '')
-    .replace(/\n?```\s*$/, '')
-    .replace(/Action\([^)]*\)/g, 'null')
+  const withoutFences = stripActionCalls(
+    String(source || '')
+      .replace(/^```[a-z-]*\n?/i, '')
+      .replace(/\n?```\s*$/, ''),
+  )
 
   return forceGaplessSectionBandStack(
     balancePartial(

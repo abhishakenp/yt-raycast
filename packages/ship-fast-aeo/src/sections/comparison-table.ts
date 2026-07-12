@@ -11,7 +11,7 @@ export function renderComparisonTableSection(section: SectionLike): string {
   const columns = section.columns?.length
     ? section.columns
     : (section.items || []).map((item) => ({
-        title: item.title,
+        title: item.title || item.label,
         highlight: false,
       }))
   const rows = section.rows?.length
