@@ -132,6 +132,27 @@ const CapsuleInlineControlsInner = ({
   const pendingOrdersRef = useRef(pendingOrders)
   pendingOrdersRef.current = pendingOrders
 
+  // ── Buffered variant/scalar edits: keyed by prop key → value
+  const [pendingScalars, setPendingScalars] = useState<Record<string, unknown>>(
+    {},
+  )
+  const pendingScalarsRef = useRef(pendingScalars)
+  pendingScalarsRef.current = pendingScalars
+
+  // ── Buffered adds: keyed by collectionKey → array of items to add on Apply
+  const [pendingAdds, setPendingAdds] = useState<
+    Record<string, Record<string, unknown>[]>
+  >({})
+  const pendingAddsRef = useRef(pendingAdds)
+  pendingAddsRef.current = pendingAdds
+
+  // ── Buffered removes: keyed by collectionKey → array of indices to remove
+  const [pendingRemoves, setPendingRemoves] = useState<
+    Record<string, number[]>
+  >({})
+  const pendingRemovesRef = useRef(pendingRemoves)
+  pendingRemovesRef.current = pendingRemoves
+
   const actionsRef = useRef(actions)
   actionsRef.current = actions
 
@@ -145,6 +166,9 @@ const CapsuleInlineControlsInner = ({
 
   const commit = useCallback(async () => {
     const orders = pendingOrdersRef.current
+    const scalars = pendingScalarsRef.current
+    const adds = pendingAddsRef.current
+    const removes = pendingRemovesRef.current
     const act = actionsRef.current
     for (const [key, order] of Object.entries(orders)) {
       const identity = order.map((_, i) => i)
@@ -159,7 +183,24 @@ const CapsuleInlineControlsInner = ({
         [key]: reordered,
       } as Partial<Record<string, unknown>>)
     }
+    for (const [key, value] of Object.entries(scalars)) {
+      await act.setProp(key, value)
+    }
+    for (const [key, items] of Object.entries(adds)) {
+      for (const item of items) {
+        await act.addItem(key, item)
+      }
+    }
+    for (const [key, indices] of Object.entries(removes)) {
+      const sorted = [...indices].sort((a, b) => b - a)
+      for (const idx of sorted) {
+        await act.removeItem(key, idx)
+      }
+    }
     setPendingOrders({})
+    setPendingScalars({})
+    setPendingAdds({})
+    setPendingRemoves({})
     originalDomRef.current = {}
   }, [])
 
@@ -173,6 +214,9 @@ const CapsuleInlineControlsInner = ({
       for (const child of children) parent.appendChild(child)
     }
     setPendingOrders({})
+    setPendingScalars({})
+    setPendingAdds({})
+    setPendingRemoves({})
     originalDomRef.current = {}
   }, [])
 
@@ -244,6 +288,9 @@ const CapsuleInlineControlsInner = ({
     )
   }
 
+  const bufferedValue = (key: string, backend: unknown) =>
+    key in pendingScalars ? pendingScalars[key] : backend
+
   const hasVariants = schemaInfo.variants.length > 0
   const hasCollections = schemaInfo.collections.length > 0
   if (!hasVariants && !hasCollections) return null
@@ -255,8 +302,13 @@ const CapsuleInlineControlsInner = ({
           key={variant.key}
           variantKey={variant.key}
           options={variant.options}
-          currentValue={actions.sectionData?.[variant.key]}
-          onSet={actions.setProp}
+          currentValue={bufferedValue(
+            variant.key,
+            actions.sectionData?.[variant.key],
+          )}
+          onBuffer={(value) =>
+            setPendingScalars((prev) => ({ ...prev, [variant.key]: value }))
+          }
         />
       ))}
 
@@ -274,12 +326,24 @@ const CapsuleInlineControlsInner = ({
           ? (activeCollectionItem?.index ?? 0)
           : 0
         const pendingOrder = pendingOrders[collection.key] ?? null
+        const pendingAddItems = pendingAdds[collection.key] ?? []
+        // Show pending adds in the item list for display purposes
+        const displayItems = Array.isArray(
+          actions.sectionData?.[collection.key],
+        )
+          ? [
+              ...(actions.sectionData![collection.key] as unknown[]),
+              ...pendingAddItems,
+            ]
+          : pendingAddItems.length > 0
+            ? pendingAddItems
+            : []
         return (
           <InlineCollectionControls
             key={collection.key}
             collectionKey={collection.key}
             itemFields={collection.itemFields}
-            items={actions.sectionData?.[collection.key]}
+            items={displayItems}
             activeIndex={activeIndex}
             pendingOrder={pendingOrder}
             onReorderLocal={(order) => {
@@ -289,8 +353,18 @@ const CapsuleInlineControlsInner = ({
               }))
               applyReorderToDom(collection.key, order)
             }}
-            onAdd={actions.addItem}
-            onRemove={actions.removeItem}
+            onAdd={(key, item) => {
+              setPendingAdds((prev) => ({
+                ...prev,
+                [key]: [...(prev[key] ?? []), item],
+              }))
+            }}
+            onRemove={(key, index) => {
+              setPendingRemoves((prev) => ({
+                ...prev,
+                [key]: [...(prev[key] ?? []), index],
+              }))
+            }}
           />
         )
       })}
@@ -304,12 +378,12 @@ const InlineVariantSwitcher = ({
   variantKey,
   options,
   currentValue,
-  onSet,
+  onBuffer,
 }: {
   variantKey: string
   options: { value: string | number | boolean; label: string }[]
   currentValue: unknown
-  onSet: (key: string, value: unknown) => Promise<void>
+  onBuffer: (value: unknown) => void
 }) => (
   <div className="flex shrink-0 items-center gap-1.5">
     <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
@@ -322,7 +396,7 @@ const InlineVariantSwitcher = ({
           <button
             key={String(option.value)}
             type="button"
-            onClick={() => void onSet(variantKey, option.value)}
+            onClick={() => onBuffer(option.value)}
             className={cn(
               'rounded px-2 py-0.5 text-xs font-semibold transition-all',
               isActive
@@ -356,8 +430,8 @@ const InlineCollectionControls = ({
   activeIndex: number | null
   pendingOrder: number[] | null
   onReorderLocal: (order: number[]) => void
-  onAdd: (key: string, item: Record<string, unknown>) => Promise<void>
-  onRemove: (key: string, index: number) => Promise<void>
+  onAdd: (key: string, item: Record<string, unknown>) => void
+  onRemove: (key: string, index: number) => void
 }) => {
   const rawItems = Array.isArray(items) ? items : []
   const label = collectionKey.charAt(0).toUpperCase() + collectionKey.slice(1)

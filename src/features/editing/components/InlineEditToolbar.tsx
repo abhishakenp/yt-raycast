@@ -76,7 +76,10 @@ import { StyleControlsPanel } from './StyleControlsPanel'
 import { TypographyControlsPanel } from './TypographyControlsPanel'
 import { LinkEditPopover } from './LinkEditPopover'
 import { ImageSwapPanel } from './ImageSwapPanel'
-import { CapsuleContextPanel } from './CapsuleContextPanel'
+import {
+  CapsuleContextPanel,
+  type CapsulePanelHandle,
+} from './CapsuleContextPanel'
 import {
   CapsuleInlineControls,
   type CapsuleInlineHandle,
@@ -458,6 +461,7 @@ export function InlineEditToolbar({
   const pendingImageSrcRef = useRef<string | null>(null)
   const imagePreviewClearedRef = useRef(false)
   const capsuleInlineRef = useRef<CapsuleInlineHandle | null>(null)
+  const capsulePanelRef = useRef<CapsulePanelHandle | null>(null)
   const [pendingImageSrc, setPendingImageSrc] = useState<string | null>(null)
   const originalLinkAttrsRef = useRef<{
     element: HTMLAnchorElement
@@ -934,8 +938,9 @@ export function InlineEditToolbar({
 
   const closeWithoutSaving = useCallback(() => {
     if (isApplying || isForking) return
-    // Discard buffered capsule reorders
+    // Discard buffered capsule reorders/edits
     capsuleInlineRef.current?.discard()
+    capsulePanelRef.current?.discard()
     restoreRememberedLinkAttrs()
     if (activeElement) {
       const isActiveImage = activeElement.tagName.toLowerCase() === 'img'
@@ -1054,6 +1059,7 @@ export function InlineEditToolbar({
         setPendingImageSrc(null)
         originalImageSrcRef.current = null
         void capsuleInlineRef.current?.commit()
+        void capsulePanelRef.current?.commit()
         onClose()
         return
       }
@@ -1062,8 +1068,9 @@ export function InlineEditToolbar({
       // and clicked Apply without modifying any style controls.
       onCommitText?.()
 
-      // Commit buffered capsule reorders
+      // Commit buffered capsule reorders/edits
       void capsuleInlineRef.current?.commit()
+      void capsulePanelRef.current?.commit()
 
       // Only save style if the user actually modified a style control.
       if (!userModifiedRef.current) {
@@ -2124,6 +2131,7 @@ export function InlineEditToolbar({
                     statementId={capsuleStatementId}
                     sessionId={sessionId}
                     anonymousOwnerSecret={anonymousOwnerSecret}
+                    handleRef={capsulePanelRef}
                   />
                 )}
             </div>

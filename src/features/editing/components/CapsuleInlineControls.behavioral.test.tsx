@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup, act } from '@testing-library/react'
-import { createElement } from 'react'
+import { createElement, type MutableRefObject } from 'react'
 
 // Mock useSectionCapsuleActions directly.
 const mockActions = vi.hoisted(() => ({
@@ -31,7 +31,32 @@ vi.mock('@ship-fast/lakebed/server', async (importOriginal) => {
   return { ...actual }
 })
 
-import { CapsuleInlineControls } from './CapsuleInlineControls'
+import {
+  CapsuleInlineControls,
+  type CapsuleInlineHandle,
+} from './CapsuleInlineControls'
+
+const makeHandleRef = (): MutableRefObject<CapsuleInlineHandle | null> => ({
+  current: null,
+})
+
+const makeCapsuleElementWithArticles = (labels: string[]) => {
+  const section = document.createElement('section')
+  const grid = document.createElement('div')
+  for (const label of labels) {
+    const article = document.createElement('article')
+    article.textContent = label
+    grid.appendChild(article)
+  }
+  section.appendChild(grid)
+  document.body.appendChild(section)
+  return { section, grid }
+}
+
+const childTextOrder = (element: HTMLElement) =>
+  Array.from(element.children)
+    .map((child) => child.textContent)
+    .join('|')
 
 describe('CapsuleInlineControls', () => {
   beforeEach(() => {
@@ -48,6 +73,7 @@ describe('CapsuleInlineControls', () => {
 
   afterEach(() => {
     cleanup()
+    document.body.innerHTML = ''
   })
 
   // ─── Variant switchers ──────────────────────────────────────────────────
@@ -86,7 +112,7 @@ describe('CapsuleInlineControls', () => {
     expect(activeBtn.className).toContain('cyan-300/20')
   })
 
-  it('calls setProp when a variant option is clicked', () => {
+  it('does not persist variant changes immediately when a variant option is clicked', () => {
     mockActions.sectionData = { columns: 3, images: [] }
 
     render(
@@ -99,7 +125,7 @@ describe('CapsuleInlineControls', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: '4' }))
-    expect(mockActions.setProp).toHaveBeenCalledWith('columns', 4)
+    expect(mockActions.setProp).not.toHaveBeenCalled()
   })
 
   it('renders variant switcher for CoworkingFeatures columns', () => {
@@ -140,7 +166,7 @@ describe('CapsuleInlineControls', () => {
     expect(screen.getByRole('button', { name: /Add/ })).toBeTruthy()
   })
 
-  it('calls addItem when Add button is clicked', () => {
+  it('does not persist new collection items immediately when Add is clicked', () => {
     mockActions.sectionData = { features: [] }
 
     render(
@@ -153,11 +179,7 @@ describe('CapsuleInlineControls', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: /Add/ }))
-    expect(mockActions.addItem).toHaveBeenCalledTimes(1)
-    expect(mockActions.addItem).toHaveBeenCalledWith(
-      'features',
-      expect.any(Object),
-    )
+    expect(mockActions.addItem).not.toHaveBeenCalled()
   })
 
   it('shows remove/reorder controls when activeCollectionItem is provided', () => {
@@ -231,7 +253,122 @@ describe('CapsuleInlineControls', () => {
     expect(mockActions.reorderItem).not.toHaveBeenCalled()
   })
 
-  it('calls removeItem when Remove item is clicked', async () => {
+  it('previews buffered reorder in the DOM and restores it on discard', () => {
+    mockActions.sectionData = {
+      features: [
+        { title: 'Hot Desks', description: 'Pick any desk' },
+        { title: 'Private Offices', description: 'Lockable rooms' },
+      ],
+    }
+    const handleRef = makeHandleRef()
+    const { section, grid } = makeCapsuleElementWithArticles([
+      'Hot Desks',
+      'Private Offices',
+    ])
+
+    render(
+      createElement(CapsuleInlineControls, {
+        capsuleName: 'CoworkingFeatures',
+        statementId: 'features_1',
+        sessionId: 'sess-1',
+        anonymousOwnerSecret: 'secret',
+        activeCollectionItem: { collectionKey: '__auto__', index: 0 },
+        handleRef,
+        capsuleElement: section,
+      }),
+    )
+
+    expect(childTextOrder(grid)).toBe('Hot Desks|Private Offices')
+    fireEvent.click(screen.getByRole('button', { name: 'Move down' }))
+
+    expect(childTextOrder(grid)).toBe('Private Offices|Hot Desks')
+    expect(mockActions.mergeData).not.toHaveBeenCalled()
+
+    act(() => {
+      handleRef.current?.discard()
+    })
+
+    expect(childTextOrder(grid)).toBe('Hot Desks|Private Offices')
+    expect(mockActions.mergeData).not.toHaveBeenCalled()
+  })
+
+  it('commits buffered reorder only when the inline handle is committed', async () => {
+    mockActions.sectionData = {
+      features: [
+        { title: 'Hot Desks', description: 'Pick any desk' },
+        { title: 'Private Offices', description: 'Lockable rooms' },
+      ],
+    }
+    const handleRef = makeHandleRef()
+    const { section } = makeCapsuleElementWithArticles([
+      'Hot Desks',
+      'Private Offices',
+    ])
+
+    render(
+      createElement(CapsuleInlineControls, {
+        capsuleName: 'CoworkingFeatures',
+        statementId: 'features_1',
+        sessionId: 'sess-1',
+        anonymousOwnerSecret: 'secret',
+        activeCollectionItem: { collectionKey: '__auto__', index: 0 },
+        handleRef,
+        capsuleElement: section,
+      }),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Move down' }))
+    expect(mockActions.mergeData).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await handleRef.current?.commit()
+    })
+
+    expect(mockActions.mergeData).toHaveBeenCalledWith({
+      features: [
+        { title: 'Private Offices', description: 'Lockable rooms' },
+        { title: 'Hot Desks', description: 'Pick any desk' },
+      ],
+    })
+  })
+
+  it('does not commit a reorder after the inline handle discards it', async () => {
+    mockActions.sectionData = {
+      features: [
+        { title: 'Hot Desks', description: 'Pick any desk' },
+        { title: 'Private Offices', description: 'Lockable rooms' },
+      ],
+    }
+    const handleRef = makeHandleRef()
+    const { section } = makeCapsuleElementWithArticles([
+      'Hot Desks',
+      'Private Offices',
+    ])
+
+    render(
+      createElement(CapsuleInlineControls, {
+        capsuleName: 'CoworkingFeatures',
+        statementId: 'features_1',
+        sessionId: 'sess-1',
+        anonymousOwnerSecret: 'secret',
+        activeCollectionItem: { collectionKey: '__auto__', index: 0 },
+        handleRef,
+        capsuleElement: section,
+      }),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Move down' }))
+    act(() => {
+      handleRef.current?.discard()
+    })
+    await act(async () => {
+      await handleRef.current?.commit()
+    })
+
+    expect(mockActions.mergeData).not.toHaveBeenCalled()
+  })
+
+  it('does not persist removal immediately when Remove item is confirmed', async () => {
     mockActions.sectionData = {
       features: [
         { title: 'Hot Desks', description: 'Pick any desk' },
@@ -258,7 +395,7 @@ describe('CapsuleInlineControls', () => {
       fireEvent.click(confirmBtn)
     })
 
-    expect(mockActions.removeItem).toHaveBeenCalledWith('features', 0)
+    expect(mockActions.removeItem).not.toHaveBeenCalled()
   })
 
   it('disables Move up for the first item', () => {
@@ -400,5 +537,37 @@ describe('CapsuleInlineControls', () => {
     // Active item shows title, not hashtag
     expect(screen.getByText('Hot Desk')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Remove item' })).toBeTruthy()
+  })
+
+  it('renders independent controls for every collection in a multi-collection capsule', () => {
+    mockActions.sectionData = {
+      countdown: [
+        { value: '12', label: 'Hours' },
+        { value: '30', label: 'Minutes' },
+      ],
+      items: [
+        { title: 'Camera Kit', price: '$499' },
+        { title: 'Audio Kit', price: '$199' },
+      ],
+    }
+
+    render(
+      createElement(CapsuleInlineControls, {
+        capsuleName: 'ElectronicsStoreDeals',
+        statementId: 'deals_1',
+        sessionId: 'sess-1',
+        anonymousOwnerSecret: 'secret',
+      }),
+    )
+
+    expect(screen.getByText('Countdown')).toBeTruthy()
+    expect(screen.getByText('Items')).toBeTruthy()
+    expect(screen.getByText('Countdown 1')).toBeTruthy()
+    expect(screen.getByText('Camera Kit')).toBeTruthy()
+    expect(screen.getAllByRole('combobox').length).toBe(2)
+    expect(screen.getAllByTitle('Move down').length).toBe(2)
+    expect(screen.getAllByRole('button', { name: 'Remove item' }).length).toBe(
+      2,
+    )
   })
 })
