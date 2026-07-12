@@ -400,7 +400,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
 
   // ── Field editing ─────────────────────────────────────────────────────────
 
-  it('editing a text field calls editItem with the new value', async () => {
+  it('editing a text field calls editItem on Save', async () => {
     mockActions.sectionData = {
       images: [{ alt: 'Old alt', caption: '' }],
     }
@@ -423,16 +423,22 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     await act(async () => {
       fireEvent.change(altInput, { target: { value: 'New alt' } })
     })
+
+    // editItem should NOT be called yet (buffered)
+    expect(mockActions.editItem).not.toHaveBeenCalled()
+
+    // Click Save to commit
     await act(async () => {
-      fireEvent.blur(altInput)
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     })
 
     expect(mockActions.editItem).toHaveBeenCalledWith('images', 0, {
       alt: 'New alt',
+      caption: '',
     })
   })
 
-  it('editing a number field calls editItem with numeric value', async () => {
+  it('editing a number field calls editItem on Save', async () => {
     mockActions.sectionData = {
       members: [{ name: 'Alice', quote: 'Great!', rating: 5 }],
     }
@@ -456,16 +462,23 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     await act(async () => {
       fireEvent.change(ratingInput, { target: { value: '10' } })
     })
+
+    // editItem should NOT be called yet (buffered)
+    expect(mockActions.editItem).not.toHaveBeenCalled()
+
+    // Click Save to commit
     await act(async () => {
-      fireEvent.blur(ratingInput)
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     })
 
     expect(mockActions.editItem).toHaveBeenCalledWith('members', 0, {
+      name: 'Alice',
+      quote: 'Great!',
       rating: 10,
     })
   })
 
-  it('editing a boolean field calls editItem with boolean value', async () => {
+  it('editing a boolean field calls editItem on Save', async () => {
     mockActions.sectionData = {
       tiers: [{ name: 'Pro', price: '$30', highlighted: false }],
     }
@@ -491,9 +504,50 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
       fireEvent.click(highlightedCheckbox)
     })
 
+    // editItem should NOT be called yet (buffered)
+    expect(mockActions.editItem).not.toHaveBeenCalled()
+
+    // Click Save to commit
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    })
+
     expect(mockActions.editItem).toHaveBeenCalledWith('tiers', 0, {
+      name: 'Pro',
+      price: '$30',
       highlighted: true,
     })
+  })
+
+  it('Cancel reverts edits without calling editItem', async () => {
+    mockActions.sectionData = {
+      images: [{ alt: 'Old alt', caption: '' }],
+    }
+
+    render(
+      createElement(CapsuleContextPanel, {
+        capsuleName: 'CoworkingGallery',
+        statementId: 'gallery_1',
+        sessionId: 'sess-1',
+      }),
+    )
+
+    // Expand the item
+    fireEvent.click(screen.getByText('Old alt'))
+
+    // Change the Alt input
+    const altInput = screen.getByPlaceholderText('Alt') as HTMLInputElement
+    await act(async () => {
+      fireEvent.change(altInput, { target: { value: 'New alt' } })
+    })
+
+    // Click Cancel
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    })
+
+    // editItem should NOT have been called
+    expect(mockActions.editItem).not.toHaveBeenCalled()
   })
 
   // ── Reorder via drag handle ───────────────────────────────────────────────
