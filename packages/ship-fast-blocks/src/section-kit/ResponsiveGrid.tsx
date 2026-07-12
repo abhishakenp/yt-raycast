@@ -69,4 +69,3 @@ const ResponsiveGrid = React.forwardRef<HTMLDivElement, ResponsiveGridProps>(
 ResponsiveGrid.displayName = 'ResponsiveGrid'
 
 export { ResponsiveGrid, gridColsVariants }
-export type { ResponsiveGridProps }
