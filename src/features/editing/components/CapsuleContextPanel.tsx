@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import { Plus, Trash2, Boxes } from 'lucide-react'
+import { Plus, Trash2, Boxes, ChevronUp, ChevronDown } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { allCapsules } from '@ship-fast/blocks'
 import {
@@ -261,19 +261,22 @@ const BentoCollection = ({
   const [draftItem, setDraftItem] = useState<Record<string, unknown> | null>(
     null,
   )
+  const [editBuffer, setEditBuffer] = useState<Record<string, unknown> | null>(
+    null,
+  )
   const rawItems = Array.isArray(items) ? items : []
   const [localOrder, setLocalOrder] = useState<number[] | null>(null)
   const label = titleCase(collectionKey)
 
-  // When rawItems length changes (add/remove from backend), reset local order
-  const rawLen = rawItems.length
-  const prevRawLen = useRef(rawLen)
+  // When rawItems reference changes (backend update), clear local order
+  // since the backend now reflects the new order
+  const prevRawItems = useRef(rawItems)
   useEffect(() => {
-    if (prevRawLen.current !== rawLen) {
+    if (prevRawItems.current !== rawItems) {
       setLocalOrder(null)
-      prevRawLen.current = rawLen
+      prevRawItems.current = rawItems
     }
-  }, [rawLen])
+  }, [rawItems])
 
   // Apply local order if present, otherwise use raw items as-is
   const itemArray = localOrder
@@ -311,8 +314,11 @@ const BentoCollection = ({
     [localOrder, rawItems, onReorder, collectionKey],
   )
 
-  // Build sortable values — use index as id since items may not have unique ids
-  const sortableItems = itemArray.map((_, i) => i)
+  // Sortable values: the raw indices in their current display order.
+  // e.g. if localOrder is [1, 2, 0, 3, 4], sortableItems is [1, 2, 0, 3, 4].
+  // This lets dnd-kit track items by their stable raw index ID and
+  // detect when the order changes.
+  const sortableItems = localOrder ?? rawItems.map((_, i) => i)
   const getItemValue = (i: number) => String(i)
 
   return (
@@ -361,8 +367,9 @@ const BentoCollection = ({
               const subtitle = subtitleField
                 ? String(itemRecord[subtitleField] || '')
                 : ''
+              const rawIndex = sortableItems[index]
               return (
-                <SortableItem key={index} value={String(index)} asChild>
+                <SortableItem key={rawIndex} value={String(rawIndex)} asChild>
                   <div
                     className={cn(
                       'group rounded-md border transition-all',
@@ -380,9 +387,17 @@ const BentoCollection = ({
                       </SortableItemHandle>
                       <button
                         type="button"
-                        onClick={() =>
-                          setExpandedIndex(isExpanded ? null : index)
-                        }
+                        onClick={() => {
+                          if (isExpanded) {
+                            // Collapsing — discard edit buffer
+                            setEditBuffer(null)
+                            setExpandedIndex(null)
+                          } else {
+                            // Expanding — initialize edit buffer from current item
+                            setEditBuffer({ ...itemRecord })
+                            setExpandedIndex(index)
+                          }
+                        }}
                         className="min-w-0 flex-1 truncate text-left text-[11px] font-medium text-white/75 hover:text-white"
                       >
                         {title}
@@ -392,26 +407,75 @@ const BentoCollection = ({
                           </span>
                         )}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => handleReorder(index, index - 1)}
+                        disabled={index === 0}
+                        className="grid size-5 shrink-0 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+                        title="Move up"
+                      >
+                        <ChevronUp className="size-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleReorder(index, index + 1)}
+                        disabled={index === itemArray.length - 1}
+                        className="grid size-5 shrink-0 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+                        title="Move down"
+                      >
+                        <ChevronDown className="size-3" />
+                      </button>
                       <DeleteWithConfirm
                         itemLabel={title}
                         onConfirm={() => void onRemove(collectionKey, index)}
                       />
                     </div>
 
-                    {isExpanded && (
-                      <div className="grid grid-cols-2 gap-1 border-t border-white/8 p-1.5">
-                        {itemFields.map((field) => (
-                          <FieldInput
-                            key={field.key}
-                            field={field}
-                            value={itemRecord[field.key]}
-                            onChange={(newValue) =>
-                              void onEdit(collectionKey, index, {
-                                [field.key]: newValue,
-                              })
-                            }
-                          />
-                        ))}
+                    {isExpanded && editBuffer !== null && (
+                      <div className="flex flex-col gap-1 border-t border-white/8 p-1.5">
+                        <div className="grid grid-cols-2 gap-1">
+                          {itemFields.map((field) => (
+                            <FieldInput
+                              key={field.key}
+                              field={field}
+                              value={editBuffer[field.key]}
+                              onChange={(newValue) =>
+                                setEditBuffer((prev) =>
+                                  prev
+                                    ? { ...prev, [field.key]: newValue }
+                                    : prev,
+                                )
+                              }
+                            />
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Cancel — revert to original, discard buffer
+                              setEditBuffer(null)
+                              setExpandedIndex(null)
+                            }}
+                            className="rounded px-2 py-0.5 text-[10px] font-medium text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+                          >
+                            Cancel
+                          </button>
+                          <Button
+                            type="button"
+                            variant="default"
+                            size="xs"
+                            onClick={() => {
+                              // Save — commit all buffered edits to backend
+                              void onEdit(collectionKey, index, editBuffer)
+                              setEditBuffer(null)
+                              setExpandedIndex(null)
+                            }}
+                            className="h-5 gap-1 px-2 text-[10px]"
+                          >
+                            Save
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
