@@ -23,11 +23,12 @@ const persistedEdit = [
   },
 ]
 
-const applyExportTransforms = (source: string): string =>
-  applyCachedTranslationsToSource(
+function applyExportTransforms(source: string): string {
+  return applyCachedTranslationsToSource(
     applyEditsToSource(source, persistedEdit),
     cachedTranslations,
   )
+}
 
 describe('session export translation and edit idempotence', () => {
   it('does not reapply an already materialized cached translation', () => {

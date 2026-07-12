@@ -2,7 +2,12 @@
 
 import React from 'react'
 import { Renderer } from '@openuidev/react-lang'
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  type RenderResult,
+} from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const authRuntime = vi.hoisted(() => ({
@@ -38,8 +43,18 @@ const { AccountDropdown, AccountDropdownUnauthenticated } =
   await import('../../section-kit/AccountDropdown.tsx')
 
 type RenderPath = 'capsule' | 'renderer'
+type SignInRenderer = (
+  path: RenderPath,
+  label?: string,
+) => Promise<RenderResult>
+type ClassTokenReader = (element: HTMLElement) => string[]
+type ButtonTokenReader = (button: HTMLButtonElement) => string[]
+type ShinyLayerReader = (button: HTMLButtonElement) => {
+  classes: string[]
+  exists: boolean
+}
 
-const renderSignIn = async (path: RenderPath, label = 'Login') => {
+const renderSignIn: SignInRenderer = async (path, label = 'Login') => {
   if (path === 'capsule') {
     const SignInCapsule = SignIn.client.component
     return render(
@@ -72,15 +87,15 @@ const renderCanonicalSignIn = () =>
     </AccountDropdown>,
   )
 
-const classTokens = (element: HTMLElement) =>
+const classTokens: ClassTokenReader = (element) =>
   element.className.split(/\s+/).filter(Boolean).sort()
 
-const interactionTokens = (button: HTMLButtonElement) =>
+const interactionTokens: ButtonTokenReader = (button) =>
   classTokens(button).filter((token) =>
     /^(?:hover|focus-visible|disabled):/.test(token),
   )
 
-const shinyLayerContract = (button: HTMLButtonElement) => {
+const shinyLayerContract: ShinyLayerReader = (button) => {
   const layer = button.querySelector<HTMLElement>('span[aria-hidden="true"]')
   return {
     classes: layer ? classTokens(layer) : [],
