@@ -57,10 +57,19 @@ MUST HAVE:
 - Responsive controls: WASD movement, mouse for aiming/camera, smooth input handling.
 - Win/lose conditions with proper progression.
 
+FLIGHT SIMULATOR SPECIFIC (for aircraft/pilot games):
+- Use GLTFLoader for aircraft models from /public folder (e.g., /Shenyang J-11.glb)
+- Use TextureLoader for terrain/cloud textures from /public folder (e.g., /Road from vibe-jet.jpg, /Cloud 10 from vibe-jet.png)
+- Build complete 3D world: terrain with hills, water bodies, clouds, landmarks (skyscrapers, castles)
+- Third-person camera following aircraft with smooth interpolation
+- Flight HUD: altitude, speed, heading, throttle indicator
+- Flight controls: W/S for pitch, A/D for roll, Q/E for yaw, Shift/Space for throttle
+- All asset paths must be absolute starting with / (e.g., /Shenyang J-11.glb)
+
 GAME MUST BE:
 - Fully functional and playable without errors. NO Canvas 2D games—only THREE.js 3D.
 - Smooth 60fps gameplay (optimize THREE.js renderer).
-- All code in ONE HTML file (no external assets except THREE.js CDN).
+- All code in ONE HTML file (no external assets except THREE.js CDN and /public assets for models/textures).
 - Menu screen: "Press SPACE to Start" before gameplay.
 - Score tracking and visual feedback for actions.
 - Realistic mechanics with 3D camera, lighting, and terrain/objects.
@@ -70,7 +79,7 @@ DO NOT:
 - Use placeholder mechanics or empty screens.
 - Include non-functional UI elements.
 - Create slow/laggy experiences.
-- Depend on external assets or image files.`
+- Depend on external assets from CDNs (only use /public folder for models/textures).`
       : st === 'ecommerce'
         ? buildEcommerceSiteTypeInstructions(hasUserDesignReferences)
         : SITE_TYPE_INSTRUCTIONS[st as keyof typeof SITE_TYPE_INSTRUCTIONS] ||

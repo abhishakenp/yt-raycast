@@ -36,6 +36,11 @@ const expectRenders = async (
 }
 
 describe('SSR render contract (real engine fixtures)', () => {
+  it('renders the deterministic whole-page flight simulator capsule', async () => {
+    const html = await expectRenders('root = FlightSimulator()')
+    expect(html).toContain('Loading Flight Simulator')
+  })
+
   // Blog family
   it('renders food-blog fixture (5 routes, URLs in targetMap)', async () => {
     const html = await expectRenders(loadFixture('food-blog'))
