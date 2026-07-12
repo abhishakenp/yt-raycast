@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
@@ -6,6 +9,36 @@ import { buildHtmlExport } from '@/features/exports/services/html-export-builder
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type DeploymentPreviewClient = Pick<ConvexHttpClient, 'query'>
+
+const DEPLOYMENT_PREVIEW_CSS_MARKER = 'data-ship-fast-preview-css="1"'
+const DEPLOYMENT_PREVIEW_CSS_URL = '/styles/openui-preview-tailwind.css'
+
+const readDeploymentPreviewCss = (): string => {
+  try {
+    return readFileSync(
+      join(process.cwd(), 'public', 'styles', 'openui-preview-tailwind.css'),
+      'utf8',
+    )
+  } catch {
+    return ''
+  }
+}
+
+const deploymentPreviewCss = readDeploymentPreviewCss()
+
+const injectDeploymentPreviewCss = (html: string): string => {
+  if (html.includes(DEPLOYMENT_PREVIEW_CSS_MARKER)) return html
+
+  const stylesheet = deploymentPreviewCss
+    ? `<style ${DEPLOYMENT_PREVIEW_CSS_MARKER}>${deploymentPreviewCss}</style>`
+    : `<link ${DEPLOYMENT_PREVIEW_CSS_MARKER} rel="stylesheet" href="${DEPLOYMENT_PREVIEW_CSS_URL}" />`
+
+  if (/<\/head>/i.test(html)) {
+    return html.replace(/<\/head>/i, `${stylesheet}</head>`)
+  }
+
+  return `${stylesheet}${html}`
+}
 
 const normalizeSlug = (value: string): string =>
   value
@@ -106,10 +139,12 @@ export const createDeploymentPreviewResponse = async (
     })
   }
 
-  const html = buildHtmlExport(previewHtml, {
-    includeBadge: false,
-    canonicalUrl: getRequestCanonicalUrl(request, deployment.url),
-  })
+  const html = injectDeploymentPreviewCss(
+    buildHtmlExport(previewHtml, {
+      includeBadge: false,
+      canonicalUrl: getRequestCanonicalUrl(request, deployment.url),
+    }),
+  )
 
   return new Response(html, {
     headers: {
