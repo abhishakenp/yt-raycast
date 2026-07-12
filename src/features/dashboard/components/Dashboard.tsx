@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react'
 import {
   Box,
@@ -438,6 +439,10 @@ const readCachedGenerationView = (
   return cached === null ? undefined : toDashboardGenerationView(cached)
 }
 
+const subscribeToHydration = () => () => undefined
+const getHydratedClientSnapshot = () => true
+const getHydratedServerSnapshot = () => false
+
 /** Resolve the section-edit selection to send to the AI patcher.
  *  Prefers the inspector's current selection (when the section inspector
  *  already selected something); otherwise builds one from the inline toolbar's
@@ -550,12 +555,18 @@ export function Dashboard({
   const liveGenerationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
   }) as DashboardGenerationView | null | undefined
+  const hasHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    getHydratedClientSnapshot,
+    getHydratedServerSnapshot,
+  )
   const [fallbackGenerationView, setFallbackGenerationView] = useState<
     DashboardGenerationView | undefined
   >(() => readCachedGenerationView(sessionId))
-  const generationView =
-    liveGenerationView === undefined ||
-    (liveGenerationView === null && fallbackGenerationView !== undefined)
+  const generationView = !hasHydrated
+    ? undefined
+    : liveGenerationView === undefined ||
+        (liveGenerationView === null && fallbackGenerationView !== undefined)
       ? fallbackGenerationView
       : liveGenerationView
   const resolvedSessionId = generationView?.session.sessionId
@@ -2441,7 +2452,7 @@ export function Dashboard({
                             className="z-[140] w-[min(360px,calc(100vw-24px))] p-3"
                           >
                             <Suspense fallback={<ToolPopoverFallback />}>
-                              <ExportPanel sessionId={sessionId} />
+                              <ExportPanel sessionId={activeSessionId} />
                             </Suspense>
                           </PopoverContent>
                         </Popover>
@@ -2489,7 +2500,7 @@ export function Dashboard({
                             className="z-[140] w-80 p-3"
                           >
                             <Suspense fallback={<ToolPopoverFallback />}>
-                              <DeploymentPanel sessionId={sessionId} />
+                              <DeploymentPanel sessionId={activeSessionId} />
                             </Suspense>
                           </PopoverContent>
                         </Popover>

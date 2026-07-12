@@ -7,6 +7,7 @@
 // preservation. If any of these behaviors regress, the corresponding test MUST
 // fail — these tests never pin buggy behavior.
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -14,6 +15,8 @@ import {
   waitFor,
 } from '@testing-library/react'
 import type { ReactNode } from 'react'
+import { hydrateRoot } from 'react-dom/client'
+import { renderToString } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Dashboard } from './Dashboard'
@@ -261,11 +264,12 @@ vi.mock('@/features/github/components/GitHubPanel', () => ({
   GitHubPanel: () => <div data-testid="github-panel-stub" />,
 }))
 
-vi.mock('@/genui/components/ThemePicker', () => ({
-  default: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>,
-}))
-
 vi.mock('@/genui/theme-apply', () => ({
+  THEME_CATALOG: [
+    { label: 'Modern Minimal', name: 'modern-minimal' },
+    { label: 'Vintage Paper', name: 'vintage-paper' },
+    { label: 'Corporate', name: 'corporate' },
+  ],
   // resolveThemeStyles must return a palette object with both modes plus a
   // themeName label so themeButtonStyle can read styles[isDark ? 'dark' : 'light'].
   resolveThemeStyles: (name: string | null | undefined) =>
@@ -883,6 +887,14 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
       matches: false,
       removeEventListener: vi.fn(),
     })
+    vi.stubGlobal(
+      'ResizeObserver',
+      class ResizeObserver {
+        disconnect() {}
+        observe() {}
+        unobserve() {}
+      },
+    )
   })
 
   afterEach(() => {
@@ -1176,6 +1188,45 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
       expect(screen.queryByTestId('generated-module-preview')).toBeNull()
     } finally {
       vi.useRealTimers()
+    }
+  })
+
+  it('hydrates the unresolved session shell without replacing server-rendered DOM', async () => {
+    getConvexState().generationView = undefined
+    const serverMarkup = renderToString(
+      <Dashboard sessionId="hydration-release-session" />,
+    )
+    const container = document.createElement('div')
+    container.innerHTML = serverMarkup
+    document.body.appendChild(container)
+    const serverFirstNode = container.firstChild
+    const recoverableErrors: Error[] = []
+
+    getConvexState().generationView = null
+    let root: ReturnType<typeof hydrateRoot> | undefined
+    await act(async () => {
+      root = hydrateRoot(
+        container,
+        <Dashboard sessionId="hydration-release-session" />,
+        {
+          onRecoverableError: (error) => {
+            recoverableErrors.push(
+              error instanceof Error ? error : new Error(String(error)),
+            )
+          },
+        },
+      )
+      await new Promise((resolve) => window.setTimeout(resolve, 0))
+    })
+
+    try {
+      expect(recoverableErrors.map((error) => error.message)).toEqual([])
+      expect(container.firstChild).toBe(serverFirstNode)
+    } finally {
+      await act(async () => {
+        root?.unmount()
+      })
+      container.remove()
     }
   })
 
@@ -1490,6 +1541,49 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     const themeRaw = screen.getByTestId('gmp-theme-styles').textContent ?? ''
     expect(themeRaw).toContain('midnight')
     expect(screen.getByText('Midnight')).toBeTruthy()
+  })
+
+  it('persists a Corporate theme selection and updates the rail and preview', async () => {
+    setupReady({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        themeOverride: 'vintage-paper',
+      },
+    })
+    const state = getConvexState()
+    render(<Dashboard sessionId="ready-session" />)
+
+    const themeTrigger = document.querySelector<HTMLButtonElement>(
+      '[data-rail-action="palette"]',
+    )
+    expect(themeTrigger).not.toBeNull()
+    if (!themeTrigger) throw new Error('Missing dashboard theme trigger')
+    expect(themeTrigger.textContent).toContain('Vintage Paper')
+    fireEvent.pointerDown(themeTrigger)
+    fireEvent.pointerUp(themeTrigger)
+    fireEvent.click(themeTrigger)
+
+    const corporateOption = (await screen.findByText('Corporate')).closest(
+      '[role="option"]',
+    )
+    expect(corporateOption).not.toBeNull()
+    if (!corporateOption) throw new Error('Missing Corporate theme option')
+    fireEvent.pointerUp(corporateOption)
+    fireEvent.click(corporateOption)
+
+    await waitFor(() => {
+      expect(state.publishMutation).toHaveBeenCalledWith({
+        anonymousOwnerSecret: undefined,
+        sessionId: 'ready-session',
+        themeMode: 'dark',
+        themeOverride: 'corporate',
+      })
+    })
+    expect(themeTrigger.textContent).toContain('Corporate')
+    expect(screen.getByTestId('gmp-theme-styles').textContent).toContain(
+      'corporate',
+    )
   })
 
   it('allows signed-out local development text edits when Clerk is disabled', async () => {

@@ -7,6 +7,7 @@ import React, {
 } from 'react'
 import { isTranslatableLocale } from '@/config/languages'
 import { shouldPreserveNativeLocaleText } from '@/features/localization/native-script'
+import { transliterateLatinFallback } from '@/features/localization/client/transliterate-latin-fallback'
 import { translateOnDeviceBatch } from './chrome-translator'
 
 type Locale = string
@@ -329,6 +330,93 @@ type TextTranslationState = {
   translatedText?: string
 }
 
+type AccessibleLabelTranslationState = {
+  originalLabel: string
+  translatedLocale?: string
+  translatedLabel?: string
+}
+
+type LinkedAccessibleLabel = {
+  leadingContext: string
+  trailingContext: string
+}
+
+type AccessibleLabelTranslationJob = {
+  element: HTMLElement
+  linkedLabel: LinkedAccessibleLabel
+  originalLabel: string
+  translatedVisibleText: string
+}
+
+const splitLinkedAccessibleLabel = (
+  label: string,
+  visibleText: string,
+): LinkedAccessibleLabel | null => {
+  const normalizedLabel = label.trim()
+  const normalizedVisibleText = visibleText.trim()
+  if (!normalizedLabel || !normalizedVisibleText) return null
+
+  const labelLower = normalizedLabel.toLocaleLowerCase()
+  const visibleLower = normalizedVisibleText.toLocaleLowerCase()
+  if (labelLower === visibleLower) {
+    return { leadingContext: '', trailingContext: '' }
+  }
+  if (labelLower.startsWith(`${visibleLower} `)) {
+    return {
+      leadingContext: '',
+      trailingContext: normalizedLabel
+        .slice(normalizedVisibleText.length)
+        .trim(),
+    }
+  }
+  if (labelLower.endsWith(` ${visibleLower}`)) {
+    return {
+      leadingContext: normalizedLabel
+        .slice(0, normalizedLabel.length - normalizedVisibleText.length)
+        .trim(),
+      trailingContext: '',
+    }
+  }
+  return null
+}
+
+const linkedAccessibleLabelFallback = ({
+  linkedLabel,
+  translatedVisibleText,
+  locale,
+}: {
+  linkedLabel: LinkedAccessibleLabel
+  translatedVisibleText: string
+  locale: string
+}): string => {
+  const leadingContext = transliterateLatinFallback(
+    linkedLabel.leadingContext,
+    locale,
+  )
+  const trailingContext = transliterateLatinFallback(
+    linkedLabel.trailingContext,
+    locale,
+  )
+  const language = locale.trim().toLowerCase().split(/[-_]/)[0]
+
+  if (language === 'hi' && trailingContext && !leadingContext) {
+    return `${trailingContext} ${translatedVisibleText}`.trim()
+  }
+  return [leadingContext, translatedVisibleText, trailingContext]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+}
+
+const preserveOuterWhitespace = (
+  originalText: string,
+  translatedText: string,
+): string => {
+  const leadingWhitespace = originalText.match(/^\s*/)?.[0] ?? ''
+  const trailingWhitespace = originalText.match(/\s*$/)?.[0] ?? ''
+  return `${leadingWhitespace}${translatedText.trim()}${trailingWhitespace}`
+}
+
 const ACTIVE_TEXT_EDIT_SELECTOR =
   '[data-ship-fast-inline-editing="true"], [contenteditable="true"], [contenteditable="plaintext-only"]'
 
@@ -345,7 +433,12 @@ export function T({ children }: React.PropsWithChildren) {
   const { locale } = useI18n()
   const processedRef = useRef(new WeakSet<Node>())
   const textStateRef = useRef(new WeakMap<Text, TextTranslationState>())
-  const queueRef = useRef<Array<{ node: Text; text: string }>>([])
+  const accessibleLabelStateRef = useRef(
+    new WeakMap<HTMLElement, AccessibleLabelTranslationState>(),
+  )
+  const queueRef = useRef<
+    Array<{ node: Text; originalText: string; text: string }>
+  >([])
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inFlightRef = useRef(false)
 
@@ -360,15 +453,16 @@ export function T({ children }: React.PropsWithChildren) {
     let timer: ReturnType<typeof setTimeout> | undefined
 
     const sourceTextForNode = (node: Text): string => {
-      const current = node.textContent?.trim() ?? ''
+      const current = node.textContent ?? ''
       const state = textStateRef.current.get(node)
       if (state?.translatedText && current === state.translatedText) {
-        return state.originalText
+        return state.originalText.trim()
       }
-      if (current) {
+      const trimmed = current.trim()
+      if (trimmed) {
         textStateRef.current.set(node, { originalText: current })
       }
-      return current
+      return trimmed
     }
 
     const restoreOriginalTextNodes = () => {
@@ -376,17 +470,36 @@ export function T({ children }: React.PropsWithChildren) {
       while (walker.nextNode()) {
         const node = walker.currentNode as Text
         const sourceText = sourceTextForNode(node)
+        const originalText =
+          textStateRef.current.get(node)?.originalText ?? sourceText
         const parent = node.parentElement
         if (parent) {
-          applyTranslationResult(parent, node, sourceText, sourceText)
+          applyTranslationResult(
+            parent,
+            node,
+            originalText,
+            node.textContent ?? originalText,
+          )
         }
-        if (sourceText && node.textContent?.trim() !== sourceText) {
-          node.textContent = sourceText
+        if (sourceText && node.textContent !== originalText) {
+          node.textContent = originalText
         }
         if (sourceText) {
-          textStateRef.current.set(node, { originalText: sourceText })
+          textStateRef.current.set(node, { originalText })
         }
       }
+    }
+
+    const restoreOriginalAccessibleLabels = () => {
+      el.querySelectorAll<HTMLElement>('[aria-label]').forEach((element) => {
+        const state = accessibleLabelStateRef.current.get(element)
+        if (!state?.translatedLabel) return
+        if (element.getAttribute('aria-label') !== state.translatedLabel) return
+        element.setAttribute('aria-label', state.originalLabel)
+        accessibleLabelStateRef.current.set(element, {
+          originalLabel: state.originalLabel,
+        })
+      })
     }
 
     // Mirrors the server-side gate in isTranslatableLocale — locales like
@@ -395,6 +508,7 @@ export function T({ children }: React.PropsWithChildren) {
     // literal "en" sentinel, not just fail fast once the request lands.
     if (!isTranslatableLocale(locale)) {
       restoreOriginalTextNodes()
+      restoreOriginalAccessibleLabels()
       return
     }
 
@@ -404,6 +518,62 @@ export function T({ children }: React.PropsWithChildren) {
         flushTimerRef.current = null
         void flushTranslations()
       }, 0)
+    }
+
+    const translateAccessibleLabels = async (
+      jobs: AccessibleLabelTranslationJob[],
+    ) => {
+      const compositeJobs = jobs.filter(
+        ({ linkedLabel }) =>
+          linkedLabel.leadingContext || linkedLabel.trailingContext,
+      )
+      let compositeTranslations: string[] = []
+      if (compositeJobs.length > 0) {
+        try {
+          compositeTranslations = await fetchTranslationBatch(
+            compositeJobs.map(({ originalLabel }) => originalLabel),
+            locale,
+          )
+        } catch {
+          compositeTranslations = compositeJobs.map(
+            ({ originalLabel }) => originalLabel,
+          )
+        }
+      }
+
+      const compositeTranslationByElement = new Map<HTMLElement, string>()
+      compositeJobs.forEach(({ element }, index) => {
+        compositeTranslationByElement.set(
+          element,
+          compositeTranslations[index] ?? '',
+        )
+      })
+
+      jobs.forEach((job) => {
+        if (cancelled || !el.contains(job.element)) return
+        const translatedComposite =
+          compositeTranslationByElement.get(job.element)?.trim() ?? ''
+        const language = locale.trim().toLowerCase().split(/[-_]/)[0]
+        const needsScriptFallback =
+          language === 'hi' && /[A-Za-z]/.test(translatedComposite)
+        const translatedLabel =
+          translatedComposite &&
+          translatedComposite !== job.originalLabel &&
+          !needsScriptFallback
+            ? translatedComposite
+            : linkedAccessibleLabelFallback({
+                linkedLabel: job.linkedLabel,
+                translatedVisibleText: job.translatedVisibleText,
+                locale,
+              })
+
+        job.element.setAttribute('aria-label', translatedLabel)
+        accessibleLabelStateRef.current.set(job.element, {
+          originalLabel: job.originalLabel,
+          translatedLocale: locale,
+          translatedLabel,
+        })
+      })
     }
 
     const flushTranslations = async () => {
@@ -423,6 +593,10 @@ export function T({ children }: React.PropsWithChildren) {
           translations = batch.map((item) => item.text)
         }
         if (!cancelled) {
+          const accessibleLabelJobs = new Map<
+            HTMLElement,
+            AccessibleLabelTranslationJob
+          >()
           batch.forEach((item, index) => {
             const translated = translations[index] ?? item.text
             if (isInsideActiveTextEdit(item.node)) {
@@ -433,22 +607,55 @@ export function T({ children }: React.PropsWithChildren) {
                 item.node.textContent ?? item.text,
               )
               textStateRef.current.set(item.node, {
-                originalText: item.node.textContent?.trim() || item.text,
+                originalText: item.node.textContent || item.originalText,
               })
               return
             }
+            const translatedText = preserveOuterWhitespace(
+              item.originalText,
+              translated,
+            )
             applyTranslationResult(
               item.node.parentElement,
               item.node,
-              translated,
-              item.text,
+              translatedText,
+              item.originalText,
             )
             textStateRef.current.set(item.node, {
-              originalText: item.text,
+              originalText: item.originalText,
               translatedLocale: locale,
-              translatedText: translated,
+              translatedText,
+            })
+
+            const labelledElement =
+              item.node.parentElement?.closest<HTMLElement>('[aria-label]')
+            const currentLabel = labelledElement?.getAttribute('aria-label')
+            if (
+              !labelledElement ||
+              !currentLabel ||
+              translated.trim() === item.text
+            ) {
+              return
+            }
+            const existingState =
+              accessibleLabelStateRef.current.get(labelledElement)
+            const originalLabel =
+              existingState?.translatedLabel === currentLabel
+                ? existingState.originalLabel
+                : currentLabel
+            const linkedLabel = splitLinkedAccessibleLabel(
+              originalLabel,
+              item.text,
+            )
+            if (!linkedLabel) return
+            accessibleLabelJobs.set(labelledElement, {
+              element: labelledElement,
+              linkedLabel,
+              originalLabel,
+              translatedVisibleText: translated.trim(),
             })
           })
+          await translateAccessibleLabels([...accessibleLabelJobs.values()])
         }
       } finally {
         inFlightRef.current = false
@@ -471,7 +678,11 @@ export function T({ children }: React.PropsWithChildren) {
           addTranslationShimmer(node)
           shimmeredNodes += 1
         }
-        nodes.push({ node, text })
+        nodes.push({
+          node,
+          originalText: textStateRef.current.get(node)?.originalText ?? text,
+          text,
+        })
       }
 
       if (nodes.length) {
@@ -482,11 +693,29 @@ export function T({ children }: React.PropsWithChildren) {
 
     collectTextNodes()
 
-    const obs = new MutationObserver(() => {
+    const obs = new MutationObserver((records) => {
+      let shouldCollect = false
+      for (const record of records) {
+        if (record.type !== 'characterData') {
+          shouldCollect = true
+          continue
+        }
+
+        const node = record.target
+        if (!(node instanceof Text)) continue
+        const current = node.textContent ?? ''
+        const state = textStateRef.current.get(node)
+        if (state?.translatedText === current) continue
+
+        processedRef.current.delete(node)
+        textStateRef.current.set(node, { originalText: current })
+        shouldCollect = true
+      }
+      if (!shouldCollect) return
       if (timer !== undefined) clearTimeout(timer)
       timer = setTimeout(collectTextNodes, 50)
     })
-    obs.observe(el, { childList: true, subtree: true })
+    obs.observe(el, { characterData: true, childList: true, subtree: true })
 
     return () => {
       cancelled = true
