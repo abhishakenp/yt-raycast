@@ -636,6 +636,31 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     expect(await screen.findByTestId('export-panel-stub')).toBeTruthy()
   })
 
+  it('passes the resolved Convex session id to export and deployment panels when the route uses a slug', async () => {
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'real-convex-session',
+        status: 'preview_ready',
+        prompt: 'A ready website behind a public slug',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+    })
+    render(<Dashboard sessionId="public-demo-slug" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Export/i }))
+    expect(
+      await screen.findByText('Export panel real-convex-session'),
+    ).toBeTruthy()
+    expect(screen.queryByText('Export panel public-demo-slug')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /Deployment URL/i }))
+    expect(
+      await screen.findByText('Deployment panel real-convex-session'),
+    ).toBeTruthy()
+    expect(screen.queryByText('Deployment panel public-demo-slug')).toBeNull()
+  })
+
   it('reveals the deployment panel content when the deployment url rail button is clicked', async () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
