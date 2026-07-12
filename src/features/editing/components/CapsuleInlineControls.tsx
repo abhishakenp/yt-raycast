@@ -11,6 +11,18 @@ import {
 } from '@ship-fast/blocks/capsules'
 import { useSectionCapsuleActions } from '../hooks/useSectionCapsuleActions'
 import { cn } from '#/lib/utils'
+import { Button } from '#/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '#/components/ui/alert-dialog'
 
 interface CapsuleInlineControlsProps {
   capsuleName: string
@@ -46,6 +58,34 @@ const lookupCapsuleSchema = (capsuleName: string): CapsuleSchemaInfo | null => {
   if (!propsSchema) return null
   const info = introspectCapsuleSchema(propsSchema)
   return hasContextInfo(info) ? info : null
+}
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+
+const TITLE_FIELD_KEYS = [
+  'name',
+  'title',
+  'heading',
+  'label',
+  'alt',
+  'tag',
+  'author',
+  'company',
+  'role',
+]
+
+const findTitleField = (itemFields: CollectionField[]): string | undefined =>
+  itemFields.find((f) => TITLE_FIELD_KEYS.includes(f.key))?.key
+
+const extractItemTitle = (
+  item: unknown,
+  titleField: string | undefined,
+  fallback: string,
+): string => {
+  if (!titleField || !isPlainObject(item)) return fallback
+  const val = item[titleField]
+  return typeof val === 'string' && val.trim() ? val : fallback
 }
 
 const CapsuleInlineControlsInner = ({
@@ -178,33 +218,47 @@ const InlineCollectionControls = ({
 }) => {
   const itemArray = Array.isArray(items) ? items : []
   const label = collectionKey.charAt(0).toUpperCase() + collectionKey.slice(1)
+  const titleField = findTitleField(itemFields)
 
   const handleAdd = () => {
     const defaultItem = createDefaultItem({ key: collectionKey, itemFields })
     void onAdd(collectionKey, defaultItem)
   }
 
+  const activeItem =
+    activeIndex !== null && activeIndex >= 0 && activeIndex < itemArray.length
+      ? itemArray[activeIndex]
+      : null
+  const activeTitle = activeItem
+    ? extractItemTitle(activeItem, titleField, `${label} ${activeIndex! + 1}`)
+    : ''
+
   return (
     <div className="flex shrink-0 items-center gap-1.5">
       <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
         {label} <span className="text-white/25">({itemArray.length})</span>
       </span>
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="xs"
         onClick={handleAdd}
-        className="flex items-center gap-0.5 rounded-md bg-cyan-300/10 px-1.5 py-0.5 text-xs font-medium text-cyan-300 transition-colors hover:bg-cyan-300/20"
+        className="h-6 gap-1 px-2 text-[11px] text-cyan-300 hover:bg-cyan-300/10 hover:text-cyan-200"
         title={`Add ${label}`}
       >
         <Plus className="size-3" />
         Add
-      </button>
+      </Button>
       {activeIndex !== null &&
         activeIndex >= 0 &&
         activeIndex < itemArray.length && (
           <>
             <div className="h-3 w-px bg-white/10" />
-            <span className="text-[10px] font-medium text-white/40">
-              #{activeIndex + 1}
+            <span
+              className="max-w-[120px] truncate text-[10px] font-medium text-white/50"
+              title={activeTitle}
+            >
+              {activeTitle}
             </span>
             <button
               type="button"
@@ -228,14 +282,35 @@ const InlineCollectionControls = ({
             >
               <ChevronDown className="size-3" />
             </button>
-            <button
-              type="button"
-              onClick={() => void onRemove(collectionKey, activeIndex)}
-              className="grid size-5 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
-              title="Remove item"
-            >
-              <Trash2 className="size-3" />
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  className="grid size-5 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                  title="Remove item"
+                >
+                  <Trash2 className="size-3" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent size="sm">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove {activeTitle}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently remove this item. This action cannot
+                    be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    onClick={() => void onRemove(collectionKey, activeIndex)}
+                  >
+                    Remove
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
     </div>

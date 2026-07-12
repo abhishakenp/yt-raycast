@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, act } from '@testing-library/react'
 import { createElement } from 'react'
 
 // Mock useSectionCapsuleActions directly.
@@ -177,7 +177,8 @@ describe('CapsuleInlineControls', () => {
       }),
     )
 
-    expect(screen.getByText('#2')).toBeTruthy()
+    // Active item title should be shown (not hashtag number)
+    expect(screen.getByText('Private Offices')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Move up' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Move down' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Remove item' })).toBeTruthy()
@@ -227,7 +228,7 @@ describe('CapsuleInlineControls', () => {
     expect(mockActions.reorderItem).toHaveBeenCalledWith('features', 0, 1)
   })
 
-  it('calls removeItem when Remove item is clicked', () => {
+  it('calls removeItem when Remove item is clicked', async () => {
     mockActions.sectionData = {
       features: [
         { title: 'Hot Desks', description: 'Pick any desk' },
@@ -245,7 +246,15 @@ describe('CapsuleInlineControls', () => {
       }),
     )
 
+    // Click remove — opens AlertDialog confirmation
     fireEvent.click(screen.getByRole('button', { name: 'Remove item' }))
+
+    // Click "Remove" in the confirmation dialog
+    const confirmBtn = screen.getByRole('button', { name: 'Remove' })
+    await act(async () => {
+      fireEvent.click(confirmBtn)
+    })
+
     expect(mockActions.removeItem).toHaveBeenCalledWith('features', 0)
   })
 
@@ -384,7 +393,8 @@ describe('CapsuleInlineControls', () => {
     )
 
     expect(screen.getByText('Tiers')).toBeTruthy()
-    expect(screen.getByText('#1')).toBeTruthy()
+    // Active item shows title, not hashtag
+    expect(screen.getByText('Hot Desk')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Remove item' })).toBeTruthy()
   })
 })
