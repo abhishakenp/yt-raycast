@@ -709,7 +709,21 @@ export default function ShooCallback() {
 
 // ─── useKeyedMutation hook ────────────────────────────────────
 
-export const renderKeyedMutationHook = (): string => `'use client'
+export const renderKeyedMutationHook = (
+  queryKeys: Iterable<string> = [],
+): string => {
+  const invalidations = [...new Set(queryKeys)]
+    .sort()
+    .map(
+      (
+        key,
+      ) => `      if (invalidationKeys?.some((candidate) => candidate[0] === ${JSON.stringify(key)})) {
+        void queryClient.invalidateQueries({ queryKey: [${JSON.stringify(key)}] })
+      }`,
+    )
+    .join('\n')
+
+  return `'use client'
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -734,16 +748,10 @@ export function useKeyedMutation(
   const syncPendingKeys = useCallback(() => {
     setPendingKeys(Array.from(pendingKeySetRef.current))
   }, [])
-  const mutation = useMutation({
-    mutationFn,
+  const mutation = useMutation<unknown, Error, unknown[]>({
+    mutationFn: (args) => mutationFn(...args),
     onSuccess: () => {
-      if (invalidationKeys) {
-        for (const key of invalidationKeys) {
-          void queryClient.invalidateQueries({ queryKey: key })
-        }
-      } else {
-        void queryClient.invalidateQueries()
-      }
+${invalidations}
     },
   })
   const run = useCallback(
@@ -785,6 +793,7 @@ export function useKeyedMutation(
   )
 }
 `
+}
 
 // ─── QueryClient provider ─────────────────────────────────────
 
