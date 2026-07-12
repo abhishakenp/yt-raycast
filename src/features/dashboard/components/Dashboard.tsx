@@ -2027,7 +2027,7 @@ export function Dashboard({
                             align="start"
                             side="left"
                             sideOffset={12}
-                            className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                            className="z-[140] w-[min(360px,calc(100vw-24px))] p-3"
                           >
                             <Suspense fallback={<ToolPopoverFallback />}>
                               <CommercePanel
@@ -2061,7 +2061,7 @@ export function Dashboard({
                           popoverSide="left"
                           popoverAlign="start"
                           popoverSideOffset={12}
-                          popoverClassName="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                          popoverClassName="z-[140] w-[min(360px,calc(100vw-24px))] p-0"
                           onSelect={(theme: string) => {
                             setSelectedTheme(theme)
                             if (resolvedSessionId) {
@@ -2322,7 +2322,7 @@ export function Dashboard({
                             align="start"
                             side="left"
                             sideOffset={12}
-                            className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                            className="z-[140] w-[min(360px,calc(100vw-24px))] p-3"
                           >
                             <Suspense fallback={<ToolPopoverFallback />}>
                               <GitHubPanel sessionId={sessionId} />
@@ -2438,7 +2438,7 @@ export function Dashboard({
                             align="start"
                             side="left"
                             sideOffset={12}
-                            className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                            className="z-[140] w-[min(360px,calc(100vw-24px))] p-3"
                           >
                             <Suspense fallback={<ToolPopoverFallback />}>
                               <ExportPanel sessionId={sessionId} />
@@ -2486,7 +2486,7 @@ export function Dashboard({
                             align="end"
                             side="left"
                             sideOffset={12}
-                            className="z-[140] w-80 border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                            className="z-[140] w-80 p-3"
                           >
                             <Suspense fallback={<ToolPopoverFallback />}>
                               <DeploymentPanel sessionId={sessionId} />
