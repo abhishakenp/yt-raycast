@@ -7,6 +7,14 @@ export type LanguageEntry = {
   keywords: string[]
 }
 
+export const ENGLISH_LANGUAGE: LanguageEntry = {
+  code: 'en',
+  name: 'English',
+  nativeName: 'English',
+  fontFamily: 'Inter, system-ui, sans-serif',
+  keywords: ['english', 'in english', 'english website', 'english language'],
+}
+
 export const HINGLISH_LANGUAGE: LanguageEntry = {
   code: 'hinglish',
   name: 'Hinglish',
@@ -455,6 +463,7 @@ export const PROMPT_DETECT_LANGUAGES = [
 ]
 
 export const KNOWN_LANGUAGES = [
+  ENGLISH_LANGUAGE,
   HINGLISH_LANGUAGE,
   ...INDIC_PURE_LANGUAGES,
   ...MIXED_ENGLISH_LANGUAGES,
@@ -519,13 +528,8 @@ export const isTranslatableLocale = (code: unknown): boolean => {
   const c = String(code || '')
     .trim()
     .toLowerCase()
-  // 'english' shows up as a real preferredLanguage value when a user types
-  // "English" into the custom-language box: there's no "English" entry in
-  // KNOWN_LANGUAGES, so it falls through to AI-resolved custom-language
-  // creation and gets a code like "english" instead of the 'en' sentinel.
-  // Without this, the catch-all ad-hoc-locale regex below treats it as a
-  // real target locale and runs the full LLM translateBatch pipeline asking
-  // to "translate" already-English text into English.
+  // Keep the legacy `english` value non-translatable. Older sessions may have
+  // persisted it before English became a first-class known-language entry.
   if (!c || c === 'en' || c === 'english') return false
   return (
     /^[a-z]{2}$/.test(c) ||

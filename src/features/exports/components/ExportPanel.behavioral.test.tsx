@@ -378,6 +378,37 @@ describe('ExportPanel behavioral', () => {
     expect(revokeObjectUrl).not.toHaveBeenCalled()
   })
 
+  it('does not download a 202 building JSON response as a file', async () => {
+    setExportTargets([
+      target({
+        target: 'html',
+        ready: true,
+        status: 'ready',
+        artifactReady: true,
+        artifactStatus: 'ready',
+        downloadUrl: '/api/sessions/session_123/download/html',
+      }),
+    ])
+    const clickMock = silenceAnchorClick()
+    const { createObjectUrl, revokeObjectUrl } = installUrlMocks()
+    const fetchMock = vi.fn(async () =>
+      Response.json(
+        { error: 'Export is still building.', status: 'building' },
+        { status: 202 },
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+    fireEvent.click(view.getByText('HTML').closest('button')!)
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+    expect(createObjectUrl).not.toHaveBeenCalled()
+    expect(clickMock).not.toHaveBeenCalled()
+    expect(revokeObjectUrl).not.toHaveBeenCalled()
+    expect(view.getByText(/export is still building/i)).toBeTruthy()
+  })
+
   it('sends the persisted anonymous owner secret on ready downloads and new export creation', async () => {
     persistAnonymousOwnerSecret(
       window.localStorage,

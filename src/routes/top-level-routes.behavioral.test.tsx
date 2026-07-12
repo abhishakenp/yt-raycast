@@ -231,4 +231,24 @@ describe('top-level route behavior', () => {
       request,
     )
   })
+
+  it('serves a deployment preview from its Ship Fast subdomain root', async () => {
+    createDeploymentPreviewResponseMock.mockResolvedValue(
+      new Response('<h1>Craft Beer Brewery</h1>'),
+    )
+    const Route = await importRoute('./index')
+    const request = new Request('https://a-craft-beer-brewery.ship-fast.io/')
+    const handler = Route.options.server?.handlers.GET
+
+    expect(handler).toBeTypeOf('function')
+
+    const response = await handler?.({ params: {}, request })
+
+    expect(response?.status).toBe(200)
+    expect(await response?.text()).toContain('Craft Beer Brewery')
+    expect(createDeploymentPreviewResponseMock).toHaveBeenCalledWith(
+      'a-craft-beer-brewery',
+      request,
+    )
+  })
 })

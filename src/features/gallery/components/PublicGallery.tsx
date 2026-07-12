@@ -132,16 +132,18 @@ const formatGenerationTime = (elapsed?: number | null) => {
   const seconds = elapsed / 1000
   if (seconds < 1) return '<1s'
   if (seconds < 10) return `${seconds.toFixed(1)}s`
-  if (seconds < 60) return `${Math.round(seconds)}s`
 
-  if (seconds >= 3600) {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.round((seconds % 3600) / 60)
+  const roundedSeconds = Math.round(seconds)
+  if (roundedSeconds < 60) return `${roundedSeconds}s`
+
+  if (roundedSeconds >= 3600) {
+    const hours = Math.floor(roundedSeconds / 3600)
+    const minutes = Math.floor((roundedSeconds % 3600) / 60)
     return `${hours}h ${minutes}m`
   }
 
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = Math.round(seconds % 60)
+  const minutes = Math.floor(roundedSeconds / 60)
+  const remainingSeconds = roundedSeconds % 60
   if (remainingSeconds === 0) return `${minutes}m`
 
   return `${minutes}m ${remainingSeconds}s`
@@ -310,8 +312,7 @@ const GalleryCard = ({
   return (
     <Link
       className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
-      to="/generate/$sessionId"
-      params={{ sessionId: session.sessionId }}
+      to={`/generate/${encodeURIComponent(session.sessionId)}`}
       preload={false}
       aria-label={getGalleryCardAriaLabel(session)}
       data-gallery-session-id={session.sessionId}

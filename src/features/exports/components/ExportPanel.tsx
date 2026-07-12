@@ -136,11 +136,24 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
       const response = await fetch(downloadUrl, {
         headers: await createAuthHeaders(),
       })
+      const contentType = response.headers.get('content-type') ?? ''
+      if (contentType.includes('json')) {
+        const data = await readJsonOrThrow<Record<string, unknown>>(
+          response,
+          'Download failed',
+        )
+        throw new Error(
+          typeof data.error === 'string'
+            ? data.error
+            : response.status === 202
+              ? 'Export is still building.'
+              : 'Download failed',
+        )
+      }
+      if (contentType.includes('text/html')) {
+        throw new Error('Download failed')
+      }
       if (!response.ok) {
-        const contentType = response.headers.get('content-type') ?? ''
-        if (contentType.includes('text/html')) {
-          throw new Error('Download failed')
-        }
         const message = await response.text()
         throw new Error(message || 'Download failed')
       }

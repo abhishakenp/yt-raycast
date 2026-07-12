@@ -129,6 +129,7 @@ export default function LanguagePicker({
   onSelect,
   trigger,
 }: LanguagePickerProps) {
+  const [activeLanguage, setActiveLanguage] = useState(value ?? '')
   const [customLanguage, setCustomLanguage] = useState('')
   const [isResolving, setIsResolving] = useState(false)
   const [resolveError, setResolveError] = useState<string | null>(null)
@@ -143,6 +144,10 @@ export default function LanguagePicker({
   // the static KNOWN_LANGUAGES so everyone can search + select them.
   const customLanguages = useQuery(api.customLanguages.list, {})
   const resolveOrCreate = useAction(api.customLanguages.resolveOrCreate)
+
+  useEffect(() => {
+    setActiveLanguage(value ?? '')
+  }, [value])
 
   // Repair stale browser-native custom rows: a previous AI run may have stored
   // a language with a non-locale code and a Latin native name (e.g. code
@@ -281,33 +286,35 @@ export default function LanguagePicker({
         sideOffset={12}
         className="w-72 p-0"
       >
-        <Command>
+        <Command value={activeLanguage} onValueChange={setActiveLanguage}>
           <CommandInput placeholder="Search languages…" />
           <CommandList>
             <ScrollArea className="max-h-[360px]">
               <CommandEmpty>No language found.</CommandEmpty>
               <CommandGroup>
                 {allLanguages.map((entry) => {
-                  const searchValue = [
-                    entry.code,
+                  const searchKeywords = [
                     entry.name,
                     entry.nativeName,
                     ...entry.keywords,
-                  ].join(' ')
+                  ]
                   return (
                     <CommandItem
                       key={entry.code}
-                      value={searchValue}
+                      value={entry.code}
+                      keywords={searchKeywords}
                       onSelect={() => onSelect(entry.code)}
                       className="flex flex-col items-start gap-0.5"
                     >
                       <span className="truncate text-sm">{entry.name}</span>
-                      <span
-                        className="truncate text-xs text-muted-foreground"
-                        style={{ fontFamily: entry.fontFamily }}
-                      >
-                        {entry.nativeName}
-                      </span>
+                      {entry.nativeName !== entry.name ? (
+                        <span
+                          className="truncate text-xs text-muted-foreground"
+                          style={{ fontFamily: entry.fontFamily }}
+                        >
+                          {entry.nativeName}
+                        </span>
+                      ) : null}
                       <Check
                         className={cn(
                           'absolute right-2 top-1/2 size-4 -translate-y-1/2',
