@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { inquiryLakebed } from './inquiry-lakebed.ts'
 import {
@@ -206,144 +207,69 @@ export const ContactFormDetails = defineCapsule({
     }
 
     return (
-      <section
-        className={cn(
-          'grid items-start gap-10 lg:grid-cols-2',
-          props.className,
-        )}
-      >
-        {/* Contact form */}
-        <Card
-          rounded="2xl"
-          padding="none"
-          className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
-        >
-          <h2 className="sr-only">Contact form</h2>
-          <form onSubmit={inquiry.submitForm}>
-            <div className="mb-6">
-              <label
-                htmlFor="cfd-name"
-                className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
-              >
-                {nameLabel}
-              </label>
-              <input
-                type="text"
-                id="cfd-name"
-                name="name"
-                placeholder={namePlaceholder}
-                className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
-              />
-            </div>
-            <div className="mb-6">
-              <label
-                htmlFor="cfd-email"
-                className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
-              >
-                {emailLabel}
-              </label>
-              <input
-                type="email"
-                id="cfd-email"
-                name="email"
-                placeholder={emailPlaceholder}
-                className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
-              />
-            </div>
-            <div className="mb-6">
-              <label
-                htmlFor="cfd-message"
-                className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
-              >
-                {messageLabel}
-              </label>
-              <textarea
-                id="cfd-message"
-                name="message"
-                placeholder={messagePlaceholder}
-                className="min-h-[140px] w-full resize-y rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
-              />
-            </div>
-            <p className="sr-only" aria-live="polite">
-              {inquiry.statusText}
-            </p>
-            <button
-              type="submit"
-              aria-busy={inquiry.isPending}
-              disabled={inquiry.isPending}
-              className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0 disabled:pointer-events-none disabled:opacity-70"
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container>
+          <div className="grid items-start gap-10 lg:grid-cols-2">
+            {/* Contact form */}
+            <Card
+              rounded="2xl"
+              padding="none"
+              className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M22 2 11 13" />
-                <path d="M22 2 15 22l-4-9-9-4 20-7z" />
-              </svg>
-              {inquiry.isPending ? 'Sending' : submitLabel}
-            </button>
-            <p className="mt-4 text-sm text-muted-foreground">
-              {inquiry.statusText}
-            </p>
-          </form>
-        </Card>
-
-        {/* Contact details */}
-        <Card
-          rounded="2xl"
-          padding="none"
-          className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
-        >
-          <h2 className="mb-6 text-xl font-bold text-foreground">
-            {detailsHeading}
-          </h2>
-          <div className="flex flex-col gap-6">
-            {detailItems.map((item) => (
-              <div
-                key={item.label}
-                className="flex items-start gap-4 rounded-lg border border-transparent bg-muted/40 p-5 transition-all hover:border-border hover:bg-muted/60"
-              >
-                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-                  {detailIcons[item.icon ?? 'mail']}
-                </span>
-                <div>
-                  <h3 className="mb-0.5 text-[0.95rem] font-semibold text-foreground">
-                    {item.label}
-                  </h3>
-                  <p className="text-[0.9rem] leading-[1.5] text-muted-foreground">
-                    {item.value}
-                    {item.value2 ? (
-                      <>
-                        <br />
-                        {item.value2}
-                      </>
-                    ) : null}
-                  </p>
+              <h2 className="sr-only">Contact form</h2>
+              <form onSubmit={inquiry.submitForm}>
+                <div className="mb-6">
+                  <label
+                    htmlFor="cfd-name"
+                    className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
+                  >
+                    {nameLabel}
+                  </label>
+                  <input
+                    type="text"
+                    id="cfd-name"
+                    name="name"
+                    placeholder={namePlaceholder}
+                    className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                  />
                 </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex gap-2.5">
-            {socials.map((label) => {
-              const s = socialPath(label)
-              return (
-                <InquiryContactSheetButton
-                  key={label}
-                  lakebed={lakebed}
-                  label={label}
-                  target={label}
-                  source="Contact details"
-                  heading={`Connect on ${label}`}
-                  description={`Open this ${label} contact option without leaving the generated page.`}
-                  buttonClassName="grid size-[42px] place-items-center rounded-xl border border-border bg-background text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                <div className="mb-6">
+                  <label
+                    htmlFor="cfd-email"
+                    className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
+                  >
+                    {emailLabel}
+                  </label>
+                  <input
+                    type="email"
+                    id="cfd-email"
+                    name="email"
+                    placeholder={emailPlaceholder}
+                    className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                  />
+                </div>
+                <div className="mb-6">
+                  <label
+                    htmlFor="cfd-message"
+                    className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
+                  >
+                    {messageLabel}
+                  </label>
+                  <textarea
+                    id="cfd-message"
+                    name="message"
+                    placeholder={messagePlaceholder}
+                    className="min-h-[140px] w-full resize-y rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                  />
+                </div>
+                <p className="sr-only" aria-live="polite">
+                  {inquiry.statusText}
+                </p>
+                <button
+                  type="submit"
+                  aria-busy={inquiry.isPending}
+                  disabled={inquiry.isPending}
+                  className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0 disabled:pointer-events-none disabled:opacity-70"
                 >
                   <svg
                     width="18"
@@ -356,34 +282,108 @@ export const ContactFormDetails = defineCapsule({
                     strokeLinejoin="round"
                     aria-hidden="true"
                   >
-                    {s.insta ? (
-                      <>
-                        <rect
-                          x="2"
-                          y="2"
-                          width="20"
-                          height="20"
-                          rx="5"
-                          ry="5"
-                        />
-                        <path d={s.path} />
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                      </>
-                    ) : s.extra ? (
-                      <>
-                        <path d={s.path} />
-                        <rect x="2" y="9" width="4" height="12" />
-                        <circle cx="4" cy="4" r="2" />
-                      </>
-                    ) : (
-                      <path d={s.path} />
-                    )}
+                    <path d="M22 2 11 13" />
+                    <path d="M22 2 15 22l-4-9-9-4 20-7z" />
                   </svg>
-                </InquiryContactSheetButton>
-              )
-            })}
+                  {inquiry.isPending ? 'Sending' : submitLabel}
+                </button>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  {inquiry.statusText}
+                </p>
+              </form>
+            </Card>
+
+            {/* Contact details */}
+            <Card
+              rounded="2xl"
+              padding="none"
+              className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
+            >
+              <h2 className="mb-6 text-xl font-bold text-foreground">
+                {detailsHeading}
+              </h2>
+              <div className="flex flex-col gap-6">
+                {detailItems.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-start gap-4 rounded-lg border border-transparent bg-muted/40 p-5 transition-all hover:border-border hover:bg-muted/60"
+                  >
+                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+                      {detailIcons[item.icon ?? 'mail']}
+                    </span>
+                    <div>
+                      <h3 className="mb-0.5 text-[0.95rem] font-semibold text-foreground">
+                        {item.label}
+                      </h3>
+                      <p className="text-[0.9rem] leading-[1.5] text-muted-foreground">
+                        {item.value}
+                        {item.value2 ? (
+                          <>
+                            <br />
+                            {item.value2}
+                          </>
+                        ) : null}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex gap-2.5">
+                {socials.map((label) => {
+                  const s = socialPath(label)
+                  return (
+                    <InquiryContactSheetButton
+                      key={label}
+                      lakebed={lakebed}
+                      label={label}
+                      target={label}
+                      source="Contact details"
+                      heading={`Connect on ${label}`}
+                      description={`Open this ${label} contact option without leaving the generated page.`}
+                      buttonClassName="grid size-[42px] place-items-center rounded-xl border border-border bg-background text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        {s.insta ? (
+                          <>
+                            <rect
+                              x="2"
+                              y="2"
+                              width="20"
+                              height="20"
+                              rx="5"
+                              ry="5"
+                            />
+                            <path d={s.path} />
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                          </>
+                        ) : s.extra ? (
+                          <>
+                            <path d={s.path} />
+                            <rect x="2" y="9" width="4" height="12" />
+                            <circle cx="4" cy="4" r="2" />
+                          </>
+                        ) : (
+                          <path d={s.path} />
+                        )}
+                      </svg>
+                    </InquiryContactSheetButton>
+                  )
+                })}
+              </div>
+            </Card>
           </div>
-        </Card>
+        </Container>
       </section>
     )
   },

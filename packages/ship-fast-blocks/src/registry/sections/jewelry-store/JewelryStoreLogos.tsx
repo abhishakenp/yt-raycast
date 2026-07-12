@@ -34,7 +34,7 @@ export const JewelryStoreLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="w-full px-6 lg:px-12 xl:px-20">
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <p className="mb-12 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
             {label}
           </p>

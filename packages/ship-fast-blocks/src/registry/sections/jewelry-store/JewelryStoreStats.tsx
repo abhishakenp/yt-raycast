@@ -32,8 +32,8 @@ export const JewelryStoreStats = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-32', props.className)}>
-        <div className="w-full px-6 lg:px-12 xl:px-20">
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="grid gap-12 text-center md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             {items.map((s) => (
               <div key={s.label}>

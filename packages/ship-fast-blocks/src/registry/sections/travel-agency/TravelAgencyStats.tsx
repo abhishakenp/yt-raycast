@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
 
 export const TravelAgencyStats = defineCapsule({
@@ -31,9 +32,11 @@ export const TravelAgencyStats = defineCapsule({
           { value: '4.9★', label: 'Average rating' },
         ]
     return (
-      <section className={cn('flex flex-col gap-10', props.className)}>
-        <SectionHeading title={heading} subtitle={subheading} />
-        <StatGrid stats={stats} columns={4} />
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <Container className="flex flex-col gap-10">
+          <SectionHeading title={heading} subtitle={subheading} />
+          <StatGrid stats={stats} columns={4} />
+        </Container>
       </section>
     )
   },

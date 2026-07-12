@@ -114,39 +114,43 @@ export const AnalyticsKpis = defineCapsule({
     return (
       <section
         aria-label="Key performance indicators"
-        className={cn(props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
       >
-        <ResponsiveGrid cols="1-2-4" gap="md">
-          {kpis.map((kpi, i) => (
-            <Card key={kpi.label}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {kpi.label}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-card-foreground">
-                    {kpi.value}
-                  </p>
-                  <div
-                    className={cn(
-                      'mt-2 flex items-center gap-1',
-                      kpi.trend === 'up' ? 'text-chart-1' : 'text-destructive',
-                    )}
-                  >
-                    {kpi.trend === 'up' ? <TrendUp /> : <TrendDown />}
-                    <span className="text-sm font-medium">{kpi.delta}</span>
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+          <ResponsiveGrid cols="1-2-4" gap="md">
+            {kpis.map((kpi, i) => (
+              <Card key={kpi.label}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {kpi.label}
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-card-foreground">
+                      {kpi.value}
+                    </p>
+                    <div
+                      className={cn(
+                        'mt-2 flex items-center gap-1',
+                        kpi.trend === 'up'
+                          ? 'text-chart-1'
+                          : 'text-destructive',
+                      )}
+                    >
+                      {kpi.trend === 'up' ? <TrendUp /> : <TrendDown />}
+                      <span className="text-sm font-medium">{kpi.delta}</span>
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-muted p-2 text-muted-foreground">
+                    {kpiIcons[i % kpiIcons.length]}
                   </div>
                 </div>
-                <div className="rounded-lg bg-muted p-2 text-muted-foreground">
-                  {kpiIcons[i % kpiIcons.length]}
-                </div>
-              </div>
-              <p className="mt-4 text-xs text-muted-foreground">
-                {kpi.caption}
-              </p>
-            </Card>
-          ))}
-        </ResponsiveGrid>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  {kpi.caption}
+                </p>
+              </Card>
+            ))}
+          </ResponsiveGrid>
+        </div>
       </section>
     )
   },

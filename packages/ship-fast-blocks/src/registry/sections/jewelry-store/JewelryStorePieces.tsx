@@ -143,8 +143,8 @@ export const JewelryStorePieces = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-background py-32', props.className)}>
-        <div className="w-full px-6 lg:px-12 xl:px-20">
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="mb-16 flex flex-col lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">

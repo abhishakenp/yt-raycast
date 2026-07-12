@@ -31,7 +31,9 @@ export const ContactHero = defineCapsule({
       'Whether you have a question about our services, pricing, need a demo, or anything else, our team is ready to answer all your questions.'
 
     return (
-      <section className={cn('pt-20 pb-14 text-center', props.className)}>
+      <section
+        className={cn('px-4 pt-20 pb-14 text-center lg:px-8', props.className)}
+      >
         <span className="mb-5 inline-flex items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary">
           <span
             aria-hidden="true"
