@@ -2102,6 +2102,7 @@ export function InlineEditToolbar({
                     sessionId={sessionId}
                     anonymousOwnerSecret={anonymousOwnerSecret}
                     handleRef={capsuleInlineRef}
+                    capsuleElement={capsuleElement}
                     activeCollectionItem={
                       activeCollectionItem
                         ? {
