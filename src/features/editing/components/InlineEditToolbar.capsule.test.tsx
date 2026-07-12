@@ -609,14 +609,21 @@ describe('InlineEditToolbar — capsule context panel integration', () => {
       expect(mockActions.setProp).toHaveBeenCalledWith('columns', 4)
     })
 
-    it('clicking Add button calls addItem', () => {
+    it('clicking Add button calls addItem', async () => {
       mockActions.sectionData = { images: [] }
       const section = makeCapsuleSectionEl('CoworkingGallery', 'home_gallery')
       renderToolbar({ activeElement: section, sessionId: 'sess-1' })
 
       fireEvent.click(screen.getByRole('button', { name: 'Capsule controls' }))
+      // Click Add — opens dialog form
       const addBtn = screen.getAllByRole('button', { name: /Add/ })[0]
       fireEvent.click(addBtn!)
+
+      // Click submit button in dialog "Add Images"
+      const submitBtn = screen.getByRole('button', { name: /Add Images/ })
+      await act(async () => {
+        fireEvent.click(submitBtn)
+      })
 
       expect(mockActions.addItem).toHaveBeenCalledWith('images', {
         alt: '',

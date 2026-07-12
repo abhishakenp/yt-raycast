@@ -24,6 +24,16 @@ import {
   AlertDialogTrigger,
 } from '#/components/ui/alert-dialog'
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '#/components/ui/dialog'
+import {
   Sortable,
   SortableContent,
   SortableItem,
@@ -87,7 +97,46 @@ const LONG_TEXT_KEYS = new Set([
   'quote',
   'blurb',
   'tagline',
+  'excerpt',
 ])
+
+const TITLE_FIELD_KEYS = [
+  'name',
+  'title',
+  'heading',
+  'label',
+  'alt',
+  'tag',
+  'author',
+  'company',
+  'role',
+]
+
+const SUBTITLE_FIELD_KEYS = [
+  'price',
+  'description',
+  'caption',
+  'excerpt',
+  'date',
+  'role',
+  'period',
+]
+
+const findTitleField = (itemFields: CollectionField[]): string | undefined =>
+  itemFields.find((f) => TITLE_FIELD_KEYS.includes(f.key))?.key
+
+const findSubtitleField = (itemFields: CollectionField[]): string | undefined =>
+  itemFields.find((f) => SUBTITLE_FIELD_KEYS.includes(f.key))?.key
+
+const extractItemTitle = (
+  item: unknown,
+  titleField: string | undefined,
+  fallback: string,
+): string => {
+  if (!titleField || !isPlainObject(item)) return fallback
+  const val = item[titleField]
+  return typeof val === 'string' && val.trim() ? val : fallback
+}
 
 // ─── Inner panel ────────────────────────────────────────────────────────────
 
@@ -219,21 +268,21 @@ const BentoCollection = ({
   ) => Promise<void>
 }) => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
   const itemArray = Array.isArray(items) ? items : []
   const label = titleCase(collectionKey)
 
-  const handleAdd = useCallback(() => {
-    const defaultItem = createDefaultItem({ key: collectionKey, itemFields })
-    void onAdd(collectionKey, defaultItem)
-    setExpandedIndex(itemArray.length)
-  }, [collectionKey, itemFields, onAdd, itemArray.length])
+  const titleField = findTitleField(itemFields)
+  const subtitleField = findSubtitleField(itemFields)
 
-  const titleField = itemFields.find(
-    (f) => f.key === 'name' || f.key === 'title' || f.key === 'alt',
-  )?.key
-  const subtitleField = itemFields.find(
-    (f) => f.key === 'price' || f.key === 'description' || f.key === 'caption',
-  )?.key
+  const handleAdd = useCallback(
+    (newItem: Record<string, unknown>) => {
+      void onAdd(collectionKey, newItem)
+      setAddDialogOpen(false)
+      setExpandedIndex(itemArray.length)
+    },
+    [collectionKey, onAdd, itemArray.length],
+  )
 
   // Build sortable values — use index as id since items may not have unique ids
   const sortableItems = itemArray.map((_, i) => i)
@@ -245,16 +294,14 @@ const BentoCollection = ({
         <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
           {label} <span className="text-white/20">({itemArray.length})</span>
         </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="xs"
-          onClick={handleAdd}
-          className="h-6 gap-1 px-2 text-[11px] text-cyan-300 hover:bg-cyan-300/10 hover:text-cyan-200"
-        >
-          <Plus className="size-3" />
-          Add
-        </Button>
+        <AddItemDialog
+          collectionKey={collectionKey}
+          itemFields={itemFields}
+          label={label}
+          open={addDialogOpen}
+          onOpenChange={setAddDialogOpen}
+          onAdd={handleAdd}
+        />
       </div>
 
       {itemArray.length === 0 && (
@@ -276,9 +323,11 @@ const BentoCollection = ({
             {itemArray.map((item, index) => {
               const isExpanded = expandedIndex === index
               const itemRecord = isPlainObject(item) ? item : {}
-              const title = titleField
-                ? String(itemRecord[titleField] || `${label} ${index + 1}`)
-                : `${label} ${index + 1}`
+              const title = extractItemTitle(
+                item,
+                titleField,
+                `${label} ${index + 1}`,
+              )
               const subtitle = subtitleField
                 ? String(itemRecord[subtitleField] || '')
                 : ''
@@ -295,7 +344,7 @@ const BentoCollection = ({
                     <div className="flex items-center gap-1 px-1.5 py-1">
                       <SortableItemHandle
                         className="grid size-5 shrink-0 place-items-center rounded text-white/25 transition-colors hover:bg-white/10 hover:text-white/60"
-                        aria-label={`Drag ${label} ${index + 1}`}
+                        aria-label={`Drag ${title}`}
                       >
                         <GripIcon />
                       </SortableItemHandle>
@@ -314,7 +363,7 @@ const BentoCollection = ({
                         )}
                       </button>
                       <DeleteWithConfirm
-                        itemLabel={`${label} ${index + 1}`}
+                        itemLabel={title}
                         onConfirm={() => void onRemove(collectionKey, index)}
                       />
                     </div>
@@ -343,6 +392,179 @@ const BentoCollection = ({
           <SortableOverlay />
         </Sortable>
       )}
+    </div>
+  )
+}
+
+// ─── Add item dialog with form ──────────────────────────────────────────────
+
+const AddItemDialog = ({
+  collectionKey,
+  itemFields,
+  label,
+  open,
+  onOpenChange,
+  onAdd,
+}: {
+  collectionKey: string
+  itemFields: CollectionField[]
+  label: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onAdd: (item: Record<string, unknown>) => void
+}) => {
+  const defaultItem = useMemo(
+    () => createDefaultItem({ key: collectionKey, itemFields }),
+    [collectionKey, itemFields],
+  )
+  const [formData, setFormData] = useState<Record<string, unknown>>(defaultItem)
+
+  // Reset form when dialog opens
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      setFormData(createDefaultItem({ key: collectionKey, itemFields }))
+    }
+    onOpenChange(newOpen)
+  }
+
+  const handleSubmit = () => {
+    onAdd(formData)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="xs"
+          className="h-6 gap-1 px-2 text-[11px]"
+        >
+          <Plus className="size-3" />
+          Add
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add {label}</DialogTitle>
+          <DialogDescription>
+            Fill in the fields below, then click Add to create the item.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid max-h-[50vh] grid-cols-2 gap-2 overflow-y-auto py-2">
+          {itemFields.map((field) => (
+            <FormField
+              key={field.key}
+              field={field}
+              value={formData[field.key]}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, [field.key]: value }))
+              }
+            />
+          ))}
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" size="sm">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button size="sm" onClick={handleSubmit}>
+            <Plus className="size-3.5" />
+            Add {label}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── Form field (for Add dialog) ────────────────────────────────────────────
+
+const FormField = ({
+  field,
+  value,
+  onChange,
+}: {
+  field: CollectionField
+  value: unknown
+  onChange: (value: unknown) => void
+}) => {
+  const placeholder = titleCase(field.key)
+  const isWide = field.type === 'array-string' || LONG_TEXT_KEYS.has(field.key)
+
+  if (field.type === 'boolean') {
+    return (
+      <label className="col-span-2 flex items-center gap-2 text-xs text-white/70">
+        <input
+          type="checkbox"
+          checked={value === true}
+          onChange={(e) => onChange(e.target.checked)}
+          className="size-3.5 accent-cyan-300"
+        />
+        {placeholder}
+      </label>
+    )
+  }
+
+  if (field.type === 'array-string') {
+    const text = Array.isArray(value)
+      ? (value as string[]).join('\n')
+      : typeof value === 'string'
+        ? value
+        : ''
+    return (
+      <div className={cn('flex flex-col gap-0.5', isWide && 'col-span-2')}>
+        <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+          {placeholder}
+        </label>
+        <textarea
+          value={text}
+          onChange={(e) =>
+            onChange(
+              e.target.value.split('\n').filter((line) => line.trim() !== ''),
+            )
+          }
+          rows={3}
+          placeholder={`${placeholder} (one per line)`}
+          className="w-full resize-none rounded-md border border-white/10 bg-black/20 px-2 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
+        />
+      </div>
+    )
+  }
+
+  if (field.type === 'number') {
+    return (
+      <div className="flex flex-col gap-0.5">
+        <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+          {placeholder}
+        </label>
+        <input
+          type="number"
+          value={typeof value === 'number' ? value : ''}
+          onChange={(e) => {
+            const n = Number(e.target.value)
+            onChange(Number.isFinite(n) ? n : 0)
+          }}
+          placeholder={placeholder}
+          className="w-full rounded-md border border-white/10 bg-black/20 px-2 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className={cn('flex flex-col gap-0.5', isWide && 'col-span-2')}>
+      <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+        {placeholder}
+      </label>
+      <input
+        type="text"
+        value={typeof value === 'string' ? value : ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-md border border-white/10 bg-black/20 px-2 py-1.5 text-xs text-white outline-none transition-colors placeholder:text-white/25 focus:border-cyan-300/40"
+      />
     </div>
   )
 }
@@ -407,7 +629,7 @@ const GripIcon = () => (
   </svg>
 )
 
-// ─── Field input (inside collection items) ──────────────────────────────────
+// ─── Field input (inside collection items — inline editing) ─────────────────
 
 const FieldInput = ({
   field,

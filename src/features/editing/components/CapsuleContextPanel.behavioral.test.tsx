@@ -127,9 +127,16 @@ describe('CapsuleContextPanel', () => {
       }),
     )
 
-    const addButtons = screen.getAllByRole('button', { name: /Add/ })
+    // Click Add button — opens a dialog form
+    const addBtn = screen.getAllByRole('button', { name: /Add/ })[0]!
     await act(async () => {
-      fireEvent.click(addButtons[0]!)
+      fireEvent.click(addBtn)
+    })
+
+    // Dialog should be open — click the submit button "Add Images"
+    const submitBtn = screen.getByRole('button', { name: /Add Images/ })
+    await act(async () => {
+      fireEvent.click(submitBtn)
     })
 
     expect(mockActions.addItem).toHaveBeenCalledWith('images', {
@@ -236,8 +243,8 @@ describe('CapsuleContextPanel', () => {
       }),
     )
 
-    // Find the trash button (title="Remove Images 1")
-    const trashButton = screen.getByTitle('Remove Images 1')
+    // Find the trash button (title="Remove A" — uses actual item title)
+    const trashButton = screen.getByTitle('Remove A')
 
     await act(async () => {
       fireEvent.click(trashButton)
@@ -504,9 +511,9 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
       }),
     )
 
-    // Each item should have a drag handle with aria-label
-    const handle1 = screen.getByLabelText('Drag Images 1')
-    const handle2 = screen.getByLabelText('Drag Images 2')
+    // Each item should have a drag handle with aria-label (uses item title)
+    const handle1 = screen.getByLabelText('Drag A')
+    const handle2 = screen.getByLabelText('Drag B')
     expect(handle1).toBeTruthy()
     expect(handle2).toBeTruthy()
   })
@@ -528,7 +535,7 @@ describe('CapsuleContextPanel — edge cases & interactions', () => {
     // the Sortable component is wired by checking drag handles exist
     // and the hook's reorderItem function is the one passed to onMove.
     // The actual drag behavior is covered by @dnd-kit's own tests.
-    expect(screen.getByLabelText('Drag Images 1')).toBeTruthy()
+    expect(screen.getByLabelText('Drag A')).toBeTruthy()
     expect(mockActions.reorderItem).not.toHaveBeenCalled()
   })
 
