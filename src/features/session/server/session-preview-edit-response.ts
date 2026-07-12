@@ -113,25 +113,15 @@ const errorResponse = (error: unknown) => {
     return json({ error: error.message }, { status: 400 })
   }
 
-  const message = getErrorMessage(error)
-  const convexPayload = getConvexErrorPayload(message)
-  const responseMessage =
-    typeof convexPayload?.message === 'string' && convexPayload.message.trim()
-      ? convexPayload.message
-      : message
+  if (isInvalidSessionIdError(error)) {
+    return json({ error: 'Session not found' }, { status: 404 })
+  }
 
-  return json(
-    {
-      error: responseMessage,
-    },
-    {
-      status: isInvalidSessionIdError(error)
-        ? 404
-        : isTextNotFoundError(error)
-          ? 409
-          : 500,
-    },
-  )
+  if (isTextNotFoundError(error)) {
+    return json({ error: 'Selected text was not found' }, { status: 409 })
+  }
+
+  return json({ error: 'Preview edit request failed' }, { status: 500 })
 }
 
 export const createPreviewHistoryResponse = async (

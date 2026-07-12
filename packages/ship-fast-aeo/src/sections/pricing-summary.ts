@@ -19,7 +19,7 @@ export function renderPricingSummarySection(section: SectionLike): string {
                 section.items || [],
                 (item) => `
                   <article class="pricing-card" data-reveal>
-                    <h3>${escapeHtml(item.title || '')}</h3>
+                    <h3>${escapeHtml(item.title || item.label || '')}</h3>
                     <div class="price">${escapeHtml(item.price || '')}</div>
                     <p>${escapeHtml(item.body || item.description || '')}</p>
                     <ul>

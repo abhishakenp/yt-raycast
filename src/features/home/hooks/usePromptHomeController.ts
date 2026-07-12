@@ -68,6 +68,17 @@ const withTimeout = async <T>(
     )
   })
 
+const isRetryableCreateSessionError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false
+  return (
+    error.message === 'create_session_timeout' ||
+    error.name === 'NetworkError' ||
+    /\b(?:network|failed to fetch|fetch failed|temporarily unavailable)\b/i.test(
+      error.message,
+    )
+  )
+}
+
 const createSessionWithRetry = async <Payload, Result>(
   createSession: (payload: Payload) => Promise<Result>,
   payload: Payload,
@@ -82,7 +93,7 @@ const createSessionWithRetry = async <Payload, Result>(
       )
     } catch (error) {
       lastError = error
-      if (attempt === 1) break
+      if (attempt === 1 || !isRetryableCreateSessionError(error)) break
       await delay(CREATE_SESSION_RETRY_DELAY_MS)
     }
   }
