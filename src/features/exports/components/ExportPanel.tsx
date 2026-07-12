@@ -239,10 +239,11 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     }
   }
 
-  const visibleTargets =
+  const hasResolvedTargets =
     exportTargets?.targets && exportTargets.targets.length > 0
-      ? exportTargets.targets
-      : loadingTargets
+  const visibleTargets = hasResolvedTargets
+    ? exportTargets.targets
+    : loadingTargets
 
   return (
     <div className="grid gap-3">
@@ -296,7 +297,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
             <button
               className="group/export grid min-h-16 w-full grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] p-2.5 text-left transition-colors hover:border-white/14 hover:bg-white/[0.075] disabled:cursor-wait disabled:opacity-60"
               data-export-target={item.target}
-              disabled={downloadingTarget !== undefined}
+              disabled={!hasResolvedTargets || downloadingTarget !== undefined}
               key={item.target}
               onClick={() => void runTargetAction(item)}
               style={{ backgroundImage: progressBackground }}

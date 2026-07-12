@@ -840,4 +840,21 @@ describe('ExportPanel behavioral', () => {
     expect(view.queryByText(/Download failed/)).toBeNull()
     expect(view.queryByText('Payment required')).toBeNull()
   })
+
+  it('keeps every loading target disabled until its current artifact status resolves', () => {
+    setLoading()
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+
+    for (const label of ['HTML', 'React', 'Next.js', 'Lakebed']) {
+      const button = view.getByText(label).closest('button')
+      expect(button).not.toBeNull()
+      expect(button?.hasAttribute('disabled')).toBe(true)
+      if (button) fireEvent.click(button)
+    }
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(exportTargetsState.ensureExportArtifact).not.toHaveBeenCalled()
+  })
 })
