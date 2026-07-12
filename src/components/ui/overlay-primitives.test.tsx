@@ -85,9 +85,11 @@ describe('overlay UI primitives', () => {
       'popover-title',
     )
     expect(screen.getByText('Choose a visual preset.')).toBeTruthy()
-    expect(
-      document.querySelector('[data-slot="popover-content"]'),
-    ).not.toBeNull()
+    const content = document.querySelector('[data-slot="popover-content"]')
+    expect(content).not.toBeNull()
+    expect(content?.classList.contains('bg-popover/50')).toBe(true)
+    expect(content?.classList.contains('backdrop-blur-md')).toBe(true)
+    expect(content?.classList.contains('backdrop-blur-sm')).toBe(false)
   })
 
   it('renders controlled tooltip content and links it to the trigger description', () => {
