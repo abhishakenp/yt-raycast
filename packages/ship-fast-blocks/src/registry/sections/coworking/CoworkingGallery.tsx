@@ -8,6 +8,10 @@ import { cn } from '#/lib/utils.ts'
 import { GridField } from '#/section-kit/motion.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  HoverAccordion,
+  HoverAccordionPanel,
+} from '#/section-kit/HoverAccordion.tsx'
 
 /**
  * CoworkingGallery — immersive space tour for a coworking or shared-
@@ -164,24 +168,18 @@ export const CoworkingGallery = defineCapsule({
           {accordion ? (
             <>
               {/* Desktop: hover-accordion row — the hovered panel eases wide. */}
-              <div
-                className="mt-14 hidden h-[30rem] gap-4 lg:flex"
-                onMouseLeave={() => setExpanded(null)}
+              <HoverAccordion
+                className="mt-14 hidden h-[30rem] lg:flex"
+                onExpandedChange={setExpanded}
               >
                 {images.map((image, index) => {
                   const isExpanded = expanded === index
                   return (
-                    <div
+                    <HoverAccordionPanel
                       key={`${image.alt}-${index}`}
+                      expanded={isExpanded}
                       onMouseEnter={() => setExpanded(index)}
                       onFocus={() => setExpanded(index)}
-                      className="group relative h-full min-w-0 overflow-hidden rounded-3xl ring-1 ring-border/60 hover:ring-primary/40"
-                      style={{
-                        flexGrow: isExpanded ? 3 : 1,
-                        flexBasis: 0,
-                        transition:
-                          'flex-grow 700ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 500ms ease',
-                      }}
                     >
                       <Image
                         alt={image.alt}
@@ -191,10 +189,10 @@ export const CoworkingGallery = defineCapsule({
                       />
                       {overlay}
                       {captionPlate(image.caption, isExpanded)}
-                    </div>
+                    </HoverAccordionPanel>
                   )
                 })}
-              </div>
+              </HoverAccordion>
 
               {/* Small screens: calm 2-col grid of the same tiles. */}
               <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">

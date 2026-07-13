@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { FilterChip, ResponsiveGrid } from '#/section-kit/index.ts'
+import {
+  ListingCard,
+  ListingCardBadge,
+  ListingCardMedia,
+  ListingCardSpecRow,
+} from '#/section-kit/ListingCard.tsx'
 import type { PropertyListingCatalogInput } from './property-listing-lakebed.ts'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
@@ -186,16 +192,16 @@ export const PropertyListingGallery = defineCapsule({
 
           <ResponsiveGrid cols="1-2-3" gap="md" className="mt-10">
             {matchingListings.map((listing, index) => (
-              <article
+              <ListingCard
                 key={`${listing.address}-${index}`}
+                variant="selectable-card"
                 className={cn(
-                  'group flex flex-col overflow-hidden rounded-2xl border bg-card',
                   selectedAddress === listing.address
                     ? 'border-primary shadow-md'
                     : 'border-border',
                 )}
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <ListingCardMedia>
                   <Image
                     alt={`listing photo for ${listing.address}`}
                     w={800}
@@ -204,9 +210,9 @@ export const PropertyListingGallery = defineCapsule({
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {listing.tag ? (
-                    <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-background/90 px-3 py-1 text-xs font-medium text-foreground backdrop-blur">
+                    <ListingCardBadge variant="glass">
                       {listing.tag}
-                    </span>
+                    </ListingCardBadge>
                   ) : null}
                   <PropertyListingSaveButton
                     lakebed={lakebed}
@@ -223,7 +229,7 @@ export const PropertyListingGallery = defineCapsule({
                   >
                     <span aria-hidden="true">♥</span>
                   </PropertyListingSaveButton>
-                </div>
+                </ListingCardMedia>
                 <button
                   type="button"
                   aria-pressed={selectedAddress === listing.address}
@@ -237,13 +243,13 @@ export const PropertyListingGallery = defineCapsule({
                   <div className="text-lg font-bold text-foreground">
                     {listing.price}
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                    <span>{listing.beds} bd</span>
-                    <span aria-hidden="true" className="h-3 w-px bg-border" />
-                    <span>{listing.baths} ba</span>
-                    <span aria-hidden="true" className="h-3 w-px bg-border" />
-                    <span>{listing.sqft} sqft</span>
-                  </div>
+                  <ListingCardSpecRow
+                    specs={[
+                      `${listing.beds} bd`,
+                      `${listing.baths} ba`,
+                      `${listing.sqft} sqft`,
+                    ]}
+                  />
                   <p className="mt-3 text-sm text-muted-foreground">
                     {listing.address}
                   </p>
@@ -265,7 +271,7 @@ export const PropertyListingGallery = defineCapsule({
                     Contact agent
                   </PropertyListingInquiryButton>
                 </div>
-              </article>
+              </ListingCard>
             ))}
             {!matchingListings.length ? (
               <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">

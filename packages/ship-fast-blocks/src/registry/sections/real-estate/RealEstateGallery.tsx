@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  ListingCard,
+  ListingCardBadge,
+  ListingCardMedia,
+  ListingCardSpecRow,
+} from '#/section-kit/ListingCard.tsx'
 
 /**
  * RealEstateGallery — featured-listings grid for a premium brokerage. A
@@ -113,11 +119,8 @@ export const RealEstateGallery = defineCapsule({
 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-16 lg:grid-cols-3">
             {listings.map((listing, index) => (
-              <article
-                key={`${listing.address}-${index}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden">
+              <ListingCard key={`${listing.address}-${index}`}>
+                <ListingCardMedia>
                   <Image
                     alt={`exterior photo of the home at ${listing.address}`}
                     w={800}
@@ -126,22 +129,20 @@ export const RealEstateGallery = defineCapsule({
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {listing.badge ? (
-                    <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                      {listing.badge}
-                    </span>
+                    <ListingCardBadge>{listing.badge}</ListingCardBadge>
                   ) : null}
-                </div>
+                </ListingCardMedia>
                 <div className="flex flex-1 flex-col p-5">
                   <div className="text-xl font-semibold text-foreground">
                     {listing.price}
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                    <span>{listing.beds} bd</span>
-                    <span aria-hidden="true" className="h-3 w-px bg-border" />
-                    <span>{listing.baths} ba</span>
-                    <span aria-hidden="true" className="h-3 w-px bg-border" />
-                    <span>{listing.sqft} sqft</span>
-                  </div>
+                  <ListingCardSpecRow
+                    specs={[
+                      `${listing.beds} bd`,
+                      `${listing.baths} ba`,
+                      `${listing.sqft} sqft`,
+                    ]}
+                  />
                   <p className="mt-3 text-sm text-muted-foreground">
                     {listing.address}
                   </p>
@@ -153,7 +154,7 @@ export const RealEstateGallery = defineCapsule({
                     {viewLabel}
                   </button>
                 </div>
-              </article>
+              </ListingCard>
             ))}
           </div>
         </div>
