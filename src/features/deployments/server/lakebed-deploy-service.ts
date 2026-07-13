@@ -31,6 +31,13 @@ const packageNodeModules = join(packageDir, 'node_modules')
 const sourceNamespace = 'lakebed-source'
 const lakebedServerNamespace = 'lakebed-server'
 const endpointMethodPattern = /^[A-Z0-9!#$%&'*+.^_`|~-]+$/
+const lakebedSchemaNamePattern = /^[A-Za-z][A-Za-z0-9_]*$/
+const lakebedReservedMetadataFields = new Set(['id', 'createdAt', 'updatedAt'])
+const lakebedDatabaseManifestVersion = {
+  apiVersion: 1,
+  indexCodecVersion: 1,
+  maxIndexKeyBytes: 2048,
+} as const
 const require = createRequire(import.meta.url)
 
 const lakebedServerModuleSource = `
@@ -548,6 +555,15 @@ function serializeSchema(schema: JsonRecord | undefined): {
   const diagnostics: Diagnostic[] = []
 
   for (const [tableName, table] of Object.entries(schema ?? {})) {
+    if (!lakebedSchemaNamePattern.test(tableName)) {
+      diagnostics.push(
+        diagnostic(
+          'server/index.ts',
+          `Table name ${tableName} must start with a letter and contain only letters, numbers, and underscores.`,
+        ),
+      )
+      continue
+    }
     if (
       !isPlainObject(table) ||
       table.kind !== 'table' ||
@@ -564,6 +580,18 @@ function serializeSchema(schema: JsonRecord | undefined): {
 
     const fields: JsonRecord = {}
     for (const [fieldName, field] of Object.entries(table.fields)) {
+      if (
+        !lakebedSchemaNamePattern.test(fieldName) ||
+        lakebedReservedMetadataFields.has(fieldName)
+      ) {
+        diagnostics.push(
+          diagnostic(
+            'server/index.ts',
+            `Field name ${tableName}.${fieldName} is invalid or reserved by Lakebed.`,
+          ),
+        )
+        continue
+      }
       if (
         !isPlainObject(field) ||
         (field.kind !== 'string' && field.kind !== 'boolean')
@@ -936,6 +964,7 @@ export async function buildLakebedAnonymousDeployRequest(
     path,
   }))
   const sourceSnapshotHash = sha256(stableStringify(sourceManifest) ?? '')
+  const schemaHash = sha256(stableStringify(schema) ?? '')
   const artifact: JsonRecord = {
     name: app.name ?? 'Lakebed Capsule',
     client: {
@@ -947,10 +976,16 @@ export async function buildLakebedAnonymousDeployRequest(
       compiler: '0.1.0',
       lakebed: LAKEBED_VERSION,
     },
+    database: {
+      apiVersion: lakebedDatabaseManifestVersion.apiVersion,
+      indexCodecVersion: lakebedDatabaseManifestVersion.indexCodecVersion,
+      schemaHash,
+    },
     deployTarget: 'anonymous-source',
     format: ANONYMOUS_ARTIFACT_FORMAT,
     limits: {
       instructionBudget: DEFAULT_ANONYMOUS_LIMITS.instructionBudget,
+      maxIndexKeyBytes: lakebedDatabaseManifestVersion.maxIndexKeyBytes,
       maxRowsReturned: DEFAULT_ANONYMOUS_LIMITS.rowsReturned,
       maxValueBytes: DEFAULT_ANONYMOUS_LIMITS.maxValueBytes,
     },

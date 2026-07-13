@@ -5206,6 +5206,13 @@ export function App() {
 // rows are projected to declared fields, protocol tables are inaccessible to
 // caller seed data, and a durable prepared receipt makes partially completed
 // deletes recoverable without pretending Lakebed provides transaction rollback.
+const lakebedSyncProtocolTableNames = {
+  outbox: 'syncInternalOutboxV1',
+  receipts: 'syncInternalReceiptsV1',
+  tombstones: 'syncInternalTombstonesV1',
+  versions: 'syncInternalVersionsV1',
+} as const
+
 export function injectSyncEndpoint(
   endpointsSource: string,
   tableFields: Map<string, string[]>,
@@ -5234,6 +5241,7 @@ export function injectSyncEndpoint(
     const configuredSyncSecret = ${configuredSecretSource};
     const receiverIdentity = ${JSON.stringify(receiverIdentity)};
     const fieldMap = ${fieldMap};
+    const protocolTableNames = ${JSON.stringify(lakebedSyncProtocolTableNames)};
     const protocolFieldMap = {
       receipts: ["idempotencyKey", "intent", "origin", "recordedAt", "status", "target", "version"],
       tombstones: ["active", "deletedAt", "deletedVersion", "stateKey"],
@@ -5375,9 +5383,9 @@ export function injectSyncEndpoint(
 
     function protocolTablesAvailable(ctx) {
       return Boolean(
-        ctx.db.__syncInternalReceiptsV1 &&
-        ctx.db.__syncInternalVersionsV1 &&
-        ctx.db.__syncInternalTombstonesV1,
+        ctx.db[protocolTableNames.receipts] &&
+        ctx.db[protocolTableNames.versions] &&
+        ctx.db[protocolTableNames.tombstones],
       );
     }
 
@@ -5401,7 +5409,7 @@ export function injectSyncEndpoint(
       if (!protocolTablesAvailable(ctx)) {
         return compatibilityState(ctx).receipts[idempotencyKey] || null;
       }
-      return ctx.db.__syncInternalReceiptsV1
+      return ctx.db[protocolTableNames.receipts]
         .where("idempotencyKey", idempotencyKey)
         .all()
         .at(0) || null;
@@ -5420,7 +5428,7 @@ export function injectSyncEndpoint(
         compatibilityState(ctx).receipts[payload.idempotencyKey] = receipt;
         return receipt;
       }
-      return ctx.db.__syncInternalReceiptsV1.insert({
+      return ctx.db[protocolTableNames.receipts].insert({
         idempotencyKey: payload.idempotencyKey,
         intent,
         origin: payload.origin,
@@ -5438,7 +5446,7 @@ export function injectSyncEndpoint(
         receipt.status = "committed";
         return;
       }
-      ctx.db.__syncInternalReceiptsV1.update(receipt.id, {
+      ctx.db[protocolTableNames.receipts].update(receipt.id, {
         recordedAt: new Date().toISOString(),
         status: "committed",
       });
@@ -5448,7 +5456,7 @@ export function injectSyncEndpoint(
       if (!protocolTablesAvailable(ctx)) {
         return compatibilityState(ctx).versions[stateKey];
       }
-      const record = ctx.db.__syncInternalVersionsV1.where("stateKey", stateKey).all().at(0);
+      const record = ctx.db[protocolTableNames.versions].where("stateKey", stateKey).all().at(0);
       const version = record ? Number(record.version) : NaN;
       return Number.isSafeInteger(version) ? version : undefined;
     }
@@ -5503,20 +5511,20 @@ export function injectSyncEndpoint(
 
       for (const action of actions) {
         protocolUpsert(
-          ctx.db.__syncInternalVersionsV1,
+          ctx.db[protocolTableNames.versions],
           "stateKey",
           action.stateKey,
           { stateKey: action.stateKey, version: String(action.change.version) },
           protocolFieldMap.versions,
           undo,
         );
-        const existingTombstone = ctx.db.__syncInternalTombstonesV1
+        const existingTombstone = ctx.db[protocolTableNames.tombstones]
           .where("stateKey", action.stateKey)
           .all()
           .at(0);
         if (action.change.operation === "delete") {
           protocolUpsert(
-            ctx.db.__syncInternalTombstonesV1,
+            ctx.db[protocolTableNames.tombstones],
             "stateKey",
             action.stateKey,
             {
@@ -5534,11 +5542,11 @@ export function injectSyncEndpoint(
             protocolFieldMap.tombstones,
             true,
           );
-          ctx.db.__syncInternalTombstonesV1.update(existingTombstone.id, {
+          ctx.db[protocolTableNames.tombstones].update(existingTombstone.id, {
             active: "false",
           });
           undo.push(() =>
-            ctx.db.__syncInternalTombstonesV1.update(existingTombstone.id, previous),
+            ctx.db[protocolTableNames.tombstones].update(existingTombstone.id, previous),
           );
         }
       }
@@ -5557,7 +5565,7 @@ export function injectSyncEndpoint(
 
     function tombstoneCount(ctx) {
       return protocolTablesAvailable(ctx)
-        ? ctx.db.__syncInternalTombstonesV1
+        ? ctx.db[protocolTableNames.tombstones]
             .all()
             .filter((tombstone) => tombstone.active !== "false").length
         : Object.keys(compatibilityState(ctx).tombstones).length;
@@ -5594,7 +5602,7 @@ export function injectSyncEndpoint(
     }
 
     function handleOutboxRequest(ctx, payload) {
-      const outbox = ctx.db.__syncInternalOutboxV1;
+      const outbox = ctx.db[protocolTableNames.outbox];
       if (!outbox) return json({ error: "outbox storage unavailable" }, { status: 503 });
 
       if (payload.action === "drain") {
@@ -5970,7 +5978,7 @@ function renderServerIndex(
         'tombstone',
         'version',
       ],
-      name: '__syncInternalOutboxV1',
+      name: lakebedSyncProtocolTableNames.outbox,
     },
     {
       fields: [
@@ -5982,15 +5990,15 @@ function renderServerIndex(
         'target',
         'version',
       ],
-      name: '__syncInternalReceiptsV1',
+      name: lakebedSyncProtocolTableNames.receipts,
     },
     {
       fields: ['stateKey', 'version'],
-      name: '__syncInternalVersionsV1',
+      name: lakebedSyncProtocolTableNames.versions,
     },
     {
       fields: ['active', 'deletedAt', 'deletedVersion', 'stateKey'],
-      name: '__syncInternalTombstonesV1',
+      name: lakebedSyncProtocolTableNames.tombstones,
     },
   ]
   for (const protocolTable of protocolTables) {
@@ -6034,7 +6042,9 @@ ${protocolTable.fields.map((field) => `    ${field}: string(),`).join('\n')}
 }`,
     ),
   )
-  const internalTableNames = new Set(protocolTables.map((table) => table.name))
+  const internalTableNames = new Set<string>(
+    protocolTables.map((table) => table.name),
+  )
   const inboundTableFields = new Map(
     [...renderedSchema.tableFields].filter(
       ([tableName]) => !internalTableNames.has(tableName),
@@ -6075,6 +6085,7 @@ ${helperSources}
 
 const syncMetadata = ${JSON.stringify(syncMetadata, null, 2)};
 const deploymentIdentity = ${JSON.stringify(receiverIdentity)};
+const syncProtocolTableNames = ${JSON.stringify(lakebedSyncProtocolTableNames)};
 
 // Lakebed 0.0.25 serializes mutations but does not roll back failed writes.
 // Each outbound event is therefore persisted as a quarantined write-ahead
@@ -6133,7 +6144,7 @@ function reportSyncPersistenceFailure(ctx, message, error) {
 
 function reserveSyncOutboxVersion(ctx, changeKey) {
   const stateKey = "outbox::" + changeKey;
-  const versions = ctx.db.__syncInternalVersionsV1;
+  const versions = ctx.db[syncProtocolTableNames.versions];
   const existing = versions.where("stateKey", stateKey).all().at(0);
   const previous = existing ? Number(existing.version) : 0;
   const version = (Number.isSafeInteger(previous) ? previous : 0) + 1;
@@ -6160,7 +6171,7 @@ function cancelSyncOutboxChangeEventsBeforeBusiness(ctx, intents, error) {
   const lastError = error instanceof Error ? error.message : String(error);
   for (const intent of intents) {
     try {
-      ctx.db.__syncInternalOutboxV1.update(intent.outboxId, {
+      ctx.db[syncProtocolTableNames.outbox].update(intent.outboxId, {
         lastError: lastError.slice(0, 1000),
         status: "cancelled",
       });
@@ -6182,7 +6193,7 @@ function quarantineIdempotencyKeyVersionedSyncOutboxChangeEvents(
   const lastError = error instanceof Error ? error.message : String(error);
   for (const intent of intents) {
     try {
-      ctx.db.__syncInternalOutboxV1.update(intent.outboxId, {
+      ctx.db[syncProtocolTableNames.outbox].update(intent.outboxId, {
         lastError: ("business-error:" + lastError).slice(0, 1000),
         status: "prepared",
       });
@@ -6240,7 +6251,7 @@ function prepareIdempotencyKeyVersionedSyncOutboxChangeEvents(
     };
     let inserted = null;
     try {
-      inserted = ctx.db.__syncInternalOutboxV1.insert({
+      inserted = ctx.db[syncProtocolTableNames.outbox].insert({
         changeKey,
         data: safeSerializeSyncValue(changeEvent.data),
         deletedAt,
@@ -6263,7 +6274,7 @@ function prepareIdempotencyKeyVersionedSyncOutboxChangeEvents(
     } catch (error) {
       if (inserted && inserted.id != null) {
         try {
-          ctx.db.__syncInternalOutboxV1.update(inserted.id, {
+          ctx.db[syncProtocolTableNames.outbox].update(inserted.id, {
             lastError: "prepare failed",
             status: "cancelled",
           });
@@ -6300,7 +6311,7 @@ function commitIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx, intents, resul
     const payload = safeSerializeSyncValue({ args: intent.args, result });
     const changeEvent = { ...intent.changeEvent, data, payload };
     try {
-      ctx.db.__syncInternalOutboxV1.update(intent.outboxId, {
+      ctx.db[syncProtocolTableNames.outbox].update(intent.outboxId, {
         data: safeSerializeSyncValue(data),
         event: safeSerializeSyncValue(changeEvent),
         lastError: "",
