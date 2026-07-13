@@ -51,6 +51,55 @@ export type LakebedDeploymentFailureInput = {
 
 export type LakebedPreparedSourceKind = 'html' | 'openui'
 
+function requireNonBlank(value: string | undefined, field: string): string {
+  if (value === undefined || !value.trim()) {
+    throw new ConvexError({
+      code: 'INVALID_LAKEBED_DEPLOYMENT',
+      message: `${field} must not be blank`,
+    })
+  }
+  return value.trim()
+}
+
+function requireWebUrl(value: string | undefined, field: string): void {
+  const normalized = requireNonBlank(value, field)
+  try {
+    const parsed = new URL(normalized)
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      throw new Error('unsupported protocol')
+    }
+  } catch {
+    throw new ConvexError({
+      code: 'INVALID_LAKEBED_DEPLOYMENT',
+      message: `${field} must be a valid web URL`,
+    })
+  }
+}
+
+function requireMeasurement(value: number, field: string): void {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new ConvexError({
+      code: 'INVALID_LAKEBED_DEPLOYMENT',
+      message: `${field} must be a non-negative whole number`,
+    })
+  }
+}
+
+function validateLakebedDeploymentSuccess(
+  args: LakebedDeploymentSuccessInput,
+): void {
+  requireWebUrl(args.url, 'url')
+  requireNonBlank(args.deployId, 'deployId')
+  if (args.claimUrl !== undefined) requireWebUrl(args.claimUrl, 'claimUrl')
+  requireNonBlank(args.artifactHash, 'artifactHash')
+  requireNonBlank(args.clientBundleHash, 'clientBundleHash')
+  requireMeasurement(args.previewVersion, 'previewVersion')
+  requireMeasurement(args.clientBundleBytes, 'clientBundleBytes')
+  requireMeasurement(args.requestBodyBytes, 'requestBodyBytes')
+  requireMeasurement(args.serverBundleBytes, 'serverBundleBytes')
+  requireMeasurement(args.sourceFileCount, 'sourceFileCount')
+}
+
 function readyStatus(): 'ready' {
   return 'ready'
 }
@@ -562,6 +611,7 @@ export async function recordLakebedSessionDeploymentSuccess(
   ctx: MutationCtx,
   args: LakebedDeploymentSuccessInput,
 ) {
+  validateLakebedDeploymentSuccess(args)
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -579,6 +629,26 @@ export async function recordLakebedSessionDeploymentSuccess(
     session,
     args.requestedSlug,
   )
+  if (existingDeployment !== null) {
+    const persistedVersion = existingDeployment.previewVersion ?? -1
+    const pendingVersion = existingDeployment.pendingPreviewVersion ?? -1
+    const newestVersion = Math.max(persistedVersion, pendingVersion)
+    const isStaleCompletion = args.previewVersion < newestVersion
+    const isReadyReplay =
+      existingDeployment.status === 'ready' &&
+      args.previewVersion <= persistedVersion
+
+    if (isStaleCompletion || isReadyReplay) {
+      return {
+        sessionId: args.sessionId,
+        slug: existingDeployment.slug,
+        url: existingDeployment.url,
+        status: existingDeployment.status,
+        provider: existingDeployment.provider,
+        deployId: existingDeployment.lakebedDeployId ?? args.deployId,
+      }
+    }
+  }
   const stableUrl =
     existingDeployment?.provider === 'lakebed' && existingDeployment.url
       ? existingDeployment.url
@@ -668,6 +738,7 @@ export async function recordLakebedSessionDeploymentFailure(
   ctx: MutationCtx,
   args: LakebedDeploymentFailureInput,
 ) {
+  requireNonBlank(args.errorMessage, 'errorMessage')
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -680,6 +751,23 @@ export async function recordLakebedSessionDeploymentFailure(
     args.requestedSlug,
   )
   const url = existingDeployment?.url ?? createDeploymentUrl(slug)
+
+  if (
+    existingDeployment?.status === 'ready' &&
+    existingDeployment.pendingPreviewVersion === undefined
+  ) {
+    return {
+      sessionId: args.sessionId,
+      slug: existingDeployment.slug,
+      status: readyStatus(),
+    }
+  }
+  if (
+    existingDeployment?.status === 'failed' &&
+    existingDeployment.errorMessage === args.errorMessage
+  ) {
+    return { sessionId: args.sessionId, slug, status: failedStatus() }
+  }
 
   existingDeployment === null
     ? await ctx.db.insert('deployments', {
