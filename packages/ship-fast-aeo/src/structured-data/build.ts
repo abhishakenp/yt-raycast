@@ -86,8 +86,6 @@ function isProductPage(
   page: SitePageLike | null | undefined,
   _siteSpec: SiteSpecLike | null | undefined,
 ) {
-  const route = normalizePath(page?.route || '/')
-  if (route.includes('/product')) return true
   return (page?.sections || []).some(
     (section) => section.type === 'product-detail',
   )
@@ -229,6 +227,7 @@ export function buildStructuredData(
     const datePublished = String(
       pageSeo.datePublished || pageSeo.date || pageSeo.publishedAt || '',
     ).trim()
+    const generatedTimestamp = String(siteSpec?.generatedTimestamp || '').trim()
     pushCleanEntry(
       entries,
       cleanObject({
@@ -241,7 +240,8 @@ export function buildStructuredData(
           '@type': 'Organization',
           name: orgName || seo.siteName,
         },
-        datePublished: datePublished || new Date().toISOString(),
+        datePublished:
+          datePublished || generatedTimestamp || new Date().toISOString(),
       }),
     )
   }
