@@ -142,14 +142,30 @@ function inferKindHint(haystack: string): { kind: string; keywords: string[] } {
   return { kind: bestKind, keywords: matched.slice(0, 8) }
 }
 
-type DomEl = {
-  textContent: string | null
-  getAttribute(name: string): string | null
+type DomQueryable = {
   querySelector(sel: string): DomEl | null
   querySelectorAll(sel: string): ArrayLike<DomEl>
 }
 
-function all(node: DomEl | null, sel: string): DomEl[] {
+type DomEl = DomQueryable & {
+  textContent: string | null
+  tagName: string
+  nextElementSibling: DomEl | null
+  getAttribute(name: string): string | null
+}
+
+function isDomQueryable(node: unknown): node is DomQueryable {
+  return (
+    node != null &&
+    typeof node === 'object' &&
+    'querySelector' in node &&
+    typeof node.querySelector === 'function' &&
+    'querySelectorAll' in node &&
+    typeof node.querySelectorAll === 'function'
+  )
+}
+
+function all(node: DomQueryable | null, sel: string): DomEl[] {
   if (!node) return []
   try {
     return Array.from(node.querySelectorAll(sel))
@@ -178,9 +194,10 @@ export function buildCloneBrief(capture: CapturedPage): string {
   const url = capture?.url || ''
   const hostBrand = hostOf(url)
 
-  let document: DomEl | null = null
+  let document: DomQueryable | null = null
   try {
-    document = parseHTML(capture?.html || '').document as unknown as DomEl
+    const doc = parseHTML(capture?.html || '').document
+    if (isDomQueryable(doc)) document = doc
   } catch {
     document = null
   }
@@ -240,14 +257,10 @@ export function buildCloneBrief(capture: CapturedPage): string {
       const headingText = clean(h.textContent)
       if (!headingText) continue
       let lead = ''
-      let cursor: DomEl | null =
-        (h as unknown as { nextElementSibling?: DomEl | null })
-          .nextElementSibling ?? null
+      let cursor: DomEl | null = h.nextElementSibling ?? null
       let hops = 0
       while (cursor && hops < 6) {
-        const tag = (
-          cursor as unknown as { tagName?: string }
-        ).tagName?.toLowerCase()
+        const tag = cursor.tagName?.toLowerCase()
         if (tag === 'p') {
           lead = clean(cursor.textContent)
           if (lead) break
@@ -262,9 +275,7 @@ export function buildCloneBrief(capture: CapturedPage): string {
             if (lead) break
           }
         }
-        cursor =
-          (cursor as unknown as { nextElementSibling?: DomEl | null })
-            .nextElementSibling ?? null
+        cursor = cursor.nextElementSibling ?? null
         hops++
       }
       sectionLines.push({
