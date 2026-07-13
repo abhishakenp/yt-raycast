@@ -231,7 +231,7 @@ async function getReadableSessionDataDoc(
   capsule: string,
   actor: SessionActor | null,
 ) {
-  if (!actor) return null
+  if (!actor) return await getSessionDataDoc(ctx, sessionId, capsule)
 
   return (
     (await getActorSessionDataDoc(ctx, sessionId, capsule, actor)) ??
@@ -346,15 +346,18 @@ export const mergeSessionData = mutation({
     )
 
     const now = Date.now()
-    const doc =
-      (await getActorSessionDataDoc(
-        ctx,
-        args.sessionId,
-        args.capsule,
-        actor,
-      )) ?? (await getSessionDataDoc(ctx, args.sessionId, args.capsule))
+    const doc = await getActorSessionDataDoc(
+      ctx,
+      args.sessionId,
+      args.capsule,
+      actor,
+    )
+    const sharedDoc =
+      doc === null
+        ? await getSessionDataDoc(ctx, args.sessionId, args.capsule)
+        : null
     const data = {
-      ...(doc?.data ?? {}),
+      ...(doc?.data ?? sharedDoc?.data ?? {}),
       ...args.patch,
     }
 
@@ -429,13 +432,12 @@ export const replaceSessionData = mutation({
     )
 
     const now = Date.now()
-    const doc =
-      (await getActorSessionDataDoc(
-        ctx,
-        args.sessionId,
-        args.capsule,
-        actor,
-      )) ?? (await getSessionDataDoc(ctx, args.sessionId, args.capsule))
+    const doc = await getActorSessionDataDoc(
+      ctx,
+      args.sessionId,
+      args.capsule,
+      actor,
+    )
 
     if (doc) {
       await ctx.db.patch(doc._id, {
