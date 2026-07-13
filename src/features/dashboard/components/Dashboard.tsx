@@ -1,5 +1,9 @@
 import { useMutation, useQuery } from 'convex/react'
-import type { CSSProperties, ReactNode } from 'react'
+import type {
+  CSSProperties,
+  MouseEvent as ReactMouseEvent,
+  ReactNode,
+} from 'react'
 import {
   lazy,
   Suspense,
@@ -181,6 +185,49 @@ type BrandLogoSelection = {
   brandId: string | null
   icon: string | null
   logo: string | null
+}
+
+type PendingTextEdit = {
+  commit: () => void
+  cancel: () => void
+}
+
+type PendingTextEditResolution = keyof PendingTextEdit
+
+type PendingTextChange = {
+  signature: string
+  promise: Promise<void>
+}
+
+type ImageChange = {
+  oldSrc: string
+  newSrc: string
+  element: HTMLImageElement
+  alt: string
+}
+
+type LinkEditPayload = {
+  oldHref: string
+  newHref: string
+  oldText: string
+  newText: string
+  target: string | null
+  rel: string
+  occurrenceIndex: number
+}
+
+type StyleApplyPayload = {
+  sourceAnchor: string
+  style: string
+  occurrenceIndex: number
+}
+
+function editAppliesToLocale(edit: object, locale: string): boolean {
+  return (
+    !('locale' in edit) ||
+    typeof edit.locale !== 'string' ||
+    edit.locale === locale
+  )
 }
 
 const crownIcon = (
@@ -496,8 +543,11 @@ export function Dashboard({
   const [railUserToggle, setRailUserToggle] = useState<boolean | null>(null)
   const railCollapsed = railUserToggle ?? isMobile
   const { requireSignIn: requireSignInForEdit } = useSignInGate()
-  const commitTextEditRef = useRef<(() => void) | null>(null)
-  const cancelTextEditRef = useRef<(() => void) | null>(null)
+  const pendingTextEditRef = useRef<PendingTextEdit | null>(null)
+  const pendingTextChangesRef = useRef(
+    new WeakMap<HTMLElement, PendingTextChange>(),
+  )
+  const activeLinkEditsRef = useRef(0)
   // Capture the element's original style attribute when the toolbar opens
   // (before any live-preview modification) so handleStyleApply can revert
   // to the exact pre-edit state on failure. Capturing at apply-time is too
@@ -525,10 +575,6 @@ export function Dashboard({
     )
     return scrollChild ?? null
   }
-  const handleCommitTextReady = useCallback((commitFn, cancelFn) => {
-    commitTextEditRef.current = commitFn
-    cancelTextEditRef.current = cancelFn
-  }, [])
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [selectedBrand, setSelectedBrand] = useState<BrandLogoSelection | null>(
     null,
@@ -538,27 +584,59 @@ export function Dashboard({
     anchorRect: null as DOMRect | null,
     activeElement: null as HTMLElement | null,
   })
+  // Element selected by the devtools-style inspector (pencil mode). Drives
+  // the InlineEditToolbar's section-level AI edit. null = no selection.
+  const [inspectorSelection, setInspectorSelection] =
+    useState<InspectorSelection | null>(null)
+  const finishPendingTextEdit = useCallback(
+    (resolution: PendingTextEditResolution) => {
+      const pendingTextEdit = pendingTextEditRef.current
+      // Clear ownership before invoking user code. Commit/cancel callbacks can
+      // synchronously close the toolbar, so clearing first makes completion
+      // one-shot even when multiple UI events finish the same draft.
+      pendingTextEditRef.current = null
+      pendingTextEdit?.[resolution]()
+    },
+    [],
+  )
+  const clearInspectorSelection = useCallback(() => {
+    setInspectorSelection(null)
+    document.dispatchEvent(new CustomEvent('ship-fast-inspector-clear'))
+  }, [])
+  const closeInlineEditingSurface = useCallback(
+    (resolution: PendingTextEditResolution = 'cancel') => {
+      finishPendingTextEdit(resolution)
+      setToolbarState({
+        isOpen: false,
+        anchorRect: null,
+        activeElement: null,
+      })
+      clearInspectorSelection()
+    },
+    [clearInspectorSelection, finishPendingTextEdit],
+  )
+  const handleCommitTextReady = useCallback(
+    (commit: () => void, cancel: () => void) => {
+      pendingTextEditRef.current = { commit, cancel }
+    },
+    [],
+  )
   // Leaving inline edit mode must close any open toolbar so the floating
   // UI does not linger over a non-editable preview. It must also cancel
   // any pending text edit (so the unsaved buffer is discarded, not
   // silently committed) and clear the inspector selection.
   useEffect(() => {
     if (!editMode && toolbarState.isOpen) {
-      cancelTextEditRef.current?.()
-      setToolbarState((s) => ({ ...s, isOpen: false }))
-      closeInspectorToolbar()
+      closeInlineEditingSurface('cancel')
     }
-  }, [editMode, toolbarState.isOpen])
+  }, [closeInlineEditingSurface, editMode, toolbarState.isOpen])
   const [isApplyingStyle, setIsApplyingStyle] = useState(false)
   const [isForkingSession, setIsForkingSession] = useState(false)
   const [isDark, setIsDark] = useState(true)
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
+  const publishInFlightRef = useRef(false)
   const [publishError, setPublishError] = useState<string>()
-  // Element selected by the devtools-style inspector (pencil mode). Drives
-  // the InlineEditToolbar's section-level AI edit. null = no selection.
-  const [inspectorSelection, setInspectorSelection] =
-    useState<InspectorSelection | null>(null)
   const [isSectionEditing, setIsSectionEditing] = useState(false)
   const [sectionEditError, setSectionEditError] = useState<string>()
   const liveGenerationView = useQuery(api.sessions.getGenerationView, {
@@ -774,9 +852,19 @@ export function Dashboard({
     ],
   )
   const visualProductCount = visualProducts.length
+  const activePreviewLocale =
+    generationView?.session.preferredLanguage?.trim() || 'en'
+  const cloneHomePage =
+    clonePageNav.pages.find((page) => page.isHome) ?? clonePageNav.pages[0]
+  const activePreviewPage = clonePageNav.isClone
+    ? clonePageNav.currentPath || cloneHomePage?.pathname || '/'
+    : '/'
+  const shouldApplyPersistedHomeEdits =
+    !clonePageNav.isClone || activePreviewPage === cloneHomePage?.pathname
 
   const imageOverrides = useMemo(() => {
     const map: Record<string, string> = {}
+    if (!shouldApplyPersistedHomeEdits) return map
     for (const edit of editController.edits ?? []) {
       if (
         edit.editType === 'image' &&
@@ -789,7 +877,7 @@ export function Dashboard({
       }
     }
     return map
-  }, [editController.edits])
+  }, [editController.edits, shouldApplyPersistedHomeEdits])
 
   const styleOverrides = useMemo(() => {
     const seen = new Set<string>()
@@ -798,6 +886,7 @@ export function Dashboard({
       occurrenceIndex: number
       style: string
     }> = []
+    if (!shouldApplyPersistedHomeEdits) return overrides
     for (const edit of editController.edits ?? []) {
       if (
         edit.editType === 'style' &&
@@ -817,7 +906,7 @@ export function Dashboard({
       }
     }
     return overrides
-  }, [editController.edits])
+  }, [editController.edits, shouldApplyPersistedHomeEdits])
 
   const textOverrides = useMemo(() => {
     const overrides: Array<{
@@ -825,11 +914,13 @@ export function Dashboard({
       afterText: string
       occurrenceIndex?: number
     }> = []
+    if (!shouldApplyPersistedHomeEdits) return overrides
     for (const edit of editController.edits ?? []) {
       if (
         edit.editType === 'text' &&
         typeof edit.beforeText === 'string' &&
-        typeof edit.afterText === 'string'
+        typeof edit.afterText === 'string' &&
+        editAppliesToLocale(edit, activePreviewLocale)
       ) {
         // edits are newest-first, so the first seen text wins (latest edit).
         overrides.push({
@@ -840,7 +931,7 @@ export function Dashboard({
       }
     }
     return overrides
-  }, [editController.edits])
+  }, [activePreviewLocale, editController.edits, shouldApplyPersistedHomeEdits])
 
   const aiTheme = useMemo(
     () => readSiteThemeName(generationView?.siteSpec?.specJson),
@@ -888,9 +979,15 @@ export function Dashboard({
     overflow: 'hidden',
   }
 
-  const navigateHome = (e) => {
-    e.preventDefault()
+  const navigateHome = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    closeInlineEditingSurface('cancel')
     window.location.href = '/'
+  }
+
+  const handlePreviewReload = () => {
+    closeInlineEditingSurface('cancel')
+    window.location.reload()
   }
 
   const publishedUrl =
@@ -908,12 +1005,38 @@ export function Dashboard({
     clonePageNav.isClone && clonePageNav.currentHtml
       ? clonePageNav.currentHtml
       : (cmsPreviewSource ?? homeModule?.source ?? '')
-  const renderedPreviewKey = cmsPreviewSource
+  const activePreviewIdentity = JSON.stringify([
+    activeSessionId,
+    activePreviewLocale,
+    activePreviewPage,
+  ])
+  const renderedPreviewRevision = cmsPreviewSource
     ? `cms:${generationView?.latestPreview?.version ?? generationView?.session.previewVersion ?? homeModule?.updatedAt ?? 'latest'}`
     : `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`
+  const renderedPreviewKey = `${renderedPreviewRevision}:${JSON.stringify([
+    activeSessionId,
+    activePreviewPage,
+  ])}`
+  const activePreviewIdentityRef = useRef(activePreviewIdentity)
+  activePreviewIdentityRef.current = activePreviewIdentity
+  const previousPreviewIdentityRef = useRef(activePreviewIdentity)
+
+  useEffect(() => {
+    if (previousPreviewIdentityRef.current === activePreviewIdentity) return
+    previousPreviewIdentityRef.current = activePreviewIdentity
+    if (activeLinkEditsRef.current > 0) {
+      // Link edits have no optimistic DOM mutation to roll back. Keep their
+      // still-connected target anchored while the request completes, but
+      // discard any unrelated text draft before accepting the new context.
+      finishPendingTextEdit('cancel')
+      return
+    }
+    closeInlineEditingSurface('cancel')
+  }, [activePreviewIdentity, closeInlineEditingSurface, finishPendingTextEdit])
 
   const handleBrandSelect = useCallback(
-    (brand) => {
+    (brand: BrandLogoSelection) => {
+      closeInlineEditingSurface('cancel')
       setSelectedBrand(brand)
       if (resolvedSessionId === undefined) return
 
@@ -923,8 +1046,47 @@ export function Dashboard({
         brandLogo: brand,
       })
     },
-    [activeAnonymousOwnerSecret, resolvedSessionId, setBrandLogoMutation],
+    [
+      activeAnonymousOwnerSecret,
+      closeInlineEditingSurface,
+      resolvedSessionId,
+      setBrandLogoMutation,
+    ],
   )
+
+  const handleThemeSelect = (theme: string) => {
+    closeInlineEditingSurface('cancel')
+    setSelectedTheme(theme)
+    if (!resolvedSessionId) return
+    void setThemeOverrideMutation({
+      sessionId: resolvedSessionId,
+      anonymousOwnerSecret: activeAnonymousOwnerSecret,
+      themeOverride: theme,
+      themeMode: isDark ? 'dark' : 'light',
+    })
+  }
+
+  const handleThemeModeToggle = () => {
+    closeInlineEditingSurface('cancel')
+    const nextMode = isDark ? 'light' : 'dark'
+    setIsDark(!isDark)
+    if (!resolvedSessionId) return
+    void setThemeOverrideMutation({
+      sessionId: resolvedSessionId,
+      anonymousOwnerSecret: activeAnonymousOwnerSecret,
+      themeMode: nextMode,
+    })
+  }
+
+  const handleLanguageSelect = (language: string) => {
+    closeInlineEditingSurface('cancel')
+    if (!resolvedSessionId) return
+    void setPreferredLanguageMutation({
+      sessionId: resolvedSessionId,
+      anonymousOwnerSecret: activeAnonymousOwnerSecret,
+      preferredLanguage: language,
+    })
+  }
 
   // Restore the preview scroll position after a remount caused by an inline
   // edit. The preview remounts when renderedPreviewKey changes (because a
@@ -987,8 +1149,10 @@ export function Dashboard({
   }, [renderedPreviewKey])
 
   const handlePublish = async () => {
-    if (resolvedSessionId === undefined) return
+    if (resolvedSessionId === undefined || publishInFlightRef.current) return
 
+    publishInFlightRef.current = true
+    closeInlineEditingSurface('cancel')
     setPublishError(undefined)
     setIsPublishing(true)
 
@@ -1005,15 +1169,16 @@ export function Dashboard({
     } catch (error) {
       setPublishError(error instanceof Error ? error.message : 'Publish failed')
     } finally {
+      publishInFlightRef.current = false
       setIsPublishing(false)
     }
   }
 
-  const handlePreviewSelect = (_selection) => {
+  const handlePreviewSelect = (_selection: PreviewSelection) => {
     // Selection no longer used with inline editing
   }
 
-  const handleSectionSelect = (selection) => {
+  const handleSectionSelect = (selection: InspectorSelection | null) => {
     setInspectorSelection(selection)
     if (selection) {
       // Unified: also open the InlineEditToolbar for the selected section element
@@ -1029,13 +1194,8 @@ export function Dashboard({
         })
       }
     } else {
-      setToolbarState((s) => ({ ...s, isOpen: false }))
+      closeInlineEditingSurface('cancel')
     }
-  }
-
-  const closeInspectorToolbar = () => {
-    setInspectorSelection(null)
-    document.dispatchEvent(new CustomEvent('ship-fast-inspector-clear'))
   }
 
   const resolveMoveVarName = () => {
@@ -1068,7 +1228,7 @@ export function Dashboard({
     await reorder.reorder(varName, 'down')
   }
 
-  const handleSectionEditSubmit = async (prompt) => {
+  const handleSectionEditSubmit = async (prompt: string) => {
     if (!resolvedSessionId) return
     // The AI edit can be triggered from either the section inspector
     // (inspectorSelection set) or the inline toolbar's Sparkles panel
@@ -1115,8 +1275,7 @@ export function Dashboard({
       // a live query update and re-renders the preview automatically. Close
       // the inline toolbar too: the edited element is gone after the re-render
       // and the toolbar would otherwise linger over a stale selection.
-      closeInspectorToolbar()
-      setToolbarState((s) => ({ ...s, isOpen: false }))
+      closeInlineEditingSurface('cancel')
     } catch (error) {
       setSectionEditError(
         error instanceof Error ? error.message : 'Section edit failed',
@@ -1126,7 +1285,7 @@ export function Dashboard({
     }
   }
 
-  const handleTextChange = async (change) => {
+  const applyTextChange = async (change: CapsuleTextChange) => {
     // ─── Capsule-aware path: route to Lakebed structured data ──────────────
     // When the edited text matches a capsule prop, persist via Lakebed merge
     // instead of the generic text-override path. This keeps the capsule's
@@ -1172,8 +1331,32 @@ export function Dashboard({
     await handleTextChangeFallback(change)
   }
 
+  const handleTextChange = (change: CapsuleTextChange): Promise<void> => {
+    const signature = JSON.stringify([
+      activePreviewIdentity,
+      change.oldText,
+      change.newText,
+      change.occurrenceIndex,
+      change.capsuleProp?.lakebedKey,
+      change.capsuleProp?.propKey,
+    ])
+    const existing = pendingTextChangesRef.current.get(change.element)
+    if (existing?.signature === signature) return existing.promise
+
+    const promise = applyTextChange(change)
+    const pending: PendingTextChange = { signature, promise }
+    pending.promise = promise.finally(() => {
+      if (pendingTextChangesRef.current.get(change.element) === pending) {
+        pendingTextChangesRef.current.delete(change.element)
+      }
+    })
+    pendingTextChangesRef.current.set(change.element, pending)
+    return pending.promise
+  }
+
   /** Original text-override path — persists via Convex createEdit. */
-  const handleTextChangeFallback = async (change) => {
+  const handleTextChangeFallback = async (change: CapsuleTextChange) => {
+    const editPreviewIdentity = activePreviewIdentity
     const tag = change.element.tagName.toLowerCase()
     const text = change.element.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
@@ -1206,18 +1389,29 @@ export function Dashboard({
       const forkResult = await editController.forkCurrentSession()
       if (!forkResult) {
         // Fork failed, revert the change
-        revertTextPreservingIcons(change.element, change.oldText)
+        if (
+          change.element.isConnected &&
+          activePreviewIdentityRef.current === editPreviewIdentity
+        ) {
+          revertTextPreservingIcons(change.element, change.oldText)
+        }
         toast.error(editController.editError || 'Failed to fork session')
       }
     } else if (result !== true && 'error' in result) {
       // Revert the DOM change on other errors
-      revertTextPreservingIcons(change.element, change.oldText)
+      if (
+        change.element.isConnected &&
+        activePreviewIdentityRef.current === editPreviewIdentity
+      ) {
+        revertTextPreservingIcons(change.element, change.oldText)
+      }
       console.error('[Inline Edit] Failed to save:', result.error)
       toast.error(result.error)
     }
   }
 
-  const handleImageChange = (change) => {
+  const handleImageChange = (change: ImageChange) => {
+    const editPreviewIdentity = activePreviewIdentity
     // Optimistic: show the new image immediately (reverted below on failure).
     // A multi-image payload previews its first URL — the carousel renders once
     // the persisted edit re-applies through imageOverrides.
@@ -1260,7 +1454,11 @@ export function Dashboard({
           // Fork the session
           toast.info('Forking session to save your changes...')
           editController.forkCurrentSession().then((forkResult) => {
-            if (!forkResult) {
+            if (
+              !forkResult &&
+              change.element.isConnected &&
+              activePreviewIdentityRef.current === editPreviewIdentity
+            ) {
               // Fork failed, revert the change
               change.element.src = change.oldSrc
               toast.error(editController.editError || 'Failed to fork session')
@@ -1268,15 +1466,20 @@ export function Dashboard({
           })
         } else if (result !== true && 'error' in result) {
           // Revert the DOM change on other errors
-          change.element.src = change.oldSrc
+          if (
+            change.element.isConnected &&
+            activePreviewIdentityRef.current === editPreviewIdentity
+          ) {
+            change.element.src = change.oldSrc
+          }
           console.error('[Inline Edit] Failed to save image:', result.error)
           toast.error(result.error)
         }
       })
   }
 
-  const handleImageTarget = (e) => {
-    const customEvent = e as CustomEvent<{
+  const handleImageTarget = (event: Event) => {
+    const customEvent = event as CustomEvent<{
       element: HTMLImageElement
       src: string
       alt: string
@@ -1286,6 +1489,7 @@ export function Dashboard({
 
     // Unified: open the InlineEditToolbar with the image element.
     // The toolbar detects <img> and shows the image swap panel.
+    closeInlineEditingSurface('cancel')
     originalStyleAttributeRef.current = element.getAttribute('style')
     setToolbarState({
       isOpen: true,
@@ -1294,7 +1498,7 @@ export function Dashboard({
     })
   }
 
-  const handleImageSelect = (newSrc, originalSrc) => {
+  const handleImageSelect = (newSrc: string, originalSrc: string) => {
     const el = toolbarState.activeElement as HTMLImageElement | null
     if (el) {
       handleImageChange({
@@ -1306,7 +1510,10 @@ export function Dashboard({
     }
   }
 
-  const handleElementActivate = (element, rect) => {
+  const handleElementActivate = (element: HTMLElement, rect: DOMRect) => {
+    if (element.tagName === 'IMG') {
+      closeInlineEditingSurface('cancel')
+    }
     originalStyleAttributeRef.current = element.getAttribute('style')
     setToolbarState({
       isOpen: true,
@@ -1320,15 +1527,15 @@ export function Dashboard({
   // background). Route through the inspector's select event so the cyan
   // overlay, inspectorSelection and toolbar all move together, exactly as a
   // real click on that element would.
-  const handleSelectParent = (element) => {
+  const handleSelectParent = (element: HTMLElement) => {
     document.dispatchEvent(
       new CustomEvent('ship-fast-inspector-select', { detail: { element } }),
     )
   }
 
-  const handleLinkEdit = async (payload) => {
+  const handleLinkEdit = async (payload: LinkEditPayload) => {
     if (!resolvedSessionId) return
-    const source = generationView?.homeModule?.source
+    const source = renderedPreviewSource
     if (!source) return
     // Save scroll position before the edit (see handleTextChange for rationale)
     const previewScrollEl = getPreviewScrollEl()
@@ -1337,6 +1544,7 @@ export function Dashboard({
     }
     // Same source of truth as the AI's `linkEdit` tool — the builder performs
     // the `updateLinkInSource` patch itself, so we no longer duplicate it here.
+    activeLinkEditsRef.current += 1
     try {
       const command = buildLinkEditCommand(
         {
@@ -1375,6 +1583,8 @@ export function Dashboard({
         error instanceof Error ? error.message : 'Failed to save link'
       console.error('[Inline Edit] Failed to save link:', error)
       toast.error(errorMessage)
+    } finally {
+      activeLinkEditsRef.current = Math.max(0, activeLinkEditsRef.current - 1)
     }
   }
 
@@ -1427,12 +1637,13 @@ export function Dashboard({
     }
   }
 
-  const handleStyleApply = async (payload) => {
+  const handleStyleApply = async (payload: StyleApplyPayload) => {
     // Use the original style captured when the toolbar opened (before any
     // live-preview modification). Capturing at apply-time is too late — the
     // toolbar has already applied the live preview by then.
     const activeElement = toolbarState.activeElement
     const originalStyleAttribute = originalStyleAttributeRef.current
+    const editPreviewIdentity = activePreviewIdentity
 
     setIsApplyingStyle(true)
     const tag = toolbarState.activeElement?.tagName.toLowerCase() || 'DIV'
@@ -1467,23 +1678,28 @@ export function Dashboard({
       toast.info('Forking session to save your changes...')
       const forkResult = await editController.forkCurrentSession()
       setIsForkingSession(false)
-      if (!forkResult) {
+      if (
+        !forkResult &&
+        activeElement?.isConnected &&
+        activePreviewIdentityRef.current === editPreviewIdentity
+      ) {
         // Fork failed, revert the style changes
-        if (activeElement) {
-          if (originalStyleAttribute === null) {
-            activeElement.removeAttribute('style')
-          } else {
-            activeElement.setAttribute('style', originalStyleAttribute)
-          }
+        if (originalStyleAttribute === null) {
+          activeElement.removeAttribute('style')
+        } else {
+          activeElement.setAttribute('style', originalStyleAttribute)
         }
         toast.error(editController.editError || 'Failed to fork session')
       }
     } else if (result === true) {
       // Close toolbar and reload for style edits
-      setToolbarState((s) => ({ ...s, isOpen: false }))
+      closeInlineEditingSurface('cancel')
     } else {
       // Revert the style changes on other errors
-      if (activeElement) {
+      if (
+        activeElement?.isConnected &&
+        activePreviewIdentityRef.current === editPreviewIdentity
+      ) {
         if (originalStyleAttribute === null) {
           activeElement.removeAttribute('style')
         } else {
@@ -1498,7 +1714,7 @@ export function Dashboard({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const handleImageTargetEvent = (e) => handleImageTarget(e)
+    const handleImageTargetEvent = (event: Event) => handleImageTarget(event)
     window.addEventListener('image-target', handleImageTargetEvent)
 
     return () => {
@@ -1507,6 +1723,7 @@ export function Dashboard({
   }, [])
 
   const toggleAdminView = () => {
+    closeInlineEditingSurface('cancel')
     setIsAdminActive((active) => {
       const nextActive = !active
       if (typeof window !== 'undefined') {
@@ -1667,7 +1884,7 @@ export function Dashboard({
                     id="preview-refresh-btn"
                     data-tip="Refresh preview"
                     aria-label="Reload page"
-                    onClick={() => window.location.reload()}
+                    onClick={handlePreviewReload}
                   >
                     <svg
                       className="size-4"
@@ -1901,13 +2118,11 @@ export function Dashboard({
                                 ? clonePageNav.currentUrl
                                 : null
                             }
-                            sessionId={sessionId}
+                            sessionId={activeSessionId}
                             siteSpecJson={generationView.siteSpec?.specJson}
-                            locale={generationView.session.preferredLanguage}
+                            locale={activePreviewLocale}
                             prompt={generationView.session.prompt}
-                            selectedBrandLogo={
-                              generationView.session.selectedBrandLogo ?? null
-                            }
+                            selectedBrandLogo={activeBrand}
                             imageOverrides={imageOverrides}
                             styleOverrides={styleOverrides}
                             textOverrides={textOverrides}
@@ -2082,32 +2297,8 @@ export function Dashboard({
                           popoverAlign="start"
                           popoverSideOffset={12}
                           popoverClassName="z-[140] w-[min(360px,calc(100vw-24px))] p-0"
-                          onSelect={(theme) => {
-                            setSelectedTheme(theme)
-                            if (resolvedSessionId) {
-                              setThemeOverrideMutation({
-                                sessionId: resolvedSessionId,
-                                anonymousOwnerSecret:
-                                  activeAnonymousOwnerSecret,
-                                themeOverride: theme,
-                                themeMode: isDark ? 'dark' : 'light',
-                              })
-                            }
-                          }}
-                          onToggleMode={() => {
-                            setIsDark((dark) => {
-                              const nextMode = dark ? 'light' : 'dark'
-                              if (resolvedSessionId) {
-                                setThemeOverrideMutation({
-                                  sessionId: resolvedSessionId,
-                                  anonymousOwnerSecret:
-                                    activeAnonymousOwnerSecret,
-                                  themeMode: nextMode,
-                                })
-                              }
-                              return !dark
-                            })
-                          }}
+                          onSelect={handleThemeSelect}
+                          onToggleMode={handleThemeModeToggle}
                           trigger={
                             <button
                               type="button"
@@ -2239,16 +2430,7 @@ export function Dashboard({
                           value={
                             generationView?.session.preferredLanguage ?? null
                           }
-                          onSelect={(language) => {
-                            if (resolvedSessionId) {
-                              setPreferredLanguageMutation({
-                                sessionId: resolvedSessionId,
-                                anonymousOwnerSecret:
-                                  activeAnonymousOwnerSecret,
-                                preferredLanguage: language,
-                              })
-                            }
-                          }}
+                          onSelect={handleLanguageSelect}
                           trigger={
                             <button
                               type="button"
@@ -2427,6 +2609,9 @@ export function Dashboard({
                               className={railRowClass}
                               data-rail-action="export"
                               aria-haspopup="dialog"
+                              onClick={() =>
+                                closeInlineEditingSurface('cancel')
+                              }
                             >
                               <span
                                 className={railIconClass}
@@ -2607,15 +2792,11 @@ export function Dashboard({
       <Suspense fallback={null}>
         <InlineEditToolbar
           isOpen={toolbarState.isOpen}
-          onClose={() => {
-            cancelTextEditRef.current?.()
-            setToolbarState((s) => ({ ...s, isOpen: false }))
-            if (inspectorSelection) closeInspectorToolbar()
-          }}
+          onClose={() => closeInlineEditingSurface('cancel')}
           anchorRect={toolbarState.anchorRect}
           activeElement={toolbarState.activeElement}
           onStyleApply={handleStyleApply}
-          onCommitText={() => commitTextEditRef.current?.()}
+          onCommitText={() => finishPendingTextEdit('commit')}
           isApplying={isApplyingStyle}
           isForking={isForkingSession}
           canUndo={undoRedo.canUndo}
