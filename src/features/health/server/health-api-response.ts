@@ -7,7 +7,12 @@ type HealthConvexClient = {
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: {
+      'Cache-Control': 'no-store',
+      'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
+      ...init?.headers,
+    },
   })
 }
 
@@ -31,12 +36,16 @@ export async function createHealthApiResponse(
       latencyMs: Date.now() - startedAt,
     })
   } catch (error) {
+    const message =
+      error instanceof Error && error.message === 'convex timeout'
+        ? 'convex timeout'
+        : 'Dependency health check failed.'
     return json(
       {
         ok: false,
         convex: 'unreachable',
         latencyMs: Date.now() - startedAt,
-        error: error instanceof Error ? error.message : 'unknown',
+        error: message,
       },
       { status: 503 },
     )
