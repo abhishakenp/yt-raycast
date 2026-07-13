@@ -92,21 +92,48 @@ export const add = mutation({
     keywords: v.array(v.string()),
   },
   handler: async (ctx, args) => {
+    const codeInput = args.code.trim()
+    const name = args.name.trim()
+    const nativeName = args.nativeName.trim()
+    const fontFamily = args.fontFamily.trim()
+    const keywordInputs = args.keywords.map((keyword) => keyword.trim())
+    if (
+      !codeInput ||
+      !name ||
+      !nativeName ||
+      !fontFamily ||
+      keywordInputs.length === 0 ||
+      keywordInputs.some((keyword) => !keyword)
+    ) {
+      throw new Error('Custom language fields must not be blank.')
+    }
+
+    const code = normalizeAiLocaleCode(codeInput) ?? codeInput.toLowerCase()
+    const keywords = keywordInputs
+      .filter(
+        (keyword, index) =>
+          !keywordInputs
+            .slice(0, index)
+            .some(
+              (prior) =>
+                prior !== keyword &&
+                prior.toLowerCase() === keyword.toLowerCase(),
+            ),
+      )
+      .map((keyword) => keyword.toLowerCase())
     const existing = await ctx.db
       .query('customLanguages')
-      .withIndex('by_code', (q) => q.eq('code', args.code))
+      .withIndex('by_code', (q) => q.eq('code', code))
       .unique()
     if (existing) return toEntry(existing)
 
-    const searchText = [args.name, args.nativeName, ...args.keywords]
-      .join(' ')
-      .trim()
+    const searchText = [name, nativeName, ...keywords].join(' ')
     const id = await ctx.db.insert('customLanguages', {
-      code: args.code,
-      name: args.name,
-      nativeName: args.nativeName,
-      fontFamily: args.fontFamily,
-      keywords: args.keywords,
+      code,
+      name,
+      nativeName,
+      fontFamily,
+      keywords,
       searchText,
       createdAt: Date.now(),
     })
