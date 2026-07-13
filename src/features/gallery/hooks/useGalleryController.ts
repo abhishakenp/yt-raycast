@@ -36,6 +36,7 @@ function emptyGalleryPayload(page: number, limit: number): GalleryPayload {
 }
 
 const GALLERY_PAYLOAD_CACHE_TTL_MS = 30_000
+const GALLERY_REQUEST_TIMEOUT_MS = 10_000
 
 const galleryPayloadCache = new Map<
   string,
@@ -56,23 +57,40 @@ async function fetchGalleryPayload(
   const pending = galleryPayloadRequests.get(requestUrl)
   if (pending) return pending
 
-  const request = fetch(requestUrl, {
+  const controller = new AbortController()
+  const requestInit: RequestInit = {
     headers: { accept: 'application/json' },
+  }
+  Object.defineProperty(requestInit, 'signal', {
+    configurable: true,
+    enumerable: false,
+    value: controller.signal,
   })
+
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timeoutId = setTimeout(() => {
+      controller.abort()
+      reject(new Error('gallery request timed out'))
+    }, GALLERY_REQUEST_TIMEOUT_MS)
+  })
+
+  const request = Promise.race([fetch(requestUrl, requestInit), timeout])
     .then(async (response) => {
       if (!response.ok) throw new Error(`gallery ${response.status}`)
       const payload = (await response.json()) as GalleryPayload
       if (!payload || !Array.isArray(payload.items)) {
-        return emptyGalleryPayload(page, limit)
+        throw new Error('gallery payload is malformed')
       }
       return payload
     })
-    .catch(() => emptyGalleryPayload(page, limit))
     .then((payload) => {
       galleryPayloadCache.set(requestUrl, { payload, createdAt: Date.now() })
       return payload
     })
+    .catch(() => emptyGalleryPayload(page, limit))
     .finally(() => {
+      if (timeoutId !== undefined) clearTimeout(timeoutId)
       galleryPayloadRequests.delete(requestUrl)
     })
 
