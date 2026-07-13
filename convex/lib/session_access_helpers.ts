@@ -170,6 +170,11 @@ export async function assertCanMutateSession(
 export async function deleteOwnedSessions(
   ctx: MutationCtx,
   args: DeleteOwnedSessionsInput,
+  deleteSession: (
+    ctx: MutationCtx,
+    sessionId: Id<'sessions'>,
+  ) => Promise<void> = async (mutationCtx, sessionId) =>
+    mutationCtx.db.delete(sessionId),
 ) {
   const userId = await getUserId(ctx)
 
@@ -189,7 +194,7 @@ export async function deleteOwnedSessions(
       }
     }
 
-    await ctx.db.delete(session._id)
+    await deleteSession(ctx, session._id)
     return { deleted: 1 }
   }
 
@@ -210,7 +215,7 @@ export async function deleteOwnedSessions(
   }
 
   for (const session of sessions) {
-    await ctx.db.delete(session._id)
+    await deleteSession(ctx, session._id)
   }
 
   return { deleted: sessions.length }

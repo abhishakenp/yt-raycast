@@ -21,6 +21,7 @@ import {
   setSessionThemeOverride,
 } from './lib/session_access_helpers'
 import { loadSessionApiResponse } from './lib/session_api_response_helpers'
+import { deleteSessionGraph } from './lib/session_delete_helpers'
 import {
   authorizeDeploymentCommerceTenantProvision,
   loadDeploymentCommerceTenantBySlugForWebhook,
@@ -250,7 +251,7 @@ const scheduleCurrentSessionExportAutomation: ScheduleCurrentSessionExportAutoma
 // userId or stable anonymousClientId.
 export const deleteMine = mutation({
   args: deleteMineArgs,
-  handler: (ctx, args) => deleteOwnedSessions(ctx, args),
+  handler: (ctx, args) => deleteOwnedSessions(ctx, args, deleteSessionGraph),
 })
 
 export const create = mutation({
