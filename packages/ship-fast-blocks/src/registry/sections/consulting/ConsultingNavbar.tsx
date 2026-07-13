@@ -5,6 +5,14 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * ConsultingNavbar — sticky top navigation bar for a management-consulting
@@ -56,17 +64,16 @@ export const ConsultingNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex items-center gap-3"
+            className="gap-3"
           >
             <BrandLogo
               brand={brand}
@@ -74,37 +81,34 @@ export const ConsultingNavbar = defineCapsule({
               labelClassName="text-xl font-semibold tracking-tight text-foreground"
             />
           </button>
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(ctaTarget)}
-              className="hidden rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
-            >
-              {ctaLabel}
-            </button>
-            <MobileNavDrawer
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              cta={{ label: ctaLabel, target: ctaTarget }}
-              label="Toggle menu"
-              buttonClassName="p-2 text-muted-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
+          <NavbarCta
+            variant="primary"
+            onClick={() => go(ctaTarget)}
+            className="hidden rounded-md px-5 py-2.5 sm:inline-flex"
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            label="Toggle menu"
+            buttonClassName="p-2 text-muted-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

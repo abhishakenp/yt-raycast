@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * KnowledgeBaseNavbar — sticky, translucent top navigation bar for a help-center
@@ -83,20 +90,17 @@ export const KnowledgeBaseNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        containerClassName="max-w-7xl px-4 sm:px-6 lg:px-8"
       >
-        <nav
-          className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
-          aria-label="Main navigation"
-        >
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex items-center gap-2"
+            className="gap-2"
             aria-label={`${brand} home`}
           >
             <BrandLogo
@@ -105,45 +109,42 @@ export const KnowledgeBaseNavbar = defineCapsule({
               labelClassName="text-lg font-semibold text-foreground"
             />
           </button>
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(searchLabel)}
-              className="hidden items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent sm:flex"
-              aria-label="Search help articles"
-            >
-              <SearchIcon className="size-4" />
-              <span>{searchLabel}</span>
-              <kbd className="hidden rounded border border-border bg-background px-1.5 py-0.5 text-xs lg:inline-block">
-                ⌘K
-              </kbd>
-            </button>
-            <MobileNavDrawer
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              cta={{
-                label: searchLabel,
-                target: searchLabel,
-                variant: 'ghost',
-              }}
-              buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-4">
+          <button
+            type="button"
+            onClick={() => go(searchLabel)}
+            className="hidden items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent sm:flex"
+            aria-label="Search help articles"
+          >
+            <SearchIcon className="size-4" />
+            <span>{searchLabel}</span>
+            <kbd className="hidden rounded border border-border bg-background px-1.5 py-0.5 text-xs lg:inline-block">
+              ⌘K
+            </kbd>
+          </button>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{
+              label: searchLabel,
+              target: searchLabel,
+              variant: 'ghost',
+            }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

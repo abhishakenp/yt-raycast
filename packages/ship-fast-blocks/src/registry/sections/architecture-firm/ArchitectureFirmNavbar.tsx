@@ -3,9 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * ArchitectureFirmNavbar — sticky, translucent top navigation bar for an
@@ -38,44 +43,40 @@ export const ArchitectureFirmNavbar = defineCapsule({
       : ['Work', 'Philosophy', 'Studio', 'Contact']
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <Container asChild>
-          <nav aria-label="Main navigation">
-            <div className="flex h-20 items-center justify-between">
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="text-xl font-light tracking-tight text-foreground"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-              <div className="hidden items-center space-x-8 md:flex">
-                {nav.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <MobileNavDrawer
-                brand={brand}
-                nav={nav}
-                homeTarget={nav[0]}
-                buttonClassName="p-2 md:hidden"
-              />
-            </div>
-          </nav>
-        </Container>
-      </header>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(nav[0])}
+            className="text-xl font-light tracking-tight text-foreground"
+          >
+            <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav className="gap-0 space-x-8">
+          {nav.map((label) => (
+            <NavbarNavLink
+              key={label}
+              onClick={() => go(label)}
+              className="font-normal"
+            >
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <MobileNavDrawer
+          brand={brand}
+          nav={nav}
+          homeTarget={nav[0]}
+          buttonClassName="p-2 md:hidden"
+        />
+      </SiteNav>
     )
   },
 })

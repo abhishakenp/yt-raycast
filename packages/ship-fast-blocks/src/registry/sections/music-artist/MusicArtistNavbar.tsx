@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
@@ -38,13 +45,13 @@ export const MusicArtistNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? 'Music'
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="responsive"
+        className={cn('bg-background/90', props.className)}
+        containerClassName="max-w-6xl px-6 lg:px-8"
       >
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:h-20 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
@@ -52,26 +59,25 @@ export const MusicArtistNavbar = defineCapsule({
           >
             <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
           </button>
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
           <MobileNavDrawer
             brand={brand}
             nav={nav}
             homeTarget={homeTarget}
             buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
           />
-        </nav>
-      </header>
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

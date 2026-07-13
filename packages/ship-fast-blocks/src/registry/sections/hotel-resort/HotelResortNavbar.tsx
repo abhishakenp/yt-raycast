@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   HotelAccountButton,
   HotelBookingActionButton,
   HotelBookingBadge,
@@ -66,84 +73,75 @@ export const HotelResortNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn('bg-background/95', props.className)}
+        containerClassName="px-6 lg:px-8"
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-3"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={
-                  <LogoMark className="size-10 bg-foreground text-lg text-background" />
-                }
-                labelClassName="text-xl font-medium tracking-tight"
-              />
-            </button>
-            <nav className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-            <div className="flex items-center gap-4">
-              <HotelBookingBadge lakebed={lakebed} />
-              <HotelSearchButton
-                lakebed={lakebed}
-                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              />
-              <HotelAccountButton
-                lakebed={lakebed}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-              />
-              <button
-                type="button"
-                onClick={() => go(phone)}
-                className="hidden text-sm text-muted-foreground lg:block"
-              >
-                {phone}
-              </button>
-              <HotelBookingActionButton
-                lakebed={lakebed}
-                intentLabel={bookTarget}
-                intentKey="navbar-booking"
-                source="navbar"
-                pendingChildren={
-                  <>
-                    <HotelMutationSpinner />
-                    Sending
-                  </>
-                }
-                className="hidden items-center justify-center gap-2 rounded-md bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
-              >
-                {cta}
-              </HotelBookingActionButton>
-              <HotelMobileMenu
-                brand={brand}
-                nav={nav}
-                homeTarget={nav[0]}
-                lakebed={lakebed}
-                ctaLabel={cta}
-                ctaTarget={bookTarget}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              />
-            </div>
-          </div>
-        </div>
-      </header>
+        <NavbarBrand asChild>
+          <button type="button" onClick={() => go(nav[0])} className="gap-3">
+            <BrandLogo
+              brand={brand}
+              fallback={
+                <LogoMark className="size-10 bg-foreground text-lg text-background" />
+              }
+              labelClassName="text-xl font-medium tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
+          <HotelBookingBadge lakebed={lakebed} />
+          <HotelSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <HotelAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <button
+            type="button"
+            onClick={() => go(phone)}
+            className="hidden text-sm text-muted-foreground lg:block"
+          >
+            {phone}
+          </button>
+          <HotelBookingActionButton
+            lakebed={lakebed}
+            intentLabel={bookTarget}
+            intentKey="navbar-booking"
+            source="navbar"
+            pendingChildren={
+              <>
+                <HotelMutationSpinner />
+                Sending
+              </>
+            }
+            className="hidden items-center justify-center gap-2 rounded-md bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+          >
+            {cta}
+          </HotelBookingActionButton>
+          <HotelMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={nav[0]}
+            lakebed={lakebed}
+            ctaLabel={cta}
+            ctaTarget={bookTarget}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

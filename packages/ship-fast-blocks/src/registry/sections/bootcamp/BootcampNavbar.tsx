@@ -4,6 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * BootcampNavbar — sticky translucent top navigation bar for a coding bootcamp /
@@ -58,17 +67,16 @@ export const BootcampNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="responsive"
+        className={cn('bg-background/95', props.className)}
       >
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex items-center gap-2"
+            className="gap-2"
           >
             <BrandLogo
               brand={brand}
@@ -76,27 +84,37 @@ export const BootcampNavbar = defineCapsule({
               labelClassName="text-lg font-semibold"
             />
           </button>
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink
+              key={label}
+              onClick={() => go(label)}
+              className="font-normal"
+            >
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
+          <NavbarCta
+            variant="primary"
             onClick={() => go(ctaTarget)}
-            className="hidden rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+            className="hidden px-5 py-2.5 sm:inline-flex"
           >
             Apply Now
-          </button>
-        </nav>
-      </header>
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: 'Apply Now', target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

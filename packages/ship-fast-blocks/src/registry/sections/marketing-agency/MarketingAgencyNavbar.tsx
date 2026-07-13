@@ -4,6 +4,14 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * MarketingAgencyNavbar — sticky, translucent top navigation bar for a growth /
@@ -15,7 +23,6 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * the sticky site header for marketing / growth agencies, SEO / paid-ads shops,
  * lead-gen consultancies, or B2B SaaS growth firms. Renders fully with no props.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const MarketingAgencyNavbar = defineCapsule({
   name: 'MarketingAgencyNavbar',
   description:
@@ -49,58 +56,50 @@ export const MarketingAgencyNavbar = defineCapsule({
       </svg>
     )
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <Container>
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8 text-foreground" />}
-                labelClassName="text-lg font-semibold tracking-tight"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.slice(0, -1).map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => go(navCta)}
-                className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {navCta}
-              </button>
-            </div>
-            <MobileNavDrawer
+        <NavbarBrand asChild>
+          <button type="button" onClick={() => go(nav[0])} className="gap-2">
+            <BrandLogo
               brand={brand}
-              nav={nav}
-              homeTarget={nav[0]}
-              cta={{
-                label: navCta,
-                target: navCta,
-              }}
-              label="Menu"
-              buttonClassName="p-2 text-foreground md:hidden"
+              fallback={<LogoMark className="size-8 text-foreground" />}
+              labelClassName="text-lg font-semibold tracking-tight"
             />
-          </div>
-        </Container>
-      </header>
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+          <NavbarCta
+            variant="primary-pill"
+            onClick={() => go(navCta)}
+            className="px-4 py-2"
+          >
+            {navCta}
+          </NavbarCta>
+        </NavbarNav>
+
+        <NavbarActions>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={nav[0]}
+            cta={{
+              label: navCta,
+              target: navCta,
+            }}
+            label="Menu"
+            buttonClassName="p-2 text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

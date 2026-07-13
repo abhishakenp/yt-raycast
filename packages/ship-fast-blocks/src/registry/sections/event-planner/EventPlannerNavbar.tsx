@@ -3,9 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import {
   InquiryActionButton,
@@ -62,84 +67,71 @@ export const EventPlannerNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <Container>
-          <nav
-            className="flex h-20 items-center justify-between"
-            aria-label="Main navigation"
-          >
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<Clock className="size-8 text-foreground/80" />}
-                labelClassName="text-xl font-light tracking-tight text-foreground"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-              <InquiryActionButton
-                lakebed={lakebed}
-                label={ctaLabel}
-                source="Event planner navbar"
-                target={ctaLabel}
-                kind="cta"
-                pendingChildren={
-                  <>
-                    <InquiryMutationSpinner />
-                    Recording
-                  </>
-                }
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-              >
-                {ctaLabel}
-              </InquiryActionButton>
-            </div>
-            <MobileNavDrawer
+        <NavbarBrand asChild>
+          <button type="button" onClick={() => go(nav[0])} className="gap-2">
+            <BrandLogo
               brand={brand}
-              nav={nav}
-              homeTarget={nav[0]}
-              buttonClassName="p-2 text-muted-foreground md:hidden"
-              footer={(close) => (
-                <InquiryActionButton
-                  lakebed={lakebed}
-                  label={ctaLabel}
-                  source="Event planner mobile menu"
-                  target={ctaLabel}
-                  kind="cta"
-                  onRecorded={close}
-                  pendingChildren={
-                    <>
-                      <InquiryMutationSpinner />
-                      Recording
-                    </>
-                  }
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {ctaLabel}
-                </InquiryActionButton>
-              )}
+              fallback={<Clock className="size-8 text-foreground/80" />}
+              labelClassName="text-xl font-light tracking-tight text-foreground"
             />
-          </nav>
-        </Container>
-      </header>
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+          <InquiryActionButton
+            lakebed={lakebed}
+            label={ctaLabel}
+            source="Event planner navbar"
+            target={ctaLabel}
+            kind="cta"
+            pendingChildren={
+              <>
+                <InquiryMutationSpinner />
+                Recording
+              </>
+            }
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {ctaLabel}
+          </InquiryActionButton>
+        </NavbarNav>
+
+        <MobileNavDrawer
+          brand={brand}
+          nav={nav}
+          homeTarget={nav[0]}
+          buttonClassName="p-2 text-muted-foreground md:hidden"
+          footer={(close) => (
+            <InquiryActionButton
+              lakebed={lakebed}
+              label={ctaLabel}
+              source="Event planner mobile menu"
+              target={ctaLabel}
+              kind="cta"
+              onRecorded={close}
+              pendingChildren={
+                <>
+                  <InquiryMutationSpinner />
+                  Recording
+                </>
+              }
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {ctaLabel}
+            </InquiryActionButton>
+          )}
+        />
+      </SiteNav>
     )
   },
 })

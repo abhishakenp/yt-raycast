@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * MarketingNavbar — glassy, sticky top navigation bar for a product-marketing /
@@ -59,57 +66,57 @@ export const MarketingNavbar = defineCapsule({
     )
 
     return (
-      <header
+      <SiteNav
+        position="sticky"
+        height="compact"
         className={cn(
-          'sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-background/60',
+          'border-border/60 bg-background/85 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-background/60',
           props.className,
         )}
+        containerClassName="max-w-6xl px-6"
       >
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-foreground"
+            className="gap-2 text-xl font-extrabold tracking-tight text-foreground"
           >
             <BrandLogo brand={brand} fallback={<LogoMark />} />
           </button>
-          <div className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => go(loginLabel)}
-              className="hidden rounded-xl border border-border bg-muted/60 px-5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:inline-flex"
-            >
-              {loginLabel}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(ctaTarget)}
-              className="hidden rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-[0_4px_14px_rgba(79,70,229,0.35)] transition-colors hover:bg-primary/90 sm:inline-flex"
-            >
-              {ctaLabel}
-            </button>
-            <MobileNavDrawer
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              cta={{ label: ctaLabel, target: ctaTarget }}
-              buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-3">
+          <button
+            type="button"
+            onClick={() => go(loginLabel)}
+            className="hidden rounded-xl border border-border bg-muted/60 px-5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:inline-flex"
+          >
+            {loginLabel}
+          </button>
+          <button
+            type="button"
+            onClick={() => go(ctaTarget)}
+            className="hidden rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-[0_4px_14px_rgba(79,70,229,0.35)] transition-colors hover:bg-primary/90 sm:inline-flex"
+          >
+            {ctaLabel}
+          </button>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

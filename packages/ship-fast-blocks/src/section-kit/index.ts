@@ -6,7 +6,18 @@
  * Single source of truth for the action contract is `./types.ts` (KitAction).
  */
 
-export { SiteNav } from './SiteNav.tsx'
+export {
+  SiteNav,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  NavbarActions,
+  NavbarCta,
+  siteNavHeaderVariants,
+  siteNavRowVariants,
+  navbarCtaVariants,
+} from './SiteNav.tsx'
+export type { SiteNavProps } from './SiteNav.tsx'
 export { SiteFooter } from './SiteFooter.tsx'
 export {
   BrandLogoProvider,

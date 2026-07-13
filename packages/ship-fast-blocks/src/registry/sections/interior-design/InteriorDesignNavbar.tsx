@@ -3,9 +3,16 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * InteriorDesignNavbar — fixed, translucent top navigation bar for an upscale
@@ -49,58 +56,54 @@ export const InteriorDesignNavbar = defineCapsule({
     const brandSuffix = brandParts.slice(1).join(' ')
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <Container>
-          <div className="flex h-20 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2 text-2xl font-light tracking-tight"
-            >
-              <BrandLogo
-                brand={brand}
-                className="mr-2 size-7"
-                showLabel={false}
-              />
-              <span className="text-foreground">{brandMark}</span>
-              {brandSuffix && (
-                <span className="text-muted-foreground">{brandSuffix}</span>
-              )}
-            </button>
-            <nav className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-            <button
-              type="button"
-              onClick={() => go(contactTarget)}
-              className="hidden items-center border border-foreground px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background md:inline-flex"
-            >
-              {cta}
-            </button>
-            <MobileNavDrawer
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(nav[0])}
+            className="gap-2 text-2xl font-light tracking-tight"
+          >
+            <BrandLogo
               brand={brand}
-              nav={nav}
-              homeTarget={nav[0]}
-              cta={{ label: cta, target: contactTarget }}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              className="mr-2 size-7"
+              showLabel={false}
             />
-          </div>
-        </Container>
-      </header>
+            <span className="text-foreground">{brandMark}</span>
+            {brandSuffix && (
+              <span className="text-muted-foreground">{brandSuffix}</span>
+            )}
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
+          <NavbarCta
+            variant="outline"
+            onClick={() => go(contactTarget)}
+            className="hidden border-foreground px-6 py-2.5 text-foreground hover:bg-foreground hover:text-background md:inline-flex"
+          >
+            {cta}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={nav[0]}
+            cta={{ label: cta, target: contactTarget }}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

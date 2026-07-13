@@ -3,8 +3,15 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -55,79 +62,58 @@ export const IllustratorNavbar = defineCapsule({
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('border-border/60 bg-background/95', props.className)}
       >
-        <Container asChild>
-          <nav aria-label="Main navigation">
-            <div className="flex h-16 items-center justify-between sm:h-20">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="font-serif text-xl tracking-tight transition-opacity hover:opacity-70 sm:text-2xl"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-              <div className="hidden items-center gap-8 md:flex">
-                {nav.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-                <CommerceSearchButton
-                  lakebed={lakebed}
-                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-                />
-                <CommerceAccountButton
-                  lakebed={lakebed}
-                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-                />
-                <CommerceCartButton
-                  lakebed={lakebed}
-                  fallbackCount={initialCartCount}
-                  buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-                />
-                <button
-                  type="button"
-                  onClick={() => go(ctaTarget)}
-                  className="rounded-full bg-foreground px-5 py-2.5 text-sm text-background transition-colors hover:bg-muted-foreground"
-                >
-                  {ctaLabel}
-                </button>
-              </div>
-              <div className="flex items-center gap-3 md:hidden">
-                <CommerceSearchButton
-                  lakebed={lakebed}
-                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-                />
-                <CommerceAccountButton
-                  lakebed={lakebed}
-                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-                />
-                <CommerceCartButton
-                  lakebed={lakebed}
-                  fallbackCount={initialCartCount}
-                  buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-                />
-                <CommerceMobileMenu
-                  brand={brand}
-                  nav={nav}
-                  homeTarget={homeTarget}
-                  buttonClassName="p-2 text-foreground"
-                />
-              </div>
-            </div>
-          </nav>
-        </Container>
-      </header>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="font-serif text-xl tracking-tight transition-opacity hover:opacity-70 sm:text-2xl"
+          >
+            <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-3">
+          <CommerceSearchButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <CommerceAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <CommerceCartButton
+            lakebed={lakebed}
+            fallbackCount={initialCartCount}
+            buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <NavbarCta
+            variant="dark-pill"
+            onClick={() => go(ctaTarget)}
+            className="hidden px-5 py-2.5 md:inline-flex"
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <CommerceMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

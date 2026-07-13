@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -80,17 +88,16 @@ export const WineryBreweryNavbar = defineCapsule({
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex items-center gap-3"
+            className="gap-3"
           >
             <BrandLogo
               brand={brand}
@@ -98,58 +105,53 @@ export const WineryBreweryNavbar = defineCapsule({
               labelClassName="font-serif text-xl font-medium text-foreground"
             />
           </button>
+        </NavbarBrand>
 
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-          <div className="flex items-center gap-4">
-            <CommerceSearchButton
-              lakebed={lakebed}
-              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-            />
-            <CommerceAccountButton
-              lakebed={lakebed}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-            />
-            <CommerceCartButton
-              lakebed={lakebed}
-              fallbackCount={initialCartCount}
-              buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-            />
-            {phone.trim() ? (
-              <a
-                href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-                className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
-              >
-                {phone}
-              </a>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => go(ctaTarget)}
-              className="hidden items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+        <NavbarActions>
+          <CommerceSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <CommerceAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <CommerceCartButton
+            lakebed={lakebed}
+            fallbackCount={initialCartCount}
+            buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          {phone.trim() ? (
+            <a
+              href={`tel:${phone.replace(/[^\d+]/g, '')}`}
+              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
             >
-              {ctaLabel}
-            </button>
-            <CommerceMobileMenu
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+              {phone}
+            </a>
+          ) : null}
+          <NavbarCta
+            variant="primary-pill"
+            onClick={() => go(ctaTarget)}
+            className="hidden px-4 py-2 sm:inline-flex"
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <CommerceMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

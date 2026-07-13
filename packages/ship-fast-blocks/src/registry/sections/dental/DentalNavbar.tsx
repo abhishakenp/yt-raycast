@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
   LocalServiceIntentBadge,
@@ -75,17 +82,16 @@ export const DentalNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(nav[0])}
-            className="flex items-center gap-3 text-left"
+            className="gap-3 text-left"
           >
             <BrandLogo
               brand={brand}
@@ -102,49 +108,46 @@ export const DentalNavbar = defineCapsule({
               </span>
             </span>
           </button>
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.slice(0, -1).map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-            <LocalServiceBookingButton
-              lakebed={lakebed}
-              intentLabel={nav[nav.length - 1]}
-              service="Dental appointment"
-              source="navbar"
-              pendingChildren={
-                <LocalServiceMutationSpinner className="text-primary-foreground" />
-              }
-              className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {nav[nav.length - 1]}
-            </LocalServiceBookingButton>
-          </div>
-          <div className="flex items-center gap-2">
-            <LocalServiceIntentBadge lakebed={lakebed} />
-            <LocalServiceSearchButton
-              lakebed={lakebed}
-              buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
-            />
-            <LocalServiceAccountButton
-              lakebed={lakebed}
-              buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
-            />
-            <LocalServiceMobileMenu
-              brand={brand}
-              homeTarget={nav[0]}
-              nav={nav}
-              buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        </NavbarBrand>
+
+        <NavbarNav className="[&>button]:font-medium">
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+          <LocalServiceBookingButton
+            lakebed={lakebed}
+            intentLabel={nav[nav.length - 1]}
+            service="Dental appointment"
+            source="navbar"
+            pendingChildren={
+              <LocalServiceMutationSpinner className="text-primary-foreground" />
+            }
+            className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {nav[nav.length - 1]}
+          </LocalServiceBookingButton>
+        </NavbarNav>
+
+        <NavbarActions className="gap-2">
+          <LocalServiceIntentBadge lakebed={lakebed} />
+          <LocalServiceSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+          />
+          <LocalServiceAccountButton
+            lakebed={lakebed}
+            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+          />
+          <LocalServiceMobileMenu
+            brand={brand}
+            homeTarget={nav[0]}
+            nav={nav}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

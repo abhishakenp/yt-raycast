@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -11,8 +19,6 @@ import {
   CommerceMobileMenu,
   CommerceSearchButton,
 } from '../commerce/commerce-interactions.tsx'
-
-import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * BarNightclubNavbar — fixed, translucent top navigation bar for a moody
@@ -57,64 +63,58 @@ export const BarNightclubNavbar = defineCapsule({
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="responsive"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <Container>
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="text-2xl font-light uppercase tracking-[0.2em] text-foreground"
-            >
-              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm tracking-wide text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-4">
-              <CommerceSearchButton
-                lakebed={lakebed}
-                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              />
-              <CommerceAccountButton
-                lakebed={lakebed}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-              />
-              <CommerceCartButton
-                lakebed={lakebed}
-                fallbackCount={initialCartCount}
-                buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-              />
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="hidden items-center border border-foreground px-6 py-2 text-sm tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background md:inline-flex"
-              >
-                {cta}
-              </button>
-              <CommerceMobileMenu
-                brand={brand}
-                nav={nav}
-                homeTarget={homeTarget}
-                buttonClassName="p-2 text-foreground md:hidden"
-              />
-            </div>
-          </div>
-        </Container>
-      </header>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="text-2xl font-light uppercase tracking-[0.2em] text-foreground"
+          >
+            <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav className="[&>button]:tracking-wide">
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
+          <CommerceSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <CommerceAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <CommerceCartButton
+            lakebed={lakebed}
+            fallbackCount={initialCartCount}
+            buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <NavbarCta
+            variant="outline"
+            onClick={() => go(ctaTarget)}
+            className="hidden border-foreground px-6 py-2 tracking-wide hover:bg-foreground hover:text-background md:inline-flex"
+          >
+            {cta}
+          </NavbarCta>
+          <CommerceMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

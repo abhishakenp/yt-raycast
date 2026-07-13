@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -21,7 +28,6 @@ import {
  * sticky site header for clothing brands, boutiques, apparel and accessories
  * shops, or any premium minimalist retail storefront.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const FashionStoreNavbar = defineCapsule({
   name: 'FashionStoreNavbar',
   description:
@@ -92,95 +98,80 @@ export const FashionStoreNavbar = defineCapsule({
       </svg>
     )
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="responsive"
+        className={cn('bg-background/95', props.className)}
       >
-        <Container asChild>
-          <nav aria-label="Main navigation">
-            <div className="flex h-16 items-center justify-between lg:h-20">
-              {/* Mobile menu button */}
-              <CommerceMobileMenu
-                brand={brand}
-                nav={nav}
-                homeTarget={nav[0]}
-                buttonClassName="-ml-2 p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </CommerceMobileMenu>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(nav[0])}
+            className="items-center"
+          >
+            <BrandLogo
+              brand={brand}
+              className="mr-2 size-8"
+              showLabel={false}
+            />
+            <span className="font-serif text-2xl font-medium tracking-tight lg:text-3xl">
+              {brand}
+            </span>
+          </button>
+        </NavbarBrand>
 
-              {/* Logo */}
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="flex items-center"
-              >
-                <BrandLogo
-                  brand={brand}
-                  className="mr-2 size-8"
-                  showLabel={false}
-                />
-                <span className="font-serif text-2xl font-medium tracking-tight lg:text-3xl">
-                  {brand}
-                </span>
-              </button>
+        <NavbarNav breakpoint="lg">
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-              {/* Desktop nav */}
-              <div className="hidden items-center gap-8 lg:flex">
-                {nav.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-4">
-                <CommerceSearchButton
-                  lakebed={lakebed}
-                  buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:block"
-                >
-                  <SearchIcon />
-                </CommerceSearchButton>
-                <CommerceAccountButton
-                  lakebed={lakebed}
-                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <AccountIcon />
-                </CommerceAccountButton>
-                <CommerceCartButton
-                  lakebed={lakebed}
-                  label="Shopping bag"
-                  fallbackCount={initialBagCount}
-                  buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <BagIcon />
-                </CommerceCartButton>
-              </div>
-            </div>
-          </nav>
-        </Container>
-      </header>
+        <NavbarActions className="gap-4">
+          <CommerceMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={nav[0]}
+            buttonClassName="-ml-2 p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+          >
+            <svg
+              className="size-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </CommerceMobileMenu>
+          <CommerceSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:block"
+          >
+            <SearchIcon />
+          </CommerceSearchButton>
+          <CommerceAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <AccountIcon />
+          </CommerceAccountButton>
+          <CommerceCartButton
+            lakebed={lakebed}
+            label="Shopping bag"
+            fallbackCount={initialBagCount}
+            buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <BagIcon />
+          </CommerceCartButton>
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

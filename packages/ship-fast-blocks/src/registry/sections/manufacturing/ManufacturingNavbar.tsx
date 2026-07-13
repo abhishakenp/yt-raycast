@@ -4,6 +4,14 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * ManufacturingNavbar — sticky, translucent top navigation bar for a precision-
@@ -18,7 +26,6 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * engineering firms. Renders fully with no props via baked-in "Vertex
  * Manufacturing" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const ManufacturingNavbar = defineCapsule({
   name: 'ManufacturingNavbar',
   description:
@@ -49,67 +56,61 @@ export const ManufacturingNavbar = defineCapsule({
       .map((w) => w.charAt(0).toUpperCase())
       .join('')
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="responsive"
+        className={cn('bg-background/95', props.className)}
       >
-        <Container asChild>
-          <nav aria-label="Main navigation">
-            <div className="flex h-16 items-center justify-between lg:h-20">
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="flex items-center gap-2"
-                aria-label={`${brand} Home`}
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span
-                      aria-hidden="true"
-                      className="grid size-8 place-items-center rounded-md bg-foreground text-sm font-bold text-background"
-                    >
-                      {brandInitials}
-                    </span>
-                  }
-                  labelClassName="text-lg font-semibold tracking-tight text-foreground"
-                />
-              </button>
-              <div className="hidden items-center gap-8 md:flex">
-                {nav.slice(0, -1).map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => go(nav[nav.length - 1])}
-                  className="inline-flex items-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(nav[0])}
+            className="gap-2"
+            aria-label={`${brand} Home`}
+          >
+            <BrandLogo
+              brand={brand}
+              fallback={
+                <span
+                  aria-hidden="true"
+                  className="grid size-8 place-items-center rounded-md bg-foreground text-sm font-bold text-background"
                 >
-                  {nav[nav.length - 1]}
-                </button>
-              </div>
-              <MobileNavDrawer
-                brand={brand}
-                nav={nav}
-                homeTarget={nav[0]}
-                cta={{
-                  label: nav[nav.length - 1],
-                  target: nav[nav.length - 1],
-                }}
-                buttonClassName="p-2 text-muted-foreground md:hidden"
-              />
-            </div>
-          </nav>
-        </Container>
-      </header>
+                  {brandInitials}
+                </span>
+              }
+              labelClassName="text-lg font-semibold tracking-tight text-foreground"
+            />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+          <NavbarCta
+            variant="dark"
+            onClick={() => go(nav[nav.length - 1])}
+            className="rounded-md px-4 py-2"
+          >
+            {nav[nav.length - 1]}
+          </NavbarCta>
+        </NavbarNav>
+
+        <NavbarActions>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={nav[0]}
+            cta={{
+              label: nav[nav.length - 1],
+              target: nav[nav.length - 1],
+            }}
+            buttonClassName="p-2 text-muted-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

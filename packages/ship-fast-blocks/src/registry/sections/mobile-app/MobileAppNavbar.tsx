@@ -4,6 +4,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   SaasAccountButton,
   SaasIntentBadge,
   SaasMobileMenu,
@@ -24,7 +31,6 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * app, productivity or to-do app, or any App-Store-distributed consumer product.
  * Renders fully with no props via baked-in "DailyFlow" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const MobileAppNavbar = defineCapsule({
   name: 'MobileAppNavbar',
   description:
@@ -67,74 +73,66 @@ export const MobileAppNavbar = defineCapsule({
       </svg>
     )
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="compact"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <Container asChild>
-          <nav aria-label="Main navigation">
-            <div className="flex h-16 items-center justify-between">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-8" />}
-                  labelClassName="text-xl font-semibold tracking-tight"
-                />
-              </button>
-              <div className="hidden items-center gap-8 md:flex">
-                {nav.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-4">
-                <SaasIntentBadge lakebed={lakebed} />
-                <SaasSearchButton
-                  lakebed={lakebed}
-                  buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-                />
-                <SaasAccountButton
-                  lakebed={lakebed}
-                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-                />
-                <SaasPlanActionButton
-                  lakebed={lakebed}
-                  intentLabel={ctaLabel}
-                  plan={ctaLabel}
-                  source="navbar"
-                  pendingChildren={
-                    <>
-                      <SaasMutationSpinner className="size-4" />
-                      Opening
-                    </>
-                  }
-                  className="hidden items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
-                >
-                  {ctaLabel}
-                </SaasPlanActionButton>
-                <SaasMobileMenu
-                  brand={brand}
-                  nav={nav}
-                  homeTarget={homeTarget}
-                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-                />
-              </div>
-            </div>
-          </nav>
-        </Container>
-      </header>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="flex items-center gap-2"
+          >
+            <BrandLogo
+              brand={brand}
+              fallback={<LogoMark className="size-8" />}
+              labelClassName="text-xl font-semibold tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-4">
+          <SaasIntentBadge lakebed={lakebed} />
+          <SaasSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <SaasAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={ctaLabel}
+            plan={ctaLabel}
+            source="navbar"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Opening
+              </>
+            }
+            className="hidden items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+          >
+            {ctaLabel}
+          </SaasPlanActionButton>
+          <SaasMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

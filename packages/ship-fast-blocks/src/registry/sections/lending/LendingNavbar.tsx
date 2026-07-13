@@ -2,6 +2,14 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * LendingNavbar — sticky, translucent top navigation bar for a personal-lending
@@ -14,7 +22,6 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * debt-consolidation services, fintech credit products, or financing brands.
  * Renders fully with no props via baked-in "ClearLoan" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const LendingNavbar = defineCapsule({
   name: 'LendingNavbar',
   description:
@@ -56,59 +63,47 @@ export const LendingNavbar = defineCapsule({
       </svg>
     )
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/80', props.className)}
       >
-        <Container asChild>
-          <nav>
-            <div className="flex h-16 items-center justify-between">
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="flex items-center gap-2"
-              >
-                <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-                  <Logo className="size-5" />
-                </span>
-                <span className="text-xl font-semibold text-foreground">
-                  {brand}
-                </span>
-              </button>
-              <div className="hidden items-center gap-8 md:flex">
-                {nav.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(signIn)}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-                >
-                  {signIn}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(ctaTarget)}
-                  className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  {cta}
-                </button>
-              </div>
-            </div>
-          </nav>
-        </Container>
-      </header>
+        <NavbarBrand asChild>
+          <button type="button" onClick={() => go(nav[0])} className="gap-2">
+            <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
+              <Logo className="size-5" />
+            </span>
+            <span className="text-xl font-semibold text-foreground">
+              {brand}
+            </span>
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-4">
+          <button
+            type="button"
+            onClick={() => go(signIn)}
+            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+          >
+            {signIn}
+          </button>
+          <NavbarCta
+            variant="primary"
+            onClick={() => go(ctaTarget)}
+            className="px-5 py-2.5"
+          >
+            {cta}
+          </NavbarCta>
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

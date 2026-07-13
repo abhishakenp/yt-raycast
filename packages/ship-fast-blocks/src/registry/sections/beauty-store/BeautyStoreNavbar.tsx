@@ -4,7 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
-import type { ReactNode } from 'react'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -12,8 +18,6 @@ import {
   CommerceMobileMenu,
   CommerceSearchButton,
 } from '../commerce/commerce-interactions.tsx'
-
-import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * BeautyStoreNavbar — sticky translucent top navigation bar for a beauty / skincare /
@@ -103,80 +107,72 @@ export const BeautyStoreNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <Container>
-          <div className="flex h-20 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-2 font-serif text-2xl font-semibold tracking-tight text-foreground"
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-2 font-serif text-2xl font-semibold tracking-tight text-foreground"
+          >
+            <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
+          <CommerceSearchButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <SearchIcon />
+          </CommerceSearchButton>
+          <CommerceAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <AccountIcon />
+          </CommerceAccountButton>
+          <CommerceCartButton
+            lakebed={lakebed}
+            fallbackCount={initialCartCount}
+            buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <CartIcon />
+          </CommerceCartButton>
+          <CommerceMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-muted-foreground md:hidden"
+          >
+            <svg
+              className="size-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
             >
-              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-            </button>
-
-            <nav className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-4">
-              <CommerceSearchButton
-                lakebed={lakebed}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <SearchIcon />
-              </CommerceSearchButton>
-              <CommerceAccountButton
-                lakebed={lakebed}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <AccountIcon />
-              </CommerceAccountButton>
-              <CommerceCartButton
-                lakebed={lakebed}
-                fallbackCount={initialCartCount}
-                buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <CartIcon />
-              </CommerceCartButton>
-              <CommerceMobileMenu
-                brand={brand}
-                nav={nav}
-                homeTarget={homeTarget}
-                buttonClassName="p-2 text-muted-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </CommerceMobileMenu>
-            </div>
-          </div>
-        </Container>
-      </header>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </CommerceMobileMenu>
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

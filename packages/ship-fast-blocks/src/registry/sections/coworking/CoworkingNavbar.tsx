@@ -6,6 +6,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * CoworkingNavbar — quiet glass navigation for a coworking / workspace
@@ -82,20 +89,22 @@ export const CoworkingNavbar = defineCapsule({
         : brand
 
     return (
-      <header
+      <SiteNav
+        position="fixed"
+        height="default"
         className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border/50 backdrop-blur-xl transition-[background-color,box-shadow] duration-500',
+          'border-border/50 backdrop-blur-xl transition-[background-color,box-shadow] duration-500',
           scrolled
             ? 'bg-background/80 shadow-[0_8px_30px_-12px] shadow-foreground/10'
             : 'bg-background/65',
           props.className,
         )}
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex items-center gap-3"
+            className="gap-3"
           >
             <Logo
               brand={brand}
@@ -104,62 +113,59 @@ export const CoworkingNavbar = defineCapsule({
               labelClassName="text-lg font-semibold tracking-tight text-foreground"
             />
           </button>
+        </NavbarBrand>
 
-          <div
-            className="hidden items-center gap-1 md:flex"
-            onMouseLeave={() => setHovered(null)}
-          >
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                onMouseEnter={() => setHovered(label)}
-                className="relative rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
-              >
-                {hovered === label ? (
-                  <span
-                    className="absolute inset-0 rounded-full bg-muted"
-                    aria-hidden="true"
-                  />
-                ) : null}
-                <span className="relative z-10">{label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {phone ? (
-              <a
-                href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-                className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
-              >
-                {phone}
-              </a>
-            ) : null}
-
+        <NavbarNav className="gap-1" onMouseLeave={() => setHovered(null)}>
+          {nav.map((label) => (
             <button
+              key={label}
               type="button"
-              onClick={() => go(ctaTarget)}
-              className="group relative hidden items-center justify-center overflow-hidden rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 transition-shadow duration-300 hover:shadow-md hover:shadow-primary/30 sm:inline-flex"
+              onClick={() => go(label)}
+              onMouseEnter={() => setHovered(label)}
+              className="relative rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
             >
-              <span
-                aria-hidden="true"
-                className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary-foreground/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
-              />
-              <span className="relative">{ctaLabel}</span>
+              {hovered === label ? (
+                <span
+                  className="absolute inset-0 rounded-full bg-muted"
+                  aria-hidden="true"
+                />
+              ) : null}
+              <span className="relative z-10">{label}</span>
             </button>
+          ))}
+        </NavbarNav>
 
-            <MobileNavDrawer
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              cta={{ label: ctaLabel, target: ctaTarget }}
-              buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+        <NavbarActions className="gap-3">
+          {phone ? (
+            <a
+              href={`tel:${phone.replace(/[^\d+]/g, '')}`}
+              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
+            >
+              {phone}
+            </a>
+          ) : null}
+
+          <NavbarCta
+            variant="primary-pill"
+            onClick={() => go(ctaTarget)}
+            className="group relative hidden overflow-hidden px-5 py-2.5 font-semibold shadow-sm shadow-primary/25 transition-shadow duration-300 hover:shadow-md hover:shadow-primary/30 sm:inline-flex"
+          >
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary-foreground/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
             />
-          </div>
-        </nav>
-      </header>
+            <span className="relative">{ctaLabel}</span>
+          </NavbarCta>
+
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

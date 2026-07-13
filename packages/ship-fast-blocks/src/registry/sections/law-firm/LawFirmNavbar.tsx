@@ -4,6 +4,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * LawFirmNavbar — sticky top navigation bar for a corporate / trial law-firm
@@ -18,7 +25,6 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * counsel, accounting/advisory or any premium professional-services site.
  * Renders fully with no props via baked-in "Reinhart & Associates" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const LawFirmNavbar = defineCapsule({
   name: 'LawFirmNavbar',
   description:
@@ -48,75 +54,67 @@ export const LawFirmNavbar = defineCapsule({
         .charAt(0)
         .toUpperCase() || 'R'
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-card',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-card', props.className)}
       >
-        <Container asChild>
-          <nav>
-            <div className="flex h-20 items-center justify-between">
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="flex items-center gap-3 text-left"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span
-                      className="grid size-10 place-items-center rounded-sm bg-primary font-serif text-lg font-bold text-primary-foreground"
-                      aria-hidden="true"
-                    >
-                      {brandInitial}
-                    </span>
-                  }
-                  className="size-10 rounded-sm"
-                  showLabel={false}
-                />
-                <span className="block">
-                  <span className="block font-serif text-xl font-semibold tracking-tight text-foreground">
-                    {brand}
-                  </span>
-                  <span className="block text-xs uppercase tracking-widest text-muted-foreground">
-                    {tagline}
-                  </span>
-                </span>
-              </button>
-              <div className="hidden items-center gap-8 md:flex">
-                {nav.slice(0, -1).map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => go(nav[nav.length - 1])}
-                  className="bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(nav[0])}
+            className="gap-3 text-left"
+          >
+            <BrandLogo
+              brand={brand}
+              fallback={
+                <span
+                  className="grid size-10 place-items-center rounded-sm bg-primary font-serif text-lg font-bold text-primary-foreground"
+                  aria-hidden="true"
                 >
-                  {ctaLabel}
-                </button>
-              </div>
-              <MobileNavDrawer
-                brand={brand}
-                nav={nav}
-                homeTarget={nav[0]}
-                cta={{
-                  label: ctaLabel,
-                  target: nav[nav.length - 1],
-                }}
-                buttonClassName="p-2 text-foreground md:hidden"
-              />
-            </div>
-          </nav>
-        </Container>
-      </header>
+                  {brandInitial}
+                </span>
+              }
+              className="size-10 rounded-sm"
+              showLabel={false}
+            />
+            <span className="block">
+              <span className="block font-serif text-xl font-semibold tracking-tight text-foreground">
+                {brand}
+              </span>
+              <span className="block text-xs uppercase tracking-widest text-muted-foreground">
+                {tagline}
+              </span>
+            </span>
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+          <NavbarCta
+            variant="primary"
+            onClick={() => go(nav[nav.length - 1])}
+            className="rounded-none px-6 py-3"
+          >
+            {ctaLabel}
+          </NavbarCta>
+        </NavbarNav>
+
+        <MobileNavDrawer
+          brand={brand}
+          nav={nav}
+          homeTarget={nav[0]}
+          cta={{
+            label: ctaLabel,
+            target: nav[nav.length - 1],
+          }}
+          buttonClassName="p-2 text-foreground md:hidden"
+        />
+      </SiteNav>
     )
   },
 })

@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   SaasAccountButton,
   SaasIntentBadge,
   SaasMobileMenu,
@@ -77,17 +84,16 @@ export const SaasNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Start free trial'
 
     return (
-      <header
-        className={cn(
-          'sticky inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex min-w-0 items-center gap-3"
+            className="min-w-0 gap-3"
           >
             <BrandLogo
               brand={brand}
@@ -95,54 +101,49 @@ export const SaasNavbar = defineCapsule({
               labelClassName="truncate text-xl font-extrabold tracking-tight text-foreground"
             />
           </button>
+        </NavbarBrand>
 
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-          <div className="flex items-center gap-3">
-            <SaasIntentBadge lakebed={lakebed} />
-            <SaasSearchButton
-              lakebed={lakebed}
-              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-            />
-            <SaasAccountButton
-              lakebed={lakebed}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-            />
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={ctaTarget}
-              plan={ctaTarget}
-              source="navbar"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Starting
-                </>
-              }
-              className="hidden items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
-            >
-              {ctaLabel}
-            </SaasPlanActionButton>
-            <SaasMobileMenu
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        <NavbarActions className="gap-3">
+          <SaasIntentBadge lakebed={lakebed} />
+          <SaasSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <SaasAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={ctaTarget}
+            plan={ctaTarget}
+            source="navbar"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Starting
+              </>
+            }
+            className="hidden items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+          >
+            {ctaLabel}
+          </SaasPlanActionButton>
+          <SaasMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

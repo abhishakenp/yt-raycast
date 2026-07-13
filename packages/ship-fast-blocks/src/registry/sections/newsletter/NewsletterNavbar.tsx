@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import {
   NewsletterAccountButton,
@@ -54,56 +61,53 @@ export const NewsletterNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/80', props.className)}
+        containerClassName="max-w-6xl px-4 sm:px-6 lg:px-8"
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(brand)}
-              className="group flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8 text-lg" />}
-                labelClassName="font-serif text-xl font-medium tracking-tight text-foreground"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.slice(0, -1).map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-              <NewsletterAccountButton
-                lakebed={lakebed}
-                buttonClassName="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              />
-              <NewsletterSubscribeDrawer
-                lakebed={lakebed}
-                buttonLabel={nav[nav.length - 1] ?? 'Subscribe'}
-                source="navbar"
-                buttonClassName="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground disabled:pointer-events-none disabled:opacity-60"
-              />
-            </div>
-            <NewsletterMobileMenu
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(brand)}
+            className="group flex items-center gap-2"
+          >
+            <BrandLogo
               brand={brand}
-              homeTarget={brand}
-              nav={nav}
-              buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              fallback={<LogoMark className="size-8 text-lg" />}
+              labelClassName="font-serif text-xl font-medium tracking-tight text-foreground"
             />
-          </div>
-        </div>
-      </header>
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+          <NewsletterAccountButton
+            lakebed={lakebed}
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          />
+          <NewsletterSubscribeDrawer
+            lakebed={lakebed}
+            buttonLabel={nav[nav.length - 1] ?? 'Subscribe'}
+            source="navbar"
+            buttonClassName="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground disabled:pointer-events-none disabled:opacity-60"
+          />
+        </NavbarNav>
+
+        <NavbarActions>
+          <NewsletterMobileMenu
+            brand={brand}
+            homeTarget={brand}
+            nav={nav}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

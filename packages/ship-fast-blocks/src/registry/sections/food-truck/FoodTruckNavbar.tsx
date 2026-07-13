@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -60,17 +68,18 @@ export const FoodTruckNavbar = defineCapsule({
       .toUpperCase()
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="outlier"
+        rowClassName="py-4"
+        className={cn('bg-background/95', props.className)}
+        containerClassName="max-w-6xl px-6"
       >
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex items-center gap-2"
+            className="gap-2"
           >
             <BrandLogo
               brand={brand}
@@ -85,48 +94,49 @@ export const FoodTruckNavbar = defineCapsule({
               labelClassName="text-lg font-semibold tracking-tight"
             />
           </button>
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.slice(0, -1).map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => go(ctaTarget)}
-              className="rounded-full bg-foreground px-4 py-2 text-sm text-background transition-colors hover:bg-foreground/90"
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink
+              key={label}
+              onClick={() => go(label)}
+              className="font-normal"
             >
-              {lastNav}
-            </button>
-          </div>
-          <div className="flex items-center gap-4">
-            <CommerceSearchButton
-              lakebed={lakebed}
-              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-            />
-            <CommerceAccountButton
-              lakebed={lakebed}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-            />
-            <CommerceCartButton
-              lakebed={lakebed}
-              fallbackCount={initialCartCount}
-              buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-            />
-            <CommerceMobileMenu
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              buttonClassName="p-2 text-muted-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+              {label}
+            </NavbarNavLink>
+          ))}
+          <NavbarCta
+            variant="dark-pill"
+            onClick={() => go(ctaTarget)}
+            className="px-4 py-2"
+          >
+            {lastNav}
+          </NavbarCta>
+        </NavbarNav>
+
+        <NavbarActions>
+          <CommerceSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <CommerceAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <CommerceCartButton
+            lakebed={lakebed}
+            fallbackCount={initialCartCount}
+            buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <CommerceMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-muted-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

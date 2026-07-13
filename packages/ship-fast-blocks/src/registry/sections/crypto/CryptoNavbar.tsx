@@ -4,8 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
-
-import { Container } from '#/section-kit/Container.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * CryptoNavbar — glassy sticky top navigation bar for a crypto / DeFi
@@ -68,60 +74,58 @@ export const CryptoNavbar = defineCapsule({
     )
 
     return (
-      <nav
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <Container>
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-2"
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-2"
+          >
+            <BrandLogo
+              brand={brand}
+              fallback={
+                <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
+                  <BoltIcon className="size-5" />
+                </span>
+              }
+              labelClassName="text-xl font-semibold tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink
+              key={label}
+              onClick={() => go(label)}
+              className="font-normal"
             >
-              <BrandLogo
-                brand={brand}
-                fallback={
-                  <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-                    <BoltIcon className="size-5" />
-                  </span>
-                }
-                labelClassName="text-xl font-semibold tracking-tight"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(docTarget)}
-                className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                {docLabel}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-              >
-                {ctaLabel}
-              </button>
-            </div>
-          </div>
-        </Container>
-      </nav>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
+          <button
+            type="button"
+            onClick={() => go(docTarget)}
+            className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+          >
+            {docLabel}
+          </button>
+          <NavbarCta
+            variant="dark"
+            onClick={() => go(ctaTarget)}
+            className="px-4 py-2"
+          >
+            {ctaLabel}
+          </NavbarCta>
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

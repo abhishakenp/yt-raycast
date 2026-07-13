@@ -3,9 +3,16 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * AccountingFirmNavbar — sticky, translucent top navigation bar for a CPA /
@@ -53,60 +60,46 @@ export const AccountingFirmNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="responsive"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <Container asChild>
-          <nav>
-            <div className="flex h-16 items-center justify-between lg:h-20">
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-8 text-sm" />}
-                  labelClassName="text-lg font-semibold tracking-tight text-foreground"
-                />
-              </button>
+        <NavbarBrand asChild>
+          <button type="button" onClick={() => go(nav[0])} className="gap-2">
+            <BrandLogo
+              brand={brand}
+              fallback={<LogoMark className="size-8 text-sm" />}
+              labelClassName="text-lg font-semibold tracking-tight text-foreground"
+            />
+          </button>
+        </NavbarBrand>
 
-              <div className="hidden items-center gap-8 md:flex">
-                {nav.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(cta)}
-                  className="hidden items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
-                >
-                  {cta}
-                </button>
-                <MobileNavDrawer
-                  brand={brand}
-                  nav={nav}
-                  homeTarget={nav[0]}
-                  cta={{ label: cta, target: cta }}
-                  buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-                />
-              </div>
-            </div>
-          </nav>
-        </Container>
-      </header>
+        <NavbarActions>
+          <NavbarCta
+            variant="primary"
+            onClick={() => go(cta)}
+            className="hidden rounded-md px-5 py-2.5 sm:inline-flex"
+          >
+            {cta}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={nav[0]}
+            cta={{ label: cta, target: cta }}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

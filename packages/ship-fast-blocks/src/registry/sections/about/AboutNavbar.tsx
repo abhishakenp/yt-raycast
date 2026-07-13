@@ -4,6 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * AboutNavbar — glassy sticky top navigation bar for a modern company / ABOUT
@@ -83,43 +92,55 @@ export const AboutNavbar = defineCapsule({
     )
 
     return (
-      <header
+      <SiteNav
+        position="sticky"
+        height="compact"
         className={cn(
-          'sticky top-0 z-50 border-b border-border/60 bg-background/75 backdrop-blur-md supports-[backdrop-filter]:bg-background/60',
+          'border-border/60 bg-background/75 supports-[backdrop-filter]:bg-background/60',
           props.className,
         )}
+        containerClassName="max-w-6xl px-6 sm:px-8 lg:px-12"
       >
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8 lg:px-12">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(nav[0])}
-            className="flex items-center gap-2.5 text-[1.05rem] font-extrabold tracking-tight text-foreground"
+            className="gap-2.5 text-[1.05rem] font-extrabold tracking-tight text-foreground"
           >
             <BrandLogo brand={brand} fallback={<LogoMark />} />
           </button>
-          <ul className="hidden items-center gap-7 text-[0.92rem] font-medium text-muted-foreground md:flex">
-            {nav.map((label) => (
-              <li key={label}>
-                <button
-                  type="button"
-                  onClick={() => go(label)}
-                  className="transition-colors hover:text-primary"
-                >
-                  {label}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
+        </NavbarBrand>
+
+        <NavbarNav className="gap-7 text-[0.92rem]">
+          {nav.map((label) => (
+            <NavbarNavLink
+              key={label}
+              onClick={() => go(label)}
+              className="font-normal hover:text-primary"
+            >
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions>
+          <NavbarCta
+            variant="dark"
             onClick={() => go(ctaTarget)}
-            className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
+            className="gap-2 px-4 py-2.5 font-semibold shadow-sm hover:-translate-y-px hover:shadow-md"
           >
             <span className="hidden sm:inline">{cta}</span>
             <ArrowRight />
-          </button>
-        </nav>
-      </header>
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={nav[0]}
+            cta={{ label: cta, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
@@ -44,13 +52,13 @@ export const MusicFestivalNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Buy Tickets'
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="responsive"
+        className={cn('bg-background/95', props.className)}
+        containerClassName="max-w-7xl px-4 sm:px-6 lg:px-8"
       >
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
@@ -58,36 +66,33 @@ export const MusicFestivalNavbar = defineCapsule({
           >
             <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
           </button>
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium transition-colors hover:text-primary"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(ctaTarget)}
-              className="hidden items-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
-            >
-              {ctaLabel}
-            </button>
-            <MobileNavDrawer
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              cta={{ label: ctaLabel, target: ctaTarget }}
-              buttonClassName="p-2 md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-4">
+          <NavbarCta
+            variant="primary-pill"
+            onClick={() => go(ctaTarget)}
+            className="hidden px-5 py-2.5 sm:inline-flex"
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="p-2 md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

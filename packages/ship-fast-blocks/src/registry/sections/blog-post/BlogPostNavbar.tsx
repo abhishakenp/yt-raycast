@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   PublicationAccountButton,
   PublicationMobileMenu,
   PublicationSearchButton,
@@ -66,17 +73,17 @@ export const BlogPostNavbar = defineCapsule({
     const subscribeCta = props.subscribeCta ?? 'Subscribe'
 
     return (
-      <header
-        className={cn(
-          'sticky inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/95', props.className)}
+        containerClassName="max-w-5xl px-6 lg:px-8"
       >
-        <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex min-w-0 items-center gap-3"
+            className="min-w-0 gap-3"
           >
             <BrandLogo
               brand={brand}
@@ -84,44 +91,39 @@ export const BlogPostNavbar = defineCapsule({
               labelClassName="truncate text-xl font-semibold text-foreground"
             />
           </button>
+        </NavbarBrand>
 
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-          <div className="flex items-center gap-3">
-            <PublicationSearchButton
-              lakebed={lakebed}
-              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-            />
-            <PublicationAccountButton
-              lakebed={lakebed}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-            />
-            <PublicationSubscribeDrawer
-              lakebed={lakebed}
-              buttonLabel={subscribeCta}
-              source="blog post navbar"
-              buttonClassName="hidden rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground sm:inline-flex"
-            />
-            <PublicationMobileMenu
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        <NavbarActions className="gap-3">
+          <PublicationSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <PublicationAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <PublicationSubscribeDrawer
+            lakebed={lakebed}
+            buttonLabel={subscribeCta}
+            source="blog post navbar"
+            buttonClassName="hidden rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground sm:inline-flex"
+          />
+          <PublicationMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

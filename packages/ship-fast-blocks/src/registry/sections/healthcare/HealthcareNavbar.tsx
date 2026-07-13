@@ -4,6 +4,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
   LocalServiceIntentBadge,
@@ -24,7 +31,6 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * pediatric / women's-health / telehealth clinics, hospitals or medical groups.
  * Renders fully with no props via baked-in "Vitality Health Partners" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const HealthcareNavbar = defineCapsule({
   name: 'HealthcareNavbar',
   description:
@@ -75,93 +81,79 @@ export const HealthcareNavbar = defineCapsule({
       </span>
     )
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
-        <Container asChild>
-          <nav aria-label="Main navigation">
-            <div className="flex h-20 items-center justify-between">
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="flex items-center gap-3"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<HeartMark className="size-10" />}
-                  labelClassName="text-xl font-semibold text-foreground"
-                />
-              </button>
+        <NavbarBrand asChild>
+          <button type="button" onClick={() => go(nav[0])} className="gap-3">
+            <BrandLogo
+              brand={brand}
+              fallback={<HeartMark className="size-10" />}
+              labelClassName="text-xl font-semibold text-foreground"
+            />
+          </button>
+        </NavbarBrand>
 
-              <div className="hidden items-center gap-8 md:flex">
-                {nav.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => go(label)}
-                    className="font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+        <NavbarNav className="[&>button]:font-medium">
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(phone)}
-                  className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground lg:flex"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  <span className="font-medium">{phone}</span>
-                </button>
-                <LocalServiceIntentBadge lakebed={lakebed} />
-                <LocalServiceSearchButton
-                  lakebed={lakebed}
-                  buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
-                />
-                <LocalServiceAccountButton
-                  lakebed={lakebed}
-                  buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
-                />
-                <LocalServiceBookingButton
-                  lakebed={lakebed}
-                  intentLabel={ctaTarget}
-                  service={cta}
-                  source="navbar"
-                  pendingChildren={
-                    <LocalServiceMutationSpinner className="text-primary-foreground" />
-                  }
-                  className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {cta}
-                </LocalServiceBookingButton>
-                <LocalServiceMobileMenu
-                  brand={brand}
-                  homeTarget={nav[0]}
-                  nav={nav}
-                  buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-                />
-              </div>
-            </div>
-          </nav>
-        </Container>
-      </header>
+        <NavbarActions>
+          <button
+            type="button"
+            onClick={() => go(phone)}
+            className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground lg:flex"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            <span className="font-medium">{phone}</span>
+          </button>
+          <LocalServiceIntentBadge lakebed={lakebed} />
+          <LocalServiceSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+          />
+          <LocalServiceAccountButton
+            lakebed={lakebed}
+            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+          />
+          <LocalServiceBookingButton
+            lakebed={lakebed}
+            intentLabel={ctaTarget}
+            service={cta}
+            source="navbar"
+            pendingChildren={
+              <LocalServiceMutationSpinner className="text-primary-foreground" />
+            }
+            className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {cta}
+          </LocalServiceBookingButton>
+          <LocalServiceMobileMenu
+            brand={brand}
+            homeTarget={nav[0]}
+            nav={nav}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

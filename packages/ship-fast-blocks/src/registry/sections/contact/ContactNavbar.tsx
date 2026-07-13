@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   InquiryAccountButton,
   InquiryActionBadge,
   InquiryActionButton,
@@ -76,66 +83,69 @@ export const ContactNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        containerClassName="max-w-[1160px] px-6"
       >
-        <nav className="mx-auto flex h-16 max-w-[1160px] items-center justify-between px-6">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(homeTarget)}
-            className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-foreground"
+            className="gap-2 text-lg font-extrabold tracking-tight text-foreground"
           >
             <BrandLogo brand={brand} fallback={<LogoMark />} />
           </button>
-          <ul className="hidden items-center gap-8 text-[0.9375rem] font-medium text-muted-foreground md:flex">
+        </NavbarBrand>
+
+        <NavbarNav className="gap-8 text-[0.9375rem] font-medium" asChild>
+          <ul>
             {nav.map((label) => (
               <li key={label}>
-                <button
-                  type="button"
+                <NavbarNavLink
                   onClick={() => go(label)}
-                  className="transition-colors hover:text-foreground"
+                  className="hover:text-foreground"
                 >
                   {label}
-                </button>
+                </NavbarNavLink>
               </li>
             ))}
           </ul>
-          <div className="flex items-center gap-3">
-            <InquiryActionBadge lakebed={lakebed} />
-            <InquiryAccountButton
-              lakebed={lakebed}
-              buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
-            />
-            <InquiryActionButton
-              lakebed={lakebed}
-              label={ctaLabel}
-              target={ctaTarget}
-              source="navbar"
-              pendingChildren={
-                <>
-                  <InquiryMutationSpinner />
-                  Saving
-                </>
-              }
-              className="hidden items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
-            >
-              {ctaLabel}
-            </InquiryActionButton>
-            <InquiryMobileMenu
-              brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              ctaLabel={ctaLabel}
-              ctaTarget={ctaTarget}
-              lakebed={lakebed}
-              buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        </NavbarNav>
+
+        <NavbarActions className="gap-3">
+          <InquiryActionBadge lakebed={lakebed} />
+          <InquiryAccountButton
+            lakebed={lakebed}
+            buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+          />
+          <InquiryActionButton
+            lakebed={lakebed}
+            label={ctaLabel}
+            target={ctaTarget}
+            source="navbar"
+            pendingChildren={
+              <>
+                <InquiryMutationSpinner />
+                Saving
+              </>
+            }
+            className="hidden items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+          >
+            {ctaLabel}
+          </InquiryActionButton>
+          <InquiryMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            ctaLabel={ctaLabel}
+            ctaTarget={ctaTarget}
+            lakebed={lakebed}
+            buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

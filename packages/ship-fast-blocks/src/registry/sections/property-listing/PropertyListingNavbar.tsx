@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
   PropertyListingAccountButton,
@@ -65,17 +72,16 @@ export const PropertyListingNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Post'
 
     return (
-      <header
-        className={cn(
-          'sticky inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/95', props.className)}
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go('Home')}
-            className="flex min-w-0 items-center gap-3"
+            className="min-w-0 gap-3"
           >
             <BrandLogo
               brand={brand}
@@ -83,53 +89,48 @@ export const PropertyListingNavbar = defineCapsule({
               labelClassName="truncate text-xl font-semibold tracking-tight text-foreground"
             />
           </button>
+        </NavbarBrand>
 
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-          <div className="flex items-center gap-3">
-            <PropertyListingStatusBadge lakebed={lakebed} />
-            <PropertyListingSearchButton
-              lakebed={lakebed}
-              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-            />
-            <PropertyListingAccountButton
-              lakebed={lakebed}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-            />
-            <PropertyListingInquiryButton
-              lakebed={lakebed}
-              intent={ctaTarget}
-              source="navbar"
-              pendingChildren={
-                <>
-                  <PropertyListingMutationSpinner className="size-4" />
-                  Sending
-                </>
-              }
-              className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
-            >
-              {cta}
-            </PropertyListingInquiryButton>
-            <PropertyListingMobileMenu
-              brand={brand}
-              nav={nav}
-              homeTarget="Home"
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+        <NavbarActions className="gap-3">
+          <PropertyListingStatusBadge lakebed={lakebed} />
+          <PropertyListingSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <PropertyListingAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          <PropertyListingInquiryButton
+            lakebed={lakebed}
+            intent={ctaTarget}
+            source="navbar"
+            pendingChildren={
+              <>
+                <PropertyListingMutationSpinner className="size-4" />
+                Sending
+              </>
+            }
+            className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+          >
+            {cta}
+          </PropertyListingInquiryButton>
+          <PropertyListingMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget="Home"
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

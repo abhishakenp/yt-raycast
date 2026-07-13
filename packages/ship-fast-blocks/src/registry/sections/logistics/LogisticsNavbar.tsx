@@ -4,6 +4,14 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * LogisticsNavbar — sticky, backdrop-blurred top navigation bar for a global-
@@ -17,7 +25,6 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * warehousing, customs-brokerage or cargo/transport companies. Renders fully with
  * no props via baked-in "SwiftFreight" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const LogisticsNavbar = defineCapsule({
   name: 'LogisticsNavbar',
   description:
@@ -66,61 +73,53 @@ export const LogisticsNavbar = defineCapsule({
       </span>
     )
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="responsive"
+        className={cn('bg-background/95', props.className)}
       >
-        <Container>
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8" />}
-                labelClassName="text-xl font-semibold tracking-tight"
-              />
-            </button>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-2"
+          >
+            <BrandLogo
+              brand={brand}
+              fallback={<LogoMark className="size-8" />}
+              labelClassName="text-xl font-semibold tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
 
-            <nav className="hidden items-center gap-8 lg:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
+        <NavbarNav breakpoint="lg">
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="hidden items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
-              >
-                {cta}
-              </button>
-              <MobileNavDrawer
-                brand={brand}
-                nav={nav}
-                homeTarget={homeTarget}
-                cta={{
-                  label: cta,
-                  target: ctaTarget,
-                }}
-                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
-              />
-            </div>
-          </div>
-        </Container>
-      </header>
+        <NavbarActions className="gap-4">
+          <NavbarCta
+            variant="primary"
+            onClick={() => go(ctaTarget)}
+            className="hidden sm:inline-flex"
+          >
+            {cta}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{
+              label: cta,
+              target: ctaTarget,
+            }}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

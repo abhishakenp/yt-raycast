@@ -4,6 +4,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * FilmDirectorNavbar — fixed, backdrop-blurred top navigation bar for a film
@@ -15,7 +22,6 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * for filmmakers, directors, cinematographers, DPs, or video production houses
  * wanting a clean, editorial, light-canvas aesthetic.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const FilmDirectorNavbar = defineCapsule({
   name: 'FilmDirectorNavbar',
   description:
@@ -34,59 +40,58 @@ export const FilmDirectorNavbar = defineCapsule({
       ? props.nav
       : ['Work', 'Services', 'About', 'Get in Touch']
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="compact"
+        rowClassName="md:h-20"
+        className={cn('bg-background/90 backdrop-blur-sm', props.className)}
       >
-        <Container>
-          <div className="flex h-16 items-center justify-between md:h-20">
-            <button
-              type="button"
-              onClick={() => go(brand)}
-              className="inline-flex items-center text-lg font-medium tracking-tight md:text-xl"
-            >
-              <BrandLogo
-                brand={brand}
-                className="mr-2 size-7"
-                showLabel={false}
-              />
-              {brand.toUpperCase()}
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.slice(0, -1).map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => go(nav[nav.length - 1])}
-                className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {nav[nav.length - 1]}
-              </button>
-            </div>
-            <MobileNavDrawer
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(brand)}
+            className="inline-flex items-center text-lg font-medium tracking-tight md:text-xl"
+          >
+            <BrandLogo
               brand={brand}
-              nav={nav}
-              homeTarget={nav[0]}
-              cta={{
-                label: nav[nav.length - 1],
-                target: nav[nav.length - 1],
-              }}
-              label="Menu"
-              buttonClassName="p-2 md:hidden"
+              className="mr-2 size-7"
+              showLabel={false}
             />
-          </div>
-        </Container>
-      </header>
+            {brand.toUpperCase()}
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink
+              key={label}
+              onClick={() => go(label)}
+              className="font-normal"
+            >
+              {label}
+            </NavbarNavLink>
+          ))}
+          <NavbarCta
+            variant="primary"
+            onClick={() => go(nav[nav.length - 1])}
+            className="rounded-md px-4 py-2"
+          >
+            {nav[nav.length - 1]}
+          </NavbarCta>
+        </NavbarNav>
+
+        <MobileNavDrawer
+          brand={brand}
+          nav={nav}
+          homeTarget={nav[0]}
+          cta={{
+            label: nav[nav.length - 1],
+            target: nav[nav.length - 1],
+          }}
+          label="Menu"
+          buttonClassName="p-2 md:hidden"
+        />
+      </SiteNav>
     )
   },
 })

@@ -6,6 +6,13 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import { kitActionClasses } from '#/section-kit/types.ts'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -72,13 +79,13 @@ export const ProductDetailNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/95', props.className)}
+        containerClassName="max-w-7xl px-6 lg:px-8"
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(nav[0])}
@@ -90,104 +97,99 @@ export const ProductDetailNavbar = defineCapsule({
               labelClassName="text-xl font-medium text-foreground"
             />
           </button>
+        </NavbarBrand>
 
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-          <div className="flex items-center gap-3">
-            <CommerceCartButton
+        <NavbarActions className="gap-3">
+          <CommerceCartButton
+            lakebed={lakebed}
+            buttonClassName="relative hidden size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted sm:inline-flex"
+          />
+          {ctaAddsProduct ? (
+            <CommerceAddItemButton
               lakebed={lakebed}
-              buttonClassName="relative hidden size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted sm:inline-flex"
-            />
-            {ctaAddsProduct ? (
-              <CommerceAddItemButton
-                lakebed={lakebed}
-                item={{ label: productTitle, price: productPrice }}
-                pendingChildren={
-                  <>
-                    <CommerceMutationSpinner />
-                    Adding
-                  </>
-                }
-                className={cn(
-                  kitActionClasses(cta.variant),
-                  'hidden items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
-                )}
-              >
-                {cta.label}
-              </CommerceAddItemButton>
-            ) : (
-              <button
-                type="button"
-                onClick={runCta}
-                className={cn(
-                  kitActionClasses(cta.variant),
-                  'hidden items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
-                )}
-              >
-                {cta.label}
-              </button>
-            )}
-
-            <MobileNavDrawer
-              brand={brand}
-              nav={nav}
-              homeTarget={nav[0]}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              footer={(close) => (
-                <div className="flex items-center gap-3 pt-1">
-                  <CommerceCartButton
-                    lakebed={lakebed}
-                    buttonClassName="relative inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
-                  />
-                  {ctaAddsProduct ? (
-                    <CommerceAddItemButton
-                      lakebed={lakebed}
-                      item={{ label: productTitle, price: productPrice }}
-                      pendingChildren={
-                        <>
-                          <CommerceMutationSpinner />
-                          Adding
-                        </>
-                      }
-                      className={cn(
-                        kitActionClasses(cta.variant),
-                        'inline-flex flex-1 items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70',
-                      )}
-                    >
-                      {cta.label}
-                    </CommerceAddItemButton>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        runCta()
-                        close()
-                      }}
-                      className={cn(
-                        kitActionClasses(cta.variant),
-                        'inline-flex flex-1 items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70',
-                      )}
-                    >
-                      {cta.label}
-                    </button>
-                  )}
-                </div>
+              item={{ label: productTitle, price: productPrice }}
+              pendingChildren={
+                <>
+                  <CommerceMutationSpinner />
+                  Adding
+                </>
+              }
+              className={cn(
+                kitActionClasses(cta.variant),
+                'hidden items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
               )}
-            />
-          </div>
-        </nav>
-      </header>
+            >
+              {cta.label}
+            </CommerceAddItemButton>
+          ) : (
+            <button
+              type="button"
+              onClick={runCta}
+              className={cn(
+                kitActionClasses(cta.variant),
+                'hidden items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
+              )}
+            >
+              {cta.label}
+            </button>
+          )}
+
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={nav[0]}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            footer={(close) => (
+              <div className="flex items-center gap-3 pt-1">
+                <CommerceCartButton
+                  lakebed={lakebed}
+                  buttonClassName="relative inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
+                />
+                {ctaAddsProduct ? (
+                  <CommerceAddItemButton
+                    lakebed={lakebed}
+                    item={{ label: productTitle, price: productPrice }}
+                    pendingChildren={
+                      <>
+                        <CommerceMutationSpinner />
+                        Adding
+                      </>
+                    }
+                    className={cn(
+                      kitActionClasses(cta.variant),
+                      'inline-flex flex-1 items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70',
+                    )}
+                  >
+                    {cta.label}
+                  </CommerceAddItemButton>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      runCta()
+                      close()
+                    }}
+                    className={cn(
+                      kitActionClasses(cta.variant),
+                      'inline-flex flex-1 items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70',
+                    )}
+                  >
+                    {cta.label}
+                  </button>
+                )}
+              </div>
+            )}
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

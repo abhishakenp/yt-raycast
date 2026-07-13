@@ -5,8 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
-
-import { Container } from '#/section-kit/Container.tsx'
+import {
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * LandscapingNavbar — sticky, translucent top navigation bar for a landscaping /
@@ -64,54 +69,52 @@ export const LandscapingNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="responsive"
+        className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
-        <Container>
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8" />}
-                labelClassName="text-xl font-semibold tracking-tight text-foreground"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.slice(0, -1).map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {label}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => go(contactTarget)}
-                className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {cta}
-              </button>
-            </div>
-            <MobileNavDrawer
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-2"
+          >
+            <BrandLogo
               brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              cta={{ label: cta, target: contactTarget }}
-              buttonClassName="p-2 text-muted-foreground md:hidden"
+              fallback={<LogoMark className="size-8" />}
+              labelClassName="text-xl font-semibold tracking-tight text-foreground"
             />
-          </div>
-        </Container>
-      </header>
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink
+              key={label}
+              onClick={() => go(label)}
+              className="hover:text-primary"
+            >
+              {label}
+            </NavbarNavLink>
+          ))}
+          <NavbarCta
+            variant="primary-pill"
+            onClick={() => go(contactTarget)}
+            className="px-5 py-2.5"
+          >
+            {cta}
+          </NavbarCta>
+        </NavbarNav>
+
+        <MobileNavDrawer
+          brand={brand}
+          nav={nav}
+          homeTarget={homeTarget}
+          cta={{ label: cta, target: contactTarget }}
+          buttonClassName="p-2 text-muted-foreground md:hidden"
+        />
+      </SiteNav>
     )
   },
 })

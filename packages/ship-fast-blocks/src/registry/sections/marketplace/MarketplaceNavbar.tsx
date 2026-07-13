@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -69,69 +77,63 @@ export const MarketplaceNavbar = defineCapsule({
       'p-2 text-muted-foreground transition-colors hover:text-foreground'
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/95', props.className)}
+        containerClassName="max-w-7xl px-4 sm:px-6 lg:px-8"
       >
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-8">
-            <CommerceMobileMenu
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="flex items-center gap-3 text-left"
+          >
+            <BrandLogo
               brand={brand}
-              nav={nav}
-              homeTarget={homeTarget}
-              buttonClassName="-ml-2 p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              fallback={<LogoMark className="size-8 text-sm" />}
+              labelClassName="text-lg font-bold tracking-tight text-foreground sm:text-xl"
             />
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-3 text-left"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8 text-sm" />}
-                labelClassName="text-lg font-bold tracking-tight text-foreground sm:text-xl"
-              />
-            </button>
-            <div className="hidden items-center gap-6 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+          </button>
+        </NavbarBrand>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <CommerceSearchButton
-              lakebed={lakebed}
-              buttonClassName={IconButtonClass}
-            />
-            <CommerceAccountButton
-              lakebed={lakebed}
-              buttonClassName={IconButtonClass}
-            />
-            <CommerceCartButton
-              lakebed={lakebed}
-              fallbackCount={initialCartCount}
-              buttonClassName={cn('relative', IconButtonClass)}
-            />
-            <button
-              type="button"
-              onClick={() => go(props.ctaTarget ?? 'Sell')}
-              className="hidden rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
-            >
-              {ctaLabel}
-            </button>
-          </div>
-        </nav>
-      </header>
+        <NavbarNav className="gap-6">
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-2 sm:gap-3">
+          <CommerceMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="-ml-2 p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+          <CommerceSearchButton
+            lakebed={lakebed}
+            buttonClassName={IconButtonClass}
+          />
+          <CommerceAccountButton
+            lakebed={lakebed}
+            buttonClassName={IconButtonClass}
+          />
+          <CommerceCartButton
+            lakebed={lakebed}
+            fallbackCount={initialCartCount}
+            buttonClassName={cn('relative', IconButtonClass)}
+          />
+          <NavbarCta
+            variant="primary-pill"
+            onClick={() => go(props.ctaTarget ?? 'Sell')}
+            className="hidden px-5 py-2.5 font-semibold sm:inline-flex"
+          >
+            {ctaLabel}
+          </NavbarCta>
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

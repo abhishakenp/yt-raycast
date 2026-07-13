@@ -5,14 +5,18 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+} from '#/section-kit/index.ts'
+import {
   PublicationAccountButton,
   PublicationMobileMenu,
   PublicationSearchButton,
   PublicationSubscribeDrawer,
 } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
-
-import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NewsroomNavbar — refined editorial masthead bar for a digital newsroom or
@@ -99,7 +103,7 @@ export const NewsroomNavbar = defineCapsule({
         </div>
 
         {/* Masthead row: search · serif wordmark · subscribe + sign in */}
-        <Container>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid h-20 grid-cols-[1fr_auto_1fr] items-center gap-4">
             <div className="flex items-center justify-start">
               <PublicationMobileMenu
@@ -128,15 +132,17 @@ export const NewsroomNavbar = defineCapsule({
               </PublicationSearchButton>
             </div>
 
-            <button
-              type="button"
-              onClick={() => go(sections[0])}
-              className="justify-self-center text-center font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
-            >
-              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-            </button>
+            <NavbarBrand asChild>
+              <button
+                type="button"
+                onClick={() => go(sections[0])}
+                className="justify-self-center text-center font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              >
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+              </button>
+            </NavbarBrand>
 
-            <div className="flex items-center justify-end gap-2 sm:gap-4">
+            <NavbarActions className="justify-end gap-2 sm:gap-4">
               <PublicationAccountButton
                 lakebed={lakebed}
                 label={signInCta}
@@ -148,31 +154,30 @@ export const NewsroomNavbar = defineCapsule({
                 source="newsroom navbar"
                 buttonClassName="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               />
-            </div>
+            </NavbarActions>
           </div>
-        </Container>
+        </div>
 
         {/* Section nav: dense, bordered editorial rail */}
         <div className="border-t border-border bg-background">
-          <Container>
-            <nav className="flex items-center gap-1 overflow-x-auto py-2 sm:justify-center sm:gap-2">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <NavbarNav className="flex gap-1 overflow-x-auto py-2 sm:justify-center sm:gap-2">
               {sections.map((label, i) => (
-                <button
+                <NavbarNavLink
                   key={label}
-                  type="button"
                   onClick={() => go(label)}
                   className={cn(
-                    'shrink-0 rounded-sm px-3 py-1.5 text-sm font-medium uppercase tracking-wide transition-colors hover:bg-muted hover:text-foreground',
+                    'shrink-0 rounded-sm px-3 py-1.5 uppercase tracking-wide hover:bg-muted',
                     i === 0
                       ? 'text-foreground underline decoration-primary decoration-2 underline-offset-8'
-                      : 'text-muted-foreground',
+                      : '',
                   )}
                 >
                   {label}
-                </button>
+                </NavbarNavLink>
               ))}
-            </nav>
-          </Container>
+            </NavbarNav>
+          </div>
         </div>
       </header>
     )

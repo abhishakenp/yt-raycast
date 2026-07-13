@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -58,112 +65,105 @@ export const JewelryStoreNavbar = defineCapsule({
       'text-muted-foreground transition-colors hover:text-primary'
 
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn('bg-background/90', props.className)}
+        containerClassName="px-6 lg:px-12 xl:px-20"
       >
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="flex h-20 items-center justify-between">
-            <div className="flex items-center gap-4">
-              <CommerceMobileMenu
-                brand={brand}
-                nav={nav}
-                homeTarget={homeTarget}
-                buttonClassName="text-muted-foreground transition-colors hover:text-primary md:hidden"
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="font-serif text-2xl tracking-wider text-primary"
+          >
+            <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav className="[&>button]:uppercase [&>button]:tracking-widest [&>button]:hover:text-primary">
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-6">
+          <CommerceSearchButton
+            lakebed={lakebed}
+            buttonClassName={utilityButtonClass}
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
               />
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="font-serif text-2xl tracking-wider text-primary"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-            </div>
-            <nav className="hidden items-center space-x-10 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-            <div className="flex items-center space-x-6">
-              <CommerceSearchButton
-                lakebed={lakebed}
-                buttonClassName={utilityButtonClass}
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                  />
-                </svg>
-              </CommerceSearchButton>
-              <CommerceAccountButton
-                lakebed={lakebed}
-                buttonClassName={utilityButtonClass}
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"
-                  />
-                </svg>
-              </CommerceAccountButton>
-              <CommerceCartButton
-                lakebed={lakebed}
-                fallbackCount={initialCartCount}
-                buttonClassName={cn('relative', utilityButtonClass)}
-                label="Cart"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.35 12A1.5 1.5 0 0 1 19.466 22H4.534a1.5 1.5 0 0 1-1.49-1.493l1.35-12A1.5 1.5 0 0 1 5.884 7.2h12.232a1.5 1.5 0 0 1 1.49 1.307Z"
-                  />
-                </svg>
-              </CommerceCartButton>
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="hidden border-b border-primary pb-0.5 text-sm uppercase tracking-widest text-primary sm:block"
-              >
-                {ctaLabel}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+            </svg>
+          </CommerceSearchButton>
+          <CommerceAccountButton
+            lakebed={lakebed}
+            buttonClassName={utilityButtonClass}
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"
+              />
+            </svg>
+          </CommerceAccountButton>
+          <CommerceCartButton
+            lakebed={lakebed}
+            fallbackCount={initialCartCount}
+            buttonClassName={cn('relative', utilityButtonClass)}
+            label="Cart"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.35 12A1.5 1.5 0 0 1 19.466 22H4.534a1.5 1.5 0 0 1-1.49-1.493l1.35-12A1.5 1.5 0 0 1 5.884 7.2h12.232a1.5 1.5 0 0 1 1.49 1.307Z"
+              />
+            </svg>
+          </CommerceCartButton>
+          <button
+            type="button"
+            onClick={() => go(ctaTarget)}
+            className="hidden border-b border-primary pb-0.5 text-sm uppercase tracking-widest text-primary sm:block"
+          >
+            {ctaLabel}
+          </button>
+          <CommerceMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="text-muted-foreground transition-colors hover:text-primary md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

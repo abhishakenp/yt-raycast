@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
   LocalServiceIntentBadge,
@@ -67,69 +74,68 @@ export const MentalHealthNavbar = defineCapsule({
     )
 
     return (
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        containerClassName="max-w-6xl px-4 sm:px-6 lg:px-8"
       >
-        <nav className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-2"
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="flex items-center gap-2"
+          >
+            <BrandLogo
+              brand={brand}
+              fallback={<LogoMark className="size-8 text-primary" />}
+              labelClassName="text-xl font-semibold text-foreground"
+            />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav className="gap-8">
+          {nav.slice(0, -1).map((label) => (
+            <NavbarNavLink
+              key={label}
+              onClick={() => go(label)}
+              className="hover:text-primary"
             >
-              <BrandLogo
-                brand={brand}
-                fallback={<LogoMark className="size-8 text-primary" />}
-                labelClassName="text-xl font-semibold text-foreground"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.slice(0, -1).map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {label}
-                </button>
-              ))}
-              <LocalServiceBookingButton
-                lakebed={lakebed}
-                intentLabel={bookLabel}
-                service="Therapy session"
-                source="navbar"
-                pendingChildren={
-                  <LocalServiceMutationSpinner className="text-primary-foreground" />
-                }
-                className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-              >
-                {bookLabel}
-              </LocalServiceBookingButton>
-            </div>
-            <div className="flex items-center gap-2">
-              <LocalServiceIntentBadge lakebed={lakebed} />
-              <LocalServiceSearchButton
-                lakebed={lakebed}
-                buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
-              />
-              <LocalServiceAccountButton
-                lakebed={lakebed}
-                buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
-              />
-              <LocalServiceMobileMenu
-                brand={brand}
-                homeTarget={homeTarget}
-                nav={nav}
-                buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
-              />
-            </div>
-          </div>
-        </nav>
-      </header>
+              {label}
+            </NavbarNavLink>
+          ))}
+          <LocalServiceBookingButton
+            lakebed={lakebed}
+            intentLabel={bookLabel}
+            service="Therapy session"
+            source="navbar"
+            pendingChildren={
+              <LocalServiceMutationSpinner className="text-primary-foreground" />
+            }
+            className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {bookLabel}
+          </LocalServiceBookingButton>
+        </NavbarNav>
+
+        <NavbarActions className="gap-2">
+          <LocalServiceIntentBadge lakebed={lakebed} />
+          <LocalServiceSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
+          />
+          <LocalServiceAccountButton
+            lakebed={lakebed}
+            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
+          />
+          <LocalServiceMobileMenu
+            brand={brand}
+            homeTarget={homeTarget}
+            nav={nav}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

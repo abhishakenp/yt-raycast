@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
+import {
   SaasAccountButton,
   SaasIntentBadge,
   SaasMobileMenu,
@@ -66,19 +73,19 @@ export const AnalyticsNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Pricing'
 
     return (
-      <header
+      <SiteNav
+        position={(props.sticky ?? true) ? 'sticky' : 'sticky'}
+        height="default"
         className={cn(
-          (props.sticky ?? true)
-            ? 'sticky inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm'
-            : 'relative z-50 border-b border-border bg-background',
+          (props.sticky ?? true) ? 'bg-background/95' : 'bg-background',
           props.className,
         )}
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(props.homeTarget ?? nav[0])}
-            className="flex min-w-0 items-center gap-3"
+            className="min-w-0 gap-3"
           >
             <BrandLogo
               brand={brand}
@@ -86,62 +93,57 @@ export const AnalyticsNavbar = defineCapsule({
               labelClassName="truncate text-xl font-semibold tracking-tight text-foreground"
             />
           </button>
+        </NavbarBrand>
 
-          <div className="hidden items-center gap-8 md:flex">
-            {nav.map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => go(label)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
 
-          <div className="flex items-center gap-3">
-            <SaasIntentBadge lakebed={lakebed} />
-            <SaasSearchButton
-              lakebed={lakebed}
-              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-            />
-            <SaasAccountButton
-              lakebed={lakebed}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-            />
-            {typeof props.phone === 'string' && props.phone.trim() ? (
-              <a
-                href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
-                className="hidden text-sm text-muted-foreground hover:text-foreground lg:inline"
-              >
-                {props.phone}
-              </a>
-            ) : null}
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={ctaTarget}
-              plan={ctaTarget}
-              source="navbar"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Starting
-                </>
-              }
-              className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+        <NavbarActions className="gap-3">
+          <SaasIntentBadge lakebed={lakebed} />
+          <SaasSearchButton
+            lakebed={lakebed}
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          />
+          <SaasAccountButton
+            lakebed={lakebed}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+          />
+          {typeof props.phone === 'string' && props.phone.trim() ? (
+            <a
+              href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
+              className="hidden text-sm text-muted-foreground hover:text-foreground lg:inline"
             >
-              {ctaLabel}
-            </SaasPlanActionButton>
-            <SaasMobileMenu
-              brand={brand}
-              nav={nav}
-              homeTarget={props.homeTarget ?? nav[0]}
-              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-            />
-          </div>
-        </nav>
-      </header>
+              {props.phone}
+            </a>
+          ) : null}
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={ctaTarget}
+            plan={ctaTarget}
+            source="navbar"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Starting
+              </>
+            }
+            className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+          >
+            {ctaLabel}
+          </SaasPlanActionButton>
+          <SaasMobileMenu
+            brand={brand}
+            nav={nav}
+            homeTarget={props.homeTarget ?? nav[0]}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

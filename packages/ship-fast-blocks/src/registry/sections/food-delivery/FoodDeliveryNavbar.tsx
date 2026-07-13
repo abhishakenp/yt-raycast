@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
 import {
   FoodDeliveryAccountButton,
@@ -23,7 +30,6 @@ import {
  * restaurant aggregators, online-ordering platforms, or takeout services.
  * Renders fully with no props via baked-in "nosh" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const FoodDeliveryNavbar = defineCapsule({
   name: 'FoodDeliveryNavbar',
   description:
@@ -62,66 +68,60 @@ export const FoodDeliveryNavbar = defineCapsule({
       </svg>
     )
     return (
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
-          props.className,
-        )}
+      <SiteNav
+        position="fixed"
+        height="responsive"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <Container>
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<PinMark className="size-8 text-foreground" />}
-                labelClassName="text-xl font-semibold tracking-tight"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-3">
-              <FoodDeliverySearchButton
-                lakebed={lakebed}
-                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              />
-              <FoodDeliveryAccountButton
-                lakebed={lakebed}
-                label={signIn}
-                buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
-              />
-              <FoodDeliveryActionButton
-                lakebed={lakebed}
-                action={getStarted}
-                source="navbar"
-                pendingChildren={<FoodDeliveryMutationSpinner />}
-                className="hidden min-h-10 items-center rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
-              >
-                {getStarted}
-              </FoodDeliveryActionButton>
-              <FoodDeliveryMobileMenu
-                brand={brand}
-                homeTarget={homeTarget}
-                nav={nav}
-                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-              />
-            </div>
-          </div>
-        </Container>
-      </header>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-2"
+          >
+            <BrandLogo
+              brand={brand}
+              fallback={<PinMark className="size-8 text-foreground" />}
+              labelClassName="text-xl font-semibold tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-3">
+          <FoodDeliverySearchButton
+            lakebed={lakebed}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          />
+          <FoodDeliveryAccountButton
+            lakebed={lakebed}
+            label={signIn}
+            buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+          />
+          <FoodDeliveryActionButton
+            lakebed={lakebed}
+            action={getStarted}
+            source="navbar"
+            pendingChildren={<FoodDeliveryMutationSpinner />}
+            className="hidden min-h-10 items-center rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+          >
+            {getStarted}
+          </FoodDeliveryActionButton>
+          <FoodDeliveryMobileMenu
+            brand={brand}
+            homeTarget={homeTarget}
+            nav={nav}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })
