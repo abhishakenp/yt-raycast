@@ -198,7 +198,7 @@ export const completeBatch = mutation({
         results.push(cached.translation)
         continue
       }
-      if (claim?.owner !== owner) {
+      if (claim?.owner !== owner || claim.expiresAt <= now) {
         results.push(null)
         continue
       }
