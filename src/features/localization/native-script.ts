@@ -27,6 +27,10 @@ const SCRIPT_BY_LOCALE: Array<{
   { locales: ['el'], pattern: /[\u0370-\u03ff]/gu },
 ]
 
+const HAS_LINGUISTIC_CHARACTER = /\p{L}/u
+const ABSOLUTE_LINK = /^(?:https?:\/\/|mailto:|tel:|sms:)/iu
+const EMAIL_ADDRESS = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u
+
 function localeBase(locale: string): string {
   return (
     locale
@@ -56,4 +60,19 @@ export function shouldPreserveNativeLocaleText(
 
   const matches = text.match(script.pattern)
   return Boolean(matches && matches.length > 0)
+}
+
+export function shouldPreserveTranslationText(
+  text: string,
+  locale: string,
+): boolean {
+  const normalizedText = text.trim()
+  if (!normalizedText) return false
+
+  return (
+    !HAS_LINGUISTIC_CHARACTER.test(normalizedText) ||
+    ABSOLUTE_LINK.test(normalizedText) ||
+    EMAIL_ADDRESS.test(normalizedText) ||
+    shouldPreserveNativeLocaleText(normalizedText, locale)
+  )
 }
