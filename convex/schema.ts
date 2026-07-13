@@ -119,8 +119,14 @@ export default defineSchema({
     agentationSessionId: v.optional(v.string()),
   })
     .index('by_userId', ['userId'])
+    .index('by_userId_createdAt', ['userId', 'createdAt'])
     .index('by_anonymousClientIdHash', ['anonymousClientIdHash'])
+    .index('by_anonymousClientIdHash_createdAt', [
+      'anonymousClientIdHash',
+      'createdAt',
+    ])
     .index('by_clientIpHash', ['clientIpHash'])
+    .index('by_clientIpHash_createdAt', ['clientIpHash', 'createdAt'])
     .index('by_workspace', ['workspace'])
     .index('by_promptCacheKey', ['promptCacheKey'])
     .index('by_public_createdAt', ['isPrivate', 'createdAt'])

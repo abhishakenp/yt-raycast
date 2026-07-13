@@ -157,22 +157,27 @@ export async function loadGenerationAdmission(
     args.userId !== undefined
       ? await ctx.db
           .query('sessions')
-          .withIndex('by_userId', (index) => index.eq('userId', args.userId))
+          .withIndex('by_userId_createdAt', (index) =>
+            index.eq('userId', args.userId),
+          )
+          .order('desc')
           .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
       : args.publicPreviewMode === true && args.clientIpHash !== undefined
         ? await ctx.db
             .query('sessions')
-            .withIndex('by_clientIpHash', (index) =>
+            .withIndex('by_clientIpHash_createdAt', (index) =>
               index.eq('clientIpHash', args.clientIpHash),
             )
+            .order('desc')
             .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
         : args.anonymousClientIdHash === undefined
           ? []
           : await ctx.db
               .query('sessions')
-              .withIndex('by_anonymousClientIdHash', (index) =>
+              .withIndex('by_anonymousClientIdHash_createdAt', (index) =>
                 index.eq('anonymousClientIdHash', args.anonymousClientIdHash),
               )
+              .order('desc')
               .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
   const recentCount = sameOwnerSessions.filter(
     (session) => session.createdAt >= recentCutoff,
