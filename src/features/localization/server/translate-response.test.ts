@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { createTranslateResponse } from './translate-response'
 
@@ -13,6 +13,15 @@ const DB_OBSERVED_TEXT = {
 }
 
 describe('createTranslateResponse', () => {
+  const originalClerk = process.env.VITE_DISABLE_CLERK
+
+  beforeEach(() => {
+    process.env.VITE_DISABLE_CLERK = 'true'
+  })
+
+  afterEach(() => {
+    process.env.VITE_DISABLE_CLERK = originalClerk
+  })
   it('rejects invalid JSON', async () => {
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {

@@ -483,6 +483,15 @@ export async function createTranslateResponse(
   )
 
   if (entries.length > 0) {
+    const isAuthDisabled =
+      (process.env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+    if (!isAuthDisabled) {
+      const auth = request.headers.get('authorization') ?? ''
+      if (!/^Bearer\s+.+$/i.test(auth)) {
+        return json({ error: 'Authentication required' }, { status: 401 })
+      }
+    }
+
     if (!isTranslatableLocale(locale)) {
       return json({
         locale: locale || 'en',
