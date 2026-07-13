@@ -8,6 +8,7 @@ import {
   type ResolvedPageSeo,
 } from '@ship-fast/aeo'
 import {
+  normalizeSiteUrl,
   renderRobotsTxt,
   renderSitemapXml,
 } from '@ship-fast/engine/renderers/seo.js'
@@ -190,20 +191,46 @@ export function buildExportSeoBundle(
   // Enrich siteSpec with route-derived pages so llms.txt lists all routes
   // even when the original siteSpec has no pages array
   const specPagesForLlms = Array.isArray(siteSpec.pages) ? siteSpec.pages : []
-  const routeDerivedPages = routePaths.map(({ path, label }) => {
-    const normalized = normalizePath(path)
-    const existing = specPagesForLlms.find(
-      (p) => normalizePath(String(p.route ?? '/')) === normalized,
-    )
-    if (existing) return existing
-    return {
-      route: normalized,
-      name: label,
-      title: siteSpec.projectName ? undefined : label,
-    }
-  })
+  const routeDerivedPages: NonNullable<SiteSpecLike['pages']> = routePaths.map(
+    ({ path, label }) => {
+      const normalized = normalizePath(path)
+      const existing = specPagesForLlms.find(
+        (p) => normalizePath(String(p.route ?? '/')) === normalized,
+      )
+      if (existing) return existing
+      return {
+        route: normalized,
+        name: label,
+        title: siteSpec.projectName ? undefined : label,
+      }
+    },
+  )
   const enrichedSiteSpec = { ...siteSpec, pages: routeDerivedPages }
-  const llmsTxt = renderGeneratedSiteLlmsTxt(enrichedSiteSpec)
+  const renderedLlmsTxt = renderGeneratedSiteLlmsTxt(enrichedSiteSpec)
+  const siteUrl = normalizeSiteUrl(String(siteSpec.seo?.siteUrl ?? ''))
+  const publicUrls = siteUrl
+    ? [
+        ...new Set(
+          routeDerivedPages.flatMap((page) => {
+            if (page.seo?.noIndex === true) return []
+            try {
+              return [
+                new URL(
+                  normalizePath(String(page.route ?? '/')),
+                  `${siteUrl}/`,
+                ).toString(),
+              ]
+            } catch {
+              return []
+            }
+          }),
+        ),
+      ]
+    : []
+  const llmsTxt =
+    publicUrls.length > 0
+      ? `${renderedLlmsTxt.trimEnd()}\n\n## Public URLs\n${publicUrls.map((url) => `- ${url}`).join('\n')}\n`
+      : renderedLlmsTxt
 
   return {
     routes,

@@ -3,6 +3,7 @@ import { picsumUrl } from '../../../lib/image-query'
 
 export interface HtmlExportFilesOptions {
   includeBadge?: boolean
+  publicRoutes?: readonly string[]
   siteUrl?: string
 }
 
@@ -116,15 +117,59 @@ export function createRobotsTxt(siteUrl: string): string {
   return `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`
 }
 
-export function createSitemapXml(siteUrl: string): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${siteUrl}/</loc>\n  </url>\n</urlset>\n`
+const normalizePublicRoutes = (
+  routes: readonly string[] | undefined,
+): string[] => {
+  if (routes === undefined) return ['/']
+  const normalized = new Set<string>()
+  for (const route of routes ?? []) {
+    const value = route.trim()
+    if (!value) continue
+    try {
+      const parsed = new URL(value, 'https://route.invalid')
+      if (parsed.origin !== 'https://route.invalid') continue
+      parsed.hash = ''
+      normalized.add(`${parsed.pathname}${parsed.search}`)
+    } catch {
+      continue
+    }
+  }
+  return [...normalized]
+}
+
+const publicUrl = (siteUrl: string, route: string): string =>
+  route === '/' ? `${siteUrl}/` : `${siteUrl}${route}`
+
+const escapeXml = (value: string): string =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;')
+
+export function createSitemapXml(
+  siteUrl: string,
+  routes?: readonly string[],
+): string {
+  const entries = normalizePublicRoutes(routes)
+    .map(
+      (route) =>
+        `  <url>\n    <loc>${escapeXml(publicUrl(siteUrl, route))}</loc>\n  </url>`,
+    )
+    .join('\n')
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>\n`
 }
 
 export function createLlmsTxt(
   siteUrl: string,
   metadata: { title: string; description: string },
+  routes?: readonly string[],
 ): string {
-  return `# ${metadata.title}\n\n> ${metadata.description}\n\n- Site URL: ${siteUrl}/\n- Primary page: /\n- Export includes robots.txt, sitemap.xml, and this llms.txt summary for answer engines and crawlers.\n`
+  const pages = normalizePublicRoutes(routes)
+    .map((route) => `- Page: ${publicUrl(siteUrl, route)}`)
+    .join('\n')
+  return `# ${metadata.title}\n\n> ${metadata.description}\n\n- Site URL: ${siteUrl}/\n- Primary page: /\n${pages}\n- Export includes robots.txt, sitemap.xml, and this llms.txt summary for answer engines and crawlers.\n`
 }
 
 function createPackageJson(
@@ -232,8 +277,8 @@ export function createHtmlExportFiles(
 Open \`index.html\` directly or serve this folder with any static file server.
 `,
     'robots.txt': createRobotsTxt(metadataSiteUrl),
-    'sitemap.xml': createSitemapXml(metadataSiteUrl),
-    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata),
+    'sitemap.xml': createSitemapXml(metadataSiteUrl, options.publicRoutes),
+    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata, options.publicRoutes),
   }
 }
 
@@ -270,8 +315,8 @@ bun run build
 \`\`\`
 `,
     'robots.txt': createRobotsTxt(metadataSiteUrl),
-    'sitemap.xml': createSitemapXml(metadataSiteUrl),
-    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata),
+    'sitemap.xml': createSitemapXml(metadataSiteUrl, options.publicRoutes),
+    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata, options.publicRoutes),
   }
 }
 
@@ -327,7 +372,7 @@ bun start
 \`\`\`
 `,
     'robots.txt': createRobotsTxt(metadataSiteUrl),
-    'sitemap.xml': createSitemapXml(metadataSiteUrl),
-    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata),
+    'sitemap.xml': createSitemapXml(metadataSiteUrl, options.publicRoutes),
+    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata, options.publicRoutes),
   }
 }
