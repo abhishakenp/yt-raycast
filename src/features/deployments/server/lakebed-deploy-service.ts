@@ -226,10 +226,34 @@ function claimTokenFromClaimUrl(
   if (!claimUrl || !deployId) return null
   try {
     const url = new URL(claimUrl)
-    if (url.origin !== new URL(deployApi).origin) return null
+    const apiUrl = new URL(deployApi)
+    const canonicalApiUrl = new URL(LAKEBED_DEPLOY_API_URL)
+    const canonicalDashboardUrl = new URL(canonicalApiUrl)
+    canonicalDashboardUrl.hostname = canonicalApiUrl.hostname.replace(
+      /^api\./,
+      'dashboard.',
+    )
+    const isTrustedOrigin =
+      url.origin === apiUrl.origin ||
+      (apiUrl.origin === canonicalApiUrl.origin &&
+        url.origin === canonicalDashboardUrl.origin)
+    if (
+      !isTrustedOrigin ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash
+    ) {
+      return null
+    }
     const segments = url.pathname.split('/').filter(Boolean)
-    if (segments[0] === 'claim' && segments[1] === deployId) {
-      return segments[2] ?? null
+    if (
+      segments.length === 3 &&
+      segments[0] === 'claim' &&
+      segments[1] === deployId &&
+      segments[2]
+    ) {
+      return segments[2]
     }
   } catch {
     return null
