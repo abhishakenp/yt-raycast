@@ -963,19 +963,27 @@ function buildRouteScript(
         return { index: hashIndex, sectionId: decodeLocationPart(hashParts.slice(1).join('/')) };
       }
       var decodedHash = decodeLocationPart(hash);
+      var sectionNode = document.getElementById(decodedHash);
+      if (sectionNode) {
+        var pageNode = sectionNode.closest('[${pageAttribute}]');
+        var pages = Array.prototype.slice.call(document.querySelectorAll('[${pageAttribute}]'));
+        var pageIndex = pageNode ? pages.indexOf(pageNode) : current;
+        return { index: pageIndex >= 0 ? pageIndex : current, sectionId: decodedHash };
+      }
       var mapped = targetMap[decodedHash] || targetMap[normalize(decodedHash)];
       var parsed = parseTarget(mapped || decodedHash);
       var mappedIndex = parsed ? findRoute(parsed.page) : -1;
       if (mappedIndex >= 0) return { index: mappedIndex, sectionId: parsed.sectionId };
-      if (document.getElementById(decodedHash)) return { index: current, sectionId: decodedHash };
     }
     var pathParts = String(window.location.pathname || '').split('/').filter(Boolean);
     var pathIndex = routeIndexFromLocationPart(pathParts[pathParts.length - 1] || '');
     return { index: pathIndex >= 0 ? pathIndex : 0, sectionId: '' };
   }
   function routeAddress(index, sectionId) {
+    if (sectionId) {
+      return window.location.pathname + window.location.search + '#' + encodeURIComponent(sectionId);
+    }
     var fragment = routeSlug(routes[index] || routes[0] || 'home');
-    if (sectionId) fragment += '/' + encodeURIComponent(sectionId);
     return window.location.pathname + window.location.search + '#' + fragment;
   }
   function writeRouteAddress(index, sectionId) {
@@ -1009,7 +1017,9 @@ function buildRouteScript(
       if (!node) return;
       var offset = fixedHeaderOffset();
       if (!offset) {
-        node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (typeof node.scrollIntoView === 'function') {
+          node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         return;
       }
       var top = Math.max(0, node.getBoundingClientRect().top + window.scrollY - offset);
