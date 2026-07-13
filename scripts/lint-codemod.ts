@@ -17,6 +17,7 @@ import {
   type VariableDeclaration,
   Node,
   SyntaxKind,
+  ts,
 } from 'ts-morph'
 import { readdirSync, statSync, writeFileSync, readFileSync } from 'node:fs'
 import { join, extname, relative } from 'node:path'
@@ -74,57 +75,77 @@ function collectArrowConversions(
   changes: TextChange[],
 ): number {
   let count = 0
-  const varDecls = sourceFile.getVariableDeclarations()
+  for (const statement of sourceFile.getVariableStatements()) {
+    if (statement.getDeclarationKind() !== 'const') continue
+    const parent = statement.getParent()
+    if (
+      parent.getKind() !== SyntaxKind.SourceFile &&
+      parent.getKind() !== SyntaxKind.ModuleBlock
+    )
+      continue
 
-  for (const varDecl of varDecls) {
-    const init = varDecl.getInitializer()
-    if (!init || !Node.isArrowFunction(init)) continue
-    if (!isTopLevelConstArrow(varDecl)) continue
-
-    const hasParamAnnotations = init
-      .getParameters()
-      .some((p) => p.getTypeNode() !== undefined)
-    const hasReturnAnnotation = init.getReturnTypeNode() !== undefined
-    if (!hasParamAnnotations && !hasReturnAnnotation) continue
-
-    const varStmt = varDecl.getFirstAncestorByKind(SyntaxKind.VariableStatement)
-    if (!varStmt) continue
-    if (varStmt.getDeclarationKind() !== 'const') continue
+    const declarations = statement.getDeclarations()
+    const convertible = new Set<VariableDeclaration>()
+    for (const declaration of declarations) {
+      const initializer = declaration.getInitializer()
+      if (!initializer || !Node.isArrowFunction(initializer)) continue
+      const hasParameterAnnotations = initializer
+        .getParameters()
+        .some((parameter) => parameter.getTypeNode() !== undefined)
+      if (
+        hasParameterAnnotations ||
+        initializer.getReturnTypeNode() !== undefined
+      )
+        convertible.add(declaration)
+    }
+    if (convertible.size === 0) continue
 
     const isExported =
-      varStmt.getFirstModifierByKind(SyntaxKind.ExportKeyword) !== undefined
-    const isDefaultExport =
-      varStmt.getFirstModifierByKind(SyntaxKind.DefaultKeyword) !== undefined
-    const isAsync = init.isAsync()
-    const name = varDecl.getName()
-    const params = init.getParameters()
-    const paramsText = params.map((p) => p.getText()).join(', ')
-    const returnTypeNode = init.getReturnTypeNode()
-    const returnTypeText = returnTypeNode ? `: ${returnTypeNode.getText()}` : ''
+      statement.getFirstModifierByKind(SyntaxKind.ExportKeyword) !== undefined
+    const fragments: string[] = []
+    const statementStart = statement.getStart()
+    const lineStart = fileText.lastIndexOf('\n', statementStart) + 1
+    const indent =
+      fileText.slice(lineStart, statementStart).match(/^\s*/)?.[0] ?? ''
 
-    const body = init.getBody()
-    const bodyText = body.getText()
+    for (const declaration of declarations) {
+      if (!convertible.has(declaration)) {
+        fragments.push(
+          `${isExported ? 'export ' : ''}const ${declaration.getText()}`,
+        )
+        continue
+      }
 
-    // Get the full range of the variable statement to replace
-    const stmtStart = varStmt.getStart()
-    const stmtEnd = varStmt.getEnd()
-
-    let fnText: string
-    if (Node.isBlock(body)) {
-      // Block body — keep the block as-is, just change the declaration syntax
-      const prefix = `${isExported ? 'export ' : ''}${isDefaultExport ? 'default ' : ''}${isAsync ? 'async ' : ''}function ${isDefaultExport ? '' : name}(${paramsText})${returnTypeText} `
-      fnText = prefix + bodyText
-    } else {
-      // Expression body — wrap in return
-      // Get indentation from the variable statement
-      const lineStart = fileText.lastIndexOf('\n', stmtStart) + 1
-      const indent =
-        fileText.slice(lineStart, stmtStart).match(/^\s*/)?.[0] ?? ''
-      fnText = `${isExported ? 'export ' : ''}${isDefaultExport ? 'default ' : ''}${isAsync ? 'async ' : ''}function ${isDefaultExport ? '' : name}(${paramsText})${returnTypeText} {\n${indent}return ${bodyText}\n${indent}}`
+      const initializer = declaration.getInitializer()
+      if (!initializer || !Node.isArrowFunction(initializer)) continue
+      const typeParameters = initializer.getTypeParameters()
+      const typeParametersText =
+        typeParameters.length === 0
+          ? ''
+          : `<${typeParameters.map((parameter) => parameter.getText()).join(', ')}>`
+      const parametersText = initializer
+        .getParameters()
+        .map((parameter) => parameter.getText())
+        .join(', ')
+      const returnTypeNode = initializer.getReturnTypeNode()
+      const returnTypeText = returnTypeNode
+        ? `: ${returnTypeNode.getText()}`
+        : ''
+      const prefix = `${isExported ? 'export ' : ''}${initializer.isAsync() ? 'async ' : ''}function ${declaration.getName()}${typeParametersText}(${parametersText})${returnTypeText}`
+      const body = initializer.getBody()
+      fragments.push(
+        Node.isBlock(body)
+          ? `${prefix} ${body.getText()}`
+          : `${prefix} {\n${indent}  return ${body.getText()}\n${indent}}`,
+      )
+      count++
     }
 
-    changes.push({ start: stmtStart, end: stmtEnd, newText: fnText })
-    count++
+    changes.push({
+      start: statementStart,
+      end: statement.getEnd(),
+      newText: fragments.join(`\n${indent}`),
+    })
   }
 
   return count
@@ -142,16 +163,17 @@ function collectCallbackAnnotationRemovals(
     if (Node.isVariableDeclaration(parent) && isTopLevelConstArrow(parent))
       continue
 
-    // Remove parameter type annotations by replacing the entire parameter text
+    const arrowStart = arrow.getStart()
+    const arrowText = arrow.getText()
+    const arrowChanges: TextChange[] = []
+    let hasParameterAnnotation = false
+
     const params = arrow.getParameters()
     for (const param of params) {
       const typeNode = param.getTypeNode()
       if (!typeNode) continue
-      const typeText = typeNode.getText()
-      if (typeText.includes(' is ')) continue
-      if (typeText.startsWith('asserts ')) continue
+      hasParameterAnnotation = true
 
-      // Reconstruct parameter without type annotation
       const nameNode = param.getNameNode()
       const nameText = nameNode.getText()
       const isRest = param.isRestParameter()
@@ -160,38 +182,63 @@ function collectCallbackAnnotationRemovals(
       let newText = isRest ? `...${nameText}` : nameText
       if (initializer) newText += ` = ${initializer.getText()}`
 
-      const paramStart = param.getStart()
-      const paramEnd = param.getEnd()
-
-      changes.push({ start: paramStart, end: paramEnd, newText })
+      arrowChanges.push({
+        start: param.getStart() - arrowStart,
+        end: param.getEnd() - arrowStart,
+        newText,
+      })
       count++
     }
 
-    // Remove return type annotation
     const returnTypeNode = arrow.getReturnTypeNode()
     if (returnTypeNode) {
-      const typeText = returnTypeNode.getText()
-      if (typeText.includes(' is ')) continue
-      if (typeText.startsWith('asserts ')) continue
-
-      const typeStart = returnTypeNode.getStart()
-      const typeEnd = returnTypeNode.getEnd()
-      const fullText = sourceFile.getText()
-      // Search backwards through whitespace ONLY to find the colon
-      let colonPos = typeStart - 1
-      while (colonPos > 0 && /\s/.test(fullText[colonPos])) colonPos--
-      if (fullText[colonPos] !== ':') continue
-      let removeStart = colonPos
-      let removeEnd = typeEnd
-      while (removeEnd < fullText.length && fullText[removeEnd] === ' ')
-        removeEnd++
-
-      changes.push({ start: removeStart, end: removeEnd, newText: '' })
+      const arrowTokenStart =
+        arrow.getEqualsGreaterThan().getStart() - arrowStart
+      const typeStart = returnTypeNode.getStart() - arrowStart
+      const colonAtTypeStart = arrowText[typeStart] === ':'
+      const colonPosition = colonAtTypeStart
+        ? typeStart
+        : arrowText.lastIndexOf(':', typeStart)
+      if (colonPosition >= 0) {
+        arrowChanges.push({
+          start: colonPosition,
+          end: arrowTokenStart,
+          newText: ' ',
+        })
+      }
       count++
     }
+
+    if (arrowChanges.length === 0) continue
+    let replacement = applyChanges(arrowText, arrowChanges)
+    const contextualSignatures =
+      arrow.getContextualType()?.getCallSignatures() ?? []
+    if (hasParameterAnnotation && contextualSignatures.length === 0) {
+      const originalType = arrow.getType().getText(arrow)
+      replacement = `(${replacement}) satisfies (${originalType})`
+    }
+    changes.push({
+      start: arrowStart,
+      end: arrow.getEnd(),
+      newText: replacement,
+    })
   }
 
   return count
+}
+
+function hasSyntaxErrors(filePath: string, content: string): boolean {
+  const result = ts.transpileModule(content, {
+    compilerOptions: {
+      jsx: ts.JsxEmit.ReactJSX,
+      target: ts.ScriptTarget.ES2022,
+    },
+    fileName: filePath,
+    reportDiagnostics: true,
+  })
+  return (result.diagnostics ?? []).some(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  )
 }
 
 function applyChanges(text: string, changes: TextChange[]): string {
@@ -212,6 +259,8 @@ function processFile(filePath: string): {
   annotations: number
 } {
   const content = readFileSync(filePath, 'utf-8')
+  if (hasSyntaxErrors(filePath, content))
+    return { converted: 0, annotations: 0 }
   const project = new Project({ useInMemoryFileSystem: true })
 
   let sourceFile: SourceFile
@@ -232,26 +281,17 @@ function processFile(filePath: string): {
 
   // Pass 2: Remove callback annotations from the intermediate text
   // Re-parse to get correct positions
-  let annotations = 0
-  if (intermediateText !== content || true) {
-    const project2 = new Project({ useInMemoryFileSystem: true })
-    let sourceFile2: SourceFile
-    try {
-      sourceFile2 = project2.createSourceFile(filePath, intermediateText)
-    } catch {
-      if (changes.length > 0 && !DRY_RUN) {
-        writeFileSync(filePath, intermediateText)
-      }
-      return { converted, annotations: 0 }
-    }
+  const project2 = new Project({ useInMemoryFileSystem: true })
+  const sourceFile2 = project2.createSourceFile(filePath, intermediateText)
+  const changes2: TextChange[] = []
+  const annotations = collectCallbackAnnotationRemovals(sourceFile2, changes2)
 
-    const changes2: TextChange[] = []
-    annotations = collectCallbackAnnotationRemovals(sourceFile2, changes2)
-
-    if (changes2.length > 0) {
-      intermediateText = applyChanges(intermediateText, changes2)
-    }
+  if (changes2.length > 0) {
+    intermediateText = applyChanges(intermediateText, changes2)
   }
+
+  if (hasSyntaxErrors(filePath, intermediateText))
+    return { converted: 0, annotations: 0 }
 
   if (changes.length > 0 || annotations > 0) {
     if (!DRY_RUN) {
