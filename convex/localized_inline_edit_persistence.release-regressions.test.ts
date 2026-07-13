@@ -25,11 +25,13 @@ const localizedEditConvexTest = () => {
 beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(new Date('2026-07-13T12:00:00.000Z'))
+  process.env.VITE_DISABLE_CLERK = 'true'
 })
 
 afterEach(() => {
   vi.clearAllTimers()
   vi.useRealTimers()
+  process.env.VITE_DISABLE_CLERK = 'false'
 })
 
 type ReadySessionOptions = {
@@ -388,12 +390,18 @@ describe('localized inline edit persistence release regressions', () => {
   })
 
   it('rejects unauthorized translated edits without touching session or cache state', async () => {
+    process.env.VITE_DISABLE_CLERK = 'false'
     const t = localizedEditConvexTest()
     const sessionId = await createReadySession(t, {
       key: 'authorization',
       preferredLanguage: 'hi',
     })
-    await seedTranslation(t, 'hi', SOURCE_TEXT, HINDI_TEXT)
+    await t
+      .withIdentity({ tokenIdentifier: 'auth-user' })
+      .mutation(api.translationCache.setBatch, {
+        locale: 'hi',
+        entries: [{ text: SOURCE_TEXT, translation: HINDI_TEXT }],
+      })
 
     await expect(
       t.mutation(api.sessions.createEdit, {

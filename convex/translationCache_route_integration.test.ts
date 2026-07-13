@@ -1,13 +1,23 @@
 /// <reference types="vite/client" />
 
 import { convexTest } from 'convex-test'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { createTranslateResponse } from '../src/features/localization/server/translate-response'
 import { api } from './_generated/api'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+
+const originalClerk = process.env.VITE_DISABLE_CLERK
+
+beforeEach(() => {
+  process.env.VITE_DISABLE_CLERK = 'true'
+})
+
+afterEach(() => {
+  process.env.VITE_DISABLE_CLERK = originalClerk
+})
 
 const translationRequest = () =>
   new Request('https://ship-fast.test/api/translate', {
