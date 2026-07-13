@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * HotelResortGallery — masonry photo gallery for a luxury hotel / resort & spa
@@ -61,14 +62,17 @@ export const HotelResortGallery = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <BentoGrid cols="1-md-2-4" gap="sm">
             {images.map((alt, i) => (
-              <div
+              <BentoTile
                 key={alt}
-                className={cn(
-                  i === 0 && 'lg:col-span-2 lg:row-span-2',
-                  (i === 5 || i === 6) && 'lg:col-span-2',
-                )}
+                span={
+                  i === 0
+                    ? 'lg:col-span-2 lg:row-span-2'
+                    : i === 5 || i === 6
+                      ? 'lg:col-span-2'
+                      : undefined
+                }
               >
                 <Image
                   alt={alt}
@@ -82,9 +86,9 @@ export const HotelResortGallery = defineCapsule({
                       : 'h-48 lg:h-56',
                   )}
                 />
-              </div>
+              </BentoTile>
             ))}
-          </div>
+          </BentoGrid>
         </div>
       </section>
     )

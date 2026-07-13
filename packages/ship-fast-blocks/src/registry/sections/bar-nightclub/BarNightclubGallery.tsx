@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * BarNightclubGallery — masonry-style photo gallery for a cocktail-bar /
@@ -66,11 +67,11 @@ export const BarNightclubGallery = defineCapsule({
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <BentoGrid cols="1-md-2-3" gap="sm">
             {images.map((alt, i) => (
-              <div
+              <BentoTile
                 key={alt}
-                className={cn(i === 0 && 'lg:col-span-2 lg:row-span-2')}
+                span={i === 0 ? 'lg:col-span-2 lg:row-span-2' : undefined}
               >
                 <Image
                   alt={alt}
@@ -84,9 +85,9 @@ export const BarNightclubGallery = defineCapsule({
                       : 'h-48 lg:h-64',
                   )}
                 />
-              </div>
+              </BentoTile>
             ))}
-          </div>
+          </BentoGrid>
         </Container>
       </section>
     )

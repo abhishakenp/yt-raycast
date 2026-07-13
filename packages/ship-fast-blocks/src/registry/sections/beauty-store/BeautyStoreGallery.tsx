@@ -3,7 +3,11 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {
+  BentoGrid,
+  BentoTile,
+  BentoTileCaption,
+} from '#/section-kit/BentoGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -62,12 +66,13 @@ export const BeautyStoreGallery = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <ResponsiveGrid cols="2-lg-4" gap="sm">
+          <BentoGrid cols="2-lg-4" gap="sm">
             {imageAlts.map((alt, i) =>
               i === 0 ? (
-                <div
+                <BentoTile
                   key={alt}
-                  className="relative col-span-2 row-span-2 aspect-square overflow-hidden rounded-xl lg:aspect-auto"
+                  span="col-span-2 row-span-2"
+                  className="relative aspect-square overflow-hidden rounded-xl lg:aspect-auto"
                 >
                   <Image
                     alt={alt}
@@ -76,14 +81,14 @@ export const BeautyStoreGallery = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-foreground/40 to-transparent p-6">
+                  <BentoTileCaption className="inset-0 flex items-end bg-gradient-to-t from-foreground/40 to-transparent p-6">
                     <span className="font-medium text-background">
                       {featureCaption}
                     </span>
-                  </div>
-                </div>
+                  </BentoTileCaption>
+                </BentoTile>
               ) : (
-                <div
+                <BentoTile
                   key={alt}
                   className="relative aspect-square overflow-hidden rounded-xl"
                 >
@@ -94,10 +99,10 @@ export const BeautyStoreGallery = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                </div>
+                </BentoTile>
               ),
             )}
-          </ResponsiveGrid>
+          </BentoGrid>
         </Container>
       </section>
     )

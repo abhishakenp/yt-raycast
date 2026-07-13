@@ -80,6 +80,16 @@ export {
   gridColsVariants,
   type ResponsiveGridProps,
 } from './ResponsiveGrid.tsx'
+export {
+  BentoGrid,
+  BentoTile,
+  BentoTileCaption,
+  bentoGridVariants,
+  bentoCaptionVariants,
+  type BentoGridProps,
+  type BentoTileProps,
+  type BentoTileCaptionProps,
+} from './BentoGrid.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

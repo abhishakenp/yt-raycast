@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * MusicArtistGallery — "behind the music" masonry photo gallery for a music
@@ -55,14 +55,12 @@ export const MusicArtistGallery = defineCapsule({
             </h2>
           </div>
 
-          <ResponsiveGrid cols="2-3-4" gap="sm">
+          <BentoGrid cols="2-3-4" gap="sm">
             {images.map((alt, i) => (
-              <div
+              <BentoTile
                 key={alt}
-                className={cn(
-                  'aspect-square overflow-hidden rounded-sm bg-muted',
-                  i === 1 && 'row-span-2',
-                )}
+                span={i === 1 ? 'row-span-2' : undefined}
+                className="aspect-square overflow-hidden rounded-sm bg-muted"
               >
                 <Image
                   alt={alt}
@@ -71,9 +69,9 @@ export const MusicArtistGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
-              </div>
+              </BentoTile>
             ))}
-          </ResponsiveGrid>
+          </BentoGrid>
         </div>
       </section>
     )

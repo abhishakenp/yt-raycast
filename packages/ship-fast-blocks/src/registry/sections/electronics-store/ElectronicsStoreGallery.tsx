@@ -3,7 +3,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {
+  BentoGrid,
+  BentoTile,
+  BentoTileCaption,
+} from '#/section-kit/BentoGrid.tsx'
 
 /**
  * ElectronicsStoreGallery — a "Featured Collections" masonry gallery on a muted
@@ -75,39 +79,41 @@ export const ElectronicsStoreGallery = defineCapsule({
           <h2 className="mb-8 text-2xl font-semibold text-foreground">
             {heading}
           </h2>
-          <ResponsiveGrid cols="2-lg-3" gap="sm">
+          <BentoGrid cols="2-lg-3" gap="sm">
             {items.map((g, i) => (
-              <button
+              <BentoTile
                 key={g.name}
-                type="button"
-                onClick={() => go(g.name)}
+                asChild
+                span={i === 0 ? 'lg:row-span-2' : undefined}
                 className={cn(
                   'group relative overflow-hidden rounded-xl bg-muted text-left',
-                  i === 0 ? 'aspect-[3/4] lg:row-span-2' : 'aspect-[4/3]',
+                  i === 0 ? 'aspect-[3/4]' : 'aspect-[4/3]',
                 )}
               >
-                <Image
-                  alt={g.imageAlt}
-                  w={600}
-                  h={i === 0 ? 800 : 450}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent"
-                />
-                <div className="absolute bottom-4 left-4 text-background sm:bottom-6 sm:left-6">
-                  <h3 className="mb-1 text-lg font-semibold sm:text-xl">
-                    {g.name}
-                  </h3>
-                  <p className="text-xs text-background/80 sm:text-sm">
-                    {g.count}
-                  </p>
-                </div>
-              </button>
+                <button type="button" onClick={() => go(g.name)}>
+                  <Image
+                    alt={g.imageAlt}
+                    w={600}
+                    h={i === 0 ? 800 : 450}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <BentoTileCaption
+                    aria-hidden="true"
+                    className="inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent"
+                  />
+                  <BentoTileCaption className="bottom-4 left-4 flex flex-col text-background sm:bottom-6 sm:left-6">
+                    <h3 className="mb-1 text-lg font-semibold sm:text-xl">
+                      {g.name}
+                    </h3>
+                    <p className="text-xs text-background/80 sm:text-sm">
+                      {g.count}
+                    </p>
+                  </BentoTileCaption>
+                </button>
+              </BentoTile>
             ))}
-          </ResponsiveGrid>
+          </BentoGrid>
         </Container>
       </section>
     )

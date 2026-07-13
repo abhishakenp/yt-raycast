@@ -2,7 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {
+  BentoGrid,
+  BentoTile,
+  BentoTileCaption,
+} from '#/section-kit/BentoGrid.tsx'
 
 /**
  * KidsEducationGallery — "learning in action" masonry photo gallery for a kids /
@@ -99,15 +103,18 @@ export const KidsEducationGallery = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <ResponsiveGrid cols="2-3-4" gap="sm">
+          <BentoGrid cols="2-3-4" gap="sm">
             {items.map((g, i) => (
-              <div
+              <BentoTile
                 key={g.caption}
-                className={cn(
-                  'group relative aspect-square overflow-hidden rounded-2xl',
-                  i === 1 && 'md:col-span-2 md:row-span-2',
-                  i === 7 && 'md:col-span-2',
-                )}
+                span={
+                  i === 1
+                    ? 'md:col-span-2 md:row-span-2'
+                    : i === 7
+                      ? 'md:col-span-2'
+                      : undefined
+                }
+                className="group relative aspect-square overflow-hidden rounded-2xl"
               >
                 <Image
                   alt={g.imageAlt}
@@ -116,12 +123,15 @@ export const KidsEducationGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 flex items-end bg-gradient-to-t from-foreground/60 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <BentoTileCaption
+                  reveal="hover"
+                  className="inset-0 flex items-end bg-gradient-to-t from-foreground/60 to-transparent p-4"
+                >
                   <p className="font-medium text-background">{g.caption}</p>
-                </div>
-              </div>
+                </BentoTileCaption>
+              </BentoTile>
             ))}
-          </ResponsiveGrid>
+          </BentoGrid>
         </Container>
       </section>
     )

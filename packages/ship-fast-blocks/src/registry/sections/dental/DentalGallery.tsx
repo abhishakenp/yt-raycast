@@ -12,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * rooms, and waiting area for dentists, dental offices, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 export const DentalGallery = defineCapsule({
   name: 'DentalGallery',
   description:
@@ -51,16 +52,16 @@ export const DentalGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{galleryDesc}</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <BentoGrid cols="1-2-4" gap="sm">
             {galleryImages.map((alt, i) => (
-              <div
+              <BentoTile
                 key={alt}
-                className={cn(
-                  'overflow-hidden rounded-2xl',
+                span={
                   i === 0
                     ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2'
-                    : 'h-64',
-                )}
+                    : undefined
+                }
+                className={cn('overflow-hidden rounded-2xl', i !== 0 && 'h-64')}
               >
                 <Image
                   alt={alt}
@@ -69,9 +70,9 @@ export const DentalGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
-              </div>
+              </BentoTile>
             ))}
-          </div>
+          </BentoGrid>
         </Container>
       </section>
     )

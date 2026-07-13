@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * MusicFestivalGallery — a dark photo gallery band of past-year memories for a
@@ -64,22 +64,29 @@ export const MusicFestivalGallery = defineCapsule({
               {description}
             </p>
           </div>
-          <ResponsiveGrid cols="2-md-4" gap="sm">
+          <BentoGrid cols="2-md-4" gap="sm">
             {imageAlts.map((alt, i) => (
-              <Image
+              <BentoTile
                 key={alt}
-                alt={alt}
-                w={600}
-                h={i === 1 ? 800 : 400}
-                loading="lazy"
-                className={cn(
-                  'h-48 w-full rounded-lg object-cover md:h-64',
-                  i === 1 && 'md:row-span-2',
-                  i === 5 && 'md:col-span-2',
-                )}
-              />
+                span={
+                  i === 1
+                    ? 'md:row-span-2'
+                    : i === 5
+                      ? 'md:col-span-2'
+                      : undefined
+                }
+                className="h-48 overflow-hidden rounded-lg md:h-64"
+              >
+                <Image
+                  alt={alt}
+                  w={600}
+                  h={i === 1 ? 800 : 400}
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
+              </BentoTile>
             ))}
-          </ResponsiveGrid>
+          </BentoGrid>
         </Container>
       </section>
     )
