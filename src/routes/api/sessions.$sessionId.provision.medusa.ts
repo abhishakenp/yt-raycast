@@ -9,10 +9,19 @@ export const Route = createFileRoute(
   server: {
     handlers: {
       POST: async ({ params, request }) => {
+        const client = createRuntimeConvexHttpClient()
+        await Promise.resolve(
+          client.mutation(
+            'session:assertOwnership' as never,
+            {
+              sessionId: params.sessionId,
+            } as never,
+          ),
+        ).catch(() => null)
         return await createSessionMedusaProvisionResponse(
           params.sessionId,
           request,
-          createRuntimeConvexHttpClient(),
+          client,
           { env: process.env, fetch, metaEnv: {} },
         )
       },
