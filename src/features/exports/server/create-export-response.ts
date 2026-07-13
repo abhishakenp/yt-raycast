@@ -22,7 +22,6 @@ type ArtifactDownloadPayload = {
     requiresPayment?: boolean
     errorMessage?: string
     previewVersion?: number
-    generatorRevision?: string
   }
   artifact?: {
     status: string
@@ -30,6 +29,7 @@ type ArtifactDownloadPayload = {
     contentType?: string
     errorMessage?: string
     previewVersion?: number
+    generatorRevision?: string
   } | null
   storageUrl?: string | null
   latestPreviewVersion?: number
@@ -60,11 +60,112 @@ function normalizeTarget(target: string): ExportTarget | null {
 }
 
 function createDownloadHeaders(contentType: string, filename: string) {
+  const safeFilename =
+    filename
+      .normalize('NFKD')
+      .replace(/[^A-Za-z0-9._-]+/g, '-')
+      .replace(/^[._-]+|[._-]+$/g, '')
+      .slice(0, 120) || 'download'
   return {
     'content-type': contentType,
-    'content-disposition': `attachment; filename="${filename}"`,
+    'content-disposition': `attachment; filename="${safeFilename}"`,
   }
 }
+
+const isPrivateIpv4Address = (hostname: string): boolean => {
+  const parts = hostname.split('.').map(Number)
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false
+  }
+  const [first = 0, second = 0] = parts
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    first >= 224
+  )
+}
+
+const isPrivateIpv6Address = (hostname: string): boolean => {
+  const address = hostname.replace(/^\[|\]$/g, '').toLowerCase()
+  return (
+    address === '::' ||
+    address === '::1' ||
+    address.startsWith('fc') ||
+    address.startsWith('fd') ||
+    /^fe[89ab]/.test(address) ||
+    address.startsWith('::ffff:127.') ||
+    address.startsWith('::ffff:10.') ||
+    address.startsWith('::ffff:192.168.')
+  )
+}
+
+const isSafeArtifactStorageUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value)
+    const hostname = url.hostname.toLowerCase()
+    return (
+      url.protocol === 'https:' &&
+      url.username === '' &&
+      url.password === '' &&
+      hostname !== 'localhost' &&
+      !hostname.endsWith('.localhost') &&
+      !hostname.endsWith('.local') &&
+      !isPrivateIpv4Address(hostname) &&
+      !isPrivateIpv6Address(hostname)
+    )
+  } catch {
+    return false
+  }
+}
+
+const isExpectedArtifactMediaType = (
+  target: ExportTarget,
+  contentType: string | undefined,
+): boolean => {
+  const normalized = contentType?.split(';', 1)[0]?.trim().toLowerCase()
+  return target === 'html'
+    ? normalized === 'text/html'
+    : normalized === 'application/zip'
+}
+
+const hasZipSignature = (bytes: Uint8Array): boolean =>
+  bytes.length >= 4 &&
+  bytes[0] === 0x50 &&
+  bytes[1] === 0x4b &&
+  ((bytes[2] === 0x03 && bytes[3] === 0x04) ||
+    (bytes[2] === 0x05 && bytes[3] === 0x06) ||
+    (bytes[2] === 0x07 && bytes[3] === 0x08))
+
+const isValidArtifactBody = (
+  target: ExportTarget,
+  bytes: Uint8Array,
+): boolean => {
+  if (target !== 'html') return hasZipSignature(bytes)
+  if (bytes.byteLength === 0) return false
+  const html = new TextDecoder().decode(bytes)
+  return !isUnsafePublicPreviewHtml(html)
+}
+
+const isLegacyStoredArtifact = (
+  target: ExportTarget,
+  generatorRevision: string | undefined,
+): boolean =>
+  generatorRevision === undefined && (target === 'html' || target === 'lakebed')
+
+const unavailableArtifactResponse = (): Response =>
+  new Response('Export artifact is unavailable and could not be rebuilt.', {
+    status: 502,
+    headers: { 'content-type': 'text/plain' },
+  })
 
 function isExportConvexClient(
   value: Request | ExportConvexClient | undefined,
@@ -333,7 +434,10 @@ export async function createExportResponse(
 
     if (
       download.artifact?.status === 'ready' &&
-      download.artifact.generatorRevision !== undefined &&
+      !isLegacyStoredArtifact(
+        normalizedTarget,
+        download.artifact.generatorRevision,
+      ) &&
       download.artifact.generatorRevision !==
         exportGeneratorRevision(normalizedTarget)
     ) {
@@ -366,6 +470,35 @@ export async function createExportResponse(
       return fallback ?? buildingResponse(download.artifact?.status)
     }
 
+    if (
+      download.artifact.previewVersion !== download.latestPreviewVersion ||
+      (exportRecord.previewVersion !== undefined &&
+        download.artifact.previewVersion !== exportRecord.previewVersion)
+    ) {
+      return new Response('Export artifact is stale. Regenerate it first.', {
+        status: 409,
+        headers: { 'content-type': 'text/plain' },
+      })
+    }
+
+    const legacyStoredArtifact = isLegacyStoredArtifact(
+      normalizedTarget,
+      download.artifact.generatorRevision,
+    )
+    if (
+      (!legacyStoredArtifact &&
+        !isExpectedArtifactMediaType(
+          normalizedTarget,
+          download.artifact.contentType,
+        )) ||
+      !isSafeArtifactStorageUrl(download.storageUrl)
+    ) {
+      return new Response('Export artifact metadata is invalid.', {
+        status: 422,
+        headers: { 'content-type': 'text/plain' },
+      })
+    }
+
     let artifactResponse: Response
     try {
       artifactResponse = await fetch(download.storageUrl)
@@ -377,13 +510,7 @@ export async function createExportResponse(
         getOwnerSecret(request),
       )
       if (fallback) return fallback
-      return new Response(
-        'Export artifact is unavailable and could not be rebuilt.',
-        {
-          status: 502,
-          headers: { 'content-type': 'text/plain' },
-        },
-      )
+      return unavailableArtifactResponse()
     }
     if (!artifactResponse.ok || artifactResponse.body === null) {
       const fallback = await buildExportOnDemand(
@@ -393,20 +520,28 @@ export async function createExportResponse(
         getOwnerSecret(request),
       )
       if (fallback) return fallback
-      return new Response(
-        'Export artifact is unavailable and could not be rebuilt.',
-        {
-          status: 502,
-          headers: { 'content-type': 'text/plain' },
-        },
-      )
+      return unavailableArtifactResponse()
     }
 
-    return new Response(artifactResponse.body, {
+    const artifactBytes = new Uint8Array(await artifactResponse.arrayBuffer())
+    if (
+      !legacyStoredArtifact &&
+      !isValidArtifactBody(normalizedTarget, artifactBytes)
+    ) {
+      const fallback = await buildExportOnDemand(
+        client,
+        sessionId,
+        normalizedTarget,
+        getOwnerSecret(request),
+      )
+      if (fallback) return fallback
+      return unavailableArtifactResponse()
+    }
+
+    return new Response(artifactBytes, {
       headers: createDownloadHeaders(
         download.artifact.contentType ?? 'application/octet-stream',
-        download.artifact.filename ??
-          `ship-fast-${sessionId}-${normalizedTarget}.zip`,
+        download.artifact.filename ?? `${sessionId}-${normalizedTarget}.zip`,
       ),
     })
   } catch (error) {
