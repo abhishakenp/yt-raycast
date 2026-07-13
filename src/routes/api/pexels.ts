@@ -24,6 +24,8 @@ type UnsplashPhoto = {
 }
 type UnsplashResponse = { results?: UnsplashPhoto[] }
 
+const PROVIDER_TIMEOUT_MS = 8_000
+
 function readServerEnv(key: string): string {
   return typeof process !== 'undefined'
     ? (process.env?.[key]?.trim() ?? '')
@@ -115,6 +117,33 @@ function choosePhotoUrl(photo: PexelsPhoto | undefined, w: number, h: number) {
   )
 }
 
+function providerRequestInit(authorization: string): RequestInit {
+  const init: RequestInit = {
+    headers: { Authorization: authorization },
+  }
+  Object.defineProperty(init, 'signal', {
+    enumerable: false,
+    value: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+  })
+  return init
+}
+
+function resizeUnsplashUrl(
+  source: string,
+  width: number,
+  height: number,
+): string | null {
+  try {
+    const url = new URL(source)
+    url.searchParams.set('w', String(width))
+    url.searchParams.set('h', String(height))
+    url.searchParams.set('fit', 'crop')
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
 export function resolvePexelsSearchQuery(
   query: string,
   seed: string | null,
@@ -159,9 +188,7 @@ async function searchPexels(
     pexelsUrl.searchParams.set('per_page', '15')
     pexelsUrl.searchParams.set('orientation', orientation)
     try {
-      const response = await fetch(pexelsUrl, {
-        headers: { Authorization: pexelsApiKey },
-      })
+      const response = await fetch(pexelsUrl, providerRequestInit(pexelsApiKey))
       if (!response.ok) return null
       const data = (await response.json()) as PexelsResponse
       return data.photos ?? []
@@ -180,7 +207,14 @@ async function searchPexels(
     const photos = await trySearch(variant)
     if (photos === null) break
     if (photos.length > 0) {
-      return choosePhotoUrl(photos[seedIndex(seed, photos.length)], w, h)
+      const usableUrls = photos
+        .map((photo) => choosePhotoUrl(photo, w, h))
+        .filter(
+          (url): url is string => typeof url === 'string' && url.length > 0,
+        )
+      if (usableUrls.length > 0) {
+        return usableUrls[seedIndex(seed, usableUrls.length)]
+      }
     }
   }
   return null
@@ -202,9 +236,10 @@ async function searchUnsplash(
     unsplashUrl.searchParams.set('per_page', '15')
     unsplashUrl.searchParams.set('orientation', orientation)
     try {
-      const response = await fetch(unsplashUrl, {
-        headers: { Authorization: `Client-ID ${unsplashAccessKey}` },
-      })
+      const response = await fetch(
+        unsplashUrl,
+        providerRequestInit(`Client-ID ${unsplashAccessKey}`),
+      )
       if (!response.ok) return null
       const data = (await response.json()) as UnsplashResponse
       return data.results ?? []
@@ -217,16 +252,22 @@ async function searchUnsplash(
     const results = await trySearch(variant)
     if (results === null) break
     if (results && results.length > 0) {
-      const photo = results[seedIndex(seed, results.length)]
-      const base =
-        photo?.urls?.regular ??
-        photo?.urls?.small ??
-        photo?.urls?.full ??
-        photo?.urls?.raw
-      if (!base) continue
+      const usableUrls = results
+        .map(
+          (photo) =>
+            photo.urls?.regular ??
+            photo.urls?.small ??
+            photo.urls?.full ??
+            photo.urls?.raw,
+        )
+        .filter(
+          (url): url is string => typeof url === 'string' && url.length > 0,
+        )
+      if (usableUrls.length === 0) continue
+      const base = usableUrls[seedIndex(seed, usableUrls.length)]
       const targetW = Math.min(Math.max(w, 400), 2400)
       const targetH = Math.min(Math.max(h, 300), 1600)
-      return `${base}&w=${targetW}&h=${targetH}&fit=crop`
+      return resizeUnsplashUrl(base, targetW, targetH)
     }
   }
   return null
