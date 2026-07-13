@@ -1,67 +1,118 @@
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { formatRunAllReport } from './report'
-import { loadSiteSpec } from '../spec/index'
-import { requirePromptText } from '../prompt'
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { resolvePipelineLanguage } from './prompt-language'
-import { writeSffHtmlHome } from './phase-sff-html.ts'
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { enrichBrandProfile } from './brand-profile'
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-import { resolvePexelsImageHints } from './image-hints'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { toPublicErrorMessage } from '../lib/public-error-message'
+import { requirePromptText } from '../prompt'
+import { loadSiteSpec } from '../spec/index'
+import type { SiteSpecProject } from '../spec/index'
+import { enrichBrandProfile } from './brand-profile'
+import { resolvePexelsImageHints } from './image-hints'
+import { writeSffHtmlHome } from './phase-sff-html.ts'
+import { resolvePipelineLanguage } from './prompt-language'
+import { formatRunAllReport } from './report'
 
-const enrichBrandProfileTyped = enrichBrandProfile as (
-  prompt: string,
-  workspace: string,
-  log?: (message: string) => void,
-) => Promise<Record<string, unknown> | null>
+type RunnerTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'FAILED'
 
-const resolvePexelsImageHintsTyped = resolvePexelsImageHints as unknown as (
-  input: {
-    prompt: string
-    hydrationPrompt: string
-    siteSpec?: Record<string, unknown>
-  },
-  options?: { onProgress?: (partial: unknown) => void },
-) => Promise<{
-  photos?: Array<{ query?: string; alt?: string; url?: string }>
-  videos?: Array<{
-    query?: string
-    alt?: string
-    url?: string
-    posterUrl?: string
-  }>
-} | null>
+type RunnerTask = {
+  id: string
+  label: string
+  status: RunnerTaskStatus
+  filename: string
+  files: string[]
+}
 
-function log(sessionCtx: any) {
-  return (msg) => {
-    console.log(msg)
-    sessionCtx?.broadcast?.({ type: 'log', message: msg })
+type RunnerSessionContext = {
+  id?: string
+  broadcast?: (payload: unknown) => void
+  setPrompt?: (prompt: string) => void
+  setTasks?: (tasks: unknown[]) => void
+  updateTask?: (task: unknown) => void
+  signalHomepageReady?: () => void
+  signalOpenuiReady?: () => void
+  setElapsed?: (elapsed: number) => void
+  setCost?: (cost: number) => void
+}
+
+type RunnerIntegrations = {
+  afterSiteSpecSaved?: (options: {
+    workspace: string
+    siteSpec: unknown
+    log: (message: string) => void
+    status: (message: string, phase: string) => void
+  }) => Promise<void>
+}
+
+type RunAllV2Input = {
+  prompt?: string
+  workspace?: string
+  sessionCtx?: RunnerSessionContext
+  integrations?: RunnerIntegrations
+  preferredLanguage?: string
+}
+
+const log =
+  (sessionCtx: RunnerSessionContext | undefined) =>
+  (message: string): void => {
+    const publicMessage = toPublicErrorMessage(message)
+    console.log(publicMessage)
+    sessionCtx?.broadcast?.({ type: 'log', message: publicMessage })
+  }
+
+const status =
+  (sessionCtx: RunnerSessionContext | undefined) =>
+  (message: string, phase: string): void => {
+    const publicMessage = toPublicErrorMessage(message)
+    console.log(`  [${phase}] ${publicMessage}`)
+    sessionCtx?.broadcast?.({
+      type: 'status',
+      message: publicMessage,
+      phase,
+    })
+  }
+
+const stringField = (
+  value: Record<string, unknown> | undefined,
+  key: string,
+): string | undefined => {
+  const field = value?.[key]
+  return typeof field === 'string' ? field : undefined
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const toMediaSiteSpec = (siteSpec: SiteSpecProject | null) => {
+  if (!siteSpec) return undefined
+
+  const metadata = isRecord(siteSpec.metadata) ? siteSpec.metadata : undefined
+
+  return {
+    siteType: siteSpec.siteType,
+    metadata: { siteType: stringField(metadata, 'siteType') },
+    pages: siteSpec.pages?.map((page) => ({
+      title: stringField(page, 'title'),
+      name: stringField(page, 'name'),
+      description: stringField(page, 'description'),
+    })),
   }
 }
 
-function status(sessionCtx: any) {
-  return (message, phase) => {
-    console.log(`  [${phase}] ${message}`)
-    sessionCtx?.broadcast?.({ type: 'status', message, phase })
+const serializationKey = (value: unknown): string | undefined => {
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return undefined
   }
 }
 
-export async function runAllV2({
+export const runAllV2 = async ({
   prompt,
   workspace,
   sessionCtx,
   integrations,
   preferredLanguage,
-}: {
-  prompt?: string
-  workspace: string
-  sessionCtx?: any
-  integrations?: any
-  preferredLanguage?: string
-} = {}) {
+}: RunAllV2Input = {}): Promise<void> => {
+  if (!workspace) throw new Error('workspace is required for runAllV2')
+
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
   const t0 = Date.now()
@@ -75,7 +126,7 @@ export async function runAllV2({
 
   const timings: Record<string, number> = { t0 }
 
-  const tasks = [
+  const tasks: RunnerTask[] = [
     {
       id: 'home.openui',
       label: 'Generate SFF HTML homepage',
@@ -102,42 +153,41 @@ export async function runAllV2({
   sessionCtx?.updateTask?.(tasks[0])
   persistTasks()
 
-  let htmlStats: any
   try {
     timings.html_start = Date.now()
     const siteSpec = loadSiteSpec(workspace)
-    const [brandProfile, imageHints] = await Promise.all([
-      enrichBrandProfileTyped(languageMode.prompt, workspace, _log).catch(
+    const seenMediaProgress = new Set<string>()
+    const [resolvedBrandProfile, imageHints] = await Promise.all([
+      enrichBrandProfile(languageMode.prompt, workspace, _log).catch(
         (error) => {
-          _log(
-            `  brand-profile: skipped (${(error as Error)?.message ?? String(error)})`,
-          )
+          _log(`  brand-profile: skipped (${toPublicErrorMessage(error)})`)
           return null
         },
       ),
-      resolvePexelsImageHintsTyped(
+      resolvePexelsImageHints(
         {
           prompt: languageMode.prompt,
           hydrationPrompt: languageMode.prompt,
-          siteSpec: siteSpec ?? undefined,
+          siteSpec: toMediaSiteSpec(siteSpec),
         },
         {
           onProgress: (partial) => {
-            const payload =
-              partial && typeof partial === 'object'
-                ? (partial as Record<string, unknown>)
-                : {}
-            sessionCtx?.broadcast?.({ type: 'media_hints', ...payload })
+            const payload = { ...partial, type: 'media_hints' }
+            const key = serializationKey(payload)
+            if (key && seenMediaProgress.has(key)) return
+            if (key) seenMediaProgress.add(key)
+            sessionCtx?.broadcast?.(payload)
           },
         },
       ).catch((error) => {
-        _log(
-          `  image-hints: skipped (${(error as Error)?.message ?? String(error)})`,
-        )
+        _log(`  image-hints: skipped (${toPublicErrorMessage(error)})`)
         return null
       }),
     ])
-    htmlStats = await writeSffHtmlHome({
+    const brandProfile = resolvedBrandProfile
+      ? { ...resolvedBrandProfile }
+      : null
+    const htmlStats = await writeSffHtmlHome({
       workspace,
       prompt: languageMode.prompt,
       siteSpec: siteSpec ?? undefined,
@@ -150,12 +200,6 @@ export async function runAllV2({
     timings.html_end = Date.now()
     timings.preview_saved = timings.html_end
 
-    tasks[0].status = 'DONE'
-    sessionCtx?.updateTask?.(tasks[0])
-    persistTasks()
-    sessionCtx?.signalHomepageReady?.()
-    sessionCtx?.signalOpenuiReady?.()
-
     if (integrations?.afterSiteSpecSaved) {
       const savedSiteSpec = loadSiteSpec(workspace)
       await integrations.afterSiteSpecSaved({
@@ -165,6 +209,12 @@ export async function runAllV2({
         status: _status,
       })
     }
+
+    tasks[0].status = 'DONE'
+    sessionCtx?.updateTask?.(tasks[0])
+    persistTasks()
+    sessionCtx?.signalHomepageReady?.()
+    sessionCtx?.signalOpenuiReady?.()
 
     const elapsed = Number.parseFloat(((Date.now() - t0) / 1000).toFixed(1))
     sessionCtx?.setElapsed?.(elapsed)
@@ -194,7 +244,7 @@ export async function runAllV2({
     tasks[0].status = 'FAILED'
     sessionCtx?.setTasks?.(tasks)
     persistTasks()
-    const message = (err as Error)?.message || String(err)
+    const message = toPublicErrorMessage(err)
     _status(`Generation failed: ${message}`, 'failed')
     _log(`Error during generation: ${message}`)
     throw err
