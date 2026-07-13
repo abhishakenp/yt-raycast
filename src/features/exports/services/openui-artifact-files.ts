@@ -6,6 +6,7 @@ import {
   extractExportMetadata,
 } from './html-export-files'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
+import { createZipBuffer } from './zip-builder'
 
 function readGenUIExportMetadata(
   siteSpecJson: string | undefined,
@@ -417,23 +418,20 @@ export async function buildDownloadFromArtifactFiles(
     }
   }
 
-  const { zipSync, strToU8 } = await import('fflate')
-  const slug =
+  const slugSource =
     input.target === 'lakebed'
-      ? `ship-fast-${input.sessionId}`
-      : extractExportMetadata(input.previewHtml ?? input.source)
-          .title.trim()
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '')
-          .slice(0, 60) || 'ship-fast-export'
+      ? input.sessionId
+      : extractExportMetadata(input.previewHtml ?? input.source).title
+  const slug =
+    slugSource
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'website'
 
   return {
-    body: zipSync(
-      Object.fromEntries(
-        Object.entries(files).map(([path, source]) => [path, strToU8(source)]),
-      ),
-    ),
+    body: createZipBuffer(files),
     contentType: 'application/zip',
     filename: `${slug}-${input.target}.zip`,
     fileCount: Object.keys(files).length,

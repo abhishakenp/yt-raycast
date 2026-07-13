@@ -28,18 +28,60 @@ const dosDateTime = (date = new Date()) => {
   }
 }
 
+const ZIP_EPOCH = new Date(1980, 0, 1, 0, 0, 0)
+
+const normalizeZipEntryPath = (path: string): string => {
+  if (!path || path.includes('\0')) {
+    throw new Error('Invalid ZIP entry path')
+  }
+
+  const portablePath = path.replaceAll('\\', '/').normalize('NFC')
+  if (
+    portablePath.startsWith('/') ||
+    /^[a-z]:\//i.test(portablePath) ||
+    portablePath.split('/').includes('..')
+  ) {
+    throw new Error(`Unsafe ZIP entry path: ${path}`)
+  }
+
+  const normalizedPath = portablePath
+    .split('/')
+    .filter((segment) => segment !== '' && segment !== '.')
+    .join('/')
+  if (!normalizedPath) {
+    throw new Error('Invalid ZIP entry path')
+  }
+  return normalizedPath
+}
+
 export function createZipBuffer(
   files: Record<string, string | Buffer>,
 ): Buffer {
   const localParts: Buffer[] = []
   const centralParts: Buffer[] = []
-  const names = Object.keys(files)
-  let offset = 0
-  const { dosDate, dosTime } = dosDateTime()
+  const entries = Object.entries(files)
+    .map(([path, source]) => {
+      const normalizedPath = normalizeZipEntryPath(path)
+      return {
+        path: normalizedPath,
+        portableKey: normalizedPath.toLocaleLowerCase('en-US'),
+        source,
+      }
+    })
+    .sort((left, right) => left.portableKey.localeCompare(right.portableKey))
+  const duplicate = entries.find(
+    (entry, index) =>
+      index > 0 && entry.portableKey === entries[index - 1]?.portableKey,
+  )
+  if (duplicate) {
+    throw new Error(`Duplicate ZIP entry path: ${duplicate.path}`)
+  }
 
-  for (const name of names) {
-    const source = files[name]
-    const filename = Buffer.from(name)
+  let offset = 0
+  const { dosDate, dosTime } = dosDateTime(ZIP_EPOCH)
+
+  for (const { path, source } of entries) {
+    const filename = Buffer.from(path)
     const content = Buffer.isBuffer(source)
       ? source
       : Buffer.from(String(source), 'utf-8')
@@ -88,8 +130,8 @@ export function createZipBuffer(
   end.writeUInt32LE(0x06054b50, 0)
   end.writeUInt16LE(0, 4)
   end.writeUInt16LE(0, 6)
-  end.writeUInt16LE(names.length, 8)
-  end.writeUInt16LE(names.length, 10)
+  end.writeUInt16LE(entries.length, 8)
+  end.writeUInt16LE(entries.length, 10)
   end.writeUInt32LE(centralDirectory.length, 12)
   end.writeUInt32LE(localDirectory.length, 16)
   end.writeUInt16LE(0, 20)
