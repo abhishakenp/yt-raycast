@@ -1,8 +1,10 @@
 import type { ConvexHttpClient } from 'convex/browser'
+import type { Browser } from 'playwright'
 
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { toPublicErrorMessage } from '@/shared/errors/public-error-message'
 import { runTargetedEdits } from './targeted-edit-pass'
 
 // Server-side clone job: crawl a public site with Playwright, stream a verbatim,
@@ -86,6 +88,9 @@ export async function runCloneJob(input: {
   brief: string
 }): Promise<void> {
   const { sessionId, anonymousOwnerSecret, bearer, seedUrl, brief } = input
+  const sensitiveValues = [anonymousOwnerSecret, bearer].filter(
+    (value): value is string => typeof value === 'string' && value.length > 0,
+  )
 
   const engine = await loadCloneEngine()
 
@@ -133,17 +138,19 @@ export async function runCloneJob(input: {
 
   const controller = new AbortController()
   const jobTimer = setTimeout(() => controller.abort(), JOB_TIMEOUT_MS)
-
-  const pw = await loadPlaywright()
-  const browser = await pw.chromium.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  })
-
-  let homeHtml = ''
-  let finalized = false
+  let browser: Browser | undefined
 
   try {
+    const pw = await loadPlaywright()
+    const launchedBrowser = await pw.chromium.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    })
+    browser = launchedBrowser
+
+    let homeHtml = ''
+    let finalized = false
+
     // 1. Crawl: ordered list of same-domain page urls, HOME first.
     const homeNormalized = engine.normalizeUrl(seedUrl)
     const { pages } = await engine.crawlSite(seedUrl, {
@@ -167,7 +174,7 @@ export async function runCloneJob(input: {
     const homeKey = orderedKeys[0]
     try {
       const captured = await engine.capturePage(
-        browser,
+        launchedBrowser,
         urlFor(homeKey, true),
         {
           signal: controller.signal,
@@ -201,7 +208,7 @@ export async function runCloneJob(input: {
     } catch (err) {
       console.warn(
         `[clone] home capture failed for ${sessionId}:`,
-        (err as Error)?.message ?? err,
+        toPublicErrorMessage(err, sensitiveValues),
       )
       await writePage({
         pathname: '/',
@@ -223,7 +230,7 @@ export async function runCloneJob(input: {
     } catch (err) {
       console.warn(
         `[clone] finalizeClonePreview failed for ${sessionId}:`,
-        (err as Error)?.message ?? err,
+        toPublicErrorMessage(err, sensitiveValues),
       )
     }
 
@@ -242,7 +249,7 @@ export async function runCloneJob(input: {
         const order = i + 1 // home was order 0
         try {
           const captured = await engine.capturePage(
-            browser,
+            launchedBrowser,
             urlFor(key, false),
             {
               signal: controller.signal,
@@ -275,7 +282,7 @@ export async function runCloneJob(input: {
         } catch (err) {
           console.warn(
             `[clone] page capture failed for ${sessionId} (${key}):`,
-            (err as Error)?.message ?? err,
+            toPublicErrorMessage(err, sensitiveValues),
           )
           await writePage({
             pathname: key,
@@ -309,12 +316,12 @@ export async function runCloneJob(input: {
       } catch (err) {
         console.warn(
           `[clone] targeted edits failed for ${sessionId}:`,
-          (err as Error)?.message ?? err,
+          toPublicErrorMessage(err, sensitiveValues),
         )
       }
     }
   } finally {
     clearTimeout(jobTimer)
-    await browser.close().catch(() => undefined)
+    await browser?.close().catch(() => undefined)
   }
 }
