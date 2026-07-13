@@ -1,4 +1,5 @@
-const PARTIAL_MAX = 480
+import { PROMPT_PARTIAL_MAX } from './-prompt-suggestions-contract.js'
+
 const OUT_MAX = 4
 const LINE_MAX = 380
 const MIN_TAIL = 6
@@ -25,6 +26,9 @@ const LANGUAGE_NAMES = {
   it: 'Italian',
   pt: 'Portuguese',
   ar: 'Arabic',
+  ja: 'Japanese',
+  zh: 'Chinese',
+  ko: 'Korean',
 }
 
 const FALLBACK_TAILS = {
@@ -148,6 +152,24 @@ const FALLBACK_TAILS = {
     'لموقع فاخر ومتوافق مع الجوال يتضمن معرضًا، عروضًا، قصة العلامة ومسار حجز بسيط.',
     'بتصميم أنيق، صور قوية، شهادات عملاء ونموذج مباشر لجمع العملاء المحتملين.',
   ],
+  ja: [
+    '向けに、魅力的なメインビジュアル、特徴紹介、利用者の声、よくある質問、購入までの明確な導線を備えた現代的なページを作成してください。',
+    'に合う上質なサイトを作り、対象のお客様、商品の魅力、信頼できる実績、問い合わせへの流れを分かりやすく伝えてください。',
+    'を紹介する、携帯端末でも見やすいページを作り、写真一覧、おすすめ商品、予約や購入の流れを整えてください。',
+    'の物語と価値を伝える清潔で高速なサイトを作り、安心材料と分かりやすい申し込み方法を用意してください。',
+  ],
+  zh: [
+    '，打造现代化首页，清晰展示核心亮点、服务内容、价格信息、用户评价和联系入口。',
+    '，制作精致的网站，说明目标人群、主要优势、信任依据、常见问题和明确的行动指引。',
+    '，设计适合移动设备的页面，加入图片展示、优惠信息和简洁顺畅的预约流程。',
+    '，创建清爽快速的网站，讲述品牌故事，组织关键内容，并提供便捷的咨询入口。',
+  ],
+  ko: [
+    '을 위한 현대적인 홈페이지를 만들고 핵심 소개, 서비스, 가격, 이용 후기와 문의 흐름을 명확하게 구성해 주세요.',
+    '에 어울리는 고급스러운 웹사이트를 만들고 대상 고객, 주요 혜택, 신뢰 요소, 자주 묻는 질문과 행동 유도 문구를 담아 주세요.',
+    '을 소개하는 모바일 친화적인 페이지를 만들고 사진 모음, 추천 상품과 간단한 예약 절차를 구성해 주세요.',
+    '의 이야기와 가치를 전하는 빠르고 깔끔한 사이트를 만들고 상담 신청으로 이어지는 경로를 분명하게 보여 주세요.',
+  ],
 }
 
 const SCRIPT_LANGUAGE_PATTERNS = [
@@ -249,7 +271,7 @@ function joinPartialTail(partial, tail) {
   const prefix = String(partial ?? '').trim()
   const suffix = String(tail ?? '').trim()
   if (!prefix || !suffix) return prefix
-  if (/\s$/.test(prefix) || /^[,.;:!?।،۔]/.test(suffix))
+  if (/\s$/.test(prefix) || /^[,.;:!?।،۔，。！？；：]/.test(suffix))
     return `${prefix}${suffix}`
   return `${prefix} ${suffix}`
 }
@@ -257,7 +279,7 @@ function joinPartialTail(partial, tail) {
 export function getFallbackPromptSuggestions(partial, language) {
   const p = String(partial ?? '').trim()
   if (p.length < 2) return []
-  if (p.length > PARTIAL_MAX) return []
+  if (p.length > PROMPT_PARTIAL_MAX) return []
   const inferred = inferLanguageFromPartial(p, language)
   const tails = FALLBACK_TAILS[inferred] || FALLBACK_TAILS.en
   const seen = new Set()
@@ -290,7 +312,7 @@ function languageInstructionFor(partial, language) {
 export async function getPartialPromptSuggestions(partial, options = {}) {
   const p = String(partial ?? '').trim()
   if (p.length < 2) return []
-  if (p.length > PARTIAL_MAX) return []
+  if (p.length > PROMPT_PARTIAL_MAX) return []
   if (!hasGroqApiKey()) return getFallbackPromptSuggestions(p, options.language)
 
   const system = [
