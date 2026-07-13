@@ -71,9 +71,9 @@ const sensitiveCloneValues = (
 
 const isPublicHttpUrl = async (value: string): Promise<boolean> => {
   try {
-    const { assertPublicUrl } =
+    const { assertPublicUrlPreflight } =
       await import('@ship-fast/engine/clone/security.ts')
-    await assertPublicUrl(value)
+    assertPublicUrlPreflight(value)
     return true
   } catch {
     return false
