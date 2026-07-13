@@ -1,6 +1,6 @@
 import { Download, LoaderCircle, Lock, TriangleAlert } from 'lucide-react'
 import { useQuery } from 'convex/react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
@@ -118,6 +118,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
   const [activeTarget, setActiveTarget] = useState<ExportTarget['target']>()
   const [downloadingTarget, setDownloadingTarget] =
     useState<ExportTarget['target']>()
+  const actionInFlightRef = useRef(false)
 
   const createAuthHeaders = async () => {
     const headers: Record<string, string> = {}
@@ -169,9 +170,12 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
         `ship-fast-${sessionId}-${target}.zip`,
       )
       document.body.append(anchor)
-      anchor.click()
-      anchor.remove()
-      window.URL.revokeObjectURL(url)
+      try {
+        anchor.click()
+      } finally {
+        anchor.remove()
+        window.URL.revokeObjectURL(url)
+      }
     } finally {
       setDownloadingTarget(undefined)
     }
@@ -227,17 +231,23 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
   }
 
   const runTargetAction = async (targetConfig) => {
-    if (targetConfig.requiresPayment) {
-      await createExport(targetConfig.target)
-      return
-    }
-    if (targetConfig.ready && targetConfig.downloadUrl) {
-      await downloadExport(targetConfig)
-      return
-    }
-    const result = await createExport(targetConfig.target)
-    if (typeof result.downloadUrl === 'string') {
-      await downloadFromUrl(result.downloadUrl, targetConfig.target)
+    if (actionInFlightRef.current) return
+    actionInFlightRef.current = true
+    try {
+      if (targetConfig.requiresPayment) {
+        await createExport(targetConfig.target)
+        return
+      }
+      if (targetConfig.ready && targetConfig.downloadUrl) {
+        await downloadExport(targetConfig)
+        return
+      }
+      const result = await createExport(targetConfig.target)
+      if (typeof result.downloadUrl === 'string') {
+        await downloadFromUrl(result.downloadUrl, targetConfig.target)
+      }
+    } finally {
+      actionInFlightRef.current = false
     }
   }
 
@@ -299,7 +309,11 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
             <button
               className="group/export grid min-h-16 w-full grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] p-2.5 text-left transition-colors hover:border-white/14 hover:bg-white/[0.075] disabled:cursor-wait disabled:opacity-60"
               data-export-target={item.target}
-              disabled={!hasResolvedTargets || downloadingTarget !== undefined}
+              disabled={
+                !hasResolvedTargets ||
+                activeTarget !== undefined ||
+                downloadingTarget !== undefined
+              }
               key={item.target}
               onClick={() => void runTargetAction(item)}
               style={{ backgroundImage: progressBackground }}
@@ -356,7 +370,10 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
       </div>
 
       {error && (
-        <p className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200">
+        <p
+          className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200"
+          role="alert"
+        >
           {error}
         </p>
       )}
