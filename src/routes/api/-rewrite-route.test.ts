@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const generateTextMock = vi.hoisted(() => vi.fn())
 
@@ -32,6 +32,20 @@ async function importRoute(): Promise<RouteWithHandlers> {
 }
 
 describe('rewrite API route', () => {
+  const originalClerk = process.env.VITE_DISABLE_CLERK
+
+  afterEach(() => {
+    process.env.VITE_DISABLE_CLERK = originalClerk
+  })
+
+  // These tests exercise route behavior (JSON parsing, validation, engine
+  // loading, error handling) — not auth. Bypass Clerk so requests succeed
+  // without Authorization headers. The security-resilience test file covers
+  // the authenticated path with VITE_DISABLE_CLERK='false'.
+  beforeEach(() => {
+    process.env.VITE_DISABLE_CLERK = 'true'
+  })
+
   const realConvexText = 'Pineapple Saison'
   const realConvexInstruction =
     'make this fit a craft beer brewery with taproom tours'
