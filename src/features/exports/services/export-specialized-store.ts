@@ -334,13 +334,99 @@ type SiteEndpointHandler = (ctx: ReturnType<typeof createSiteEndpointContext>, r
 function endpointResponse(body: string, options: EndpointResponseOptions = {}): EndpointResponse {
   return { body, headers: options.headers ?? {}, kind: 'response', status: options.status ?? 200 }
 }
+type EndpointTableQuery = {
+  all(): DataRecord[]
+  first(): DataRecord | null
+  limit(count: number): EndpointTableQuery
+  orderBy(field: string, direction?: 'asc' | 'desc'): EndpointTableQuery
+  unique(): DataRecord | null
+  where(field: string, value: unknown): EndpointTableQuery
+}
+function endpointRows(name: string): DataRecord[] {
+  const rows = readRecords(database[name])
+  database[name] = rows
+  return rows
+}
+function endpointRow(value: DataRecord): DataRecord {
+  const now = new Date().toISOString()
+  return {
+    id: typeof value.id === 'string' ? value.id : Date.now().toString(36),
+    createdAt: typeof value.createdAt === 'string' ? value.createdAt : now,
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : now,
+    ...value,
+  }
+}
+function endpointQuery(
+  name: string,
+  filters: Array<[string, unknown]> = [],
+  order: [string, 'asc' | 'desc'] | null = null,
+  limitCount: number | null = null,
+): EndpointTableQuery {
+  function all(): DataRecord[] {
+    let rows = endpointRows(name).map(endpointRow)
+    for (const [field, value] of filters) {
+      rows = rows.filter((row) => row[field] === value)
+    }
+    if (order) {
+      const [field, direction] = order
+      rows = [...rows].sort((left, right) => {
+        const leftValue = String(left[field] ?? '')
+        const rightValue = String(right[field] ?? '')
+        return direction === 'desc'
+          ? rightValue.localeCompare(leftValue)
+          : leftValue.localeCompare(rightValue)
+      })
+    }
+    return limitCount === null ? rows : rows.slice(0, limitCount)
+  }
+  return {
+    all,
+    first() { return all()[0] ?? null },
+    limit(count) { return endpointQuery(name, filters, order, count) },
+    orderBy(field, direction = 'asc') {
+      return endpointQuery(name, filters, [field, direction], limitCount)
+    },
+    unique() { return all()[0] ?? null },
+    where(field, value) {
+      return endpointQuery(name, [...filters, [field, value]], order, limitCount)
+    },
+  }
+}
+function endpointTable(name: string) {
+  return {
+    ...endpointQuery(name),
+    delete(id: string) {
+      database[name] = endpointRows(name).filter((row) => row.id !== id)
+    },
+    get(id: string) {
+      return endpointRows(name).find((row) => row.id === id) ?? null
+    },
+    insert(value: DataRecord) {
+      const row = endpointRow(value)
+      database[name] = [...endpointRows(name), row]
+      return row
+    },
+    update(id: string, patch: DataRecord) {
+      database[name] = endpointRows(name).map((row) =>
+        row.id === id
+          ? { ...row, ...patch, updatedAt: new Date().toISOString() }
+          : row,
+      )
+    },
+  }
+}
+function endpointDatabase() {
+  return new Proxy<Record<string, ReturnType<typeof endpointTable>>>({}, {
+    get(_target, property) { return endpointTable(String(property)) },
+  })
+}
 export function json(value: unknown, options: EndpointResponseOptions = {}) { return endpointResponse(JSON.stringify(value ?? null), { ...options, headers: { 'Content-Type': 'application/json; charset=utf-8', ...(options.headers ?? {}) } }) }
 export function text(value: unknown, options: EndpointResponseOptions = {}) { return endpointResponse(String(value ?? ''), { ...options, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...(options.headers ?? {}) } }) }
 export function empty(options: EndpointResponseOptions = {}) { return endpointResponse('', { ...options, status: options.status ?? 204 }) }
 export function redirect(url: string, options: EndpointResponseOptions = {}) { return endpointResponse('', { ...options, status: options.status ?? 302, headers: { Location: url, ...(options.headers ?? {}) } }) }
 export function endpoint(route: { method: string; path: string }, handler: SiteEndpointHandler) { return { handler, method: route.method.toUpperCase(), path: route.path } }
 function isStringEntry(entry: [string, unknown]): entry is [string, string] { return typeof entry[1] === 'string' }
-export function createSiteEndpointContext() { return { auth: guestAuth, db: {}, env: Reflect.get(Reflect.get(globalThis, 'process') ?? {}, 'env') ?? {}, log: console } }
+export function createSiteEndpointContext() { return { auth: guestAuth, db: endpointDatabase(), env: Reflect.get(Reflect.get(globalThis, 'process') ?? {}, 'env') ?? {}, log: console } }
 export function toEndpointRequest(request: Request) { const url = new URL(request.url); return { method: request.method, path: url.pathname, url: request.url, headers: request.headers, query: url.searchParams, text: () => request.clone().text(), json: () => request.clone().json(), bytes: async () => new Uint8Array(await request.clone().arrayBuffer()) } }
 export function toEndpointResponse(value: unknown): Response { if (value instanceof Response) return value; if (isRecord(value) && value.kind === 'response') return new Response(String(value.body ?? ''), { headers: isRecord(value.headers) ? Object.fromEntries(Object.entries(value.headers).filter(isStringEntry)) : {}, status: typeof value.status === 'number' ? value.status : 200 }); return Response.json(value ?? null) }
 `

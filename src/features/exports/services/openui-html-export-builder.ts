@@ -155,7 +155,17 @@ function applyPreviewRootTheme(
   themeStyle: string,
   isDark: boolean,
 ): string {
-  if (/<[a-z][^>]*\bid=(['"])openui-root\1[^>]*>/i.test(html)) return html
+  const existingRootPattern = /<[a-z][^>]*\bid=(['"])openui-root\1[^>]*>/i
+  const existingRoot = html.match(existingRootPattern)?.[0]
+  if (existingRoot) {
+    if (/\bstyle=(['"])/i.test(existingRoot)) return html
+    const withStyle = mergeRootAttribute(
+      existingRoot.slice(0, -1),
+      'style',
+      `${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`,
+    )
+    return html.replace(existingRoot, `${withStyle}>`)
+  }
 
   const openingTag = mergeRootAttribute(
     `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}"`,

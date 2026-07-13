@@ -3745,7 +3745,11 @@ export default config
 `
 }
 
-function renderReadme(projectName: string, target: 'react' | 'next'): string {
+function renderReadme(
+  projectName: string,
+  target: 'react' | 'next',
+  includeGeneratorCredit: boolean,
+): string {
   const commands =
     target === 'react'
       ? ['bun install', 'bun dev', 'bun run build', 'bun run preview']
@@ -3758,6 +3762,7 @@ function renderReadme(projectName: string, target: 'react' | 'next'): string {
 \`\`\`bash
 ${commands.join('\n')}
 \`\`\`
+${includeGeneratorCredit ? '\nGenerated with [ShipFast](https://ship-fast.io) 🚀.\n' : ''}
 `
 }
 
@@ -4281,7 +4286,11 @@ async function buildReactExport(
     'src/lib/image.tsx': renderImageHelper(imageSources),
     'src/styles.css':
       renderThemeCss(input) + renderStyleOverridesCss(styleOverrides),
-    'README.md': renderReadme(parsed.projectName, 'react'),
+    'README.md': renderReadme(
+      parsed.projectName,
+      'react',
+      input.syncSecret === undefined,
+    ),
   }
   if (usesLakebed) {
     files['src/lib/store.ts'] = renderSpecializedReactStore(
@@ -4416,7 +4425,11 @@ export default function RootLayout({ children }: PropsWithChildren) {
       renderPortableCommerceConfig(input.siteSpecJson),
     'src/lib/cn.ts': renderLibCn(),
     'src/lib/image.tsx': renderImageHelper(imageSources),
-    'README.md': renderReadme(parsed.projectName, 'next'),
+    'README.md': renderReadme(
+      parsed.projectName,
+      'next',
+      input.syncSecret === undefined,
+    ),
   }
   if (usesLakebed) {
     files['src/lib/store.ts'] = renderSpecializedNextStore(
