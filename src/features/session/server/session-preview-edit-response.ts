@@ -9,6 +9,9 @@ type PreviewEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 
 type JsonBody = Record<string, unknown>
 
+const EXECUTABLE_PREVIEW_FRAGMENT_PATTERN =
+  /<\s*\/?\s*(?:script|iframe|object|embed|base|meta|link|foreignObject)\b|\s(?:on[a-z]+|srcdoc)\s*=|\s(?:href|src|action|formaction|xlink:href)\s*=\s*["']?\s*(?:(?:javascript|vbscript)\s*:|data\s*:\s*text\/html)/i
+
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
     ...init,
@@ -58,11 +61,18 @@ function getString(body: JsonBody, keys: string[]): string | undefined {
 }
 
 function getOwnerSecret(request: Request, body: JsonBody): string | undefined {
-  return (
-    getString(body, ['anonymousOwnerSecret', 'anonOwnerSecret']) ??
-    request.headers.get('x-ship-fast-owner-secret') ??
-    undefined
-  )
+  const bodySecret = getString(body, [
+    'anonymousOwnerSecret',
+    'anonOwnerSecret',
+  ])?.trim()
+  if (bodySecret) return bodySecret
+
+  const headerSecret = request.headers.get('x-ship-fast-owner-secret')?.trim()
+  return headerSecret || undefined
+}
+
+function containsExecutablePreviewFragment(html: string): boolean {
+  return EXECUTABLE_PREVIEW_FRAGMENT_PATTERN.test(html)
 }
 
 function createClient(clientOverride?: PreviewEditClient): PreviewEditClient {
@@ -156,7 +166,7 @@ export async function createPreviewRestoreResponse(
   try {
     const body = await readJsonBody(request)
     const parsedVersion = Number(version)
-    if (!Number.isInteger(parsedVersion) || parsedVersion < 1) {
+    if (!Number.isSafeInteger(parsedVersion) || parsedVersion < 1) {
       return json({ error: 'Invalid preview version' }, { status: 400 })
     }
 
@@ -229,6 +239,9 @@ export async function createInlineTextEditResponse(
         { status: 400 },
       )
     }
+    if (!beforeText.trim()) {
+      return json({ error: 'beforeText must not be empty' }, { status: 400 })
+    }
 
     const result = await createClient(clientOverride).mutation(
       api.sessions.createEdit,
@@ -259,6 +272,12 @@ export async function createInlineStyleEditResponse(
     const afterHtml = getString(body, ['afterHtml', 'html', 'fragmentHtml'])
     if (afterHtml === undefined || !afterHtml.trim()) {
       return json({ error: 'afterHtml is required' }, { status: 400 })
+    }
+    if (containsExecutablePreviewFragment(afterHtml)) {
+      return json(
+        { error: 'Executable preview fragments are not allowed' },
+        { status: 422 },
+      )
     }
 
     const result = await createClient(clientOverride).mutation(
