@@ -238,14 +238,14 @@ function wireReactAdminAccess(
         "$1import { isShipFastAdminRoute, ShipFastAdminGate } from './lib/ship-fast-admin-gate'\n",
       )
   const wiredApp = withImport.replace(
-    /element=\{<([A-Za-z0-9_]+) \{\.\.\.\1Route\.props\} \/>\}/g,
+    /element=\{<([A-Za-z0-9_]+)(?: \{\.\.\.\1Route\.props\})? \/>\}/g,
     (_source, componentName) =>
       `element={isShipFastAdminRoute(${componentName}Route.label, ${componentName}Route.path) ? (
           <ShipFastAdminGate routeLabel={${componentName}Route.label}>
-            <${componentName} {...${componentName}Route.props} />
+            <${componentName} />
           </ShipFastAdminGate>
         ) : (
-          <${componentName} {...${componentName}Route.props} />
+          <${componentName} />
         )}`,
   )
 
@@ -340,17 +340,24 @@ function unzipTextFiles(body: Uint8Array) {
 
 export async function buildOpenUIArtifactFiles(input: OpenUIExportInput) {
   if (input.target === 'html') {
-    const { buildOpenUIHtmlExport } =
-      await import('./openui-html-export-builder')
+    const {
+      buildOpenUIHtmlExport,
+      isUsablePreviewHtml,
+      neutralizeGeneratedHtmlRuntimeMarkers,
+    } = await import('./openui-html-export-builder')
     const download = await buildOpenUIHtmlExport({
       ...input,
       includeBadge: input.includeBadge ?? false,
     })
     if (typeof download?.body === 'string') {
+      const artifactBody = isUsablePreviewHtml(input.previewHtml)
+        ? download.body
+        : neutralizeGeneratedHtmlRuntimeMarkers(download.body)
+      const artifactDownload = { ...download, body: artifactBody }
       const files = createHtmlExportFiles(
         input.sessionId,
         'html',
-        download.body,
+        artifactBody,
         {
           includeBadge: input.includeBadge ?? false,
         },
@@ -359,7 +366,10 @@ export async function buildOpenUIArtifactFiles(input: OpenUIExportInput) {
 
 Open \`index.html\` in a browser or serve this directory with any static file server.
 `
-      return { files: withGenUIExportMetadata(input, files), download }
+      return {
+        files: withGenUIExportMetadata(input, files),
+        download: artifactDownload,
+      }
     }
     throw new Error('HTML export did not produce an HTML document')
   }
