@@ -3,12 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
   NavbarNav,
   NavbarNavLink,
+  SiteNav,
 } from '#/section-kit/index.ts'
 import {
   PublicationAccountButton,
@@ -74,93 +76,96 @@ export const NewsroomNavbar = defineCapsule({
     const signInCta = props.signInCta ?? 'Sign in'
 
     return (
-      <header
+      <SiteNav
+        position="sticky"
+        height="outlier"
+        rowClassName="block"
         className={cn(
-          'sticky top-0 z-50 border-b border-border bg-background',
+          'overflow-x-clip bg-background backdrop-blur-none',
           props.className,
         )}
       >
         {/* Top utility strip: date + live BREAKING ticker */}
-        <div className="border-b border-border bg-muted">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-1.5 text-xs sm:px-6 lg:px-8">
-            <time className="hidden font-medium uppercase tracking-wider text-muted-foreground sm:block">
-              {date}
-            </time>
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-primary px-2 py-0.5 font-semibold uppercase tracking-wider text-primary-foreground">
-                <span className="size-1.5 animate-pulse rounded-full bg-primary-foreground" />
-                Breaking
-              </span>
-              <button
-                type="button"
-                onClick={() => go(breaking)}
-                className="truncate text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {breaking}
-              </button>
+        <div className="relative left-1/2 w-screen -translate-x-1/2 border-b border-border bg-muted">
+          <Container>
+            <div className="flex items-center justify-between gap-4 py-1.5 text-xs">
+              <time className="hidden font-medium uppercase tracking-wider text-muted-foreground sm:block">
+                {date}
+              </time>
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-primary px-2 py-0.5 font-semibold uppercase tracking-wider text-primary-foreground">
+                  <span className="size-1.5 animate-pulse rounded-full bg-primary-foreground" />
+                  Breaking
+                </span>
+                <button
+                  type="button"
+                  onClick={() => go(breaking)}
+                  className="truncate text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {breaking}
+                </button>
+              </div>
             </div>
-          </div>
+          </Container>
         </div>
 
         {/* Masthead row: search · serif wordmark · subscribe + sign in */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid h-20 grid-cols-[1fr_auto_1fr] items-center gap-4">
-            <div className="flex items-center justify-start">
-              <PublicationMobileMenu
-                brand={brand}
-                homeTarget={sections[0]}
-                nav={sections}
-                buttonClassName="mr-2 inline-flex items-center justify-center rounded-md border border-border px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-              />
-              <PublicationSearchButton
-                lakebed={lakebed}
-                label="Search articles"
-                buttonClassName="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        <div className="grid h-20 grid-cols-[1fr_auto_1fr] items-center gap-4">
+          <div className="flex items-center justify-start">
+            <PublicationMobileMenu
+              brand={brand}
+              homeTarget={sections[0]}
+              nav={sections}
+              buttonClassName="mr-2 inline-flex items-center justify-center rounded-md border border-border px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+            />
+            <PublicationSearchButton
+              lakebed={lakebed}
+              label="Search articles"
+              buttonClassName="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="size-4"
+                aria-hidden="true"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="size-4"
-                  aria-hidden="true"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
-                <span className="hidden sm:inline">Search</span>
-              </PublicationSearchButton>
-            </div>
-
-            <NavbarBrand asChild>
-              <button
-                type="button"
-                onClick={() => go(sections[0])}
-                className="justify-self-center text-center font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-            </NavbarBrand>
-
-            <NavbarActions className="justify-end gap-2 sm:gap-4">
-              <PublicationAccountButton
-                lakebed={lakebed}
-                label={signInCta}
-                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              />
-              <PublicationSubscribeDrawer
-                lakebed={lakebed}
-                buttonLabel={subscribeCta}
-                source="newsroom navbar"
-                buttonClassName="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              />
-            </NavbarActions>
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <span className="hidden sm:inline">Search</span>
+            </PublicationSearchButton>
           </div>
+
+          <NavbarBrand asChild>
+            <button
+              type="button"
+              onClick={() => go(sections[0])}
+              className="justify-self-center text-center font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+            >
+              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+            </button>
+          </NavbarBrand>
+
+          <NavbarActions className="justify-end gap-2 sm:gap-4">
+            <PublicationAccountButton
+              lakebed={lakebed}
+              label={signInCta}
+              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            />
+            <PublicationSubscribeDrawer
+              lakebed={lakebed}
+              buttonLabel={subscribeCta}
+              source="newsroom navbar"
+              buttonClassName="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            />
+          </NavbarActions>
         </div>
 
         {/* Section nav: dense, bordered editorial rail */}
-        <div className="border-t border-border bg-background">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative left-1/2 w-screen -translate-x-1/2 border-t border-border bg-background">
+          <Container>
             <NavbarNav className="flex gap-1 overflow-x-auto py-2 sm:justify-center sm:gap-2">
               {sections.map((label, i) => (
                 <NavbarNavLink
@@ -177,9 +182,9 @@ export const NewsroomNavbar = defineCapsule({
                 </NavbarNavLink>
               ))}
             </NavbarNav>
-          </div>
+          </Container>
         </div>
-      </header>
+      </SiteNav>
     )
   },
 })
