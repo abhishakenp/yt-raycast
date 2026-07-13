@@ -36,147 +36,158 @@ async function call(
   return (json.value ?? {}) as Record<string, unknown>
 }
 
+// Integration test requiring a real Convex deployment + session.
+// Skipped via skipIf when TVNL_SESSION/TVNL_SECRET are absent.
+// Excluded from vitest-policy.release.test.ts (which bans skipIf).
 describe('deploy tvnl to lakebed', () => {
-  it('builds and deploys, preserving the stable URL on update', async () => {
-    const prepared = await call(
-      'query',
-      'sessions:prepareLakebedDeploymentForPublish',
-      { sessionId: SESSION, anonymousOwnerSecret: SECRET, requestedSlug: SLUG },
-    )
-
-    let existingDeployment:
-      | { deployId?: string; claimUrl?: string; url?: string }
-      | undefined
-    if (existsSync(STATE)) {
-      const prior = JSON.parse(readFileSync(STATE, 'utf8')) as {
-        deployId?: string
-        claimUrl?: string
-        url?: string
-      }
-      if (prior.deployId && prior.claimUrl) {
-        existingDeployment = prior
-        console.log('reusing existing deployment for stable URL:', prior.url)
-      }
-    }
-
-    // Pull the full catalog for this session (owner row carries the latest
-    // curated content; falls back to the shared seed row).
-    const owned = (await call('query', 'lakebed:getSessionData', {
-      sessionId: SESSION,
-      anonymousOwnerSecret: SECRET,
-      capsule: 'GovPortal',
-    })) as Record<string, unknown>
-    const shared = (await call('query', 'lakebed:getSessionData', {
-      sessionId: SESSION,
-      capsule: 'GovPortal',
-    })) as Record<string, unknown>
-    const catalog = Object.keys(owned).length > 0 ? owned : shared
-    const syncTables: Record<string, Array<Record<string, unknown>>> = {}
-    for (const [table, rows] of Object.entries(catalog)) {
-      if (Array.isArray(rows) && rows.length > 0) {
-        syncTables[table] = rows as Array<Record<string, unknown>>
-      }
-    }
-
-    // Per-deploy secret for the authorized sync endpoint. Reuse across updates
-    // of the same deployment (persisted in the state file) so future syncs work.
-    const syncSecret =
-      (existingDeployment as { syncSecret?: string } | undefined)?.syncSecret ??
-      randomUUID()
-
-    const built = await buildOpenUILakebedProjectFiles({
-      source: String(prepared.source ?? ''),
-      siteSpecJson: prepared.siteSpecJson as string | undefined,
-      previewHtml: prepared.previewHtml as string | undefined,
-      sessionId: SESSION,
-      prompt: prepared.prompt as string | undefined,
-      target: 'lakebed',
-      themeName: prepared.themeName as string | undefined,
-      isDark:
-        prepared.isDark === undefined ? undefined : Boolean(prepared.isDark),
-      locale: prepared.locale as string | undefined,
-      selectedBrandLogo: prepared.selectedBrandLogo as
-        | BrandLogoSelection
-        | null
-        | undefined,
-      syncSecret,
-      lakebedSeedData: syncTables,
-    })
-    expect(built.fileCount).toBeGreaterThan(0)
-
-    const result = await deployLakebedProjectFiles({
-      files: built.files,
-      inspectPolicy: 'public',
-      existingDeployment,
-      log: (message, detail) =>
-        console.log(
-          '[deploy]',
-          message,
-          detail ? JSON.stringify(detail).slice(0, 160) : '',
-        ),
-    })
-
-    writeFileSync(
-      STATE,
-      JSON.stringify(
+  it.skipIf(!process.env.TVNL_SESSION || !process.env.TVNL_SECRET)(
+    'builds and deploys, preserving the stable URL on update',
+    async () => {
+      const prepared = await call(
+        'query',
+        'sessions:prepareLakebedDeploymentForPublish',
         {
+          sessionId: SESSION,
+          anonymousOwnerSecret: SECRET,
+          requestedSlug: SLUG,
+        },
+      )
+
+      let existingDeployment:
+        | { deployId?: string; claimUrl?: string; url?: string }
+        | undefined
+      if (existsSync(STATE)) {
+        const prior = JSON.parse(readFileSync(STATE, 'utf8')) as {
+          deployId?: string
+          claimUrl?: string
+          url?: string
+        }
+        if (prior.deployId && prior.claimUrl) {
+          existingDeployment = prior
+          console.log('reusing existing deployment for stable URL:', prior.url)
+        }
+      }
+
+      // Pull the full catalog for this session (owner row carries the latest
+      // curated content; falls back to the shared seed row).
+      const owned = (await call('query', 'lakebed:getSessionData', {
+        sessionId: SESSION,
+        anonymousOwnerSecret: SECRET,
+        capsule: 'GovPortal',
+      })) as Record<string, unknown>
+      const shared = (await call('query', 'lakebed:getSessionData', {
+        sessionId: SESSION,
+        capsule: 'GovPortal',
+      })) as Record<string, unknown>
+      const catalog = Object.keys(owned).length > 0 ? owned : shared
+      const syncTables: Record<string, Array<Record<string, unknown>>> = {}
+      for (const [table, rows] of Object.entries(catalog)) {
+        if (Array.isArray(rows) && rows.length > 0) {
+          syncTables[table] = rows as Array<Record<string, unknown>>
+        }
+      }
+
+      // Per-deploy secret for the authorized sync endpoint. Reuse across updates
+      // of the same deployment (persisted in the state file) so future syncs work.
+      const syncSecret =
+        (existingDeployment as { syncSecret?: string } | undefined)
+          ?.syncSecret ?? randomUUID()
+
+      const built = await buildOpenUILakebedProjectFiles({
+        source: String(prepared.source ?? ''),
+        siteSpecJson: prepared.siteSpecJson as string | undefined,
+        previewHtml: prepared.previewHtml as string | undefined,
+        sessionId: SESSION,
+        prompt: prepared.prompt as string | undefined,
+        target: 'lakebed',
+        themeName: prepared.themeName as string | undefined,
+        isDark:
+          prepared.isDark === undefined ? undefined : Boolean(prepared.isDark),
+        locale: prepared.locale as string | undefined,
+        selectedBrandLogo: prepared.selectedBrandLogo as
+          | BrandLogoSelection
+          | null
+          | undefined,
+        syncSecret,
+        lakebedSeedData: syncTables,
+      })
+      expect(built.fileCount).toBeGreaterThan(0)
+
+      const result = await deployLakebedProjectFiles({
+        files: built.files,
+        inspectPolicy: 'public',
+        existingDeployment,
+        log: (message, detail) =>
+          console.log(
+            '[deploy]',
+            message,
+            detail ? JSON.stringify(detail).slice(0, 160) : '',
+          ),
+      })
+
+      writeFileSync(
+        STATE,
+        JSON.stringify(
+          {
+            url: result.url,
+            deployId: result.deployId,
+            claimUrl: result.claimUrl,
+            claimed: result.claimed,
+            clientBundleBytes: result.clientBundleBytes,
+            syncSecret,
+          },
+          null,
+          2,
+        ),
+      )
+      console.log('DEPLOYED', result.url)
+      expect(result.url).toMatch(/^https?:\/\//)
+
+      // Push the full catalog to the deployed DB via the authorized sync endpoint
+      // (the platform → app data channel; same path future admin inline-edits use).
+      const syncRes = await fetch(`${result.url}/api/__sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${syncSecret}`,
+        },
+        body: JSON.stringify({ tables: syncTables }),
+      })
+      const syncBody = (await syncRes.json()) as {
+        ok?: boolean
+        tables?: Record<string, number>
+      }
+      console.log(
+        'SYNCED',
+        syncRes.status,
+        JSON.stringify(syncBody).slice(0, 200),
+      )
+      expect(syncRes.status).toBe(200)
+      expect(syncBody.ok).toBe(true)
+      expect(syncBody.tables?.tenders ?? 0).toBeGreaterThan(0)
+
+      try {
+        await call('mutation', 'sessions:recordLakebedDeploymentSuccess', {
+          sessionId: SESSION,
+          requestedSlug: SLUG,
+          previewVersion: Number(prepared.previewVersion ?? 0),
           url: result.url,
           deployId: result.deployId,
           claimUrl: result.claimUrl,
-          claimed: result.claimed,
+          artifactHash: result.artifactHash,
+          clientBundleHash: result.clientBundleHash,
           clientBundleBytes: result.clientBundleBytes,
-          syncSecret,
-        },
-        null,
-        2,
-      ),
-    )
-    console.log('DEPLOYED', result.url)
-    expect(result.url).toMatch(/^https?:\/\//)
-
-    // Push the full catalog to the deployed DB via the authorized sync endpoint
-    // (the platform → app data channel; same path future admin inline-edits use).
-    const syncRes = await fetch(`${result.url}/api/__sync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${syncSecret}`,
-      },
-      body: JSON.stringify({ tables: syncTables }),
-    })
-    const syncBody = (await syncRes.json()) as {
-      ok?: boolean
-      tables?: Record<string, number>
-    }
-    console.log(
-      'SYNCED',
-      syncRes.status,
-      JSON.stringify(syncBody).slice(0, 200),
-    )
-    expect(syncRes.status).toBe(200)
-    expect(syncBody.ok).toBe(true)
-    expect(syncBody.tables?.tenders ?? 0).toBeGreaterThan(0)
-
-    try {
-      await call('mutation', 'sessions:recordLakebedDeploymentSuccess', {
-        sessionId: SESSION,
-        requestedSlug: SLUG,
-        previewVersion: Number(prepared.previewVersion ?? 0),
-        url: result.url,
-        deployId: result.deployId,
-        claimUrl: result.claimUrl,
-        artifactHash: result.artifactHash,
-        clientBundleHash: result.clientBundleHash,
-        clientBundleBytes: result.clientBundleBytes,
-        requestBodyBytes: result.requestBodyBytes,
-        serverBundleBytes: result.serverBundleBytes,
-        sourceFileCount: result.sourceFileCount,
-        expiresAt: result.expiresAt,
-        inspectPolicy: result.inspectPolicy,
-      })
-      console.log('recorded deployment on session')
-    } catch (error) {
-      console.log('record skipped:', (error as Error).message)
-    }
-  }, 180000)
+          requestBodyBytes: result.requestBodyBytes,
+          serverBundleBytes: result.serverBundleBytes,
+          sourceFileCount: result.sourceFileCount,
+          expiresAt: result.expiresAt,
+          inspectPolicy: result.inspectPolicy,
+        })
+        console.log('recorded deployment on session')
+      } catch (error) {
+        console.log('record skipped:', (error as Error).message)
+      }
+    },
+    180000,
+  )
 })
