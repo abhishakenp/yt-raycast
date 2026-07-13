@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { INLINE_EDIT_CANCEL_EVENT } from '@/features/editing/inline-edit-events'
 import { isInRadixPortal } from '../lib/radix-portal'
 
 interface CapturedTextNode {
@@ -744,6 +745,10 @@ export function useTextEdit(
       }
     }
 
+    const handleCancelRequest = () => {
+      cancelEdit()
+    }
+
     container.addEventListener('click', handleClick)
     container.addEventListener('blur', handleBlur, true)
     container.addEventListener('keydown', handleKeyDown)
@@ -751,6 +756,7 @@ export function useTextEdit(
     container.addEventListener('paste', handlePaste)
     container.addEventListener('drop', handleDrop)
     container.addEventListener('cut', handleCut)
+    container.addEventListener(INLINE_EDIT_CANCEL_EVENT, handleCancelRequest)
 
     return () => {
       container.removeEventListener('click', handleClick)
@@ -760,6 +766,10 @@ export function useTextEdit(
       container.removeEventListener('paste', handlePaste)
       container.removeEventListener('drop', handleDrop)
       container.removeEventListener('cut', handleCut)
+      container.removeEventListener(
+        INLINE_EDIT_CANCEL_EVENT,
+        handleCancelRequest,
+      )
       if (blurRafRef.current !== null) {
         cancelAnimationFrame(blurRafRef.current)
         blurRafRef.current = null

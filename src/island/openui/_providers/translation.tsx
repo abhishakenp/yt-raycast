@@ -6,6 +6,7 @@ import React, {
   type ReactNode,
 } from 'react'
 import { isTranslatableLocale } from '@/config/languages'
+import { INLINE_EDIT_CANCEL_EVENT } from '@/features/editing/inline-edit-events'
 import { shouldPreserveTranslationText } from '@/features/localization/native-script'
 import { transliterateLatinFallback } from '@/features/localization/client/transliterate-latin-fallback'
 import { localeTextDirection } from '@/features/localization/locale-direction'
@@ -45,13 +46,19 @@ function translationCacheKey(locale: string, text: string): string {
 function getCachedTranslation(locale: string, text: string): string | null {
   const key = translationCacheKey(locale, text)
   const memory = memoryTranslationCache.get(key)
-  if (memory !== undefined) return memory
+  if (memory !== undefined) {
+    if (memory.trim()) return memory
+    memoryTranslationCache.delete(key)
+  }
   if (typeof window === 'undefined') return null
   try {
     const stored = window.localStorage.getItem(`sf-translation:${key}`)
-    if (stored !== null) {
+    if (stored?.trim()) {
       memoryTranslationCache.set(key, stored)
       return stored
+    }
+    if (stored !== null) {
+      window.localStorage.removeItem(`sf-translation:${key}`)
     }
   } catch {
     return null
@@ -447,6 +454,8 @@ export function T({ children }: React.PropsWithChildren) {
   const ref = useRef<HTMLDivElement>(null)
   const { locale } = useI18n()
   const documentLocale = locale.trim() || 'en'
+  const latestDocumentLocaleRef = useRef(documentLocale)
+  latestDocumentLocaleRef.current = documentLocale
   const processedRef = useRef(new WeakSet<Node>())
   const textStateRef = useRef(new WeakMap<Text, TextTranslationState>())
   const accessibleLabelStateRef = useRef(
@@ -468,7 +477,7 @@ export function T({ children }: React.PropsWithChildren) {
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | undefined
 
-    const sourceTextForNode = (node) => {
+    const sourceTextForNode = (node: Text): string => {
       const current = node.textContent ?? ''
       const state = textStateRef.current.get(node)
       if (state?.translatedText && current === state.translatedText) {
@@ -537,7 +546,9 @@ export function T({ children }: React.PropsWithChildren) {
       }, 0)
     }
 
-    const translateAccessibleLabels = async (jobs) => {
+    const translateAccessibleLabels = async (
+      jobs: AccessibleLabelTranslationJob[],
+    ): Promise<void> => {
       const compositeJobs = jobs.filter(
         ({ linkedLabel }) =>
           linkedLabel.leadingContext || linkedLabel.trailingContext,
@@ -680,7 +691,11 @@ export function T({ children }: React.PropsWithChildren) {
 
     const collectTextNodes = () => {
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-      const nodes: Array<{ node: Text; text: string }> = []
+      const nodes: Array<{
+        node: Text
+        originalText: string
+        text: string
+      }> = []
       let shimmeredNodes = 0
 
       while (walker.nextNode()) {
@@ -741,6 +756,24 @@ export function T({ children }: React.PropsWithChildren) {
         flushTimerRef.current = null
       }
       obs.disconnect()
+
+      const previousLocale = documentLocale.trim().toLowerCase()
+      const nextLocale = latestDocumentLocaleRef.current.trim().toLowerCase()
+      const activeEdit = el.querySelector<HTMLElement>(
+        ACTIVE_TEXT_EDIT_SELECTOR,
+      )
+      // A draft made from translated DOM belongs to that locale and must not
+      // be restored after the locale changes. A canonical-source draft remains
+      // protected when translation starts, so en -> localized does not cancel.
+      if (
+        activeEdit &&
+        previousLocale !== nextLocale &&
+        isTranslatableLocale(locale)
+      ) {
+        activeEdit.dispatchEvent(
+          new CustomEvent(INLINE_EDIT_CANCEL_EVENT, { bubbles: true }),
+        )
+      }
     }
   }, [locale])
 
