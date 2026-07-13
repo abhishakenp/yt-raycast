@@ -6,7 +6,7 @@ import {
   Rocket,
   TriangleAlert,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
@@ -124,6 +124,7 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
   const [pendingPublicTarget, setPendingPublicTarget] =
     useState<DeploymentTarget>()
   const [error, setError] = useState<DeploymentPanelError>()
+  const actionInFlightRef = useRef(false)
 
   const visibleExportTargets = exportTargets?.targets ?? []
   const lakebedTarget = visibleExportTargets.find(
@@ -244,7 +245,11 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
       setPendingPublicTarget(target)
       return
     }
-    void publishNow(target)
+    if (actionInFlightRef.current) return
+    actionInFlightRef.current = true
+    void publishNow(target).finally(() => {
+      actionInFlightRef.current = false
+    })
   }
 
   useEffect(() => {
@@ -312,7 +317,11 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
 
       <button
         className="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition-colors hover:border-cyan-300/30 hover:bg-cyan-300/10 disabled:cursor-wait disabled:opacity-60"
-        disabled={activeTarget !== undefined || shipfastRefreshing}
+        disabled={
+          activeTarget !== undefined ||
+          waitingTarget !== undefined ||
+          shipfastRefreshing
+        }
         onClick={() => startPublish('shipfast')}
         type="button"
       >
@@ -346,7 +355,11 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
 
       <button
         className="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition-colors hover:border-cyan-300/30 hover:bg-cyan-300/10 disabled:cursor-wait disabled:opacity-60"
-        disabled={activeTarget !== undefined || lakebedRefreshing}
+        disabled={
+          activeTarget !== undefined ||
+          waitingTarget !== undefined ||
+          lakebedRefreshing
+        }
         onClick={() => startPublish('lakebed')}
         style={{ backgroundImage: lakebedProgressBackground }}
         type="button"
@@ -386,7 +399,10 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
       </button>
 
       {visibleError && (
-        <p className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200">
+        <p
+          className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200"
+          role="alert"
+        >
           {visibleError}
         </p>
       )}
