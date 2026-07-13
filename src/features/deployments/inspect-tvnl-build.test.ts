@@ -65,7 +65,6 @@ describe('inspect tvnl lakebed build', () => {
       '/tmp/tvnl-offenders.json',
       JSON.stringify(offenders, null, 2),
     )
-    // eslint-disable-next-line no-console
     console.log('OFFENDERS', JSON.stringify(offenders))
     expect(built.fileCount).toBeGreaterThan(0)
   }, 120000)

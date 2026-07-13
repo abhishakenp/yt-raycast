@@ -283,7 +283,7 @@ describe('public metadata responses', () => {
     const response = await createPublicMetadataResponse(
       'llms',
       new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
-      { client: client as any },
+      { client: client },
     )
     const body = await response.text()
 

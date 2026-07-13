@@ -1107,7 +1107,7 @@ type MockGithubState = {
 
 function createGithubMockCtx(
   state: MockGithubState,
-  identity: { tokenIdentifier: string; subject: string } | null,
+  userIdentity: { tokenIdentifier: string; subject: string } | null,
 ) {
   const deleted = new Set<string>()
   const tables: Record<string, GithubRow[]> = {
@@ -1132,7 +1132,7 @@ function createGithubMockCtx(
   })
   return {
     auth: {
-      getUserIdentity: vi.fn(async () => identity),
+      getUserIdentity: vi.fn(async () => userIdentity),
     },
     db: {
       query: vi.fn(query),
@@ -1156,7 +1156,7 @@ function createGithubMockCtx(
 }
 
 function handler(fn: unknown): any {
-  return (fn as any)._handler ?? (fn as any).handler ?? fn
+  return fn._handler ?? fn.handler ?? fn
 }
 
 const ISS = 'https://clerk.test'

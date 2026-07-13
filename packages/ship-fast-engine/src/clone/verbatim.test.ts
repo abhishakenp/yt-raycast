@@ -234,8 +234,8 @@ describe('selfContainPage', () => {
     const { document, window } = parseHTML(out.html)
     const messages: Array<{ type: string; path?: string; abs?: string }> = []
     window.parent = {
-      postMessage: (msg) => messages.push(msg as any),
-    } as any
+      postMessage: (msg) => messages.push(msg),
+    }
     const getComputedStyle = () => ({ display: 'block' })
     new Function('window', 'document', 'getComputedStyle', NAV_SHIM_SCRIPT)(
       window,

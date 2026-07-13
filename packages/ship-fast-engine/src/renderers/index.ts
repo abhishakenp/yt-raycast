@@ -707,7 +707,7 @@ export function renderProject(
     `# ${brand}\n\n${tagline}\n\nThis project was generated with the **${theme}** theme.\n\n## Structure\n- Brand: ${brand}\n- Tagline: ${tagline}\n- Theme: ${theme}\n- Pages: ${moduleNames.join(', ')}\n`
 
   if (target === 'html') {
-    const previewSeoHead = buildPreviewSeoHead(siteSpec as any, brand, tagline)
+    const previewSeoHead = buildPreviewSeoHead(siteSpec, brand, tagline)
     files['index.html'] = `<!DOCTYPE html>
 <html lang="en">
 <head>

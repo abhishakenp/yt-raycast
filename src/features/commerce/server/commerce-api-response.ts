@@ -293,7 +293,7 @@ export async function createSessionMedusaConfigResponse(
   try {
     const config = await createClient(clientOverride).query(
       api.sessions.getCommerceConfig,
-      { sessionId: sessionId as any },
+      { sessionId: sessionId },
     )
 
     return json({
@@ -386,7 +386,7 @@ export async function createSessionMedusaProvisionResponse(
 
     const client = createClient(clientOverride)
     const mutationArgs = {
-      sessionId: sessionId as any,
+      sessionId: sessionId,
       anonymousOwnerSecret: getOwnerSecret(request, body),
       backendUrl,
       adminUrl,

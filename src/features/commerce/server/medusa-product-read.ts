@@ -79,7 +79,7 @@ async function readTenantConfig(
   try {
     const config = await createClient(clientOverride).query(
       api.sessions.getCommerceConfig,
-      { sessionId: sessionId as any },
+      { sessionId: sessionId },
     )
     if (
       !config ||

@@ -37,7 +37,7 @@ describe('OpenUI renderer error fallback', () => {
       writeFileSync(join(workspace, 'home.openui'), source)
 
       try {
-        await renderPreviewToWorkspace(siteSpec as any, workspace)
+        await renderPreviewToWorkspace(siteSpec, workspace)
       } catch {
         return
       }

@@ -42,7 +42,7 @@ function transformOutsideQuotedStrings(
   }
 
   return quotedSegments.reduce(
-    (result, segment, index) => result.replaceAll(tokenFor(index), segment),
+    (result, segment, idx) => result.replaceAll(tokenFor(idx), segment),
     transform(masked),
   )
 }

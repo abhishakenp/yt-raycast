@@ -5,7 +5,7 @@ import { api } from './_generated/api'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
-const convexApi = api as any
+const convexApi = api
 const ownerSecret = 'lakebed-owner-secret'
 
 afterEach(() => {
@@ -48,7 +48,7 @@ async function createSession(
 }
 
 test('lakebed session data is isolated by session, capsule, and user', async () => {
-  const t = convexTest(schema, modules) as any
+  const t = convexTest(schema, modules)
   const firstUser = identityFor('lakebed-user-one')
   const secondUser = identityFor('lakebed-user-two')
 
@@ -113,7 +113,7 @@ test('lakebed session data is isolated by session, capsule, and user', async () 
 })
 
 test('lakebed session data can be listed for generated admin views', async () => {
-  const t = convexTest(schema, modules) as any
+  const t = convexTest(schema, modules)
 
   const { sessionId } = await createSession(t, {
     anonymousClientId: 'lakebed-admin-list',
@@ -155,7 +155,7 @@ test('lakebed session data can be listed for generated admin views', async () =>
 })
 
 test('lakebed admin listing includes legacy session data without owner keys', async () => {
-  const t = convexTest(schema, modules) as any
+  const t = convexTest(schema, modules)
 
   const { sessionId } = await createSession(t, {
     anonymousClientId: 'lakebed-admin-legacy-list',
@@ -212,7 +212,7 @@ test('lakebed admin listing includes legacy session data without owner keys', as
 
 test('lakebed writes succeed without identity or owner secret when VITE_DISABLE_CLERK is true', async () => {
   vi.stubEnv('VITE_DISABLE_CLERK', 'true')
-  const t = convexTest(schema, modules) as any
+  const t = convexTest(schema, modules)
 
   const { sessionId } = await createSession(t, {
     anonymousClientId: 'lakebed-disabled-clerk',
@@ -247,7 +247,7 @@ test('lakebed writes succeed without identity or owner secret when VITE_DISABLE_
 
 test('lakebed writes still require auth when VITE_DISABLE_CLERK is false', async () => {
   vi.stubEnv('VITE_DISABLE_CLERK', 'false')
-  const t = convexTest(schema, modules) as any
+  const t = convexTest(schema, modules)
 
   const { sessionId } = await createSession(t, {
     anonymousClientId: 'lakebed-clerk-enabled',

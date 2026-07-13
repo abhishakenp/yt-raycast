@@ -10,7 +10,7 @@ import {
 } from './gallery_helpers'
 
 function makeSession(overrides: Record<string, unknown> = {}) {
-  return { _id: 'session-1', prompt: '', ...overrides } as any
+  return { _id: 'session-1', prompt: '', ...overrides }
 }
 
 describe('hasGalleryReadySignal', () => {
@@ -230,7 +230,7 @@ describe('getGalleryCategoryOptions', () => {
       makeSession({ prompt: 'Another SaaS platform' }),
       makeSession({ prompt: 'A blog about dogs' }),
     ]
-    const result = getGalleryCategoryOptions(sessions as any)
+    const result = getGalleryCategoryOptions(sessions)
     expect(result).toEqual([
       { value: 'saas', label: 'Saas', count: 2 },
       { value: 'blog', label: 'Blog', count: 1 },
@@ -244,7 +244,7 @@ describe('getGalleryCategoryOptions', () => {
       makeSession({ prompt: 'blog publication' }),
       makeSession({ prompt: 'SaaS analytics' }),
     ]
-    const result = getGalleryCategoryOptions(sessions as any)
+    const result = getGalleryCategoryOptions(sessions)
     expect(result[0]).toMatchObject({ value: 'commerce', count: 2 })
     // saas and blog both have count 1, alphabetical order: blog < saas
     const countOneOptions = result.filter((o) => o.count === 1)
@@ -253,7 +253,7 @@ describe('getGalleryCategoryOptions', () => {
 
   it('counts sessions matching multiple categories once per category', () => {
     const sessions = [makeSession({ prompt: 'SaaS blog platform with store' })]
-    const result = getGalleryCategoryOptions(sessions as any)
+    const result = getGalleryCategoryOptions(sessions)
     expect(result).toHaveLength(3)
     expect(result.every((o) => o.count === 1)).toBe(true)
   })
@@ -263,7 +263,7 @@ describe('getGalleryCategoryOptions', () => {
       makeSession({ prompt: 'something random' }),
       makeSession({ prompt: 'SaaS dashboard' }),
     ]
-    const result = getGalleryCategoryOptions(sessions as any)
+    const result = getGalleryCategoryOptions(sessions)
     expect(result).toEqual([{ value: 'saas', label: 'Saas', count: 1 }])
   })
 })
