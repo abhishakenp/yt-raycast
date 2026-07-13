@@ -18,6 +18,7 @@ import {
   createAnonymousClientId,
   createSessionWorkspaceKey,
 } from '@/features/session/services/session-create-payload'
+import type { BuildCreateSessionPayloadInput } from '@/features/session/services/session-create-payload'
 import {
   forgetReadySession,
   readReadySessionCache,
@@ -25,16 +26,47 @@ import {
   verifyReadySession,
 } from '@/features/session/services/ready-session-cache'
 import { rememberGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
+import { AppError } from '@/shared/errors/app-error'
 
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
 const MIN_LAUNCH_FEEDBACK_MS = 1_200
 
 type CreateSessionPayload = ReturnType<typeof buildCreateSessionPayload>
+type RunSubmitOptions = Partial<
+  Pick<
+    BuildCreateSessionPayloadInput,
+    | 'prompt'
+    | 'preferredLanguage'
+    | 'isPrivate'
+    | 'designReferenceUrls'
+    | 'designReferenceNotes'
+    | 'cloneUrl'
+    | 'engineVersion'
+  >
+>
 type CreateSessionResult = {
   sessionId: string
   cached?: boolean
   cloned?: boolean
+}
+type CreateSessionErrorResult = {
+  code?: unknown
+  error?: unknown
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const admissionErrorFromResponse = (data: unknown): AppError | null => {
+  if (!isRecord(data) || typeof data.error !== 'string') return null
+  if (data.code === 'AUTH_REQUIRED') {
+    return new AppError('UNAUTHENTICATED', data.error)
+  }
+  if (data.code === 'QUOTA_EXCEEDED') {
+    return new AppError('QUOTA_EXCEEDED', data.error)
+  }
+  return null
 }
 
 function delay(ms: number) {
@@ -48,7 +80,10 @@ async function waitForMinimumLaunchFeedback(startedAt: number) {
   if (remainingMs > 0) await delay(remainingMs)
 }
 
-async function withTimeout(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
   return await new Promise<T>((resolve, reject) => {
     const timer = window.setTimeout(() => {
       reject(new Error('create_session_timeout'))
@@ -78,7 +113,7 @@ function isRetryableCreateSessionError(error: unknown): boolean {
   )
 }
 
-async function createSessionWithRetry(
+async function createSessionWithRetry<Payload, Result>(
   createSession: (payload: Payload) => Promise<Result>,
   payload: Payload,
 ): Promise<Result> {
@@ -118,7 +153,7 @@ async function createSessionFromHttp(
       ? null
       : ((await response.json().catch(() => null)) as
           | CreateSessionResult
-          | { error?: string }
+          | CreateSessionErrorResult
           | null)
     const disabled =
       response.status === 404 &&
@@ -129,8 +164,8 @@ async function createSessionFromHttp(
     const hasSessionId =
       data !== null &&
       'sessionId' in data &&
-      typeof (data as CreateSessionResult).sessionId === 'string' &&
-      ((data as CreateSessionResult).sessionId as string).trim() !== ''
+      typeof data.sessionId === 'string' &&
+      data.sessionId.trim() !== ''
 
     // A 200 response with a non-JSON/HTML body, or JSON missing a session id,
     // is a malformed success — fall back to the Convex mutation instead of
@@ -139,8 +174,13 @@ async function createSessionFromHttp(
 
     if (response.ok && hasSessionId) return data as CreateSessionResult
     if (!disabled && !malformedSuccess) {
+      const admissionError = admissionErrorFromResponse(data)
+      if (admissionError) throw admissionError
       throw new Error(
-        data !== null && 'error' in data && data.error
+        data !== null &&
+          'error' in data &&
+          typeof data.error === 'string' &&
+          data.error
           ? data.error
           : 'Generation could not start.',
       )
@@ -165,38 +205,64 @@ export const usePromptHomeController = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [shareBonusClaimed, setShareBonusClaimed] = useState(false)
   const submitInFlightRef = useRef(false)
+  const shareBonusClaimedRef = useRef(false)
   const shareBonusHydratedRef = useRef(false)
+  const shareBonusRefreshInFlightRef = useRef<Promise<void> | null>(null)
+  const shareBonusClaimInFlightRef = useRef<Promise<void> | null>(null)
 
-  const refreshShareBonusStatus = useCallback(async () => {
-    if (shareBonusHydratedRef.current) return
-    shareBonusHydratedRef.current = true
-
-    try {
-      const resp = await fetch('/api/share-bonus')
-      if (!resp.ok) return
-      const data = await resp.json()
-      if (data.claimed) setShareBonusClaimed(true)
-    } catch {
-      shareBonusHydratedRef.current = false
+  const refreshShareBonusStatus = useCallback(() => {
+    if (shareBonusHydratedRef.current) return Promise.resolve()
+    if (shareBonusRefreshInFlightRef.current) {
+      return shareBonusRefreshInFlightRef.current
     }
+
+    const request = (async () => {
+      try {
+        const resp = await fetch('/api/share-bonus')
+        if (!resp.ok) return
+        const data: unknown = await resp.json()
+        if (!isRecord(data) || typeof data.claimed !== 'boolean') return
+        shareBonusHydratedRef.current = true
+        shareBonusClaimedRef.current = data.claimed
+        setShareBonusClaimed(data.claimed)
+      } catch {
+        // Keep hydration retryable after network and parsing failures.
+      } finally {
+        shareBonusRefreshInFlightRef.current = null
+      }
+    })()
+    shareBonusRefreshInFlightRef.current = request
+    return request
   }, [])
 
-  const claimShareBonus = async () => {
-    if (shareBonusClaimed) return
-    try {
-      const resp = await fetch('/api/share-bonus', { method: 'POST' })
-      if (resp.ok) {
-        shareBonusHydratedRef.current = true
-        setShareBonusClaimed(true)
-      }
-    } catch {
-      // Ignore network errors
+  const claimShareBonus = useCallback(() => {
+    if (shareBonusClaimedRef.current) return Promise.resolve()
+    if (shareBonusClaimInFlightRef.current) {
+      return shareBonusClaimInFlightRef.current
     }
-  }
+
+    const request = (async () => {
+      try {
+        const resp = await fetch('/api/share-bonus', { method: 'POST' })
+        if (!resp.ok) return
+        const data: unknown = await resp.json()
+        if (!isRecord(data) || data.claimed !== true) return
+        shareBonusHydratedRef.current = true
+        shareBonusClaimedRef.current = true
+        setShareBonusClaimed(true)
+      } catch {
+        // Leave the claim retryable after network and parsing failures.
+      } finally {
+        shareBonusClaimInFlightRef.current = null
+      }
+    })()
+    shareBonusClaimInFlightRef.current = request
+    return request
+  }, [])
 
   const normalizedPrompt = useMemo(() => normalizePromptDraft(prompt), [prompt])
   const canSubmit = normalizedPrompt.length > 0 && !isSubmitting
-  const runSubmit = async (opts?) => {
+  const runSubmit = async (opts?: RunSubmitOptions) => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
     const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
     const isPrivate = opts?.isPrivate ?? false
@@ -307,15 +373,20 @@ export const usePromptHomeController = () => {
           sessionId,
         },
       })
-    } catch {
+    } catch (error) {
       await waitForMinimumLaunchFeedback(launchFeedbackStartedAt)
       submitInFlightRef.current = false
-      setErrorMessage('Generation could not start. Try again.')
+      setErrorMessage(
+        error instanceof AppError &&
+          (error.code === 'UNAUTHENTICATED' || error.code === 'QUOTA_EXCEEDED')
+          ? error.message
+          : 'Generation could not start. Try again.',
+      )
       setIsSubmitting(false)
     }
   }
 
-  const selectExamplePrompt = (value) => {
+  const selectExamplePrompt = (value: string) => {
     setPrompt(value)
   }
 
