@@ -10,6 +10,50 @@
 
 process.env.VITE_DISABLE_CLERK = 'false'
 
+type CrossRealmHTMLElement = {
+  readonly nodeType: number
+  readonly tagName: string
+}
+
+function isCrossRealmHTMLElement(
+  value: unknown,
+): value is CrossRealmHTMLElement {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'nodeType' in value &&
+    value.nodeType === 1 &&
+    'tagName' in value &&
+    typeof value.tagName === 'string'
+  )
+}
+
+function isCrossRealmHTMLButtonElement(value: unknown): boolean {
+  return isCrossRealmHTMLElement(value) && value.tagName === 'BUTTON'
+}
+
+class NodeEnvironmentHTMLElement {
+  static [Symbol.hasInstance] = isCrossRealmHTMLElement
+}
+
+class NodeEnvironmentHTMLButtonElement extends NodeEnvironmentHTMLElement {
+  static [Symbol.hasInstance] = isCrossRealmHTMLButtonElement
+}
+
+if (typeof globalThis.HTMLElement === 'undefined') {
+  Object.defineProperty(globalThis, 'HTMLElement', {
+    configurable: true,
+    value: NodeEnvironmentHTMLElement,
+  })
+}
+
+if (typeof globalThis.HTMLButtonElement === 'undefined') {
+  Object.defineProperty(globalThis, 'HTMLButtonElement', {
+    configurable: true,
+    value: NodeEnvironmentHTMLButtonElement,
+  })
+}
+
 type MemoryStorage = Pick<
   Storage,
   'clear' | 'getItem' | 'key' | 'length' | 'removeItem' | 'setItem'
@@ -37,8 +81,7 @@ function createMemoryStorage(): MemoryStorage {
 function defineStorage(name: 'localStorage' | 'sessionStorage') {
   const storage = createMemoryStorage()
 
-  for (const target of [globalThis, globalThis.window].filter(Boolean)) {
-    const host = target as typeof globalThis
+  for (const host of [globalThis, globalThis.window].filter(Boolean)) {
     try {
       if (host[name]) continue
     } catch {
