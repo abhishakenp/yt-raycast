@@ -93,10 +93,10 @@ vi.mock('#/components/ui/sortable', () => {
         ) as HTMLElement[]
         let overIdx = ctx.startIndex.current
         const pe = e as PointerEvent
-        for (let i = 0; i < items.length; i++) {
-          const rect = items[i].getBoundingClientRect()
+        for (const item of items) {
+          const rect = item.getBoundingClientRect()
           if (pe.clientY >= rect.top && pe.clientY <= rect.bottom) {
-            overIdx = parseInt(items[i].getAttribute('data-sortable-idx')!, 10)
+            overIdx = parseInt(item.getAttribute('data-sortable-idx')!, 10)
             break
           }
         }

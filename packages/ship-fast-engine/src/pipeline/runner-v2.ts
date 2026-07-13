@@ -49,21 +49,19 @@ function status(sessionCtx: any) {
   }
 }
 
-export async function runAllV2(
-  {
-    prompt,
-    workspace,
-    sessionCtx,
-    integrations,
-    preferredLanguage,
-  }: {
-    prompt?: string
-    workspace: string
-    sessionCtx?: any
-    integrations?: any
-    preferredLanguage?: string
-  } = {} as any,
-) {
+export async function runAllV2({
+  prompt,
+  workspace,
+  sessionCtx,
+  integrations,
+  preferredLanguage,
+}: {
+  prompt?: string
+  workspace: string
+  sessionCtx?: any
+  integrations?: any
+  preferredLanguage?: string
+} = {}) {
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
   const t0 = Date.now()

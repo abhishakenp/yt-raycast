@@ -111,7 +111,7 @@ describe('createDeploymentPreviewResponse', () => {
     const response = await createDeploymentPreviewResponse(
       'a-craft-beer-brewery',
       new Request('https://ship-fast.io/preview/a-craft-beer-brewery'),
-      client as any,
+      client,
     )
 
     expect(response.status).toBe(503)
@@ -188,7 +188,7 @@ describe('createDeploymentPreviewResponse', () => {
     const response = await createDeploymentPreviewResponse(
       'a-craft-beer-brewery',
       new Request('https://ship-fast.io/preview/a-craft-beer-brewery'),
-      client as any,
+      client,
     )
     const body = await response.text()
 

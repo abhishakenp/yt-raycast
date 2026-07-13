@@ -22,7 +22,7 @@ function goodHomepage(): string {
   const sections = Array.from({ length: 8 }, (_, i) => {
     const items = Array.from(
       { length: 30 },
-      (_, j) =>
+      (_n, j) =>
         `<div class="item-${j}"><p>item${i * 30 + j} value${j} desc${i}</p></div>`,
     ).join('\n')
     return `<section id="sec${i}"><h2>Section ${i}</h2>${items}</section>`

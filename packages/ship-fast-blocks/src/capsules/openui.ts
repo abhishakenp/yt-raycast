@@ -352,10 +352,10 @@ export function defineCapsule(
   // leaf renderers that never use renderNode, but the upstream OpenUI type
   // requires it. This lets tests and consumers call capsule components
   // without supplying a no-op renderNode.
-  const capsuleComponent: CapsuleRenderer<z.infer<TProps>> = (input) =>
+  const capsuleComponent: CapsuleRenderer<z.infer<TProps>> = (props) =>
     client.component({
-      ...input,
-      renderNode: input.renderNode ?? (() => null),
+      ...props,
+      renderNode: props.renderNode ?? (() => null),
     })
 
   const capsuleClient = { ...client, component: capsuleComponent }

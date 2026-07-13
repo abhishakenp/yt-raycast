@@ -104,21 +104,19 @@ function pascalCase(s: string): string {
     .join('')
 }
 
-export async function runAllV3(
-  {
-    prompt,
-    workspace,
-    sessionCtx,
-    integrations,
-    preferredLanguage,
-  }: {
-    prompt?: string
-    workspace: string
-    sessionCtx?: any
-    integrations?: any
-    preferredLanguage?: string
-  } = {} as any,
-): Promise<unknown> {
+export async function runAllV3({
+  prompt,
+  workspace,
+  sessionCtx,
+  integrations,
+  preferredLanguage,
+}: {
+  prompt?: string
+  workspace: string
+  sessionCtx?: any
+  integrations?: any
+  preferredLanguage?: string
+} = {}): Promise<unknown> {
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
   const t0 = Date.now()

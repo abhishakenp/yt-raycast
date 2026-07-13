@@ -122,7 +122,7 @@ describe('defineCapsule data-openui-* attr stamping', () => {
     const output = capsule.client.component({
       props: { label: 'World' },
       statementId: 'hero',
-    } as any)
+    })
 
     const html = renderToStaticMarkup(output as ReactElement)
     expect(html).toContain('data-openui-component="AttrProbe"')
@@ -140,7 +140,7 @@ describe('defineCapsule data-openui-* attr stamping', () => {
     const output = capsule.client.component({
       props: {},
       statementId: 'nav',
-    } as any)
+    })
 
     const html = renderToStaticMarkup(output as ReactElement)
     expect(html).toContain('class="my-class"')
@@ -159,7 +159,7 @@ describe('defineCapsule data-openui-* attr stamping', () => {
     const output = capsule.client.component({
       props: {},
       statementId: 'text',
-    } as any)
+    })
 
     const html = renderToStaticMarkup(output as ReactElement)
     expect(html).toContain('data-openui-component="StringProbe"')
@@ -177,7 +177,7 @@ describe('defineCapsule data-openui-* attr stamping', () => {
 
     const output = capsule.client.component({
       props: {},
-    } as any)
+    })
 
     const html = renderToStaticMarkup(output as ReactElement)
     expect(html).toContain('data-openui-component="NoVarProbe"')
@@ -202,7 +202,7 @@ describe('defineCapsule data-openui-* attr stamping', () => {
       const output = capsule.client.component({
         props: {},
         statementId: 'hero',
-      } as any)
+      })
 
       const html = renderToStaticMarkup(output as ReactElement)
       expect(html).toContain('Generated editable heading')
@@ -236,7 +236,7 @@ describe('defineCapsule data-openui-* attr stamping', () => {
       const output = capsule.client.component({
         props: {},
         statementId: 'hero',
-      } as any)
+      })
 
       const html = renderToStaticMarkup(output as ReactElement)
       expect(html).toContain('Fragment heading')
@@ -270,7 +270,7 @@ describe('withLakebed', () => {
     const wrapped = withLakebed(mockRenderer, undefined, 'TestCapsule')
     expect(typeof wrapped).toBe('function')
 
-    wrapped({ props: { foo: 'bar' }, statementId: 'stmt1' } as any)
+    wrapped({ props: { foo: 'bar' }, statementId: 'stmt1' })
 
     expect(capturedLakebed).toBeTruthy()
     // createLakebedClient returns a runtime with hook functions; the

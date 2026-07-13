@@ -114,43 +114,43 @@ describe('session decomposition boundary', () => {
         preferredExportTarget: 'html',
         isPrivate: false,
         workspace: 'workspace_bad_prompt',
-      } as any),
+      }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.getGenerationView, {
         sessionId: 123,
-      } as any),
+      }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.getEventStream, {
         lookup: 123,
-      } as any),
+      }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.getSessionApiResponse, {
         lookup: 123,
-      } as any),
+      }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.getDeploymentBySlug, {
         slug: 42,
-      } as any),
+      }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.listPublicSessions, {
         limit: 'twenty',
-      } as any),
+      }),
     ).rejects.toThrow()
 
     await expect(
       t.mutation(api.sessions.deleteMine, {
         sessionId: 123,
-      } as any),
+      }),
     ).rejects.toThrow()
   })
 })

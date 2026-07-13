@@ -10,7 +10,7 @@ import {
 import { buildCapsuleSchemaRegistry } from './capsule-schema-registry'
 
 const modules = import.meta.glob('../../../../convex/**/*.ts')
-const convexApi = api as any
+const convexApi = api
 const ownerSecret = 'lakebed-owner-secret'
 
 async function createSession(t: any, anonymousClientId: string) {
@@ -38,7 +38,7 @@ const RESTAURANT_TABLES = [
 
 describe('lakebed admin integration: convex-test → schema-aware model', () => {
   it('flows real DB sessionData through the schema-aware admin model', async () => {
-    const t = convexTest(schema, modules) as any
+    const t = convexTest(schema, modules)
     const sessionId = await createSession(t, 'admin-int-1')
 
     // Seed sessionData with capsule = dataKey ('Restaurant') as production does
@@ -109,7 +109,7 @@ describe('lakebed admin integration: convex-test → schema-aware model', () => 
   })
 
   it('shows schema tables with correct field types from real DB data', async () => {
-    const t = convexTest(schema, modules) as any
+    const t = convexTest(schema, modules)
     const sessionId = await createSession(t, 'admin-int-2')
 
     await t.mutation(convexApi.lakebed.replaceSessionData, {
@@ -144,7 +144,7 @@ describe('lakebed admin integration: convex-test → schema-aware model', () => 
   })
 
   it('merges schema tables across multiple capsule instances from real DB', async () => {
-    const t = convexTest(schema, modules) as any
+    const t = convexTest(schema, modules)
     const sessionId = await createSession(t, 'admin-int-3')
 
     // Two capsule instances of the same dataKey with the same table
@@ -182,7 +182,7 @@ describe('lakebed admin integration: convex-test → schema-aware model', () => 
   })
 
   it('handles empty sessionData doc with schema (all tables empty)', async () => {
-    const t = convexTest(schema, modules) as any
+    const t = convexTest(schema, modules)
     const sessionId = await createSession(t, 'admin-int-4')
 
     await t.mutation(convexApi.lakebed.replaceSessionData, {
@@ -211,7 +211,7 @@ describe('lakebed admin integration: convex-test → schema-aware model', () => 
   })
 
   it('produces no tables for capsules without a matching dataKey schema', async () => {
-    const t = convexTest(schema, modules) as any
+    const t = convexTest(schema, modules)
     const sessionId = await createSession(t, 'admin-int-5')
 
     // Use a capsule name that does NOT match any block registry dataKey.
@@ -240,7 +240,7 @@ describe('lakebed admin integration: convex-test → schema-aware model', () => 
   })
 
   it('ignores section-capsule prop docs even when a lakebed schema exists for that vertical', async () => {
-    const t = convexTest(schema, modules) as any
+    const t = convexTest(schema, modules)
     const sessionId = await createSession(t, 'admin-int-6')
 
     // Real restaurant lakebed data under the dataKey

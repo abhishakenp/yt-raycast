@@ -55,7 +55,6 @@ describe('deploy tvnl to lakebed', () => {
       }
       if (prior.deployId && prior.claimUrl) {
         existingDeployment = prior
-        // eslint-disable-next-line no-console
         console.log('reusing existing deployment for stable URL:', prior.url)
       }
     }
@@ -110,7 +109,6 @@ describe('deploy tvnl to lakebed', () => {
       inspectPolicy: 'public',
       existingDeployment,
       log: (message, detail) =>
-        // eslint-disable-next-line no-console
         console.log(
           '[deploy]',
           message,
@@ -133,7 +131,6 @@ describe('deploy tvnl to lakebed', () => {
         2,
       ),
     )
-    // eslint-disable-next-line no-console
     console.log('DEPLOYED', result.url)
     expect(result.url).toMatch(/^https?:\/\//)
 
@@ -151,7 +148,6 @@ describe('deploy tvnl to lakebed', () => {
       ok?: boolean
       tables?: Record<string, number>
     }
-    // eslint-disable-next-line no-console
     console.log(
       'SYNCED',
       syncRes.status,
@@ -178,10 +174,8 @@ describe('deploy tvnl to lakebed', () => {
         expiresAt: result.expiresAt,
         inspectPolicy: result.inspectPolicy,
       })
-      // eslint-disable-next-line no-console
       console.log('recorded deployment on session')
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.log('record skipped:', (error as Error).message)
     }
   }, 180000)

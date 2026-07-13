@@ -17,7 +17,7 @@ describe('lakebed_deploy action', () => {
   })
 
   it('logs deploy lifecycle events and records failure when the session has no generated content', async () => {
-    const t = convexTest(schema, modules) as any
+    const t = convexTest(schema, modules)
 
     // Create a session so we have a valid session id to pass to the action.
     const { sessionId } = await t.mutation(api.sessions.create, {

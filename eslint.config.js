@@ -45,6 +45,7 @@ export default [
       'prettier.config.js',
       'src/routeTree.gen.ts',
       'vendor/**',
+      '**/pipeline/openui-validate.d.ts',
     ],
   },
 ]
