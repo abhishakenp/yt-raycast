@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import type { CapturedPage } from './types.ts'
@@ -161,7 +162,8 @@ export async function downloadAsset(
 
     const buffer = Buffer.concat(chunks.map((c) => Buffer.from(c)))
 
-    const filename = `asset_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+    const digest = createHash('sha256').update(buffer).digest('hex')
+    const filename = `asset_${digest}.${ext}`
 
     // Ensure assets directory exists
     const assetsDir = join(workspace, 'assets')
@@ -187,8 +189,11 @@ export async function downloadPageAssets(
   signal?: AbortSignal,
 ): Promise<Map<string, string>> {
   const assetMap = new Map<string, string>()
-  const queue = [...captured.assetUrls]
+  const queue = [...new Set(captured.assetUrls)]
   const running = new Set<Promise<void>>()
+  const workerCount = Number.isFinite(concurrency)
+    ? Math.max(1, Math.floor(concurrency))
+    : 4
 
   const processNext = async () => {
     if (signal?.aborted) return
@@ -202,7 +207,7 @@ export async function downloadPageAssets(
   }
 
   while (queue.length > 0 && !signal?.aborted) {
-    while (running.size < concurrency && queue.length > 0 && !signal?.aborted) {
+    while (running.size < workerCount && queue.length > 0 && !signal?.aborted) {
       const p = processNext().finally(() => running.delete(p))
       running.add(p)
     }

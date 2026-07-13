@@ -10,6 +10,11 @@ import { assertPublicUrl } from './security.ts'
 const MAX_DEPTH_DEFAULT = 3
 const MAX_PAGES_DEFAULT = 20
 const CONCURRENCY_DEFAULT = 4
+const MAX_HTML_SIZE = 10 * 1024 * 1024
+const MAX_PAGE_REDIRECTS = 5
+
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
+const HTML_CONTENT_TYPES = new Set(['text/html', 'application/xhtml+xml'])
 
 // Normalize URL into canonical form for deduplication (CONTRACT canonical form):
 // lowercase host, strip default ports (:80/:443), drop #fragment, sort query params,
@@ -256,32 +261,108 @@ interface CrawlState {
   shingleSeen: Array<{ url: string; shingles: Set<string> }>
 }
 
-// Fetch a page following redirects; returns the FINAL response url so callers
-// key the page by where it actually landed, not where it was requested.
+async function readHtmlBody(response: Response): Promise<string | null> {
+  const contentLength = response.headers.get('content-length')
+  if (contentLength !== null) {
+    const declaredBytes = Number(contentLength)
+    if (Number.isFinite(declaredBytes) && declaredBytes > MAX_HTML_SIZE) {
+      return null
+    }
+  }
+
+  if (!response.body) return null
+
+  const reader = response.body.getReader()
+  const chunks: Uint8Array[] = []
+  let receivedBytes = 0
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    if (!value) continue
+
+    receivedBytes += value.byteLength
+    if (receivedBytes > MAX_HTML_SIZE) {
+      await reader.cancel()
+      return null
+    }
+    chunks.push(value)
+  }
+
+  return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))).toString(
+    'utf8',
+  )
+}
+
+function isHtmlDocument(html: string): boolean {
+  return /^\s*(?:<!doctype\s+html\b|<html\b)/i.test(html)
+}
+
+// Fetch a page while validating every redirect target before network access.
+// Returns the FINAL response URL so callers key the page by its canonical target.
 async function fetchPage(
   url: string,
+  signal?: AbortSignal,
 ): Promise<{ html: string; finalUrl: string; success: boolean }> {
-  try {
-    // SSRF guard: DNS-resolve and reject private/loopback/link-local/metadata hosts.
-    await assertPublicUrl(url)
+  const failed = { html: '', finalUrl: url, success: false }
 
-    const response = await fetch(url, {
-      redirect: 'follow',
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-      },
-      signal: AbortSignal.timeout(30000), // 30s timeout per page
-    })
-    if (!response.ok) {
-      return { html: '', finalUrl: url, success: false }
+  try {
+    const timeoutSignal = AbortSignal.timeout(30000)
+    const requestSignal = signal
+      ? AbortSignal.any([signal, timeoutSignal])
+      : timeoutSignal
+    let currentUrl = url
+
+    for (let hop = 0; hop <= MAX_PAGE_REDIRECTS; hop++) {
+      await assertPublicUrl(currentUrl)
+      if (!isSameDomain(url, currentUrl)) return failed
+
+      const response = await fetch(currentUrl, {
+        redirect: 'manual',
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        },
+        signal: requestSignal,
+      })
+
+      if (REDIRECT_STATUSES.has(response.status)) {
+        const location = response.headers.get('location')
+        if (!location) return failed
+        currentUrl = new URL(location, currentUrl).toString()
+        await response.body?.cancel()
+        continue
+      }
+
+      if (!response.ok) return failed
+
+      const finalUrl = response.url || currentUrl
+      await assertPublicUrl(finalUrl)
+      if (!isSameDomain(url, finalUrl)) return failed
+
+      const contentType = response.headers
+        .get('content-type')
+        ?.split(';')[0]
+        .trim()
+        .toLowerCase()
+      const declaredHtml = contentType
+        ? HTML_CONTENT_TYPES.has(contentType)
+        : false
+      if (contentType && !declaredHtml && contentType !== 'text/plain') {
+        return failed
+      }
+
+      const html = await readHtmlBody(response)
+      if (html === null || (!declaredHtml && !isHtmlDocument(html))) {
+        return failed
+      }
+
+      return { html, finalUrl, success: true }
     }
-    const html = await response.text()
-    // response.url is the final URL after any redirects.
-    const finalUrl = response.url || url
-    return { html, finalUrl, success: true }
+
+    return failed
   } catch {
-    return { html: '', finalUrl: url, success: false }
+    return failed
   }
 }
 
@@ -309,6 +390,9 @@ export async function crawlSite(
     structuralSeen: new Map(),
     shingleSeen: [],
   }
+  const workerCount = Number.isFinite(concurrency)
+    ? Math.max(1, Math.floor(concurrency))
+    : CONCURRENCY_DEFAULT
 
   // Atomic page-slot reservation: count SUCCESSFUL pages only, but reserve the
   // slot BEFORE the await so concurrent workers can never overshoot maxPages.
@@ -374,7 +458,7 @@ export async function crawlSite(
     })
 
     // Fetch page (follows redirects, returns final url)
-    const { html, finalUrl, success } = await fetchPage(url)
+    const { html, finalUrl, success } = await fetchPage(url, signal)
     if (!success) {
       // Release the reserved slot — failed fetches must not count toward the cap.
       reservedPages--
@@ -523,7 +607,7 @@ export async function crawlSite(
     !signal?.aborted
   ) {
     while (
-      processing.size < concurrency &&
+      processing.size < workerCount &&
       nextIndex < state.queue.length &&
       reservedPages < maxPages
     ) {
