@@ -6,6 +6,7 @@ import {
   useCallback,
   useMemo,
 } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
 import {
   useFloating,
   autoUpdate,
@@ -469,7 +470,7 @@ export function InlineEditToolbar({
     rel: string
   } | null>(null)
 
-  const rememberLinkAttrs = useCallback((element) => {
+  const rememberLinkAttrs = useCallback((element: HTMLAnchorElement) => {
     originalLinkAttrsRef.current = {
       element,
       target: element.getAttribute('target'),
@@ -512,7 +513,7 @@ export function InlineEditToolbar({
   }, [activeElement, pendingImageSrc])
 
   const setActivePanelWithCleanup = useCallback(
-    (nextPanel) => {
+    (nextPanel: typeof activePanel) => {
       if (activePanel === 'link' && nextPanel !== 'link') {
         restoreRememberedLinkAttrs()
       }
@@ -915,8 +916,8 @@ export function InlineEditToolbar({
   // BUT: <select> and <input> elements need the mousedown default to function
   // (open dropdown, open color picker). Skip preventDefault for those so the
   // font-size dropdown and color picker actually work.
-  const preventFocusSteal = (e) => {
-    const target = e.target as HTMLElement
+  const preventFocusSteal = (event: ReactMouseEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement
     const tag = target.tagName
     // <select>, <input>, and Radix Select triggers (role="combobox") need
     // the mousedown default to function (open dropdown, focus input).
@@ -924,7 +925,7 @@ export function InlineEditToolbar({
     if (target.closest('[role="combobox"]')) return
     // <label> wrapping a color input needs mousedown to trigger the input
     if (tag === 'LABEL' && target.querySelector('input[type="color"]')) return
-    e.preventDefault()
+    event.preventDefault()
   }
 
   const closeWithoutSaving = useCallback(() => {
@@ -970,8 +971,8 @@ export function InlineEditToolbar({
   // those should NOT close the toolbar.
   useEffect(() => {
     if (!isOpen || isApplying || isForking) return
-    const handleClickOutside = (e) => {
-      const target = e.target as HTMLElement
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as HTMLElement
       const isInWrapper =
         (wrapperRef.current && wrapperRef.current.contains(target)) ||
         target.closest?.('[data-inline-edit-wrapper]')
@@ -1004,8 +1005,9 @@ export function InlineEditToolbar({
   // Close on escape
   useEffect(() => {
     if (!isOpen || isApplying || isForking) return
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') closeWithoutSaving()
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.isComposing || event.keyCode === 229) return
+      if (event.key === 'Escape') closeWithoutSaving()
     }
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
@@ -1021,7 +1023,7 @@ export function InlineEditToolbar({
   // in handleApply; handleClose reverts the src. newSrc may be a multi-image
   // payload (encodeMultiImageSrc) — the live <img> previews its first URL and
   // the full payload is kept pending so Apply persists the whole carousel.
-  const handleImagePreview = (newSrc) => {
+  const handleImagePreview = (newSrc: string | null) => {
     if (!activeElement || !isImageElement) return
     if (originalImageSrcRef.current === null) {
       originalImageSrcRef.current = (activeElement as HTMLImageElement).src
@@ -1118,7 +1120,7 @@ export function InlineEditToolbar({
   // committed only when Apply is pressed (handleApply reads the full inline
   // style) and reverted by closeWithoutSaving (restores originalStyleRef) if
   // the user cancels, clicks away, or presses Escape without saving.
-  const handleLayer = (direction) => {
+  const handleLayer = (direction: 'front' | 'back') => {
     if (!activeElement || isApplying || isForking) return
 
     const computed = window.getComputedStyle(activeElement)
