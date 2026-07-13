@@ -33,7 +33,8 @@ export async function loadSessionEventStream(
   if (session === null) return null
   await assertCanReadPrivateSession(ctx, session, args.anonymousOwnerSecret)
 
-  const events = await ctx.db
+  const limit = clampEventStreamLimit(args.limit)
+  const candidates = await ctx.db
     .query('generationEvents')
     .withIndex('by_sessionId_createdAt', (index) => {
       const scoped = index.eq('sessionId', sessionId)
@@ -42,7 +43,30 @@ export async function loadSessionEventStream(
         : scoped.gt('createdAt', args.since)
     })
     .order('asc')
-    .take(clampEventStreamLimit(args.limit))
+    .take(limit + 1)
+
+  let events = candidates.slice(0, limit)
+  const boundary = events.at(-1)?.createdAt
+  const overflow = candidates.at(limit)
+
+  // A timestamp alone cannot identify a position inside a tied group. Keep the
+  // numeric cursor backward-compatible by treating the requested limit as a
+  // soft boundary and returning the complete tie group in the same page.
+  if (boundary !== undefined && overflow?.createdAt === boundary) {
+    const tiedEvents = await ctx.db
+      .query('generationEvents')
+      .withIndex('by_sessionId_createdAt', (index) =>
+        index.eq('sessionId', sessionId).eq('createdAt', boundary),
+      )
+      .order('asc')
+      .collect()
+    events = [
+      ...candidates
+        .slice(0, limit)
+        .filter((event) => event.createdAt < boundary),
+      ...tiedEvents,
+    ]
+  }
 
   return {
     session: serializeSession(session),

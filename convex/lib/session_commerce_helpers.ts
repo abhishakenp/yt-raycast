@@ -11,6 +11,50 @@ import {
 type CommerceMutationCtx = MutationCtx
 type CommerceQueryCtx = Pick<QueryCtx, 'auth' | 'db'>
 
+function assertNonNegativeInteger(
+  value: number | undefined,
+  field: string,
+): void {
+  if (value === undefined) return
+
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new ConvexError({
+      code: 'INVALID_ARGUMENT',
+      message: `${field} must be a non-negative integer`,
+    })
+  }
+}
+
+function normalizeWebUrl(value: string, field: string): string {
+  const normalized = value.trim()
+
+  try {
+    const url = new URL(normalized)
+    if (
+      (url.protocol !== 'http:' && url.protocol !== 'https:') ||
+      url.hostname.length === 0 ||
+      url.username.length > 0 ||
+      url.password.length > 0
+    ) {
+      throw new Error('Unsupported URL')
+    }
+  } catch {
+    throw new ConvexError({
+      code: 'INVALID_ARGUMENT',
+      message: `${field} must be a valid HTTP(S) URL without credentials`,
+    })
+  }
+
+  return normalized
+}
+
+function normalizeOptionalWebUrl(
+  value: string | undefined,
+  field: string,
+): string | undefined {
+  return value === undefined ? undefined : normalizeWebUrl(value, field)
+}
+
 export type UpsertSessionCommerceConfigInput = {
   sessionId: Id<'sessions'>
   anonymousOwnerSecret?: string
@@ -165,6 +209,13 @@ export async function upsertSessionCommerceConfig(
   ctx: CommerceMutationCtx,
   args: UpsertSessionCommerceConfigInput,
 ) {
+  assertNonNegativeInteger(args.productCount, 'productCount')
+  const backendUrl = normalizeOptionalWebUrl(args.backendUrl, 'backendUrl')
+  const adminUrl = normalizeOptionalWebUrl(args.adminUrl, 'adminUrl')
+  const storefrontUrl = normalizeOptionalWebUrl(
+    args.storefrontUrl,
+    'storefrontUrl',
+  )
   const session = await ctx.db.get(args.sessionId)
   const now = Date.now()
 
@@ -182,9 +233,9 @@ export async function upsertSessionCommerceConfig(
 
   if (existing !== null) {
     await ctx.db.patch(existing._id, {
-      backendUrl: args.backendUrl,
-      adminUrl: args.adminUrl,
-      storefrontUrl: args.storefrontUrl,
+      backendUrl,
+      adminUrl,
+      storefrontUrl,
       configJson: args.configJson,
       errorMessage: args.errorMessage,
       productCount: args.productCount,
@@ -195,9 +246,9 @@ export async function upsertSessionCommerceConfig(
     await ctx.db.insert('commerceConfigs', {
       sessionId: args.sessionId,
       status: 'ready',
-      backendUrl: args.backendUrl,
-      adminUrl: args.adminUrl,
-      storefrontUrl: args.storefrontUrl,
+      backendUrl,
+      adminUrl,
+      storefrontUrl,
       configJson: args.configJson,
       errorMessage: args.errorMessage,
       productCount: args.productCount,
@@ -329,6 +380,17 @@ export async function upsertDeploymentCommerceTenant(
   ctx: CommerceMutationCtx,
   args: UpsertDeploymentCommerceTenantInput,
 ) {
+  assertNonNegativeInteger(args.productCount, 'productCount')
+  const provider = args.provider.trim()
+  if (provider.length === 0) {
+    throw new ConvexError({
+      code: 'INVALID_ARGUMENT',
+      message: 'provider must not be blank',
+    })
+  }
+  const backendUrl = normalizeWebUrl(args.backendUrl, 'backendUrl')
+  const adminUrl = normalizeWebUrl(args.adminUrl, 'adminUrl')
+  const storefrontUrl = normalizeWebUrl(args.storefrontUrl, 'storefrontUrl')
   const deployment = await loadDeploymentDocBySlug(ctx, args.deploymentSlug)
   const now = Date.now()
 
@@ -363,13 +425,13 @@ export async function upsertDeploymentCommerceTenant(
     deploymentId: deployment._id,
     sessionId: deployment.sessionId,
     deploymentSlug: deployment.slug,
-    provider: args.provider,
+    provider,
     providerTenantId: args.providerTenantId,
     status: readyStatus,
     syncStatus: initialSyncStatus,
-    backendUrl: args.backendUrl,
-    adminUrl: args.adminUrl,
-    storefrontUrl: args.storefrontUrl,
+    backendUrl,
+    adminUrl,
+    storefrontUrl,
     publishableKey: args.publishableKey,
     databaseRef: args.databaseRef,
     secretRef: args.secretRef,
@@ -398,6 +460,7 @@ export async function recordDeploymentCommerceTenantPull(
   ctx: CommerceMutationCtx,
   args: RecordDeploymentCommerceTenantPullInput,
 ) {
+  assertNonNegativeInteger(args.productCount, 'productCount')
   const { deployment, tenant } = await loadDeploymentTenantPair(
     ctx,
     args.deploymentSlug,
@@ -465,23 +528,26 @@ export async function provisionSessionMedusaTenant(
   ctx: CommerceMutationCtx,
   args: ProvisionMedusaTenantInput,
 ) {
+  const backendUrl = normalizeWebUrl(args.backendUrl, 'backendUrl')
+  const adminUrl = normalizeWebUrl(args.adminUrl, 'adminUrl')
+  const storefrontUrl = normalizeWebUrl(args.storefrontUrl, 'storefrontUrl')
   const now = Date.now()
   const existingConfig = await loadCommerceConfigDoc(ctx, args.sessionId)
 
   if (existingConfig !== null) {
     await ctx.db.patch(existingConfig._id, {
-      backendUrl: args.backendUrl,
-      adminUrl: args.adminUrl,
-      storefrontUrl: args.storefrontUrl,
+      backendUrl,
+      adminUrl,
+      storefrontUrl,
       updatedAt: now,
     })
   } else {
     await ctx.db.insert('commerceConfigs', {
       sessionId: args.sessionId,
       status: 'ready',
-      backendUrl: args.backendUrl,
-      adminUrl: args.adminUrl,
-      storefrontUrl: args.storefrontUrl,
+      backendUrl,
+      adminUrl,
+      storefrontUrl,
       productCount: 0,
       createdAt: now,
       updatedAt: now,
