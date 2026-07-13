@@ -388,12 +388,16 @@ function pexelsDevApi(): Plugin {
 }
 
 const config = defineConfig({
+  define: {
+    'import.meta.env.MEDUSA_BACKEND_URL': JSON.stringify(
+      devEnv.MEDUSA_BACKEND_URL || process.env.MEDUSA_BACKEND_URL || '',
+    ),
+  },
   envPrefix: [
     'VITE_',
     'NEXT_PUBLIC_',
     'CONVEX_URL',
     'CONVEX_SELF_HOSTED_URL',
-    'MEDUSA_BACKEND_',
     'MEDUSA_ADMIN_URL',
     'MEDUSA_STOREFRONT_',
     'MEDUSA_PUBLISHABLE_',
