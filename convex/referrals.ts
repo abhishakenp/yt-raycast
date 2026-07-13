@@ -314,39 +314,70 @@ export const markReferralDiscountApplied = mutation({
   },
   handler: async (ctx, args) => {
     requireServerSecret(args.secret)
-    const now = Date.now()
+    const providerDiscountId = args.providerDiscountId.trim()
+    const providerSubscriptionId = args.subscriptionId?.trim()
+    if (!providerDiscountId || !providerSubscriptionId) {
+      throw new ConvexError({
+        code: 'INVALID_REFERRAL_DISCOUNT',
+        message: 'Discount and subscription identifiers are required.',
+      })
+    }
 
     const reward = await ctx.db
       .query('referralRewards')
       .withIndex('by_userId', (index) => index.eq('userId', args.userId))
       .first()
-    if (reward !== null) {
-      await ctx.db.patch(reward._id, {
-        discountAppliedAt: now,
-        discountProvider: args.provider,
-        discountProviderId: args.providerDiscountId,
-        discountSubscriptionId: args.subscriptionId,
-        updatedAt: now,
+    if (reward === null || !reward.unlocked) {
+      throw new ConvexError({
+        code: 'REFERRAL_REWARD_LOCKED',
+        message: 'Referral reward is not unlocked.',
       })
     }
 
-    // Mirror onto the subscription row for an at-a-glance audit trail.
-    if (args.subscriptionId) {
-      const subscription = await ctx.db
-        .query('subscriptions')
-        .withIndex('by_providerSubscriptionId', (index) =>
-          index.eq('providerSubscriptionId', args.subscriptionId),
-        )
-        .first()
-      if (subscription !== null) {
-        await ctx.db.patch(subscription._id, {
-          referralDiscountPercent:
-            reward?.discountPercent ?? REFERRAL_DISCOUNT_PERCENT,
-          referralDiscountAppliedAt: now,
-          referralDiscountProviderId: args.providerDiscountId,
-        })
-      }
+    const subscriptionCandidates = await ctx.db
+      .query('subscriptions')
+      .withIndex('by_providerSubscriptionId', (index) =>
+        index.eq('providerSubscriptionId', providerSubscriptionId),
+      )
+      .take(10)
+    const subscription =
+      subscriptionCandidates.find(
+        (candidate) => candidate.provider === args.provider,
+      ) ?? null
+    if (
+      subscription === null ||
+      subscription.userId !== args.userId ||
+      !activeSubscriptionStatuses.has(subscription.status)
+    ) {
+      throw new ConvexError({
+        code: 'INVALID_REFERRAL_SUBSCRIPTION',
+        message: 'Referral discount requires an active owned subscription.',
+      })
     }
+
+    if (
+      reward.discountAppliedAt !== undefined &&
+      reward.discountProvider === args.provider &&
+      reward.discountProviderId === providerDiscountId &&
+      reward.discountSubscriptionId === providerSubscriptionId
+    ) {
+      return { ok: true }
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(reward._id, {
+      discountAppliedAt: now,
+      discountProvider: args.provider,
+      discountProviderId: providerDiscountId,
+      discountSubscriptionId: providerSubscriptionId,
+      updatedAt: now,
+    })
+    await ctx.db.patch(subscription._id, {
+      referralDiscountPercent:
+        reward.discountPercent ?? REFERRAL_DISCOUNT_PERCENT,
+      referralDiscountAppliedAt: now,
+      referralDiscountProviderId: providerDiscountId,
+    })
 
     return { ok: true }
   },
