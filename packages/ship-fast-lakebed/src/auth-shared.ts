@@ -134,10 +134,14 @@ export function decodeIdentityClaims(
   const parts = idToken.split('.')
   if (parts.length < 2 || !parts[1]) return null
 
-  const claims = parseJson(decodeBase64Url(parts[1]))
-  return claims && typeof claims === 'object'
-    ? (claims as IdentityClaims)
-    : null
+  try {
+    const claims = parseJson(decodeBase64Url(parts[1]))
+    return claims && typeof claims === 'object' && !Array.isArray(claims)
+      ? (claims as IdentityClaims)
+      : null
+  } catch {
+    return null
+  }
 }
 
 export function isExpiredClaims(claims: IdentityClaims | null): boolean {
@@ -148,8 +152,11 @@ export function createGoogleAuthFromToken(
   token: string | null | undefined,
 ): LakebedAuthContext | null {
   const claims = decodeIdentityClaims(token)
-  const pairwiseSub = claims?.pairwise_sub ?? claims?.sub
-  if (!claims || !pairwiseSub) return null
+  if (!claims || isExpiredClaims(claims)) return null
+
+  const rawSubject = claims.pairwise_sub ?? claims.sub
+  const subject = typeof rawSubject === 'string' ? rawSubject.trim() : ''
+  if (!subject) return null
 
   const displayName =
     typeof claims.name === 'string' && claims.name.trim()
@@ -167,6 +174,6 @@ export function createGoogleAuthFromToken(
     isGuest: false,
     picture: typeof claims.picture === 'string' ? claims.picture : undefined,
     provider: 'google',
-    userId: `google:${pairwiseSub}`,
+    userId: `google:${subject}`,
   })
 }
