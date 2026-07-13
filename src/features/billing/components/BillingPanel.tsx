@@ -1,5 +1,5 @@
 import { CreditCard, RefreshCw, Wallet } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
@@ -33,7 +33,10 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
   const [overview, setOverview] = useState<BillingOverview | null>(null)
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckoutPending, setIsCheckoutPending] = useState(false)
+  const [checkoutProgress, setCheckoutProgress] = useState<string>()
   const [checkoutState, setCheckoutState] = useState<string>()
+  const checkoutInFlight = useRef(false)
 
   const loadOverview = async () => {
     setError(undefined)
@@ -71,9 +74,14 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
     void loadOverview()
   }, [isSignedIn])
 
-  const startCheckout = async (mode, packId?) => {
+  const startCheckout = async (mode: CheckoutMode, packId?: string) => {
+    if (checkoutInFlight.current) return
+
+    checkoutInFlight.current = true
+    setIsCheckoutPending(true)
     setError(undefined)
-    setCheckoutState(
+    setCheckoutState(undefined)
+    setCheckoutProgress(
       mode === 'subscription'
         ? 'Opening subscription checkout...'
         : 'Opening credit checkout...',
@@ -124,6 +132,9 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
           ? checkoutError.message
           : 'Checkout failed',
       )
+    } finally {
+      checkoutInFlight.current = false
+      setIsCheckoutPending(false)
     }
   }
 
@@ -201,7 +212,7 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
 
         <button
           className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
-          disabled={isLoading}
+          disabled={isLoading || isCheckoutPending}
           onClick={() => void startCheckout('subscription')}
           type="button"
         >
@@ -211,7 +222,7 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
         <div className="grid grid-cols-2 gap-2">
           <button
             className="inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-bold text-white/72 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={isLoading}
+            disabled={isLoading || isCheckoutPending}
             onClick={() => void startCheckout('credit_pack', '3_credits')}
             type="button"
           >
@@ -219,7 +230,7 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
           </button>
           <button
             className="inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-bold text-white/72 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={isLoading}
+            disabled={isLoading || isCheckoutPending}
             onClick={() => void startCheckout('credit_pack', '10_credits')}
             type="button"
           >
@@ -229,13 +240,25 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
         </div>
       </div>
 
+      {isCheckoutPending && checkoutProgress && (
+        <p
+          aria-live="polite"
+          className="m-0 rounded-xl border border-cyan-300/20 bg-cyan-300/10 p-3 text-sm text-cyan-100"
+          role="status"
+        >
+          {checkoutProgress}
+        </p>
+      )}
       {checkoutState && (
         <p className="m-0 rounded-xl border border-cyan-300/20 bg-cyan-300/10 p-3 text-sm text-cyan-100">
           {checkoutState}
         </p>
       )}
       {error && (
-        <p className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200">
+        <p
+          className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200"
+          role="alert"
+        >
           {error}
         </p>
       )}
