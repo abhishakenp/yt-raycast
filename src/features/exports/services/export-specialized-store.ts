@@ -64,6 +64,23 @@ function recordArgument(args: unknown[]): DataRecord {
   }
 }
 
+function requireItemMutationPayload(args: unknown[]): void {
+  let input: DataRecord | null = null
+  for (const value of args) {
+    if (isRecord(value)) {
+      input = value
+      break
+    }
+  }
+  if (!input) throw new Error('Invalid item mutation payload')
+  const identifier = ['id', 'itemKey', 'label', 'name']
+    .map((key) => Reflect.get(input, key))
+    .find((value) => typeof value === 'string' && value.trim().length > 0)
+  if (identifier === undefined) {
+    throw new Error('Item mutation payload requires an item identifier')
+  }
+}
+
 function itemIdentifier(record: DataRecord): string {
   return textField(record, 'id') || textField(record, 'itemKey') || textField(record, 'label') || textField(record, 'name') || 'item'
 }
@@ -168,35 +185,40 @@ function renderQueryFunction(
   name: string,
   stateName: string,
   asynchronous: boolean,
+  argumentScoped = false,
 ): string {
   const operation = normalizeOperation(name)
   const prefix = asynchronous ? 'export async function' : 'export function'
   const functionName = queryActionName(name)
+  const parameters = argumentScoped ? '...args: unknown[]' : ''
   if (operation === 'cartsummary') {
-    return `${prefix} ${functionName}() { return cartSummary(${stateName}) }`
+    return `${prefix} ${functionName}(${parameters}) { return cartSummary(${stateName}) }`
   }
   if (operation === 'productcatalog') {
-    return `${prefix} ${functionName}() { return readRecords(${stateName}.products) }`
+    return `${prefix} ${functionName}(${parameters}) { return readRecords(${stateName}.products) }`
   }
   if (operation === 'commercesearchstate') {
-    return `${prefix} ${functionName}() {
-  const state = isRecord(${stateName}.commerceSearchState) ? ${stateName}.commerceSearchState : {}
+    return `${prefix} ${functionName}(${parameters}) {
+  const store = ${stateName}
+  const candidate = store.commerceSearchState
+  const state = isRecord(candidate) ? candidate : {}
   return { query: textField(state, 'query'), selectedLabel: textField(state, 'selectedLabel') }
 }`
   }
   if (operation === 'subscribersummary') {
-    return `${prefix} ${functionName}() { return { count: readRecords(${stateName}.subscribers).length } }`
+    return `${prefix} ${functionName}(${parameters}) { return { count: readRecords(${stateName}.subscribers).length } }`
   }
   if (/(?:names|titles|emails)$/.test(operation)) {
-    return `${prefix} ${functionName}() { return new Set(readStrings(${stateName}[${JSON.stringify(name)}])) }`
+    return `${prefix} ${functionName}(${parameters}) { return new Set(readStrings(${stateName}[${JSON.stringify(name)}])) }`
   }
-  return `${prefix} ${functionName}() { return ${stateName}[${JSON.stringify(name)}] ?? [] }`
+  return `${prefix} ${functionName}(${parameters}) { return ${stateName}[${JSON.stringify(name)}] ?? [] }`
 }
 
 function renderMutationFunction(
   name: string,
   stateName: string,
   asynchronous: boolean,
+  validatePayload = false,
 ): string {
   const operation = normalizeOperation(name)
   const prefix = asynchronous ? 'export async function' : 'export function'
@@ -218,6 +240,7 @@ function renderMutationFunction(
   }
   if (operation === 'additem' || operation.includes('addcartitem')) {
     return `${start}
+  ${validatePayload ? 'requireItemMutationPayload(args)' : ''}
   addCartItem(${stateName}, args)
   return cartSummary(${stateName})
 }`
@@ -437,15 +460,35 @@ export function renderSpecializedNextStore(
   collections: PrecomputedCollections,
 ): string {
   const queries = [...keys.queries]
-    .map((name) => renderQueryFunction(name, 'database', false))
+    .map((name) =>
+      renderQueryFunction(name, 'storeForArguments(args)', false, true),
+    )
     .join('\n\n')
   const mutations = [...keys.mutations]
-    .map((name) => renderMutationFunction(name, 'database', false))
+    .map((name) =>
+      renderMutationFunction(name, 'storeForArguments(args)', false, true),
+    )
     .join('\n\n')
   return `${renderStoreCore(collections)}
-const persistedStore = Reflect.get(globalThis, '__generatedSiteDataDatabase')
-const database: Store = isRecord(persistedStore) ? persistedStore : initialStore()
-Reflect.set(globalThis, '__generatedSiteDataDatabase', database)
+const scopedStores = new Map<string, Store>()
+function scopeFromArguments(args: unknown[]): string {
+  let ownerId: unknown
+  for (const value of args) {
+    if (!isRecord(value)) continue
+    ownerId = Reflect.get(value, 'ownerId')
+    break
+  }
+  return typeof ownerId === 'string' && ownerId.trim() ? ownerId.trim() : 'guest'
+}
+function storeForArguments(args: unknown[]): Store {
+  const scope = scopeFromArguments(args)
+  const existing = scopedStores.get(scope)
+  if (existing) return existing
+  const store = initialStore()
+  scopedStores.set(scope, store)
+  return store
+}
+const database = storeForArguments([])
 
 ${queries}
 
