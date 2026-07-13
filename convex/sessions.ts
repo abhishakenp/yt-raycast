@@ -1,5 +1,5 @@
 import { Debouncer } from '@ikhrustalev/convex-debouncer'
-import { v } from 'convex/values'
+import { ConvexError, v } from 'convex/values'
 import { components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import {
@@ -16,6 +16,8 @@ import {
   claimAnonymousSession,
   claimAnonymousSessionsByClientId,
   deleteOwnedSessions,
+  getUserId,
+  isSessionOwner,
   setSessionBrandLogo,
   setSessionPreferredLanguage,
   setSessionThemeOverride,
@@ -200,6 +202,30 @@ const canReadSessionById: CanReadSessionById = async (ctx, sessionId) => {
   return session !== null && (await canReadPrivateSession(ctx, session))
 }
 
+async function redactForeignSessionOwnerId<T extends { userId?: string }>(
+  ctx: Pick<QueryCtx, 'auth'>,
+  session: T,
+) {
+  const callerUserId = await getUserId(ctx)
+  return session.userId === undefined || session.userId === callerUserId
+    ? session
+    : { ...session, userId: undefined }
+}
+
+function emptyUsageMetrics() {
+  return {
+    totalCost: 0,
+    totalElapsedMs: 0,
+    count: 0,
+    byProvider: {},
+    byEventType: {},
+  }
+}
+
+function isStableAuthUserId(userId: string): boolean {
+  return userId.includes('|')
+}
+
 type ScheduleEditedSessionExportAutomation = (
   ctx: MutationCtx,
   args: {
@@ -338,12 +364,28 @@ export const setPreferredLanguageInternal = internalMutation({
 
 export const getGenerationView = query({
   args: generationViewArgs,
-  handler: async (ctx, args) => loadGenerationView(ctx, args),
+  handler: async (ctx, args) => {
+    const view = await loadGenerationView(ctx, args)
+    return view === null
+      ? null
+      : {
+          ...view,
+          session: await redactForeignSessionOwnerId(ctx, view.session),
+        }
+  },
 })
 
 export const getEventStream = query({
   args: eventStreamArgs,
-  handler: async (ctx, args) => loadSessionEventStream(ctx, args),
+  handler: async (ctx, args) => {
+    const stream = await loadSessionEventStream(ctx, args)
+    return stream === null
+      ? null
+      : {
+          ...stream,
+          session: await redactForeignSessionOwnerId(ctx, stream.session),
+        }
+  },
 })
 
 export const getSessionApiResponse = query({
@@ -353,7 +395,15 @@ export const getSessionApiResponse = query({
 
 export const getWorkspace = query({
   args: sessionIdArgs,
-  handler: async (ctx, args) => loadSessionWorkspace(ctx, args.sessionId),
+  handler: async (ctx, args) => {
+    const workspace = await loadSessionWorkspace(ctx, args.sessionId)
+    return workspace === null
+      ? null
+      : {
+          ...workspace,
+          session: await redactForeignSessionOwnerId(ctx, workspace.session),
+        }
+  },
 })
 
 export const getSessionReadiness = query({
@@ -361,7 +411,13 @@ export const getSessionReadiness = query({
   handler: async (ctx, args) => {
     const lookup = args.lookup ?? args.sessionId
     if (lookup === undefined) return null
-    return loadSessionReadiness(ctx, lookup)
+    const readiness = await loadSessionReadiness(ctx, lookup)
+    return readiness === null
+      ? null
+      : {
+          ...readiness,
+          session: await redactForeignSessionOwnerId(ctx, readiness.session),
+        }
   },
 })
 
@@ -512,14 +568,16 @@ export const recordGitHubExportRepositoryByLookup = mutation({
 export const getExport = query({
   args: exportRecordArgs,
   handler: async (ctx, args) =>
-    loadExportRecord(ctx, args.sessionId, args.target),
+    (await canReadSessionById(ctx, args.sessionId))
+      ? loadExportRecord(ctx, args.sessionId, args.target)
+      : null,
 })
 
 export const getExportTargets = query({
   args: lookupArgs,
-  handler: (ctx, args) => {
+  handler: async (ctx, args) => {
     const sessionId = ctx.db.normalizeId('sessions', args.lookup)
-    return sessionId === null
+    return sessionId === null || !(await canReadSessionById(ctx, sessionId))
       ? {
           sessionId: args.lookup,
           previewReady: false,
@@ -532,9 +590,11 @@ export const getExportTargets = query({
 
 export const getDeploymentStatusByLookup = query({
   args: lookupArgs,
-  handler: (ctx, args) => {
+  handler: async (ctx, args) => {
     const sessionId = ctx.db.normalizeId('sessions', args.lookup)
-    return sessionId === null ? null : loadDeploymentStatus(ctx, sessionId)
+    return sessionId === null || !(await canReadSessionById(ctx, sessionId))
+      ? null
+      : loadDeploymentStatus(ctx, sessionId)
   },
 })
 
@@ -697,9 +757,16 @@ export const listEdits = query({
   args: lookupArgs,
   handler: async (ctx, args) => {
     const sessionId = ctx.db.normalizeId('sessions', args.lookup)
-    return sessionId !== null && (await canReadSessionById(ctx, sessionId))
-      ? listSessionEdits(ctx, sessionId)
-      : []
+    if (sessionId === null) return []
+
+    const session = await ctx.db.get(sessionId)
+    if (session === null || !(await canReadPrivateSession(ctx, session))) {
+      return []
+    }
+
+    const edits = await listSessionEdits(ctx, sessionId)
+    if (await isSessionOwner(ctx, session)) return edits
+    return edits.map((edit) => ({ ...edit, userId: undefined }))
   },
 })
 
@@ -877,7 +944,10 @@ export const getDeploymentBySlug = query({
 
 export const getDeploymentStatus = query({
   args: sessionIdArgs,
-  handler: async (ctx, args) => loadDeploymentStatus(ctx, args.sessionId),
+  handler: async (ctx, args) =>
+    (await canReadSessionById(ctx, args.sessionId))
+      ? loadDeploymentStatus(ctx, args.sessionId)
+      : null,
 })
 
 export const getOwnedLakebedDeploymentArtifact = query({
@@ -928,12 +998,29 @@ export const recordOperationalEvent = internalMutation({
 
 export const getUsageMetrics = query({
   args: sessionIdArgs,
-  handler: (ctx, args) => loadSessionUsageMetrics(ctx, args.sessionId),
+  handler: async (ctx, args) => {
+    const metrics = await loadSessionUsageMetrics(ctx, args.sessionId)
+    if (Array.isArray(metrics) || metrics.count === 0) return metrics
+    return (await canReadSessionById(ctx, args.sessionId))
+      ? metrics
+      : emptyUsageMetrics()
+  },
 })
 
 export const getUserUsageMetrics = query({
   args: userUsageMetricsArgs,
-  handler: (ctx, args) => loadUserUsageMetrics(ctx, args),
+  handler: async (ctx, args) => {
+    if (isStableAuthUserId(args.userId)) {
+      const callerUserId = await getUserId(ctx)
+      if (callerUserId !== args.userId) {
+        throw new ConvexError({
+          code: callerUserId === undefined ? 'AUTH_REQUIRED' : 'FORBIDDEN',
+          message: 'Usage metrics are only available to their owner',
+        })
+      }
+    }
+    return loadUserUsageMetrics(ctx, args)
+  },
 })
 
 export const sendOperationalNotification = internalAction({
