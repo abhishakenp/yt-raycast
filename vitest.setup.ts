@@ -44,6 +44,7 @@ if (typeof globalThis.HTMLElement === 'undefined') {
   Object.defineProperty(globalThis, 'HTMLElement', {
     configurable: true,
     value: NodeEnvironmentHTMLElement,
+    writable: true,
   })
 }
 
@@ -51,6 +52,7 @@ if (typeof globalThis.HTMLButtonElement === 'undefined') {
   Object.defineProperty(globalThis, 'HTMLButtonElement', {
     configurable: true,
     value: NodeEnvironmentHTMLButtonElement,
+    writable: true,
   })
 }
 
