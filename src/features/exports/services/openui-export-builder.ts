@@ -35,13 +35,15 @@ import {
   queryActionName,
   renderKeyedMutationHook,
   renderNextServerActions,
-  renderNextStore,
   renderQueryClientProvider,
-  renderReactStore,
   renderShooAuthProvider,
   renderShooCallbackRoute,
   type DataKeys,
 } from './export-data'
+import {
+  renderSpecializedNextStore,
+  renderSpecializedReactStore,
+} from './export-specialized-store'
 import { resolvePreviewImageUrl } from './preview-image-url-resolution'
 
 type ParsedOpenUIProgram = {
@@ -112,7 +114,7 @@ const forbiddenExportTokens = [
   'openui',
   'ship-fast-blocks',
   'data-tsd-source',
-] as const
+]
 
 function toProjectSlug(value: string): string {
   return (
@@ -301,7 +303,7 @@ const themeVarKeys = [
   'shadow-offset-y',
   'letter-spacing',
   'spacing',
-] as const
+]
 
 function buildThemeStyle(styles: ThemeStyles | null, isDark: boolean): string {
   if (!styles) return ''
@@ -419,16 +421,8 @@ function blockAliasSourcePath(moduleName: string): string | null {
 function exportedBlockSourceOutPath(sourcePath: string): string {
   if (sourcePath === 'src/lib/utils.ts') return 'src/lib/cn.ts'
   if (sourcePath === 'src/lib/img.tsx') return 'src/lib/image.tsx'
-  if (sourcePath.startsWith('src/components/')) return sourcePath
-  if (sourcePath.startsWith('src/hooks/')) return sourcePath
-  if (sourcePath.startsWith('src/lib/')) return sourcePath
-  if (sourcePath.startsWith('src/section-kit/')) return sourcePath
-  if (sourcePath.startsWith('src/registry/')) {
-    return `src/vendor/blocks/${sourcePath}`
-  }
-  if (sourcePath.startsWith('src/capsules/')) {
-    return `src/vendor/blocks/${sourcePath}`
-  }
+  if (sourcePath === 'src/section-kit/Logo.tsx') return sourcePath
+  if (sourcePath.startsWith('src/')) return `src/vendor/blocks/${sourcePath}`
   throw new Error(`Unsupported block dependency source path: ${sourcePath}`)
 }
 
@@ -1800,8 +1794,11 @@ function translateBlockSourceLakebed(
 
   // Add React Query imports if the file uses useQuery/useMutation after translation
   const needsReactQuery =
-    /\buseQuery\b/.test(body) || /\buseMutation\b/.test(body)
-  const needsQueryClient = /\bqueryClient\b/.test(body)
+    /\buseQuery\b/.test(body) ||
+    /\buseMutation\b/.test(body) ||
+    /\buseQueryClient\b/.test(body)
+  const needsQueryClient = /\buseQueryClient\b/.test(body)
+  const needsInlineQueryClient = /\bqueryClient\b/.test(body)
   const needsKeyedMutation = /\buseKeyedMutation\b/.test(body)
   const needsShooAuth = /\buseShooAuth\b/.test(body)
   const needsAdaptShoo = /\badaptShooIdentity\b/.test(body)
@@ -1838,7 +1835,7 @@ function translateBlockSourceLakebed(
   }
 
   // Add queryClient declaration if needed
-  if (needsQueryClient) {
+  if (needsInlineQueryClient) {
     // Insert `const queryClient = useQueryClient()` once per function that uses useMutation.
     // We find each function body that contains useMutation and insert the declaration
     // before the first useMutation call in that function.
@@ -2402,7 +2399,9 @@ function canonicalizeRouteStructure(
     value.props.id = count === 0 ? base : `${base}_${count + 1}`
     if (
       typeof value.props.className === 'string' &&
-      /[^\x00-\x7f]/.test(value.props.className)
+      [...value.props.className].some(
+        (character) => (character.codePointAt(0) ?? 0) > 127,
+      )
     ) {
       const amount = value.props.className.match(/\d+/g)?.at(-1) ?? '28'
       value.props.className = `scroll-mt-${amount}`
@@ -3231,10 +3230,10 @@ function resolveDependencyVersions(
 function renderThemeCss(input: OpenUIExportInput): string {
   const siteSpec = parseSiteSpec(input.siteSpecJson)
   const themeName = readThemeName(siteSpec, input.themeName)
-  const isDark = input.isDark ?? true
   const themeStyles =
     resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
-  const themeStyle = buildThemeStyle(themeStyles, isDark)
+  const lightThemeStyle = buildThemeStyle(themeStyles, false)
+  const darkThemeStyle = buildThemeStyle(themeStyles, true)
   const tailwindThemeStyle = buildTailwindThemeStyle(themeStyles)
 
   return `@import "tailwindcss";
@@ -3244,8 +3243,13 @@ function renderThemeCss(input: OpenUIExportInput): string {
 }
 
 :root {
-  ${themeStyle.replaceAll('; ', ';\n  ')}
-  color-scheme: ${isDark ? 'dark' : 'light'};
+  ${lightThemeStyle.replaceAll('; ', ';\n  ')}
+  color-scheme: light;
+}
+
+.dark {
+  ${darkThemeStyle.replaceAll('; ', ';\n  ')}
+  color-scheme: dark;
 }
 
 html,
@@ -3981,6 +3985,9 @@ function renderNextRoutePage(
     ? `\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ${JSON.stringify(jsonLd)} }} />`
     : ''
   return `import { ${componentName} } from '${componentImportPath}'
+import { ${componentName}Route } from '${componentImportPath.replace(/components\/.+$/, 'data/pages')}'
+
+export const routePath = ${componentName}Route.path
 
 ${metadataExport}${viewportExport}export default function Page() {
   return (
@@ -4100,10 +4107,11 @@ async function buildReactExport(
   )
   const homeHeadTags = seoBundle?.homeSeo?.headTags ?? []
   const htmlLang = seoBundle?.homeSeo?.seo.htmlLang ?? 'en'
+  const themeClass = (input.isDark ?? true) ? ' class="dark"' : ''
   const indexHtml =
     homeHeadTags.length > 0
-      ? `<!doctype html><html lang="${htmlLang}"><head>${homeHeadTags.join('\n')}</head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n`
-      : '<!doctype html><html><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n'
+      ? `<!doctype html><html lang="${htmlLang}"${themeClass}><head>${homeHeadTags.join('\n')}</head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n`
+      : `<!doctype html><html${themeClass}><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n`
   const files: Record<string, string> = {
     'package.json': renderReactPackageJson(
       parsed.projectName,
@@ -4129,7 +4137,7 @@ async function buildReactExport(
     'README.md': renderReadme(parsed.projectName, 'react'),
   }
   if (usesLakebed) {
-    files['src/lib/store.ts'] = renderReactStore(
+    files['src/lib/store.ts'] = renderSpecializedReactStore(
       dataKeys,
       extractCollections(routes),
     )
@@ -4250,7 +4258,7 @@ ${layoutImport}import './globals.css'
 ${layoutMetadata}
 ${layoutViewport ? `${layoutViewport}\n\n` : ''}
 export default function RootLayout({ children }: PropsWithChildren) {
-  return <html lang="${seoBundle?.homeSeo?.seo.htmlLang ?? 'en'}"><body>${layoutChildren}</body></html>
+  return <html lang="${seoBundle?.homeSeo?.seo.htmlLang ?? 'en'}"${(input.isDark ?? true) ? ' className="dark"' : ''}><body>${layoutChildren}</body></html>
 }
 `,
     'app/globals.css':
@@ -4261,7 +4269,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
     'README.md': renderReadme(parsed.projectName, 'next'),
   }
   if (usesLakebed) {
-    files['src/lib/store.ts'] = renderNextStore(
+    files['src/lib/store.ts'] = renderSpecializedNextStore(
       dataKeys,
       extractCollections(routes),
     )
@@ -4272,13 +4280,22 @@ export default function RootLayout({ children }: PropsWithChildren) {
     files['app/actions/server-actions.ts'] = renderNextServerActions(dataKeys)
     if (dataKeys.usesAuth) {
       files['src/lib/auth.tsx'] = renderShooAuthProvider()
-      files['app/auth/callback/page.tsx'] = renderShooCallbackRoute()
+      files['src/components/auth/AuthCallback.tsx'] = renderShooCallbackRoute()
+      files['app/auth/callback/page.tsx'] =
+        `import ShooCallback from '../../../src/components/auth/AuthCallback'
+
+export const metadata = { title: 'Signing in' }
+
+export default function Page() {
+  return <ShooCallback />
+}
+`
     }
   }
   if (endpoints.length > 0) {
     // Endpoint route files import from store.ts which is generated above
     if (!usesLakebed) {
-      files['src/lib/store.ts'] = renderNextStore(
+      files['src/lib/store.ts'] = renderSpecializedNextStore(
         dataKeys,
         extractCollections(routes),
       )

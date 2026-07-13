@@ -709,7 +709,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 export function renderShooCallbackRoute(): string {
   return `"use client"
 
-import { useShooAuth } from '../../../src/lib/auth'
+import { useShooAuth } from '../../lib/auth'
 
 export default function ShooCallback() {
   useShooAuth()
