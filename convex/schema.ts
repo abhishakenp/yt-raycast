@@ -637,4 +637,19 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index('by_cacheKey', ['cacheKey']),
+
+  sessionTranslationOverrides: defineTable({
+    sessionId: v.id('sessions'),
+    locale: v.string(),
+    sourceText: v.string(),
+    translation: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId_locale_sourceText', [
+      'sessionId',
+      'locale',
+      'sourceText',
+    ])
+    .index('by_sessionId', ['sessionId']),
 })

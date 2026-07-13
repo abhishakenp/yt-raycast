@@ -1419,6 +1419,24 @@ describe('InlineEditToolbar (behavioral)', () => {
     })
   })
 
+  it('21b.3. expanded panel content is horizontally centered so it does not hug the left when the toolbar row is wider than the panel', () => {
+    const { container } = renderToolbar()
+    const style = screen.getByRole('button', { name: 'Style controls' })
+
+    fireEvent.click(style)
+    expect(style.getAttribute('aria-expanded')).toBe('true')
+
+    // The animated panel container holds a single inner wrapper that carries
+    // the fixed panel width (w-[32.5rem]/w-[40rem]). It must also carry
+    // `mx-auto` so the panel centers when the toolbar row is wider than it.
+    const animatedPanel = findAnimatedPanel(container)
+    const panelWrapper = animatedPanel.querySelector(
+      '[data-inline-edit-wrapper="true"]',
+    ) as HTMLElement | null
+    expect(panelWrapper).not.toBeNull()
+    expect(panelWrapper?.className).toContain('mx-auto')
+  })
+
   it('21c. AI edit panel exposes a named prompt and submits a trimmed prompt with Enter', () => {
     const onSectionEdit = vi.fn()
     renderToolbar({ onSectionEdit })

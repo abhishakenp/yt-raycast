@@ -266,7 +266,10 @@ async function withCanonicalTranslatedBeforeText(
   const priorLocalizedEdit = priorLocalizedEdits.find(
     (edit) =>
       edit.canonicalSourceText !== undefined &&
-      normalizeComparableText(edit.afterText) === selectedText,
+      (normalizeComparableText(edit.afterText) === selectedText ||
+        (normalizeComparableText(edit.beforeText) === selectedText &&
+          normalizeComparableText(edit.afterText) ===
+            normalizeComparableText(args.afterText ?? ''))),
   )
   if (priorLocalizedEdit?.canonicalSourceText !== undefined) {
     return {
@@ -334,6 +337,46 @@ function isSamePersistedEdit(
     edit.instruction === args.instruction &&
     edit.occurrenceIndex === args.occurrenceIndex
   )
+}
+
+async function upsertSessionTranslationOverride(
+  ctx: MutationCtx,
+  sessionId: Id<'sessions'>,
+  locale: string,
+  sourceText: string,
+  translation: string,
+  now: number,
+): Promise<void> {
+  const normalizedLocale = locale.trim().toLowerCase()
+  const canonicalSourceText = sourceText.trim()
+  const trimmedTranslation = translation.trim()
+  if (!normalizedLocale || !canonicalSourceText || !trimmedTranslation) return
+
+  const existing = await ctx.db
+    .query('sessionTranslationOverrides')
+    .withIndex('by_sessionId_locale_sourceText', (index) =>
+      index
+        .eq('sessionId', sessionId)
+        .eq('locale', normalizedLocale)
+        .eq('sourceText', canonicalSourceText),
+    )
+    .unique()
+
+  if (existing) {
+    await ctx.db.patch(existing._id, {
+      translation: trimmedTranslation,
+      updatedAt: now,
+    })
+  } else {
+    await ctx.db.insert('sessionTranslationOverrides', {
+      sessionId,
+      locale: normalizedLocale,
+      sourceText: canonicalSourceText,
+      translation: trimmedTranslation,
+      createdAt: now,
+      updatedAt: now,
+    })
+  }
 }
 
 async function invalidateTranslationsForSource(
@@ -1032,6 +1075,15 @@ export async function applySessionEdit(
   if (patchArgs.editType === 'text') {
     if (!isLocaleScopedTranslatedTextEdit) {
       await invalidateTranslationsForSource(ctx, patchArgs.beforeText)
+    } else if (canonicalized.translatedEdit !== undefined) {
+      await upsertSessionTranslationOverride(
+        ctx,
+        sessionId,
+        canonicalized.translatedEdit.locale,
+        canonicalized.translatedEdit.sourceText,
+        String(patchArgs.afterText ?? ''),
+        now,
+      )
     }
     if (!sessionDataPatched) {
       await patchTextEditIntoSessionData(
