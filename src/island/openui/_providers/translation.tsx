@@ -6,7 +6,7 @@ import React, {
   type ReactNode,
 } from 'react'
 import { isTranslatableLocale } from '@/config/languages'
-import { shouldPreserveNativeLocaleText } from '@/features/localization/native-script'
+import { shouldPreserveTranslationText } from '@/features/localization/native-script'
 import { transliterateLatinFallback } from '@/features/localization/client/transliterate-latin-fallback'
 import { translateOnDeviceBatch } from './chrome-translator'
 
@@ -105,7 +105,7 @@ export async function fetchTranslationBatch(
 
   for (let index = 0; index < texts.length; index += 1) {
     const text = texts[index]
-    if (shouldPreserveNativeLocaleText(text, locale)) {
+    if (shouldPreserveTranslationText(text, locale)) {
       translations[index] = text
       continue
     }
@@ -166,8 +166,14 @@ export async function fetchTranslationBatch(
   })
   if (!res.ok) return translations
 
-  const data = (await res.json()) as { translations?: unknown }
-  const batch = Array.isArray(data.translations) ? data.translations : []
+  const data: unknown = await res.json()
+  const batch =
+    data !== null &&
+    typeof data === 'object' &&
+    'translations' in data &&
+    Array.isArray(data.translations)
+      ? data.translations
+      : []
   networkIndexes.forEach((originalIndex, offset) => {
     const translated = batch[offset]
     if (typeof translated === 'string' && translated.trim()) {
@@ -422,9 +428,16 @@ const ACTIVE_TEXT_EDIT_SELECTOR =
   '[data-ship-fast-inline-editing="true"], [contenteditable="true"], [contenteditable="plaintext-only"]'
 
 function isInsideActiveTextEdit(node: Node): boolean {
-  const parent =
-    node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement
+  const parent = isElementNode(node) ? node : node.parentElement
   return Boolean(parent?.closest(ACTIVE_TEXT_EDIT_SELECTOR))
+}
+
+function isElementNode(node: Node): node is Element {
+  return node.nodeType === Node.ELEMENT_NODE
+}
+
+function isTextNode(node: Node): node is Text {
+  return node.nodeType === Node.TEXT_NODE
 }
 
 // T uses MutationObserver to find text nodes, then translates them in one
@@ -469,7 +482,8 @@ export function T({ children }: React.PropsWithChildren) {
     const restoreOriginalTextNodes = () => {
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
       while (walker.nextNode()) {
-        const node = walker.currentNode as Text
+        const node = walker.currentNode
+        if (!isTextNode(node)) continue
         const sourceText = sourceTextForNode(node)
         const originalText =
           textStateRef.current.get(node)?.originalText ?? sourceText
@@ -668,7 +682,8 @@ export function T({ children }: React.PropsWithChildren) {
       let shimmeredNodes = 0
 
       while (walker.nextNode()) {
-        const node = walker.currentNode as Text
+        const node = walker.currentNode
+        if (!isTextNode(node)) continue
         if (isInsideActiveTextEdit(node)) continue
         const text = sourceTextForNode(node)
         if (!text || processedRef.current.has(node)) continue

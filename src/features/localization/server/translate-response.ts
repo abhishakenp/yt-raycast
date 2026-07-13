@@ -1,7 +1,7 @@
 import { isTranslatableLocale, lookupKnownLanguage } from '@/config/languages'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { api } from '../../../../convex/_generated/api'
-import { shouldPreserveNativeLocaleText } from '../native-script'
+import { shouldPreserveTranslationText } from '../native-script'
 
 type TranslateModel = (
   system: string,
@@ -61,6 +61,16 @@ type CoordinatedTranslationCacheClient = TranslationCacheClient & {
 type TranslationCacheEntry = {
   text: string
   translation: string
+}
+
+type TranslationRequestBody = {
+  texts?: unknown
+  locale?: unknown
+  entries?: unknown
+}
+
+function isUnknownRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function json(body: unknown, init?: ResponseInit) {
@@ -130,7 +140,7 @@ function buildTranslationPrompt(texts: string[], locale: string) {
 function parseTranslationArray(raw: string, fallbackTexts: string[]): string[] {
   const cleaned = stripCodeFence(raw)
   try {
-    const parsed = JSON.parse(cleaned) as unknown
+    const parsed: unknown = JSON.parse(cleaned)
     if (Array.isArray(parsed)) {
       return fallbackTexts.map((fallback, index) => {
         const value = parsed[index]
@@ -327,22 +337,22 @@ function normalizeEntries(body: {
   entries?: unknown
 }): TranslationCacheEntry[] {
   if (!Array.isArray(body.entries)) return []
-  return body.entries
-    .slice(0, MAX_TRANSLATION_BATCH_SIZE)
-    .map((entry) => {
-      if (entry === null || typeof entry !== 'object') return null
-      const record = entry as Record<string, unknown>
-      const text =
-        typeof record.text === 'string'
-          ? record.text.trim().slice(0, MAX_TRANSLATION_TEXT_LENGTH)
-          : ''
-      const translation =
-        typeof record.translation === 'string'
-          ? record.translation.trim().slice(0, MAX_TRANSLATION_TEXT_LENGTH)
-          : ''
-      return text && translation ? { text, translation } : null
-    })
-    .filter((entry): entry is TranslationCacheEntry => entry !== null)
+  const entries: TranslationCacheEntry[] = []
+
+  for (const entry of body.entries.slice(0, MAX_TRANSLATION_BATCH_SIZE)) {
+    if (!isUnknownRecord(entry)) continue
+    const text =
+      typeof entry.text === 'string'
+        ? entry.text.trim().slice(0, MAX_TRANSLATION_TEXT_LENGTH)
+        : ''
+    const translation =
+      typeof entry.translation === 'string'
+        ? entry.translation.trim().slice(0, MAX_TRANSLATION_TEXT_LENGTH)
+        : ''
+    if (text && translation) entries.push({ text, translation })
+  }
+
+  return entries
 }
 
 async function translateBatch({
@@ -363,7 +373,7 @@ async function translateBatch({
 
   texts.forEach((text, index) => {
     if (!text) return
-    if (shouldPreserveNativeLocaleText(text, locale)) {
+    if (shouldPreserveTranslationText(text, locale)) {
       translations[index] = text
       return
     }
@@ -410,7 +420,7 @@ async function translateBatch({
 
   texts.forEach((text, index) => {
     if (!text) return
-    if (shouldPreserveNativeLocaleText(text, locale)) {
+    if (shouldPreserveTranslationText(text, locale)) {
       translations[index] = text
       return
     }
@@ -456,13 +466,11 @@ export async function createTranslateResponse(
   translateModel: TranslateModel = defaultTranslateModel,
   cacheClient: TranslationCacheClient | null = createDefaultTranslationCacheClient(),
 ): Promise<Response> {
-  let body: { texts?: unknown; locale?: unknown; entries?: unknown } = {}
+  let body: TranslationRequestBody = {}
 
   try {
-    body = (await request.json()) as {
-      texts?: unknown
-      locale?: unknown
-    }
+    const parsedBody: unknown = await request.json()
+    if (isUnknownRecord(parsedBody)) body = parsedBody
   } catch {
     return json({ error: 'Invalid JSON' }, { status: 400 })
   }
@@ -471,7 +479,7 @@ export async function createTranslateResponse(
   const locale = normalizeLocale(body.locale)
   const entries = normalizeEntries(body)
   const cacheableEntries = entries.filter(
-    (entry) => !shouldPreserveNativeLocaleText(entry.text, locale),
+    (entry) => !shouldPreserveTranslationText(entry.text, locale),
   )
 
   if (entries.length > 0) {
