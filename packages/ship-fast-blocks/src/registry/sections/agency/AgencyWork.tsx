@@ -92,7 +92,12 @@ export const AgencyWork = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-muted/30 py-24 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'bg-muted/30 pt-28 pb-24 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>

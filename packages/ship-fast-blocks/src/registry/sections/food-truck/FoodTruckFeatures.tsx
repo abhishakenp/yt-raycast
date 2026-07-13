@@ -44,7 +44,10 @@ export const FoodTruckFeatures = defineCapsule({
 
     return (
       <section
-        className={cn('border-t border-border px-6 py-16', props.className)}
+        className={cn(
+          'border-t border-border px-6 pt-28 pb-16',
+          props.className,
+        )}
       >
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
           {features.map((f) => (

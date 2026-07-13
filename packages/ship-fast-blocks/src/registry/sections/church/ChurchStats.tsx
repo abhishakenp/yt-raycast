@@ -34,7 +34,9 @@ export const ChurchStats = defineCapsule({
         ]
 
     return (
-      <section className={cn('border-y border-border py-20', props.className)}>
+      <section
+        className={cn('border-y border-border pt-28 pb-20', props.className)}
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
             {items.map((s) => (

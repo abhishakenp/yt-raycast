@@ -157,7 +157,7 @@ export const WineryBreweryMenu = defineCapsule({
     )
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-6 font-serif text-3xl font-medium text-foreground sm:text-4xl lg:text-5xl">

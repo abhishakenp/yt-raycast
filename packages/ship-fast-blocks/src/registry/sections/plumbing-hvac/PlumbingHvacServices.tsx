@@ -115,7 +115,7 @@ export const PlumbingHvacServices = defineCapsule({
         ]
 
     return (
-      <section className="bg-background py-20 lg:py-28">
+      <section className="bg-background pt-28 pb-20 lg:pt-32 lg:pb-28">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <FeatureGrid
             heading={heading}

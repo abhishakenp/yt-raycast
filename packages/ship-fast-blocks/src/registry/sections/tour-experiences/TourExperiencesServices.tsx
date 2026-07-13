@@ -131,7 +131,7 @@ export const TourExperiencesServices = defineCapsule({
       : defaults
 
     return (
-      <section className="bg-background px-6 py-20 lg:px-8 lg:py-24">
+      <section className="bg-background px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
         <div className="mx-auto max-w-7xl">
           <FeatureGrid
             heading={props.heading ?? 'Find your kind of adventure'}

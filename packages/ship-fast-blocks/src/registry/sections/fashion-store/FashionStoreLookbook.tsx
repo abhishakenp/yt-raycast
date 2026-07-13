@@ -105,7 +105,10 @@ export const FashionStoreLookbook = defineCapsule({
     return (
       <section
         aria-label="Lookbook gallery"
-        className={cn('bg-muted py-20 lg:py-28', props.className)}
+        className={cn(
+          'bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
       >
         <Container>
           <div className="mb-16 grid items-start gap-8 lg:grid-cols-2 lg:gap-12">

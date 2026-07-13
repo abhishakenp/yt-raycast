@@ -52,7 +52,10 @@ export const FoodDeliveryStats = defineCapsule({
         ]
     return (
       <section
-        className={cn('bg-foreground py-16 text-background', props.className)}
+        className={cn(
+          'bg-foreground pt-28 pb-16 text-background',
+          props.className,
+        )}
       >
         <Container>
           <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">

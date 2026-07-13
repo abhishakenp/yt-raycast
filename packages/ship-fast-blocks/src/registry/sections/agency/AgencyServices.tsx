@@ -165,7 +165,12 @@ export const AgencyServices = defineCapsule({
     ]
 
     return (
-      <section className={cn('relative py-24 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'relative pt-28 pb-24 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 max-w-3xl">
             <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">

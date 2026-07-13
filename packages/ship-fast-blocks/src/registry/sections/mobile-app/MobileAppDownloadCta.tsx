@@ -80,7 +80,7 @@ export const MobileAppDownloadCta = defineCapsule({
 
     return (
       <section
-        className={cn('py-20 lg:py-28', props.className)}
+        className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
         aria-labelledby="mobileapp-cta-heading"
       >
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">

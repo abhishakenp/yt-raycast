@@ -42,7 +42,7 @@ export const FintechStats = defineCapsule({
         ]
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 lg:px-8">
           {heading ? (
             <SectionHeading title={heading} subtitle={subheading} />

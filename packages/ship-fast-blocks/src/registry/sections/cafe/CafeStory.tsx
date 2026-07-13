@@ -58,7 +58,7 @@ export const CafeStory = defineCapsule({
       'Coffee shop interior during golden hour, showing warm lighting, potted plants, and communal seating'
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="order-2 lg:order-1">

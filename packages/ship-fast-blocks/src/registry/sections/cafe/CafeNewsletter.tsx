@@ -46,7 +46,7 @@ export const CafeNewsletter = defineCapsule({
     const submitTarget = props.submitTarget ?? submit
 
     return (
-      <section className={cn('bg-primary/10 py-20', props.className)}>
+      <section className={cn('bg-primary/10 pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-4xl px-6 text-center lg:px-8">
           <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">
             {heading}

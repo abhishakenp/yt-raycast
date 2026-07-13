@@ -38,7 +38,7 @@ export const CafeGallery = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-card py-20', props.className)}>
+      <section className={cn('bg-card pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <ResponsiveGrid cols="2-md-3" gap="sm">
             <div className="space-y-4">

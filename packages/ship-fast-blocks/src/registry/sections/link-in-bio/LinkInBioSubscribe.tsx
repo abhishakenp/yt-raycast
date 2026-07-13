@@ -52,7 +52,10 @@ export const LinkInBioSubscribe = defineCapsule({
 
     return (
       <section
-        className={cn('mx-auto w-full max-w-md px-6 py-10', props.className)}
+        className={cn(
+          'mx-auto w-full max-w-md px-6 pt-28 pb-10',
+          props.className,
+        )}
       >
         <Card rounded="2xl" className="text-center sm:p-8">
           <div className="mx-auto grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">

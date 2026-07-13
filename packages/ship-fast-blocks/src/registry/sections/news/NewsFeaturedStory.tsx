@@ -130,7 +130,9 @@ export const NewsFeaturedStory = defineCapsule({
     }
 
     return (
-      <section className={cn('bg-card py-8 lg:py-12', props.className)}>
+      <section
+        className={cn('bg-card pt-28 pb-8 lg:pt-32 lg:pb-12', props.className)}
+      >
         <Container>
           {/* Breaking banner */}
           <div className="mb-8 flex items-center gap-3">

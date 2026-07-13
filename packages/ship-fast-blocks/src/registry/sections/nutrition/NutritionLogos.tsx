@@ -29,7 +29,10 @@ export const NutritionLogos = defineCapsule({
 
     return (
       <section
-        className={cn('border-y border-border bg-card py-10', props.className)}
+        className={cn(
+          'border-y border-border bg-card pt-28 pb-10',
+          props.className,
+        )}
       >
         <Container>
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wide text-muted-foreground">

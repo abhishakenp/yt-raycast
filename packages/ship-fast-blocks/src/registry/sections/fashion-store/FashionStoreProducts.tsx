@@ -162,7 +162,7 @@ export const FashionStoreProducts = defineCapsule({
     return (
       <section
         aria-label="New arrivals"
-        className={cn('py-20 lg:py-28', props.className)}
+        className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
           <div className="mb-16 text-center">

@@ -123,7 +123,7 @@ export const TelehealthServices = defineCapsule({
     }))
 
     return (
-      <section className="bg-background py-20 sm:py-24">
+      <section className="bg-background pt-28 pb-20 sm:pt-32 sm:pb-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <FeatureGrid
             heading={heading}

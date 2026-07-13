@@ -67,7 +67,7 @@ export const NonprofitTestimonials = defineCapsule({
     }))
 
     return (
-      <section className="py-20 lg:py-28">
+      <section className="pt-28 pb-20 lg:pt-32 lg:pb-28">
         <Container>
           <TestimonialGrid
             heading={heading}

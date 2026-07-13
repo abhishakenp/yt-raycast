@@ -146,7 +146,12 @@ export const NewsStoryGrid = defineCapsule({
     }
 
     return (
-      <section className={cn('bg-muted/40 py-8 lg:py-12', props.className)}>
+      <section
+        className={cn(
+          'bg-muted/40 pt-28 pb-8 lg:pt-32 lg:pb-12',
+          props.className,
+        )}
+      >
         <Container>
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl font-bold text-foreground lg:text-2xl">

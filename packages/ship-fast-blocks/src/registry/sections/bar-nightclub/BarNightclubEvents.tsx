@@ -99,7 +99,10 @@ export const BarNightclubEvents = defineCapsule({
 
     return (
       <section
-        className={cn('border-t border-border py-24 lg:py-28', props.className)}
+        className={cn(
+          'border-t border-border pt-28 pb-24 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
       >
         <Container>
           <div className="mb-16 max-w-2xl">

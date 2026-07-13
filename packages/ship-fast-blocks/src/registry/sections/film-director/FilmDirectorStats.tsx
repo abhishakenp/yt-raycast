@@ -88,7 +88,12 @@ export const FilmDirectorStats = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <Container>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
             {statMetrics.map((m) => (

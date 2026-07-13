@@ -38,7 +38,12 @@ export const WriterAuthorAbout = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
+      <section
+        className={cn(
+          'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
+          props.className,
+        )}
+      >
         <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
           <Image
             alt={props.portraitAlt ?? 'author portrait black and white'}

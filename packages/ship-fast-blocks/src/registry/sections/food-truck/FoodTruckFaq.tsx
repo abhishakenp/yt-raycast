@@ -65,7 +65,7 @@ export const FoodTruckFaq = defineCapsule({
     )
 
     return (
-      <section className={cn('px-6 py-20', props.className)}>
+      <section className={cn('px-6 pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-3xl">
           <div className="mb-16 space-y-4 text-center">
             <span className="text-sm uppercase tracking-widest text-muted-foreground">

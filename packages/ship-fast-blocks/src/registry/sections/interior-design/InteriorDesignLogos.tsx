@@ -38,7 +38,10 @@ export const InteriorDesignLogos = defineCapsule({
 
     return (
       <section
-        className={cn('border-y border-border bg-muted py-16', props.className)}
+        className={cn(
+          'border-y border-border bg-muted pt-28 pb-16',
+          props.className,
+        )}
       >
         <Container>
           <p className="mb-10 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">

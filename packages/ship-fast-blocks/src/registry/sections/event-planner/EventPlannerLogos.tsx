@@ -38,7 +38,10 @@ export const EventPlannerLogos = defineCapsule({
 
     return (
       <section
-        className={cn('border-y border-border bg-muted py-12', props.className)}
+        className={cn(
+          'border-y border-border bg-muted pt-28 pb-12',
+          props.className,
+        )}
       >
         <Container>
           <p className="mb-8 text-center text-sm uppercase tracking-widest text-muted-foreground">

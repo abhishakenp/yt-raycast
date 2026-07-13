@@ -103,7 +103,10 @@ export const MobileAppTestimonials = defineCapsule({
     )
     return (
       <section
-        className={cn('bg-muted/50 py-20 lg:py-28', props.className)}
+        className={cn(
+          'bg-muted/50 pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
         aria-labelledby="mobileapp-testimonials-heading"
       >
         <Container>

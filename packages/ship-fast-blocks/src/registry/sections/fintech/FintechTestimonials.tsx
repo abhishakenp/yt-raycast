@@ -74,7 +74,12 @@ export const FintechTestimonials = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-muted/30 py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'bg-muted/30 pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <TestimonialGrid
             heading={heading}

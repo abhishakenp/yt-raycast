@@ -59,7 +59,7 @@ export const NonprofitSubscribe = defineCapsule({
       props.footnote ?? 'No spam, ever. Unsubscribe with one click.'
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-2xl border border-border bg-muted/40 px-6 py-12 sm:px-12 lg:py-16">
             <SectionHeading

@@ -27,7 +27,7 @@ export const MobileAppLogos = defineCapsule({
       : ['TechCrunch', 'Product Hunt', 'Wired', 'The Verge', 'Fast Company']
     return (
       <section
-        className={cn('border-b border-border py-12', props.className)}
+        className={cn('border-b border-border pt-28 pb-12', props.className)}
         aria-label="Featured in"
       >
         <Container>

@@ -47,7 +47,7 @@ export const AgencyStats = defineCapsule({
         ]
 
     return (
-      <section className={cn('py-24 lg:py-28', props.className)}>
+      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>

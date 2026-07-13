@@ -175,7 +175,9 @@ export const FoodDeliveryRestaurants = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
+      <section
+        className={cn('bg-card pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
+      >
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>

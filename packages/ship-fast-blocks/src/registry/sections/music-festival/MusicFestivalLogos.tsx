@@ -30,7 +30,9 @@ export const MusicFestivalLogos = defineCapsule({
       ? props.items
       : ['PITCHFORK', 'SPOTIFY', 'SONOS', 'RED BULL', 'BEATS', 'VANS']
     return (
-      <section className={cn('border-y border-border py-16', props.className)}>
+      <section
+        className={cn('border-y border-border pt-28 pb-16', props.className)}
+      >
         <Container>
           <p className="mb-8 text-center text-sm text-foreground/50">{label}</p>
           <div className="flex flex-wrap items-center justify-center gap-12 lg:gap-20">

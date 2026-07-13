@@ -32,7 +32,12 @@ export const TelehealthStats = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
+      <section
+        className={cn(
+          'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           {heading ? (
             <SectionHeading

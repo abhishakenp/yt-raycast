@@ -98,7 +98,10 @@ export const DocsStoryGrid = defineCapsule({
 
     return (
       <section
-        className={cn('mx-auto w-full max-w-6xl px-6 py-16', props.className)}
+        className={cn(
+          'mx-auto w-full max-w-6xl px-6 pt-28 pb-16',
+          props.className,
+        )}
       >
         <SectionHeading
           eyebrow={eyebrow}

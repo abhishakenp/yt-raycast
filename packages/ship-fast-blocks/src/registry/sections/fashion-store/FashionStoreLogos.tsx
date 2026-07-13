@@ -29,7 +29,7 @@ export const FashionStoreLogos = defineCapsule({
     return (
       <section
         aria-label="Featured press"
-        className={cn('border-b border-border py-12', props.className)}
+        className={cn('border-b border-border pt-28 pb-12', props.className)}
       >
         <Container>
           <p className={cn(eyebrowCls, 'mb-8 text-center')}>{pressEyebrow}</p>

@@ -99,7 +99,7 @@ export const PortfolioWork = defineCapsule({
 
     return (
       <section
-        className={cn('py-24', props.className)}
+        className={cn('pt-28 pb-24', props.className)}
         aria-labelledby="portfolio-work-heading"
       >
         <div className="mx-auto max-w-[1200px] px-6">

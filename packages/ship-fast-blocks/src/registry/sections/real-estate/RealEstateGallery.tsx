@@ -104,7 +104,12 @@ export const RealEstateGallery = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">

@@ -43,7 +43,10 @@ export const PortfolioLogos = defineCapsule({
     return (
       <section
         aria-label="Trusted by leading brands"
-        className={cn('border-y border-border bg-card py-12', props.className)}
+        className={cn(
+          'border-y border-border bg-card pt-28 pb-12',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-[1200px] px-6">
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-9 opacity-60 md:gap-x-16 md:gap-y-10">

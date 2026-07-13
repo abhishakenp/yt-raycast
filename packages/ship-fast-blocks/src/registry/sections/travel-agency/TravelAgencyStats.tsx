@@ -32,7 +32,12 @@ export const TravelAgencyStats = defineCapsule({
           { value: '4.9★', label: 'Average rating' },
         ]
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <Container className="flex flex-col gap-10">
           <SectionHeading title={heading} subtitle={subheading} />
           <StatGrid stats={stats} columns={4} />

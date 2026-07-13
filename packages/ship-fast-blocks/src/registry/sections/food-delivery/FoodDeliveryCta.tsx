@@ -42,7 +42,7 @@ export const FoodDeliveryCta = defineCapsule({
     const ctaGooglePlay = props.googlePlay ?? 'Google Play'
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-xl bg-foreground p-8 text-center sm:p-12 lg:p-16">
             <h2 className="text-3xl font-semibold tracking-tight text-background sm:text-4xl">

@@ -87,7 +87,12 @@ export const HotelResortTestimonials = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'bg-muted pt-28 pb-24 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">

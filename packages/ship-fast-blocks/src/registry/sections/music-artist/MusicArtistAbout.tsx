@@ -56,7 +56,12 @@ export const MusicArtistAbout = defineCapsule({
       "James O'Brien and Sam Torres, band members playing bass and drums during rehearsal"
 
     return (
-      <section className={cn('px-6 py-20 lg:px-8 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-6xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div>

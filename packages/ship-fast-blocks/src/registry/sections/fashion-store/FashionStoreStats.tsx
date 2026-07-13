@@ -50,7 +50,10 @@ export const FashionStoreStats = defineCapsule({
     return (
       <section
         aria-label="Brand statistics"
-        className={cn('border-y border-border py-20 lg:py-28', props.className)}
+        className={cn(
+          'border-y border-border pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
       >
         <Container>
           <ResponsiveGrid

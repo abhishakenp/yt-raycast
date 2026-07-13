@@ -119,7 +119,9 @@ export const NewsTopics = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-card py-12 lg:py-16', props.className)}>
+      <section
+        className={cn('bg-card pt-28 pb-12 lg:pt-32 lg:pb-16', props.className)}
+      >
         <Container>
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl font-bold text-foreground lg:text-2xl">

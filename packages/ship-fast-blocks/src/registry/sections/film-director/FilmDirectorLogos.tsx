@@ -27,7 +27,10 @@ export const FilmDirectorLogos = defineCapsule({
       : ['NIKE', 'APPLE', 'SONY', 'NETFLIX', 'SPOTIFY', 'ADOBE']
     return (
       <section
-        className={cn('border-y border-border py-16 md:py-24', props.className)}
+        className={cn(
+          'border-y border-border pt-28 pb-16 md:pt-32 md:pb-24',
+          props.className,
+        )}
       >
         <Container>
           <p className="mb-12 text-center text-sm text-muted-foreground">

@@ -39,7 +39,10 @@ export const FoodDeliveryLogos = defineCapsule({
         ]
     return (
       <section
-        className={cn('border-y border-border bg-card py-12', props.className)}
+        className={cn(
+          'border-y border-border bg-card pt-28 pb-12',
+          props.className,
+        )}
       >
         <Container>
           <p className="mb-8 text-center text-sm font-medium text-muted-foreground">

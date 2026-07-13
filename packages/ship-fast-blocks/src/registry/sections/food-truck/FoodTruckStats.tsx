@@ -32,7 +32,7 @@ export const FoodTruckStats = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-muted px-6 py-16', props.className)}>
+      <section className={cn('bg-muted px-6 pt-28 pb-16', props.className)}>
         <div className="mx-auto max-w-6xl">
           <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
             {stats.map((s) => (

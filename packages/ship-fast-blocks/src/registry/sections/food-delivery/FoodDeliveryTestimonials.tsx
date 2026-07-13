@@ -79,7 +79,9 @@ export const FoodDeliveryTestimonials = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
+      <section
+        className={cn('bg-card pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
+      >
         <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

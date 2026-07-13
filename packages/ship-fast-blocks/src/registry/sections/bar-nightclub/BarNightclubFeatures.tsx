@@ -93,7 +93,7 @@ export const BarNightclubFeatures = defineCapsule({
     ]
 
     return (
-      <section className={cn('py-24 lg:py-28', props.className)}>
+      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
           <div className="grid gap-12 md:grid-cols-3 lg:gap-16">
             {items.map((f, i) => (

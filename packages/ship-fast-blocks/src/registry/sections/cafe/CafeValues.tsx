@@ -111,7 +111,7 @@ export const CafeValues = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-card py-20', props.className)}>
+      <section className={cn('bg-card pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {items.map((v, i) => (

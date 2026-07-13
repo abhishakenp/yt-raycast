@@ -81,7 +81,10 @@ export const YogaStudioPrograms = defineCapsule({
 
     return (
       <section
-        className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
+        className={cn(
+          'bg-muted/40 pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
         aria-labelledby="yoga-programs-heading"
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">

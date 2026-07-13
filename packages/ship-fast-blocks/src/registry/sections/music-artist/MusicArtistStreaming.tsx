@@ -39,7 +39,9 @@ export const MusicArtistStreaming = defineCapsule({
         ]
 
     return (
-      <section className={cn('border-y border-border py-12', props.className)}>
+      <section
+        className={cn('border-y border-border pt-28 pb-12', props.className)}
+      >
         <div className="mx-auto max-w-6xl px-6 lg:px-8">
           <p className="mb-8 text-center text-xs uppercase tracking-widest text-muted-foreground">
             {label}

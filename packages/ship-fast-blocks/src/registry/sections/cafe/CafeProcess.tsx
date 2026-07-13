@@ -62,7 +62,10 @@ export const CafeProcess = defineCapsule({
 
     return (
       <section
-        className={cn('bg-foreground py-20 text-background', props.className)}
+        className={cn(
+          'bg-foreground pt-28 pb-20 text-background',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">

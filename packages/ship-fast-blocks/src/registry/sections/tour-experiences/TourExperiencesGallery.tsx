@@ -58,7 +58,7 @@ export const TourExperiencesGallery = defineCapsule({
         ]
 
     return (
-      <section className="bg-muted/30 px-6 py-20 lg:px-8 lg:py-24">
+      <section className="bg-muted/30 px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
         <div className="mx-auto max-w-7xl">
           <GalleryGrid
             heading={props.heading ?? 'Where the trail takes you'}

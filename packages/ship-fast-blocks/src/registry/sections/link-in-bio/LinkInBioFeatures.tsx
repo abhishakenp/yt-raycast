@@ -205,7 +205,10 @@ export const LinkInBioFeatures = defineCapsule({
 
     return (
       <section
-        className={cn('mx-auto w-full max-w-md px-6 py-10', props.className)}
+        className={cn(
+          'mx-auto w-full max-w-md px-6 pt-28 pb-10',
+          props.className,
+        )}
       >
         {eyebrow ? (
           <p className="mb-6 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">

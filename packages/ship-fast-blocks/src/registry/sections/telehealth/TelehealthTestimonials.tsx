@@ -59,7 +59,7 @@ export const TelehealthTestimonials = defineCapsule({
         ]
 
     return (
-      <section className="bg-muted/30 py-20 sm:py-24">
+      <section className="bg-muted/30 pt-28 pb-20 sm:pt-32 sm:pb-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <TestimonialGrid
             heading={heading}

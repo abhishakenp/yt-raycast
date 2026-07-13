@@ -74,7 +74,7 @@ export const PlumbingHvacTestimonials = defineCapsule({
         ]
 
     return (
-      <section className="bg-muted/30 py-20 lg:py-28">
+      <section className="bg-muted/30 pt-28 pb-20 lg:pt-32 lg:pb-28">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <TestimonialGrid
             heading={heading}

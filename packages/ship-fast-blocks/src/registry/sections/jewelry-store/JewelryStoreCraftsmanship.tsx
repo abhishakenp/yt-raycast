@@ -131,7 +131,12 @@ export const JewelryStoreCraftsmanship = defineCapsule({
     const icons = [CheckBadge, StarIcon, ShieldIcon, SparkleIcon]
 
     return (
-      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="grid items-center gap-20 lg:grid-cols-2">
             <div>
