@@ -211,10 +211,10 @@ function sanitizeGeneratedCapsuleOutput(output: ReactNode): ReactNode {
  * variable name) on the root element of a capsule's rendered output so the
  * element inspector can map a selected DOM node back to its OpenUI capsule.
  *
- * If the output is a single React element, we clone it with the data attrs
- * merged onto its existing props (preserving any className/style the capsule
- * set). If it's a fragment, string, array, or null, we wrap it in a `<div>`
- * carrying the attrs so the marker is always present on a stable root.
+ * Host elements can carry the marker directly. Composite elements and
+ * fragments cannot be trusted to forward unknown props to their DOM root, so
+ * they use a layout-neutral wrapper that guarantees the marker reaches the
+ * rendered document.
  */
 function stampCapsuleAttrs(
   output: ReactNode,
@@ -222,21 +222,23 @@ function stampCapsuleAttrs(
   statementId: string | undefined,
 ): ReactNode {
   const safeOutput = sanitizeGeneratedCapsuleOutput(output)
-  if (isValidElement(safeOutput)) {
-    const element = safeOutput as ReactElement<Record<string, unknown>>
-    const existing = (element.props ?? {}) as Record<string, unknown>
-    return cloneElement(element, {
-      ...existing,
+  if (
+    isValidElement<Record<string, unknown>>(safeOutput) &&
+    typeof safeOutput.type === 'string'
+  ) {
+    return cloneElement(safeOutput, {
+      ...safeOutput.props,
       'data-openui-component': capsuleName,
       'data-openui-var': statementId,
     })
   }
-  return cloneElement(
-    createElement('div', {
+  return createElement(
+    'div',
+    {
       'data-openui-component': capsuleName,
       'data-openui-var': statementId,
-    }),
-    undefined,
+      style: { display: 'contents' },
+    },
     safeOutput,
   )
 }
