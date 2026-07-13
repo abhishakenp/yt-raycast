@@ -6,7 +6,7 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { useMutation, useQuery } from 'convex/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
@@ -160,25 +160,33 @@ function consumePendingPush(sessionId: string): GitHubTarget['target'] | null {
   if (typeof window === 'undefined') return null
   const raw = window.sessionStorage.getItem(GITHUB_PENDING_PUSH_KEY)
   if (!raw) return null
-  window.sessionStorage.removeItem(GITHUB_PENDING_PUSH_KEY)
 
   try {
     const parsed = JSON.parse(raw)
-    if (!isPendingPushRecord(parsed)) return null
-    if (
-      parsed.sessionId === sessionId &&
-      (parsed.target === 'html' ||
-        parsed.target === 'react' ||
-        parsed.target === 'next' ||
-        parsed.target === 'lakebed')
-    ) {
-      return parsed.target
+    if (!isPendingPushRecord(parsed)) {
+      window.sessionStorage.removeItem(GITHUB_PENDING_PUSH_KEY)
+      return null
     }
+    const pendingSessionId = parsed.sessionId
+    const target = parsed.target
+    const supportedTarget =
+      target === 'html' ||
+      target === 'react' ||
+      target === 'next' ||
+      target === 'lakebed'
+    if (typeof pendingSessionId !== 'string' || !supportedTarget) {
+      window.sessionStorage.removeItem(GITHUB_PENDING_PUSH_KEY)
+      return null
+    }
+    if (pendingSessionId !== sessionId) {
+      return null
+    }
+    window.sessionStorage.removeItem(GITHUB_PENDING_PUSH_KEY)
+    return target
   } catch {
+    window.sessionStorage.removeItem(GITHUB_PENDING_PUSH_KEY)
     return null
   }
-
-  return null
 }
 
 export function GitHubPanel({ sessionId }: GitHubPanelProps) {
@@ -196,6 +204,7 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
   >(null)
   const [error, setError] = useState<string>()
   const [waitingTarget, setWaitingTarget] = useState<GitHubTarget['target']>()
+  const pushInFlightRef = useRef(false)
   const [repoUrlsByTarget, setRepoUrlsByTarget] = useState(() => ({
     html: '',
     react: '',
@@ -215,7 +224,10 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
     [exportTargets?.targets],
   )
 
-  const startGitHubConnection = async (target, appToken?) => {
+  const startGitHubConnection = async (
+    target: GitHubTarget['target'],
+    appToken?: string,
+  ) => {
     if (!isClerkDisabled() && !auth.isSignedIn) {
       void clerk.openSignIn?.()
       return
@@ -238,11 +250,18 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
         anonymousClientId: readAnonymousClientId(),
       }),
     })
-    const data = await response.json()
+    const data = await readJsonOrThrow<Record<string, unknown>>(
+      response,
+      'Unable to start GitHub connection.',
+    )
     if (!response.ok) {
-      throw new Error(data?.error ?? 'Unable to start GitHub connection.')
+      throw new Error(
+        typeof data.error === 'string'
+          ? data.error
+          : 'Unable to start GitHub connection.',
+      )
     }
-    if (typeof data?.url !== 'string' || !data.url.trim()) {
+    if (typeof data.url !== 'string' || !data.url.trim()) {
       throw new Error('Unable to start GitHub connection.')
     }
 
@@ -251,9 +270,9 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
   }
 
   const createExportForGitHub = async (
-    target,
-    appToken,
-    anonymousOwnerSecret,
+    target: GitHubTarget['target'],
+    appToken: string,
+    anonymousOwnerSecret: string | undefined,
   ) => {
     const response = await fetch(`/api/sessions/${sessionId}/export`, {
       method: 'POST',
@@ -273,115 +292,125 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
       )
   }
 
-  const pushTarget = async (targetConfig) => {
-    setError(undefined)
+  const pushTarget = async (targetConfig: GitHubTarget) => {
+    if (pushInFlightRef.current) return
+    pushInFlightRef.current = true
 
-    const existingRepoUrl =
-      targetConfig.githubUrl ??
-      targetConfig.githubRepoUrl ??
-      repoUrlsByTarget[targetConfig.target]
-    if (existingRepoUrl) {
-      window.open(existingRepoUrl, '_blank', 'noopener,noreferrer')
-      return
-    }
-
-    if (!isClerkDisabled() && !auth.isSignedIn) {
-      void clerk.openSignIn?.()
-      setError('Sign in before pushing to GitHub.')
-      return
-    }
-
-    if (!targetConfig.artifactReady) {
-      setWaitingTarget(targetConfig.target)
-      try {
-        const result = await ensureExportArtifact({
-          lookup: sessionId,
-          target: targetConfig.target,
-          anonymousOwnerSecret: readOwnerSecret(sessionId),
-        })
-        if (!result || result.status !== 'ready') return
-        setWaitingTarget(undefined)
-      } catch (ensureError) {
-        setWaitingTarget(undefined)
-        setError(
-          ensureError instanceof Error
-            ? ensureError.message
-            : 'GitHub push failed',
-        )
-        return
-      }
-    }
-
-    if (
-      targetConfig.requiresPayment ||
-      targetConfig.status === 'payment_required'
-    ) {
-      setError('Subscribe to Pro or use a download credit before pushing.')
-      return
-    }
-
-    setActiveTarget(targetConfig.target)
     try {
-      const appToken = await auth.getToken({ template: 'convex' })
-      if (!appToken && !isClerkDisabled())
-        throw new Error('Sign in before pushing to GitHub.')
-      const anonymousOwnerSecret = readOwnerSecret(sessionId)
+      setError(undefined)
 
-      if (!targetConfig.ready) {
-        await createExportForGitHub(
-          targetConfig.target,
-          appToken ?? '',
-          anonymousOwnerSecret,
-        )
-      }
-
-      const pushExport = async () =>
-        await fetch(`/api/sessions/${sessionId}/github/push`, {
-          method: 'POST',
-          headers: {
-            ...(appToken ? { Authorization: `Bearer ${appToken}` } : {}),
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            target: targetConfig.target,
-            anonymousOwnerSecret,
-            anonymousClientId: readAnonymousClientId(),
-          }),
-        })
-
-      const response = await pushExport()
-      const data = await readJsonOrThrow<Record<string, unknown>>(
-        response,
-        'GitHub push failed',
-      )
-      if (
-        !response.ok &&
-        response.status === 409 &&
-        (data?.code === 'GITHUB_NOT_CONNECTED' ||
-          data?.code === 'GITHUB_REPO_SCOPE_REQUIRED')
-      ) {
-        await startGitHubConnection(targetConfig.target, appToken ?? undefined)
+      const existingRepoUrl =
+        targetConfig.githubUrl ??
+        targetConfig.githubRepoUrl ??
+        repoUrlsByTarget[targetConfig.target]
+      if (existingRepoUrl) {
+        window.open(existingRepoUrl, '_blank', 'noopener,noreferrer')
         return
       }
-      if (!response.ok) {
-        throw new Error(
-          typeof data?.error === 'string' ? data.error : 'GitHub push failed',
+
+      if (!isClerkDisabled() && !auth.isSignedIn) {
+        void clerk.openSignIn?.()
+        setError('Sign in before pushing to GitHub.')
+        return
+      }
+
+      if (!targetConfig.artifactReady) {
+        setWaitingTarget(targetConfig.target)
+        try {
+          const result = await ensureExportArtifact({
+            lookup: sessionId,
+            target: targetConfig.target,
+            anonymousOwnerSecret: readOwnerSecret(sessionId),
+          })
+          if (!result || result.status !== 'ready') return
+          setWaitingTarget(undefined)
+        } catch (ensureError) {
+          setWaitingTarget(undefined)
+          setError(
+            ensureError instanceof Error
+              ? ensureError.message
+              : 'GitHub push failed',
+          )
+          return
+        }
+      }
+
+      if (
+        targetConfig.requiresPayment ||
+        targetConfig.status === 'payment_required'
+      ) {
+        setError('Subscribe to Pro or use a download credit before pushing.')
+        return
+      }
+
+      setActiveTarget(targetConfig.target)
+      try {
+        const appToken = await auth.getToken({ template: 'convex' })
+        if (!appToken && !isClerkDisabled())
+          throw new Error('Sign in before pushing to GitHub.')
+        const anonymousOwnerSecret = readOwnerSecret(sessionId)
+
+        if (!targetConfig.ready) {
+          await createExportForGitHub(
+            targetConfig.target,
+            appToken ?? '',
+            anonymousOwnerSecret,
+          )
+        }
+
+        const pushExport = async () =>
+          await fetch(`/api/sessions/${sessionId}/github/push`, {
+            method: 'POST',
+            headers: {
+              ...(appToken ? { Authorization: `Bearer ${appToken}` } : {}),
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              target: targetConfig.target,
+              anonymousOwnerSecret,
+              anonymousClientId: readAnonymousClientId(),
+            }),
+          })
+
+        const response = await pushExport()
+        const data = await readJsonOrThrow<Record<string, unknown>>(
+          response,
+          'GitHub push failed',
         )
+        if (
+          !response.ok &&
+          response.status === 409 &&
+          (data?.code === 'GITHUB_NOT_CONNECTED' ||
+            data?.code === 'GITHUB_REPO_SCOPE_REQUIRED')
+        ) {
+          await startGitHubConnection(
+            targetConfig.target,
+            appToken ?? undefined,
+          )
+          return
+        }
+        if (!response.ok) {
+          throw new Error(
+            typeof data?.error === 'string' ? data.error : 'GitHub push failed',
+          )
+        }
+        if (typeof data.repoUrl === 'string' && data.repoUrl.trim()) {
+          const nextRepoUrl = data.repoUrl
+          setRepoUrlsByTarget((current) => ({
+            ...current,
+            [targetConfig.target]: nextRepoUrl,
+          }))
+          window.open(nextRepoUrl, '_blank', 'noopener,noreferrer')
+        }
+      } catch (pushError) {
+        setError(
+          pushError instanceof Error ? pushError.message : 'GitHub push failed',
+        )
+      } finally {
+        setActiveTarget(undefined)
       }
-      if (typeof data.repoUrl === 'string' && data.repoUrl.trim()) {
-        const nextRepoUrl = data.repoUrl
-        setRepoUrlsByTarget((current) => ({
-          ...current,
-          [targetConfig.target]: nextRepoUrl,
-        }))
-        window.open(nextRepoUrl, '_blank', 'noopener,noreferrer')
-      }
-    } catch (pushError) {
-      setError(
-        pushError instanceof Error ? pushError.message : 'GitHub push failed',
-      )
     } finally {
-      setActiveTarget(undefined)
+      pushInFlightRef.current = false
     }
   }
 
@@ -476,7 +505,9 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
             <button
               className="group/github grid min-h-16 w-full grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] p-2.5 text-left transition-colors hover:border-white/14 hover:bg-white/[0.075] disabled:cursor-wait disabled:opacity-60"
               data-github-target={item.target}
-              disabled={activeTarget !== undefined}
+              disabled={
+                activeTarget !== undefined || waitingTarget !== undefined
+              }
               key={item.target}
               onClick={() => void pushTarget(item)}
               style={{ backgroundImage: progressBackground }}
@@ -528,7 +559,10 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
       </div>
 
       {error && (
-        <p className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200">
+        <p
+          className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200"
+          role="alert"
+        >
           {error}
         </p>
       )}
