@@ -103,8 +103,15 @@ function assertFieldValue(
     throw new Error(`Expected ${tableName}.${fieldName} to be a boolean.`)
   }
 
-  if (field?.kind === 'number' && typeof value !== 'number') {
-    throw new Error(`Expected ${tableName}.${fieldName} to be a number.`)
+  if (field?.kind === 'number') {
+    if (typeof value !== 'number') {
+      throw new Error(`Expected ${tableName}.${fieldName} to be a number.`)
+    }
+    if (!Number.isFinite(value)) {
+      throw new Error(
+        `Expected ${tableName}.${fieldName} to be a finite number.`,
+      )
+    }
   }
 }
 
@@ -146,6 +153,10 @@ class ObjectQueryBuilder<TRow extends LakebedBaseRow & JsonRecord> {
   }
 
   limit(count: number) {
+    if (!Number.isSafeInteger(count) || count < 0) {
+      throw new Error('Lakebed query limit must be a non-negative integer.')
+    }
+
     return new ObjectQueryBuilder<TRow>(
       this.table,
       this.rows,
@@ -216,7 +227,9 @@ class ObjectTableApi<
     }
 
     for (const [fieldName, field] of Object.entries(fields)) {
-      const valueOrDefault = value[fieldName] ?? fieldDefault(field)
+      const suppliedValue = value[fieldName]
+      const valueOrDefault =
+        suppliedValue === undefined ? fieldDefault(field) : suppliedValue
       assertFieldValue(this.name, fieldName, field, valueOrDefault)
       row[fieldName] = valueOrDefault
     }
@@ -272,9 +285,15 @@ class ObjectTableApi<
     const row = this.rows.get(id)
     if (!row) return
 
+    const cleanPatch = this.validatePatch(patch)
+    const changesRow = Object.entries(cleanPatch).some(
+      ([key, value]) => !Object.is(row[key], value),
+    )
+    if (!changesRow) return
+
     this.rows.set(id, {
       ...row,
-      ...this.validatePatch(patch),
+      ...cleanPatch,
       id,
       updatedAt: now(),
     })
