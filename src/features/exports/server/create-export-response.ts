@@ -7,6 +7,7 @@ import type {
   ExportTarget,
   OpenUIExportInput,
 } from '../services/openui-export-types'
+import { exportGeneratorRevision } from '../services/export-generator-revision'
 import {
   buildDownloadFromArtifactFiles,
   buildOpenUIArtifactFiles,
@@ -21,6 +22,7 @@ type ArtifactDownloadPayload = {
     requiresPayment?: boolean
     errorMessage?: string
     previewVersion?: number
+    generatorRevision?: string
   }
   artifact?: {
     status: string
@@ -115,7 +117,9 @@ function isArtifactDownloadPayload(
         (artifact.errorMessage === undefined ||
           typeof artifact.errorMessage === 'string') &&
         (artifact.previewVersion === undefined ||
-          typeof artifact.previewVersion === 'number'))) &&
+          typeof artifact.previewVersion === 'number') &&
+        (artifact.generatorRevision === undefined ||
+          typeof artifact.generatorRevision === 'string'))) &&
     (value.storageUrl === undefined ||
       value.storageUrl === null ||
       typeof value.storageUrl === 'string') &&
@@ -325,6 +329,21 @@ export async function createExportResponse(
         status: 409,
         headers: { 'content-type': 'text/plain' },
       })
+    }
+
+    if (
+      download.artifact?.status === 'ready' &&
+      download.artifact.generatorRevision !== undefined &&
+      download.artifact.generatorRevision !==
+        exportGeneratorRevision(normalizedTarget)
+    ) {
+      return new Response(
+        'Export artifact is outdated. Regenerate the export first.',
+        {
+          status: 409,
+          headers: { 'content-type': 'text/plain' },
+        },
+      )
     }
 
     if (download.artifact?.status === 'failed') {
