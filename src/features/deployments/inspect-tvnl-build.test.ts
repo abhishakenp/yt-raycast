@@ -25,47 +25,54 @@ async function query(path: string, args: unknown) {
 }
 
 describe('inspect tvnl lakebed build', () => {
-  it('builds and dumps files, flags unbound client references', async () => {
-    const prepared = await query(
-      'sessions:prepareLakebedDeploymentForPublish',
-      {
+  // Integration test requiring a real Convex deployment + session.
+  // Skipped via skipIf when TVNL_SESSION/TVNL_SECRET are absent.
+  // Excluded from vitest-policy.release.test.ts (which bans skipIf).
+  it.skipIf(!process.env.TVNL_SESSION || !process.env.TVNL_SECRET)(
+    'builds and dumps files, flags unbound client references',
+    async () => {
+      const prepared = await query(
+        'sessions:prepareLakebedDeploymentForPublish',
+        {
+          sessionId: SESSION,
+          anonymousOwnerSecret: SECRET,
+          requestedSlug: 'tvnl',
+        },
+      )
+      const built = await buildOpenUILakebedProjectFiles({
+        source: prepared.source ?? '',
+        siteSpecJson: prepared.siteSpecJson,
+        previewHtml: prepared.previewHtml,
         sessionId: SESSION,
-        anonymousOwnerSecret: SECRET,
-        requestedSlug: 'tvnl',
-      },
-    )
-    const built = await buildOpenUILakebedProjectFiles({
-      source: prepared.source ?? '',
-      siteSpecJson: prepared.siteSpecJson,
-      previewHtml: prepared.previewHtml,
-      sessionId: SESSION,
-      target: 'lakebed',
-      themeName: prepared.themeName,
-      isDark:
-        prepared.isDark === undefined ? undefined : Boolean(prepared.isDark),
-      locale: prepared.locale,
-    })
-    mkdirSync(OUT, { recursive: true })
-    const offenders: Record<string, string[]> = {}
-    for (const [path, contents] of Object.entries(built.files)) {
-      writeFileSync(join(OUT, path.replace(/[\/]/g, '__')), contents)
-      // Only OUR generated client code — third-party vendored ESM legitimately
-      // reads many globals we don't model.
-      if (
-        !path.startsWith('client/') ||
-        path.startsWith('client/vendor/') ||
-        !/\.tsx?$/.test(path)
-      ) {
-        continue
+        target: 'lakebed',
+        themeName: prepared.themeName,
+        isDark:
+          prepared.isDark === undefined ? undefined : Boolean(prepared.isDark),
+        locale: prepared.locale,
+      })
+      mkdirSync(OUT, { recursive: true })
+      const offenders: Record<string, string[]> = {}
+      for (const [path, contents] of Object.entries(built.files)) {
+        writeFileSync(join(OUT, path.replace(/[\/]/g, '__')), contents)
+        // Only OUR generated client code — third-party vendored ESM legitimately
+        // reads many globals we don't model.
+        if (
+          !path.startsWith('client/') ||
+          path.startsWith('client/vendor/') ||
+          !/\.tsx?$/.test(path)
+        ) {
+          continue
+        }
+        const unbound = findUnboundClientReferences(contents, path)
+        if (unbound.length > 0) offenders[path] = unbound
       }
-      const unbound = findUnboundClientReferences(contents, path)
-      if (unbound.length > 0) offenders[path] = unbound
-    }
-    writeFileSync(
-      '/tmp/tvnl-offenders.json',
-      JSON.stringify(offenders, null, 2),
-    )
-    console.log('OFFENDERS', JSON.stringify(offenders))
-    expect(built.fileCount).toBeGreaterThan(0)
-  }, 120000)
+      writeFileSync(
+        '/tmp/tvnl-offenders.json',
+        JSON.stringify(offenders, null, 2),
+      )
+      console.log('OFFENDERS', JSON.stringify(offenders))
+      expect(built.fileCount).toBeGreaterThan(0)
+    },
+    120000,
+  )
 })
