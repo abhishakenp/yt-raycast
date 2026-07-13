@@ -47,6 +47,8 @@ type BrandSearchPage = {
   isDone: boolean
 }
 
+type BrandSearchMode = 'append' | 'replace'
+
 type UploadedImage = {
   url: string | null
   filename?: string | null
@@ -113,6 +115,7 @@ export function BrandMediaPanel({
   const [uploadError, setUploadError] = useState<string>()
   const listRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadInFlightRef = useRef(false)
   const requestIdRef = useRef(0)
   const pageCacheRef = useRef<Map<string, BrandSearchPage>>(new Map())
 
@@ -125,7 +128,7 @@ export function BrandMediaPanel({
   ) as UploadedImage[] | undefined
 
   const loadBrands = useCallback(
-    async (cursor, mode) => {
+    async (cursor: string | null, mode: BrandSearchMode) => {
       const query = brandQuery.trim()
       if (query.length < 2) {
         setResults([])
@@ -203,56 +206,77 @@ export function BrandMediaPanel({
   }, [loadMore])
 
   const uploadFile = useCallback(
-    async (file) => {
+    async (file: File) => {
       if (!sessionId) {
-        setUploadError('Open a session before uploading images.')
-        return
+        throw new Error('Open a session before uploading images.')
       }
       const validationError = validateImageFile(file)
       if (validationError) {
-        setUploadError(validationError)
-        return
+        throw new Error(validationError)
       }
 
+      const anonymousOwnerSecret =
+        typeof window === 'undefined'
+          ? undefined
+          : readAnonymousOwnerSecret(window.localStorage, sessionId)
+      const uploadUrl = await generateUploadUrl({
+        sessionId: sessionId as Id<'sessions'>,
+        anonymousOwnerSecret,
+      })
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      })
+      if (!response.ok) throw new Error(`Upload failed: ${response.status}`)
+      const { storageId } = await readJsonOrThrow<{
+        storageId: Id<'_storage'>
+      }>(response, 'Upload failed')
+      await saveUserImage({
+        sessionId: sessionId as Id<'sessions'>,
+        anonymousOwnerSecret,
+        storageId,
+        filename: file.name,
+        contentType: file.type,
+        size: file.size,
+      })
+    },
+    [generateUploadUrl, saveUserImage, sessionId],
+  )
+
+  const uploadFiles = useCallback(
+    async (files: File[]) => {
+      if (files.length === 0 || uploadInFlightRef.current) return
+
+      uploadInFlightRef.current = true
       setIsUploading(true)
       setUploadError(undefined)
       try {
-        const anonymousOwnerSecret =
-          typeof window === 'undefined'
-            ? undefined
-            : readAnonymousOwnerSecret(window.localStorage, sessionId)
-        const uploadUrl = await generateUploadUrl({
-          sessionId: sessionId as Id<'sessions'>,
-          anonymousOwnerSecret,
-        })
-        const response = await fetch(uploadUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': file.type },
-          body: file,
-        })
-        if (!response.ok) throw new Error(`Upload failed: ${response.status}`)
-        const { storageId } = await readJsonOrThrow<{
-          storageId: Id<'_storage'>
-        }>(response, 'Upload failed')
-        await saveUserImage({
-          sessionId: sessionId as Id<'sessions'>,
-          anonymousOwnerSecret,
-          storageId,
-          filename: file.name,
-          contentType: file.type,
-          size: file.size,
-        })
-      } catch (uploadFailure) {
-        setUploadError(
-          uploadFailure instanceof Error
-            ? uploadFailure.message
-            : 'Upload failed',
+        const outcomes = await Promise.all(
+          files.map(async (file) => {
+            try {
+              await uploadFile(file)
+              return null
+            } catch (uploadFailure: unknown) {
+              return uploadFailure
+            }
+          }),
         )
+        for (const uploadFailure of outcomes) {
+          if (uploadFailure === null) continue
+          setUploadError(
+            uploadFailure instanceof Error
+              ? uploadFailure.message
+              : 'Upload failed',
+          )
+          break
+        }
       } finally {
+        uploadInFlightRef.current = false
         setIsUploading(false)
       }
     },
-    [generateUploadUrl, saveUserImage, sessionId],
+    [uploadFile],
   )
 
   const uploadedImages =
@@ -297,19 +321,25 @@ export function BrandMediaPanel({
             className="hidden"
             onChange={(event) => {
               const files = Array.from(event.currentTarget.files ?? [])
-              for (const file of files) void uploadFile(file)
               event.currentTarget.value = ''
+              void uploadFiles(files)
             }}
           />
         </div>
 
         {uploadError && (
-          <p className="m-0 border-b px-3 py-2 text-xs text-destructive">
+          <p
+            className="m-0 border-b px-3 py-2 text-xs text-destructive"
+            role="alert"
+          >
             {uploadError}
           </p>
         )}
         {error && (
-          <p className="m-0 border-b px-3 py-2 text-xs text-destructive">
+          <p
+            className="m-0 border-b px-3 py-2 text-xs text-destructive"
+            role="alert"
+          >
             {error}
           </p>
         )}
