@@ -3957,16 +3957,13 @@ function lakebedEndpointImportsFor(endpointsSource: string): string[] {
   )
 }
 
-function renderReadme(
-  projectName: string,
-  includeGeneratorCredit: boolean,
-): string {
+function renderReadme(projectName: string): string {
   return `# ${projectName}
 
 Run this Lakebed app:
 
 \`\`\`sh
-${includeGeneratorCredit ? 'npx' : 'bunx'} lakebed dev
+bunx lakebed dev
 \`\`\`
 
 The exported app has one client entry, one server entry, and shared TypeScript.
@@ -3977,7 +3974,7 @@ Server mutations write a durable \`prepared\` outbox intent before changing busi
 
 Prepared intents are deliberately ambiguous because Lakebed 0.0.25 serializes mutations without rolling them back. An authenticated sync worker must verify business state, then call the existing sync endpoint with \`{ "action": "reconcile", "decision": "commit" | "cancel", "idempotencyKeys": [...] }\`. Ordinary retry and acknowledgement requests cannot promote or delete prepared intents.
 
-${includeGeneratorCredit ? 'Generated with [ShipFast](https://ship-fast.io) 🚀.' : 'Portable project export.'}
+Portable project export.
 `
 }
 
@@ -6482,7 +6479,7 @@ async function buildStaticLakebedProjectFiles(
   const files = await formatExportFiles({
     'AGENTS.md': renderAgents(),
     'CLAUDE.md': renderAgents(),
-    'README.md': renderReadme(projectName, true),
+    'README.md': renderReadme(projectName),
     'client/index.tsx': renderStaticClientIndex(projectName, html),
     'server/index.ts': renderStaticServerIndex(projectName),
     'shared/content.ts': renderSharedContent(projectName, routes),
@@ -6559,7 +6556,7 @@ export async function buildOpenUILakebedProjectFiles(
     theme: themeName ?? 'default',
   }
   Object.assign(files, {
-    'README.md': renderReadme(parsed.projectName, false),
+    'README.md': renderReadme(parsed.projectName),
     'client/index.tsx': renderClientIndex(
       routes,
       clientComponents,

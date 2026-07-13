@@ -3745,11 +3745,7 @@ export default config
 `
 }
 
-function renderReadme(
-  projectName: string,
-  target: 'react' | 'next',
-  includeGeneratorCredit: boolean,
-): string {
+function renderReadme(projectName: string, target: 'react' | 'next'): string {
   const commands =
     target === 'react'
       ? ['bun install', 'bun dev', 'bun run build', 'bun run preview']
@@ -3762,7 +3758,6 @@ function renderReadme(
 \`\`\`bash
 ${commands.join('\n')}
 \`\`\`
-${includeGeneratorCredit ? '\nGenerated with [ShipFast](https://ship-fast.io) 🚀.\n' : ''}
 `
 }
 
@@ -4286,11 +4281,7 @@ async function buildReactExport(
     'src/lib/image.tsx': renderImageHelper(imageSources),
     'src/styles.css':
       renderThemeCss(input) + renderStyleOverridesCss(styleOverrides),
-    'README.md': renderReadme(
-      parsed.projectName,
-      'react',
-      input.syncSecret === undefined,
-    ),
+    'README.md': renderReadme(parsed.projectName, 'react'),
   }
   if (usesLakebed) {
     files['src/lib/store.ts'] = renderSpecializedReactStore(
@@ -4425,11 +4416,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
       renderPortableCommerceConfig(input.siteSpecJson),
     'src/lib/cn.ts': renderLibCn(),
     'src/lib/image.tsx': renderImageHelper(imageSources),
-    'README.md': renderReadme(
-      parsed.projectName,
-      'next',
-      input.syncSecret === undefined,
-    ),
+    'README.md': renderReadme(parsed.projectName, 'next'),
   }
   if (usesLakebed) {
     files['src/lib/store.ts'] = renderSpecializedNextStore(
@@ -4540,9 +4527,7 @@ function buildRawHtmlExport(input: OpenUIExportInput): BuiltExport {
   const files = {
     'README.md': `# ${projectName}
 
-This export contains a static single-file HTML website from Ship Fast v2.
-
-Generated with [ShipFast](https://ship-fast.io) 🚀.
+This export contains a portable static single-file HTML website.
 
 Open index.html directly, or serve this folder with any static host.
 `,
