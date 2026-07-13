@@ -68,6 +68,7 @@ type ContentSection = {
 type LakebedDefinition = {
   helpers: Record<string, string>
   schemaSource: string | null
+  propSeedDisabledTables: string[]
   numericFieldNames: string[]
   queries: Record<string, string>
   mutations: Record<string, string>
@@ -1909,6 +1910,32 @@ function lakebedSchemaSource(
   return `{\n${properties.map((property) => `  ${property}`).join(',\n')}\n}`
 }
 
+function readPropSeedDisabledTables(
+  schema: ts.ObjectLiteralExpression,
+  sourceFile: ts.SourceFile,
+): string[] {
+  const disabledTables: string[] = []
+
+  for (const property of schema.properties) {
+    if (!ts.isPropertyAssignment(property)) continue
+    const initializer = unwrapExpression(property.initializer)
+    if (!ts.isObjectLiteralExpression(initializer)) continue
+    function isSeedFromPropsProperty(
+      candidate: ts.ObjectLiteralElementLike,
+    ): candidate is ts.PropertyAssignment {
+      return (
+        ts.isPropertyAssignment(candidate) &&
+        propertyNameText(candidate.name, sourceFile) === 'seedFromProps'
+      )
+    }
+    const seedSetting = initializer.properties.find(isSeedFromPropsProperty)
+    if (seedSetting?.initializer.kind !== ts.SyntaxKind.FalseKeyword) continue
+    disabledTables.push(propertyNameText(property.name, sourceFile))
+  }
+
+  return disabledTables
+}
+
 function unwrapExpression(expression: ts.Expression): ts.Expression {
   if (
     ts.isAsExpression(expression) ||
@@ -2120,6 +2147,9 @@ export function readLakebedDefinition(
         schemaSource: normalizeLakebedSchemaSource(
           schema ? lakebedSchemaSource(schema, lakebedSource.sourceFile) : null,
         ),
+        propSeedDisabledTables: schema
+          ? readPropSeedDisabledTables(schema, lakebedSource.sourceFile)
+          : [],
         numericFieldNames: readNumericSchemaFields(
           schema ?? undefined,
           lakebedSource.sourceFile,
@@ -2328,6 +2358,20 @@ function collectClientComponents(
   })
 }
 
+function normalizePortablePunctuation(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return value.replace(/[\u2010\u2011\u2012\u2013]/g, '-')
+  }
+  if (Array.isArray(value)) return value.map(normalizePortablePunctuation)
+  if (!isRecord(value)) return value
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [
+      key,
+      normalizePortablePunctuation(entry),
+    ]),
+  )
+}
+
 function buildRoutes(
   parsed: ReturnType<typeof parseOpenUIForExport>,
 ): LakebedRoute[] {
@@ -2341,12 +2385,14 @@ function buildRoutes(
       ? `${baseName}${index + 1}`
       : baseName
     usedNames.add(componentName)
+    const normalizedPage = normalizePortablePunctuation(page)
+    const node = isOpenUIElementNode(normalizedPage) ? normalizedPage : page
     return {
       label,
       path: uniqueRoutePath(label, index, usedPaths),
       componentName,
-      node: page,
-      props: isRecord(page.props) ? page.props : {},
+      node,
+      props: isRecord(node.props) ? node.props : {},
     }
   })
 }
@@ -3005,6 +3051,7 @@ export function renderSeedData(
   routes: LakebedRoute[],
   tableFields: Map<string, string[]>,
   externalSeed?: Record<string, Array<Record<string, unknown>>>,
+  propSeedDisabledTables: ReadonlySet<string> = new Set(),
 ): string {
   const seedRows: Record<string, Array<Record<string, string>>> = {}
   for (const [tableName, fields] of tableFields.entries()) {
@@ -3015,7 +3062,9 @@ export function renderSeedData(
     const rows =
       Array.isArray(external) && external.length > 0
         ? projectExternalSeedRows(external, fields)
-        : seedRowsForTable(tableName, fields, routes)
+        : propSeedDisabledTables.has(tableName)
+          ? []
+          : seedRowsForTable(tableName, fields, routes)
     if (rows.length > 0) seedRows[tableName] = rows
   }
 
@@ -3948,6 +3997,7 @@ function renderAgents(): string {
 function renderSharedContent(
   projectName: string,
   routes: LakebedRoute[],
+  definitions: LakebedDefinition[] = [],
 ): string {
   const pages = routes.map((route, index) => {
     const hero = route.props.hero
@@ -3990,6 +4040,24 @@ function renderSharedContent(
     }
   })
 
+  const queryOperationNames = definitions.flatMap((definition) =>
+    Object.keys(definition.queries).map(
+      (name) =>
+        `get${name
+          .replace(/[^A-Za-z0-9]+/g, ' ')
+          .trim()
+          .split(/\s+/)
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join('')}`,
+    ),
+  )
+  const mutationOperationNames = definitions.flatMap((definition) =>
+    Object.keys(definition.mutations),
+  )
+  const operationNames = [
+    ...new Set([...queryOperationNames, ...mutationOperationNames]),
+  ].sort()
+
   return `export type ContentSection = {
   id: string
   title: string
@@ -4018,6 +4086,8 @@ export type Article = {
 }
 
 export const projectName = ${JSON.stringify(sanitizeSharedText(projectName))}
+
+export const operationNames = ${JSON.stringify(operationNames, null, 2)}
 
 export const pages = ${JSON.stringify(pages, null, 2)} satisfies PageData[]
 
@@ -4463,6 +4533,52 @@ function prepareQueryResult(value: unknown): unknown {
   return changed ? normalized : value;
 }
 
+const PORTABLE_ITEM_KEY_PREFIX = "cart-item-v1:";
+
+function portableItemKey(value: string) {
+  if (value.startsWith(PORTABLE_ITEM_KEY_PREFIX)) return value;
+  return PORTABLE_ITEM_KEY_PREFIX + JSON.stringify(value.split("\u0000"));
+}
+
+function prepareMutationValue(value: unknown, key = ""): unknown {
+  if (key === "itemKey" && typeof value === "string") {
+    return portableItemKey(value);
+  }
+  if (Array.isArray(value)) {
+    return value.map((entry) => prepareMutationValue(entry));
+  }
+  if (!isQueryRecord(value)) return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([entryKey, entryValue]) => [
+      entryKey,
+      prepareMutationValue(entryValue, entryKey),
+    ]),
+  );
+}
+
+function prepareMutationArguments(name: string, args: unknown[]) {
+  for (let index = 0; index < args.length; index += 1) {
+    args[index] = prepareMutationValue(args[index]);
+  }
+  if (name !== "syncCatalog") return;
+  const payload = args[0];
+  if (!isQueryRecord(payload) || !Array.isArray(payload.products)) return;
+  const products = payload.products.map((product) => {
+    if (!isQueryRecord(product)) return product;
+    if (typeof product.itemKey === "string" && product.itemKey.trim()) {
+      return product;
+    }
+    const label = typeof product.label === "string" ? product.label : "";
+    if (!label) return product;
+    const price = typeof product.price === "string" ? product.price : "";
+    return {
+      ...product,
+      itemKey: portableItemKey(label + "\u0000" + price),
+    };
+  });
+  args[0] = { ...payload, products };
+}
+
 function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown>(
   name: string,
 ): LakebedMutationFunction<Args, Result> {
@@ -4476,6 +4592,7 @@ function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown
     setPendingCount((count) => count + 1);
     setLastError(null);
     try {
+      prepareMutationArguments(name, args);
       return await mutationRef.current(...args);
     } catch (error) {
       setLastError(error);
@@ -5805,6 +5922,9 @@ function renderServerIndex(
   syncMetadata: Record<string, string> = {},
   useEnvironmentSyncSecret = false,
 ): string {
+  const propSeedDisabledTables = new Set(
+    definitions.flatMap((definition) => definition.propSeedDisabledTables),
+  )
   const helpersByName = new Map<string, string>()
   for (const definition of definitions) {
     for (const [name, source] of Object.entries(definition.helpers)) {
@@ -5938,6 +6058,7 @@ ${protocolTable.fields.map((field) => `    ${field}: string(),`).join('\n')}
   ]
 
   return `import { ${[...new Set(imports)].sort().join(', ')} } from "lakebed/server";
+export { operationNames } from "../shared/content";
 ${
   endpointImports.length > 0
     ? `import * as lakebedServerRuntime from "lakebed/server";
@@ -6198,7 +6319,12 @@ function commitIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx, intents, resul
   }
 }
 
-${renderSeedData(routes, inboundTableFields, externalSeed)}
+${renderSeedData(
+  routes,
+  inboundTableFields,
+  externalSeed,
+  propSeedDisabledTables,
+)}
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
@@ -6403,7 +6529,8 @@ export async function buildOpenUILakebedProjectFiles(
   )
   const clientComponents = [...routeClientComponents, ...nestedClientComponents]
   const themeName = readThemeName(input.siteSpecJson, input.themeName)
-  const resolvedThemeStyles = resolveThemeStyles(themeName)
+  const resolvedThemeStyles =
+    resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
   const isDarkTheme = input.isDark ?? true
   const themeCss = buildLakebedThemeCss(resolvedThemeStyles, isDarkTheme)
   const tailwindThemeCss = buildLakebedTailwindThemeCss(
@@ -6478,7 +6605,11 @@ export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontU
       syncMetadata,
       options.useEnvironmentSyncSecret,
     ),
-    'shared/content.ts': renderSharedContent(parsed.projectName, routes),
+    'shared/content.ts': renderSharedContent(
+      parsed.projectName,
+      routes,
+      definitions,
+    ),
     'public/favicon.svg': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#171717"/><circle cx="32" cy="32" r="15" fill="#f5f5f5"/></svg>`,
   })
   for (const component of clientComponents) {
