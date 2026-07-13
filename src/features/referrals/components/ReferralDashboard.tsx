@@ -1,5 +1,5 @@
 import { Check, Copy, Gift, RefreshCw, Share2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useReferralStatus } from '@/features/referrals/hooks/useReferralStatus'
 import { requestClerkSignIn } from '@/shared/auth/use-optional-auth'
@@ -25,29 +25,72 @@ const statusClass: Record<string, string> = {
 export const ReferralDashboard = () => {
   const { status, isLoading, error, reload } = useReferralStatus()
   const [copied, setCopied] = useState(false)
+  const [copyError, setCopyError] = useState<string | null>(null)
+  const copyInFlightRef = useRef(false)
+  const copyResetTimerRef = useRef<number | null>(null)
+  const isMountedRef = useRef(true)
+  const reloadTimerRefs = useRef<number[]>([])
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+      if (copyResetTimerRef.current !== null) {
+        window.clearTimeout(copyResetTimerRef.current)
+      }
+      for (const timerId of reloadTimerRefs.current) {
+        window.clearTimeout(timerId)
+      }
+      reloadTimerRefs.current = []
+    }
+  }, [])
 
   const signInForReferrals = () => {
     requestClerkSignIn()
-    window.setTimeout(() => void reload(), 1200)
-    window.setTimeout(() => void reload(), 3000)
+    for (const timerId of reloadTimerRefs.current) {
+      window.clearTimeout(timerId)
+    }
+    reloadTimerRefs.current = [1_200, 3_000].map((delay) =>
+      window.setTimeout(() => {
+        if (isMountedRef.current) void reload()
+      }, delay),
+    )
   }
 
-  const link = useMemo(() => buildReferralLink(status?.code ?? null), [status])
+  const link = useMemo(
+    () => buildReferralLink(status?.code ?? null),
+    [status?.code],
+  )
 
   const copyLink = async () => {
-    if (!link) return
+    if (!link || copyInFlightRef.current) return
+    copyInFlightRef.current = true
+    setCopyError(null)
     try {
       await navigator.clipboard.writeText(link)
+      if (!isMountedRef.current) return
       setCopied(true)
-      setTimeout(() => setCopied(false), 1800)
+      if (copyResetTimerRef.current !== null) {
+        window.clearTimeout(copyResetTimerRef.current)
+      }
+      copyResetTimerRef.current = window.setTimeout(() => {
+        if (isMountedRef.current) setCopied(false)
+      }, 1_800)
     } catch {
+      if (!isMountedRef.current) return
       setCopied(false)
+      setCopyError(
+        'Unable to copy the referral link. Copy it manually instead.',
+      )
+    } finally {
+      copyInFlightRef.current = false
     }
   }
 
-  const threshold = status?.threshold ?? 2
-  const qualified = status?.qualifiedCount ?? 0
-  const progress = Math.min(100, Math.round((qualified / threshold) * 100))
+  const threshold = Math.max(1, status?.threshold ?? 2)
+  const qualified = Math.max(0, status?.qualifiedCount ?? 0)
+  const progressValue = Math.min(qualified, threshold)
+  const progress = Math.round((progressValue / threshold) * 100)
   const refreshDisabled = isLoading || !status
 
   return (
@@ -79,7 +122,10 @@ export const ReferralDashboard = () => {
       </header>
 
       {error && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3">
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3"
+          role="alert"
+        >
           <p className="m-0 text-sm text-rose-200">{error}</p>
           <button
             className="inline-flex h-9 shrink-0 items-center rounded-xl bg-cyan-300 px-3 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
@@ -119,6 +165,11 @@ export const ReferralDashboard = () => {
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
+        {copyError && (
+          <p className="m-0 mt-3 text-sm text-rose-200" role="alert">
+            {copyError}
+          </p>
+        )}
       </section>
 
       {/* Progress */}
@@ -131,7 +182,14 @@ export const ReferralDashboard = () => {
             {qualified} / {threshold} paid
           </p>
         </div>
-        <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div
+          aria-label="Referral progress"
+          aria-valuemax={threshold}
+          aria-valuemin={0}
+          aria-valuenow={progressValue}
+          className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-white/10"
+          role="progressbar"
+        >
           <div
             className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-emerald-300 transition-all"
             style={{ width: `${progress}%` }}
