@@ -94,7 +94,7 @@ function readPreviewCss(): string {
   }
 }
 
-function isUsablePreviewHtml(html: string | undefined): html is string {
+export function isUsablePreviewHtml(html: string | undefined): html is string {
   const trimmed = html?.trim()
   return Boolean(
     trimmed &&
@@ -103,6 +103,12 @@ function isUsablePreviewHtml(html: string | undefined): html is string {
     !/\bship-fast-openui-source\b/i.test(trimmed) &&
     !/generated openui source is ready/i.test(trimmed),
   )
+}
+
+export function neutralizeGeneratedHtmlRuntimeMarkers(html: string): string {
+  return html
+    .replaceAll('openui-root', 'site-root')
+    .replaceAll('data-sf-export-page', 'data-export-page')
 }
 
 function isHtmlDocumentSource(source: string): boolean {
@@ -149,24 +155,14 @@ function applyPreviewRootTheme(
   themeStyle: string,
   isDark: boolean,
 ): string {
-  const themedRoot = html.replace(
-    /<[a-z][^>]*\bid=(['"])openui-root\1[^>]*>/i,
-    (openingTag) => {
-      const tagWithoutClose = openingTag.slice(0, -1)
-      const withClass = isDark
-        ? mergeRootAttribute(tagWithoutClose, 'class', 'dark')
-        : tagWithoutClose
-      const withStyle = mergeRootAttribute(
-        withClass,
-        'style',
-        `${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`,
-      )
-      return `${withStyle}>`
-    },
+  if (/<[a-z][^>]*\bid=(['"])openui-root\1[^>]*>/i.test(html)) return html
+
+  const openingTag = mergeRootAttribute(
+    `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}"`,
+    'style',
+    `${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`,
   )
-  return themedRoot === html
-    ? `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${html}</main>`
-    : themedRoot
+  return `${openingTag}>${html}</main>`
 }
 
 type StaticUiMessages = {
@@ -581,9 +577,33 @@ function buildInteractionRuntime(messages: StaticUiMessages): string {
     record.overlay.setAttribute('aria-hidden', 'true');
     window.setTimeout(function () {
       record.overlay.hidden = true;
-      record.panel.removeAttribute('role');
+      if (record.panel !== record.overlay) record.panel.removeAttribute('role');
       record.trigger.focus();
     }, 190);
+  }
+  function findExistingDialog(trigger) {
+    var controls = trigger.getAttribute('aria-controls');
+    var controlled = controls ? document.getElementById(controls) : null;
+    if (controlled && controlled.getAttribute('role') === 'dialog') return controlled;
+    var label = String(trigger.getAttribute('aria-label') || '').trim().toLowerCase();
+    var contract = trigger.getAttribute('data-contract') || '';
+    var dialogs = Array.prototype.slice.call(document.querySelectorAll('[role="dialog"]'));
+    return dialogs.find(function (dialog) {
+      if (contract === 'cart-open' && (dialog.id === 'cart-dialog' || dialog.querySelector('[data-cart-items]'))) return true;
+      return label && String(dialog.getAttribute('aria-label') || '').trim().toLowerCase() === label;
+    }) || null;
+  }
+  function openExistingDialog(trigger) {
+    var dialog = findExistingDialog(trigger);
+    if (!dialog) return false;
+    activeDialog = { overlay: dialog, panel: dialog, trigger: trigger };
+    dialog.hidden = false;
+    dialog.setAttribute('aria-hidden', 'false');
+    trigger.setAttribute('aria-expanded', 'true');
+    if (dialog.id) trigger.setAttribute('aria-controls', dialog.id);
+    if (trigger.getAttribute('data-contract') === 'cart-open') renderCart();
+    requestAnimationFrame(function () { dialogFocusTarget(dialog).focus(); });
+    return true;
   }
   function createStaticDialog(trigger) {
     var currentId = trigger.getAttribute('aria-controls');
@@ -677,6 +697,10 @@ function buildInteractionRuntime(messages: StaticUiMessages): string {
     }
     if (target.hasAttribute('data-static-overlay-kind')) {
       if (openStaticDialog(target)) event.preventDefault();
+      return;
+    }
+    if (target.getAttribute('aria-haspopup') === 'dialog' && openExistingDialog(target)) {
+      event.preventDefault();
       return;
     }
     if (target.matches('[data-contract="sign-in"], [data-slot="account-dropdown-unauthenticated"]')) {
@@ -1202,10 +1226,12 @@ async function buildStandaloneHtmlDocument(
     input.selectedBrandLogo,
   )
   const css = readPreviewCss()
-  const pagesMarkup = await rewritePreviewImageUrls(
-    await buildPagesMarkup(parsed, locale, input.selectedBrandLogo),
-  )
   const hasPreviewMarkup = isUsablePreviewHtml(input.previewHtml)
+  const pagesMarkup = hasPreviewMarkup
+    ? ''
+    : await rewritePreviewImageUrls(
+        await buildPagesMarkup(parsed, locale, input.selectedBrandLogo),
+      )
   const previewMarkup = hasPreviewMarkup
     ? stripPreviewSourceMetadata(
         await rewritePreviewImageUrls(
