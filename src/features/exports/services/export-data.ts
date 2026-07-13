@@ -582,19 +582,21 @@ export function renderNextServerActions(keys: DataKeys): string {
     )
 
   const queryActions = [...keys.queries]
-    .map(
-      (name) =>
-        `export async function ${queryActionName(name)}Action() {
-  return ${queryActionName(name)}()
-}`,
-    )
+    .map((name) => {
+      const acceptsScope = /cart|favorite|profile|wishlist/i.test(name)
+      const parameters = acceptsScope ? '...args: unknown[]' : ''
+      const argumentsList = acceptsScope ? '...args' : ''
+      return `export async function ${queryActionName(name)}Action(${parameters}) {
+  return ${queryActionName(name)}(${argumentsList})
+}`
+    })
     .join('\n\n')
 
   const mutationActions = [...keys.mutations]
     .map(
       (name) =>
         `export async function ${mutationActionName(name)}Server(...args: unknown[]) {
-  return ${mutationActionName(name)}(...args)
+  return runMutationAction(${JSON.stringify(name)}, ${mutationActionName(name)}, args)
 }`,
     )
     .join('\n\n')
@@ -614,6 +616,69 @@ export async function signOutAction() {
   return `'use server'
 
 ${imports.join('\n')}
+
+type ServerActionFunction = (...args: unknown[]) => unknown
+type ServerActionRecord = Record<string, unknown>
+
+const completedMutations = new Map<string, unknown>()
+const pendingMutations = new Map<string, Promise<unknown>>()
+
+function isServerActionRecord(value: unknown): value is ServerActionRecord {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function toServerActionValue(value: unknown): unknown {
+  if (value === undefined) return null
+  if (typeof value === 'bigint') return value.toString()
+  if (value instanceof Date) return value.toISOString()
+  if (value instanceof Set) return [...value].map(toServerActionValue)
+  if (Array.isArray(value)) return value.map(toServerActionValue)
+  if (isServerActionRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, toServerActionValue(entry)]),
+    )
+  }
+  return value
+}
+
+function mutationRequestKey(name: string, args: unknown[]): string | null {
+  const input = args.find(isServerActionRecord)
+  const idempotencyKey = input ? Reflect.get(input, 'idempotencyKey') : undefined
+  if (typeof idempotencyKey !== 'string' || !idempotencyKey.trim()) return null
+  const ownerId = input ? Reflect.get(input, 'ownerId') : undefined
+  const scope = typeof ownerId === 'string' && ownerId.trim() ? ownerId.trim() : 'guest'
+  return [name, scope, idempotencyKey.trim()].join(':')
+}
+
+async function runMutationAction(
+  name: string,
+  action: ServerActionFunction,
+  args: unknown[],
+): Promise<unknown> {
+  const requestKey = mutationRequestKey(name, args)
+  if (requestKey === null) {
+    return toServerActionValue(await Promise.resolve(action(...args)))
+  }
+  if (completedMutations.has(requestKey)) {
+    return completedMutations.get(requestKey) ?? null
+  }
+  const pending = pendingMutations.get(requestKey)
+  if (pending) return pending
+
+  const operation = Promise.resolve(action(...args)).then(toServerActionValue)
+  pendingMutations.set(requestKey, operation)
+  try {
+    const result = await operation
+    if (completedMutations.size >= 1_000) {
+      const oldestKey = completedMutations.keys().next().value
+      if (typeof oldestKey === 'string') completedMutations.delete(oldestKey)
+    }
+    completedMutations.set(requestKey, result)
+    return result
+  } finally {
+    pendingMutations.delete(requestKey)
+  }
+}
 
 ${queryActions}
 
