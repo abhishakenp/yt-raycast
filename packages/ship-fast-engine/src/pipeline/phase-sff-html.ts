@@ -16,6 +16,8 @@ type GenerateHtmlResult = {
   cost?: number
 }
 
+const SFF_HTML_GENERATION_ATTEMPTS = 2
+
 const brandProfilePromptBlockTyped = brandProfilePromptBlock as (
   brandProfile?: Record<string, unknown> | null,
 ) => string
@@ -155,6 +157,9 @@ export function isCompleteSffHtml(html: string): boolean {
   )
 }
 
+const sanitizeStreamPreview = (raw: string): string =>
+  sanitizeSffHtml(raw).replace(/<script\b[\s\S]*?(?:<\/script>|$)/gi, '')
+
 function summarizeSiteSpec(siteSpec?: Record<string, unknown>): string {
   if (!siteSpec) return 'No site spec was generated.'
   const pick = (key) => {
@@ -276,43 +281,56 @@ export async function writeSffHtmlHome({
   sessionCtx,
   generateHtml = defaultGenerateHtml,
 }: WriteSffHtmlHomeInput) {
-  const chunks: string[] = []
-  const result = await generateHtml({
-    system: SFF_HTML_SYSTEM_PROMPT,
-    user: buildSffHtmlPrompt({
-      prompt,
-      siteSpec,
-      preferredLanguage,
-      imageHints,
-      brandProfile,
-    }),
-    onToken: (token, accumulated) => {
-      chunks.push(token)
-      sessionCtx?.broadcast?.({
-        type: 'source',
-        text: accumulated,
-      })
-    },
+  const user = buildSffHtmlPrompt({
+    prompt,
+    siteSpec,
+    preferredLanguage,
+    imageHints,
+    brandProfile,
   })
-  const html = ensureLucideIconRuntimeTyped(
-    sanitizeSffHtml(result.content),
-    log,
-  )
 
-  if (!isCompleteSffHtml(html)) {
-    throw new Error(
-      'SFF HTML generation did not return a complete HTML document',
-    )
+  for (let attempt = 0; attempt < SFF_HTML_GENERATION_ATTEMPTS; attempt += 1) {
+    const streamSnapshots: string[] = []
+
+    try {
+      const result = await generateHtml({
+        system: SFF_HTML_SYSTEM_PROMPT,
+        user,
+        onToken: (_token, accumulated) => {
+          streamSnapshots.push(accumulated)
+        },
+      })
+      const html = ensureLucideIconRuntimeTyped(
+        sanitizeSffHtml(result.content),
+        log,
+      )
+
+      if (!isCompleteSffHtml(html)) {
+        throw new Error(
+          'SFF HTML generation did not return a complete HTML document',
+        )
+      }
+
+      writeFileSync(join(workspace, 'index.html'), html)
+      writeFileSync(join(workspace, 'home.openui'), html)
+      for (const snapshot of streamSnapshots) {
+        sessionCtx?.broadcast?.({
+          type: 'source',
+          text: sanitizeStreamPreview(snapshot),
+        })
+      }
+      log?.(
+        `  sff-html: ${html.length} chars generated${streamSnapshots.length ? ` in ${streamSnapshots.length} chunks` : ''}`,
+      )
+
+      return {
+        chars: html.length,
+        cost: result.cost ?? 0,
+      }
+    } catch (error) {
+      if (attempt + 1 >= SFF_HTML_GENERATION_ATTEMPTS) throw error
+    }
   }
 
-  writeFileSync(join(workspace, 'index.html'), html)
-  writeFileSync(join(workspace, 'home.openui'), html)
-  log?.(
-    `  sff-html: ${html.length} chars generated${chunks.length ? ` in ${chunks.length} chunks` : ''}`,
-  )
-
-  return {
-    chars: html.length,
-    cost: result.cost ?? 0,
-  }
+  throw new Error('SFF HTML generation failed')
 }
