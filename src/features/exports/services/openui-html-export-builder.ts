@@ -6,19 +6,7 @@ import {
   type ElementNode,
 } from '@openuidev/lang-core'
 import { loadOpenUIRuntimeLibrary } from '@ship-fast/blocks/runtime'
-import { renderOpenUIToHTMLWithTheme as _renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
-
-type RenderResult = { html: string; cssVars: string }
-type BrandLogoAwareRenderer = (
-  source: string,
-  theme?: object | null,
-  locale?: string,
-  integrations?: object | null,
-  imageContext?: object | null,
-  brandLogo?: BrandLogoSelection | null,
-) => Promise<RenderResult>
-const renderOpenUIToHTMLWithTheme =
-  _renderOpenUIToHTMLWithTheme as unknown as BrandLogoAwareRenderer
+import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
 
 import { preprocessOpenUIResponse } from '@ship-fast/engine'
 import { resolveThemeStyles } from '@/genui/theme-apply'
@@ -28,7 +16,6 @@ import {
   buildExportSeoBundle,
   extractDescriptionFromMarkup,
 } from './export-seo'
-import { enrichSiteSpecJson } from './openui-export-builder'
 import type {
   BuiltExport,
   OpenUIExportInput,
@@ -52,7 +39,7 @@ const cssPath = join(
   'openui-preview-tailwind.css',
 )
 
-const themeVarKeys = [
+const themeVarKeys: readonly string[] = [
   'background',
   'foreground',
   'card',
@@ -97,7 +84,7 @@ const themeVarKeys = [
   'shadow-offset-y',
   'letter-spacing',
   'spacing',
-] as const
+]
 
 function readPreviewCss(): string {
   try {
@@ -137,33 +124,189 @@ function stripPreviewSourceMetadata(html: string): string {
   return html.replace(/\sdata-tsd-source=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
 }
 
+function mergeRootAttribute(
+  openingTag: string,
+  attribute: 'class' | 'style',
+  value: string,
+): string {
+  const pattern = new RegExp(`\\s${attribute}=(['"])(.*?)\\1`, 'i')
+  const current = openingTag.match(pattern)?.[2]?.trim() ?? ''
+  const separator =
+    attribute === 'style' && current && !current.endsWith(';')
+      ? '; '
+      : current
+        ? ' '
+        : ''
+  const merged = `${current}${separator}${value}`.trim()
+  const nextAttribute = ` ${attribute}="${escapeAttribute(merged)}"`
+  return pattern.test(openingTag)
+    ? openingTag.replace(pattern, nextAttribute)
+    : `${openingTag}${nextAttribute}`
+}
+
+function applyPreviewRootTheme(
+  html: string,
+  themeStyle: string,
+  isDark: boolean,
+): string {
+  const themedRoot = html.replace(
+    /<[a-z][^>]*\bid=(['"])openui-root\1[^>]*>/i,
+    (openingTag) => {
+      const tagWithoutClose = openingTag.slice(0, -1)
+      const withClass = isDark
+        ? mergeRootAttribute(tagWithoutClose, 'class', 'dark')
+        : tagWithoutClose
+      const withStyle = mergeRootAttribute(
+        withClass,
+        'style',
+        `${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`,
+      )
+      return `${withStyle}>`
+    },
+  )
+  return themedRoot === html
+    ? `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${html}</main>`
+    : themedRoot
+}
+
+type StaticUiMessages = {
+  cart: string
+  close: string
+  closeMenu: string
+  menu: string
+  mobileNavigation: string
+  search: string
+  signIn: string
+}
+
+function staticUiMessages(locale: string): StaticUiMessages {
+  if (locale.toLowerCase().split('-')[0] === 'hi') {
+    return {
+      cart: 'कार्ट',
+      close: 'बंद करें',
+      closeMenu: 'मेनू बंद करें',
+      menu: 'मेनू खोलें',
+      mobileNavigation: 'मोबाइल नेविगेशन',
+      search: 'खोजें',
+      signIn: 'साइन इन करें',
+    }
+  }
+  return {
+    cart: 'Cart',
+    close: 'Close',
+    closeMenu: 'Close menu',
+    menu: 'Open menu',
+    mobileNavigation: 'Mobile navigation',
+    search: 'Search',
+    signIn: 'Sign in',
+  }
+}
+
+function decorateAccountTrigger(html: string): string {
+  return html.replace(
+    /<button\b(?=[^>]*data-slot="account-dropdown-unauthenticated")[^>]*>/gi,
+    (openingTag) => {
+      const type = /\stype=(['"])[^'"]*\1/i.test(openingTag)
+        ? openingTag
+        : openingTag.replace('<button', '<button type="button"')
+      return type.replace('<button', '<button data-static-overlay-kind="auth"')
+    },
+  )
+}
+
+function includesNonAscii(value: string): boolean {
+  return Array.from(value).some(
+    (character) => (character.codePointAt(0) ?? 0) > 127,
+  )
+}
+
+function prepareGeneratedMarkup(html: string, locale: string): string {
+  const messages = staticUiMessages(locale)
+  return decorateAccountTrigger(html)
+    .replaceAll(
+      'data-slot="command-search-trigger"',
+      'data-static-overlay-kind="search" data-slot="command-search-trigger"',
+    )
+    .replaceAll(
+      'aria-label="Search"',
+      `aria-label="${escapeAttribute(messages.search)}"`,
+    )
+    .replaceAll(
+      'aria-label="Cart"',
+      `data-static-overlay-kind="cart" aria-label="${escapeAttribute(messages.cart)}"`,
+    )
+    .replaceAll(
+      'aria-label="Open menu"',
+      `aria-label="${escapeAttribute(messages.menu)}"`,
+    )
+    .replaceAll('>Sign in<', `>${escapeHtml(messages.signIn)}<`)
+    .replace(/aria-label="([^"]*) to cart"/gi, (match, label) =>
+      includesNonAscii(label) ? `aria-label="${label}"` : match,
+    )
+    .replaceAll(
+      'group-hover/shiny:translate-x-full',
+      'group-hover/shiny:translate-x-full motion-reduce:transition-none',
+    )
+}
+
+function extractPreviewRoutes(html: string): string[] {
+  const routes: string[] = []
+  const pattern = /\sdata-(?:sf-)?export-page=(['"])(.*?)\1/gi
+  for (const match of html.matchAll(pattern)) {
+    const label = match[2]?.trim()
+    if (label && !routes.includes(label)) routes.push(label)
+  }
+  return routes
+}
+
+function ensurePrimaryHeading(html: string, fallback: string): string {
+  if (/<h1\b/i.test(html)) return html
+  const heading = html.match(/<h2\b([^>]*)>([\s\S]*?)<\/h2>/i)
+  if (heading) {
+    return html.replace(heading[0], `<h1${heading[1]}>${heading[2]}</h1>`)
+  }
+  return `<h1 class="sr-only">${escapeHtml(fallback)}</h1>${html}`
+}
+
+function isPlainObjectValue(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 function parseSiteSpec(
   siteSpecJson: string | undefined,
 ): Record<string, unknown> {
   if (!siteSpecJson) return {}
   try {
-    const parsed = JSON.parse(siteSpecJson) as unknown
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : {}
+    const parsed: unknown = JSON.parse(siteSpecJson)
+    return isPlainObjectValue(parsed) ? parsed : {}
   } catch {
     return {}
   }
+}
+
+function enrichSiteSpecJson(
+  siteSpecJson: string | undefined,
+  projectName: string,
+): string {
+  const siteSpec = parseSiteSpec(siteSpecJson)
+  return JSON.stringify({
+    ...siteSpec,
+    projectName: siteSpec.projectName ?? projectName,
+  })
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0
 }
 
 function readProjectName(
   siteSpec: Record<string, unknown>,
   fallback: string,
 ): string {
-  const candidates = [
-    siteSpec.projectName,
-    siteSpec.brand,
-    (siteSpec.seo as { siteName?: unknown } | undefined)?.siteName,
-  ]
-  const match = candidates.find(
-    (value): value is string =>
-      typeof value === 'string' && value.trim().length > 0,
-  )
+  const seo = siteSpec.seo
+  const seoSiteName = isPlainObjectValue(seo) ? seo.siteName : undefined
+  const candidates = [siteSpec.projectName, siteSpec.brand, seoSiteName]
+  const match = candidates.find(isNonEmptyString)
   return match?.trim() || fallback
 }
 
@@ -180,18 +323,74 @@ function readGenUIExportMetadata(
   siteSpec: Record<string, unknown>,
 ): Record<string, unknown> | null {
   const genui = siteSpec.genui
-  return genui !== null && typeof genui === 'object' && !Array.isArray(genui)
-    ? (genui as Record<string, unknown>)
-    : null
+  return isPlainObjectValue(genui) ? genui : null
 }
 
 function readGenUIAdminPolicy(
   genui: Record<string, unknown> | null,
 ): Record<string, unknown> {
   const policy = genui?.adminPolicy
-  return policy !== null && typeof policy === 'object' && !Array.isArray(policy)
-    ? (policy as Record<string, unknown>)
-    : {}
+  return isPlainObjectValue(policy) ? policy : {}
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
+function isElementNode(value: unknown): value is ElementNode {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    value.type === 'element'
+  )
+}
+
+function readSchemaDefinitions(schema: unknown): Record<string, unknown> {
+  if (!isPlainObjectValue(schema)) return {}
+  const definitions = schema.$defs ?? schema.properties
+  return isPlainObjectValue(definitions) ? definitions : {}
+}
+
+function unwrapObjectProps(
+  value: unknown,
+  definitions: Record<string, unknown>,
+): void {
+  if (Array.isArray(value)) {
+    value.forEach((item) => unwrapObjectProps(item, definitions))
+    return
+  }
+  if (!isElementNode(value)) return
+
+  const componentSchema = definitions[value.typeName]
+  const componentProperties = isPlainObjectValue(componentSchema)
+    ? componentSchema.properties
+    : undefined
+  if (isPlainObjectValue(componentProperties)) {
+    const propKeys = Object.keys(value.props)
+    const onlyKey = propKeys.length === 1 ? propKeys[0] : undefined
+    const wrapped = onlyKey ? value.props[onlyKey] : undefined
+    const onlyKeySchema = onlyKey ? componentProperties[onlyKey] : undefined
+    const onlyKeyExpectsObject =
+      isPlainObjectValue(onlyKeySchema) && onlyKeySchema.type === 'object'
+    if (
+      onlyKey &&
+      !onlyKeyExpectsObject &&
+      isPlainObjectValue(wrapped) &&
+      Object.keys(wrapped).every((key) => key in componentProperties)
+    ) {
+      delete value.props[onlyKey]
+      Object.assign(value.props, wrapped)
+    }
+  }
+
+  Object.values(value.props).forEach((child) =>
+    unwrapObjectProps(child, definitions),
+  )
+}
+
+function isStringEntry(entry: unknown[]): entry is [string, string] {
+  return typeof entry[0] === 'string' && typeof entry[1] === 'string'
 }
 
 function readGenUIAdminEmails(genui: Record<string, unknown> | null): string[] {
@@ -206,7 +405,7 @@ function readGenUIAdminEmails(genui: Record<string, unknown> | null): string[] {
   return [
     ...new Set(
       values
-        .filter((value): value is string => typeof value === 'string')
+        .filter(isString)
         .map((value) => value.trim().toLowerCase())
         .filter((value) => value.includes('@')),
     ),
@@ -242,7 +441,10 @@ function buildInlineAdminBootstrap(
 
 function buildThemeStyle(styles: ThemeStyles | null, isDark: boolean): string {
   if (!styles) return ''
-  const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
+  const merged: Record<string, unknown> = {
+    ...styles.light,
+    ...(isDark ? styles.dark : {}),
+  }
   return themeVarKeys
     .flatMap((key) => {
       const value = merged[key]
@@ -269,7 +471,10 @@ function themeValues(
   isDark: boolean,
 ): Record<string, string> {
   if (!styles) return {}
-  const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
+  const merged: Record<string, unknown> = {
+    ...styles.light,
+    ...(isDark ? styles.dark : {}),
+  }
   return Object.fromEntries(
     themeVarKeys.flatMap((key) => {
       const value = merged[key]
@@ -312,12 +517,15 @@ function buildThemeRuntime(
 })();`
 }
 
-function buildInteractionRuntime(): string {
+function buildInteractionRuntime(messages: StaticUiMessages): string {
   return `
 (function () {
+  var messages = ${stringifyJs(messages)};
   var cartStorageKey = 'static-site-cart-v1';
   var authStorageKey = 'static-site-auth-v1';
   var newsletterStorageKey = 'static-site-newsletter-v1';
+  var activeDialog = null;
+  var dialogCounter = 0;
   function readCart() {
     try {
       var value = JSON.parse(window.localStorage.getItem(cartStorageKey) || '[]');
@@ -331,7 +539,7 @@ function buildInteractionRuntime(): string {
     try { window.localStorage.setItem(cartStorageKey, JSON.stringify(cart)); } catch {}
   }
   function renderCart() {
-    document.querySelectorAll('[data-cart-count], button[aria-label="Cart"] span').forEach(function (node) {
+    document.querySelectorAll('[data-cart-count], [data-static-overlay-kind="cart"] span, button[aria-label="Cart"] span').forEach(function (node) {
       node.textContent = String(cart.length);
     });
     var container = document.querySelector('[data-cart-items]');
@@ -361,17 +569,101 @@ function buildInteractionRuntime(): string {
   function isAddToCart(button) {
     var contract = button.getAttribute('data-contract') || '';
     var ariaLabel = button.getAttribute('aria-label') || '';
-    return contract === 'add-cart' || contract === 'add-cart-shop' || /^add to cart\\b/i.test(ariaLabel);
+    return contract === 'add-cart' || contract === 'add-cart-shop' || button.hasAttribute('aria-busy') || /^add to cart\\b/i.test(ariaLabel);
   }
-  function openCart(button) {
-    var dialog = document.querySelector('#cart-dialog, [data-contract="cart-dialog"]');
-    if (!dialog) return false;
-    renderCart();
-    dialog.hidden = false;
-    dialog.setAttribute('aria-hidden', 'false');
-    button.setAttribute('aria-expanded', 'true');
+  function dialogFocusTarget(panel) {
+    return panel.querySelector('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])') || panel;
+  }
+  function closeStaticDialog(record) {
+    if (!record) return;
+    if (activeDialog && activeDialog.overlay === record.overlay) activeDialog = null;
+    record.trigger.setAttribute('aria-expanded', 'false');
+    record.overlay.setAttribute('aria-hidden', 'true');
+    window.setTimeout(function () {
+      record.overlay.hidden = true;
+      record.panel.removeAttribute('role');
+      record.trigger.focus();
+    }, 190);
+  }
+  function createStaticDialog(trigger) {
+    var currentId = trigger.getAttribute('aria-controls');
+    var current = currentId ? document.getElementById(currentId) : null;
+    if (current && current.getAttribute('data-static-overlay-panel')) return current.parentElement;
+    var kind = trigger.getAttribute('data-static-overlay-kind');
+    if (!kind) return null;
+    dialogCounter += 1;
+    var panelId = 'static-' + kind + '-dialog-' + dialogCounter;
+    var overlay = document.createElement('div');
+    var panel = document.createElement('section');
+    var title = document.createElement('h2');
+    var close = document.createElement('button');
+    var content = document.createElement('div');
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('data-static-overlay', kind);
+    overlay.setAttribute('role', 'presentation');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;place-items:center;background:rgba(0,0,0,.48);padding:1rem;';
+    panel.id = panelId;
+    panel.tabIndex = -1;
+    panel.setAttribute('data-static-overlay-panel', kind);
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-labelledby', panelId + '-title');
+    panel.style.cssText = 'width:min(32rem,100%);max-height:min(40rem,90vh);overflow:auto;border:1px solid var(--border,rgba(0,0,0,.14));border-radius:1rem;background:var(--background,#fff);color:var(--foreground,#111);box-shadow:0 24px 80px rgba(0,0,0,.28);padding:1.25rem;';
+    title.id = panelId + '-title';
+    title.textContent = trigger.getAttribute('aria-label') || kind;
+    close.type = 'button';
+    close.textContent = '×';
+    close.setAttribute('aria-label', messages.close);
+    close.setAttribute('data-slot', 'dialog-close');
+    close.style.cssText = 'float:right;border:0;background:transparent;color:inherit;font-size:1.5rem;cursor:pointer;';
+    content.style.cssText = 'clear:both;padding-top:1rem;';
+    if (kind === 'search') {
+      var input = document.createElement('input');
+      input.type = 'search';
+      input.setAttribute('aria-label', messages.search);
+      input.placeholder = messages.search;
+      content.appendChild(input);
+    } else if (kind === 'cart') {
+      content.setAttribute('data-cart-items', '');
+    } else {
+      var signIn = document.createElement('button');
+      signIn.type = 'button';
+      signIn.textContent = messages.signIn;
+      content.appendChild(signIn);
+    }
+    panel.appendChild(close);
+    panel.appendChild(title);
+    panel.appendChild(content);
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+    trigger.type = 'button';
+    trigger.setAttribute('aria-controls', panelId);
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    close.addEventListener('click', function () {
+      closeStaticDialog({ overlay: overlay, panel: panel, trigger: trigger });
+    });
+    overlay.addEventListener('click', function (event) {
+      if (event.target === overlay) closeStaticDialog({ overlay: overlay, panel: panel, trigger: trigger });
+    });
+    return overlay;
+  }
+  function openStaticDialog(trigger) {
+    var overlay = createStaticDialog(trigger);
+    var panel = overlay ? overlay.querySelector('[data-static-overlay-panel]') : null;
+    if (!overlay || !panel) return false;
+    activeDialog = { overlay: overlay, panel: panel, trigger: trigger };
+    panel.setAttribute('role', 'dialog');
+    overlay.hidden = false;
+    overlay.setAttribute('aria-hidden', 'false');
+    trigger.setAttribute('aria-expanded', 'true');
+    if (trigger.getAttribute('data-static-overlay-kind') === 'cart') renderCart();
+    requestAnimationFrame(function () { dialogFocusTarget(panel).focus(); });
     return true;
   }
+  document.querySelectorAll('[data-static-overlay-kind]').forEach(function (trigger) {
+    createStaticDialog(trigger);
+  });
   document.addEventListener('click', function (event) {
     var target = event.target instanceof Element ? event.target.closest('button') : null;
     if (!target) return;
@@ -383,8 +675,8 @@ function buildInteractionRuntime(): string {
       target.setAttribute('aria-busy', 'false');
       return;
     }
-    if (target.matches('[data-contract="cart-open"], button[aria-haspopup="dialog"], button[aria-label="Cart"]')) {
-      if (openCart(target)) event.preventDefault();
+    if (target.hasAttribute('data-static-overlay-kind')) {
+      if (openStaticDialog(target)) event.preventDefault();
       return;
     }
     if (target.matches('[data-contract="sign-in"], [data-slot="account-dropdown-unauthenticated"]')) {
@@ -392,6 +684,34 @@ function buildInteractionRuntime(): string {
       target.setAttribute('data-auth-state', 'signed-in');
       target.setAttribute('aria-pressed', 'true');
       try { window.localStorage.setItem(authStorageKey, 'signed-in'); } catch {}
+    }
+  });
+  document.addEventListener('focusin', function (event) {
+    if (!activeDialog || activeDialog.panel.contains(event.target)) return;
+    dialogFocusTarget(activeDialog.panel).focus();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (!activeDialog) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeStaticDialog(activeDialog);
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    var focusable = Array.prototype.slice.call(activeDialog.panel.querySelectorAll('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) {
+      event.preventDefault();
+      activeDialog.panel.focus();
+      return;
+    }
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   });
   document.addEventListener('submit', function (event) {
@@ -410,13 +730,16 @@ function buildInteractionRuntime(): string {
 })();`
 }
 
+type FontKey = 'font-sans' | 'font-serif' | 'font-mono'
+const fontKeys: readonly FontKey[] = ['font-sans', 'font-serif', 'font-mono']
+
 function buildThemeFontLinks(styles: ThemeStyles | null): string {
   if (!styles) return ''
   const systemFontRe =
     /^(ui-|system|-apple|blinkmac|segoe|roboto$|helvetica|arial|sans-serif|serif|monospace|menlo|consolas|courier|georgia|cambria|times)/i
   const families = new Set<string>()
   for (const variant of [styles.light, styles.dark]) {
-    for (const key of ['font-sans', 'font-serif', 'font-mono'] as const) {
+    for (const key of fontKeys) {
       const raw = variant[key]
       if (typeof raw !== 'string') continue
       const first = raw
@@ -458,12 +781,15 @@ function buildRouteScript(
   routes: string[],
   targetMap: Record<string, string>,
   pageAttribute: 'data-export-page' | 'data-sf-export-page',
+  messages: StaticUiMessages,
 ): string {
   return `
 (function () {
   var routes = ${stringifyJs(routes)};
   var targetMap = ${stringifyJs(targetMap)};
+  var messages = ${stringifyJs(messages)};
   var current = 0;
+  var activeDrawer = null;
   function normalize(value) { return String(value || '').trim().toLowerCase(); }
   function parseTarget(value) {
     var text = String(value || '').trim();
@@ -591,7 +917,8 @@ function buildRouteScript(
     var panel = document.createElement('aside');
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
-    panel.setAttribute('aria-label', trigger.getAttribute('aria-label') || 'Navigation menu');
+    panel.setAttribute('aria-label', messages.mobileNavigation);
+    panel.tabIndex = -1;
     panel.style.cssText = 'position:absolute;top:0;right:0;height:100%;width:min(22rem,100%);box-sizing:border-box;background:var(--background,#fff);color:var(--foreground,#111);border-left:1px solid var(--border,rgba(0,0,0,.12));box-shadow:-24px 0 80px rgba(0,0,0,.22);transform:translateX(100%);transition:transform .18s ease;display:flex;flex-direction:column;';
 
     var header = document.createElement('div');
@@ -600,13 +927,14 @@ function buildRouteScript(
     title.textContent = window.__STATIC_SITE__?.projectName || 'Navigation';
     title.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;';
     var close = makeButton('×', '');
-    close.setAttribute('aria-label', 'Close menu');
+    close.setAttribute('aria-label', messages.closeMenu);
+    close.setAttribute('data-slot', 'sheet-close');
     close.style.cssText = 'display:inline-flex;width:2rem;height:2rem;align-items:center;justify-content:center;border:0;border-radius:.5rem;background:transparent;color:inherit;font-size:1.5rem;line-height:1;cursor:pointer;';
     header.appendChild(title);
     header.appendChild(close);
 
     var nav = document.createElement('nav');
-    nav.setAttribute('aria-label', 'Mobile navigation');
+    nav.setAttribute('aria-label', messages.mobileNavigation);
     nav.style.cssText = 'display:flex;flex-direction:column;gap:.25rem;padding:.75rem;';
     links.forEach(function (entry) {
       var item = makeButton(entry.label, '');
@@ -632,17 +960,22 @@ function buildRouteScript(
   function openStaticDrawer(overlay, trigger) {
     if (!overlay) return false;
     var panel = overlay.querySelector('[role="dialog"]');
+    if (!panel) return false;
     overlay.hidden = false;
     trigger.setAttribute('aria-expanded', 'true');
+    activeDrawer = { overlay: overlay, panel: panel, trigger: trigger };
     requestAnimationFrame(function () {
       overlay.style.opacity = '1';
       overlay.style.pointerEvents = 'auto';
-      if (panel) panel.style.transform = 'translateX(0)';
+      panel.style.transform = 'translateX(0)';
+      var focusable = panel.querySelector('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+      (focusable || panel).focus();
     });
     return true;
   }
   function closeStaticDrawer(overlay, trigger) {
     var panel = overlay.querySelector('[role="dialog"]');
+    if (activeDrawer && activeDrawer.overlay === overlay) activeDrawer = null;
     trigger.setAttribute('aria-expanded', 'false');
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
@@ -650,6 +983,7 @@ function buildRouteScript(
     window.setTimeout(function () {
       overlay.hidden = true;
       overlay.setAttribute('aria-hidden', 'true');
+      trigger.focus();
     }, 190);
   }
   function handleStaticDrawerTrigger(target) {
@@ -667,8 +1001,51 @@ function buildRouteScript(
       event.preventDefault();
       return;
     }
-    if (!navigate(target.textContent)) return;
+    if (target.hasAttribute('data-static-overlay-kind')) return;
+    var navigated = navigate(target.textContent);
+    if (!navigated) {
+      var nav = target.closest('nav') || target.closest('header');
+      var controls = nav ? Array.prototype.slice.call(nav.querySelectorAll('button,a')).filter(function (control) {
+        return !control.getAttribute('aria-label') &&
+          !control.hasAttribute('data-static-overlay-kind') &&
+          !control.matches('[data-slot="sheet-trigger"]');
+      }) : [];
+      var routeIndex = controls.indexOf(target);
+      navigated = routeIndex >= 0 && routeIndex < routes.length
+        ? navigate(routes[routeIndex])
+        : false;
+    }
+    if (!navigated) return;
     event.preventDefault();
+  });
+  document.addEventListener('focusin', function (event) {
+    if (!activeDrawer || activeDrawer.panel.contains(event.target)) return;
+    var focusable = activeDrawer.panel.querySelector('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+    (focusable || activeDrawer.panel).focus();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (!activeDrawer) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeStaticDrawer(activeDrawer.overlay, activeDrawer.trigger);
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    var focusable = Array.prototype.slice.call(activeDrawer.panel.querySelectorAll('button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) {
+      event.preventDefault();
+      activeDrawer.panel.focus();
+      return;
+    }
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   });
   document.addEventListener('submit', function (event) { event.preventDefault(); });
   show(0);
@@ -681,7 +1058,8 @@ export async function parseOpenUIForHtmlExport(
 ): Promise<ParsedOpenUIProgram> {
   const cleaned = preprocessOpenUIResponse(source, { resolveRefs: false })
   const library = await loadOpenUIRuntimeLibrary(cleaned)
-  const parser = createParser(library.toJSONSchema(), 'root')
+  const schema = library.toJSONSchema()
+  const parser = createParser(schema, 'root')
   const result = parser.parse(cleaned)
 
   if (result.root === null) {
@@ -716,6 +1094,8 @@ export async function parseOpenUIForHtmlExport(
     )
   }
 
+  unwrapObjectProps(result.root, readSchemaDefinitions(schema))
+
   const rawRoutes =
     result.root.typeName === 'PageSwitch' ? result.root.props.routes : undefined
   const rawPages =
@@ -725,30 +1105,17 @@ export async function parseOpenUIForHtmlExport(
       ? result.root.props.targetMap
       : undefined
   const routes = Array.isArray(rawRoutes)
-    ? rawRoutes.filter(
-        (route): route is string =>
-          typeof route === 'string' && route.trim().length > 0,
-      )
+    ? rawRoutes.filter(isNonEmptyString)
     : ['Home']
   const pages = Array.isArray(rawPages)
-    ? rawPages.filter(
-        (page): page is ElementNode =>
-          Boolean(page) &&
-          typeof page === 'object' &&
-          (page as ElementNode).type === 'element',
-      )
+    ? rawPages.filter(isElementNode)
     : [result.root]
   const siteSpec = parseSiteSpec(siteSpecJson)
   const parsedTargetMap =
     rawTargetMap &&
     typeof rawTargetMap === 'object' &&
     !Array.isArray(rawTargetMap)
-      ? Object.fromEntries(
-          Object.entries(rawTargetMap).filter(
-            (entry): entry is [string, string] =>
-              typeof entry[0] === 'string' && typeof entry[1] === 'string',
-          ),
-        )
+      ? Object.fromEntries(Object.entries(rawTargetMap).filter(isStringEntry))
       : {}
   const localizedRouteByCanonicalName = new Map<string, string>()
   for (const route of routes) {
@@ -786,14 +1153,14 @@ async function renderPageHtml(
   brandLogo?: BrandLogoSelection | null,
 ): Promise<string> {
   const pageSource = jsonToOpenUI(page, library)
-  const { html } = (await renderOpenUIToHTMLWithTheme(
+  const { html } = await renderOpenUIToHTMLWithTheme(
     pageSource,
     undefined,
     locale,
     undefined,
     undefined,
     brandLogo,
-  )) as RenderResult
+  )
   return html
 }
 
@@ -826,14 +1193,14 @@ async function buildStandaloneHtmlDocument(
   const themeStylesheet = buildThemeStylesheet(themeStyles)
   const themeFontLinks =
     input.includeBadge === false ? '' : buildThemeFontLinks(themeStyles)
-  const { cssVars } = (await renderOpenUIToHTMLWithTheme(
+  const { cssVars } = await renderOpenUIToHTMLWithTheme(
     input.source,
     undefined,
     locale,
     undefined,
     undefined,
     input.selectedBrandLogo,
-  )) as RenderResult
+  )
   const css = readPreviewCss()
   const pagesMarkup = await rewritePreviewImageUrls(
     await buildPagesMarkup(parsed, locale, input.selectedBrandLogo),
@@ -841,21 +1208,34 @@ async function buildStandaloneHtmlDocument(
   const hasPreviewMarkup = isUsablePreviewHtml(input.previewHtml)
   const previewMarkup = hasPreviewMarkup
     ? stripPreviewSourceMetadata(
-        await rewritePreviewImageUrls(extractBodyMarkup(input.previewHtml)),
+        await rewritePreviewImageUrls(
+          extractBodyMarkup(input.previewHtml ?? ''),
+        ),
       )
     : ''
-  const generatedPagesMarkup = stripPreviewSourceMetadata(pagesMarkup)
-    .replaceAll('data-sf-export-page', 'data-export-page')
-    .replace(/\sdata-openui-[\w-]+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+  const generatedPagesMarkup = ensurePrimaryHeading(
+    prepareGeneratedMarkup(
+      stripPreviewSourceMetadata(pagesMarkup).replace(
+        /\sdata-openui-[\w-]+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
+        '',
+      ),
+      locale,
+    ),
+    parsed.projectName,
+  )
   const bodyMarkup = hasPreviewMarkup ? previewMarkup : generatedPagesMarkup
+  const previewRoutes = hasPreviewMarkup
+    ? extractPreviewRoutes(previewMarkup)
+    : []
+  const routes = previewRoutes.length > 0 ? previewRoutes : parsed.routes
   const rootMarkup = hasPreviewMarkup
-    ? bodyMarkup
-    : `<div id="site-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</div>`
-  const rootId = hasPreviewMarkup ? 'openui-root' : 'site-root'
+    ? applyPreviewRootTheme(bodyMarkup, themeStyle, isDark)
+    : `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</main>`
+  const rootId = 'openui-root'
   const genui = readGenUIExportMetadata(siteSpec)
   const seoBundle = buildExportSeoBundle(
     enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
-    parsed.routes.map((label, index) => {
+    routes.map((label, index) => {
       const path =
         index === 0 ? '/' : `/${label.toLowerCase().replace(/\s+/g, '-')}`
       return { path, label }
@@ -867,7 +1247,8 @@ async function buildStandaloneHtmlDocument(
     (tag) =>
       !tag.startsWith('<meta charset') &&
       !tag.startsWith('<meta name="viewport"') &&
-      !tag.startsWith('<title>'),
+      !tag.startsWith('<title>') &&
+      !tag.includes('href="/llms.txt"'),
   )
   const seoHeadMarkup = seoHeadTags.length > 0 ? seoHeadTags.join('\n  ') : ''
   const htmlLang =
@@ -892,11 +1273,11 @@ ${css}
 <body class="min-h-screen bg-background text-foreground">
   ${rootMarkup}
   <script>
-    window.__STATIC_SITE__ = ${stringifyJs({ routes: parsed.routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};
+    window.__STATIC_SITE__ = ${stringifyJs({ routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};
     ${buildInlineAdminBootstrap(genui, input.target)}
     ${buildThemeRuntime(themeStyles, isDark, rootId)}
-    ${buildRouteScript(parsed.routes, parsed.targetMap, hasPreviewMarkup ? 'data-sf-export-page' : 'data-export-page')}
-    ${buildInteractionRuntime()}
+    ${buildRouteScript(routes, parsed.targetMap, 'data-sf-export-page', staticUiMessages(locale))}
+    ${buildInteractionRuntime(staticUiMessages(locale))}
   </script>
 </body>
 </html>`,

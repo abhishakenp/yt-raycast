@@ -46,13 +46,15 @@ type SiteSpecLike = Record<string, unknown> & {
   >
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 function parseSiteSpec(siteSpecJson: string | undefined): SiteSpecLike {
   if (!siteSpecJson) return {}
   try {
-    const parsed = JSON.parse(siteSpecJson) as unknown
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? (parsed as SiteSpecLike)
-      : {}
+    const parsed: unknown = JSON.parse(siteSpecJson)
+    return isPlainObject(parsed) ? parsed : {}
   } catch {
     return {}
   }
@@ -75,7 +77,13 @@ export type ExportSeoBundleOptions = {
  * word boundary. Returns '' when no meaningful text exists.
  */
 export function extractDescriptionFromMarkup(markup: string): string {
-  const text = markup
+  const main = markup.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1]
+  const content = (main ?? markup)
+    .replace(/<header\b[^>]*>[\s\S]*?<\/header>/gi, ' ')
+    .replace(/<nav\b[^>]*>[\s\S]*?<\/nav>/gi, ' ')
+    .replace(/<[^>]+\brole=(['"])dialog\1[^>]*>[\s\S]*?<\/[^>]+>/gi, ' ')
+  const paragraph = content.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[1]
+  const text = (paragraph ?? content)
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
@@ -157,8 +165,14 @@ export function buildExportSeoBundle(
     const headTags = buildHeadTags(seo, {
       structuredDataScript,
     })
-    const nextMetadata = buildNextMetadata(seo) as Record<string, unknown>
-    const nextViewport = buildNextViewport(seo) as Record<string, unknown>
+    const nextMetadataValue = buildNextMetadata(seo)
+    const nextViewportValue = buildNextViewport(seo)
+    const nextMetadata = isPlainObject(nextMetadataValue)
+      ? nextMetadataValue
+      : {}
+    const nextViewport = isPlainObject(nextViewportValue)
+      ? nextViewportValue
+      : {}
 
     const routeSeo: ExportRouteSeo = {
       seo,

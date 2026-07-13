@@ -3,15 +3,35 @@ import { extractFaqItems } from '../seo/extract-faq.ts'
 import { resolvePageSeo } from '../seo/resolve-page-seo.ts'
 import { cleanObject, joinUrl, normalizePath } from '../utils.ts'
 
-const SOFTWARE_SITE_TYPES = new Set([
-  'software',
-  'saas',
-  'dashboard',
-  'landing',
-  'app',
-])
+const SOFTWARE_SITE_TYPES = new Set(['software', 'saas', 'dashboard', 'app'])
 
 const BLOG_SITE_TYPES = new Set(['blog', 'publication'])
+
+const LOCAL_BUSINESS_SCHEMA_TYPES = new Map([
+  ['bakery', 'Bakery'],
+  ['restaurant', 'Restaurant'],
+  ['hotel', 'Hotel'],
+  ['medical-clinic', 'MedicalClinic'],
+  ['store', 'Store'],
+])
+
+function siteCategory(siteSpec: unknown): string {
+  if (!siteSpec || typeof siteSpec !== 'object' || Array.isArray(siteSpec)) {
+    return ''
+  }
+  if (!('genui' in siteSpec)) return ''
+  const genui = siteSpec.genui
+  if (!genui || typeof genui !== 'object' || Array.isArray(genui)) return ''
+  if (!('category' in genui) || typeof genui.category !== 'string') return ''
+  return genui.category.trim().toLowerCase()
+}
+
+function pushCleanEntry(
+  entries: Record<string, unknown>[],
+  entry: Record<string, unknown> | undefined,
+): void {
+  if (entry) entries.push(entry)
+}
 
 function isArticlePage(
   page: SitePageLike | null | undefined,
@@ -85,7 +105,8 @@ export function buildStructuredData(
   const logo = String(siteSpec?.seo?.logo || '').trim()
 
   if (page?.route === '/') {
-    entries.push(
+    pushCleanEntry(
+      entries,
       cleanObject({
         '@context': 'https://schema.org',
         '@type': 'WebSite',
@@ -102,13 +123,14 @@ export function buildStructuredData(
               'query-input': 'required name=search_term_string',
             }
           : undefined,
-      }) as Record<string, unknown>,
+      }),
     )
   }
 
   const orgName = String(signals.brandName || seo.siteName || '').trim()
   if (orgName && (seo.siteUrl || seo.canonicalUrl)) {
-    entries.push(
+    pushCleanEntry(
+      entries,
       cleanObject({
         '@context': 'https://schema.org',
         '@type': 'Organization',
@@ -119,12 +141,13 @@ export function buildStructuredData(
         email: signals.contact?.email,
         telephone: signals.contact?.phone,
         address: signals.contact?.address || signals.contact?.location,
-      }) as Record<string, unknown>,
+      }),
     )
   }
 
   if (SOFTWARE_SITE_TYPES.has(siteType) && page?.route === '/') {
-    entries.push(
+    pushCleanEntry(
+      entries,
       cleanObject({
         '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
@@ -137,16 +160,36 @@ export function buildStructuredData(
           ? signals.benefits
           : signals.useCases,
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      }) as Record<string, unknown>,
+      }),
     )
   }
 
-  if (siteType === 'ecommerce' && isProductPage(page, siteSpec)) {
+  const localBusinessType = LOCAL_BUSINESS_SCHEMA_TYPES.get(
+    siteCategory(siteSpec),
+  )
+  if (localBusinessType && page?.route === '/') {
+    pushCleanEntry(
+      entries,
+      cleanObject({
+        '@context': 'https://schema.org',
+        '@type': localBusinessType,
+        name: orgName || seo.siteName,
+        url: seo.siteUrl || seo.canonicalUrl,
+        description: seo.description,
+        image: seo.ogImage,
+        telephone: signals.contact?.phone,
+        address: signals.contact?.address || signals.contact?.location,
+      }),
+    )
+  }
+
+  if (isProductPage(page, siteSpec)) {
     const productSection = (page?.sections || []).find(
       (section) => section.type === 'product-detail',
     )
     const productItem = productSection?.items?.[0]
-    entries.push(
+    pushCleanEntry(
+      entries,
       cleanObject({
         '@context': 'https://schema.org',
         '@type': 'Product',
@@ -159,11 +202,12 @@ export function buildStructuredData(
         offers: productItem?.price
           ? { '@type': 'Offer', price: productItem.price, priceCurrency: 'USD' }
           : undefined,
-      }) as Record<string, unknown>,
+      }),
     )
   }
 
-  entries.push(
+  pushCleanEntry(
+    entries,
     cleanObject({
       '@context': 'https://schema.org',
       '@type': 'WebPage',
@@ -177,7 +221,7 @@ export function buildStructuredData(
             url: seo.siteUrl,
           }
         : undefined,
-    }) as Record<string, unknown>,
+    }),
   )
 
   if (BLOG_SITE_TYPES.has(siteType) && isArticlePage(page, siteSpec)) {
@@ -185,7 +229,8 @@ export function buildStructuredData(
     const datePublished = String(
       pageSeo.datePublished || pageSeo.date || pageSeo.publishedAt || '',
     ).trim()
-    entries.push(
+    pushCleanEntry(
+      entries,
       cleanObject({
         '@context': 'https://schema.org',
         '@type': 'Article',
@@ -197,7 +242,7 @@ export function buildStructuredData(
           name: orgName || seo.siteName,
         },
         datePublished: datePublished || new Date().toISOString(),
-      }) as Record<string, unknown>,
+      }),
     )
   }
 
