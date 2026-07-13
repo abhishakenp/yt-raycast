@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
 
 /**
  * FoodTruckGallery — a masonry-style food GALLERY section. A centered eyebrow +
@@ -48,26 +49,24 @@ export const FoodTruckGallery = defineCapsule({
           <div className="grid gap-4 md:grid-cols-3">
             {[0, 1, 2].map((col) => (
               <div key={col} className="space-y-4">
-                <Image
-                  alt={galleryAlts[col * 2] ?? galleryHeading}
-                  w={400}
-                  h={500}
-                  loading="lazy"
-                  className={cn(
-                    'w-full rounded-xl object-cover',
-                    col === 1 ? 'h-48' : 'h-64',
-                  )}
-                />
-                <Image
-                  alt={galleryAlts[col * 2 + 1] ?? galleryHeading}
-                  w={400}
-                  h={400}
-                  loading="lazy"
-                  className={cn(
-                    'w-full rounded-xl object-cover',
-                    col === 1 ? 'h-64' : 'h-48',
-                  )}
-                />
+                <MasonryTile treatment={col === 1 ? 'h-48-xl' : 'h-64-xl'}>
+                  <Image
+                    alt={galleryAlts[col * 2] ?? galleryHeading}
+                    w={400}
+                    h={500}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                </MasonryTile>
+                <MasonryTile treatment={col === 1 ? 'h-64-xl' : 'h-48-xl'}>
+                  <Image
+                    alt={galleryAlts[col * 2 + 1] ?? galleryHeading}
+                    w={400}
+                    h={400}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                </MasonryTile>
               </div>
             ))}
           </div>

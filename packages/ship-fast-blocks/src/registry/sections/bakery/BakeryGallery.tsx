@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -60,26 +61,24 @@ export const BakeryGallery = defineCapsule({
           <ResponsiveGrid cols="2-md-4" gap="sm">
             {[0, 1, 2, 3].map((col) => (
               <div key={col} className="space-y-4">
-                <Image
-                  alt={items[(col * 2) % items.length]}
-                  w={400}
-                  h={500}
-                  loading="lazy"
-                  className={cn(
-                    'w-full rounded-xl object-cover',
-                    col % 2 === 0 ? 'h-64' : 'h-48',
-                  )}
-                />
-                <Image
-                  alt={items[(col * 2 + 1) % items.length]}
-                  w={400}
-                  h={col % 2 === 0 ? 300 : 500}
-                  loading="lazy"
-                  className={cn(
-                    'w-full rounded-xl object-cover',
-                    col % 2 === 0 ? 'h-48' : 'h-64',
-                  )}
-                />
+                <MasonryTile treatment={col % 2 === 0 ? 'h-64-xl' : 'h-48-xl'}>
+                  <Image
+                    alt={items[(col * 2) % items.length]}
+                    w={400}
+                    h={500}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                </MasonryTile>
+                <MasonryTile treatment={col % 2 === 0 ? 'h-48-xl' : 'h-64-xl'}>
+                  <Image
+                    alt={items[(col * 2 + 1) % items.length]}
+                    w={400}
+                    h={col % 2 === 0 ? 300 : 500}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                </MasonryTile>
               </div>
             ))}
           </ResponsiveGrid>

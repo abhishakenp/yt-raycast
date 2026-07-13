@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
 
 /**
  * CafeGallery — masonry photo gallery for a cozy cafe / coffee shop page,
@@ -41,7 +42,7 @@ export const CafeGallery = defineCapsule({
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <ResponsiveGrid cols="2-md-3" gap="sm">
             <div className="space-y-4">
-              <div className="aspect-[3/4] overflow-hidden rounded-xl">
+              <MasonryTile treatment="3-4-xl">
                 <Image
                   alt={images[0]}
                   w={600}
@@ -49,8 +50,8 @@ export const CafeGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
-              </div>
-              <div className="aspect-square overflow-hidden rounded-xl">
+              </MasonryTile>
+              <MasonryTile treatment="square-xl">
                 <Image
                   alt={images[1]}
                   w={600}
@@ -58,10 +59,10 @@ export const CafeGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
-              </div>
+              </MasonryTile>
             </div>
             <div className="space-y-4">
-              <div className="aspect-square overflow-hidden rounded-xl">
+              <MasonryTile treatment="square-xl">
                 <Image
                   alt={images[2]}
                   w={600}
@@ -69,8 +70,8 @@ export const CafeGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
-              </div>
-              <div className="aspect-[3/4] overflow-hidden rounded-xl">
+              </MasonryTile>
+              <MasonryTile treatment="3-4-xl">
                 <Image
                   alt={images[3]}
                   w={600}
@@ -78,10 +79,10 @@ export const CafeGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
-              </div>
+              </MasonryTile>
             </div>
             <div className="hidden space-y-4 md:block">
-              <div className="aspect-[3/4] overflow-hidden rounded-xl">
+              <MasonryTile treatment="3-4-xl">
                 <Image
                   alt={images[4]}
                   w={600}
@@ -89,8 +90,8 @@ export const CafeGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
-              </div>
-              <div className="aspect-square overflow-hidden rounded-xl">
+              </MasonryTile>
+              <MasonryTile treatment="square-xl">
                 <Image
                   alt={images[5]}
                   w={600}
@@ -98,7 +99,7 @@ export const CafeGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
-              </div>
+              </MasonryTile>
             </div>
           </ResponsiveGrid>
         </div>

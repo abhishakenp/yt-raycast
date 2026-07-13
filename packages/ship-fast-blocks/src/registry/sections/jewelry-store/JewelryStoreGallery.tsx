@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
 
 /**
  * JewelryStoreGallery — lifestyle masonry gallery for a luxury jewelry brand
@@ -54,7 +55,7 @@ export const JewelryStoreGallery = defineCapsule({
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-4">
-              <div className="aspect-[3/4] overflow-hidden bg-card">
+              <MasonryTile treatment="3-4-card">
                 <Image
                   alt={alts[0]}
                   w={600}
@@ -62,8 +63,8 @@ export const JewelryStoreGallery = defineCapsule({
                   loading="lazy"
                   className={imgCls}
                 />
-              </div>
-              <div className="aspect-square overflow-hidden bg-card">
+              </MasonryTile>
+              <MasonryTile treatment="square-card">
                 <Image
                   alt={alts[1]}
                   w={600}
@@ -71,10 +72,10 @@ export const JewelryStoreGallery = defineCapsule({
                   loading="lazy"
                   className={imgCls}
                 />
-              </div>
+              </MasonryTile>
             </div>
             <div className="space-y-4 md:mt-12">
-              <div className="aspect-square overflow-hidden bg-card">
+              <MasonryTile treatment="square-card">
                 <Image
                   alt={alts[2]}
                   w={600}
@@ -82,8 +83,8 @@ export const JewelryStoreGallery = defineCapsule({
                   loading="lazy"
                   className={imgCls}
                 />
-              </div>
-              <div className="aspect-[4/5] overflow-hidden bg-card">
+              </MasonryTile>
+              <MasonryTile treatment="4-5-card">
                 <Image
                   alt={alts[3]}
                   w={600}
@@ -91,8 +92,8 @@ export const JewelryStoreGallery = defineCapsule({
                   loading="lazy"
                   className={imgCls}
                 />
-              </div>
-              <div className="aspect-square overflow-hidden bg-card">
+              </MasonryTile>
+              <MasonryTile treatment="square-card">
                 <Image
                   alt={alts[4]}
                   w={600}
@@ -100,10 +101,10 @@ export const JewelryStoreGallery = defineCapsule({
                   loading="lazy"
                   className={imgCls}
                 />
-              </div>
+              </MasonryTile>
             </div>
             <div className="space-y-4">
-              <div className="aspect-[3/4] overflow-hidden bg-card">
+              <MasonryTile treatment="3-4-card">
                 <Image
                   alt={alts[5]}
                   w={600}
@@ -111,8 +112,8 @@ export const JewelryStoreGallery = defineCapsule({
                   loading="lazy"
                   className={imgCls}
                 />
-              </div>
-              <div className="aspect-square overflow-hidden bg-card">
+              </MasonryTile>
+              <MasonryTile treatment="square-card">
                 <Image
                   alt={alts[6]}
                   w={600}
@@ -120,7 +121,7 @@ export const JewelryStoreGallery = defineCapsule({
                   loading="lazy"
                   className={imgCls}
                 />
-              </div>
+              </MasonryTile>
             </div>
           </div>
         </div>

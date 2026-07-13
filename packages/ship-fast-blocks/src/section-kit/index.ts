@@ -100,6 +100,11 @@ export {
   contentCardVariants,
   type ContentCardProps,
 } from './ContentCard.tsx'
+export {
+  MasonryTile,
+  masonryTileVariants,
+  type MasonryTileProps,
+} from './MasonryTile.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'
