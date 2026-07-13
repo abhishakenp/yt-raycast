@@ -234,17 +234,19 @@ function wireReactAdminAccess(
   const withImport = app.includes("from './lib/ship-fast-admin-gate'")
     ? app
     : app.replace(
-        "import { routes } from './data/pages'\n",
-        "import { routes } from './data/pages'\nimport { isShipFastAdminRoute, ShipFastAdminGate } from './lib/ship-fast-admin-gate'\n",
+        /(^import .* from 'react-router-dom'\n)/m,
+        "$1import { isShipFastAdminRoute, ShipFastAdminGate } from './lib/ship-fast-admin-gate'\n",
       )
   const wiredApp = withImport.replace(
-    '  return <Page {...route.props} />',
-    `  const page = <Page {...route.props} />
-  return isShipFastAdminRoute(route.label, route.path) ? (
-    <ShipFastAdminGate routeLabel={route.label}>{page}</ShipFastAdminGate>
-  ) : (
-    page
-  )`,
+    /element=\{<([A-Za-z0-9_]+) \{\.\.\.\1Route\.props\} \/>\}/g,
+    (_source, componentName) =>
+      `element={isShipFastAdminRoute(${componentName}Route.label, ${componentName}Route.path) ? (
+          <ShipFastAdminGate routeLabel={${componentName}Route.label}>
+            <${componentName} {...${componentName}Route.props} />
+          </ShipFastAdminGate>
+        ) : (
+          <${componentName} {...${componentName}Route.props} />
+        )}`,
   )
 
   // Add /admin route to the routes data if it doesn't exist

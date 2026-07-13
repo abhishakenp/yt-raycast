@@ -2287,6 +2287,9 @@ function normalizeValueForExportSchema(
   value: unknown,
   schema: ExportSchemaNode | undefined,
 ): unknown {
+  if (typeof value === 'string') {
+    return value.replace(/[\u2010\u2011\u2012\u2013]/g, '-')
+  }
   const resolved = resolveExportSchemaNode(schema)
   if (Array.isArray(value)) {
     return value.map((item) =>

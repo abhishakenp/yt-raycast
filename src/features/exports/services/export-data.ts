@@ -508,6 +508,12 @@ export function toEndpointResponse(value: unknown): Response {
   return Response.json(value ?? null)
 }`
 
+  const portableServerStoreSetup = keys.usesAuth
+    ? serverStoreSetup
+    : serverStoreSetup
+        .replaceAll('__shipFast', '__generatedSite')
+        .replaceAll('demo@ship-fast.local', 'demo@example.com')
+
   const queryFns = [...keys.queries]
     .map(
       (name) =>
@@ -542,7 +548,7 @@ export function signOut(): void { /* no-op in local mode */ }
       ? `export function getAffectedQueryNames(name: string): string[] { return affectedQueryNames(name) }`
       : ''
 
-  return `${serverStoreSetup}
+  return `${portableServerStoreSetup}
 
 ${queryFns}
 
