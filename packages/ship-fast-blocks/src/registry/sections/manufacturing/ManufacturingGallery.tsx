@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ContentCard } from '#/section-kit/ContentCard.tsx'
 
 /**
  * ManufacturingGallery — a dark portfolio / recent-projects gallery for a
@@ -84,26 +85,28 @@ export const ManufacturingGallery = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <button
+              <ContentCard
                 key={item.title}
-                type="button"
-                onClick={() => go(item.title)}
-                className="group block text-left"
+                asChild
+                variant="plain"
+                className="text-left"
               >
-                <div className="overflow-hidden rounded-lg">
-                  <Image
-                    alt={item.title}
-                    w={600}
-                    h={400}
-                    loading="lazy"
-                    className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="mt-4">
-                  <p className="font-medium text-background">{item.title}</p>
-                  <p className="text-sm text-background/60">{item.spec}</p>
-                </div>
-              </button>
+                <button type="button" onClick={() => go(item.title)}>
+                  <div className="overflow-hidden rounded-lg">
+                    <Image
+                      alt={item.title}
+                      w={600}
+                      h={400}
+                      loading="lazy"
+                      className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <p className="font-medium text-background">{item.title}</p>
+                    <p className="text-sm text-background/60">{item.spec}</p>
+                  </div>
+                </button>
+              </ContentCard>
             ))}
           </div>
         </Container>

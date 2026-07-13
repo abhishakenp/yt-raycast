@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { ContentCard } from '#/section-kit/ContentCard.tsx'
 
 /**
  * AiProductGallery — a product-screenshot showcase grid for a clean, light AI
@@ -78,30 +79,32 @@ export const AiProductGallery = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <button
+              <ContentCard
                 key={item.title}
-                type="button"
-                onClick={() => go(item.title)}
-                className="group block w-full overflow-hidden rounded-xl border border-border bg-card text-left transition-shadow hover:shadow-lg"
+                asChild
+                variant="bordered-light"
+                className="w-full text-left"
               >
-                <div className="aspect-[4/3] overflow-hidden bg-muted">
-                  <Image
-                    alt={item.title}
-                    w={800}
-                    h={600}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                </div>
-                <div className="p-5">
-                  <h3 className="mb-1 font-semibold text-card-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-              </button>
+                <button type="button" onClick={() => go(item.title)}>
+                  <div className="aspect-[4/3] overflow-hidden bg-muted">
+                    <Image
+                      alt={item.title}
+                      w={800}
+                      h={600}
+                      loading="lazy"
+                      className="size-full object-cover"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <h3 className="mb-1 font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {item.description}
+                    </p>
+                  </div>
+                </button>
+              </ContentCard>
             ))}
           </div>
         </Container>

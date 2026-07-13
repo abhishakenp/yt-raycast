@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ContentCard } from '#/section-kit/ContentCard.tsx'
 
 /**
  * InvestingGallery — dark product-showcase gallery for an investing / fintech
@@ -87,10 +88,7 @@ export const InvestingGallery = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((g, i) => (
-              <div
-                key={g.title}
-                className="group relative overflow-hidden rounded-xl bg-background/10"
-              >
+              <ContentCard key={g.title} variant="gradient-tinted">
                 <div
                   className={cn(
                     'flex aspect-[4/3] flex-col bg-gradient-to-br to-background/5 p-6',
@@ -113,7 +111,7 @@ export const InvestingGallery = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </ContentCard>
             ))}
           </div>
         </Container>

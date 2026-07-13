@@ -95,6 +95,11 @@ export {
   imageTileVariants,
   type ImageTileProps,
 } from './ImageTile.tsx'
+export {
+  ContentCard,
+  contentCardVariants,
+  type ContentCardProps,
+} from './ContentCard.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

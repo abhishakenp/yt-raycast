@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { ContentCard } from '#/section-kit/ContentCard.tsx'
 
 /**
  * CybersecurityGallery — platform-screenshot gallery. A light section with a
@@ -81,26 +82,28 @@ export const CybersecurityGallery = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <button
+              <ContentCard
                 key={item.title}
-                type="button"
-                onClick={() => go(item.title)}
-                className="group overflow-hidden rounded-2xl border border-border text-left shadow-lg"
+                asChild
+                variant="bordered-shadowed"
+                className="text-left"
               >
-                <Image
-                  alt={item.title}
-                  w={600}
-                  h={400}
-                  loading="lazy"
-                  className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="p-6">
-                  <h3 className="mb-2 text-lg font-bold">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-              </button>
+                <button type="button" onClick={() => go(item.title)}>
+                  <Image
+                    alt={item.title}
+                    w={600}
+                    h={400}
+                    loading="lazy"
+                    className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="p-6">
+                    <h3 className="mb-2 text-lg font-bold">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {item.description}
+                    </p>
+                  </div>
+                </button>
+              </ContentCard>
             ))}
           </div>
         </Container>

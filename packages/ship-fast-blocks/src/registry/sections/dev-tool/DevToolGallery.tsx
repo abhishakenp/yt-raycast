@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ContentCard } from '#/section-kit/ContentCard.tsx'
 
 /**
  * DevToolGallery — a 2x2 product screenshot gallery for a developer tool / API
@@ -71,19 +72,17 @@ export const DevToolGallery = defineCapsule({
           <div className="grid gap-8 md:grid-cols-2">
             {items.map((item) => (
               <figure key={item.title} className="group">
-                <button
-                  type="button"
-                  onClick={() => go(item.title)}
-                  className="block w-full overflow-hidden rounded-xl border border-border bg-foreground shadow-lg"
-                >
-                  <Image
-                    alt={item.title}
-                    w={800}
-                    h={500}
-                    loading="lazy"
-                    className="h-auto w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </button>
+                <ContentCard asChild variant="figure-dark">
+                  <button type="button" onClick={() => go(item.title)}>
+                    <Image
+                      alt={item.title}
+                      w={800}
+                      h={500}
+                      loading="lazy"
+                      className="h-auto w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </button>
+                </ContentCard>
                 <figcaption className="mt-4 text-center">
                   <h3 className="font-semibold text-foreground">
                     {item.title}
