@@ -482,6 +482,8 @@ function GalleryGridInner({
   deleteMineRef: RefObject<DeleteMineFn | null>
 }) {
   const hoveredSessionIdRef = useRef<string | null>(null)
+  const deletionInFlightRef = useRef(new Set<string>())
+  const [deleteError, setDeleteError] = useState<string>()
   const [deletedSessionIds, setDeletedSessionIds] = useState<Set<string>>(
     () => new Set(),
   )
@@ -498,8 +500,15 @@ function GalleryGridInner({
 
   const deleteHoveredSession = useCallback(
     (sessionId) => {
+      if (deletionInFlightRef.current.has(sessionId)) return
       const deleteMine = deleteMineRef.current
-      if (!deleteMine) return
+      if (!deleteMine) {
+        setDeleteError('Delete unavailable')
+        return
+      }
+
+      deletionInFlightRef.current.add(sessionId)
+      setDeleteError(undefined)
       const anonymousClientId = createAnonymousClientId(window.localStorage)
       void deleteMine({
         anonymousClientId,
@@ -516,7 +525,16 @@ function GalleryGridInner({
             return next
           })
         })
-        .catch(() => undefined)
+        .catch((error: unknown) => {
+          setDeleteError(
+            error instanceof Error && error.message.trim()
+              ? error.message
+              : 'Delete unavailable',
+          )
+        })
+        .finally(() => {
+          deletionInFlightRef.current.delete(sessionId)
+        })
     },
     [deleteMineRef],
   )
@@ -578,25 +596,35 @@ function GalleryGridInner({
   const isEmpty = items.length === 0
 
   return (
-    <div
-      className={cn(
-        'sf-gallery-grid grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3',
-        className,
-      )}
-    >
-      {isEmpty ? (
-        <GalleryEmptyState variant={emptyStateVariant} />
-      ) : (
-        items.map((session) => (
-          <GalleryCard
-            key={session.sessionId}
-            session={session}
-            onHoverEnd={handleCardHoverEnd}
-            onHoverStart={handleCardHoverStart}
-          />
-        ))
-      )}
-    </div>
+    <>
+      {deleteError ? (
+        <p
+          className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200"
+          role="alert"
+        >
+          {deleteError}
+        </p>
+      ) : null}
+      <div
+        className={cn(
+          'sf-gallery-grid grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3',
+          className,
+        )}
+      >
+        {isEmpty ? (
+          <GalleryEmptyState variant={emptyStateVariant} />
+        ) : (
+          items.map((session) => (
+            <GalleryCard
+              key={session.sessionId}
+              session={session}
+              onHoverEnd={handleCardHoverEnd}
+              onHoverStart={handleCardHoverStart}
+            />
+          ))
+        )}
+      </div>
+    </>
   )
 }
 export function GalleryPagination({
