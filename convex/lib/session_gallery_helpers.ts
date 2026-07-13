@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values'
+
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
@@ -41,6 +43,28 @@ export type PublicGalleryListInput = {
 
 export type OwnedGalleryListInput = PublicGalleryListInput & {
   anonymousClientId?: string
+}
+
+function readGalleryLimit(value: number | undefined): number {
+  const limit = value ?? 12
+  if (!Number.isSafeInteger(limit) || limit < 1) {
+    throw new ConvexError({
+      code: 'INVALID_ARGUMENT',
+      message: 'limit must be a positive integer',
+    })
+  }
+  return Math.min(limit, 48)
+}
+
+function readGalleryPage(value: number | undefined): number {
+  const page = value ?? 1
+  if (!Number.isSafeInteger(page) || page < 1) {
+    throw new ConvexError({
+      code: 'INVALID_ARGUMENT',
+      message: 'page must be a positive integer',
+    })
+  }
+  return page
 }
 
 async function loadPublicGalleryBaseArtifacts(
@@ -265,20 +289,34 @@ export async function listPublicGallerySessions(
   ctx: Pick<QueryCtx, 'db'>,
   args: PublicGalleryListInput,
 ) {
-  const limit = Math.min(Math.max(args.limit ?? 12, 1), 48)
-  const requestedPage = Math.max(args.page ?? 1, 1)
-  const scanLimit = Math.min(Math.max(requestedPage * limit * 2, limit), 96)
-  const publicSessions = await ctx.db
+  const limit = readGalleryLimit(args.limit)
+  const requestedPage = readGalleryPage(args.page)
+  const scanLimit = Math.max(requestedPage * limit * 2, limit)
+  const publicSessionQuery = ctx.db
     .query('sessions')
     .withIndex('by_public_createdAt', (index) => index.eq('isPrivate', false))
     .order('desc')
-    .take(scanLimit)
+  const scannedPublicSessions = await publicSessionQuery.take(scanLimit)
+  const publicSessions =
+    scannedPublicSessions.length < scanLimit
+      ? scannedPublicSessions
+      : await publicSessionQuery.collect()
   const visibleSessions = publicSessions.filter(isGalleryVisibleSession)
   const searchFilteredSessions = visibleSessions.filter((session) =>
     matchesGalleryFilters(session, args.search, undefined),
   )
-  const availableCategories = getGalleryCategoryOptions(searchFilteredSessions)
-  const filteredSessions = searchFilteredSessions.filter((session) =>
+  const renderableSessions = (
+    await Promise.all(
+      searchFilteredSessions.map(async (session) => ({
+        session,
+        artifacts: await loadPublicGalleryBaseArtifacts(ctx, session._id),
+      })),
+    )
+  ).filter(({ artifacts }) => isRenderableGalleryArtifacts(artifacts))
+  const availableCategories = getGalleryCategoryOptions(
+    renderableSessions.map(({ session }) => session),
+  )
+  const filteredSessions = renderableSessions.filter(({ session }) =>
     matchesGalleryFilters(session, undefined, args.category),
   )
 
@@ -287,7 +325,7 @@ export async function listPublicGallerySessions(
   const page = Math.min(requestedPage, totalPages)
   const pageSessions = filteredSessions.slice((page - 1) * limit, page * limit)
   const translatedPageSessions = await Promise.all(
-    pageSessions.map(async (session) => ({
+    pageSessions.map(async ({ session }) => ({
       session,
       artifacts: await loadPublicGalleryArtifacts(
         ctx,
@@ -296,15 +334,7 @@ export async function listPublicGallerySessions(
       ),
     })),
   )
-  const validPageSessions = translatedPageSessions.filter(({ artifacts }) =>
-    isRenderableGalleryArtifacts(artifacts),
-  )
-  const suppressedCount =
-    translatedPageSessions.length - validPageSessions.length
-  const visibleTotal =
-    suppressedCount > 0 ? Math.max(0, total - suppressedCount) : total
-  const visibleTotalPages = Math.max(1, Math.ceil(visibleTotal / limit))
-  const items = validPageSessions.map(({ session, artifacts }) =>
+  const items = translatedPageSessions.map(({ session, artifacts }) =>
     serializePublicGallerySession(session, artifacts, {
       legacySiteSpecFallback: true,
       previewReadyFromStoredPreview: true,
@@ -315,9 +345,9 @@ export async function listPublicGallerySessions(
     items,
     page,
     limit,
-    total: visibleTotal,
-    totalPages: visibleTotalPages,
-    hasNext: page < visibleTotalPages,
+    total,
+    totalPages,
+    hasNext: page < totalPages,
     hasPrev: page > 1,
     availableCategories,
   }
