@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { api } from './_generated/api'
 import schema from './schema'
@@ -7,6 +7,16 @@ import schema from './schema'
 const modules = import.meta.glob('./**/*.ts')
 
 describe('translationCache', () => {
+  const originalClerk = process.env.VITE_DISABLE_CLERK
+
+  beforeEach(() => {
+    process.env.VITE_DISABLE_CLERK = 'true'
+  })
+
+  afterEach(() => {
+    process.env.VITE_DISABLE_CLERK = originalClerk
+  })
+
   it('returns cached translations positionally and normalizes locale/text keys', async () => {
     const t = convexTest(schema, modules)
 

@@ -1,11 +1,22 @@
-import { v } from 'convex/values'
+import { v, ConvexError } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import type { Id } from './_generated/dataModel'
+import { isAuthDisabled } from './lib/session_export_helpers'
 
 const CLAIM_LEASE_MS = 30_000
 
 function cacheKey(locale: string, text: string) {
   return `${locale.trim().toLowerCase()}\n${text.trim()}`
+}
+
+async function requireAuth(ctx: {
+  auth: { getUserIdentity: () => Promise<unknown> }
+}): Promise<void> {
+  if (isAuthDisabled()) return
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) {
+    throw new ConvexError('Authentication required')
+  }
 }
 
 const claimResultValidator = v.union(
@@ -74,6 +85,7 @@ export const setBatch = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     const locale = args.locale.trim().toLowerCase()
     const now = Date.now()
 
@@ -118,6 +130,7 @@ export const claimBatch = mutation({
   },
   returns: v.array(claimResultValidator),
   handler: async (ctx, args) => {
+    await requireAuth(ctx)
     const locale = args.locale.trim().toLowerCase()
     const owner = args.owner.trim()
     if (!owner) throw new Error('Translation cache claim owner is required.')

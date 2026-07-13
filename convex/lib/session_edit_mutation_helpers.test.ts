@@ -1,6 +1,6 @@
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { convexTest } from 'convex-test'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
@@ -17,7 +17,14 @@ const sessionEditConvexTest = () => {
   return t
 }
 
+const originalClerk = process.env.VITE_DISABLE_CLERK
+
+beforeEach(() => {
+  process.env.VITE_DISABLE_CLERK = 'true'
+})
+
 afterEach(async () => {
+  process.env.VITE_DISABLE_CLERK = originalClerk
   if (activeTest) {
     for (let i = 0; i < 5; i++) {
       await new Promise((r) => setTimeout(r, 10))
@@ -713,6 +720,7 @@ describe('session edit mutation helpers', () => {
   })
 
   it('rejects edits from callers that do not own the session', async () => {
+    process.env.VITE_DISABLE_CLERK = 'false'
     const t = sessionEditConvexTest()
     const sessionId: Id<'sessions'> = await createReadySession(
       t,
