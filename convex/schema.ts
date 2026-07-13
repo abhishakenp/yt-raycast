@@ -251,9 +251,17 @@ export default defineSchema({
     afterHtml: v.optional(v.string()),
     instruction: v.optional(v.string()),
     occurrenceIndex: v.optional(v.number()),
+    locale: v.optional(v.string()),
+    canonicalSourceText: v.optional(v.string()),
     createdAt: v.number(),
     userId: v.optional(v.string()),
-  }).index('by_sessionId_createdAt', ['sessionId', 'createdAt']),
+  })
+    .index('by_sessionId_createdAt', ['sessionId', 'createdAt'])
+    .index('by_sessionId_locale_canonicalSourceText', [
+      'sessionId',
+      'locale',
+      'canonicalSourceText',
+    ]),
 
   exports: defineTable({
     sessionId: v.id('sessions'),
@@ -277,6 +285,7 @@ export default defineSchema({
     sessionId: v.id('sessions'),
     target: exportTarget,
     previewVersion: v.number(),
+    locale: v.optional(v.string()),
     status: exportArtifactStatus,
     storageId: v.optional(v.id('_storage')),
     filesStorageId: v.optional(v.id('_storage')),
@@ -295,6 +304,12 @@ export default defineSchema({
       'sessionId',
       'target',
       'previewVersion',
+    ])
+    .index('by_sessionId_target_previewVersion_locale', [
+      'sessionId',
+      'target',
+      'previewVersion',
+      'locale',
     ]),
 
   githubConnections: defineTable({
@@ -610,7 +625,8 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_cacheKey', ['cacheKey'])
-    .index('by_locale', ['locale']),
+    .index('by_locale', ['locale'])
+    .index('by_sourceText', ['sourceText']),
 
   translationCacheClaims: defineTable({
     cacheKey: v.string(),

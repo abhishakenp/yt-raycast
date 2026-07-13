@@ -225,6 +225,7 @@ export const build = internalAction({
       stage = 'record-ready'
       await ctx.runMutation(internal.sessions.recordExportArtifactBuildReady, {
         ...args,
+        locale: prepared.locale,
         storageId,
         filesStorageId,
         filename: download.filename,

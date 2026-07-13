@@ -38,10 +38,6 @@ function readAppliedIsDark(session: Doc<'sessions'>): boolean {
   return session.themeMode !== 'light'
 }
 
-function readAppliedLocale(session: Doc<'sessions'>): string {
-  return session.preferredLanguage || 'en'
-}
-
 export type ExportEntitlement =
   | {
       status: 'ready'
@@ -117,6 +113,7 @@ export type ExportArtifactBuildInput = {
   sessionId: Id<'sessions'>
   target: ExportTarget
   previewVersion: number
+  locale?: string
   autoDeployPublic?: boolean
   generatorRevision?: string
 }
@@ -125,6 +122,7 @@ export type ExportArtifactStalledInput = {
   sessionId: Id<'sessions'>
   target: ExportTarget
   previewVersion: number
+  locale?: string
   buildStartedAt: number
 }
 
@@ -289,19 +287,33 @@ export function applyEditsToSource(
         beforeText?: string
         afterText?: string
         occurrenceIndex?: number
+        locale?: string
+        canonicalSourceText?: string
       }>
     | undefined,
+  locale?: string,
 ): string {
   if (!edits || edits.length === 0) return source
 
   let result = source
   // Apply edits in reverse order (oldest first) so newer edits take precedence
   for (const edit of [...edits].reverse()) {
-    if (edit.editType === 'text' && edit.beforeText && edit.afterText) {
+    const localizedEditMatches =
+      edit.locale !== undefined &&
+      normalizeExportLocale(edit.locale) === normalizeExportLocale(locale)
+    const textEditSource =
+      edit.locale === undefined
+        ? edit.beforeText
+        : localizedEditMatches
+          ? edit.beforeText && result.includes(edit.beforeText)
+            ? edit.beforeText
+            : edit.canonicalSourceText
+          : undefined
+    if (edit.editType === 'text' && textEditSource && edit.afterText) {
       if (
         isTextEditAlreadyMaterialized(
           result,
-          edit.beforeText,
+          textEditSource,
           edit.afterText,
           edit.occurrenceIndex,
         )
@@ -310,7 +322,7 @@ export function applyEditsToSource(
       }
       const textResult = applyPreviewTextEdit(
         result,
-        edit.beforeText,
+        textEditSource,
         edit.afterText,
         edit.occurrenceIndex,
       )
@@ -427,7 +439,56 @@ async function loadExportArtifactRecord(
               .eq('previewVersion', previewVersion),
           )
 
-  return await query.order('desc').first()
+  return previewVersion === undefined
+    ? await query.order('desc').first()
+    : await query.first()
+}
+
+function normalizeExportLocale(locale: string | undefined): string {
+  return locale?.trim().toLowerCase() || 'en'
+}
+
+async function resolveExportArtifactLocale(
+  ctx: Pick<QueryCtx, 'db'>,
+  sessionId: Id<'sessions'>,
+  requestedLocale?: string,
+): Promise<string> {
+  if (requestedLocale !== undefined) {
+    return normalizeExportLocale(requestedLocale)
+  }
+
+  const session = await ctx.db.get(sessionId)
+  return normalizeExportLocale(session?.preferredLanguage)
+}
+
+async function loadLocaleScopedExportArtifactRecord(
+  ctx: Pick<QueryCtx, 'db'>,
+  sessionId: Id<'sessions'>,
+  target: ExportTarget,
+  previewVersion: number,
+  locale: string,
+) {
+  const normalizedLocale = normalizeExportLocale(locale)
+  const scoped = await ctx.db
+    .query('exportArtifacts')
+    .withIndex('by_sessionId_target_previewVersion_locale', (index) =>
+      index
+        .eq('sessionId', sessionId)
+        .eq('target', target)
+        .eq('previewVersion', previewVersion)
+        .eq('locale', normalizedLocale),
+    )
+    .first()
+
+  if (scoped !== null || normalizedLocale !== 'en') return scoped
+
+  const legacy = await loadExportArtifactRecord(
+    ctx,
+    sessionId,
+    target,
+    previewVersion,
+  )
+  return legacy?.locale === undefined ? legacy : null
 }
 
 export async function loadSessionExportTargets(
@@ -437,6 +498,7 @@ export async function loadSessionExportTargets(
   const session = await ctx.db.get(sessionId)
   const previewReady = session?.status === 'preview_ready'
   const currentPreviewVersion = session?.previewVersion
+  const currentLocale = normalizeExportLocale(session?.preferredLanguage)
 
   const targets = await Promise.all(
     exportTargets.map(async (target) => {
@@ -449,11 +511,12 @@ export async function loadSessionExportTargets(
           .first(),
         currentPreviewVersion === undefined
           ? Promise.resolve(null)
-          : loadExportArtifactRecord(
+          : loadLocaleScopedExportArtifactRecord(
               ctx,
               sessionId,
               target,
               currentPreviewVersion,
+              currentLocale,
             ),
       ])
       const isStale =
@@ -514,9 +577,15 @@ export async function queueSessionExportArtifactBuilds(
     now: number
     buildExportArtifact: ExportArtifactBuildReference
     delayMs?: number
+    locale?: string
   },
 ) {
   const delayMs = args.delayMs ?? 0
+  const locale = await resolveExportArtifactLocale(
+    ctx,
+    args.sessionId,
+    args.locale,
+  )
 
   await Promise.all(
     exportTargets.map((target) =>
@@ -528,6 +597,7 @@ export async function queueSessionExportArtifactBuilds(
         now: args.now,
         buildExportArtifact: args.buildExportArtifact,
         delayMs,
+        locale,
         force: true,
       }),
     ),
@@ -546,18 +616,22 @@ export async function queueSessionExportArtifactBuild(
     delayMs?: number
     force?: boolean
     generatorRevision?: string
+    locale?: string
   },
 ) {
   const generatorRevision = args.generatorRevision?.trim() || undefined
-  const existing = await ctx.db
-    .query('exportArtifacts')
-    .withIndex('by_sessionId_target_previewVersion', (index) =>
-      index
-        .eq('sessionId', args.sessionId)
-        .eq('target', args.target)
-        .eq('previewVersion', args.previewVersion),
-    )
-    .first()
+  const locale = await resolveExportArtifactLocale(
+    ctx,
+    args.sessionId,
+    args.locale,
+  )
+  const existing = await loadLocaleScopedExportArtifactRecord(
+    ctx,
+    args.sessionId,
+    args.target,
+    args.previewVersion,
+    locale,
+  )
 
   if (
     existing?.status === 'ready' &&
@@ -573,6 +647,7 @@ export async function queueSessionExportArtifactBuild(
         sessionId: args.sessionId,
         target: args.target,
         previewVersion: args.previewVersion,
+        locale,
         status: 'queued',
         ...(generatorRevision === undefined ? {} : { generatorRevision }),
         createdAt: args.now,
@@ -610,11 +685,17 @@ export async function markExportArtifactBuilding(
   },
 ) {
   const now = Date.now()
-  const existing = await loadExportArtifactRecord(
+  const locale = await resolveExportArtifactLocale(
+    ctx,
+    args.sessionId,
+    args.locale,
+  )
+  const existing = await loadLocaleScopedExportArtifactRecord(
     ctx,
     args.sessionId,
     args.target,
     args.previewVersion,
+    locale,
   )
 
   if (existing?.status === 'ready') return toArtifactPayload(existing)
@@ -624,13 +705,17 @@ export async function markExportArtifactBuilding(
     sessionId: args.sessionId,
     target: args.target,
     previewVersion: args.previewVersion,
+    locale,
     status,
     ...(args.generatorRevision === undefined
       ? {}
       : { generatorRevision: args.generatorRevision }),
     errorMessage: undefined,
     updatedAt: now,
-  }
+  } satisfies Omit<
+    Doc<'exportArtifacts'>,
+    '_id' | '_creationTime' | 'createdAt'
+  >
 
   const artifactId =
     existing === null
@@ -674,12 +759,34 @@ export async function recordExportArtifactStalled(
   ctx: MutationCtx,
   args: ExportArtifactStalledInput,
 ) {
-  const existing = await loadExportArtifactRecord(
-    ctx,
-    args.sessionId,
-    args.target,
-    args.previewVersion,
-  )
+  const locale =
+    args.locale === undefined ? undefined : normalizeExportLocale(args.locale)
+  const artifactAttempts =
+    locale === undefined
+      ? await ctx.db
+          .query('exportArtifacts')
+          .withIndex('by_sessionId_target_previewVersion', (index) =>
+            index
+              .eq('sessionId', args.sessionId)
+              .eq('target', args.target)
+              .eq('previewVersion', args.previewVersion),
+          )
+          .take(20)
+      : []
+  const existing =
+    locale === undefined
+      ? (artifactAttempts.find(
+          (artifact) => artifact.updatedAt === args.buildStartedAt,
+        ) ??
+        artifactAttempts[0] ??
+        null)
+      : await loadLocaleScopedExportArtifactRecord(
+          ctx,
+          args.sessionId,
+          args.target,
+          args.previewVersion,
+          locale,
+        )
 
   if (
     existing === null ||
@@ -693,6 +800,7 @@ export async function recordExportArtifactStalled(
     sessionId: args.sessionId,
     target: args.target,
     previewVersion: args.previewVersion,
+    ...(locale === undefined ? {} : { locale }),
     errorMessage: stalledExportArtifactMessage,
   })
 }
@@ -702,17 +810,24 @@ export async function recordExportArtifactReady(
   args: ExportArtifactReadyInput,
 ) {
   const now = Date.now()
-  const existing = await loadExportArtifactRecord(
+  const locale = await resolveExportArtifactLocale(
+    ctx,
+    args.sessionId,
+    args.locale,
+  )
+  const existing = await loadLocaleScopedExportArtifactRecord(
     ctx,
     args.sessionId,
     args.target,
     args.previewVersion,
+    locale,
   )
   const status = 'ready'
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
     previewVersion: args.previewVersion,
+    locale,
     status,
     storageId: args.storageId,
     filesStorageId: args.filesStorageId,
@@ -726,7 +841,10 @@ export async function recordExportArtifactReady(
       : { generatorRevision: args.generatorRevision }),
     errorMessage: undefined,
     updatedAt: now,
-  }
+  } satisfies Omit<
+    Doc<'exportArtifacts'>,
+    '_id' | '_creationTime' | 'createdAt'
+  >
 
   const artifactId =
     existing === null
@@ -752,24 +870,34 @@ export async function recordExportArtifactFailure(
   args: ExportArtifactFailureInput,
 ) {
   const now = Date.now()
-  const existing = await loadExportArtifactRecord(
+  const locale = await resolveExportArtifactLocale(
+    ctx,
+    args.sessionId,
+    args.locale,
+  )
+  const existing = await loadLocaleScopedExportArtifactRecord(
     ctx,
     args.sessionId,
     args.target,
     args.previewVersion,
+    locale,
   )
   const status = 'failed'
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
     previewVersion: args.previewVersion,
+    locale,
     status,
     ...(args.generatorRevision === undefined
       ? {}
       : { generatorRevision: args.generatorRevision }),
     errorMessage: args.errorMessage,
     updatedAt: now,
-  }
+  } satisfies Omit<
+    Doc<'exportArtifacts'>,
+    '_id' | '_creationTime' | 'createdAt'
+  >
 
   existing === null
     ? await ctx.db.insert('exportArtifacts', {
@@ -947,7 +1075,7 @@ export async function createSessionExport(
   const existingExportStatus = 'ready'
   const existingExportRequiresPayment = false
   const existingExportEntitlement = 'existing'
-  const entitlement = alreadyReadyForCurrentPreview
+  const entitlement: ExportEntitlement = alreadyReadyForCurrentPreview
     ? {
         status: existingExportStatus,
         requiresPayment: existingExportRequiresPayment,
@@ -1139,6 +1267,7 @@ export async function ensureExportArtifactBuild(
     buildExportArtifact: args.buildExportArtifact,
     force: false,
     generatorRevision: args.generatorRevision,
+    locale: normalizeExportLocale(session.preferredLanguage),
   })
 }
 
@@ -1163,6 +1292,14 @@ export async function prepareExportArtifactBuild(
         message: 'Preview is not ready to export',
       })
     })()
+
+  const locale = normalizeExportLocale(session.preferredLanguage)
+  if (
+    args.locale !== undefined &&
+    normalizeExportLocale(args.locale) !== locale
+  ) {
+    return null
+  }
 
   const preview = await ctx.db
     .query('previews')
@@ -1205,7 +1342,7 @@ export async function prepareExportArtifactBuild(
     homeModule,
     siteSpec,
   )
-  const editedSource = applyEditsToSource(canonicalSource, edits)
+  const editedSource = applyEditsToSource(canonicalSource, edits, locale)
   const source = applyCachedTranslationsToSource(
     editedSource,
     await loadCachedTranslationsForSource(
@@ -1248,7 +1385,7 @@ export async function prepareExportArtifactBuild(
     ...(siteSpecJson === undefined ? {} : { siteSpecJson }),
     ...(themeName === undefined ? {} : { themeName }),
     isDark,
-    locale: readAppliedLocale(session),
+    locale,
     selectedBrandLogo: session.selectedBrandLogo ?? null,
     isPrivate: session.isPrivate === true,
   }
@@ -1334,14 +1471,16 @@ export async function loadOwnedExportArtifactDownload(
     .first()
   const latestPreviewVersion = latestPreview?.version
 
+  const locale = normalizeExportLocale(session.preferredLanguage)
   const artifact =
     latestPreviewVersion === undefined
       ? null
-      : await loadExportArtifactRecord(
+      : await loadLocaleScopedExportArtifactRecord(
           ctx,
           args.sessionId,
           args.target,
           latestPreviewVersion,
+          locale,
         )
   const artifactPayload = toArtifactPayload(artifact)
   const storageUrl =
@@ -1463,9 +1602,11 @@ export async function loadOwnedExportForGitHubPush(
       index.eq('sessionId', args.sessionId),
     )
     .collect()
+  const locale = normalizeExportLocale(session.preferredLanguage)
   const editedSource = applyEditsToSource(
     resolveExportOpenUISource(preview, homeModule, siteSpec),
     edits,
+    locale,
   )
   const source = applyCachedTranslationsToSource(
     editedSource,
@@ -1499,11 +1640,12 @@ export async function loadOwnedExportForGitHubPush(
     })
   }
 
-  const artifact = await loadExportArtifactRecord(
+  const artifact = await loadLocaleScopedExportArtifactRecord(
     ctx,
     args.sessionId,
     args.target,
     preview.version,
+    locale,
   )
   const filesUrl =
     artifact?.status === 'ready' && artifact.filesStorageId !== undefined
@@ -1521,7 +1663,7 @@ export async function loadOwnedExportForGitHubPush(
     previewHtml: html,
     themeName,
     isDark,
-    locale: readAppliedLocale(session),
+    locale,
     selectedBrandLogo: session.selectedBrandLogo ?? null,
     includeBadge: exportRecord.requiresPayment !== false,
     artifact: toArtifactPayload(artifact),

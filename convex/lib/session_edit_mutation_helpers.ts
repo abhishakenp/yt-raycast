@@ -219,62 +219,6 @@ function normalizeComparableText(value: string | undefined): string {
     .trim()
 }
 
-function translationCacheKey(locale: string, text: string): string {
-  return `${locale.trim().toLowerCase()}\n${text.trim()}`
-}
-
-async function rememberTranslation(
-  ctx: MutationCtx,
-  locale: string | undefined,
-  sourceText: string | undefined,
-  translation: string | undefined,
-  now: number,
-): Promise<void> {
-  const normalizedLocale = normalizeComparableText(locale).toLowerCase()
-  const normalizedSourceText = String(sourceText ?? '').trim()
-  const normalizedTranslation = String(translation ?? '').trim()
-  if (
-    !normalizedLocale ||
-    normalizedLocale === 'en' ||
-    !normalizedSourceText ||
-    !normalizedTranslation
-  ) {
-    return
-  }
-
-  const cacheKey = translationCacheKey(normalizedLocale, normalizedSourceText)
-  const [existing] = await ctx.db
-    .query('translationCache')
-    .withIndex('by_cacheKey', (index) => index.eq('cacheKey', cacheKey))
-    .take(1)
-
-  if (existing) {
-    await ctx.db.patch(existing._id, {
-      translation: normalizedTranslation,
-      updatedAt: now,
-    })
-    return
-  }
-
-  await ctx.db.insert('translationCache', {
-    cacheKey,
-    locale: normalizedLocale,
-    sourceText: normalizedSourceText,
-    translation: normalizedTranslation,
-    createdAt: now,
-    updatedAt: now,
-  })
-}
-
-async function rememberIdentityTranslation(
-  ctx: MutationCtx,
-  locale: string | undefined,
-  text: string | undefined,
-  now: number,
-): Promise<void> {
-  await rememberTranslation(ctx, locale, text, text, now)
-}
-
 type CanonicalTranslatedTextEdit = {
   locale: string
   sourceText: string
@@ -311,6 +255,30 @@ async function withCanonicalTranslatedBeforeText(
 
   const sourceTexts = extractOpenUISourceStrings(source)
   if (sourceTexts.length === 0) return unchanged
+
+  const priorLocalizedEdits = await ctx.db
+    .query('edits')
+    .withIndex('by_sessionId_locale_canonicalSourceText', (index) =>
+      index.eq('sessionId', sessionId).eq('locale', locale),
+    )
+    .order('desc')
+    .take(80)
+  const priorLocalizedEdit = priorLocalizedEdits.find(
+    (edit) =>
+      edit.canonicalSourceText !== undefined &&
+      normalizeComparableText(edit.afterText) === selectedText,
+  )
+  if (priorLocalizedEdit?.canonicalSourceText !== undefined) {
+    return {
+      args: { ...args, beforeText: priorLocalizedEdit.canonicalSourceText },
+      translatedEdit: {
+        locale,
+        sourceText: priorLocalizedEdit.canonicalSourceText,
+        selectedText,
+      },
+      patchCanonicalArtifacts: false,
+    }
+  }
 
   const rows = await ctx.db
     .query('translationCache')
@@ -351,6 +319,53 @@ async function withCanonicalTranslatedBeforeText(
   }
 
   return unchanged
+}
+
+function isSamePersistedEdit(
+  edit: Doc<'edits'>,
+  args: SessionEditInput,
+): boolean {
+  return (
+    edit.editType === args.editType &&
+    edit.targetLabel === args.targetLabel &&
+    edit.beforeText === args.beforeText &&
+    edit.afterText === args.afterText &&
+    edit.afterHtml === args.afterHtml &&
+    edit.instruction === args.instruction &&
+    edit.occurrenceIndex === args.occurrenceIndex
+  )
+}
+
+async function invalidateTranslationsForSource(
+  ctx: MutationCtx,
+  sourceText: string | undefined,
+): Promise<void> {
+  const canonicalSourceText = String(sourceText ?? '').trim()
+  if (!canonicalSourceText) return
+
+  const translations = await ctx.db
+    .query('translationCache')
+    .withIndex('by_sourceText', (index) =>
+      index.eq('sourceText', canonicalSourceText),
+    )
+    .take(1000)
+  const claims = await Promise.all(
+    translations.map((translation) =>
+      ctx.db
+        .query('translationCacheClaims')
+        .withIndex('by_cacheKey', (index) =>
+          index.eq('cacheKey', translation.cacheKey),
+        )
+        .unique(),
+    ),
+  )
+
+  await Promise.all([
+    ...translations.map((translation) => ctx.db.delete(translation._id)),
+    ...claims.flatMap((claim) =>
+      claim === null ? [] : [ctx.db.delete(claim._id)],
+    ),
+  ])
 }
 
 async function findAiCapsuleTextEdits(
@@ -760,6 +775,59 @@ export async function applySessionEdit(
       })
     })()
 
+  const unchangedText =
+    args.afterText !== undefined && args.beforeText === args.afterText
+  const unchangedHtml =
+    args.afterHtml !== undefined && args.afterHtml === preview.html
+  if (unchangedText || unchangedHtml) {
+    return {
+      sessionId,
+      previewVersion: preview.version,
+      saved: false,
+      translatedEdit: undefined,
+    }
+  }
+
+  const translatedEdit = canonicalized.translatedEdit
+  if (translatedEdit !== undefined) {
+    const existingTranslatedEdit = await ctx.db
+      .query('edits')
+      .withIndex('by_sessionId_locale_canonicalSourceText', (index) =>
+        index
+          .eq('sessionId', sessionId)
+          .eq('locale', translatedEdit.locale)
+          .eq('canonicalSourceText', translatedEdit.sourceText),
+      )
+      .order('desc')
+      .first()
+
+    if (existingTranslatedEdit !== null) {
+      if (isSamePersistedEdit(existingTranslatedEdit, args)) {
+        return {
+          sessionId,
+          previewVersion: existingTranslatedEdit.previewVersion,
+          saved: true,
+          translatedEdit: {
+            locale: translatedEdit.locale,
+            sourceText: translatedEdit.sourceText,
+            translation: String(patchArgs.afterText ?? ''),
+          },
+        }
+      }
+
+      if (
+        normalizeComparableText(existingTranslatedEdit.afterText) !==
+        normalizeComparableText(args.beforeText)
+      ) {
+        throw new ConvexError({
+          code: 'TEXT_NOT_FOUND',
+          message:
+            'Selected text was not found in the current preview. Select a smaller text block and try again.',
+        })
+      }
+    }
+  }
+
   let openUiSource: string | undefined
   let siteSpecJson: string | undefined
 
@@ -962,21 +1030,9 @@ export async function applySessionEdit(
   }
 
   if (patchArgs.editType === 'text') {
-    if (isLocaleScopedTranslatedTextEdit && canonicalized.translatedEdit) {
-      await rememberTranslation(
-        ctx,
-        canonicalized.translatedEdit.locale,
-        canonicalized.translatedEdit.sourceText,
-        patchArgs.afterText,
-        now,
-      )
+    if (!isLocaleScopedTranslatedTextEdit) {
+      await invalidateTranslationsForSource(ctx, patchArgs.beforeText)
     }
-    await rememberIdentityTranslation(
-      ctx,
-      session.preferredLanguage,
-      patchArgs.afterText,
-      now,
-    )
     if (!sessionDataPatched) {
       await patchTextEditIntoSessionData(
         ctx,
@@ -1023,6 +1079,12 @@ export async function applySessionEdit(
     afterHtml: args.afterHtml,
     instruction: args.instruction,
     occurrenceIndex: args.occurrenceIndex,
+    ...(translatedEdit === undefined
+      ? {}
+      : {
+          locale: translatedEdit.locale,
+          canonicalSourceText: translatedEdit.sourceText,
+        }),
     createdAt: now,
     userId: session.userId,
   })
