@@ -1353,11 +1353,28 @@ export function Dashboard({
           selectedText: payload.oldText,
         },
       )
-      await editController.applyCommand(command)
+      const result = await editController.applyCommand(command)
+
+      if (result === 'fork_needed') {
+        setIsForkingSession(true)
+        toast.info('Forking session to save your changes...')
+        try {
+          const forkResult = await editController.forkCurrentSession()
+          if (!forkResult) {
+            toast.error(editController.editError || 'Failed to fork session')
+          }
+        } finally {
+          setIsForkingSession(false)
+        }
+      } else if (result !== true) {
+        console.error('[Inline Edit] Failed to save link:', result.error)
+        toast.error(result.error)
+      }
     } catch (error) {
-      // Builder throws when the link isn't found in source — mirror the old
-      // silent no-op rather than surfacing an error toast.
-      console.error('[Inline Edit] Link edit skipped:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to save link'
+      console.error('[Inline Edit] Failed to save link:', error)
+      toast.error(errorMessage)
     }
   }
 

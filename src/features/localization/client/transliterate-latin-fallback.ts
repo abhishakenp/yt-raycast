@@ -57,6 +57,8 @@ const DEVANAGARI_VOWEL_MARKS: Record<string, string> = {
 
 function englishSpellingToPhoneticHindi(word: string): string {
   return word
+    .normalize('NFKD')
+    .replace(/\p{Mark}/gu, '')
     .toLowerCase()
     .replace(/^cho(?=co)/, 'chQ')
     .replace(/tch/g, 'ch')
@@ -66,10 +68,11 @@ function englishSpellingToPhoneticHindi(word: string): string {
     .replace(/oo/g, 'u')
     .replace(/(?:ee|ea)/g, 'ii')
     .replace(/ie$/g, 'ii')
-    .replace(/a([bcdfghjklmnpqrstvwxyz])e$/g, 'e$1')
-    .replace(/o(?=[bcdfghjklmnpqrstvwxyz][aeiou])/g, 'a')
     .replace(/c(?=[eiy])/g, 's')
     .replace(/c(?!h)/g, 'k')
+    .replace(/a([bcdfghjklmnpqrstvwxyz])e$/g, 'e$1')
+    .replace(/([eiou])([bcdfghjklmnpqrstvwxyz])e$/g, '$1$2')
+    .replace(/o(?=[bcdfghjklmnpqrstvwxyz][aeiou])/g, 'a')
     .replace(/q/g, 'k')
     .replace(/x/g, 'ks')
 }
@@ -132,5 +135,8 @@ export function transliterateLatinFallback(
 ): string {
   const language = locale.trim().toLowerCase().split(/[-_]/)[0]
   if (language !== 'hi') return text
-  return text.replace(/[A-Za-z]+/g, latinWordToDevanagari)
+  return text.replace(
+    /\p{Script=Latin}[\p{Script=Latin}\p{Mark}]*/gu,
+    latinWordToDevanagari,
+  )
 }
