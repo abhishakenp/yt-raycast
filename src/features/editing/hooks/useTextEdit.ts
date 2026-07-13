@@ -275,7 +275,153 @@ export function useTextEdit(
     }
     cancelEditRef.current = cancelEdit
 
-    const handleClick = (e) => {
+    const isEventOnActiveEdit = (
+      eventTarget: EventTarget | null,
+      active: TextEditState,
+    ): boolean =>
+      eventTarget instanceof Node &&
+      (eventTarget === active.element || active.element.contains(eventTarget))
+
+    const isInsideLockedChild = (
+      node: Node,
+      lockedChildren: HTMLElement[],
+    ): boolean =>
+      lockedChildren.some((locked) => locked === node || locked.contains(node))
+
+    const setCaret = (selection: Selection, textNode: Text, offset: number) => {
+      const nextRange = document.createRange()
+      nextRange.setStart(textNode, offset)
+      nextRange.collapse(true)
+      selection.removeAllRanges()
+      selection.addRange(nextRange)
+    }
+
+    const replaceSelectionWithPlainText = (plainText: string): boolean => {
+      const active = activeEditRef.current
+      if (!active) return false
+
+      const lockedChildren = active.lockedChildren ?? []
+      const editableTextNodes = collectTextNodes(active.element).filter(
+        (node) => !isInsideLockedChild(node, lockedChildren),
+      )
+      const selection = window.getSelection()
+
+      if (!selection || selection.rangeCount === 0) {
+        const lastTextNode = editableTextNodes[editableTextNodes.length - 1]
+        if (lastTextNode) {
+          const currentText = lastTextNode.nodeValue ?? ''
+          lastTextNode.nodeValue = `${currentText}${plainText}`
+          if (selection) {
+            setCaret(
+              selection,
+              lastTextNode,
+              currentText.length + plainText.length,
+            )
+          }
+        } else if (plainText) {
+          active.element.append(document.createTextNode(plainText))
+        }
+        return true
+      }
+
+      const range = selection.getRangeAt(0)
+      const isWithinActiveElement = (node: Node): boolean =>
+        node === active.element || active.element.contains(node)
+      if (
+        !isWithinActiveElement(range.startContainer) ||
+        !isWithinActiveElement(range.endContainer)
+      ) {
+        return false
+      }
+
+      const intersectsLockedChild = lockedChildren.some((locked) => {
+        try {
+          return range.intersectsNode(locked)
+        } catch {
+          return false
+        }
+      })
+
+      if (!intersectsLockedChild) {
+        range.deleteContents()
+        if (!plainText) return true
+
+        const textNode = document.createTextNode(plainText)
+        range.insertNode(textNode)
+        setCaret(selection, textNode, plainText.length)
+        return true
+      }
+
+      const selectedTextRuns = editableTextNodes.flatMap((node) => {
+        try {
+          if (!range.intersectsNode(node)) return []
+        } catch {
+          return []
+        }
+
+        const value = node.nodeValue ?? ''
+        const start =
+          node === range.startContainer
+            ? Math.min(range.startOffset, value.length)
+            : 0
+        const end =
+          node === range.endContainer
+            ? Math.min(range.endOffset, value.length)
+            : value.length
+        return start <= end ? [{ node, value, start, end }] : []
+      })
+
+      const firstRun = selectedTextRuns[0]
+      if (!firstRun) {
+        if (!plainText) return true
+        const textNode = document.createTextNode(plainText)
+        active.element.append(textNode)
+        setCaret(selection, textNode, plainText.length)
+        return true
+      }
+
+      selectedTextRuns.forEach(({ node, value, start, end }, index) => {
+        const replacement = index === 0 ? plainText : ''
+        node.nodeValue = `${value.slice(0, start)}${replacement}${value.slice(end)}`
+      })
+      setCaret(selection, firstRun.node, firstRun.start + plainText.length)
+      return true
+    }
+
+    const readPlainTransferText = (transfer: DataTransfer | null): string =>
+      transfer?.getData('text/plain') || transfer?.getData('text') || ''
+
+    const handlePaste = (event: ClipboardEvent) => {
+      const active = activeEditRef.current
+      if (!active || !isEventOnActiveEdit(event.target, active)) return
+      event.preventDefault()
+      replaceSelectionWithPlainText(readPlainTransferText(event.clipboardData))
+    }
+
+    const handleDrop = (event: DragEvent) => {
+      const active = activeEditRef.current
+      if (!active || !isEventOnActiveEdit(event.target, active)) return
+      event.preventDefault()
+      replaceSelectionWithPlainText(readPlainTransferText(event.dataTransfer))
+    }
+
+    const handleCut = (event: ClipboardEvent) => {
+      const active = activeEditRef.current
+      if (!active || !isEventOnActiveEdit(event.target, active)) return
+
+      const selection = window.getSelection()
+      if (
+        event.clipboardData &&
+        selection &&
+        typeof event.clipboardData.setData === 'function'
+      ) {
+        event.clipboardData.setData('text/plain', selection.toString())
+      }
+      event.preventDefault()
+      replaceSelectionWithPlainText('')
+    }
+
+    const handleClick = (e: MouseEvent) => {
       if (!editModeRef.current) return
 
       const target = e.target as HTMLElement
@@ -431,7 +577,10 @@ export function useTextEdit(
       })
     }
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeEditRef.current && (e.isComposing || e.keyCode === 229)) {
+        return
+      }
       if (
         activeEditRef.current &&
         (e.ctrlKey || e.metaKey) &&
@@ -543,7 +692,7 @@ export function useTextEdit(
       }
     }
 
-    const handleBeforeInput = (e) => {
+    const handleBeforeInput = (e: InputEvent) => {
       const active = activeEditRef.current
       if (!active || !active.lockedChildren) return
       const sel = window.getSelection()
@@ -599,17 +748,23 @@ export function useTextEdit(
     container.addEventListener('blur', handleBlur, true)
     container.addEventListener('keydown', handleKeyDown)
     container.addEventListener('beforeinput', handleBeforeInput)
+    container.addEventListener('paste', handlePaste)
+    container.addEventListener('drop', handleDrop)
+    container.addEventListener('cut', handleCut)
 
     return () => {
       container.removeEventListener('click', handleClick)
       container.removeEventListener('blur', handleBlur, true)
       container.removeEventListener('keydown', handleKeyDown)
       container.removeEventListener('beforeinput', handleBeforeInput)
+      container.removeEventListener('paste', handlePaste)
+      container.removeEventListener('drop', handleDrop)
+      container.removeEventListener('cut', handleCut)
       if (blurRafRef.current !== null) {
         cancelAnimationFrame(blurRafRef.current)
         blurRafRef.current = null
       }
-      finishEdit()
+      cancelEdit()
     }
   }, [containerRef])
 
