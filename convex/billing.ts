@@ -60,6 +60,42 @@ async function getCredits(ctx: QueryCtx | MutationCtx, userId: string) {
   return credits?.remaining ?? 0
 }
 
+async function requireBillingReadAccess(
+  ctx: QueryCtx,
+  requestedUserId: string,
+): Promise<void> {
+  // Historical server callers use opaque, non-Clerk user ids. Clerk user ids
+  // include the issuer separator and must always be bound to the caller.
+  if (!requestedUserId.includes('|')) return
+
+  const identity = await ctx.auth.getUserIdentity()
+  if (identity?.tokenIdentifier === requestedUserId) return
+
+  throw new ConvexError({
+    code: identity === null ? 'UNAUTHENTICATED' : 'FORBIDDEN',
+    message: 'Billing details are available only to their owner.',
+  })
+}
+
+async function findProviderSubscription(
+  ctx: QueryCtx | MutationCtx,
+  provider: Doc<'subscriptions'>['provider'],
+  providerSubscriptionId: string | undefined,
+): Promise<Doc<'subscriptions'> | null> {
+  if (providerSubscriptionId === undefined) return null
+
+  const candidates = await ctx.db
+    .query('subscriptions')
+    .withIndex('by_providerSubscriptionId', (index) =>
+      index.eq('providerSubscriptionId', providerSubscriptionId),
+    )
+    .take(10)
+  return (
+    candidates.find((subscription) => subscription.provider === provider) ??
+    null
+  )
+}
+
 export const getSubscriptionStatus = query({
   args: {},
   handler: async (ctx) => {
@@ -120,15 +156,20 @@ export const hasActiveSubscription = query({
   args: {
     userId: v.string(),
   },
-  handler: async (ctx, args) =>
-    (await getActiveSubscription(ctx, args.userId)) !== null,
+  handler: async (ctx, args) => {
+    await requireBillingReadAccess(ctx, args.userId)
+    return (await getActiveSubscription(ctx, args.userId)) !== null
+  },
 })
 
 export const getUserCredits = query({
   args: {
     userId: v.string(),
   },
-  handler: async (ctx, args) => await getCredits(ctx, args.userId),
+  handler: async (ctx, args) => {
+    await requireBillingReadAccess(ctx, args.userId)
+    return await getCredits(ctx, args.userId)
+  },
 })
 
 export const addCreditsForUser = internalMutation({
@@ -179,15 +220,11 @@ export const upsertSubscriptionForUser = internalMutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now()
-    const existing =
-      args.providerSubscriptionId === undefined
-        ? null
-        : await ctx.db
-            .query('subscriptions')
-            .withIndex('by_providerSubscriptionId', (index) =>
-              index.eq('providerSubscriptionId', args.providerSubscriptionId),
-            )
-            .first()
+    const existing = await findProviderSubscription(
+      ctx,
+      args.provider,
+      args.providerSubscriptionId,
+    )
 
     if (existing !== null) {
       await ctx.db.patch(existing._id, {
@@ -288,6 +325,7 @@ export const getCreditLedger = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireBillingReadAccess(ctx, args.userId)
     const limit = Math.min(args.limit ?? 50, 100)
     const transactions = await ctx.db
       .query('creditLedger')
@@ -340,88 +378,132 @@ export const applyBillingWebhook = mutation({
       })
     }
 
+    const idempotencyKey = args.idempotencyKey.trim()
+    const userId = args.userId.trim()
+    const credits = args.credits
+    if (!idempotencyKey || !userId) {
+      throw new ConvexError({
+        code: 'INVALID_BILLING_EVENT',
+        message: 'Billing event identifiers must not be blank.',
+      })
+    }
+    if (
+      credits !== undefined &&
+      (!Number.isSafeInteger(credits) || credits <= 0)
+    ) {
+      throw new ConvexError({
+        code: 'INVALID_BILLING_EVENT',
+        message: 'Credit grants must be positive whole numbers.',
+      })
+    }
+
+    const subscription =
+      args.subscription === undefined
+        ? undefined
+        : {
+            ...args.subscription,
+            planId: args.subscription.planId.trim(),
+            providerSubscriptionId:
+              args.subscription.providerSubscriptionId?.trim(),
+            providerCheckoutId: args.subscription.providerCheckoutId?.trim(),
+          }
+    if (
+      subscription !== undefined &&
+      (!subscription.planId ||
+        subscription.providerSubscriptionId === '' ||
+        subscription.providerCheckoutId === '')
+    ) {
+      throw new ConvexError({
+        code: 'INVALID_BILLING_EVENT',
+        message: 'Subscription identifiers must not be blank.',
+      })
+    }
+    if (subscription === undefined && credits === undefined) {
+      throw new ConvexError({
+        code: 'INVALID_BILLING_EVENT',
+        message: 'Billing events must contain a subscription or credit grant.',
+      })
+    }
+
     const existingWebhook = await ctx.db
       .query('webhookEvents')
       .withIndex('by_provider_idempotencyKey', (index) =>
         index
           .eq('provider', args.provider)
-          .eq('idempotencyKey', args.idempotencyKey),
+          .eq('idempotencyKey', idempotencyKey),
       )
       .first()
     if (existingWebhook !== null) {
       return { processed: false, duplicate: true }
     }
 
+    const existingSubscription = await findProviderSubscription(
+      ctx,
+      args.provider,
+      subscription?.providerSubscriptionId,
+    )
+    if (
+      existingSubscription !== null &&
+      existingSubscription.userId !== userId
+    ) {
+      throw new ConvexError({
+        code: 'SUBSCRIPTION_OWNERSHIP_CONFLICT',
+        message: 'Provider subscription already belongs to another user.',
+      })
+    }
+
     const now = Date.now()
     await ctx.db.insert('webhookEvents', {
       provider: args.provider,
-      idempotencyKey: args.idempotencyKey,
+      idempotencyKey,
       processedAt: now,
     })
 
     let referralUnlock: { referrerUserId: string } | null = null
 
-    if (args.subscription !== undefined) {
-      const existing =
-        args.subscription.providerSubscriptionId === undefined
-          ? null
-          : await ctx.db
-              .query('subscriptions')
-              .withIndex('by_providerSubscriptionId', (index) =>
-                index.eq(
-                  'providerSubscriptionId',
-                  args.subscription!.providerSubscriptionId,
-                ),
-              )
-              .first()
-
-      if (existing === null) {
+    if (subscription !== undefined) {
+      if (existingSubscription === null) {
         await ctx.db.insert('subscriptions', {
-          userId: args.userId,
+          userId,
           provider: args.provider,
-          status: args.subscription.status,
-          planId: args.subscription.planId,
-          providerSubscriptionId: args.subscription.providerSubscriptionId,
-          providerCheckoutId: args.subscription.providerCheckoutId,
+          status: subscription.status,
+          planId: subscription.planId,
+          providerSubscriptionId: subscription.providerSubscriptionId,
+          providerCheckoutId: subscription.providerCheckoutId,
           createdAt: now,
           updatedAt: now,
-          canceledAt:
-            args.subscription.status === 'cancelled' ? now : undefined,
+          canceledAt: subscription.status === 'cancelled' ? now : undefined,
         })
       } else {
-        await ctx.db.patch(existing._id, {
-          userId: args.userId,
-          provider: args.provider,
-          status: args.subscription.status,
-          planId: args.subscription.planId,
-          providerCheckoutId: args.subscription.providerCheckoutId,
+        await ctx.db.patch(existingSubscription._id, {
+          status: subscription.status,
+          planId: subscription.planId,
+          providerCheckoutId: subscription.providerCheckoutId,
           updatedAt: now,
-          canceledAt:
-            args.subscription.status === 'cancelled' ? now : undefined,
+          canceledAt: subscription.status === 'cancelled' ? now : undefined,
         })
       }
 
       // When the payer's subscription is active, attribute any referral that
       // brought them in. Returns the referrer only when their reward JUST
       // unlocked, so the server can apply the lifetime discount.
-      if (activeSubscriptionStatuses.has(args.subscription.status)) {
-        const result = await qualifyReferralOnPayment(ctx, args.userId)
+      if (activeSubscriptionStatuses.has(subscription.status)) {
+        const result = await qualifyReferralOnPayment(ctx, userId)
         if (result !== null) {
           referralUnlock = { referrerUserId: result.referrerUserId }
         }
       }
     }
 
-    if ((args.credits ?? 0) > 0) {
+    if (credits !== undefined) {
       const existingCredits = await ctx.db
         .query('customerCredits')
-        .withIndex('by_userId', (index) => index.eq('userId', args.userId))
+        .withIndex('by_userId', (index) => index.eq('userId', userId))
         .first()
-      const balanceAfter =
-        (existingCredits?.remaining ?? 0) + (args.credits ?? 0)
+      const balanceAfter = (existingCredits?.remaining ?? 0) + credits
       if (existingCredits === null) {
         await ctx.db.insert('customerCredits', {
-          userId: args.userId,
+          userId,
           remaining: balanceAfter,
           updatedAt: now,
         })
@@ -432,8 +514,8 @@ export const applyBillingWebhook = mutation({
         })
       }
       await ctx.db.insert('creditLedger', {
-        userId: args.userId,
-        amount: args.credits!,
+        userId,
+        amount: credits,
         balanceAfter,
         reason: 'purchase',
         createdAt: now,
