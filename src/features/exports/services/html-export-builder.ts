@@ -3,6 +3,58 @@ const SHIP_FAST_BADGE_RE =
   /\s*<a\b[^>]*data-ship-fast-export-badge="1"[\s\S]*?<\/a>/i
 const SHIP_FAST_BADGE_LOGO_SVG =
   '<svg viewBox="0 0 52 52" width="16" height="16" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><path d="M26 4 8 20l6 2 12-12 12 12 6-2L26 4Z" fill="#7c3aed"/><path d="M14 22v18l8-4V24l-8-2Z" fill="#6d28d9"/><path d="M38 22v18l-8-4V24l8-2Z" fill="#6d28d9"/><path d="M22 24v12l4 2 4-2V24l-4-4-4 4Z" fill="#a78bfa"/><path d="m22 38 4 10 4-10-4 2-4-2Z" fill="#c4b5fd"/></svg>'
+const URL_ATTRIBUTE_PATTERN =
+  /(\s+)(href|src|action|formaction)(\s*=\s*)("[^"]*"|'[^']*'|[^\s"'`=<>]+)/gi
+const SAFE_DATA_IMAGE_PATTERN =
+  /^data:image\/(?:avif|gif|jpe?g|png|webp)(?:;|,)/i
+
+const decodeUrlEntities = (value: string): string =>
+  value
+    .replace(/&(?:colon|tab|newline);?/gi, (entity) => {
+      const name = entity.replace(/[&;]/g, '').toLowerCase()
+      if (name === 'colon') return ':'
+      return name === 'tab' ? '\t' : '\n'
+    })
+    .replace(/&#(?:x([0-9a-f]+)|(\d+));?/gi, (entity, hex, decimal) => {
+      const codePoint = Number.parseInt(hex ?? decimal ?? '', hex ? 16 : 10)
+      if (!Number.isSafeInteger(codePoint) || codePoint > 0x10ffff)
+        return entity
+      return String.fromCodePoint(codePoint)
+    })
+
+const stripUrlControls = (value: string): string =>
+  [...value]
+    .filter((character) => {
+      const codePoint = character.codePointAt(0)
+      return (
+        codePoint !== undefined &&
+        codePoint > 0x20 &&
+        (codePoint < 0x7f || codePoint > 0x9f)
+      )
+    })
+    .join('')
+
+const isExecutableUrl = (value: string): boolean => {
+  const normalized = stripUrlControls(decodeUrlEntities(value)).toLowerCase()
+  if (normalized.startsWith('javascript:')) return true
+  if (normalized.startsWith('vbscript:')) return true
+  return (
+    normalized.startsWith('data:') && !SAFE_DATA_IMAGE_PATTERN.test(normalized)
+  )
+}
+
+const removeExecutableUrlAttributes = (html: string): string =>
+  html.replace(
+    URL_ATTRIBUTE_PATTERN,
+    (attribute, whitespace, name, separator, encodedValue) => {
+      const value = /^(['"])/.test(encodedValue)
+        ? encodedValue.slice(1, -1)
+        : encodedValue
+      return isExecutableUrl(value)
+        ? ''
+        : `${whitespace}${name}${separator}${encodedValue}`
+    },
+  )
 
 export interface HtmlExportOptions {
   includeBadge?: boolean
@@ -43,5 +95,5 @@ export function buildHtmlExport(
     html = injectShipFastBadge(html)
   }
 
-  return html
+  return removeExecutableUrlAttributes(html)
 }
