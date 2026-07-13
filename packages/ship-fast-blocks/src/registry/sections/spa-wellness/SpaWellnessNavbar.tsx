@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * SpaWellnessNavbar — serene top navigation bar for a day-spa / wellness site.
@@ -35,18 +44,48 @@ export const SpaWellnessNavbar = defineCapsule({
     const links = props.links?.length
       ? props.links
       : ['Treatments', 'Memberships', 'Gift Cards', 'Contact']
+    const go = useNavigate()
+    const brand = props.brand ?? 'Lumen Spa'
+    const brandClassName = 'font-serif text-xl font-semibold tracking-tight'
+    const ctaLabel = props.cta ?? 'Book Now'
+    const ctaTarget = props.ctaTarget ?? 'Booking'
+    const homeTarget = props.homeTarget ?? 'Home'
+
     return (
-      <SiteNav
-        brand={props.brand ?? 'Lumen Spa'}
-        brandClassName="font-serif text-xl font-semibold tracking-tight"
-        nav={links}
-        cta={{
-          label: props.cta ?? 'Book Now',
-          target: props.ctaTarget ?? 'Booking',
-        }}
-        homeTarget={props.homeTarget ?? 'Home'}
-        className={props.className}
-      />
+      <SiteNav position="fixed" height="default" className={props.className}>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-3"
+          >
+            <Logo brand={brand} labelClassName={brandClassName} />
+          </button>
+        </NavbarBrand>
+        <NavbarNav>
+          {links.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+        <NavbarActions>
+          <NavbarCta
+            variant="primary-pill"
+            className="hidden px-5 py-2.5 sm:inline-flex"
+            onClick={() => go(ctaTarget)}
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={links}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

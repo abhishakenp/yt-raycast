@@ -1,7 +1,17 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * RealEstateNavbar — confident top navigation for a premium brokerage site. A
@@ -33,21 +43,59 @@ export const RealEstateNavbar = defineCapsule({
     const nav = props.links?.length
       ? props.links
       : ['Buy', 'Sell', 'Rent', 'Agents', 'Contact']
+    const brand = props.brand ?? 'Marbury & Co.'
+    const phone = props.phone ?? '(415) 555-0148'
+    const cta = props.cta ?? 'List a Property'
+    const ctaTarget = props.ctaTarget ?? 'List'
+    const homeTarget = 'Home'
+    const go = useNavigate()
 
     return (
-      <SiteNav
-        brand={props.brand ?? 'Marbury & Co.'}
-        brandClassName="font-serif text-xl font-semibold tracking-tight"
-        nav={nav}
-        phone={props.phone ?? '(415) 555-0148'}
-        cta={{
-          label: props.cta ?? 'List a Property',
-          target: props.ctaTarget ?? 'List',
-          variant: 'primary',
-        }}
-        homeTarget="Home"
-        className={props.className}
-      />
+      <SiteNav position="fixed" height="default" className={props.className}>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-3"
+          >
+            <Logo
+              brand={brand}
+              labelClassName="font-serif text-xl font-semibold tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+        <NavbarActions>
+          {phone ? (
+            <a
+              href={`tel:${phone.replace(/[^\d+]/g, '')}`}
+              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+            >
+              {phone}
+            </a>
+          ) : null}
+          <NavbarCta
+            variant="primary-pill"
+            className="hidden px-5 py-2.5 sm:inline-flex"
+            onClick={() => go(ctaTarget)}
+          >
+            {cta}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: cta, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

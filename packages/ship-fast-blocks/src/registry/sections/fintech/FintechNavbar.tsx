@@ -1,7 +1,17 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * FintechNavbar — sticky site header for a fintech / neobank / digital-banking
@@ -50,22 +60,53 @@ export const FintechNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Features', 'Security', 'Pricing', 'FAQ']
+    const brand = props.brand ?? 'Vault'
+    const ctaLabel = props.ctaLabel ?? 'Get Started'
+    const ctaTarget = props.ctaTarget ?? 'Open an Account'
+    const homeTarget = props.homeTarget ?? nav[0]
     return (
-      <SiteNav
-        brand={props.brand ?? 'Vault'}
-        brandMark={<ShieldMark className="size-8 text-primary" />}
-        brandClassName="text-xl font-semibold tracking-tight"
-        nav={nav}
-        cta={{
-          label: props.ctaLabel ?? 'Get Started',
-          target: props.ctaTarget ?? 'Open an Account',
-        }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        className={props.className}
-      />
+      <SiteNav position="fixed" height="default" className={props.className}>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-3"
+          >
+            <ShieldMark className="size-8 text-primary" />
+            <Logo
+              brand={brand}
+              labelClassName="text-xl font-semibold tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+        <NavbarActions>
+          <NavbarCta
+            variant="primary-pill"
+            className="hidden px-5 py-2.5 sm:inline-flex"
+            onClick={() => go(ctaTarget)}
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

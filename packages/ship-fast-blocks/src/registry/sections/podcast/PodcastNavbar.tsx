@@ -1,7 +1,17 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 function MicWaveMark({ className }: { className?: string }) {
   return (
@@ -43,19 +53,51 @@ export const PodcastNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Episodes', 'About', 'Hosts', 'Subscribe']
+    const brand = props.brand ?? 'Signal & Static'
+    const ctaLabel = props.ctaLabel ?? 'Subscribe'
+    const ctaTarget = props.ctaTarget ?? 'Subscribe'
+    const homeTarget = props.homeTarget ?? nav[0]
+    const go = useNavigate()
+
     return (
-      <SiteNav
-        brand={props.brand ?? 'Signal & Static'}
-        brandMark={<MicWaveMark className="size-8 text-primary" />}
-        brandClassName="font-semibold tracking-tight text-xl"
-        nav={nav}
-        cta={{
-          label: props.ctaLabel ?? 'Subscribe',
-          target: props.ctaTarget ?? 'Subscribe',
-        }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        className={props.className}
-      />
+      <SiteNav position="fixed" height="default" className={props.className}>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-3"
+          >
+            <MicWaveMark className="size-8 text-primary" />
+            <Logo
+              brand={brand}
+              labelClassName="font-semibold tracking-tight text-xl"
+            />
+          </button>
+        </NavbarBrand>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+        <NavbarActions>
+          <NavbarCta
+            variant="primary-pill"
+            className="hidden px-5 py-2.5 sm:inline-flex"
+            onClick={() => go(ctaTarget)}
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /** Inline compass brand mark — adventurous, currentColor → theme token. */
 function CompassMark({ className }: { className?: string }) {
@@ -58,19 +67,59 @@ export const TourExperiencesNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Tours', 'Destinations', 'Pricing', 'Reviews', 'Book a Tour']
+    const go = useNavigate()
+    const brand = props.brand ?? 'Wanderwild Tours'
+    const brandMark = <CompassMark className="size-8 text-primary" />
+    const brandClassName = 'text-xl font-medium text-foreground'
+    const phone = props.phone ?? '(415) 555-0188'
+    const ctaLabel = props.ctaLabel ?? 'Book a Tour'
+    const ctaTarget = props.ctaTarget ?? 'Book a Tour'
+    const homeTarget = props.homeTarget ?? nav[0]
+
     return (
-      <SiteNav
-        brand={props.brand ?? 'Wanderwild Tours'}
-        brandMark={<CompassMark className="size-8 text-primary" />}
-        nav={nav}
-        phone={props.phone ?? '(415) 555-0188'}
-        cta={{
-          label: props.ctaLabel ?? 'Book a Tour',
-          target: props.ctaTarget ?? 'Book a Tour',
-        }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        className={props.className}
-      />
+      <SiteNav position="fixed" height="default" className={props.className}>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-3"
+          >
+            {brandMark}
+            <Logo brand={brand} labelClassName={brandClassName} />
+          </button>
+        </NavbarBrand>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+        <NavbarActions>
+          {phone ? (
+            <a
+              href={`tel:${phone.replace(/[^\d+]/g, '')}`}
+              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+            >
+              {phone}
+            </a>
+          ) : null}
+          <NavbarCta
+            variant="primary-pill"
+            className="hidden px-5 py-2.5 sm:inline-flex"
+            onClick={() => go(ctaTarget)}
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

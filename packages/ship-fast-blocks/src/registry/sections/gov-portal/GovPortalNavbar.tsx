@@ -5,7 +5,7 @@ import { MenuIcon, PhoneIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo } from '#/section-kit/index.ts'
+import { Logo, NavbarActions, NavbarBrand } from '#/section-kit/index.ts'
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -404,20 +404,22 @@ export const GovPortalNavbar = defineCapsule({
         {/* brand header */}
         <div className="border-b border-border">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-            <button
-              type="button"
-              onClick={() => go('Home')}
-              className="flex items-center gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label={`${brand} — home`}
-            >
-              {Brandmark}
-              {cin ? (
-                <span className="hidden border-l border-border pl-3 text-xs text-muted-foreground lg:block">
-                  CIN {cin}
-                </span>
-              ) : null}
-            </button>
-            <div className="flex items-center gap-3">
+            <NavbarBrand asChild>
+              <button
+                type="button"
+                onClick={() => go('Home')}
+                className="flex items-center gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={`${brand} — home`}
+              >
+                {Brandmark}
+                {cin ? (
+                  <span className="hidden border-l border-border pl-3 text-xs text-muted-foreground lg:block">
+                    CIN {cin}
+                  </span>
+                ) : null}
+              </button>
+            </NavbarBrand>
+            <NavbarActions className="gap-3">
               {location ? (
                 <span className="hidden max-w-[14rem] text-right text-xs text-muted-foreground md:block">
                   {location}
@@ -472,7 +474,7 @@ export const GovPortalNavbar = defineCapsule({
                   </div>
                 </SheetContent>
               </Sheet>
-            </div>
+            </NavbarActions>
           </div>
         </div>
 

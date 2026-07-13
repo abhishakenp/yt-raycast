@@ -1,7 +1,17 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * PortfolioNavbar — fixed, blur-backdrop top navigation for a creative-individual
@@ -34,18 +44,50 @@ export const PortfolioNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Work', 'About', 'Services', 'Contact']
+    const brand = props.brand ?? 'Kaelen Vance'
+    const ctaLabel = props.ctaLabel ?? 'Get in touch'
+    const ctaTarget = props.ctaTarget ?? 'Contact'
+    const homeTarget = props.homeTarget ?? nav[0]
+    const go = useNavigate()
+
     return (
-      <SiteNav
-        brand={props.brand ?? 'Kaelen Vance'}
-        brandClassName="text-xl font-bold tracking-tight"
-        nav={nav}
-        cta={{
-          label: props.ctaLabel ?? 'Get in touch',
-          target: props.ctaTarget ?? 'Contact',
-        }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        className={props.className}
-      />
+      <SiteNav position="fixed" height="default" className={props.className}>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-3"
+          >
+            <Logo
+              brand={brand}
+              labelClassName="text-xl font-bold tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+        <NavbarActions>
+          <NavbarCta
+            variant="primary-pill"
+            className="hidden px-5 py-2.5 sm:inline-flex"
+            onClick={() => go(ctaTarget)}
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

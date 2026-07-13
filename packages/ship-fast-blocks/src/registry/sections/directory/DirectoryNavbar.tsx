@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { directoryLakebed } from './directory-lakebed.ts'
 import {
   DirectoryAccountButton,
@@ -21,7 +28,6 @@ import {
  * Use as the site header for local directories, business-listing marketplaces,
  * find-a-service platforms, review-and-discovery sites, or city guides.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const DirectoryNavbar = defineCapsule({
   name: 'DirectoryNavbar',
   description:
@@ -65,64 +71,60 @@ export const DirectoryNavbar = defineCapsule({
       </svg>
     )
     return (
-      <nav
-        className={cn('border-b border-border bg-card', props.className)}
-        aria-label="Main navigation"
+      <SiteNav
+        position="sticky"
+        height="compact"
+        className={cn('bg-card', props.className)}
       >
-        <Container>
-          <div className="flex h-16 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="flex items-center gap-2"
-            >
-              <BrandLogo
-                brand={brand}
-                fallback={<PinLogo className="size-8 text-foreground" />}
-                labelClassName="text-xl font-semibold text-foreground"
-              />
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <DirectorySearchButton
-                lakebed={lakebed}
-                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              />
-              <DirectoryAccountButton
-                lakebed={lakebed}
-                label={signIn}
-                buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
-              />
-              <DirectoryLeadButton
-                lakebed={lakebed}
-                action={listCta}
-                source="navbar"
-                pendingChildren={<DirectoryMutationSpinner />}
-                className="hidden min-h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
-              >
-                {listCta}
-              </DirectoryLeadButton>
-              <DirectoryMobileMenu
-                brand={brand}
-                homeTarget={homeTarget}
-                nav={nav}
-                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-              />
-            </div>
-          </div>
-        </Container>
-      </nav>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-2"
+          >
+            <BrandLogo
+              brand={brand}
+              fallback={<PinLogo className="size-8 text-foreground" />}
+              labelClassName="text-xl font-semibold text-foreground"
+            />
+          </button>
+        </NavbarBrand>
+
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+
+        <NavbarActions className="gap-2 sm:gap-3">
+          <DirectorySearchButton
+            lakebed={lakebed}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          />
+          <DirectoryAccountButton
+            lakebed={lakebed}
+            label={signIn}
+            buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+          />
+          <DirectoryLeadButton
+            lakebed={lakebed}
+            action={listCta}
+            source="navbar"
+            pendingChildren={<DirectoryMutationSpinner />}
+            className="hidden min-h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+          >
+            {listCta}
+          </DirectoryLeadButton>
+          <DirectoryMobileMenu
+            brand={brand}
+            homeTarget={homeTarget}
+            nav={nav}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

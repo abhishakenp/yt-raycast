@@ -5,6 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import {
   NewsletterAccountButton,
@@ -41,13 +47,14 @@ export const ComingSoonNavbar = defineCapsule({
       : ['Features', 'Join Waitlist']
 
     return (
-      <nav
-        className={cn(
-          'w-full px-4 py-6 sm:px-6 lg:px-8 xl:px-12',
-          props.className,
-        )}
+      <SiteNav
+        position="sticky"
+        height="outlier"
+        className={cn('border-0', props.className)}
+        containerClassName="max-w-6xl xl:px-12"
+        rowClassName="py-6"
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
+        <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(brand)}
@@ -56,47 +63,47 @@ export const ComingSoonNavbar = defineCapsule({
           >
             <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
           </button>
-          <div className="flex items-center gap-6">
-            <button
-              type="button"
-              onClick={() => go(links[0])}
-              className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              {links[0]}
-            </button>
-            <NewsletterAccountButton
-              lakebed={lakebed}
-              buttonClassName="hidden size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
-            />
-            <NewsletterSubscribeDrawer
-              lakebed={lakebed}
-              buttonLabel={links[links.length - 1] ?? 'Join Waitlist'}
-              source="navbar"
-              buttonClassName="hidden border-b border-foreground text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground sm:inline-flex"
-            />
-            <MobileNavDrawer
-              brand={brand}
-              label="Menu"
-              nav={links.slice(0, -1)}
-              homeTarget={brand}
-              buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
-              footer={
-                <NewsletterSubscribeForm
-                  lakebed={lakebed}
-                  source="navbar"
-                  buttonLabel={links[links.length - 1] ?? 'Join Waitlist'}
-                  pendingLabel="Joining"
-                  placeholder="you@example.com"
-                  successMessage="You're on the waitlist."
-                  className="grid gap-2"
-                  inputClassName="min-h-11 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
-                  buttonClassName="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
-                />
-              }
-            />
-          </div>
-        </div>
-      </nav>
+        </NavbarBrand>
+
+        <NavbarActions className="gap-6">
+          <NavbarNavLink
+            onClick={() => go(links[0])}
+            className="hidden sm:block"
+          >
+            {links[0]}
+          </NavbarNavLink>
+          <NewsletterAccountButton
+            lakebed={lakebed}
+            buttonClassName="hidden size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+          />
+          <NewsletterSubscribeDrawer
+            lakebed={lakebed}
+            buttonLabel={links[links.length - 1] ?? 'Join Waitlist'}
+            source="navbar"
+            buttonClassName="hidden border-b border-foreground text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground sm:inline-flex"
+          />
+          <MobileNavDrawer
+            brand={brand}
+            label="Menu"
+            nav={links.slice(0, -1)}
+            homeTarget={brand}
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
+            footer={
+              <NewsletterSubscribeForm
+                lakebed={lakebed}
+                source="navbar"
+                buttonLabel={links[links.length - 1] ?? 'Join Waitlist'}
+                pendingLabel="Joining"
+                placeholder="you@example.com"
+                successMessage="You're on the waitlist."
+                className="grid gap-2"
+                inputClassName="min-h-11 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+                buttonClassName="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
+              />
+            }
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })

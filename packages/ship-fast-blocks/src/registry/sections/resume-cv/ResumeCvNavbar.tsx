@@ -1,7 +1,17 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo } from '#/section-kit/Logo.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import {
+  NavbarActions,
+  NavbarBrand,
+  NavbarCta,
+  NavbarNav,
+  NavbarNavLink,
+  SiteNav,
+} from '#/section-kit/index.ts'
 
 /**
  * ResumeCvNavbar — sticky site header for a personal resume / CV / portfolio
@@ -38,26 +48,60 @@ export const ResumeCvNavbar = defineCapsule({
       ? props.nav
       : ['About', 'Experience', 'Skills', 'Projects']
     const initials = props.initials ?? 'JA'
+    const brand = props.brand ?? 'Jordan Avery'
+    const ctaLabel = props.ctaLabel ?? 'Contact Me'
+    const ctaTarget = props.ctaTarget ?? 'Contact'
+    const homeTarget = props.homeTarget ?? nav[0]
+    const go = useNavigate()
+
+    const brandMark = (
+      <span
+        aria-hidden="true"
+        className="inline-flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+      >
+        {initials}
+      </span>
+    )
+
     return (
-      <SiteNav
-        brand={props.brand ?? 'Jordan Avery'}
-        brandMark={
-          <span
-            aria-hidden="true"
-            className="inline-flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+      <SiteNav position="fixed" height="default" className={props.className}>
+        <NavbarBrand asChild>
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="gap-3"
           >
-            {initials}
-          </span>
-        }
-        brandClassName="text-lg font-semibold tracking-tight"
-        nav={nav}
-        cta={{
-          label: props.ctaLabel ?? 'Contact Me',
-          target: props.ctaTarget ?? 'Contact',
-        }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        className={props.className}
-      />
+            {brandMark}
+            <Logo
+              brand={brand}
+              labelClassName="text-lg font-semibold tracking-tight"
+            />
+          </button>
+        </NavbarBrand>
+        <NavbarNav>
+          {nav.map((label) => (
+            <NavbarNavLink key={label} onClick={() => go(label)}>
+              {label}
+            </NavbarNavLink>
+          ))}
+        </NavbarNav>
+        <NavbarActions>
+          <NavbarCta
+            variant="primary-pill"
+            className="hidden px-5 py-2.5 sm:inline-flex"
+            onClick={() => go(ctaTarget)}
+          >
+            {ctaLabel}
+          </NavbarCta>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            cta={{ label: ctaLabel, target: ctaTarget }}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+          />
+        </NavbarActions>
+      </SiteNav>
     )
   },
 })
