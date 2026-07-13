@@ -5343,9 +5343,10 @@ export function injectSyncEndpoint(
 
     function canUseLegacySnapshot(ctx, tables) {
       const names = Object.keys(tables).filter((name) => fieldMap[name] && ctx.db[name]);
-      return names.length > 0 && names.every((name) =>
+      const usesCompatibilityTableApi = names.every((name) =>
         typeof ctx.db[name].get !== "function" || typeof ctx.db[name].update !== "function"
       );
+      return names.length > 0 && (protocolTablesAvailable(ctx) || usesCompatibilityTableApi);
     }
 
     function applyLegacySnapshot(ctx, tables) {
