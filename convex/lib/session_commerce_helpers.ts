@@ -214,7 +214,10 @@ export async function loadSessionCommerceConfig(
   sessionId: Id<'sessions'>,
 ) {
   const session = await ctx.db.get(sessionId)
-  if (session === null || !(await canReadPrivateSession(ctx, session))) {
+  if (
+    session === null ||
+    (session.isPrivate === true && !(await canReadPrivateSession(ctx, session)))
+  ) {
     return null
   }
 
@@ -353,14 +356,17 @@ export async function upsertDeploymentCommerceTenant(
     args.webhookSecret === undefined
       ? existing?.webhookSecretHash
       : await hashOwnerSecret(args.webhookSecret)
+  const readyStatus: Doc<'commerceTenants'>['status'] = 'ready'
+  const initialSyncStatus: Doc<'commerceTenants'>['syncStatus'] =
+    existing?.syncStatus ?? 'idle'
   const patch = {
     deploymentId: deployment._id,
     sessionId: deployment.sessionId,
     deploymentSlug: deployment.slug,
     provider: args.provider,
     providerTenantId: args.providerTenantId,
-    status: 'ready' as const,
-    syncStatus: existing?.syncStatus ?? ('idle' as const),
+    status: readyStatus,
+    syncStatus: initialSyncStatus,
     backendUrl: args.backendUrl,
     adminUrl: args.adminUrl,
     storefrontUrl: args.storefrontUrl,
@@ -384,7 +390,7 @@ export async function upsertDeploymentCommerceTenant(
     deploymentId: deployment._id,
     deploymentSlug: deployment.slug,
     sessionId: deployment.sessionId,
-    status: 'ready' as const,
+    status: readyStatus,
   }
 }
 
@@ -431,6 +437,9 @@ export async function recordDeploymentCommerceTenantPull(
   }
 
   const failed = args.errorMessage !== undefined
+  const pullStatus: Doc<'commerceTenants'>['status'] = failed
+    ? 'degraded'
+    : 'ready'
   await ctx.db.patch(tenant._id, {
     ...(args.productCount === undefined
       ? {}
@@ -439,7 +448,7 @@ export async function recordDeploymentCommerceTenantPull(
       ? { lastPullAt: now }
       : { lastWebhookAt: now }),
     errorMessage: args.errorMessage,
-    status: failed ? 'degraded' : 'ready',
+    status: pullStatus,
     syncStatus: failed ? 'failed' : 'ready',
     updatedAt: now,
   })
@@ -448,7 +457,7 @@ export async function recordDeploymentCommerceTenantPull(
     deploymentSlug: deployment.slug,
     productCount: args.productCount,
     source: args.source,
-    status: failed ? ('degraded' as const) : ('ready' as const),
+    status: pullStatus,
   }
 }
 
