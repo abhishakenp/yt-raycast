@@ -28,7 +28,10 @@ export type SectionRenderer = ComponentType<SectionRenderProps>
  * Reserved keys that the lakebed seed pipeline stamps onto rows. They are not
  * section props and must never be merged back into the component props.
  */
+const UNSAFE_DATA_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
 const RESERVED_DATA_KEYS = new Set([
+  ...UNSAFE_DATA_KEYS,
   '_id',
   '_key',
   'id',
@@ -36,6 +39,14 @@ const RESERVED_DATA_KEYS = new Set([
   'shipFastGeneratedProps',
   'updatedAt',
 ])
+
+function hasOwn(record: JsonRecord, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(record, key)
+}
+
+function hasUnsafeDataKey(record: JsonRecord): boolean {
+  return Object.keys(record).some((key) => UNSAFE_DATA_KEYS.has(key))
+}
 
 function isPlainRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -81,7 +92,7 @@ export function buildSectionSeedPatch(
   const previousSeedProps = seedSnapshotFromLiveData(liveData)
 
   for (const [key, value] of Object.entries(seedProps)) {
-    if (!liveData || !(key in liveData)) {
+    if (!liveData || !hasOwn(liveData, key)) {
       patch[key] = value
       continue
     }
@@ -118,16 +129,18 @@ export function mergeSectionProps(
   liveData: JsonRecord | null,
 ): JsonRecord {
   if (!liveData) return generatedProps
-  const merged: JsonRecord = { ...generatedProps }
+  const merged = generatedSeedProps(generatedProps)
   const previousSeedProps = seedSnapshotFromLiveData(liveData)
+  const hasUnsafeLiveDataKey = hasUnsafeDataKey(liveData)
 
   for (const [key, value] of Object.entries(liveData)) {
     if (RESERVED_DATA_KEYS.has(key)) continue
 
-    if (key in generatedProps) {
-      if (!previousSeedProps) continue
+    if (hasOwn(generatedProps, key)) {
+      if (!previousSeedProps && !hasUnsafeLiveDataKey) continue
       if (
-        key in previousSeedProps &&
+        previousSeedProps &&
+        hasOwn(previousSeedProps, key) &&
         jsonEqual(value, previousSeedProps[key])
       ) {
         continue
