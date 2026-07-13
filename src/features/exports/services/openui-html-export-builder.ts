@@ -9,6 +9,7 @@ import { loadOpenUIRuntimeLibrary } from '@ship-fast/blocks/runtime'
 import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
 
 import { preprocessOpenUIResponse } from '@ship-fast/engine'
+import { localeTextDirection } from '@/features/localization/locale-direction'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { buildHtmlExport } from './html-export-builder'
@@ -822,24 +823,6 @@ function buildInteractionRuntime(
 
 type FontKey = 'font-sans' | 'font-serif' | 'font-mono'
 const fontKeys: readonly FontKey[] = ['font-sans', 'font-serif', 'font-mono']
-const rightToLeftLocales = new Set([
-  'ar',
-  'ckb',
-  'dv',
-  'fa',
-  'he',
-  'ks',
-  'ps',
-  'sd',
-  'ug',
-  'ur',
-  'yi',
-])
-
-function textDirection(locale: string): 'ltr' | 'rtl' {
-  const language = locale.trim().toLowerCase().split(/[-_]/)[0] ?? ''
-  return rightToLeftLocales.has(language) ? 'rtl' : 'ltr'
-}
 
 function buildThemeFontLinks(styles: ThemeStyles | null): string {
   if (!styles) return ''
@@ -1426,7 +1409,7 @@ async function buildStandaloneHtmlDocument(
   const seoHeadMarkup = seoHeadTags.length > 0 ? seoHeadTags.join('\n  ') : ''
   const htmlLang =
     input.locale?.trim() || seoBundle?.homeSeo?.seo.htmlLang || locale
-  const htmlDirection = textDirection(htmlLang)
+  const htmlDirection = localeTextDirection(htmlLang)
 
   return buildHtmlExport(
     `<!doctype html>

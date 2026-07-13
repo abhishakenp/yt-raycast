@@ -8,6 +8,7 @@ import React, {
 import { isTranslatableLocale } from '@/config/languages'
 import { shouldPreserveTranslationText } from '@/features/localization/native-script'
 import { transliterateLatinFallback } from '@/features/localization/client/transliterate-latin-fallback'
+import { localeTextDirection } from '@/features/localization/locale-direction'
 import { translateOnDeviceBatch } from './chrome-translator'
 
 type Locale = string
@@ -445,6 +446,7 @@ function isTextNode(node: Node): node is Text {
 export function T({ children }: React.PropsWithChildren) {
   const ref = useRef<HTMLDivElement>(null)
   const { locale } = useI18n()
+  const documentLocale = locale.trim() || 'en'
   const processedRef = useRef(new WeakSet<Node>())
   const textStateRef = useRef(new WeakMap<Text, TextTranslationState>())
   const accessibleLabelStateRef = useRef(
@@ -743,7 +745,12 @@ export function T({ children }: React.PropsWithChildren) {
   }, [locale])
 
   return (
-    <div ref={ref} style={{ display: 'contents' }}>
+    <div
+      ref={ref}
+      dir={localeTextDirection(documentLocale)}
+      lang={documentLocale}
+      style={{ display: 'contents' }}
+    >
       {children}
     </div>
   )
