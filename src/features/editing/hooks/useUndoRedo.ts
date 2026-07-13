@@ -43,6 +43,7 @@ export function useUndoRedo(controller: UndoRedoController) {
   // Client-side stacks
   const undoStackRef = useRef<number[]>([])
   const redoStackRef = useRef<number[]>([])
+  const restoreInFlightRef = useRef(false)
   const [undoStackSize, setUndoStackSize] = useState(0)
   const [redoStackSize, setRedoStackSize] = useState(0)
 
@@ -84,27 +85,43 @@ export function useUndoRedo(controller: UndoRedoController) {
   const canRedo = redoStackSize > 0
 
   const undo = useCallback(async () => {
-    if (undoStackRef.current.length === 0) return
-    // Pop the top of the undo stack — that's the version to restore to
-    const targetVersion = undoStackRef.current[undoStackRef.current.length - 1]
-    undoStackRef.current = undoStackRef.current.slice(0, -1)
-    // Push currentVersion onto redo stack
-    redoStackRef.current = [...redoStackRef.current, currentVersion]
-    setUndoStackSize(undoStackRef.current.length)
-    setRedoStackSize(redoStackRef.current.length)
-    await controller.restoreVersion(targetVersion)
+    if (restoreInFlightRef.current || undoStackRef.current.length === 0) return
+    restoreInFlightRef.current = true
+    const targetIndex = undoStackRef.current.length - 1
+    const targetVersion = undoStackRef.current[targetIndex]
+    try {
+      await controller.restoreVersion(targetVersion)
+      const nextUndoStack = [...undoStackRef.current]
+      if (nextUndoStack[targetIndex] === targetVersion) {
+        nextUndoStack.splice(targetIndex, 1)
+      }
+      undoStackRef.current = nextUndoStack
+      redoStackRef.current = [...redoStackRef.current, currentVersion]
+      setUndoStackSize(nextUndoStack.length)
+      setRedoStackSize(redoStackRef.current.length)
+    } finally {
+      restoreInFlightRef.current = false
+    }
   }, [currentVersion, controller])
 
   const redo = useCallback(async () => {
-    if (redoStackRef.current.length === 0) return
-    // Pop the top of the redo stack — that's the version to restore to
-    const targetVersion = redoStackRef.current[redoStackRef.current.length - 1]
-    redoStackRef.current = redoStackRef.current.slice(0, -1)
-    // Push currentVersion onto undo stack
-    undoStackRef.current = [...undoStackRef.current, currentVersion]
-    setRedoStackSize(redoStackRef.current.length)
-    setUndoStackSize(undoStackRef.current.length)
-    await controller.restoreVersion(targetVersion)
+    if (restoreInFlightRef.current || redoStackRef.current.length === 0) return
+    restoreInFlightRef.current = true
+    const targetIndex = redoStackRef.current.length - 1
+    const targetVersion = redoStackRef.current[targetIndex]
+    try {
+      await controller.restoreVersion(targetVersion)
+      const nextRedoStack = [...redoStackRef.current]
+      if (nextRedoStack[targetIndex] === targetVersion) {
+        nextRedoStack.splice(targetIndex, 1)
+      }
+      redoStackRef.current = nextRedoStack
+      undoStackRef.current = [...undoStackRef.current, currentVersion]
+      setRedoStackSize(nextRedoStack.length)
+      setUndoStackSize(undoStackRef.current.length)
+    } finally {
+      restoreInFlightRef.current = false
+    }
   }, [currentVersion, controller])
 
   return {
