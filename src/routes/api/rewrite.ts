@@ -3,6 +3,16 @@ import { createFileRoute } from '@tanstack/react-router'
 const MAX_REWRITE_BODY_BYTES = 1_000_000
 const REWRITE_TIMEOUT_MS = 30_000
 
+function isAuthDisabled(): boolean {
+  return (process.env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+}
+
+function isAuthenticated(request: Request): boolean {
+  if (isAuthDisabled()) return true
+  const auth = request.headers.get('authorization') ?? ''
+  return /^Bearer\s+.+$/i.test(auth)
+}
+
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
     ...init,
@@ -64,6 +74,10 @@ export const Route = createFileRoute('/api/rewrite')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        if (!isAuthenticated(request)) {
+          return json({ error: 'Authentication required' }, { status: 401 })
+        }
+
         const rawBody = await readRewriteBody(request)
         if (rawBody === null) {
           return json(
