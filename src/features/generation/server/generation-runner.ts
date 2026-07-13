@@ -1,6 +1,15 @@
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
+import {
+  assertCompletedEngineWorkspaceArtifacts,
+  createEngineWorkspacePath,
+  readEngineWorkspaceArtifacts,
+} from './engine-workspace'
 import { createShipFastEngineAdapter } from './ship-fast-engine-adapter'
-import type { EngineWorkspaceTask } from './engine-workspace'
+import { toPublicErrorMessage } from '@/shared/errors/public-error-message'
+import type {
+  EngineWorkspaceArtifacts,
+  EngineWorkspaceTask,
+} from './engine-workspace'
 import type {
   RunShipFastEngine,
   ShipFastEngineAdapterOptions,
@@ -37,14 +46,57 @@ export type RunEngineGenerationInput = {
   runAll: RunShipFastEngine
   persistence: GenerationPersistence
   onEvent?: ShipFastEngineAdapterOptions['onEvent']
+  signal?: AbortSignal
 }
 
 export type RunEngineGenerationResult =
   | { status: 'completed'; previewVersion: number }
   | { status: 'failed'; message: string }
 
-function toErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Generation failed'
+const GENERATION_TIMEOUT_MS = 90_000
+const GENERATION_ATTEMPTS = 2
+
+const signalError = (signal: AbortSignal): Error => {
+  if (signal.reason instanceof Error) return signal.reason
+  if (typeof signal.reason === 'string' && signal.reason.trim()) {
+    return new Error(signal.reason)
+  }
+  return new Error('Generation cancelled')
+}
+
+const createGenerationAbortScope = (
+  callerSignal?: AbortSignal,
+): { signal: AbortSignal; dispose: () => void } => {
+  const controller = new AbortController()
+  const abortFromCaller = () => controller.abort(callerSignal?.reason)
+
+  if (callerSignal?.aborted) abortFromCaller()
+  else callerSignal?.addEventListener('abort', abortFromCaller, { once: true })
+
+  const timeout = setTimeout(
+    () => controller.abort(new Error('Generation timed out')),
+    GENERATION_TIMEOUT_MS,
+  )
+
+  return {
+    signal: controller.signal,
+    dispose: () => {
+      clearTimeout(timeout)
+      callerSignal?.removeEventListener('abort', abortFromCaller)
+    },
+  }
+}
+
+const readCompletedWorkspace = (
+  workspace: string,
+): EngineWorkspaceArtifacts | undefined => {
+  try {
+    const artifacts = readEngineWorkspaceArtifacts(workspace)
+    assertCompletedEngineWorkspaceArtifacts(artifacts)
+    return isUnsafePublicPreviewHtml(artifacts.html) ? undefined : artifacts
+  } catch {
+    return undefined
+  }
 }
 
 export async function runEngineGeneration({
@@ -56,17 +108,43 @@ export async function runEngineGeneration({
   runAll,
   persistence,
   onEvent,
+  signal: callerSignal,
 }: RunEngineGenerationInput): Promise<RunEngineGenerationResult> {
+  const abortScope = createGenerationAbortScope(callerSignal)
+
   try {
-    const result = await createShipFastEngineAdapter({
-      runAll,
-      workspaceRoot,
-      onEvent,
-    }).generate({
-      sessionId,
-      prompt,
-      preferredLanguage,
-    })
+    if (abortScope.signal.aborted) throw signalError(abortScope.signal)
+
+    const workspace = createEngineWorkspacePath(workspaceRoot, sessionId)
+    let result = readCompletedWorkspace(workspace)
+
+    if (!result) {
+      const adapter = createShipFastEngineAdapter({
+        runAll,
+        workspaceRoot,
+        onEvent,
+      })
+      let lastError: unknown
+
+      for (let attempt = 0; attempt < GENERATION_ATTEMPTS; attempt += 1) {
+        try {
+          result = await adapter.generate({
+            sessionId,
+            prompt,
+            preferredLanguage,
+            signal: abortScope.signal,
+          })
+          break
+        } catch (error) {
+          lastError = error
+          if (abortScope.signal.aborted || attempt + 1 >= GENERATION_ATTEMPTS) {
+            throw error
+          }
+        }
+      }
+
+      if (!result) throw lastError ?? new Error('Generation failed')
+    }
 
     if (isUnsafePublicPreviewHtml(result.html)) {
       throw new Error(
@@ -85,7 +163,10 @@ export async function runEngineGeneration({
 
     return { status: 'completed', previewVersion: persisted.previewVersion }
   } catch (error) {
-    const message = toErrorMessage(error)
+    const message = toPublicErrorMessage(
+      error,
+      anonymousOwnerSecret ? [anonymousOwnerSecret] : [],
+    )
 
     await persistence
       .failGeneration({
@@ -99,5 +180,7 @@ export async function runEngineGeneration({
       })
 
     return { status: 'failed', message }
+  } finally {
+    abortScope.dispose()
   }
 }

@@ -1,4 +1,5 @@
 import {
+  assertCompletedEngineWorkspaceArtifacts,
   createEngineWorkspacePath,
   prepareEngineWorkspace,
   readEngineWorkspaceArtifacts,
@@ -39,12 +40,14 @@ export type RunShipFastEngine = (input: {
     }) => Promise<void>
   }
   preferredLanguage?: string
+  signal?: AbortSignal
 }) => Promise<unknown>
 
 export type ShipFastEngineAdapterInput = {
   sessionId: string
   prompt: string
   preferredLanguage?: string
+  signal?: AbortSignal
 }
 
 export type ShipFastEngineAdapterResult = EngineWorkspaceArtifacts & {
@@ -82,6 +85,45 @@ function createSessionContext(
   }
 }
 
+const eventKey = (event: ShipFastEngineSessionEvent): string | undefined => {
+  try {
+    return JSON.stringify(event)
+  } catch {
+    return undefined
+  }
+}
+
+const isReadinessEvent = (event: ShipFastEngineSessionEvent): boolean =>
+  event.type === 'preview_ready' || event.type === 'openui_ready'
+
+const abortReason = (signal: AbortSignal): Error => {
+  if (signal.reason instanceof Error) return signal.reason
+  if (typeof signal.reason === 'string' && signal.reason.trim()) {
+    return new Error(signal.reason)
+  }
+  return new Error('Generation cancelled')
+}
+
+const runWithSignal = async <T>(
+  operation: Promise<T>,
+  signal?: AbortSignal,
+): Promise<T> => {
+  if (!signal) return await operation
+  if (signal.aborted) throw abortReason(signal)
+
+  let abortListener: (() => void) | undefined
+  const aborted = new Promise<never>((_resolve, reject) => {
+    abortListener = () => reject(abortReason(signal))
+    signal.addEventListener('abort', abortListener, { once: true })
+  })
+
+  try {
+    return await Promise.race([operation, aborted])
+  } finally {
+    if (abortListener) signal.removeEventListener('abort', abortListener)
+  }
+}
+
 export function createShipFastEngineAdapter({
   runAll,
   workspaceRoot,
@@ -89,34 +131,52 @@ export function createShipFastEngineAdapter({
   onEvent,
 }: ShipFastEngineAdapterOptions) {
   return {
-    generate: async ({ sessionId, prompt, preferredLanguage }) => {
+    generate: async ({ sessionId, prompt, preferredLanguage, signal }) => {
       const startedAt = now()
       const events: ShipFastEngineSessionEvent[] = []
+      const deferredEvents: ShipFastEngineSessionEvent[] = []
+      const seenEvents = new Set<string>()
       const pendingEventWrites: Promise<void>[] = []
       const workspace = createEngineWorkspacePath(workspaceRoot, sessionId)
+      const persistEvent = (event: ShipFastEngineSessionEvent) => {
+        if (!onEvent) return
+
+        pendingEventWrites.push(
+          Promise.resolve()
+            .then(() => onEvent(event, { sessionId, prompt, workspace }))
+            .catch(() => undefined),
+        )
+      }
       const emit = (event) => {
+        const key = eventKey(event)
+        if (key && seenEvents.has(key)) return
+        if (key) seenEvents.add(key)
         events.push(event)
 
-        if (onEvent) {
-          pendingEventWrites.push(
-            Promise.resolve(
-              onEvent(event, { sessionId, prompt, workspace }),
-            ).catch(() => undefined),
-          )
-        }
+        if (isReadinessEvent(event)) deferredEvents.push(event)
+        else persistEvent(event)
       }
 
+      if (signal?.aborted) throw abortReason(signal)
       prepareEngineWorkspace(workspace)
-      await runAll({
-        prompt,
-        workspace,
-        sessionCtx: createSessionContext(sessionId, emit),
-        preferredLanguage,
-      })
+      await runWithSignal(
+        runAll({
+          prompt,
+          workspace,
+          sessionCtx: createSessionContext(sessionId, emit),
+          preferredLanguage,
+          signal,
+        }),
+        signal,
+      )
+      const artifacts = readEngineWorkspaceArtifacts(workspace)
+      assertCompletedEngineWorkspaceArtifacts(artifacts)
+
+      for (const event of deferredEvents) persistEvent(event)
       await Promise.all(pendingEventWrites)
 
       return {
-        ...readEngineWorkspaceArtifacts(workspace),
+        ...artifacts,
         workspace,
         events,
         elapsedMs: now() - startedAt,
