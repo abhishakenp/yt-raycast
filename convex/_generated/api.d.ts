@@ -32,6 +32,7 @@ import type * as lib_session_artifact_helpers from "../lib/session_artifact_help
 import type * as lib_session_clone_helpers from "../lib/session_clone_helpers.js";
 import type * as lib_session_commerce_helpers from "../lib/session_commerce_helpers.js";
 import type * as lib_session_creation_helpers from "../lib/session_creation_helpers.js";
+import type * as lib_session_delete_helpers from "../lib/session_delete_helpers.js";
 import type * as lib_session_deployment_helpers from "../lib/session_deployment_helpers.js";
 import type * as lib_session_edit_helpers from "../lib/session_edit_helpers.js";
 import type * as lib_session_edit_mutation_helpers from "../lib/session_edit_mutation_helpers.js";
@@ -57,6 +58,7 @@ import type * as lib_session_usage_metrics_helpers from "../lib/session_usage_me
 import type * as lib_session_user_image_helpers from "../lib/session_user_image_helpers.js";
 import type * as lib_session_validators from "../lib/session_validators.js";
 import type * as lib_session_workspace_helpers from "../lib/session_workspace_helpers.js";
+import type * as lib_testHelpers from "../lib/testHelpers.js";
 import type * as openui_ssr_health from "../openui_ssr_health.js";
 import type * as referrals from "../referrals.js";
 import type * as session_completion from "../session_completion.js";
@@ -94,6 +96,7 @@ declare const fullApi: ApiFromModules<{
   "lib/session_clone_helpers": typeof lib_session_clone_helpers;
   "lib/session_commerce_helpers": typeof lib_session_commerce_helpers;
   "lib/session_creation_helpers": typeof lib_session_creation_helpers;
+  "lib/session_delete_helpers": typeof lib_session_delete_helpers;
   "lib/session_deployment_helpers": typeof lib_session_deployment_helpers;
   "lib/session_edit_helpers": typeof lib_session_edit_helpers;
   "lib/session_edit_mutation_helpers": typeof lib_session_edit_mutation_helpers;
@@ -119,6 +122,7 @@ declare const fullApi: ApiFromModules<{
   "lib/session_user_image_helpers": typeof lib_session_user_image_helpers;
   "lib/session_validators": typeof lib_session_validators;
   "lib/session_workspace_helpers": typeof lib_session_workspace_helpers;
+  "lib/testHelpers": typeof lib_testHelpers;
   openui_ssr_health: typeof openui_ssr_health;
   referrals: typeof referrals;
   session_completion: typeof session_completion;

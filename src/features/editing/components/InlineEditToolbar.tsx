@@ -1986,7 +1986,7 @@ export function InlineEditToolbar({
           <div className="overflow-hidden w-full">
             <div
               className={cn(
-                'max-h-[min(60vh,420px)] max-w-full overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent',
+                'mx-auto max-h-[min(60vh,420px)] max-w-full overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent',
                 activePanel === 'capsule' ? 'w-[40rem]' : 'w-[32.5rem]',
               )}
               data-inline-edit-wrapper="true"

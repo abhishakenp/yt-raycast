@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
+import type { Id } from './_generated/dataModel'
 
 const CLAIM_LEASE_MS = 30_000
 
@@ -17,6 +18,7 @@ export const getBatch = query({
   args: {
     locale: v.string(),
     texts: v.array(v.string()),
+    sessionId: v.optional(v.id('sessions')),
   },
   handler: async (ctx, args) => {
     const locale = args.locale.trim().toLowerCase()
@@ -28,6 +30,26 @@ export const getBatch = query({
         results.push('')
         continue
       }
+
+      // Session-level overrides take priority over the global cache so
+      // locale-scoped inline edits survive reloads without leaking to
+      // other sessions that share the same source text + locale.
+      if (args.sessionId !== undefined) {
+        const override = await ctx.db
+          .query('sessionTranslationOverrides')
+          .withIndex('by_sessionId_locale_sourceText', (q) =>
+            q
+              .eq('sessionId', args.sessionId as Id<'sessions'>)
+              .eq('locale', locale)
+              .eq('sourceText', sourceText),
+          )
+          .unique()
+        if (override) {
+          results.push(override.translation)
+          continue
+        }
+      }
+
       const row = await ctx.db
         .query('translationCache')
         .withIndex('by_cacheKey', (q) =>

@@ -177,6 +177,7 @@ describe('session edit mutation helpers', () => {
       t.query(api.translationCache.getBatch, {
         locale: 'hi',
         texts: ['Original English headline'],
+        sessionId,
       }),
     ).resolves.toEqual(['अपडेट किया गया शीर्षक'])
   })
@@ -220,6 +221,7 @@ describe('session edit mutation helpers', () => {
       t.query(api.translationCache.getBatch, {
         locale: 'hi',
         texts: ['Original English headline'],
+        sessionId,
       }),
     ).resolves.toEqual(['पहला हिंदी संपादन'])
 
@@ -250,6 +252,7 @@ describe('session edit mutation helpers', () => {
       t.query(api.translationCache.getBatch, {
         locale: 'hi',
         texts: ['Original English headline'],
+        sessionId,
       }),
     ).resolves.toEqual(['दूसरा हिंदी संपादन'])
   })
