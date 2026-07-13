@@ -1,5 +1,6 @@
 import { ConvexError } from 'convex/values'
 
+import { exportGeneratorRevision } from '../../src/features/exports/services/export-generator-revision'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import {
@@ -21,19 +22,11 @@ import { isUnsafePublicPreviewHtml } from './openui_error_html'
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 export type ExportArtifactStatus = 'queued' | 'building' | 'ready' | 'failed'
 const exportTargets: ExportTarget[] = ['html', 'react', 'next', 'lakebed']
-const exportGeneratorRevisions: Record<ExportTarget, string> = {
-  html: 'html-export-v2',
-  react: 'react-export-v2',
-  next: 'next-export-v2',
-  lakebed: 'lakebed-export-v2',
-}
 const exportArtifactBuildStallMs = 2 * 60 * 1000
 const stalledExportArtifactMessage =
   'Export build stalled before completion. Click to retry.'
 
-export function exportGeneratorRevision(target: ExportTarget): string {
-  return exportGeneratorRevisions[target]
-}
+export { exportGeneratorRevision }
 
 function readAppliedThemeName(session: Doc<'sessions'>): string | undefined {
   return typeof session.themeOverride === 'string'

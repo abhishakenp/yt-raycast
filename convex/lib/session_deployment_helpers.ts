@@ -10,6 +10,7 @@ import {
 import {
   applyEditsToSource,
   exportDownloadUrl,
+  exportGeneratorRevision,
   exportTargetFileCount,
 } from './session_export_helpers'
 import {
@@ -49,6 +50,34 @@ export type LakebedDeploymentFailureInput = {
 }
 
 export type LakebedPreparedSourceKind = 'html' | 'openui'
+
+function readyStatus(): 'ready' {
+  return 'ready'
+}
+
+function failedStatus(): 'failed' {
+  return 'failed'
+}
+
+function noneStatus(): 'none' {
+  return 'none'
+}
+
+function updatingStatus(): 'updating' {
+  return 'updating'
+}
+
+function skippedStatus(): 'skipped' {
+  return 'skipped'
+}
+
+function lakebedProvider(): 'lakebed' {
+  return 'lakebed'
+}
+
+function isUnknownRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
 export function normalizeDeploymentSlug(value: string): string {
   return value
@@ -115,11 +144,8 @@ function readLakebedThemeName(
   }
   if (siteSpecJson === undefined) return undefined
   try {
-    const parsed = JSON.parse(siteSpecJson) as {
-      genuiTheme?: unknown
-      theme?: unknown
-      themeName?: unknown
-    }
+    const parsed: unknown = JSON.parse(siteSpecJson)
+    if (!isUnknownRecord(parsed)) return undefined
     const theme = parsed.themeName ?? parsed.genuiTheme ?? parsed.theme
     return typeof theme === 'string' && theme.trim().length > 0
       ? theme
@@ -140,15 +166,9 @@ function readOpenUiSourceFromSiteSpec(
   for (const candidate of candidates) {
     if (typeof candidate !== 'string' || !candidate.trim()) continue
     try {
-      const parsed = JSON.parse(candidate) as unknown
-      if (
-        parsed !== null &&
-        typeof parsed === 'object' &&
-        'pages' in parsed &&
-        parsed.pages !== null &&
-        typeof parsed.pages === 'object'
-      ) {
-        const home = (parsed.pages as Record<string, unknown>).home
+      const parsed: unknown = JSON.parse(candidate)
+      if (isUnknownRecord(parsed) && isUnknownRecord(parsed.pages)) {
+        const home = parsed.pages.home
         if (typeof home === 'string' && isLikelyOpenUiSource(home)) return home
       }
     } catch {
@@ -312,8 +332,12 @@ export async function loadOwnedLakebedDeploymentArtifact(
         .eq('previewVersion', session.previewVersion ?? 0),
     )
     .first()
+  const artifactIsCurrent =
+    artifact?.generatorRevision === exportGeneratorRevision('lakebed')
   const filesUrl =
-    artifact?.status === 'ready' && artifact.filesStorageId !== undefined
+    artifactIsCurrent &&
+    artifact.status === 'ready' &&
+    artifact.filesStorageId !== undefined
       ? await ctx.storage.getUrl(artifact.filesStorageId)
       : null
 
@@ -321,7 +345,7 @@ export async function loadOwnedLakebedDeploymentArtifact(
     sessionId: args.sessionId,
     prompt: session.prompt,
     previewVersion: session.previewVersion ?? 0,
-    status: artifact?.status ?? 'queued',
+    status: artifactIsCurrent ? artifact.status : 'queued',
     filesUrl,
     isPrivate: session.isPrivate,
   }
@@ -427,12 +451,6 @@ export async function prepareLakebedSessionDeployment(
     (previewHasOpenUiError && homeModuleOpenUiSource !== undefined) ||
     session.openuiReady === true ||
     session.preferredExportTarget !== 'html'
-  if (shouldUseOpenUiSource && !openUiSource?.trim()) {
-    throw new ConvexError({
-      code: 'ARTIFACT_NOT_READY',
-      message: 'Generated source is not ready to deploy',
-    })
-  }
   if (!shouldUseOpenUiSource) {
     throw new ConvexError({
       code: 'FULLSTACK_SOURCE_NOT_READY',
@@ -440,13 +458,14 @@ export async function prepareLakebedSessionDeployment(
         'Lakebed deploys require generated fullstack source. Regenerate this site before publishing to Lakebed.',
     })
   }
-  const sourceKind: LakebedPreparedSourceKind = shouldUseOpenUiSource
-    ? 'openui'
-    : 'html'
-  const editedSource = applyEditsToSource(
-    shouldUseOpenUiSource ? openUiSource! : preview.html,
-    edits,
-  )
+  if (typeof openUiSource !== 'string' || !openUiSource.trim()) {
+    throw new ConvexError({
+      code: 'ARTIFACT_NOT_READY',
+      message: 'Generated source is not ready to deploy',
+    })
+  }
+  const sourceKind: LakebedPreparedSourceKind = 'openui'
+  const editedSource = applyEditsToSource(openUiSource, edits)
   const source = applyCachedTranslationsToSource(
     editedSource,
     await loadCachedTranslationsForSource(
@@ -569,8 +588,8 @@ export async function recordLakebedSessionDeploymentSuccess(
     sessionId: args.sessionId,
     slug,
     url: stableUrl,
-    status: 'ready' as const,
-    provider: 'lakebed' as const,
+    status: readyStatus(),
+    provider: lakebedProvider(),
     previewVersion: args.previewVersion,
     pendingPreviewVersion: undefined,
     lakebedDeployId: args.deployId,
@@ -639,8 +658,8 @@ export async function recordLakebedSessionDeploymentSuccess(
     sessionId: args.sessionId,
     slug,
     url: stableUrl,
-    status: 'ready' as const,
-    provider: 'lakebed' as const,
+    status: readyStatus(),
+    provider: lakebedProvider(),
     deployId: args.deployId,
   }
 }
@@ -690,7 +709,7 @@ export async function recordLakebedSessionDeploymentFailure(
     createdAt: now,
   })
 
-  return { sessionId: args.sessionId, slug, status: 'failed' as const }
+  return { sessionId: args.sessionId, slug, status: failedStatus() }
 }
 
 export async function publishSessionPreview(
@@ -848,7 +867,7 @@ export async function publishSessionPreview(
     sessionId: args.sessionId,
     slug,
     url,
-    status: 'ready' as const,
+    status: readyStatus(),
   }
 }
 
@@ -864,7 +883,7 @@ export async function markSessionDeploymentUpdating(
     .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
     .first()
 
-  if (deployment === null) return { status: 'none' as const }
+  if (deployment === null) return { status: noneStatus() }
 
   await ctx.db.patch(deployment._id, {
     status: 'updating',
@@ -873,7 +892,7 @@ export async function markSessionDeploymentUpdating(
     updatedAt: Date.now(),
   })
 
-  return { status: 'updating' as const }
+  return { status: updatingStatus() }
 }
 
 export async function refreshShipFastDeploymentIfPresent(
@@ -908,14 +927,14 @@ export async function refreshShipFastDeploymentIfPresent(
     preview === null ||
     session.status !== 'preview_ready'
   ) {
-    return { status: 'skipped' as const }
+    return { status: skippedStatus() }
   }
 
   if (
     preview.html.trim().length === 0 ||
     isUnsafePublicPreviewHtml(preview.html)
   ) {
-    return { status: 'skipped' as const }
+    return { status: skippedStatus() }
   }
 
   const now = Date.now()
@@ -935,5 +954,5 @@ export async function refreshShipFastDeploymentIfPresent(
     createdAt: now,
   })
 
-  return { status: 'ready' as const }
+  return { status: readyStatus() }
 }
