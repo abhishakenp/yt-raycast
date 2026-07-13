@@ -372,15 +372,32 @@ export async function loadOwnedLakebedDeploymentArtifact(
 
   await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
 
-  const artifact = await ctx.db
+  const locale = session.preferredLanguage?.trim().toLowerCase() || 'en'
+  const scopedArtifact = await ctx.db
     .query('exportArtifacts')
-    .withIndex('by_sessionId_target_previewVersion', (index) =>
+    .withIndex('by_sessionId_target_previewVersion_locale', (index) =>
       index
         .eq('sessionId', args.sessionId)
         .eq('target', 'lakebed')
-        .eq('previewVersion', session.previewVersion ?? 0),
+        .eq('previewVersion', session.previewVersion ?? 0)
+        .eq('locale', locale),
     )
     .first()
+  const legacyArtifact =
+    scopedArtifact === null && locale === 'en'
+      ? await ctx.db
+          .query('exportArtifacts')
+          .withIndex('by_sessionId_target_previewVersion', (index) =>
+            index
+              .eq('sessionId', args.sessionId)
+              .eq('target', 'lakebed')
+              .eq('previewVersion', session.previewVersion ?? 0),
+          )
+          .first()
+      : null
+  const artifact =
+    scopedArtifact ??
+    (legacyArtifact?.locale === undefined ? legacyArtifact : null)
   const artifactIsCurrent =
     artifact?.generatorRevision === exportGeneratorRevision('lakebed')
   const filesUrl =
@@ -514,7 +531,11 @@ export async function prepareLakebedSessionDeployment(
     })
   }
   const sourceKind: LakebedPreparedSourceKind = 'openui'
-  const editedSource = applyEditsToSource(openUiSource, edits)
+  const editedSource = applyEditsToSource(
+    openUiSource,
+    edits,
+    session.preferredLanguage,
+  )
   const source = applyCachedTranslationsToSource(
     editedSource,
     await loadCachedTranslationsForSource(

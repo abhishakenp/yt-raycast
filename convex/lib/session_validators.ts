@@ -169,6 +169,7 @@ export const exportArtifactBuildArgs = {
   sessionId: v.id('sessions'),
   target: exportTarget,
   previewVersion: v.number(),
+  locale: v.optional(v.string()),
   autoDeployPublic: v.optional(v.boolean()),
   generatorRevision: v.optional(v.string()),
 }

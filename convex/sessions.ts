@@ -723,10 +723,12 @@ export const createEdit = mutation({
   args: createEditArgs,
   handler: async (ctx, args) => {
     const result = await createSessionEdit(ctx, args)
-    await scheduleEditedSessionExportAutomation(ctx, {
-      sessionId: result.sessionId,
-      previewVersion: result.previewVersion,
-    })
+    if (result.saved) {
+      await scheduleEditedSessionExportAutomation(ctx, {
+        sessionId: result.sessionId,
+        previewVersion: result.previewVersion,
+      })
+    }
     return result
   },
 })
