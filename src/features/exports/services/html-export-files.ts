@@ -205,8 +205,6 @@ const nextConfig = {
 module.exports = nextConfig`
 }
 
-const shipFastReadmeLine = 'Generated with [ShipFast](https://ship-fast.io) 🚀.'
-
 export function createHtmlExportFiles(
   _sessionId: string,
   _target: 'html',
@@ -229,7 +227,9 @@ export function createHtmlExportFiles(
     'index.html': exportHtml,
     'README.md': `# Static site export
 
-${shipFastReadmeLine}
+## Run locally
+
+Open \`index.html\` directly or serve this folder with any static file server.
 `,
     'robots.txt': createRobotsTxt(metadataSiteUrl),
     'sitemap.xml': createSitemapXml(metadataSiteUrl),
@@ -261,9 +261,7 @@ export function createReactExportFiles(
     'index.html': exportHtml,
     'README.md': `# React site export
 
-${shipFastReadmeLine}
-
-## Development
+## Run locally
 
 \`\`\`bash
 bun install
@@ -319,9 +317,7 @@ export function createNextExportFiles(
 }`,
     'README.md': `# Next.js site export
 
-${shipFastReadmeLine}
-
-## Development
+## Run locally
 
 \`\`\`bash
 bun install
