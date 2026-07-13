@@ -4,6 +4,10 @@ import {
   getMedusaBackendUrl,
   getMedusaPublishableKey,
 } from '@/features/commerce/server/medusa-store-env'
+import {
+  createMedusaRequestInit,
+  isValidMedusaResourceId,
+} from '@/features/commerce/server/medusa-store-request'
 
 export const Route = createFileRoute('/api/medusa-store/cart/$id')({
   server: {
@@ -18,14 +22,22 @@ export const Route = createFileRoute('/api/medusa-store/cart/$id')({
           )
         }
 
+        const cartId = params.id.trim()
+        if (!isValidMedusaResourceId(cartId)) {
+          return Response.json({ error: 'Invalid cart id' }, { status: 400 })
+        }
+
         const baseUrl = getMedusaBackendUrl()
 
         try {
-          const response = await fetch(`${baseUrl}/store/carts/${params.id}`, {
-            headers: {
-              'x-publishable-api-key': publishableKey.trim(),
-            },
-          })
+          const response = await fetch(
+            `${baseUrl}/store/carts/${encodeURIComponent(cartId)}`,
+            createMedusaRequestInit({
+              headers: {
+                'x-publishable-api-key': publishableKey.trim(),
+              },
+            }),
+          )
 
           if (!response.ok) {
             return Response.json(
