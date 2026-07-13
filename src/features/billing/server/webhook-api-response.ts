@@ -11,12 +11,15 @@ type ApplyReferralDiscount = (
 ) => Promise<{ applied: boolean; reason: string }>
 type Provider = 'stripe' | 'razorpay'
 type BillingWebhookEnv = NodeJS.ProcessEnv
+type JsonRecord = Record<string, unknown>
 type BillingStatus =
   | 'active'
   | 'trialing'
   | 'authenticated'
   | 'past_due'
   | 'cancelled'
+
+const MAX_WEBHOOK_BODY_BYTES = 1_048_576
 
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -99,9 +102,54 @@ function creditsForPack(packId: string): number {
   return packId === '10_credits' ? 10 : packId === '3_credits' ? 3 : 0
 }
 
-function stripePayloadToMutation(event: any) {
-  const object = event?.data?.object ?? {}
-  const metadata = object.metadata ?? {}
+function asRecord(value: unknown): JsonRecord | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as JsonRecord)
+    : null
+}
+
+async function readWebhookBody(request: Request): Promise<string | null> {
+  const contentLength = Number(request.headers.get('content-length'))
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > MAX_WEBHOOK_BODY_BYTES
+  ) {
+    return null
+  }
+
+  const reader = request.body?.getReader()
+  if (!reader) return ''
+
+  const decoder = new TextDecoder()
+  let byteLength = 0
+  let body = ''
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      byteLength += value.byteLength
+      if (byteLength > MAX_WEBHOOK_BODY_BYTES) {
+        await reader.cancel()
+        return null
+      }
+      body += decoder.decode(value, { stream: true })
+    }
+    return body + decoder.decode()
+  } finally {
+    reader.releaseLock()
+  }
+}
+
+function stripePayloadToMutation(event: unknown) {
+  const eventRecord = asRecord(event)
+  const data = asRecord(eventRecord?.data)
+  const object = asRecord(data?.object)
+  if (!eventRecord || !object) return null
+
+  const metadata = asRecord(object.metadata) ?? {}
+  const plan = asRecord(object.plan)
   const userId = metadata.userId ?? object.client_reference_id
   const mode =
     metadata.mode ?? (object.mode === 'subscription' ? 'subscription' : '')
@@ -113,7 +161,7 @@ function stripePayloadToMutation(event: any) {
     return credits > 0
       ? {
           provider: 'stripe' as const,
-          idempotencyKey: String(event.id || object.id),
+          idempotencyKey: String(eventRecord.id || object.id),
           userId: String(userId),
           credits,
         }
@@ -123,27 +171,34 @@ function stripePayloadToMutation(event: any) {
   const subscriptionId = String(object.subscription ?? object.id ?? '')
   return {
     provider: 'stripe' as const,
-    idempotencyKey: String(event.id || object.id),
+    idempotencyKey: String(eventRecord.id || object.id),
     userId: String(userId),
     subscription: {
       status: normalizeStripeStatus(object.status),
-      planId: String(metadata.tier ?? object.plan?.id ?? 'pro'),
+      planId: String(metadata.tier ?? plan?.id ?? 'pro'),
       providerSubscriptionId: subscriptionId || undefined,
       providerCheckoutId: String(object.id ?? '') || undefined,
     },
   }
 }
 
-function razorpayPayloadToMutation(event: any) {
-  const subscription = event?.payload?.subscription?.entity
+function razorpayPayloadToMutation(event: unknown) {
+  const eventRecord = asRecord(event)
+  const payload = asRecord(eventRecord?.payload)
+  if (!eventRecord || !payload) return null
+
+  const subscriptionContainer = asRecord(payload.subscription)
+  const subscription = asRecord(subscriptionContainer?.entity)
   if (subscription) {
-    const notes = subscription.notes ?? {}
+    const notes = asRecord(subscription.notes) ?? {}
     const userId = notes.userId ?? notes.user_id
     if (!userId) return null
     return {
       provider: 'razorpay' as const,
       idempotencyKey:
-        String(event.event || 'subscription') + ':' + String(subscription.id),
+        String(eventRecord.event || 'subscription') +
+        ':' +
+        String(subscription.id),
       userId: String(userId),
       subscription: {
         status: normalizeRazorpayStatus(subscription.status),
@@ -153,15 +208,17 @@ function razorpayPayloadToMutation(event: any) {
     }
   }
 
-  const order = event?.payload?.order?.entity
-  const notes = order?.notes ?? {}
+  const orderContainer = asRecord(payload.order)
+  const order = asRecord(orderContainer?.entity)
+  const notes = asRecord(order?.notes) ?? {}
   const userId = notes.userId ?? notes.user_id
   const packId = String(notes.packId ?? notes.pack_id ?? '')
   const credits = creditsForPack(packId)
   return userId && credits > 0
     ? {
         provider: 'razorpay' as const,
-        idempotencyKey: String(event.event || 'order') + ':' + String(order.id),
+        idempotencyKey:
+          String(eventRecord.event || 'order') + ':' + String(order?.id),
         userId: String(userId),
         credits,
       }
@@ -175,7 +232,10 @@ export async function createWebhookApiResponse(
   clientOverride?: WebhookConvexClient,
   applyDiscount: ApplyReferralDiscount = applyReferralDiscountForUser,
 ): Promise<Response> {
-  const rawBody = await request.text()
+  const rawBody = await readWebhookBody(request)
+  if (rawBody === null) {
+    return json({ error: 'Webhook payload is too large.' }, { status: 413 })
+  }
   const providerSecret =
     provider === 'stripe'
       ? env.STRIPE_WEBHOOK_SECRET
