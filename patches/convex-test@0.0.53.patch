@@ -1,0 +1,12 @@
+diff --git a/dist/index.js b/dist/index.js
+index 42cb0c59234e520c217ea592538c0927e5de153c..95eaaa248437f4934b0ad87a23ba1719f26cd086 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1214,6 +1214,7 @@ function jsSyscallImpl() {
+                     return db.insert("_storage", {
+                         size: blob.size,
+                         sha256: await blobSha(blob),
++                        ...(blob.type ? { contentType: blob.type } : {}),
+                     });
+                 });
+                 db.storeFile(storageId, blob);
