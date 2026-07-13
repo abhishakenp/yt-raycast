@@ -14,11 +14,16 @@ type SessionCreateClient = {
   ) => Promise<unknown>
 }
 
+const MAX_REQUEST_BODY_BYTES = 1_048_576
+const REQUEST_BODY_TOO_LARGE_ERROR = 'Request body is too large.'
+
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
     ...init,
     headers: {
+      'Cache-Control': 'no-store',
       'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
       ...init?.headers,
     },
   })
@@ -53,7 +58,38 @@ export function hashClientIp(
 async function readJsonBody(
   request: Request,
 ): Promise<Record<string, unknown>> {
-  const text = await request.text()
+  const contentLength = Number(request.headers.get('content-length'))
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > MAX_REQUEST_BODY_BYTES
+  ) {
+    throw new Error(REQUEST_BODY_TOO_LARGE_ERROR)
+  }
+
+  const reader = request.body?.getReader()
+  if (!reader) return {}
+
+  const decoder = new TextDecoder()
+  let byteLength = 0
+  let text = ''
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      byteLength += value.byteLength
+      if (byteLength > MAX_REQUEST_BODY_BYTES) {
+        await reader.cancel()
+        throw new Error(REQUEST_BODY_TOO_LARGE_ERROR)
+      }
+      text += decoder.decode(value, { stream: true })
+    }
+    text += decoder.decode()
+  } finally {
+    reader.releaseLock()
+  }
+
   if (!text.trim()) return {}
   const parsed = JSON.parse(text) as unknown
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
@@ -101,6 +137,18 @@ export async function createSessionCreateResponse(
     )
   }
 
+  const contentType = request.headers
+    .get('content-type')
+    ?.split(';', 1)[0]
+    ?.trim()
+    .toLowerCase()
+  if (request.headers.has('origin') && contentType !== 'application/json') {
+    return json(
+      { error: 'Content-Type must be application/json.' },
+      { status: 415 },
+    )
+  }
+
   try {
     const body = await readJsonBody(request)
     const clientIpHash = hashClientIp(getClientIp(request))
@@ -135,6 +183,12 @@ export async function createSessionCreateResponse(
       error.message === 'Request body must be a JSON object.'
     ) {
       return json({ error: error.message }, { status: 400 })
+    }
+    if (
+      error instanceof Error &&
+      error.message === REQUEST_BODY_TOO_LARGE_ERROR
+    ) {
+      return json({ error: error.message }, { status: 413 })
     }
     const payload = errorPayload(error)
     return json(payload.body, { status: payload.status })
