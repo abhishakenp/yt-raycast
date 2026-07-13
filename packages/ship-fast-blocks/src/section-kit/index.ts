@@ -90,6 +90,11 @@ export {
   type BentoTileProps,
   type BentoTileCaptionProps,
 } from './BentoGrid.tsx'
+export {
+  ImageTile,
+  imageTileVariants,
+  type ImageTileProps,
+} from './ImageTile.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

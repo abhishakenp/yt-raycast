@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
  * LogisticsGallery — a global-network image gallery for a logistics / freight-
@@ -50,18 +51,15 @@ export const LogisticsGallery = defineCapsule({
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {images.map((alt) => (
-              <div
-                key={alt}
-                className="aspect-[4/3] overflow-hidden rounded-2xl bg-muted"
-              >
+              <ImageTile key={alt} treatment="4-3-2xl-muted">
                 <Image
                   alt={alt}
                   w={600}
                   h={450}
                   loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 hover:scale-105"
+                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-              </div>
+              </ImageTile>
             ))}
           </div>
         </Container>

@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { BentoTileCaption } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * CleaningServiceGallery — a before/after transformations image gallery for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 1/2/3-column grid of clickable project cards; each card shows a lazy-loaded image that subtly zooms on hover, with a gradient-to-top overlay that fades in to reveal a title and location caption. Every card routes through useNavigate on click. Use for portfolio / results galleries for residential cleaning companies, maid services, renovation cleaners, or home-service brands that want visual proof. Renders fully with no props via six baked-in default transformations.
@@ -80,28 +82,33 @@ export const CleaningServiceGallery = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <button
+              <ImageTile
                 key={item.title}
-                type="button"
-                onClick={() => go(item.title)}
-                className="group relative block overflow-hidden rounded-2xl text-left"
+                asChild
+                treatment="h-72-2xl"
+                className="block text-left"
               >
-                <Image
-                  alt={item.alt}
-                  w={600}
-                  h={450}
-                  loading="lazy"
-                  className="h-72 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100">
-                  <div className="absolute bottom-4 left-4 text-background">
-                    <p className="font-semibold">{item.title}</p>
-                    <p className="text-sm text-background/80">
-                      {item.location}
-                    </p>
-                  </div>
-                </div>
-              </button>
+                <button type="button" onClick={() => go(item.title)}>
+                  <Image
+                    alt={item.alt}
+                    w={600}
+                    h={450}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <BentoTileCaption
+                    reveal="hover"
+                    className="inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent"
+                  >
+                    <div className="absolute bottom-4 left-4 text-background">
+                      <p className="font-semibold">{item.title}</p>
+                      <p className="text-sm text-background/80">
+                        {item.location}
+                      </p>
+                    </div>
+                  </BentoTileCaption>
+                </button>
+              </ImageTile>
             ))}
           </div>
         </Container>

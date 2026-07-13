@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { BentoTileCaption } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * CorporateGallery — global office / presence gallery for an enterprise /
@@ -87,30 +89,32 @@ export const CorporateGallery = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((office) => (
-              <button
+              <ImageTile
                 key={office.title}
-                type="button"
-                onClick={() => go(office.title)}
-                className="group relative block overflow-hidden rounded-xl text-left"
+                asChild
+                treatment="4-3-xl"
+                className="block text-left"
               >
-                <Image
-                  alt={office.imageAlt}
-                  w={600}
-                  h={450}
-                  loading="lazy"
-                  className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 flex items-end bg-gradient-to-t from-foreground/60 to-transparent p-6">
-                  <div>
-                    <p className="font-semibold text-background">
-                      {office.title}
-                    </p>
-                    <p className="text-sm text-background/80">
-                      {office.caption}
-                    </p>
-                  </div>
-                </div>
-              </button>
+                <button type="button" onClick={() => go(office.title)}>
+                  <Image
+                    alt={office.imageAlt}
+                    w={600}
+                    h={450}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <BentoTileCaption className="inset-0 flex items-end bg-gradient-to-t from-foreground/60 to-transparent p-6">
+                    <div>
+                      <p className="font-semibold text-background">
+                        {office.title}
+                      </p>
+                      <p className="text-sm text-background/80">
+                        {office.caption}
+                      </p>
+                    </div>
+                  </BentoTileCaption>
+                </button>
+              </ImageTile>
             ))}
           </div>
         </Container>

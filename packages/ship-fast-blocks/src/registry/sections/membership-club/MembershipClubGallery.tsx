@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -58,17 +59,19 @@ export const MembershipClubGallery = defineCapsule({
           </div>
           <ResponsiveGrid cols="2-lg-4" gap="sm" className="lg:gap-6">
             {images.map((alt, i) => (
-              <Image
+              <ImageTile
                 key={alt}
-                alt={alt}
-                w={400}
-                h={i % 2 === 0 ? 500 : 300}
-                loading="lazy"
-                className={cn(
-                  'w-full rounded-lg object-cover',
-                  i % 2 === 0 ? 'h-64 lg:h-80' : 'h-48 lg:h-56',
-                )}
-              />
+                treatment="fixed-lg"
+                className={cn(i % 2 === 0 ? 'h-64 lg:h-80' : 'h-48 lg:h-56')}
+              >
+                <Image
+                  alt={alt}
+                  w={400}
+                  h={i % 2 === 0 ? 500 : 300}
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
+              </ImageTile>
             ))}
           </ResponsiveGrid>
         </Container>

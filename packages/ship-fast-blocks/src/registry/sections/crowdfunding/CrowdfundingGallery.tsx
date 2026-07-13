@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
  * CrowdfundingGallery — a product photo GALLERY for a crowdfunding / campaign
@@ -52,18 +53,15 @@ export const CrowdfundingGallery = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {galleryAlts.map((alt) => (
-              <div
-                key={alt}
-                className="aspect-[4/3] overflow-hidden rounded-xl"
-              >
+              <ImageTile key={alt} treatment="4-3-xl">
                 <Image
                   alt={alt}
                   w={800}
                   h={600}
                   loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 hover:scale-105"
+                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-              </div>
+              </ImageTile>
             ))}
           </div>
         </Container>

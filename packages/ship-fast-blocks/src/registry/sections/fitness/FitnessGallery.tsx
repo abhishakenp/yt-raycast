@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
  * FitnessGallery — facility photo gallery for a gym or fitness studio, on a muted
@@ -51,14 +52,19 @@ export const FitnessGallery = defineCapsule({
 
           <ResponsiveGrid cols="2-md-4" gap="sm">
             {galleryItems.map((alt) => (
-              <Image
+              <ImageTile
                 key={alt}
-                alt={alt}
-                w={600}
-                h={400}
-                loading="lazy"
-                className="h-48 w-full rounded-lg object-cover md:h-64"
-              />
+                treatment="fixed-lg"
+                className="h-48 md:h-64"
+              >
+                <Image
+                  alt={alt}
+                  w={600}
+                  h={400}
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
+              </ImageTile>
             ))}
           </ResponsiveGrid>
         </Container>

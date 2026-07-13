@@ -2,6 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { BentoTileCaption } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * CloudInfraGallery — developer-showcase image gallery for a cloud-infrastructure /
@@ -82,10 +84,7 @@ export const CloudInfraGallery = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <figure
-                key={item.title}
-                className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted"
-              >
+              <ImageTile key={item.title} treatment="4-3-xl-muted">
                 <Image
                   alt={item.alt}
                   w={800}
@@ -93,11 +92,11 @@ export const CloudInfraGallery = defineCapsule({
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 to-transparent p-6">
+                <BentoTileCaption className="inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 to-transparent p-6">
                   <p className="font-medium text-background">{item.title}</p>
                   <p className="text-sm text-background/80">{item.caption}</p>
-                </figcaption>
-              </figure>
+                </BentoTileCaption>
+              </ImageTile>
             ))}
           </div>
         </Container>
