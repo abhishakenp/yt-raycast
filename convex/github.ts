@@ -12,6 +12,8 @@ import { isAuthDisabled } from './lib/session_export_helpers'
 const AUTH_REQUIRED = 'AUTH_REQUIRED: Sign in before connecting GitHub.'
 const OAUTH_STATE_INVALID =
   'OAUTH_STATE_INVALID: GitHub connection expired. Try again.'
+const OAUTH_REQUEST_INVALID =
+  'OAUTH_REQUEST_INVALID: GitHub connection request is invalid.'
 
 const githubUserArgs = {
   githubUserId: v.number(),
@@ -55,6 +57,18 @@ function normalizeScopes(scopes: string[]): string[] {
   ).sort()
 }
 
+function normalizeLocalReturnTo(value: string): string {
+  const returnTo = value.trim()
+  if (
+    !returnTo.startsWith('/') ||
+    returnTo.startsWith('//') ||
+    returnTo.includes('\\')
+  ) {
+    throw new Error(OAUTH_REQUEST_INVALID)
+  }
+  return returnTo
+}
+
 export const createOAuthState = mutation({
   args: {
     state: v.string(),
@@ -65,6 +79,9 @@ export const createOAuthState = mutation({
     anonymousClientId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const state = args.state.trim()
+    if (!state) throw new Error(OAUTH_REQUEST_INVALID)
+    const returnTo = normalizeLocalReturnTo(args.returnTo)
     const key = await resolveIdentityKey(ctx, args.anonymousClientId)
     const now = Date.now()
 
@@ -83,9 +100,9 @@ export const createOAuthState = mutation({
     await Promise.all(existingStates.map((state) => ctx.db.delete(state._id)))
 
     await ctx.db.insert('githubOAuthStates', {
-      state: args.state,
+      state,
       ...key,
-      returnTo: args.returnTo,
+      returnTo,
       sessionId: args.sessionId,
       target: args.target,
       createdAt: now,
