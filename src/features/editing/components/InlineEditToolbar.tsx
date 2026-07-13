@@ -99,6 +99,9 @@ interface InlineEditToolbarProps {
    *  before style changes are saved. Always called, even if no style was
    *  modified — so text-only edits are saved too. */
   onCommitText?: () => void
+  /** Registers persistence started inside the toolbar so dashboard navigation
+   *  can wait for it before unloading the page. */
+  onPendingSave?: (save: Promise<void>) => void
   onClose: () => void
   isApplying?: boolean
   isForking?: boolean
@@ -369,6 +372,7 @@ export function InlineEditToolbar({
   activeElement,
   onStyleApply,
   onCommitText,
+  onPendingSave,
   onClose,
   isApplying = false,
   isForking = false,
@@ -1051,8 +1055,10 @@ export function InlineEditToolbar({
         imagePreviewClearedRef.current = false
         setPendingImageSrc(null)
         originalImageSrcRef.current = null
-        void capsuleInlineRef.current?.commit()
-        void capsulePanelRef.current?.commit()
+        const inlineSave = capsuleInlineRef.current?.commit()
+        const panelSave = capsulePanelRef.current?.commit()
+        if (inlineSave) onPendingSave?.(inlineSave)
+        if (panelSave) onPendingSave?.(panelSave)
         onClose()
         return
       }
@@ -1062,8 +1068,10 @@ export function InlineEditToolbar({
       onCommitText?.()
 
       // Commit buffered capsule reorders/edits
-      void capsuleInlineRef.current?.commit()
-      void capsulePanelRef.current?.commit()
+      const inlineSave = capsuleInlineRef.current?.commit()
+      const panelSave = capsulePanelRef.current?.commit()
+      if (inlineSave) onPendingSave?.(inlineSave)
+      if (panelSave) onPendingSave?.(panelSave)
 
       // Only save style if the user actually modified a style control.
       if (!userModifiedRef.current) {
