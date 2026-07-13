@@ -90,10 +90,15 @@ function isPrivateIp(ip: string): boolean {
   return true
 }
 
-// Throws if the URL is not safe to fetch. Allows only http/https; DNS-resolves the
-// host and rejects loopback/link-local/private/metadata addresses and numeric
-// host-encoding tricks.
-export async function assertPublicUrl(url: string): Promise<void> {
+type PublicUrlPreflight = {
+  host: string
+  literalFamily: number
+}
+
+// Deterministic checks shared by request admission and the full fetch-time guard.
+// Hostnames still require assertPublicUrl before network access because only that
+// function resolves DNS and can reject names which point at private addresses.
+function validatePublicUrlPreflight(url: string): PublicUrlPreflight {
   let parsed: URL
   try {
     parsed = new URL(url)
@@ -119,8 +124,25 @@ export async function assertPublicUrl(url: string): Promise<void> {
     if (isPrivateIp(host.replace(/^\[|\]$/g, ''))) {
       throw new Error(`Blocked URL (private/loopback IP): ${url}`)
     }
-    return
   }
+
+  return { host, literalFamily }
+}
+
+// Route-level admission check. This intentionally performs no DNS lookup: clone
+// jobs are asynchronous, and runCloneJob calls assertPublicUrl before launching a
+// browser. Keeping admission deterministic avoids rejecting a safe queued request
+// because the resolver is temporarily unavailable without weakening fetch safety.
+export function assertPublicUrlPreflight(url: string): void {
+  validatePublicUrlPreflight(url)
+}
+
+// Throws if the URL is not safe to fetch. Allows only http/https; DNS-resolves the
+// host and rejects loopback/link-local/private/metadata addresses and numeric
+// host-encoding tricks.
+export async function assertPublicUrl(url: string): Promise<void> {
+  const { host, literalFamily } = validatePublicUrlPreflight(url)
+  if (literalFamily !== 0) return
 
   // Otherwise resolve the hostname and reject if ANY resolved address is private.
   let records: Array<{ address: string; family: number }>
