@@ -666,12 +666,12 @@ type AuthState = {
   isAuthenticated: boolean
   isGuest: boolean
   isLoading: boolean
-  picture: string | null
-  provider: string | null
+  picture?: string
+  provider?: string
   user: {
     displayName: string
     email: string
-    picture: string | null
+    picture?: string
     isGuest: boolean
   } | null
   userId: string
@@ -687,7 +687,7 @@ export function adaptShooIdentity(identity: {
   const isGuest = !userId || userId === 'guest'
   const displayName = identity.name ?? null
   const email = identity.email ?? null
-  const picture = identity.picture ?? null
+  const picture = identity.picture ?? undefined
   return {
     displayName,
     email,
@@ -695,7 +695,7 @@ export function adaptShooIdentity(identity: {
     isGuest,
     isLoading: false,
     picture,
-    provider: isGuest ? null : 'google',
+    provider: isGuest ? undefined : 'google',
     user: isGuest ? null : {
       displayName: displayName ?? email ?? 'User',
       email: email ?? '',
@@ -704,6 +704,16 @@ export function adaptShooIdentity(identity: {
     },
     userId,
   }
+}
+
+function useSiteAuthState(): AuthState {
+  return adaptShooIdentity(useShooAuth().identity)
+}
+
+export const siteAuth = {
+  useAuth: useSiteAuthState,
+  signInWithGoogle() {},
+  signOut() {},
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {

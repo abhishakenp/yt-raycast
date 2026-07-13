@@ -28,13 +28,17 @@ function isRecord(value: unknown): value is DataRecord {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
+function isString(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
 function readRecords(value: unknown): DataRecord[] {
   return Array.isArray(value) ? value.filter(isRecord) : []
 }
 
 function readStrings(value: unknown): string[] {
-  if (value instanceof Set) return [...value].filter((item): item is string => typeof item === 'string')
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+  if (value instanceof Set) return [...value].filter(isString)
+  return Array.isArray(value) ? value.filter(isString) : []
 }
 
 function textField(record: DataRecord, key: string, fallback = ''): string {
@@ -175,7 +179,10 @@ function renderQueryFunction(
     return `${prefix} ${functionName}() { return readRecords(${stateName}.products) }`
   }
   if (operation === 'commercesearchstate') {
-    return `${prefix} ${functionName}() { return isRecord(${stateName}.commerceSearchState) ? ${stateName}.commerceSearchState : { query: '', selectedLabel: '' } }`
+    return `${prefix} ${functionName}() {
+  const state = isRecord(${stateName}.commerceSearchState) ? ${stateName}.commerceSearchState : {}
+  return { query: textField(state, 'query'), selectedLabel: textField(state, 'selectedLabel') }
+}`
   }
   if (operation === 'subscribersummary') {
     return `${prefix} ${functionName}() { return { count: readRecords(${stateName}.subscribers).length } }`
