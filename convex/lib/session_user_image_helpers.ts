@@ -49,19 +49,62 @@ export async function saveUserImage(
   const session = await assertSessionExists(ctx, args.sessionId)
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
-  // Only allow image MIME types
-  if (!args.contentType.startsWith('image/')) {
+  const contentType = args.contentType.trim().toLowerCase()
+  if (!contentType.startsWith('image/')) {
     throw new ConvexError({
       code: 'INVALID_FILE_TYPE',
       message: 'Only image files are allowed',
     })
   }
 
+  if (!Number.isSafeInteger(args.size) || args.size <= 0) {
+    throw new ConvexError({
+      code: 'INVALID_FILE_SIZE',
+      message: 'Image size must be a positive integer',
+    })
+  }
+
+  const metadata = await ctx.db.system.get('_storage', args.storageId)
+  const storedContentType = metadata?.contentType?.trim().toLowerCase()
+  if (
+    storedContentType === undefined ||
+    !storedContentType.startsWith('image/') ||
+    storedContentType !== contentType
+  ) {
+    throw new ConvexError({
+      code: 'INVALID_FILE_TYPE',
+      message: 'Uploaded file metadata does not match the declared image type',
+    })
+  }
+
+  const existing = (
+    await ctx.db
+      .query('userImages')
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
+      .collect()
+  ).find((image) => image.storageId === args.storageId)
+
+  if (existing !== undefined) {
+    if (
+      existing.filename !== args.filename ||
+      existing.contentType !== contentType ||
+      existing.size !== args.size
+    ) {
+      throw new ConvexError({
+        code: 'CONFLICT',
+        message: 'Uploaded image was already saved with different metadata',
+      })
+    }
+    return existing._id
+  }
+
   return await ctx.db.insert('userImages', {
     sessionId: args.sessionId,
     storageId: args.storageId,
     filename: args.filename,
-    contentType: args.contentType,
+    contentType,
     size: args.size,
     createdAt: Date.now(),
   })

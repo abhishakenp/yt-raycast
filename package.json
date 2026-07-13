@@ -212,6 +212,7 @@
     ]
   },
   "patchedDependencies": {
-    "@ikhrustalev/convex-debouncer@0.1.2": "patches/@ikhrustalev%2Fconvex-debouncer@0.1.2.patch"
+    "@ikhrustalev/convex-debouncer@0.1.2": "patches/@ikhrustalev%2Fconvex-debouncer@0.1.2.patch",
+    "convex-test@0.0.53": "patches/convex-test@0.0.53.patch"
   }
 }
