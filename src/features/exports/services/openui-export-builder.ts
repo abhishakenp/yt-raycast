@@ -421,6 +421,12 @@ function blockAliasSourcePath(moduleName: string): string | null {
 function exportedBlockSourceOutPath(sourcePath: string): string {
   if (sourcePath === 'src/lib/utils.ts') return 'src/lib/cn.ts'
   if (sourcePath === 'src/lib/img.tsx') return 'src/lib/image.tsx'
+  if (sourcePath.endsWith('/commerce/cart-lakebed.ts')) {
+    return `src/vendor/blocks/${sourcePath.replace(/cart-lakebed\.ts$/, 'cart-model.ts')}`
+  }
+  if (sourcePath.endsWith('/newsletter/newsletter-lakebed.ts')) {
+    return `src/vendor/blocks/${sourcePath.replace(/newsletter-lakebed\.ts$/, 'newsletter-model.ts')}`
+  }
   if (sourcePath === 'src/section-kit/Logo.tsx') return sourcePath
   if (sourcePath.startsWith('src/')) return `src/vendor/blocks/${sourcePath}`
   throw new Error(`Unsupported block dependency source path: ${sourcePath}`)
@@ -1635,7 +1641,8 @@ function translateBlockSourceLakebed(
   // Process lakebed definition files: keep types and utility functions,
   // but remove the createLakebedDefinition call and its imports
   const isLakebedDefFile =
-    /cart-lakebed\.ts$/.test(outPath) || /newsletter-lakebed\.ts$/.test(outPath)
+    /cart-(?:lakebed|model)\.ts$/.test(outPath) ||
+    /newsletter-(?:lakebed|model)\.ts$/.test(outPath)
 
   if (isLakebedDefFile) {
     // Remove createLakebedDefinition import
@@ -2235,7 +2242,10 @@ function collectBlockSourceFiles(
       const routePathsConst = navRewritten.usesNavigation
         ? `const routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
         : ''
-      files[outPath] = routePathsConst + navRewritten.body
+      files[outPath] = (routePathsConst + navRewritten.body).replace(
+        /Shoo\/lakebed/gi,
+        'site',
+      )
     } else {
       const rawSource = prependImports(
         removeImportDeclarations(source, sourceFile),
