@@ -136,6 +136,7 @@ export function ShareBonusPanel({
           />
         </ShareIcon>
         <GlassPillButton
+          ariaLabel="Share"
           className="size-8 min-h-8 min-w-8 p-0"
           id="bonus-share-native"
           onClick={() => onShareClick('native')}

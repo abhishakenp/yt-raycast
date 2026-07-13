@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import { cn } from '@/lib/utils'
 
 export function PrivateGenerationModal({
@@ -7,6 +9,51 @@ export function PrivateGenerationModal({
   isOpen: boolean
   onClose: () => void
 }) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const openerRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    openerRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null
+    closeButtonRef.current?.focus()
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+
+      if (event.key !== 'Tab') return
+      const focusableElements =
+        dialogRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        )
+      if (!focusableElements?.length) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault()
+        lastElement.focus()
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault()
+        firstElement.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      if (openerRef.current?.isConnected) openerRef.current.focus()
+    }
+  }, [isOpen, onClose])
+
   return (
     <div
       className={cn(
@@ -22,12 +69,15 @@ export function PrivateGenerationModal({
         onClick={onClose}
       />
       <div
+        ref={dialogRef}
         className="relative z-[1] grid w-[min(420px,100%)] gap-4 rounded-[28px] border border-white/12 bg-[#10131c]/95 p-6 text-center text-white shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-[24px]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="private-gen-modal-title"
       >
         <button
+          ref={closeButtonRef}
+          type="button"
           className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/[0.1] hover:text-white"
           id="private-gen-modal-close"
           aria-label="Close"
