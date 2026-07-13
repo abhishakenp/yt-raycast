@@ -875,6 +875,7 @@ export const HomePage = () => {
                               submitCtaShaking && 'submit-btn--cta-shake',
                             )}
                             id="submit-btn"
+                            ariaLabel={submitCtaLabel}
                             disabled={!canSubmit}
                             onAnimationEnd={() => setSubmitCtaShaking(false)}
                           >
