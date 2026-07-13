@@ -18,6 +18,16 @@ export type EngineWorkspaceArtifacts = {
   tasks: EngineWorkspaceTask[]
 }
 
+export const assertCompletedEngineWorkspaceArtifacts = (
+  artifacts: EngineWorkspaceArtifacts,
+): void => {
+  if (artifacts.tasks.some((task) => task.status !== 'DONE')) {
+    throw new Error(
+      'Ship Fast engine returned before all workspace tasks completed',
+    )
+  }
+}
+
 function safeWorkspaceSegment(value: string): string {
   return (
     value
