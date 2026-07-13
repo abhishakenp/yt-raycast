@@ -214,10 +214,12 @@ function resolveDeployApiUrl(api?: string): string {
 function claimTokenFromClaimUrl(
   claimUrl: string | undefined,
   deployId: string | undefined,
+  deployApi: string,
 ): string | null {
   if (!claimUrl || !deployId) return null
   try {
     const url = new URL(claimUrl)
+    if (url.origin !== new URL(deployApi).origin) return null
     const segments = url.pathname.split('/').filter(Boolean)
     if (segments[0] === 'claim' && segments[1] === deployId) {
       return segments[2] ?? null
@@ -226,6 +228,32 @@ function claimTokenFromClaimUrl(
     return null
   }
   return null
+}
+
+const validateSourceFilePaths = (files: Record<string, string>): void => {
+  const portablePaths = new Set<string>()
+  for (const path of Object.keys(files)) {
+    const portablePath = path.replaceAll('\\', '/').normalize('NFC')
+    const segments = portablePath.split('/')
+    if (
+      !path ||
+      path.includes('\0') ||
+      path !== portablePath ||
+      portablePath.startsWith('/') ||
+      /^[a-z]:\//i.test(portablePath) ||
+      segments.some(
+        (segment) => segment === '' || segment === '.' || segment === '..',
+      )
+    ) {
+      throw new Error(`Invalid source file path: ${path || '(empty)'}`)
+    }
+
+    const portableKey = portablePath.toLocaleLowerCase('en-US')
+    if (portablePaths.has(portableKey)) {
+      throw new Error(`Duplicate portable source file path: ${path}`)
+    }
+    portablePaths.add(portableKey)
+  }
 }
 
 function createSourceStore(files: Record<string, string>): MemorySourceStore {
@@ -855,6 +883,7 @@ export async function buildLakebedAnonymousDeployRequest(
   files: Record<string, string>,
   options: { inspectPolicy?: 'public'; log?: LakebedDeployLogger } = {},
 ): Promise<LakebedBuildResult> {
+  validateSourceFilePaths(files)
   options.log?.('anonymous-request:source-store:create', summarizeFiles(files))
   const sourceStore = createSourceStore(files)
   const bundleStartedAt = Date.now()
@@ -1027,6 +1056,7 @@ export async function deployLakebedProjectFiles({
   const claimToken = claimTokenFromClaimUrl(
     existingDeployment?.claimUrl,
     existingDeployId,
+    deployApi,
   )
   const updateUrl =
     existingDeployId && claimToken
@@ -1069,13 +1099,29 @@ export async function deployLakebedProjectFiles({
   })
 
   const deployId =
-    typeof deployed.deployId === 'string' && deployed.deployId.length > 0
-      ? deployed.deployId
-      : (existingDeployment?.deployId ?? '')
-  const url =
-    updateUrl !== null && existingDeployment?.url
-      ? existingDeployment.url
-      : String(deployed.url ?? '')
+    typeof deployed.deployId === 'string' ? deployed.deployId.trim() : ''
+  if (!deployId) {
+    throw new Error('Invalid deploy response: deployment id is required')
+  }
+  if (existingDeployId && deployId !== existingDeployId) {
+    throw new Error('Invalid deploy response: deployment id mismatch')
+  }
+
+  const responseUrl = typeof deployed.url === 'string' ? deployed.url : ''
+  let publicUrl: URL
+  try {
+    publicUrl = new URL(responseUrl)
+  } catch {
+    throw new Error('Invalid deploy response: deployment URL is required')
+  }
+  if (
+    publicUrl.protocol !== 'https:' ||
+    publicUrl.username !== '' ||
+    publicUrl.password !== ''
+  ) {
+    throw new Error('Invalid deploy response: deployment URL must use HTTPS')
+  }
+  const url = responseUrl
 
   return {
     deployId,
