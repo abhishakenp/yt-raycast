@@ -222,8 +222,26 @@ type PexelsPhoto = {
   }
 }
 
-type PexelsResponse = {
-  photos?: PexelsPhoto[]
+function isString(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
+function parseJsonRecord(source: string): Record<string, unknown> | null {
+  const parsed: unknown = JSON.parse(source)
+  return isRecord(parsed) ? parsed : null
+}
+
+function isPexelsPhoto(value: unknown): value is PexelsPhoto {
+  if (!isRecord(value)) return false
+  if (value.src === undefined) return true
+  if (!isRecord(value.src)) return false
+  return ['large', 'large2x', 'original', 'medium'].every(
+    (key) => value.src?.[key] === undefined || isString(value.src[key]),
+  )
 }
 
 function readServerEnv(...keys: string[]): string {
@@ -294,8 +312,9 @@ async function resolvePexelsImageForLakebed(
       signal: AbortSignal.timeout(lakebedImageFetchTimeoutMs),
     })
     if (!response.ok) return null
-    const data = (await response.json()) as PexelsResponse
-    const photos = data.photos ?? []
+    const data: unknown = await response.json()
+    if (!isRecord(data) || !Array.isArray(data.photos)) return null
+    const photos = data.photos.filter(isPexelsPhoto)
     if (!photos.length) return null
     return choosePexelsPhotoUrl(photos[seedFromAlt(alt) % photos.length], w, h)
   } catch {
@@ -467,23 +486,22 @@ function collectImageReferences(
   }
   if (!isRecord(value)) return
 
-  const altCandidates = Object.entries(value)
-    .filter(
-      (entry): entry is [string, string] =>
-        isLikelyImageAltKey(entry[0]) &&
-        typeof entry[1] === 'string' &&
-        !/^https?:\/\//i.test(entry[1]),
-    )
-    .map(([, alt]) => alt.trim())
-    .filter(Boolean)
-  const srcCandidates = Object.entries(value)
-    .filter(
-      (entry): entry is [string, string] =>
-        isLikelyImageSrcKey(entry[0]) &&
-        typeof entry[1] === 'string' &&
-        isResolvableImageSrc(entry[1].trim()),
-    )
-    .map(([, src]) => src.trim())
+  const altCandidates = Object.entries(value).flatMap(
+    ([entryKey, entryValue]) =>
+      isLikelyImageAltKey(entryKey) &&
+      typeof entryValue === 'string' &&
+      !/^https?:\/\//i.test(entryValue)
+        ? [entryValue.trim()]
+        : [],
+  )
+  const srcCandidates = Object.entries(value).flatMap(
+    ([entryKey, entryValue]) =>
+      isLikelyImageSrcKey(entryKey) &&
+      typeof entryValue === 'string' &&
+      isResolvableImageSrc(entryValue.trim())
+        ? [entryValue.trim()]
+        : [],
+  )
 
   for (const [index, alt] of altCandidates.entries()) {
     addRouteImageReference(into, alt, srcCandidates[index] ?? srcCandidates[0])
@@ -550,10 +568,10 @@ function parseSiteSpecBrandContext(
 ): string | undefined {
   if (!siteSpecJson) return undefined
   try {
-    const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
-    if (!parsed || typeof parsed !== 'object') return undefined
+    const parsed = parseJsonRecord(siteSpecJson)
+    if (!parsed) return undefined
     const parts = [parsed.brand, parsed.brandName, parsed.name, parsed.tagline]
-      .filter((value): value is string => typeof value === 'string')
+      .filter(isString)
       .map((value) => value.trim())
       .filter(Boolean)
     const descriptor = [...new Set(parts)].join(' ').trim()
@@ -573,15 +591,14 @@ function readPortableCommerceConfig(
 ): PortableCommerceConfig | null {
   if (!siteSpecJson) return null
   try {
-    const parsed = JSON.parse(siteSpecJson) as {
-      commerce?: { backendUrl?: unknown; storefrontUrl?: unknown }
-    }
+    const parsed = parseJsonRecord(siteSpecJson)
+    if (!parsed || !isRecord(parsed.commerce)) return null
     const backendUrl =
-      typeof parsed.commerce?.backendUrl === 'string'
+      typeof parsed.commerce.backendUrl === 'string'
         ? parsed.commerce.backendUrl.trim()
         : ''
     const storefrontUrl =
-      typeof parsed.commerce?.storefrontUrl === 'string'
+      typeof parsed.commerce.storefrontUrl === 'string'
         ? parsed.commerce.storefrontUrl.trim()
         : ''
     return backendUrl || storefrontUrl ? { backendUrl, storefrontUrl } : null
@@ -788,10 +805,7 @@ function parseSiteSpec(
 ): Record<string, unknown> {
   if (!siteSpecJson) return {}
   try {
-    const parsed = JSON.parse(siteSpecJson) as unknown
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : {}
+    return parseJsonRecord(siteSpecJson) ?? {}
   } catch {
     return {}
   }
@@ -802,18 +816,14 @@ function readGenUIExportMetadata(
 ): Record<string, unknown> | null {
   const siteSpec = parseSiteSpec(siteSpecJson)
   const genui = siteSpec.genui
-  return genui !== null && typeof genui === 'object' && !Array.isArray(genui)
-    ? (genui as Record<string, unknown>)
-    : null
+  return isRecord(genui) ? genui : null
 }
 
 function readAdminPolicy(
   genui: Record<string, unknown>,
 ): Record<string, unknown> {
   const policy = genui.adminPolicy
-  return policy !== null && typeof policy === 'object' && !Array.isArray(policy)
-    ? (policy as Record<string, unknown>)
-    : {}
+  return isRecord(policy) ? policy : {}
 }
 
 function readAdminEmails(genui: Record<string, unknown>): string[] {
@@ -828,7 +838,7 @@ function readAdminEmails(genui: Record<string, unknown>): string[] {
   return [
     ...new Set(
       values
-        .filter((value): value is string => typeof value === 'string')
+        .filter(isString)
         .map((value) => value.trim().toLowerCase())
         .filter((value) => value.includes('@')),
     ),
@@ -840,17 +850,9 @@ function readAdminRoutes(
 ): Array<{ label: string; path: string }> {
   const manifest = genui.openuiManifest
   const pages =
-    manifest !== null &&
-    typeof manifest === 'object' &&
-    !Array.isArray(manifest) &&
-    Array.isArray((manifest as { pages?: unknown }).pages)
-      ? (manifest as { pages: unknown[] }).pages
-      : []
+    isRecord(manifest) && Array.isArray(manifest.pages) ? manifest.pages : []
   const routes = pages
-    .filter(
-      (page): page is { id?: string; label?: string; component?: string } =>
-        page !== null && typeof page === 'object',
-    )
+    .filter(isRecord)
     .filter((page) =>
       [page.id, page.label, page.component].some(
         (value) => typeof value === 'string' && /admin/i.test(value),
@@ -882,15 +884,9 @@ function readProjectName(
   fallback: string,
 ): string {
   const siteSpec = parseSiteSpec(siteSpecJson)
-  const candidates = [
-    siteSpec.projectName,
-    siteSpec.brand,
-    (siteSpec.seo as { siteName?: unknown } | undefined)?.siteName,
-  ]
-  const match = candidates.find(
-    (value): value is string =>
-      typeof value === 'string' && value.trim().length > 0,
-  )
+  const seo = isRecord(siteSpec.seo) ? siteSpec.seo : null
+  const candidates = [siteSpec.projectName, siteSpec.brand, seo?.siteName]
+  const match = candidates.find(isNonEmptyString)
   return match?.trim() || fallback
 }
 
@@ -904,7 +900,7 @@ function readThemeName(
   return typeof theme === 'string' ? theme : undefined
 }
 
-const themeVarKeys = [
+const themeVarKeys: string[] = [
   'background',
   'foreground',
   'card',
@@ -949,7 +945,7 @@ const themeVarKeys = [
   'shadow-offset-y',
   'letter-spacing',
   'spacing',
-] as const
+]
 
 const defaultLakebedThemeVars: Record<string, string> = {
   background: '#ffffff',
@@ -992,7 +988,7 @@ const defaultLakebedThemeVars: Record<string, string> = {
   radius: '0.5rem',
 }
 
-const lakebedColorKeys = [
+const lakebedColorKeys: string[] = [
   'background',
   'foreground',
   'card',
@@ -1025,7 +1021,7 @@ const lakebedColorKeys = [
   'sidebar-accent-foreground',
   'sidebar-border',
   'sidebar-ring',
-] as const
+]
 
 export function buildLakebedThemeCss(
   styles: ThemeStyles | null,
@@ -1047,7 +1043,7 @@ export function buildLakebedThemeCss(
         const value = vars[key] ?? defaultLakebedThemeVars[key]
         return value == null ? null : `  --${key}: ${String(value)};`
       })
-      .filter((line): line is string => Boolean(line))
+      .filter(isString)
       .join('\n')
 
   return `:root {
@@ -1135,14 +1131,14 @@ function buildLakebedTailwindThemeCss(
       const value = selected[key] ?? defaultLakebedThemeVars[key]
       return value == null ? null : `  --color-${key}: var(--${key});`
     })
-    .filter((line): line is string => Boolean(line))
+    .filter(isString)
     .join('\n')
   const fontDeclarations = [
     selected['font-sans'] && `  --font-sans: var(--font-sans);`,
     selected['font-serif'] && `  --font-serif: var(--font-serif);`,
     selected['font-mono'] && `  --font-mono: var(--font-mono);`,
   ]
-    .filter((line): line is string => Boolean(line))
+    .filter(isString)
     .join('\n')
   const radiusDeclaration = selected['radius']
     ? `  --radius: var(--radius);`
@@ -1194,12 +1190,25 @@ function getManifestSourceIndex(): Record<
       `Unsupported React export source manifest encoding: ${reactExportSourcesEncoding}`,
     )
   }
-  manifestSourceIndex = JSON.parse(
+  const parsed = parseJsonRecord(
     brotliDecompressSync(
       Buffer.from(reactExportSourcesBase64, 'base64'),
     ).toString('utf8'),
-  ) as Record<string, ReactExportSourceEntry | undefined>
-  return manifestSourceIndex
+  )
+  if (!parsed) throw new Error('Invalid React export source manifest')
+  const nextIndex: Record<string, ReactExportSourceEntry | undefined> = {}
+  for (const [name, entry] of Object.entries(parsed)) {
+    if (
+      !isRecord(entry) ||
+      typeof entry.file !== 'string' ||
+      typeof entry.source !== 'string'
+    ) {
+      throw new Error(`Invalid React export source entry: ${name}`)
+    }
+    nextIndex[name] = { file: entry.file, source: entry.source }
+  }
+  manifestSourceIndex = nextIndex
+  return nextIndex
 }
 
 function getVendorSourceFileIndex(): Record<string, string | undefined> {
@@ -1209,12 +1218,21 @@ function getVendorSourceFileIndex(): Record<string, string | undefined> {
       `Unsupported vendor source file manifest encoding: ${vendorSourceFilesEncoding}`,
     )
   }
-  vendorSourceFileIndex = JSON.parse(
+  const parsed = parseJsonRecord(
     brotliDecompressSync(
       Buffer.from(vendorSourceFilesBase64, 'base64'),
     ).toString('utf8'),
-  ) as Record<string, string | undefined>
-  return vendorSourceFileIndex
+  )
+  if (!parsed) throw new Error('Invalid vendor source file manifest')
+  const nextIndex: Record<string, string | undefined> = {}
+  for (const [path, source] of Object.entries(parsed)) {
+    if (typeof source !== 'string') {
+      throw new Error(`Invalid vendor source file entry: ${path}`)
+    }
+    nextIndex[path] = source
+  }
+  vendorSourceFileIndex = nextIndex
+  return nextIndex
 }
 
 function printNode(node: ts.Node, sourceFile: ts.SourceFile): string {
@@ -1711,9 +1729,7 @@ function objectRecord(
   if (!object || !ts.isObjectLiteralExpression(object)) return {}
   return Object.fromEntries(
     object.properties
-      .filter((property): property is ts.PropertyAssignment =>
-        ts.isPropertyAssignment(property),
-      )
+      .filter(ts.isPropertyAssignment)
       .map((property) => [
         propertyNameText(property.name, sourceFile),
         printNode(property.initializer, sourceFile),
@@ -1725,12 +1741,13 @@ function stringPropertyValue(
   object: ts.ObjectLiteralExpression,
   name: string,
 ): string | null {
-  const property = object.properties.find(
-    (item): item is ts.PropertyAssignment =>
-      ts.isPropertyAssignment(item) &&
-      ((ts.isIdentifier(item.name) && item.name.text === name) ||
-        (ts.isStringLiteral(item.name) && item.name.text === name)),
-  )
+  const property = object.properties
+    .filter(ts.isPropertyAssignment)
+    .find(
+      (item) =>
+        (ts.isIdentifier(item.name) && item.name.text === name) ||
+        (ts.isStringLiteral(item.name) && item.name.text === name),
+    )
   const value = property?.initializer
   return value &&
     (ts.isStringLiteral(value) || ts.isNoSubstitutionTemplateLiteral(value))
@@ -1744,28 +1761,24 @@ function readEndpointRecord(
 ): Record<string, LakebedEndpointDefinition> {
   if (!object || !ts.isObjectLiteralExpression(object)) return {}
   return Object.fromEntries(
-    object.properties
-      .filter((property): property is ts.PropertyAssignment =>
-        ts.isPropertyAssignment(property),
-      )
-      .map((property) => {
-        const initializer = property.initializer
-        const route =
-          ts.isCallExpression(initializer) &&
-          initializer.expression.getText(sourceFile) === 'endpoint' &&
-          initializer.arguments[0] &&
-          ts.isObjectLiteralExpression(initializer.arguments[0])
-            ? initializer.arguments[0]
-            : null
-        return [
-          propertyNameText(property.name, sourceFile),
-          {
-            method: route ? stringPropertyValue(route, 'method') : null,
-            path: route ? stringPropertyValue(route, 'path') : null,
-            source: printNode(initializer, sourceFile),
-          },
-        ]
-      }),
+    object.properties.filter(ts.isPropertyAssignment).map((property) => {
+      const initializer = property.initializer
+      const route =
+        ts.isCallExpression(initializer) &&
+        initializer.expression.getText(sourceFile) === 'endpoint' &&
+        initializer.arguments[0] &&
+        ts.isObjectLiteralExpression(initializer.arguments[0])
+          ? initializer.arguments[0]
+          : null
+      return [
+        propertyNameText(property.name, sourceFile),
+        {
+          method: route ? stringPropertyValue(route, 'method') : null,
+          path: route ? stringPropertyValue(route, 'path') : null,
+          source: printNode(initializer, sourceFile),
+        },
+      ]
+    }),
   )
 }
 
@@ -1789,13 +1802,13 @@ function readNumericSchemaFields(
           .filter(ts.isSpreadAssignment)
           .map((property) => property.expression)
           .find(
-            (expression): expression is ts.CallExpression =>
+            (expression) =>
               ts.isCallExpression(expression) &&
               expression.expression.getText(sourceFile) === 'table',
           )
       : undefined
     const rawTableCall = directTableCall ?? spreadTableCall
-    if (!rawTableCall) continue
+    if (!rawTableCall || !ts.isCallExpression(rawTableCall)) continue
     const tableCall = inlineTableCallArg(rawTableCall, sourceFile)
 
     const tableShape = tableCall.arguments[0]
@@ -1876,12 +1889,13 @@ function lakebedSchemaSource(
     .map((property) => {
       const initializer = unwrapExpression(property.initializer)
       const rawTableSource = ts.isObjectLiteralExpression(initializer)
-        ? initializer.properties.find(
-            (item): item is ts.SpreadAssignment =>
-              ts.isSpreadAssignment(item) &&
-              ts.isCallExpression(item.expression) &&
-              item.expression.expression.getText(sourceFile) === 'table',
-          )?.expression
+        ? initializer.properties
+            .filter(ts.isSpreadAssignment)
+            .find(
+              (item) =>
+                ts.isCallExpression(item.expression) &&
+                item.expression.expression.getText(sourceFile) === 'table',
+            )?.expression
         : undefined
       const tableSource =
         rawTableSource && ts.isCallExpression(rawTableSource)
@@ -2066,23 +2080,23 @@ export function readLakebedDefinition(
 
       const config = call.arguments[0]
       if (!config || !ts.isObjectLiteralExpression(config)) continue
-      const lakebedProperty = config.properties.find(
-        (property): property is ts.PropertyAssignment =>
-          ts.isPropertyAssignment(property) &&
-          ts.isIdentifier(property.name) &&
-          property.name.text === 'lakebed',
-      )
+      const lakebedProperty = config.properties
+        .filter(ts.isPropertyAssignment)
+        .find(
+          (property) =>
+            ts.isIdentifier(property.name) && property.name.text === 'lakebed',
+        )
       const lakebed = lakebedProperty?.initializer
       const lakebedSource = resolveLakebedObject(lakebed, sourceFile, entry)
       if (!lakebedSource) return null
 
       const prop = (name) =>
-        lakebedSource.object.properties.find(
-          (property): property is ts.PropertyAssignment =>
-            ts.isPropertyAssignment(property) &&
-            ts.isIdentifier(property.name) &&
-            property.name.text === name,
-        )?.initializer
+        lakebedSource.object.properties
+          .filter(ts.isPropertyAssignment)
+          .find(
+            (property) =>
+              ts.isIdentifier(property.name) && property.name.text === name,
+          )?.initializer
 
       const schema = resolveSchemaObject(
         prop('schema'),
@@ -2244,12 +2258,13 @@ function readClientComponentDefinition(
 
       const config = call.arguments[0]
       if (!config || !ts.isObjectLiteralExpression(config)) continue
-      const componentProperty = config.properties.find(
-        (property): property is ts.PropertyAssignment =>
-          ts.isPropertyAssignment(property) &&
-          ts.isIdentifier(property.name) &&
-          property.name.text === 'component',
-      )
+      const componentProperty = config.properties
+        .filter(ts.isPropertyAssignment)
+        .find(
+          (property) =>
+            ts.isIdentifier(property.name) &&
+            property.name.text === 'component',
+        )
       if (!componentProperty) return null
       const outPath = `client/components/${toIdentifier(componentName)}.tsx`
       const { imports, vendorFiles } = transformClientComponentImports(
@@ -2282,14 +2297,13 @@ function readClientComponentDefinition(
 
 function collectDefinitions(componentNames: string[]): LakebedDefinition[] {
   const manifest = getManifestSourceIndex()
-  return componentNames
-    .map((componentName) => {
-      const entry = manifest[componentName]
-      return entry ? readLakebedDefinition(componentName, entry) : null
-    })
-    .filter(
-      (definition): definition is LakebedDefinition => definition !== null,
-    )
+  return componentNames.flatMap((componentName) => {
+    const entry = manifest[componentName]
+    const definition = entry
+      ? readLakebedDefinition(componentName, entry)
+      : null
+    return definition ? [definition] : []
+  })
 }
 
 function collectClientComponents(
@@ -2299,23 +2313,19 @@ function collectClientComponents(
   seenBlockFiles: Set<string>,
 ): ClientComponentDefinition[] {
   const manifest = getManifestSourceIndex()
-  return componentNames
-    .map((componentName) => {
-      const entry = manifest[componentName]
-      return entry
-        ? readClientComponentDefinition(
-            componentName,
-            entry,
-            files,
-            seenVendorFiles,
-            seenBlockFiles,
-          )
-        : null
-    })
-    .filter(
-      (definition): definition is ClientComponentDefinition =>
-        definition !== null,
-    )
+  return componentNames.flatMap((componentName) => {
+    const entry = manifest[componentName]
+    const definition = entry
+      ? readClientComponentDefinition(
+          componentName,
+          entry,
+          files,
+          seenVendorFiles,
+          seenBlockFiles,
+        )
+      : null
+    return definition ? [definition] : []
+  })
 }
 
 function buildRoutes(
@@ -2336,7 +2346,7 @@ function buildRoutes(
       path: uniqueRoutePath(label, index, usedPaths),
       componentName,
       node: page,
-      props: (page.props ?? {}) as Record<string, unknown>,
+      props: isRecord(page.props) ? page.props : {},
     }
   })
 }
@@ -2353,11 +2363,28 @@ let componentSchemaDefs: Record<string, ComponentSchemaDef> | null = null
 function getComponentSchemaDefs(): Record<string, ComponentSchemaDef> {
   if (componentSchemaDefs) return componentSchemaDefs
   try {
-    const schema = library.toJSONSchema() as Record<string, unknown>
-    const defs = (schema.$defs ?? schema.properties ?? {}) as Record<
-      string,
-      ComponentSchemaDef
-    >
+    const schema: unknown = library.toJSONSchema()
+    if (!isRecord(schema)) return {}
+    const rawDefs = schema.$defs ?? schema.properties
+    if (!isRecord(rawDefs)) return {}
+    const defs: Record<string, ComponentSchemaDef> = {}
+    for (const [name, rawDef] of Object.entries(rawDefs)) {
+      if (!isRecord(rawDef) || !isRecord(rawDef.properties)) continue
+      const properties: NonNullable<ComponentSchemaDef['properties']> = {}
+      for (const [propertyName, rawProperty] of Object.entries(
+        rawDef.properties,
+      )) {
+        if (!isRecord(rawProperty)) continue
+        properties[propertyName] = {
+          type:
+            typeof rawProperty.type === 'string' ? rawProperty.type : undefined,
+          properties: rawProperty.properties,
+          items: rawProperty.items,
+          $ref: rawProperty.$ref,
+        }
+      }
+      defs[name] = { properties }
+    }
     componentSchemaDefs = defs
     return defs
   } catch {
@@ -2392,7 +2419,7 @@ function isObjectLikeSchema(def: {
 function unwrapSingleObjectArgProps(node: unknown): void {
   if (!isOpenUIElementNode(node)) return
   const props = node.props
-  if (props && typeof props === 'object' && !Array.isArray(props)) {
+  if (isRecord(props)) {
     const keys = Object.keys(props)
     if (
       keys.length === 1 &&
@@ -2400,14 +2427,15 @@ function unwrapSingleObjectArgProps(node: unknown): void {
       node.typeName !== 'PageSwitch'
     ) {
       const onlyKey = keys[0]
-      const wrapped = props[onlyKey] as unknown
-      if (wrapped && typeof wrapped === 'object' && !Array.isArray(wrapped)) {
+      if (!onlyKey) return
+      const wrapped = props[onlyKey]
+      if (isRecord(wrapped)) {
         const def = getComponentSchemaDefs()[node.typeName]
         const propNames = def?.properties
           ? new Set(Object.keys(def.properties))
           : null
         const onlyKeyDef = def?.properties?.[onlyKey]
-        const wrappedKeys = Object.keys(wrapped as Record<string, unknown>)
+        const wrappedKeys = Object.keys(wrapped)
         if (
           propNames &&
           wrappedKeys.length >= 2 &&
@@ -2415,7 +2443,7 @@ function unwrapSingleObjectArgProps(node: unknown): void {
           wrappedKeys.every((key) => propNames.has(key))
         ) {
           for (const key of keys) delete props[key]
-          Object.assign(props, wrapped as Record<string, unknown>)
+          Object.assign(props, wrapped)
         }
       }
     }
@@ -2514,9 +2542,7 @@ function routeStackClass(props: Record<string, unknown>) {
     props.wrap === true ? 'flex-wrap' : '',
     props.className,
   ]
-    .filter(
-      (item): item is string => typeof item === 'string' && item.length > 0,
-    )
+    .filter(isNonEmptyString)
     .join(' ')
 }
 
@@ -2534,9 +2560,7 @@ function routeGridClass(cols: unknown, gap: unknown, className: unknown) {
               ? 'grid-cols-2 lg:grid-cols-6'
               : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
   return ['grid', colsClass, routeGapClass(gap), className]
-    .filter(
-      (item): item is string => typeof item === 'string' && item.length > 0,
-    )
+    .filter(isNonEmptyString)
     .join(' ')
 }
 
@@ -2590,9 +2614,7 @@ ${renderRouteNodeChildren(props.children)}
   if (value.typeName === 'Section') {
     return `<section className=${JSON.stringify(
       ['w-full px-4 py-12 md:py-20', props.className]
-        .filter(
-          (item): item is string => typeof item === 'string' && item.length > 0,
-        )
+        .filter(isNonEmptyString)
         .join(' '),
     )}>
   <div className="mx-auto max-w-6xl">
@@ -2611,9 +2633,7 @@ ${renderRouteNodeChildren(props.children)}
   if (value.typeName === 'Heading') {
     return `<h2 className=${JSON.stringify(
       [routeHeadingClass(props.level), props.className]
-        .filter(
-          (item): item is string => typeof item === 'string' && item.length > 0,
-        )
+        .filter(isNonEmptyString)
         .join(' '),
     )}>{${JSON.stringify(String(props.text ?? ''))}}</h2>`
   }
@@ -2624,9 +2644,7 @@ ${renderRouteNodeChildren(props.children)}
         props.tone === 'muted' ? 'text-muted-foreground' : '',
         props.className,
       ]
-        .filter(
-          (item): item is string => typeof item === 'string' && item.length > 0,
-        )
+        .filter(isNonEmptyString)
         .join(' '),
     )}>{${JSON.stringify(String(props.text ?? ''))}}</p>`
   }
@@ -2683,16 +2701,12 @@ function buildLakebedTargetMap(
   routes: LakebedRoute[],
   sourceTargetMap: Record<string, string>,
 ): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(sourceTargetMap)
-      .map(([alias, target]) => [
-        alias,
-        resolveLakebedRouteTarget(target, routes),
-      ])
-      .filter(
-        (entry): entry is [string, string] => typeof entry[1] === 'string',
-      ),
-  )
+  const targetMap: Record<string, string> = {}
+  for (const [alias, target] of Object.entries(sourceTargetMap)) {
+    const resolved = resolveLakebedRouteTarget(target, routes)
+    if (resolved !== null) targetMap[alias] = resolved
+  }
+  return targetMap
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -2838,9 +2852,7 @@ function renderMergedSchema(
   sources: Array<string | null>,
   fallback: string,
 ): ServerSchemaRender {
-  const schemaSources = sources.filter((source): source is string =>
-    Boolean(source?.trim()),
-  )
+  const schemaSources = sources.filter(isNonEmptyString)
   const sourceForFields = schemaSources.length > 0 ? schemaSources : [fallback]
   const tableFieldsByName = new Map<string, Map<string, string>>()
 
@@ -2976,19 +2988,17 @@ function projectExternalSeedRows(
   rows: Array<Record<string, unknown>>,
   fields: string[],
 ): Array<Record<string, string>> {
-  return rows
-    .map((item) => {
-      const row: Record<string, string> = {}
-      let hasFieldValue = false
-      for (const field of fields) {
-        const raw = seedFieldValue(item, field)
-        const value = raw == null ? '' : String(raw)
-        row[field] = value
-        if (value) hasFieldValue = true
-      }
-      return hasFieldValue ? row : null
-    })
-    .filter((row): row is Record<string, string> => row !== null)
+  return rows.flatMap((item) => {
+    const row: Record<string, string> = {}
+    let hasFieldValue = false
+    for (const field of fields) {
+      const raw = seedFieldValue(item, field)
+      const value = raw == null ? '' : String(raw)
+      row[field] = value
+      if (value) hasFieldValue = true
+    }
+    return hasFieldValue ? [row] : []
+  })
 }
 
 export function renderSeedData(
@@ -2996,21 +3006,18 @@ export function renderSeedData(
   tableFields: Map<string, string[]>,
   externalSeed?: Record<string, Array<Record<string, unknown>>>,
 ): string {
-  const seedRows = Object.fromEntries(
-    [...tableFields.entries()]
-      .map(([tableName, fields]) => {
-        // Prefer the real seeded catalog for this table (the full tvnl.in data
-        // published to the session's Lakebed store); fall back to
-        // props/default-derived rows only when no external rows exist.
-        const external = externalSeed?.[tableName]
-        const rows =
-          Array.isArray(external) && external.length > 0
-            ? projectExternalSeedRows(external, fields)
-            : seedRowsForTable(tableName, fields, routes)
-        return [tableName, rows] as const
-      })
-      .filter(([, rows]) => rows.length > 0),
-  )
+  const seedRows: Record<string, Array<Record<string, string>>> = {}
+  for (const [tableName, fields] of tableFields.entries()) {
+    // Prefer the real seeded catalog for this table (the full tvnl.in data
+    // published to the session's Lakebed store); fall back to
+    // props/default-derived rows only when no external rows exist.
+    const external = externalSeed?.[tableName]
+    const rows =
+      Array.isArray(external) && external.length > 0
+        ? projectExternalSeedRows(external, fields)
+        : seedRowsForTable(tableName, fields, routes)
+    if (rows.length > 0) seedRows[tableName] = rows
+  }
 
   return `const seedRows: Record<string, Array<Record<string, string>>> = ${JSON.stringify(seedRows, null, 2)};
 
@@ -3076,12 +3083,11 @@ function exportedPackagePath(
     }
     return exportTarget
   }
-  if (!exportTarget || typeof exportTarget !== 'object') return null
-  const record = exportTarget as Record<string, unknown>
+  if (!isRecord(exportTarget)) return null
   return (
-    exportedPackagePath(record.import, subpath) ??
-    exportedPackagePath(record.default, subpath) ??
-    exportedPackagePath(record.browser, subpath) ??
+    exportedPackagePath(exportTarget.import, subpath) ??
+    exportedPackagePath(exportTarget.default, subpath) ??
+    exportedPackagePath(exportTarget.browser, subpath) ??
     null
   )
 }
@@ -3091,19 +3097,37 @@ function resolvePackageExportTarget(
   subpath: string,
 ): unknown {
   if (subpath === '.') {
-    return exportsField && typeof exportsField === 'object'
-      ? (exportsField as Record<string, unknown>)['.']
-      : exportsField
+    return isRecord(exportsField) ? exportsField['.'] : exportsField
   }
-  if (!exportsField || typeof exportsField !== 'object') return null
-  const exportsRecord = exportsField as Record<string, unknown>
-  if (exportsRecord[subpath]) return exportsRecord[subpath]
-  for (const [key, value] of Object.entries(exportsRecord)) {
+  if (!isRecord(exportsField)) return null
+  if (exportsField[subpath]) return exportsField[subpath]
+  for (const [key, value] of Object.entries(exportsField)) {
     if (!key.includes('*')) continue
     const [prefix, suffix = ''] = key.split('*')
     if (subpath.startsWith(prefix) && subpath.endsWith(suffix)) return value
   }
   return null
+}
+
+type PortablePackageJson = {
+  exports?: unknown
+  jsnextMain?: string
+  module?: string
+  main?: string
+}
+
+function readPortablePackageJson(source: string): PortablePackageJson {
+  const parsed = parseJsonRecord(source)
+  if (!parsed) throw new Error('Invalid vendored package metadata')
+  return {
+    exports: parsed.exports,
+    jsnextMain:
+      typeof parsed['jsnext:main'] === 'string'
+        ? parsed['jsnext:main']
+        : undefined,
+    module: typeof parsed.module === 'string' ? parsed.module : undefined,
+    main: typeof parsed.main === 'string' ? parsed.main : undefined,
+  }
 }
 
 function resolveVendorSourceManifestPath(sourceRelPath: string): string | null {
@@ -3143,12 +3167,7 @@ function resolveBareImportFile(specifier: string): string {
   if (packageJsonSource === undefined) {
     throw new Error(`Missing vendored package metadata for ${packageName}`)
   }
-  const packageJson = JSON.parse(packageJsonSource) as {
-    exports?: Record<string, unknown> | string
-    'jsnext:main'?: string
-    module?: string
-    main?: string
-  }
+  const packageJson = readPortablePackageJson(packageJsonSource)
   const subpath = packageSubpath(specifier, packageName)
   const exportTarget = resolvePackageExportTarget(packageJson.exports, subpath)
   const exported = exportedPackagePath(exportTarget, subpath)
@@ -3164,14 +3183,10 @@ function resolveBareImportFile(specifier: string): string {
     if (!nestedPackageJsonSource) {
       throw new Error(`Missing vendored package source for ${specifier}`)
     }
-    const nestedPackageJson = JSON.parse(nestedPackageJsonSource) as {
-      'jsnext:main'?: string
-      module?: string
-      main?: string
-    }
+    const nestedPackageJson = readPortablePackageJson(nestedPackageJsonSource)
     const nestedCandidate =
       nestedPackageJson.module ??
-      nestedPackageJson['jsnext:main'] ??
+      nestedPackageJson.jsnextMain ??
       nestedPackageJson.main
     const nestedResolved = nestedCandidate
       ? resolveVendorSourceManifestPath(
@@ -3195,14 +3210,10 @@ function resolveBareImportFile(specifier: string): string {
     if (!nestedPackageJsonSource) {
       throw new Error(`Missing vendored package source for ${specifier}`)
     }
-    const nestedPackageJson = JSON.parse(nestedPackageJsonSource) as {
-      'jsnext:main'?: string
-      module?: string
-      main?: string
-    }
+    const nestedPackageJson = readPortablePackageJson(nestedPackageJsonSource)
     const nestedCandidate =
       nestedPackageJson.module ??
-      nestedPackageJson['jsnext:main'] ??
+      nestedPackageJson.jsnextMain ??
       nestedPackageJson.main
     const nestedResolved = nestedCandidate
       ? resolveVendorSourceManifestPath(
@@ -3499,6 +3510,9 @@ function rewriteLakebedClientImports(
     context.outPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   )
   const ranges: Array<{ start: number; end: number; text: string }> = []
+  const projectSectionKit =
+    context.outPath.startsWith('client/components/') ||
+    context.outPath.startsWith('client/section-kit/')
 
   const rewriteModuleSpecifier = (moduleName) => {
     const allowed = allowedLakebedClientBareImport(moduleName)
@@ -3536,6 +3550,7 @@ function rewriteLakebedClientImports(
         context.files,
         context.seenVendorFiles,
         context.seenBlockFiles,
+        projectSectionKit,
       )
       return relativeImportPath(context.outPath, targetOut)
     }
@@ -3551,6 +3566,7 @@ function rewriteLakebedClientImports(
           context.files,
           context.seenVendorFiles,
           context.seenBlockFiles,
+          projectSectionKit,
         )
         return relativeImportPath(context.outPath, targetOut)
       }
@@ -3623,6 +3639,7 @@ function copyBlocksClientSourceForLakebed(
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
   seenBlockFiles: Set<string>,
+  projectSectionKit = false,
 ): string {
   const sourcePath = resolveBlockSourceManifestPath(sourceRelPath)
   if (!sourcePath) {
@@ -3632,7 +3649,8 @@ function copyBlocksClientSourceForLakebed(
   const outPath =
     blocksRel === 'src/lib/utils.ts'
       ? 'client/lib/cn.ts'
-      : blocksRel.startsWith('src/section-kit/')
+      : blocksRel === 'src/section-kit/Logo.tsx' ||
+          (projectSectionKit && blocksRel.startsWith('src/section-kit/'))
         ? `client/section-kit/${blocksRel.slice('src/section-kit/'.length)}`
         : `client/vendor/blocks-runtime/${blocksRel}`
   if (seenBlockFiles.has(outPath)) return outPath
@@ -3748,6 +3766,17 @@ function transformHandler(
   const writesDelete = /\.delete\s*\(/.test(source)
   const writesInsert = /\.insert\s*\(/.test(source)
   const writesUpdate = /\.update\s*\(/.test(source)
+  const syncTables = [
+    ...new Set(
+      Array.from(
+        source.matchAll(
+          /\bdb\.([A-Za-z_$][\w$]*)\.(?:delete|insert|update)\s*\(/g,
+        ),
+        (match) => String(match[1]),
+      ),
+    ),
+  ].sort()
+  const actionableSyncTables = syncTables.length > 0 ? syncTables : ['unknown']
   const syncOperation =
     writesDelete && !writesInsert && !writesUpdate
       ? 'delete'
@@ -3756,8 +3785,8 @@ function transformHandler(
         : 'update'
   if (!handler || !ts.isArrowFunction(handler)) {
     return `${name}: ${wrapper}((ctx) => {
-${seedCall}  const result = { ok: true, userId: ctx.auth.userId };
-${shouldRecordSync ? `  recordIdempotencyKeyVersionedSyncOutboxChangeEvent(ctx, ${JSON.stringify(name)}, ${JSON.stringify(syncOperation)}, [], result);\n` : ''}  return result;
+${seedCall}${shouldRecordSync ? `  const syncIntents = prepareIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx, ${JSON.stringify(name)}, ${JSON.stringify(actionableSyncTables)}, ${JSON.stringify(syncOperation)}, []);\n` : ''}  const result = { ok: true, userId: ctx.auth.userId };
+${shouldRecordSync ? `  commitIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx, syncIntents, result);\n` : ''}  return result;
 })`
   }
 
@@ -3770,9 +3799,20 @@ ${shouldRecordSync ? `  recordIdempotencyKeyVersionedSyncOutboxChangeEvent(ctx, 
     .map((parameter) => parameter.name.getText(sourceFile))
     .join(', ')
   const prefix = args ? `ctx, ${args}` : 'ctx'
-  const syncStatement = shouldRecordSync
-    ? `  recordIdempotencyKeyVersionedSyncOutboxChangeEvent(ctx, ${JSON.stringify(name)}, ${JSON.stringify(syncOperation)}, [${args}], result);\n`
+  const prepareSyncStatement = shouldRecordSync
+    ? `  const syncIntents = prepareIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx, ${JSON.stringify(name)}, ${JSON.stringify(actionableSyncTables)}, ${JSON.stringify(syncOperation)}, [${args}]);\n`
     : ''
+  const commitSyncStatement = shouldRecordSync
+    ? `  commitIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx, syncIntents, result);\n`
+    : ''
+  const quarantineSyncStatement = shouldRecordSync
+    ? `    quarantineIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx, syncIntents, error);\n`
+    : ''
+  const isAsync = handler.modifiers?.some(
+    (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
+  )
+  const asyncKeyword = isAsync ? 'async ' : ''
+  const awaitKeyword = isAsync ? 'await ' : ''
 
   const normalizeHandlerSource = (value) =>
     normalizeNumericFieldWrites(
@@ -3787,24 +3827,34 @@ ${shouldRecordSync ? `  recordIdempotencyKeyVersionedSyncOutboxChangeEvent(ctx, 
     const body = handler.body.statements
       .map((statement) => printNode(statement, sourceFile))
       .join('\n')
-    return `${name}: ${wrapper}((${prefix}) => {
-${seedCall}  const db = ctx.db
-${contextAlias}  const result = (() => {
+    return `${name}: ${wrapper}(${asyncKeyword}(${prefix}) => {
+${seedCall}${prepareSyncStatement}  const db = ctx.db
+${contextAlias}  let result;
+  try {
+    result = ${awaitKeyword}(${asyncKeyword}() => {
 ${normalizeHandlerSource(body)
   .split('\n')
-  .map((line) => `    ${line}`)
+  .map((line) => `      ${line}`)
   .join('\n')}
-  })();
-${syncStatement}  return result;
+    })();
+  } catch (error) {
+${quarantineSyncStatement}    throw error;
+  }
+${commitSyncStatement}  return result;
 })`
   }
 
   const expression = normalizeHandlerSource(
     printNode(handler.body, sourceFile),
   ).replace(/(^|[^A-Za-z0-9_$.])db\./g, '$1ctx.db.')
-  return `${name}: ${wrapper}((${prefix}) => {
-${seedCall}${contextAlias}  const result = ${expression};
-${syncStatement}  return result;
+  return `${name}: ${wrapper}(${asyncKeyword}(${prefix}) => {
+${seedCall}${prepareSyncStatement}${contextAlias}  let result;
+  try {
+    result = ${awaitKeyword}${expression};
+  } catch (error) {
+${quarantineSyncStatement}    throw error;
+  }
+${commitSyncStatement}  return result;
 })`
 }
 
@@ -3872,6 +3922,12 @@ ${includeGeneratorCredit ? 'npx' : 'bunx'} lakebed dev
 
 The exported app has one client entry, one server entry, and shared TypeScript.
 
+## Sync reliability
+
+Server mutations write a durable \`prepared\` outbox intent before changing business data. A successful mutation promotes that intent to \`pending\`. If the final status write fails, the intent stays quarantined: drain responses report it under \`prepared\` but never include it in deliverable \`events\`.
+
+Prepared intents are deliberately ambiguous because Lakebed 0.0.25 serializes mutations without rolling them back. An authenticated sync worker must verify business state, then call the existing sync endpoint with \`{ "action": "reconcile", "decision": "commit" | "cancel", "idempotencyKeys": [...] }\`. Ordinary retry and acknowledgement requests cannot promote or delete prepared intents.
+
 ${includeGeneratorCredit ? 'Generated with [ShipFast](https://ship-fast.io) 🚀.' : 'Portable project export.'}
 `
 }
@@ -3894,12 +3950,9 @@ function renderSharedContent(
   routes: LakebedRoute[],
 ): string {
   const pages = routes.map((route, index) => {
-    const hero = route.props.hero as
-      | Record<string, unknown>
-      | string
-      | undefined
+    const hero = route.props.hero
     const title =
-      (typeof hero === 'object' && typeof hero.title === 'string'
+      (isRecord(hero) && typeof hero.title === 'string'
         ? hero.title
         : undefined) ??
       (typeof route.props.heading === 'string'
@@ -4235,7 +4288,7 @@ function navigateTo(path: string) {
 }
 
 export function useNavigate() {
-  return (target: unknown) => {
+  function navigate(target: unknown) {
     if (typeof target !== "string" || !target.trim()) return;
     const value = target.trim();
     const route =
@@ -4248,7 +4301,8 @@ export function useNavigate() {
       return;
     }
     console.warn("[Navigation] Unresolved target:", slugFragment(value));
-  };
+  }
+  return navigate;
 }
 `
 }
@@ -4256,12 +4310,18 @@ export function useNavigate() {
 function renderClientImage(): string {
   return `import { imageSources } from "../routes";
 
+type ImageSource = (typeof imageSources)[number];
+
+function hasOriginalSrc(image: ImageSource): image is ImageSource & { originalSrc: string } {
+  return typeof image.originalSrc === "string" && image.originalSrc.trim().length > 0;
+}
+
 const imageSourcesByAlt = new Map(
   imageSources.map((image) => [image.alt, image.src]),
 );
 const imageSourcesByOriginalSrc = new Map(
   imageSources
-    .filter((image): image is typeof image & { originalSrc: string } => typeof image.originalSrc === "string" && image.originalSrc.trim().length > 0)
+    .filter(hasOriginalSrc)
     .map((image) => [image.originalSrc, image.src]),
 );
 
@@ -4412,19 +4472,20 @@ function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown
   const [lastError, setLastError] = useState<unknown | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const reset = useCallback(() => setLastError(null), []);
+  async function executeMutation(...args: Args) {
+    setPendingCount((count) => count + 1);
+    setLastError(null);
+    try {
+      return await mutationRef.current(...args);
+    } catch (error) {
+      setLastError(error);
+      throw error;
+    } finally {
+      setPendingCount((count) => Math.max(0, count - 1));
+    }
+  }
   const callable = Object.assign(
-    async (...args: Args) => {
-      setPendingCount((count) => count + 1);
-      setLastError(null);
-      try {
-        return await mutationRef.current(...args);
-      } catch (error) {
-        setLastError(error);
-        throw error;
-      } finally {
-        setPendingCount((count) => Math.max(0, count - 1));
-      }
-    },
+    executeMutation,
     {
       isPending: false,
       lastError: null,
@@ -4455,31 +4516,34 @@ export function useKeyedLakebedMutation<
 
   pendingKeysRef.current = pendingKeys;
 
-  const run = useCallback(
-    async (key: string, ...args: Args): Promise<Result | undefined> => {
-      if (pendingKeysRef.current.includes(key)) return undefined;
+  async function runMutation(
+    key: string,
+    ...args: Args
+  ): Promise<Result | undefined> {
+    if (pendingKeysRef.current.includes(key)) return undefined;
 
-      const addKey = (current: readonly string[]) =>
-        current.includes(key) ? current : [...current, key];
-      pendingKeysRef.current = addKey(pendingKeysRef.current);
-      setPendingKeys(addKey);
+    function addKey(current: readonly string[]) {
+      return current.includes(key) ? current : [...current, key];
+    }
+    pendingKeysRef.current = addKey(pendingKeysRef.current);
+    setPendingKeys(addKey);
 
-      try {
-        return await mutation(...args);
-      } finally {
-        const removeKey = (current: readonly string[]) =>
-          current.filter((item) => item !== key);
-        pendingKeysRef.current = removeKey(pendingKeysRef.current);
-        setPendingKeys(removeKey);
+    try {
+      return await mutation(...args);
+    } finally {
+      function removeKey(current: readonly string[]) {
+        return current.filter((item) => item !== key);
       }
-    },
-    [mutation],
-  );
+      pendingKeysRef.current = removeKey(pendingKeysRef.current);
+      setPendingKeys(removeKey);
+    }
+  }
+  const run = useCallback(runMutation, [mutation]);
 
-  const isPending = useCallback(
-    (key: string) => pendingKeys.includes(key),
-    [pendingKeys],
-  );
+  function pendingForKey(key: string) {
+    return pendingKeys.includes(key);
+  }
+  const isPending = useCallback(pendingForKey, [pendingKeys]);
   const reset = useCallback(() => {
     pendingKeysRef.current = [];
     setPendingKeys([]);
@@ -4582,6 +4646,96 @@ function assertNoUnboundClientReferences(files: Record<string, string>): void {
   }
 }
 
+function renderFunctionDeclaration(
+  name: string,
+  initializer: ts.ArrowFunction | ts.FunctionExpression,
+  sourceFile: ts.SourceFile,
+  exported: boolean,
+): string {
+  const asyncKeyword = initializer.modifiers?.some(
+    (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
+  )
+    ? 'async '
+    : ''
+  const generatorToken =
+    ts.isFunctionExpression(initializer) && initializer.asteriskToken ? '*' : ''
+  const typeParameters = initializer.typeParameters?.length
+    ? `<${initializer.typeParameters.map((parameter) => parameter.getText(sourceFile)).join(', ')}>`
+    : ''
+  const parameters = initializer.parameters
+    .map((parameter) => parameter.getText(sourceFile))
+    .join(', ')
+  const returnType = initializer.type
+    ? `: ${initializer.type.getText(sourceFile)}`
+    : ''
+  const body = ts.isBlock(initializer.body)
+    ? initializer.body.getText(sourceFile)
+    : `{ return (${initializer.body.getText(sourceFile)}); }`
+  return `${exported ? 'export ' : ''}${asyncKeyword}function${generatorToken} ${name}${typeParameters}(${parameters})${returnType} ${body}`
+}
+
+function renderNamedClientComponent(name: string, source: string): string {
+  const sourceFile = ts.createSourceFile(
+    `${name}.tsx`,
+    `const component = ${source}`,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  )
+  const statement = sourceFile.statements.find(ts.isVariableStatement)
+  const declaration = statement?.declarationList.declarations[0]
+  const initializer = declaration?.initializer
+  if (
+    !initializer ||
+    (!ts.isArrowFunction(initializer) && !ts.isFunctionExpression(initializer))
+  ) {
+    throw new Error(`Lakebed component ${name} must export a function`)
+  }
+  return renderFunctionDeclaration(
+    `${toIdentifier(name)}Block`,
+    initializer,
+    sourceFile,
+    true,
+  )
+}
+
+function renderClientPreludeSource(source: string): string {
+  const sourceFile = ts.createSourceFile(
+    'component-prelude.tsx',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  )
+  return sourceFile.statements
+    .map((statement) => {
+      if (!ts.isVariableStatement(statement))
+        return statement.getText(sourceFile)
+      const declarations = statement.declarationList.declarations
+      if (declarations.length !== 1) return statement.getText(sourceFile)
+      const declaration = declarations[0]
+      if (!ts.isIdentifier(declaration.name))
+        return statement.getText(sourceFile)
+      const initializer = declaration.initializer
+      if (
+        !initializer ||
+        (!ts.isArrowFunction(initializer) &&
+          !ts.isFunctionExpression(initializer))
+      ) {
+        return statement.getText(sourceFile)
+      }
+      return renderFunctionDeclaration(
+        declaration.name.text,
+        initializer,
+        sourceFile,
+        statement.modifiers?.some(
+          (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+        ) ?? false,
+      )
+    })
+    .join('\n\n')
+}
+
 function renderClientComponentModule(
   component: ClientComponentDefinition,
 ): string {
@@ -4613,12 +4767,9 @@ function renderClientComponentModule(
 
   return `${imports.join('\n')}
 
-${component.preludeSources.join('\n\n')}
+${component.preludeSources.map(renderClientPreludeSource).join('\n\n')}
 
-export const ${toIdentifier(component.name)}Block: (input: {
-  props: Record<string, unknown>;
-  lakebed: LakebedAdapter;
-}) => ComponentChildren = ${source};
+${renderNamedClientComponent(component.name, source)}
 `
 }
 
@@ -4935,13 +5086,12 @@ export function App() {
 `
 }
 
-// Auto-generated authorized data-sync endpoint. Our platform POSTs catalog data
-// to `POST /__lakebed/sync` with `Authorization: Bearer <syncSecret>` to seed or
-// update the deployed DB — the deployed app never calls out (it can't). The
-// secret is baked into the SERVER bundle only (never the client), so only our
-// platform can write. Rows are projected to each table's declared fields
-// (unknown/engine-managed keys are rejected by lakebed inserts), and every
-// posted table is bulk-replaced (idempotent). Proven end-to-end in ~/test-lakebed.
+// Auto-generated authorized data-sync endpoint. The platform posts versioned
+// changes with a bearer secret that is either supplied directly for isolated
+// artifacts or resolved from server-only runtime environment state. Incoming
+// rows are projected to declared fields, protocol tables are inaccessible to
+// caller seed data, and a durable prepared receipt makes partially completed
+// deletes recoverable without pretending Lakebed provides transaction rollback.
 export function injectSyncEndpoint(
   endpointsSource: string,
   tableFields: Map<string, string[]>,
@@ -4961,19 +5111,18 @@ export function injectSyncEndpoint(
         '',
     ]),
   )
+  const configuredSecretSource = syncSecret
+    ? JSON.stringify(syncSecret)
+    : 'null'
   const entry = `
   __lakebedSync: (() => {
     const canonicalSyncPath = "/__lakebed/sync";
-    const configuredSyncSecret = ${
-      syncSecret
-        ? JSON.stringify(syncSecret)
-        : '(typeof process !== "undefined" ? process.env.LAKEBED_SYNC_SECRET : "")'
-    };
+    const configuredSyncSecret = ${configuredSecretSource};
     const receiverIdentity = ${JSON.stringify(receiverIdentity)};
     const fieldMap = ${fieldMap};
     const protocolFieldMap = {
-      receipts: ["idempotencyKey", "origin", "target", "version"],
-      tombstones: ["deletedAt", "deletedVersion", "stateKey"],
+      receipts: ["idempotencyKey", "intent", "origin", "recordedAt", "status", "target", "version"],
+      tombstones: ["active", "deletedAt", "deletedVersion", "stateKey"],
       versions: ["stateKey", "version"],
     };
     const stableIdentityFields = ${JSON.stringify(stableIdentityFields)};
@@ -4987,6 +5136,19 @@ export function injectSyncEndpoint(
         typeof value === "string" ||
         typeof value === "number" ||
         typeof value === "boolean";
+    }
+
+    function canonicalJson(value) {
+      if (Array.isArray(value)) {
+        return "[" + value.map(canonicalJson).join(",") + "]";
+      }
+      if (isRecord(value)) {
+        return "{" + Object.keys(value)
+          .sort()
+          .map((key) => JSON.stringify(key) + ":" + canonicalJson(value[key]))
+          .join(",") + "}";
+      }
+      return JSON.stringify(value);
     }
 
     function projectedRow(raw, fields, fillMissing) {
@@ -5113,23 +5275,58 @@ export function injectSyncEndpoint(
         Object.defineProperty(owner, "__syncProtocolCompatibilityState", {
           configurable: false,
           enumerable: false,
-          value: { receipts: [], tombstones: {}, versions: {} },
+          value: { receipts: {}, tombstones: {}, versions: {} },
           writable: false,
         });
       }
       return owner.__syncProtocolCompatibilityState;
     }
 
-    function hasReceipt(ctx, idempotencyKey) {
+    function receiptFor(ctx, idempotencyKey) {
       if (!protocolTablesAvailable(ctx)) {
-        return compatibilityState(ctx).receipts.includes(idempotencyKey);
+        return compatibilityState(ctx).receipts[idempotencyKey] || null;
       }
-      return Boolean(
-        ctx.db.__syncInternalReceiptsV1
-          .where("idempotencyKey", idempotencyKey)
-          .all()
-          .at(0),
-      );
+      return ctx.db.__syncInternalReceiptsV1
+        .where("idempotencyKey", idempotencyKey)
+        .all()
+        .at(0) || null;
+    }
+
+    function prepareReceipt(ctx, payload, intent) {
+      const existing = receiptFor(ctx, payload.idempotencyKey);
+      if (existing) {
+        if (existing.intent && existing.intent !== intent) {
+          throw new Error("idempotency key reused with different payload");
+        }
+        return existing;
+      }
+      if (!protocolTablesAvailable(ctx)) {
+        const receipt = { intent, status: "prepared" };
+        compatibilityState(ctx).receipts[payload.idempotencyKey] = receipt;
+        return receipt;
+      }
+      return ctx.db.__syncInternalReceiptsV1.insert({
+        idempotencyKey: payload.idempotencyKey,
+        intent,
+        origin: payload.origin,
+        recordedAt: new Date().toISOString(),
+        status: "prepared",
+        target: payload.target,
+        version: String(payload.version),
+      });
+    }
+
+    function commitReceipt(ctx, payload) {
+      const receipt = receiptFor(ctx, payload.idempotencyKey);
+      if (!receipt) throw new Error("sync receipt unavailable");
+      if (!protocolTablesAvailable(ctx)) {
+        receipt.status = "committed";
+        return;
+      }
+      ctx.db.__syncInternalReceiptsV1.update(receipt.id, {
+        recordedAt: new Date().toISOString(),
+        status: "committed",
+      });
     }
 
     function latestVersionFor(ctx, stateKey) {
@@ -5156,10 +5353,26 @@ export function injectSyncEndpoint(
       });
     }
 
-    function persistProtocolState(ctx, payload, actions, undo) {
+    function persistProtocolState(ctx, actions, undo) {
       if (!protocolTablesAvailable(ctx)) {
         const state = compatibilityState(ctx);
         for (const action of actions) {
+          const hadVersion = Object.prototype.hasOwnProperty.call(
+            state.versions,
+            action.stateKey,
+          );
+          const previousVersion = state.versions[action.stateKey];
+          const hadTombstone = Object.prototype.hasOwnProperty.call(
+            state.tombstones,
+            action.stateKey,
+          );
+          const previousTombstone = state.tombstones[action.stateKey];
+          undo.push(() => {
+            if (hadVersion) state.versions[action.stateKey] = previousVersion;
+            else delete state.versions[action.stateKey];
+            if (hadTombstone) state.tombstones[action.stateKey] = previousTombstone;
+            else delete state.tombstones[action.stateKey];
+          });
           state.versions[action.stateKey] = action.change.version;
           if (action.change.operation === "delete") {
             state.tombstones[action.stateKey] = {
@@ -5169,10 +5382,6 @@ export function injectSyncEndpoint(
           } else {
             delete state.tombstones[action.stateKey];
           }
-        }
-        state.receipts.push(payload.idempotencyKey);
-        if (state.receipts.length > 1000) {
-          state.receipts.splice(0, state.receipts.length - 1000);
         }
         return;
       }
@@ -5196,6 +5405,7 @@ export function injectSyncEndpoint(
             "stateKey",
             action.stateKey,
             {
+              active: "true",
               deletedAt: action.change.deletedAt || "",
               deletedVersion: String(action.change.version),
               stateKey: action.stateKey,
@@ -5209,26 +5419,13 @@ export function injectSyncEndpoint(
             protocolFieldMap.tombstones,
             true,
           );
-          ctx.db.__syncInternalTombstonesV1.delete(existingTombstone.id);
-          undo.push(() => ctx.db.__syncInternalTombstonesV1.insert(previous));
+          ctx.db.__syncInternalTombstonesV1.update(existingTombstone.id, {
+            active: "false",
+          });
+          undo.push(() =>
+            ctx.db.__syncInternalTombstonesV1.update(existingTombstone.id, previous),
+          );
         }
-      }
-      protocolUpsert(
-        ctx.db.__syncInternalReceiptsV1,
-        "idempotencyKey",
-        payload.idempotencyKey,
-        {
-          idempotencyKey: payload.idempotencyKey,
-          origin: payload.origin,
-          target: payload.target,
-          version: String(payload.version),
-        },
-        protocolFieldMap.receipts,
-        undo,
-      );
-      const receipts = ctx.db.__syncInternalReceiptsV1.all();
-      for (const expired of receipts.slice(0, Math.max(0, receipts.length - 1000))) {
-        ctx.db.__syncInternalReceiptsV1.delete(expired.id);
       }
     }
 
@@ -5245,23 +5442,183 @@ export function injectSyncEndpoint(
 
     function tombstoneCount(ctx) {
       return protocolTablesAvailable(ctx)
-        ? ctx.db.__syncInternalTombstonesV1.all().length
+        ? ctx.db.__syncInternalTombstonesV1
+            .all()
+            .filter((tombstone) => tombstone.active !== "false").length
         : Object.keys(compatibilityState(ctx).tombstones).length;
     }
 
-    function rollback(undo) {
-      for (let index = undo.length - 1; index >= 0; index -= 1) {
-        try { undo[index](); } catch {}
+    function parsedOutboxEvent(row) {
+      try {
+        return JSON.parse(row.event);
+      } catch {
+        return {
+          changeKey: row.changeKey,
+          data: row.data,
+          deletedAt: row.deletedAt,
+          idempotencyKey: row.idempotencyKey,
+          mutationName: row.mutationName,
+          operation: row.operation,
+          origin: row.origin,
+          payload: row.payload,
+          table: row.table,
+          target: row.target,
+          tombstone: row.tombstone === "true",
+          version: Number(row.version) || 0,
+        };
       }
+    }
+
+    function outboxRequestKeys(payload) {
+      if (!Array.isArray(payload.idempotencyKeys)) return [];
+      return [...new Set(
+        payload.idempotencyKeys
+          .filter((key) => typeof key === "string" && key.trim())
+          .map((key) => key.trim()),
+      )].slice(0, 1000);
+    }
+
+    function handleOutboxRequest(ctx, payload) {
+      const outbox = ctx.db.__syncInternalOutboxV1;
+      if (!outbox) return json({ error: "outbox storage unavailable" }, { status: 503 });
+
+      if (payload.action === "drain") {
+        const requestedLimit = Number(payload.limit);
+        const limit = Number.isSafeInteger(requestedLimit)
+          ? Math.min(100, Math.max(1, requestedLimit))
+          : 50;
+        const now = Date.now();
+        const allRows = outbox.all();
+        const rows = allRows
+          .filter((row) =>
+            (row.status === "pending" || row.status === "delivering") &&
+            (Number(row.nextAttemptAt) || 0) <= now
+          )
+          .sort((left, right) => String(left.createdAt).localeCompare(String(right.createdAt)))
+          .slice(0, limit);
+        const events = [];
+        for (const row of rows) {
+          const retryCount = (Number(row.retryCount) || 0) + 1;
+          const retryDelay = Math.min(300000, 1000 * 2 ** Math.min(retryCount, 8));
+          outbox.update(row.id, {
+            nextAttemptAt: String(now + retryDelay),
+            retryCount: String(retryCount),
+            status: "delivering",
+          });
+          events.push(parsedOutboxEvent(row));
+        }
+        const prepared = allRows
+          .filter((row) => row.status === "prepared")
+          .sort((left, right) =>
+            String(left.createdAt).localeCompare(String(right.createdAt)),
+          )
+          .slice(0, limit)
+          .map(parsedOutboxEvent);
+        return json({ ok: true, action: "drain", events, prepared });
+      }
+
+      if (payload.action === "ack") {
+        const keys = outboxRequestKeys(payload);
+        let acknowledged = 0;
+        for (const key of keys) {
+          for (const row of outbox.where("idempotencyKey", key).all()) {
+            if (row.status === "prepared" || row.status === "cancelled") continue;
+            outbox.delete(row.id);
+            acknowledged += 1;
+          }
+        }
+        return json({ ok: true, action: "ack", acknowledged });
+      }
+
+      if (payload.action === "retry") {
+        const keys = outboxRequestKeys(payload);
+        const lastError =
+          typeof payload.error === "string" ? payload.error.slice(0, 1000) : "delivery failed";
+        const retryAt = String(Date.now() + 1000);
+        let retried = 0;
+        for (const key of keys) {
+          for (const row of outbox.where("idempotencyKey", key).all()) {
+            if (row.status === "prepared" || row.status === "cancelled") continue;
+            outbox.update(row.id, {
+              lastError,
+              nextAttemptAt: retryAt,
+              status: "pending",
+            });
+            retried += 1;
+          }
+        }
+        return json({ ok: true, action: "retry", retried });
+      }
+
+      if (payload.action === "reconcile") {
+        const keys = outboxRequestKeys(payload);
+        const decision = payload.decision;
+        if (decision !== "commit" && decision !== "cancel") {
+          return json(
+            { error: "reconcile decision must be commit or cancel" },
+            { status: 422 },
+          );
+        }
+        const reconciledAt = new Date().toISOString();
+        let reconciled = 0;
+        for (const key of keys) {
+          for (const row of outbox.where("idempotencyKey", key).all()) {
+            if (row.status !== "prepared") continue;
+            outbox.update(row.id, {
+              lastError: "reconciled:" + decision + ":" + reconciledAt,
+              nextAttemptAt: decision === "commit" ? "0" : row.nextAttemptAt,
+              status: decision === "commit" ? "pending" : "cancelled",
+            });
+            reconciled += 1;
+          }
+        }
+        return json({ ok: true, action: "reconcile", decision, reconciled });
+      }
+
+      return json(
+        { error: "action must be drain, ack, retry, or reconcile" },
+        { status: 422 },
+      );
+    }
+
+    function rollback(undo) {
+      let rollbackError = null;
+      for (let index = undo.length - 1; index >= 0; index -= 1) {
+        try {
+          undo[index]();
+        } catch (error) {
+          if (!rollbackError) rollbackError = error;
+        }
+      }
+      if (rollbackError) throw rollbackError;
+    }
+
+    function mergeSameBatchChanges(previous, next) {
+      if (next.operation === "delete") return next;
+      if (previous.operation === "delete") {
+        return { ...next, operation: "create" };
+      }
+      return {
+        ...next,
+        data: { ...previous.data, ...next.data },
+        operation:
+          previous.operation === "create" || next.operation === "create"
+            ? "create"
+            : "update",
+      };
     }
 
     return endpoint(
       { method: "POST", path: "/api/__sync" },
       (ctx, req) => {
-        if (!configuredSyncSecret) {
+        const activeSyncSecret = configuredSyncSecret ||
+          (ctx.env && typeof ctx.env.LAKEBED_SYNC_SECRET === "string"
+            ? ctx.env.LAKEBED_SYNC_SECRET
+            : "");
+        if (!activeSyncSecret) {
           return json({ error: "sync unavailable" }, { status: 503 });
         }
-        if (req.headers.get("authorization") !== "Bearer " + configuredSyncSecret) {
+        if (req.headers.get("authorization") !== "Bearer " + activeSyncSecret) {
           return json({ error: "unauthorized" }, { status: 401 });
         }
         return req.text().then(function(body) {
@@ -5270,6 +5627,10 @@ export function injectSyncEndpoint(
             payload = JSON.parse(body);
           } catch {
             return json({ error: "invalid json" }, { status: 400 });
+          }
+
+          if (isRecord(payload) && typeof payload.action === "string") {
+            return handleOutboxRequest(ctx, payload);
           }
 
           const envelopeError = validateEnvelope(payload);
@@ -5288,12 +5649,23 @@ export function injectSyncEndpoint(
           }
 
           const idempotencyKey = payload.idempotencyKey.trim();
-          if (hasReceipt(ctx, idempotencyKey)) {
+          const intent = canonicalJson(payload);
+          const existingReceipt = receiptFor(ctx, idempotencyKey);
+          if (existingReceipt && existingReceipt.intent && existingReceipt.intent !== intent) {
+            return json({ error: "idempotency key reused with different payload" }, { status: 409 });
+          }
+          if (existingReceipt && existingReceipt.status !== "prepared") {
             return json({ ok: true, duplicate: true, idempotencyKey });
           }
           if (payload.origin === payload.target) {
             return json({ ok: true, ignored: true, reason: "sync loop suppressed" });
           }
+          try {
+            prepareReceipt(ctx, payload, intent);
+          } catch {
+            return json({ error: "sync intent unavailable" }, { status: 503 });
+          }
+          const resumingPreparedIntent = Boolean(existingReceipt);
 
           const actionsByState = new Map();
           let staleChanges = 0;
@@ -5301,24 +5673,31 @@ export function injectSyncEndpoint(
             const stateKey = change.table + "::" + change.key;
             const pending = actionsByState.get(stateKey);
             const persistedVersion = latestVersionFor(ctx, stateKey);
-            const latestVersion = pending
-              ? Math.max(pending.change.version, persistedVersion ?? -1)
-              : persistedVersion;
-            if (typeof latestVersion === "number" && change.version <= latestVersion) {
+            const staleAgainstBatch = pending && change.version < pending.change.version;
+            const staleAgainstStorage =
+              !pending &&
+              typeof persistedVersion === "number" &&
+              (resumingPreparedIntent
+                ? change.version < persistedVersion
+                : change.version <= persistedVersion);
+            if (staleAgainstBatch || staleAgainstStorage) {
               staleChanges += 1;
               continue;
             }
-            actionsByState.set(stateKey, { change, stateKey });
+            actionsByState.set(stateKey, {
+              change: pending
+                ? mergeSameBatchChanges(pending.change, change)
+                : change,
+              stateKey,
+            });
           }
           const actions = [...actionsByState.values()];
 
           const undo = [];
           const result = {};
+          const pendingDeletes = [];
           try {
-            const orderedActions = actions.slice().sort((left, right) =>
-              Number(left.change.operation === "delete") - Number(right.change.operation === "delete")
-            );
-            for (const action of orderedActions) {
+            for (const action of actions) {
               const change = action.change;
               const target = ctx.db[change.table];
               const fields = fieldMap[change.table];
@@ -5326,11 +5705,7 @@ export function injectSyncEndpoint(
               const existing = findExisting(target, change.table, change.key);
 
               if (change.operation === "delete") {
-                if (existing) {
-                  target.delete(existing.id);
-                  const previous = projectedRow(existing, fields, true);
-                  undo.push(() => target.insert(previous));
-                }
+                if (existing) pendingDeletes.push({ existing, target });
               } else {
                 const patch = projectedRow(change.data, fields, change.operation === "create");
                 const identityField = stableIdentityFields[change.table];
@@ -5349,10 +5724,42 @@ export function injectSyncEndpoint(
               }
               result[change.table] = (result[change.table] || 0) + 1;
             }
-            persistProtocolState(ctx, payload, actions, undo);
+            persistProtocolState(ctx, actions, undo);
           } catch {
-            rollback(undo);
-            return json({ error: "storage unavailable" }, { status: 500 });
+            try {
+              rollback(undo);
+              return json({ error: "storage unavailable" }, { status: 500 });
+            } catch {
+              return json({ error: "storage rollback failed" }, { status: 500 });
+            }
+          }
+
+          for (const pendingDelete of pendingDeletes) {
+            try {
+              pendingDelete.target.delete(pendingDelete.existing.id);
+            } catch {
+              return json(
+                {
+                  error: "sync delete pending recovery",
+                  idempotencyKey,
+                  pending: true,
+                },
+                { status: 503 },
+              );
+            }
+          }
+
+          try {
+            commitReceipt(ctx, payload);
+          } catch {
+            return json(
+              {
+                error: "sync commit pending recovery",
+                idempotencyKey,
+                pending: true,
+              },
+              { status: 503 },
+            );
           }
 
           return json({
@@ -5394,6 +5801,7 @@ function renderServerIndex(
   routes: LakebedRoute[],
   externalSeed?: Record<string, Array<Record<string, unknown>>>,
   syncSecret?: string,
+  receiverIdentity = 'deployment-release',
   syncMetadata: Record<string, string> = {},
   useEnvironmentSyncSecret = false,
 ): string {
@@ -5427,20 +5835,35 @@ function renderServerIndex(
     {
       fields: [
         'changeKey',
+        'data',
+        'deletedAt',
         'event',
         'idempotencyKey',
+        'lastError',
         'mutationName',
+        'nextAttemptAt',
         'operation',
+        'origin',
         'payload',
         'retryCount',
         'status',
+        'table',
+        'target',
         'tombstone',
         'version',
       ],
       name: '__syncInternalOutboxV1',
     },
     {
-      fields: ['idempotencyKey', 'origin', 'target', 'version'],
+      fields: [
+        'idempotencyKey',
+        'intent',
+        'origin',
+        'recordedAt',
+        'status',
+        'target',
+        'version',
+      ],
       name: '__syncInternalReceiptsV1',
     },
     {
@@ -5448,7 +5871,7 @@ function renderServerIndex(
       name: '__syncInternalVersionsV1',
     },
     {
-      fields: ['deletedAt', 'deletedVersion', 'stateKey'],
+      fields: ['active', 'deletedAt', 'deletedVersion', 'stateKey'],
       name: '__syncInternalTombstonesV1',
     },
   ]
@@ -5503,7 +5926,7 @@ ${protocolTable.fields.map((field) => `    ${field}: string(),`).join('\n')}
     mergeEndpointHandlers(definitions),
     inboundTableFields,
     syncSecret,
-    projectName ? toProjectSlug(projectName) : 'deployment-release',
+    receiverIdentity,
     useEnvironmentSyncSecret,
   )
   const endpointImports = lakebedEndpointImportsFor(endpointsSource)
@@ -5532,56 +5955,250 @@ const text = Reflect.get(lakebedServerRuntime, "text") ??
 ${helperSources}
 
 const syncMetadata = ${JSON.stringify(syncMetadata, null, 2)};
+const deploymentIdentity = ${JSON.stringify(receiverIdentity)};
 
-function recordIdempotencyKeyVersionedSyncOutboxChangeEvent(
-  ctx,
-  mutationName,
-  operation,
-  args,
-  result,
-) {
-  const input = args[0] && typeof args[0] === "object" ? args[0] : {};
-  const changeKey = String(
-    input.itemKey ?? input.id ?? input.key ?? input.label ?? mutationName,
-  );
-  const version =
-    ctx.db.__syncInternalOutboxV1
-      .all()
-      .filter((entry) => entry.changeKey === changeKey)
-      .reduce((latest, entry) => Math.max(latest, Number(entry.version) || 0), 0) + 1;
-  const idempotencyKey =
-    "lakebed:" + changeKey + ":" + version + ":" + mutationName;
-  const payload = JSON.stringify(result ?? null);
-  const tombstone = operation === "delete";
-  const changeEvent = {
-    changeKey,
-    idempotencyKey,
-    metadata: syncMetadata,
-    mutationName,
-    operation,
-    origin: "lakebed",
-    payload,
-    schemaVersion: 1,
-    target: "dashboard",
-    tombstone,
-    version,
-  };
-  ctx.db.__syncInternalOutboxV1.insert({
-    changeKey,
-    event: JSON.stringify(changeEvent),
-    idempotencyKey,
-    mutationName,
-    operation,
-    payload,
-    retryCount: "0",
-    status: "pending",
-    tombstone: String(tombstone),
-    version: String(version),
-  });
-  return changeEvent;
+// Lakebed 0.0.25 serializes mutations but does not roll back failed writes.
+// Each outbound event is therefore persisted as a quarantined write-ahead
+// intent before business code runs. Only a successful business mutation may
+// promote it to pending; ambiguous prepared intents require explicit,
+// authenticated reconciliation and are never returned as deliverable events.
+function isSyncRecord(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-${renderSeedData(routes, renderedSchema.tableFields, externalSeed)}
+function safeSerializeSyncValue(value) {
+  const seen = new WeakSet();
+  try {
+    const serialized = JSON.stringify(value, function(_key, entry) {
+      if (typeof entry === "bigint") return String(entry);
+      if (entry && typeof entry === "object") {
+        if (seen.has(entry)) return "[Circular]";
+        seen.add(entry);
+      }
+      return entry;
+    });
+    if (typeof serialized !== "string") return "null";
+    if (serialized.length <= 65536) return serialized;
+    return JSON.stringify({ bytes: serialized.length, truncated: true });
+  } catch {
+    return JSON.stringify({ unserializable: true });
+  }
+}
+
+function stableSyncEntityKey(value) {
+  if (!isSyncRecord(value)) return "";
+  for (const key of ["itemKey", "id", "key", "slug", "email", "label", "name", "title"]) {
+    const candidate = value[key];
+    if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+    if (typeof candidate === "number" && Number.isFinite(candidate)) return String(candidate);
+  }
+  return "";
+}
+
+function stableSyncHash(value) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function reportSyncPersistenceFailure(ctx, message, error) {
+  if (ctx.log && typeof ctx.log.error === "function") {
+    ctx.log.error(message, {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+function reserveSyncOutboxVersion(ctx, changeKey) {
+  const stateKey = "outbox::" + changeKey;
+  const versions = ctx.db.__syncInternalVersionsV1;
+  const existing = versions.where("stateKey", stateKey).all().at(0);
+  const previous = existing ? Number(existing.version) : 0;
+  const version = (Number.isSafeInteger(previous) ? previous : 0) + 1;
+  let insertedVersionId = null;
+  function commit() {
+    if (existing) {
+      versions.update(existing.id, { stateKey, version: String(version) });
+    } else {
+      const inserted = versions.insert({ stateKey, version: String(version) });
+      insertedVersionId = inserted && inserted.id;
+    }
+  }
+  function rollback() {
+    if (existing) {
+      versions.update(existing.id, { stateKey, version: String(previous) });
+    } else if (insertedVersionId != null) {
+      versions.delete(insertedVersionId);
+    }
+  }
+  return { commit, rollback, version };
+}
+
+function cancelSyncOutboxChangeEventsBeforeBusiness(ctx, intents, error) {
+  const lastError = error instanceof Error ? error.message : String(error);
+  for (const intent of intents) {
+    try {
+      ctx.db.__syncInternalOutboxV1.update(intent.outboxId, {
+        lastError: lastError.slice(0, 1000),
+        status: "cancelled",
+      });
+    } catch (cancelError) {
+      reportSyncPersistenceFailure(
+        ctx,
+        "Unable to cancel prepared sync outbox intent",
+        cancelError,
+      );
+    }
+  }
+}
+
+function quarantineIdempotencyKeyVersionedSyncOutboxChangeEvents(
+  ctx,
+  intents,
+  error,
+) {
+  const lastError = error instanceof Error ? error.message : String(error);
+  for (const intent of intents) {
+    try {
+      ctx.db.__syncInternalOutboxV1.update(intent.outboxId, {
+        lastError: ("business-error:" + lastError).slice(0, 1000),
+        status: "prepared",
+      });
+    } catch (quarantineError) {
+      reportSyncPersistenceFailure(
+        ctx,
+        "Unable to annotate ambiguous sync outbox intent",
+        quarantineError,
+      );
+    }
+  }
+}
+
+function prepareIdempotencyKeyVersionedSyncOutboxChangeEvents(
+  ctx,
+  mutationName,
+  tables,
+  operation,
+  args,
+) {
+  const input = args[0];
+  const payload = safeSerializeSyncValue({ args });
+  const scalarKey =
+    typeof input === "string" || typeof input === "number" ? String(input) : "";
+  const entityKey =
+    stableSyncEntityKey(input) ||
+    scalarKey ||
+    mutationName + ":" + stableSyncHash(payload);
+  const intents = [];
+
+  for (const table of tables) {
+    const tableName = table || "unknown";
+    const changeKey = deploymentIdentity + "::" + tableName + "::" + entityKey;
+    const versionReservation = reserveSyncOutboxVersion(ctx, changeKey);
+    const version = versionReservation.version;
+    const idempotencyKey =
+      deploymentIdentity + ":" + changeKey + ":" + version + ":" + mutationName;
+    const tombstone = operation === "delete";
+    const deletedAt = tombstone ? new Date().toISOString() : "";
+    const changeEvent = {
+      changeKey,
+      data: isSyncRecord(input) ? input : null,
+      deletedAt,
+      idempotencyKey,
+      metadata: syncMetadata,
+      mutationName,
+      operation,
+      origin: deploymentIdentity,
+      payload,
+      schemaVersion: 1,
+      table: tableName,
+      target: "dashboard",
+      tombstone,
+      version,
+    };
+    let inserted = null;
+    try {
+      inserted = ctx.db.__syncInternalOutboxV1.insert({
+        changeKey,
+        data: safeSerializeSyncValue(changeEvent.data),
+        deletedAt,
+        event: safeSerializeSyncValue(changeEvent),
+        idempotencyKey,
+        lastError: "",
+        mutationName,
+        nextAttemptAt: "0",
+        operation,
+        origin: deploymentIdentity,
+        payload,
+        retryCount: "0",
+        status: "prepared",
+        table: tableName,
+        target: "dashboard",
+        tombstone: String(tombstone),
+        version: String(version),
+      });
+      versionReservation.commit();
+    } catch (error) {
+      if (inserted && inserted.id != null) {
+        try {
+          ctx.db.__syncInternalOutboxV1.update(inserted.id, {
+            lastError: "prepare failed",
+            status: "cancelled",
+          });
+        } catch (cancelError) {
+          reportSyncPersistenceFailure(
+            ctx,
+            "Unable to cancel incomplete sync outbox intent",
+            cancelError,
+          );
+        }
+      }
+      try {
+        versionReservation.rollback();
+      } catch (rollbackError) {
+        reportSyncPersistenceFailure(
+          ctx,
+          "Unable to roll back sync version reservation",
+          rollbackError,
+        );
+      }
+      cancelSyncOutboxChangeEventsBeforeBusiness(ctx, intents, error);
+      throw error;
+    }
+    intents.push({ args, changeEvent, outboxId: inserted.id });
+  }
+
+  return intents;
+}
+
+function commitIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx, intents, result) {
+  for (const intent of intents) {
+    const input = intent.args[0];
+    const data = isSyncRecord(input) ? input : result;
+    const payload = safeSerializeSyncValue({ args: intent.args, result });
+    const changeEvent = { ...intent.changeEvent, data, payload };
+    try {
+      ctx.db.__syncInternalOutboxV1.update(intent.outboxId, {
+        data: safeSerializeSyncValue(data),
+        event: safeSerializeSyncValue(changeEvent),
+        lastError: "",
+        payload,
+        status: "pending",
+      });
+    } catch (error) {
+      reportSyncPersistenceFailure(
+        ctx,
+        "Sync mutation committed with a prepared outbox intent",
+        error,
+      );
+    }
+  }
+}
+
+${renderSeedData(routes, inboundTableFields, externalSeed)}
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
@@ -5696,9 +6313,6 @@ function resolveArtifactRelativeImport(
 
 function pruneUnreachableLakebedSources(files: Record<string, string>): void {
   const artifactSources = new Set(artifactSourcePaths(files))
-  const ownedSources = new Set(
-    [...artifactSources].filter((path) => !path.includes('/vendor/')),
-  )
   const reachable = new Set<string>()
   const pending = ['client/index.tsx', 'server/index.ts'].filter((path) =>
     artifactSources.has(path),
@@ -5719,7 +6333,7 @@ function pruneUnreachableLakebedSources(files: Record<string, string>): void {
       }
     }
   }
-  for (const path of ownedSources) {
+  for (const path of artifactSources) {
     if (!reachable.has(path)) delete files[path]
   }
 }
@@ -5860,6 +6474,7 @@ export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontU
       routes,
       input.lakebedSeedData,
       input.syncSecret,
+      input.sessionId,
       syncMetadata,
       options.useEnvironmentSyncSecret,
     ),
