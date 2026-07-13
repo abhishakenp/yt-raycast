@@ -28,6 +28,12 @@ function withGenUIExportMetadata(
   files: Record<string, string>,
 ): Record<string, string> {
   const genui = readGenUIExportMetadata(input.siteSpecJson)
+  const hasExplicitAdminPolicy =
+    genui?.adminPolicy !== null &&
+    typeof genui?.adminPolicy === 'object' &&
+    !Array.isArray(genui.adminPolicy)
+  if (input.syncSecret && !hasExplicitAdminPolicy) return files
+
   const supportsAdminModule =
     input.target === 'react' ||
     input.target === 'next' ||
