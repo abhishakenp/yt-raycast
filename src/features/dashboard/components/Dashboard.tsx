@@ -47,6 +47,7 @@ import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { createPendingDashboardSaves } from '@/features/dashboard/lib/pending-dashboard-saves'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 import { takeGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
@@ -223,10 +224,11 @@ type StyleApplyPayload = {
 }
 
 function editAppliesToLocale(edit: object, locale: string): boolean {
+  const normalizedLocale = locale.trim().toLowerCase()
   return (
     !('locale' in edit) ||
     typeof edit.locale !== 'string' ||
-    edit.locale === locale
+    edit.locale.trim().toLowerCase() === normalizedLocale
   )
 }
 
@@ -547,6 +549,9 @@ export function Dashboard({
   const pendingTextChangesRef = useRef(
     new WeakMap<HTMLElement, PendingTextChange>(),
   )
+  const [dashboardSaves] = useState(createPendingDashboardSaves)
+  const reloadInFlightRef = useRef(false)
+  const trackDashboardSave = dashboardSaves.track
   const activeLinkEditsRef = useRef(0)
   // Capture the element's original style attribute when the toolbar opens
   // (before any live-preview modification) so handleStyleApply can revert
@@ -853,7 +858,7 @@ export function Dashboard({
   )
   const visualProductCount = visualProducts.length
   const activePreviewLocale =
-    generationView?.session.preferredLanguage?.trim() || 'en'
+    generationView?.session.preferredLanguage?.trim().toLowerCase() || 'en'
   const cloneHomePage =
     clonePageNav.pages.find((page) => page.isHome) ?? clonePageNav.pages[0]
   const activePreviewPage = clonePageNav.isClone
@@ -987,8 +992,34 @@ export function Dashboard({
 
   const handlePreviewReload = () => {
     closeInlineEditingSurface('cancel')
-    window.location.reload()
+    if (!dashboardSaves.hasPending()) {
+      window.location.reload()
+      return
+    }
+    if (reloadInFlightRef.current) return
+
+    reloadInFlightRef.current = true
+    void (async () => {
+      try {
+        await dashboardSaves.drain()
+        window.location.reload()
+      } finally {
+        reloadInFlightRef.current = false
+      }
+    })()
   }
+
+  useEffect(() => {
+    const preventReloadDuringSave = (event: BeforeUnloadEvent) => {
+      if (!dashboardSaves.hasPending()) return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', preventReloadDuringSave)
+    return () => {
+      window.removeEventListener('beforeunload', preventReloadDuringSave)
+    }
+  }, [dashboardSaves])
 
   const publishedUrl =
     deploymentStatus?.status === 'ready' ? deploymentStatus.url : undefined
@@ -1040,17 +1071,20 @@ export function Dashboard({
       setSelectedBrand(brand)
       if (resolvedSessionId === undefined) return
 
-      void setBrandLogoMutation({
-        sessionId: resolvedSessionId,
-        anonymousOwnerSecret: activeAnonymousOwnerSecret,
-        brandLogo: brand,
-      })
+      void trackDashboardSave(
+        setBrandLogoMutation({
+          sessionId: resolvedSessionId,
+          anonymousOwnerSecret: activeAnonymousOwnerSecret,
+          brandLogo: brand,
+        }),
+      )
     },
     [
       activeAnonymousOwnerSecret,
       closeInlineEditingSurface,
       resolvedSessionId,
       setBrandLogoMutation,
+      trackDashboardSave,
     ],
   )
 
@@ -1058,12 +1092,14 @@ export function Dashboard({
     closeInlineEditingSurface('cancel')
     setSelectedTheme(theme)
     if (!resolvedSessionId) return
-    void setThemeOverrideMutation({
-      sessionId: resolvedSessionId,
-      anonymousOwnerSecret: activeAnonymousOwnerSecret,
-      themeOverride: theme,
-      themeMode: isDark ? 'dark' : 'light',
-    })
+    void trackDashboardSave(
+      setThemeOverrideMutation({
+        sessionId: resolvedSessionId,
+        anonymousOwnerSecret: activeAnonymousOwnerSecret,
+        themeOverride: theme,
+        themeMode: isDark ? 'dark' : 'light',
+      }),
+    )
   }
 
   const handleThemeModeToggle = () => {
@@ -1071,21 +1107,25 @@ export function Dashboard({
     const nextMode = isDark ? 'light' : 'dark'
     setIsDark(!isDark)
     if (!resolvedSessionId) return
-    void setThemeOverrideMutation({
-      sessionId: resolvedSessionId,
-      anonymousOwnerSecret: activeAnonymousOwnerSecret,
-      themeMode: nextMode,
-    })
+    void trackDashboardSave(
+      setThemeOverrideMutation({
+        sessionId: resolvedSessionId,
+        anonymousOwnerSecret: activeAnonymousOwnerSecret,
+        themeMode: nextMode,
+      }),
+    )
   }
 
   const handleLanguageSelect = (language: string) => {
     closeInlineEditingSurface('cancel')
     if (!resolvedSessionId) return
-    void setPreferredLanguageMutation({
-      sessionId: resolvedSessionId,
-      anonymousOwnerSecret: activeAnonymousOwnerSecret,
-      preferredLanguage: language,
-    })
+    void trackDashboardSave(
+      setPreferredLanguageMutation({
+        sessionId: resolvedSessionId,
+        anonymousOwnerSecret: activeAnonymousOwnerSecret,
+        preferredLanguage: language,
+      }),
+    )
   }
 
   // Restore the preview scroll position after a remount caused by an inline
@@ -1162,10 +1202,12 @@ export function Dashboard({
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, resolvedSessionId)
 
-      await publishPreview({
-        sessionId: resolvedSessionId,
-        anonymousOwnerSecret,
-      })
+      await trackDashboardSave(
+        publishPreview({
+          sessionId: resolvedSessionId,
+          anonymousOwnerSecret,
+        }),
+      )
     } catch (error) {
       setPublishError(error instanceof Error ? error.message : 'Publish failed')
     } finally {
@@ -1218,14 +1260,14 @@ export function Dashboard({
     const varName = resolveMoveVarName()
     if (!varName) return
     pendingScrollToSectionRef.current = varName
-    await reorder.reorder(varName, 'up')
+    await trackDashboardSave(reorder.reorder(varName, 'up'))
   }
 
   const handleSectionMoveDown = async () => {
     const varName = resolveMoveVarName()
     if (!varName) return
     pendingScrollToSectionRef.current = varName
-    await reorder.reorder(varName, 'down')
+    await trackDashboardSave(reorder.reorder(varName, 'down'))
   }
 
   const handleSectionEditSubmit = async (prompt: string) => {
@@ -1252,17 +1294,19 @@ export function Dashboard({
     setIsSectionEditing(true)
     setSectionEditError(undefined)
     try {
-      const response = await fetch(
-        `/api/sessions/${encodeURIComponent(resolvedSessionId)}/section-edit`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            instruction: prompt,
-            selection,
-            anonymousOwnerSecret: activeAnonymousOwnerSecret,
-          }),
-        },
+      const response = await trackDashboardSave(
+        fetch(
+          `/api/sessions/${encodeURIComponent(resolvedSessionId)}/section-edit`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instruction: prompt,
+              selection,
+              anonymousOwnerSecret: activeAnonymousOwnerSecret,
+            }),
+          },
+        ),
       )
       if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}))
@@ -1343,7 +1387,7 @@ export function Dashboard({
     const existing = pendingTextChangesRef.current.get(change.element)
     if (existing?.signature === signature) return existing.promise
 
-    const promise = applyTextChange(change)
+    const promise = trackDashboardSave(applyTextChange(change))
     const pending: PendingTextChange = { signature, promise }
     pending.promise = promise.finally(() => {
       if (pendingTextChangesRef.current.get(change.element) === pending) {
@@ -1433,27 +1477,28 @@ export function Dashboard({
     // Same source of truth as the AI's `imageReplace` tool. `sourceAnchor: alt`
     // keeps the swap anchored on the image's stable `alt` (builder uses
     // sourceAnchor as beforeText), preserving the prior matching behaviour.
-    editController
-      .applyCommand(
-        buildImageReplaceCommand(
-          {
-            src: change.newSrc,
-            alt: change.alt,
-            sourceAnchor: change.alt,
-            occurrenceIndex,
-          },
-          {
-            sessionId: resolvedSessionId || sessionId,
-            selectedTag: 'img',
-            instruction: 'inline image swap',
-          },
-        ),
-      )
-      .then((result) => {
-        if (result === 'fork_needed') {
-          // Fork the session
-          toast.info('Forking session to save your changes...')
-          editController.forkCurrentSession().then((forkResult) => {
+    void trackDashboardSave(
+      editController
+        .applyCommand(
+          buildImageReplaceCommand(
+            {
+              src: change.newSrc,
+              alt: change.alt,
+              sourceAnchor: change.alt,
+              occurrenceIndex,
+            },
+            {
+              sessionId: resolvedSessionId || sessionId,
+              selectedTag: 'img',
+              instruction: 'inline image swap',
+            },
+          ),
+        )
+        .then(async (result) => {
+          if (result === 'fork_needed') {
+            // Fork the session
+            toast.info('Forking session to save your changes...')
+            const forkResult = await editController.forkCurrentSession()
             if (
               !forkResult &&
               change.element.isConnected &&
@@ -1463,19 +1508,19 @@ export function Dashboard({
               change.element.src = change.oldSrc
               toast.error(editController.editError || 'Failed to fork session')
             }
-          })
-        } else if (result !== true && 'error' in result) {
-          // Revert the DOM change on other errors
-          if (
-            change.element.isConnected &&
-            activePreviewIdentityRef.current === editPreviewIdentity
-          ) {
-            change.element.src = change.oldSrc
+          } else if (result !== true && 'error' in result) {
+            // Revert the DOM change on other errors
+            if (
+              change.element.isConnected &&
+              activePreviewIdentityRef.current === editPreviewIdentity
+            ) {
+              change.element.src = change.oldSrc
+            }
+            console.error('[Inline Edit] Failed to save image:', result.error)
+            toast.error(result.error)
           }
-          console.error('[Inline Edit] Failed to save image:', result.error)
-          toast.error(result.error)
-        }
-      })
+        }),
+    )
   }
 
   const handleImageTarget = (event: Event) => {
@@ -1561,13 +1606,17 @@ export function Dashboard({
           selectedText: payload.oldText,
         },
       )
-      const result = await editController.applyCommand(command)
+      const result = await trackDashboardSave(
+        editController.applyCommand(command),
+      )
 
       if (result === 'fork_needed') {
         setIsForkingSession(true)
         toast.info('Forking session to save your changes...')
         try {
-          const forkResult = await editController.forkCurrentSession()
+          const forkResult = await trackDashboardSave(
+            editController.forkCurrentSession(),
+          )
           if (!forkResult) {
             toast.error(editController.editError || 'Failed to fork session')
           }
@@ -1596,7 +1645,7 @@ export function Dashboard({
     if (previewScrollEl) {
       savedPreviewScrollRef.current = previewScrollEl.scrollTop
     }
-    await undoRedo.undo()
+    await trackDashboardSave(undoRedo.undo())
   }
 
   const handleRedo = async () => {
@@ -1604,7 +1653,7 @@ export function Dashboard({
     if (previewScrollEl) {
       savedPreviewScrollRef.current = previewScrollEl.scrollTop
     }
-    await undoRedo.redo()
+    await trackDashboardSave(undoRedo.redo())
   }
 
   const handleMoveUp = async () => {
@@ -1618,7 +1667,7 @@ export function Dashboard({
       undefined
     if (varName) {
       pendingScrollToSectionRef.current = varName
-      await reorder.reorder(varName, 'up')
+      await trackDashboardSave(reorder.reorder(varName, 'up'))
     }
   }
 
@@ -1633,7 +1682,7 @@ export function Dashboard({
       undefined
     if (varName) {
       pendingScrollToSectionRef.current = varName
-      await reorder.reorder(varName, 'down')
+      await trackDashboardSave(reorder.reorder(varName, 'down'))
     }
   }
 
@@ -1656,18 +1705,20 @@ export function Dashboard({
     }
     // Same source of truth as the AI's `styleApply` tool: build the command
     // through the shared semantic builder, then persist via the shared executor.
-    const result = await editController.applyCommand(
-      buildStyleApplyCommand(
-        {
-          sourceAnchor: payload.sourceAnchor,
-          style: payload.style,
-          targetLabel: label,
-          occurrenceIndex: payload.occurrenceIndex,
-        },
-        {
-          sessionId: resolvedSessionId || sessionId,
-          instruction: 'inline style',
-        },
+    const result = await trackDashboardSave(
+      editController.applyCommand(
+        buildStyleApplyCommand(
+          {
+            sourceAnchor: payload.sourceAnchor,
+            style: payload.style,
+            targetLabel: label,
+            occurrenceIndex: payload.occurrenceIndex,
+          },
+          {
+            sessionId: resolvedSessionId || sessionId,
+            instruction: 'inline style',
+          },
+        ),
       ),
     )
     setIsApplyingStyle(false)
@@ -1676,7 +1727,9 @@ export function Dashboard({
       // Fork the session
       setIsForkingSession(true)
       toast.info('Forking session to save your changes...')
-      const forkResult = await editController.forkCurrentSession()
+      const forkResult = await trackDashboardSave(
+        editController.forkCurrentSession(),
+      )
       setIsForkingSession(false)
       if (
         !forkResult &&
@@ -2797,6 +2850,7 @@ export function Dashboard({
           activeElement={toolbarState.activeElement}
           onStyleApply={handleStyleApply}
           onCommitText={() => finishPendingTextEdit('commit')}
+          onPendingSave={trackDashboardSave}
           isApplying={isApplyingStyle}
           isForking={isForkingSession}
           canUndo={undoRedo.canUndo}

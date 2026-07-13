@@ -46,6 +46,7 @@ export function serializeSessionEdit(edit: Doc<'edits'>) {
     previewVersion: edit.previewVersion,
     createdAt: edit.createdAt,
     userId: edit.userId,
+    ...(edit.locale === undefined ? {} : { locale: edit.locale }),
   }
 }
 
