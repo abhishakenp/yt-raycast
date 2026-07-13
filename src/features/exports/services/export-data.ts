@@ -829,6 +829,9 @@ export function renderQueryClientProvider(): string {
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { PropsWithChildren } from 'react'
+import './store'
+
+export { useKeyedMutation } from './use-keyed-mutation'
 
 const queryClient = new QueryClient({
   defaultOptions: {
