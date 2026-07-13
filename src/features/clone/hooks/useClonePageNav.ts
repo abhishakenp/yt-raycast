@@ -60,10 +60,14 @@ export function useClonePageNav(
   // Default currentPath to the home (or first) row once rows load, and keep it
   // valid if rows change. Only reset when the current selection no longer exists.
   useEffect(() => {
+    if (!sessionId) {
+      setCurrentPath('')
+      return
+    }
     if (rows.length === 0) return
     const exists = rows.some((row) => row.pathname === currentPath)
     if (!exists) setCurrentPath(homePath)
-  }, [rows, homePath, currentPath])
+  }, [sessionId, rows, homePath, currentPath])
 
   useEffect(() => {
     const onMessage = (event) => {
