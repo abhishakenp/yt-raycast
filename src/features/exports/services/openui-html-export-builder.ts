@@ -181,6 +181,7 @@ type StaticUiMessages = {
   closeMenu: string
   menu: string
   mobileNavigation: string
+  remove: string
   search: string
   signIn: string
 }
@@ -193,6 +194,7 @@ function staticUiMessages(locale: string): StaticUiMessages {
       closeMenu: 'मेनू बंद करें',
       menu: 'मेनू खोलें',
       mobileNavigation: 'मोबाइल नेविगेशन',
+      remove: 'हटाएं',
       search: 'खोजें',
       signIn: 'साइन इन करें',
     }
@@ -203,6 +205,7 @@ function staticUiMessages(locale: string): StaticUiMessages {
     closeMenu: 'Close menu',
     menu: 'Open menu',
     mobileNavigation: 'Mobile navigation',
+    remove: 'Remove',
     search: 'Search',
     signIn: 'Sign in',
   }
@@ -523,13 +526,17 @@ function buildThemeRuntime(
 })();`
 }
 
-function buildInteractionRuntime(messages: StaticUiMessages): string {
+function buildInteractionRuntime(
+  messages: StaticUiMessages,
+  storageNamespace: string,
+): string {
   return `
 (function () {
   var messages = ${stringifyJs(messages)};
-  var cartStorageKey = 'static-site-cart-v1';
-  var authStorageKey = 'static-site-auth-v1';
-  var newsletterStorageKey = 'static-site-newsletter-v1';
+  var storagePrefix = ${stringifyJs(`static-site:${storageNamespace}`)};
+  var cartStorageKey = storagePrefix + ':cart-v1';
+  var authStorageKey = storagePrefix + ':auth-v1';
+  var newsletterStorageKey = storagePrefix + ':newsletter-v1';
   var activeDialog = null;
   var dialogCounter = 0;
   function readCart() {
@@ -544,18 +551,55 @@ function buildInteractionRuntime(messages: StaticUiMessages): string {
   function saveCart() {
     try { window.localStorage.setItem(cartStorageKey, JSON.stringify(cart)); } catch {}
   }
+  function readStoredText(key) {
+    try { return String(window.localStorage.getItem(key) || '').trim(); } catch { return ''; }
+  }
+  function isNewsletterForm(form) {
+    var submit = form.querySelector('button[type="submit"],input[type="submit"]');
+    var semantics = [
+      form.id,
+      form.getAttribute('data-contract'),
+      form.getAttribute('aria-label'),
+      submit ? submit.textContent || submit.getAttribute('value') : ''
+    ].filter(Boolean).join(' ');
+    return /newsletter|subscribe|mailing|updates/i.test(semantics);
+  }
+  function restorePersistedState() {
+    if (readStoredText(authStorageKey) === 'signed-in') {
+      document.querySelectorAll('[data-contract="sign-in"], [data-slot="account-dropdown-unauthenticated"]').forEach(function (trigger) {
+        trigger.setAttribute('data-auth-state', 'signed-in');
+        trigger.setAttribute('aria-pressed', 'true');
+      });
+    }
+    var email = readStoredText(newsletterStorageKey);
+    if (!email) return;
+    document.querySelectorAll('form').forEach(function (form) {
+      if (!isNewsletterForm(form)) return;
+      var input = form.querySelector('input[name="email"]');
+      if (input instanceof HTMLInputElement) input.value = email;
+    });
+  }
   function renderCart() {
     document.querySelectorAll('[data-cart-count], [data-static-overlay-kind="cart"] span, button[aria-label="Cart"] span').forEach(function (node) {
       node.textContent = String(cart.length);
     });
-    var container = document.querySelector('[data-cart-items]');
-    if (!container) return;
-    container.replaceChildren();
-    cart.forEach(function (item) {
-      var row = document.createElement('div');
-      row.setAttribute('data-cart-item', item.key || item.label || 'item');
-      row.textContent = [item.label, item.price].filter(Boolean).join(' — ');
-      container.appendChild(row);
+    document.querySelectorAll('[data-cart-items]').forEach(function (container) {
+      container.replaceChildren();
+      cart.forEach(function (item, index) {
+        var row = document.createElement('div');
+        var summary = document.createElement('span');
+        var remove = document.createElement('button');
+        var label = String(item.label || item.key || 'Item');
+        row.setAttribute('data-cart-item', item.key || label);
+        summary.textContent = [label, item.price].filter(Boolean).join(' — ');
+        remove.type = 'button';
+        remove.textContent = messages.remove;
+        remove.setAttribute('data-cart-remove', String(index));
+        remove.setAttribute('aria-label', messages.remove + ' ' + label);
+        row.appendChild(summary);
+        row.appendChild(remove);
+        container.appendChild(row);
+      });
     });
   }
   function productFrom(button) {
@@ -659,6 +703,7 @@ function buildInteractionRuntime(messages: StaticUiMessages): string {
       var signIn = document.createElement('button');
       signIn.type = 'button';
       signIn.textContent = messages.signIn;
+      signIn.setAttribute('data-contract', 'sign-in');
       content.appendChild(signIn);
     }
     panel.appendChild(close);
@@ -697,6 +742,16 @@ function buildInteractionRuntime(messages: StaticUiMessages): string {
   document.addEventListener('click', function (event) {
     var target = event.target instanceof Element ? event.target.closest('button') : null;
     if (!target) return;
+    if (target.hasAttribute('data-cart-remove')) {
+      event.preventDefault();
+      var index = Number.parseInt(target.getAttribute('data-cart-remove') || '', 10);
+      if (Number.isInteger(index) && index >= 0 && index < cart.length) {
+        cart.splice(index, 1);
+        saveCart();
+        renderCart();
+      }
+      return;
+    }
     if (isAddToCart(target)) {
       event.preventDefault();
       cart.push(productFrom(target));
@@ -756,16 +811,35 @@ function buildInteractionRuntime(messages: StaticUiMessages): string {
     var output = form.querySelector('output,[aria-live]');
     if (output) output.textContent = email ? 'Subscribed' : 'Email required';
     form.setAttribute('data-submit-state', email ? 'submitted' : 'invalid');
-    if (email) {
+    if (email && isNewsletterForm(form)) {
       try { window.localStorage.setItem(newsletterStorageKey, email); } catch {}
     }
   });
+  restorePersistedState();
   renderCart();
 })();`
 }
 
 type FontKey = 'font-sans' | 'font-serif' | 'font-mono'
 const fontKeys: readonly FontKey[] = ['font-sans', 'font-serif', 'font-mono']
+const rightToLeftLocales = new Set([
+  'ar',
+  'ckb',
+  'dv',
+  'fa',
+  'he',
+  'ks',
+  'ps',
+  'sd',
+  'ug',
+  'ur',
+  'yi',
+])
+
+function textDirection(locale: string): 'ltr' | 'rtl' {
+  const language = locale.trim().toLowerCase().split(/[-_]/)[0] ?? ''
+  return rightToLeftLocales.has(language) ? 'rtl' : 'ltr'
+}
 
 function buildThemeFontLinks(styles: ThemeStyles | null): string {
   if (!styles) return ''
@@ -825,6 +899,12 @@ function buildRouteScript(
   var current = 0;
   var activeDrawer = null;
   function normalize(value) { return String(value || '').trim().toLowerCase(); }
+  function decodeLocationPart(value) {
+    try { return decodeURIComponent(String(value || '')); } catch { return String(value || ''); }
+  }
+  function routeSlug(value) {
+    return encodeURIComponent(normalize(value).replace(/\\s+/g, '-'));
+  }
   function parseTarget(value) {
     var text = String(value || '').trim();
     if (!text) return null;
@@ -865,6 +945,52 @@ function buildRouteScript(
       page.hidden = pageIndex !== current;
     });
   }
+  function routeIndexFromLocationPart(value) {
+    var encoded = String(value || '');
+    while (encoded.startsWith('#')) encoded = encoded.slice(1);
+    while (encoded.endsWith('/')) encoded = encoded.slice(0, -1);
+    if (!encoded) return -1;
+    var exact = routes.findIndex(function (route) { return routeSlug(route) === encoded.toLowerCase(); });
+    if (exact >= 0) return exact;
+    return findRoute(decodeLocationPart(encoded).replace(/-/g, ' '));
+  }
+  function locationRoute() {
+    var hash = String(window.location.hash || '').replace(/^#/, '');
+    if (hash) {
+      var hashParts = hash.split('/');
+      var hashIndex = routeIndexFromLocationPart(hashParts[0]);
+      if (hashIndex >= 0) {
+        return { index: hashIndex, sectionId: decodeLocationPart(hashParts.slice(1).join('/')) };
+      }
+      var decodedHash = decodeLocationPart(hash);
+      var mapped = targetMap[decodedHash] || targetMap[normalize(decodedHash)];
+      var parsed = parseTarget(mapped || decodedHash);
+      var mappedIndex = parsed ? findRoute(parsed.page) : -1;
+      if (mappedIndex >= 0) return { index: mappedIndex, sectionId: parsed.sectionId };
+      if (document.getElementById(decodedHash)) return { index: current, sectionId: decodedHash };
+    }
+    var pathParts = String(window.location.pathname || '').split('/').filter(Boolean);
+    var pathIndex = routeIndexFromLocationPart(pathParts[pathParts.length - 1] || '');
+    return { index: pathIndex >= 0 ? pathIndex : 0, sectionId: '' };
+  }
+  function routeAddress(index, sectionId) {
+    var fragment = routeSlug(routes[index] || routes[0] || 'home');
+    if (sectionId) fragment += '/' + encodeURIComponent(sectionId);
+    return window.location.pathname + window.location.search + '#' + fragment;
+  }
+  function writeRouteAddress(index, sectionId) {
+    var address = routeAddress(index, sectionId);
+    try {
+      window.history.pushState({ staticSiteRoute: index }, '', address);
+    } catch {
+      window.location.hash = address.slice(address.indexOf('#'));
+    }
+  }
+  function syncRouteFromLocation() {
+    var target = locationRoute();
+    show(target.index);
+    if (target.sectionId) scrollToSection(target.sectionId);
+  }
   function fixedHeaderOffset() {
     var headers = Array.prototype.slice.call(document.querySelectorAll('header'));
     for (var i = 0; i < headers.length; i++) {
@@ -899,11 +1025,10 @@ function buildRouteScript(
     var idx = findRoute(parsed.page || text);
     if (idx < 0) return false;
     show(idx);
+    writeRouteAddress(idx, parsed.sectionId);
     if (parsed.sectionId) {
-      window.location.hash = parsed.sectionId;
       scrollToSection(parsed.sectionId);
     } else {
-      history.replaceState(null, '', location.pathname + location.search);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     return true;
@@ -1082,7 +1207,9 @@ function buildRouteScript(
     }
   });
   document.addEventListener('submit', function (event) { event.preventDefault(); });
-  show(0);
+  window.addEventListener('popstate', syncRouteFromLocation);
+  window.addEventListener('hashchange', syncRouteFromLocation);
+  syncRouteFromLocation();
 })();`
 }
 
@@ -1289,10 +1416,11 @@ async function buildStandaloneHtmlDocument(
   const seoHeadMarkup = seoHeadTags.length > 0 ? seoHeadTags.join('\n  ') : ''
   const htmlLang =
     input.locale?.trim() || seoBundle?.homeSeo?.seo.htmlLang || locale
+  const htmlDirection = textDirection(htmlLang)
 
   return buildHtmlExport(
     `<!doctype html>
-<html lang="${escapeAttribute(htmlLang)}">
+<html lang="${escapeAttribute(htmlLang)}" dir="${htmlDirection}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1313,7 +1441,7 @@ ${css}
     ${buildInlineAdminBootstrap(genui, input.target)}
     ${buildThemeRuntime(themeStyles, isDark, rootId)}
     ${buildRouteScript(routes, parsed.targetMap, 'data-sf-export-page', staticUiMessages(locale))}
-    ${buildInteractionRuntime(staticUiMessages(locale))}
+    ${buildInteractionRuntime(staticUiMessages(locale), input.sessionId)}
   </script>
 </body>
 </html>`,
