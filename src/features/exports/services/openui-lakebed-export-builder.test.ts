@@ -1769,7 +1769,7 @@ export function signOut() { globalThis.__lakebedSignedOut = true; }
     }
   })
 
-  it('packages rendered HTML fragments as static Lakebed projects instead of parsing page text as OpenUI', async () => {
+  it('packages rendered HTML fragments as portable static Lakebed projects without internal identity', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:
         '<main><h1>PurrSpecs</h1><p>Subscribers value Satisfaction Readers cat lovers.</p></main>',
@@ -1779,9 +1779,10 @@ export function signOut() { globalThis.__lakebedSignedOut = true; }
     })
 
     expect(built.projectName).toBe('PurrSpecs')
-    expect(built.files['README.md']).toContain(
-      'Generated with [ShipFast](https://ship-fast.io) 🚀.',
+    expect(built.files['README.md']).not.toMatch(
+      /ShipFast|ship-fast\.io|OpenUI/i,
     )
+    expect(built.files['README.md']).toContain('Lakebed')
     expect(built.files['client/index.tsx']).toContain('PurrSpecs')
     expect(Object.values(built.files).join('\n')).not.toContain('root =')
     expect(Object.values(built.files).join('\n')).not.toContain('@openuidev')

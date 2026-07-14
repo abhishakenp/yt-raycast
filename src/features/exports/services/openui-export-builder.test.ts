@@ -573,9 +573,7 @@ describe('openui-export-builder', () => {
     expect(result.contentType).toBe('application/zip')
     expect(files['index.html']).toBe(rawHtmlSource)
     expect(files['README.md']).toContain('Export Demo')
-    expect(files['README.md']).toContain(
-      'Generated with [ShipFast](https://ship-fast.io) 🚀.',
-    )
+    expect(files['README.md']).not.toMatch(/ShipFast|ship-fast\.io|OpenUI/i)
     expect(files['README.md']).not.toContain('Session:')
     expect(files['README.md']).not.toContain('Target:')
     const pkg = JSON.parse(files['package.json']) as {
@@ -615,9 +613,7 @@ describe('openui-export-builder', () => {
       '/// <reference types="vite/client" />',
     )
     expect(files['src/data/pages.ts']).toContain('Hello export')
-    expect(files['README.md']).toContain(
-      'Generated with [ShipFast](https://ship-fast.io) 🚀.',
-    )
+    expect(files['README.md']).not.toMatch(/ShipFast|ship-fast\.io|OpenUI/i)
   })
 
   it('runs exported React apps built from malformed generated restaurant props without runtime crashes', async () => {
