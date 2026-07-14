@@ -29,7 +29,6 @@ import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-su
 import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
 import { Route as ApiMedusaCheckoutRouteImport } from './routes/api/medusa-checkout'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
-import { Route as ApiGalleryRouteImport } from './routes/api/gallery'
 import { Route as ApiCreditsRouteImport } from './routes/api/credits'
 import { Route as ApiCloneRouteImport } from './routes/api/clone'
 import { Route as ApiBrandProfileRouteImport } from './routes/api/brand-profile'
@@ -41,7 +40,6 @@ import { Route as GenerateSessionIdAdminRouteImport } from './routes/generate.$s
 import { Route as GenerateSessionIdSplatRouteImport } from './routes/generate.$sessionId.$'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
-import { Route as ApiSessionsRecentRouteImport } from './routes/api/sessions.recent'
 import { Route as ApiSessionsCreateRouteImport } from './routes/api/sessions.create'
 import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
 import { Route as ApiReferralsStatusRouteImport } from './routes/api/referrals.status'
@@ -60,7 +58,6 @@ import { Route as ApiSessionsSessionIdPreviewHomepageHtmlRouteImport } from './r
 import { Route as ApiSessionsSessionIdMedusaProductsRouteImport } from './routes/api/sessions.$sessionId.medusa-products'
 import { Route as ApiSessionsSessionIdMedusaConfigRouteImport } from './routes/api/sessions.$sessionId.medusa-config'
 import { Route as ApiSessionsSessionIdHistoryRouteImport } from './routes/api/sessions.$sessionId.history'
-import { Route as ApiSessionsSessionIdGalleryThumbRouteImport } from './routes/api/sessions.$sessionId.gallery-thumb'
 import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/sessions.$sessionId.export'
 import { Route as ApiPaymentsStripeWebhookRouteImport } from './routes/api/payments.stripe.webhook'
 import { Route as ApiPaymentsRazorpayWebhookRouteImport } from './routes/api/payments.razorpay.webhook'
@@ -179,11 +176,6 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiGalleryRoute = ApiGalleryRouteImport.update({
-  id: '/api/gallery',
-  path: '/api/gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiCreditsRoute = ApiCreditsRouteImport.update({
   id: '/api/credits',
   path: '/api/credits',
@@ -238,11 +230,6 @@ const ExportSessionIdTargetRoute = ExportSessionIdTargetRouteImport.update({
 const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   id: '/api/stripe/webhook',
   path: '/api/stripe/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSessionsRecentRoute = ApiSessionsRecentRouteImport.update({
-  id: '/api/sessions/recent',
-  path: '/api/sessions/recent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSessionsCreateRoute = ApiSessionsCreateRouteImport.update({
@@ -342,12 +329,6 @@ const ApiSessionsSessionIdHistoryRoute =
   ApiSessionsSessionIdHistoryRouteImport.update({
     id: '/history',
     path: '/history',
-    getParentRoute: () => ApiSessionsSessionIdRoute,
-  } as any)
-const ApiSessionsSessionIdGalleryThumbRoute =
-  ApiSessionsSessionIdGalleryThumbRouteImport.update({
-    id: '/gallery-thumb',
-    path: '/gallery-thumb',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
 const ApiSessionsSessionIdExportRoute =
@@ -466,7 +447,6 @@ export interface FileRoutesByFullPath {
   '/api/brand-profile': typeof ApiBrandProfileRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
-  '/api/gallery': typeof ApiGalleryRoute
   '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
@@ -486,7 +466,6 @@ export interface FileRoutesByFullPath {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -505,7 +484,6 @@ export interface FileRoutesByFullPath {
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
   '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
-  '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
   '/api/sessions/$sessionId/medusa-products': typeof ApiSessionsSessionIdMedusaProductsRoute
@@ -537,7 +515,6 @@ export interface FileRoutesByTo {
   '/api/brand-profile': typeof ApiBrandProfileRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
-  '/api/gallery': typeof ApiGalleryRoute
   '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
@@ -557,7 +534,6 @@ export interface FileRoutesByTo {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -576,7 +552,6 @@ export interface FileRoutesByTo {
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
   '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
-  '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
   '/api/sessions/$sessionId/medusa-products': typeof ApiSessionsSessionIdMedusaProductsRoute
@@ -609,7 +584,6 @@ export interface FileRoutesById {
   '/api/brand-profile': typeof ApiBrandProfileRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
-  '/api/gallery': typeof ApiGalleryRoute
   '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
@@ -629,7 +603,6 @@ export interface FileRoutesById {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -648,7 +621,6 @@ export interface FileRoutesById {
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
   '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
-  '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
   '/api/sessions/$sessionId/medusa-products': typeof ApiSessionsSessionIdMedusaProductsRoute
@@ -682,7 +654,6 @@ export interface FileRouteTypes {
     | '/api/brand-profile'
     | '/api/clone'
     | '/api/credits'
-    | '/api/gallery'
     | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
@@ -702,7 +673,6 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -721,7 +691,6 @@ export interface FileRouteTypes {
     | '/api/payments/razorpay/webhook'
     | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
-    | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
     | '/api/sessions/$sessionId/medusa-products'
@@ -753,7 +722,6 @@ export interface FileRouteTypes {
     | '/api/brand-profile'
     | '/api/clone'
     | '/api/credits'
-    | '/api/gallery'
     | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
@@ -773,7 +741,6 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -792,7 +759,6 @@ export interface FileRouteTypes {
     | '/api/payments/razorpay/webhook'
     | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
-    | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
     | '/api/sessions/$sessionId/medusa-products'
@@ -824,7 +790,6 @@ export interface FileRouteTypes {
     | '/api/brand-profile'
     | '/api/clone'
     | '/api/credits'
-    | '/api/gallery'
     | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
@@ -844,7 +809,6 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -863,7 +827,6 @@ export interface FileRouteTypes {
     | '/api/payments/razorpay/webhook'
     | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
-    | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
     | '/api/sessions/$sessionId/medusa-products'
@@ -896,7 +859,6 @@ export interface RootRouteChildren {
   ApiBrandProfileRoute: typeof ApiBrandProfileRoute
   ApiCloneRoute: typeof ApiCloneRoute
   ApiCreditsRoute: typeof ApiCreditsRoute
-  ApiGalleryRoute: typeof ApiGalleryRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMedusaCheckoutRoute: typeof ApiMedusaCheckoutRoute
   ApiPexelsRoute: typeof ApiPexelsRoute
@@ -916,7 +878,6 @@ export interface RootRouteChildren {
   ApiReferralsStatusRoute: typeof ApiReferralsStatusRoute
   ApiSessionsSessionIdRoute: typeof ApiSessionsSessionIdRouteWithChildren
   ApiSessionsCreateRoute: typeof ApiSessionsCreateRoute
-  ApiSessionsRecentRoute: typeof ApiSessionsRecentRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
   ApiDeploymentsDeploymentSlugMedusaConfigRoute: typeof ApiDeploymentsDeploymentSlugMedusaConfigRoute
@@ -1072,13 +1033,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/gallery': {
-      id: '/api/gallery'
-      path: '/api/gallery'
-      fullPath: '/api/gallery'
-      preLoaderRoute: typeof ApiGalleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/credits': {
       id: '/api/credits'
       path: '/api/credits'
@@ -1154,13 +1108,6 @@ declare module '@tanstack/react-router' {
       path: '/api/stripe/webhook'
       fullPath: '/api/stripe/webhook'
       preLoaderRoute: typeof ApiStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sessions/recent': {
-      id: '/api/sessions/recent'
-      path: '/api/sessions/recent'
-      fullPath: '/api/sessions/recent'
-      preLoaderRoute: typeof ApiSessionsRecentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sessions/create': {
@@ -1287,13 +1234,6 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/api/sessions/$sessionId/history'
       preLoaderRoute: typeof ApiSessionsSessionIdHistoryRouteImport
-      parentRoute: typeof ApiSessionsSessionIdRoute
-    }
-    '/api/sessions/$sessionId/gallery-thumb': {
-      id: '/api/sessions/$sessionId/gallery-thumb'
-      path: '/gallery-thumb'
-      fullPath: '/api/sessions/$sessionId/gallery-thumb'
-      preLoaderRoute: typeof ApiSessionsSessionIdGalleryThumbRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
     '/api/sessions/$sessionId/export': {
@@ -1477,7 +1417,6 @@ const ApiSessionsSessionIdHistoryRouteWithChildren =
 
 interface ApiSessionsSessionIdRouteChildren {
   ApiSessionsSessionIdExportRoute: typeof ApiSessionsSessionIdExportRoute
-  ApiSessionsSessionIdGalleryThumbRoute: typeof ApiSessionsSessionIdGalleryThumbRoute
   ApiSessionsSessionIdHistoryRoute: typeof ApiSessionsSessionIdHistoryRouteWithChildren
   ApiSessionsSessionIdMedusaConfigRoute: typeof ApiSessionsSessionIdMedusaConfigRoute
   ApiSessionsSessionIdMedusaProductsRoute: typeof ApiSessionsSessionIdMedusaProductsRoute
@@ -1495,7 +1434,6 @@ interface ApiSessionsSessionIdRouteChildren {
 
 const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
   ApiSessionsSessionIdExportRoute: ApiSessionsSessionIdExportRoute,
-  ApiSessionsSessionIdGalleryThumbRoute: ApiSessionsSessionIdGalleryThumbRoute,
   ApiSessionsSessionIdHistoryRoute:
     ApiSessionsSessionIdHistoryRouteWithChildren,
   ApiSessionsSessionIdMedusaConfigRoute: ApiSessionsSessionIdMedusaConfigRoute,
@@ -1537,7 +1475,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBrandProfileRoute: ApiBrandProfileRoute,
   ApiCloneRoute: ApiCloneRoute,
   ApiCreditsRoute: ApiCreditsRoute,
-  ApiGalleryRoute: ApiGalleryRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMedusaCheckoutRoute: ApiMedusaCheckoutRoute,
   ApiPexelsRoute: ApiPexelsRoute,
@@ -1557,7 +1494,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReferralsStatusRoute: ApiReferralsStatusRoute,
   ApiSessionsSessionIdRoute: ApiSessionsSessionIdRouteWithChildren,
   ApiSessionsCreateRoute: ApiSessionsCreateRoute,
-  ApiSessionsRecentRoute: ApiSessionsRecentRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
   ApiDeploymentsDeploymentSlugMedusaConfigRoute:

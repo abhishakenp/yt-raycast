@@ -4,12 +4,10 @@ const routeMocks = vi.hoisted(() => ({
   billing: vi.fn(),
   brandProfile: vi.fn(),
   checkout: vi.fn(),
-  gallery: vi.fn(),
   lakebedPublish: vi.fn(),
   sessionCreate: vi.fn(),
   sessionDownload: vi.fn(),
   sessionExport: vi.fn(),
-  galleryThumbnail: vi.fn(),
   githubPush: vi.fn(),
   previewRaw: vi.fn(),
   sectionEdit: vi.fn(),
@@ -34,10 +32,6 @@ vi.mock('@/features/billing/server/checkout-api-response', () => ({
   createCheckoutApiResponse: routeMocks.checkout,
 }))
 
-vi.mock('@/features/gallery/server/gallery-api-response', () => ({
-  createGalleryApiResponse: routeMocks.gallery,
-}))
-
 vi.mock('@/features/deployments/server/lakebed-publish-response', () => ({
   createLakebedPublishResponse: routeMocks.lakebedPublish,
 }))
@@ -49,10 +43,6 @@ vi.mock('@/features/session/server/session-create-response', () => ({
 vi.mock('@/features/exports/server/export-api-response', () => ({
   createSessionDownloadResponse: routeMocks.sessionDownload,
   createSessionExportResponse: routeMocks.sessionExport,
-}))
-
-vi.mock('@/features/gallery/server/gallery-thumbnail-response', () => ({
-  createGalleryThumbnailResponse: routeMocks.galleryThumbnail,
 }))
 
 vi.mock('@/features/github/server/github-push-response', () => ({
@@ -136,21 +126,6 @@ describe('API server response route wrappers', () => {
       routeMocks.checkout,
       [],
     ],
-    ['./gallery', '/api/gallery', 'GET', routeMocks.gallery, []],
-    [
-      './sessions.recent',
-      '/api/sessions/recent',
-      'GET',
-      routeMocks.gallery,
-      [],
-    ],
-    [
-      './sessions.create',
-      '/api/sessions/create',
-      'POST',
-      routeMocks.sessionCreate,
-      [],
-    ],
     ['./translate', '/api/translate', 'POST', routeMocks.translate, []],
   ] as const)(
     'delegates %s to its response helper',
@@ -219,13 +194,6 @@ describe('API server response route wrappers', () => {
       'POST',
       routeMocks.sessionExport,
       'export response',
-    ],
-    [
-      './sessions.$sessionId.gallery-thumb',
-      '/api/sessions/$sessionId/gallery-thumb',
-      'GET',
-      routeMocks.galleryThumbnail,
-      'thumbnail response',
     ],
     [
       './sessions.$sessionId.stream',

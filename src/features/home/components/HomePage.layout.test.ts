@@ -71,8 +71,6 @@ vi.mock('@/features/home/hooks/usePromptHomeController', () => ({
 }))
 
 vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
-  getGalleryThumbnailUrl: () => '',
-  resolveGalleryThumbnail: async () => undefined,
   useGalleryController: () => ({
     gallery: {
       items: [
@@ -81,10 +79,6 @@ vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
           prompt: 'Static home gallery preview',
           categories: ['website'],
           elapsed: 1200,
-          previewVersion: 7,
-          html: '<main><h1>Rendered home gallery artifact</h1></main>',
-          imageUrl: 'https://cdn.example.test/stale-gallery.png',
-          moduleSource: '$page = "Home"',
         },
       ],
       page: 1,
@@ -97,6 +91,14 @@ vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
     },
     sessions: [],
   }),
+}))
+
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: undefined, isPending: true }),
+}))
+
+vi.mock('@/features/gallery/server/gallery-preview-server-fn', () => ({
+  fetchGalleryPreviewHtml: vi.fn(async () => null),
 }))
 
 import { HomePage } from './HomePage'
@@ -180,6 +182,5 @@ describe('HomePage rendered entry surface', () => {
         '[data-gallery-session-id="home_static_gallery_session"]',
       ),
     ).not.toBeNull()
-    expect(container.textContent).toContain('Rendered home gallery artifact')
   })
 })

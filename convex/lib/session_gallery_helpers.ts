@@ -218,16 +218,6 @@ function applyGalleryEditsToSource(
   return result
 }
 
-function isRenderableGalleryArtifacts(
-  artifacts: PublicGalleryArtifacts,
-): boolean {
-  if (artifacts.preview === null) {
-    return resolveGalleryOpenUISource(artifacts).trim().length > 0
-  }
-  if (!isUnsafePublicPreviewHtml(artifacts.preview.html)) return true
-  return resolveGalleryOpenUISource(artifacts).trim().length > 0
-}
-
 export function serializePublicGallerySession(
   session: Doc<'sessions'>,
   artifacts: PublicGalleryArtifacts,
@@ -285,6 +275,34 @@ export function serializePublicGallerySession(
   }
 }
 
+/**
+ * Minimal metadata returned by gallery LIST endpoints.
+ *
+ * Only the fields the gallery card chrome needs: sessionId, prompt,
+ * categories, elapsed, and openuiReady.  No HTML, no OpenUI source,
+ * no siteSpec, no translations, no theme, no cost, no timestamps.
+ * Preview HTML is fetched per-card via the per-session thumbnail endpoint.
+ */
+type GallerySessionMetadata = {
+  sessionId: Id<'sessions'>
+  prompt: string
+  categories: string[]
+  elapsed: number | null
+  openuiReady: boolean | null
+}
+
+function toGallerySessionMetadata(
+  session: Doc<'sessions'>,
+): GallerySessionMetadata {
+  return {
+    sessionId: session._id,
+    prompt: session.prompt,
+    categories: getGalleryCategories(session.prompt),
+    elapsed: session.elapsed ?? null,
+    openuiReady: session.openuiReady ?? null,
+  }
+}
+
 export async function listPublicGallerySessions(
   ctx: Pick<QueryCtx, 'db'>,
   args: PublicGalleryListInput,
@@ -309,18 +327,8 @@ export async function listPublicGallerySessions(
   const searchFilteredSessions = visibleSessions.filter((session) =>
     matchesGalleryFilters(session, args.search, undefined),
   )
-  const renderableSessions = (
-    await Promise.all(
-      searchFilteredSessions.map(async (session) => ({
-        session,
-        artifacts: await loadPublicGalleryBaseArtifacts(ctx, session._id),
-      })),
-    )
-  ).filter(({ artifacts }) => isRenderableGalleryArtifacts(artifacts))
-  const availableCategories = getGalleryCategoryOptions(
-    renderableSessions.map(({ session }) => session),
-  )
-  const filteredSessions = renderableSessions.filter(({ session }) =>
+  const availableCategories = getGalleryCategoryOptions(searchFilteredSessions)
+  const filteredSessions = searchFilteredSessions.filter((session) =>
     matchesGalleryFilters(session, undefined, args.category),
   )
 
@@ -328,32 +336,7 @@ export async function listPublicGallerySessions(
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
   const pageSessions = filteredSessions.slice((page - 1) * limit, page * limit)
-  // Reuse the base artifacts already loaded during the renderability check
-  // above instead of re-fetching them from the DB. Only translations are
-  // fetched per paginated item, saving 3-4 DB queries per page item.
-  const translatedPageSessions = await Promise.all(
-    pageSessions.map(async ({ session, artifacts: baseArtifacts }) => {
-      const translations = await loadCachedTranslationsForSource(
-        ctx,
-        session.preferredLanguage,
-        applyGalleryEditsToSource(
-          resolveGalleryOpenUISource(baseArtifacts),
-          baseArtifacts.edits,
-        ),
-      )
-      const artifacts =
-        translations.length > 0
-          ? { ...baseArtifacts, translations }
-          : baseArtifacts
-      return { session, artifacts }
-    }),
-  )
-  const items = translatedPageSessions.map(({ session, artifacts }) =>
-    serializePublicGallerySession(session, artifacts, {
-      legacySiteSpecFallback: true,
-      previewReadyFromStoredPreview: true,
-    }),
-  )
+  const items = pageSessions.map(toGallerySessionMetadata)
 
   return {
     items,
@@ -464,38 +447,15 @@ export async function listOwnedGallerySessions(
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
   const pageSessions = filteredSessions.slice((page - 1) * limit, page * limit)
-  const translatedPageSessions = await Promise.all(
-    pageSessions.map(async (session) => ({
-      session,
-      artifacts: await loadPublicGalleryArtifacts(
-        ctx,
-        session._id,
-        session.preferredLanguage,
-      ),
-    })),
-  )
-  const validPageSessions = translatedPageSessions.filter(({ artifacts }) =>
-    isRenderableGalleryArtifacts(artifacts),
-  )
-  const suppressedCount =
-    translatedPageSessions.length - validPageSessions.length
-  const visibleTotal =
-    suppressedCount > 0 ? Math.max(0, total - suppressedCount) : total
-  const visibleTotalPages = Math.max(1, Math.ceil(visibleTotal / limit))
-  const items = validPageSessions.map(({ session, artifacts }) =>
-    serializePublicGallerySession(session, artifacts, {
-      legacySiteSpecFallback: true,
-      previewReadyFromStoredPreview: true,
-    }),
-  )
+  const items = pageSessions.map(toGallerySessionMetadata)
 
   return {
     items,
     page,
     limit,
-    total: visibleTotal,
-    totalPages: visibleTotalPages,
-    hasNext: page < visibleTotalPages,
+    total,
+    totalPages,
+    hasNext: page < totalPages,
     hasPrev: page > 1,
     availableCategories,
   }

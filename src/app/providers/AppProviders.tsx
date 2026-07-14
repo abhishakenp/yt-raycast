@@ -1,4 +1,5 @@
 import { useRouterState } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
@@ -44,6 +45,17 @@ const PUBLIC_LAUNCH_BACKDROP_PATHS = new Set([
   '/privacy',
   '/terms',
 ])
+
+const appQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    },
+  },
+})
 
 const clerkPublishableKey = getClerkPublishableKey()
 const convexUrl =
@@ -126,61 +138,66 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   if (shouldLoadClerk) {
     return (
-      <Suspense fallback={<ProviderFallback />}>
-        <LazyClerkConvexProvider
-          clerkPublishableKey={clerkPublishableKey}
-          convexUrl={configuredConvexUrl}
-        >
-          <WithSignInHost
-            showLaunchBackdrop={showLaunchBackdrop}
-            signInRequestId={signInRequestId}
-            clerkMounted
+      <QueryClientProvider client={appQueryClient}>
+        <Suspense fallback={<ProviderFallback />}>
+          <LazyClerkConvexProvider
+            clerkPublishableKey={clerkPublishableKey}
+            convexUrl={configuredConvexUrl}
           >
-            {children}
-          </WithSignInHost>
-        </LazyClerkConvexProvider>
-      </Suspense>
+            <WithSignInHost
+              showLaunchBackdrop={showLaunchBackdrop}
+              signInRequestId={signInRequestId}
+              clerkMounted
+            >
+              {children}
+            </WithSignInHost>
+          </LazyClerkConvexProvider>
+        </Suspense>
+      </QueryClientProvider>
     )
   }
 
   if (shouldLoadConvex) {
     return (
-      <Suspense fallback={<ProviderFallback />}>
-        <LazyConvexAnonymousProvider convexUrl={configuredConvexUrl}>
-          <WithSignInHost
-            showLaunchBackdrop={showLaunchBackdrop}
-            signInRequestId={signInRequestId}
-            clerkMounted={false}
-          >
-            {children}
-          </WithSignInHost>
-        </LazyConvexAnonymousProvider>
-      </Suspense>
+      <QueryClientProvider client={appQueryClient}>
+        <Suspense fallback={<ProviderFallback />}>
+          <LazyConvexAnonymousProvider convexUrl={configuredConvexUrl}>
+            <WithSignInHost
+              showLaunchBackdrop={showLaunchBackdrop}
+              signInRequestId={signInRequestId}
+              clerkMounted={false}
+            >
+              {children}
+            </WithSignInHost>
+          </LazyConvexAnonymousProvider>
+        </Suspense>
+      </QueryClientProvider>
     )
   }
 
-  // Routes that render Convex hook consumers must not mount their children
-  // outside a Convex provider. When Convex is required but not configured,
-  // render the loading fallback instead of mounting children unprotected.
   if (shouldUseConvexProviders(pathname)) {
     return (
+      <QueryClientProvider client={appQueryClient}>
+        <WithSignInHost
+          showLaunchBackdrop={showLaunchBackdrop}
+          signInRequestId={signInRequestId}
+          clerkMounted={false}
+        >
+          <ProviderFallback />
+        </WithSignInHost>
+      </QueryClientProvider>
+    )
+  }
+
+  return (
+    <QueryClientProvider client={appQueryClient}>
       <WithSignInHost
         showLaunchBackdrop={showLaunchBackdrop}
         signInRequestId={signInRequestId}
         clerkMounted={false}
       >
-        <ProviderFallback />
+        {children}
       </WithSignInHost>
-    )
-  }
-
-  return (
-    <WithSignInHost
-      showLaunchBackdrop={showLaunchBackdrop}
-      signInRequestId={signInRequestId}
-      clerkMounted={false}
-    >
-      {children}
-    </WithSignInHost>
+    </QueryClientProvider>
   )
 }

@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { useMutation } from 'convex/react'
 import {
   ArrowRight,
@@ -60,11 +61,8 @@ import { createAnonymousClientId } from '@/features/session/services/session-cre
 import { cn } from '@/lib/utils'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { fetchGalleryPreviewHtml } from '../server/gallery-preview-server-fn'
 
-import {
-  getGalleryThumbnailUrl,
-  resolveGalleryThumbnail,
-} from '../hooks/gallery-thumbnail'
 import { useGalleryController } from '../hooks/useGalleryController'
 
 export type GalleryCategory = string
@@ -75,31 +73,20 @@ export type GalleryCategoryOption = {
   value: string
 }
 
+/**
+ * Minimal metadata returned by the gallery LIST endpoints.
+ *
+ * Only what the card chrome needs: sessionId (for link + preview fetch),
+ * prompt (title), categories (tags), elapsed (generation time), and
+ * openuiReady (status badge).  Preview HTML is fetched per-card by
+ * `GalleryCardPreview` via the per-session thumbnail endpoint.
+ */
 export type GallerySession = {
-  id?: string
   sessionId: string
   prompt?: string
-  status?: string | null
-  previewVersion?: number
-  createdAt?: number
-  updatedAt?: number
-  elapsed?: number | null
-  cost?: number | null
-  html?: string | null
-  moduleSource?: string | null
-  preferredLanguage?: string | null
-  siteSpecJson?: string | null
-  imageUrl?: string | null
   categories?: string[]
-  homepageReady?: boolean | null
-  siteSpecReady?: boolean | null
+  elapsed?: number | null
   openuiReady?: boolean | null
-  readiness?: {
-    homepageReady?: boolean | null
-    siteSpecReady?: boolean | null
-    openuiReady?: boolean | null
-    previewReady?: boolean | null
-  }
 }
 
 export type GalleryPayload = {
@@ -160,31 +147,42 @@ function getGalleryCardAriaLabel(session: GallerySession): string {
     : `Open ${title}`
 }
 
-export function getGalleryImageUrl(session: GallerySession): string {
-  if (getPreviewDocument(session.html) !== undefined) return ''
+function GalleryCardPreview({ session }: { session: GallerySession }) {
+  const title = getPromptTitle(session.prompt)
+  const { data: html, isPending } = useQuery({
+    queryKey: ['gallery-preview', session.sessionId],
+    queryFn: () =>
+      fetchGalleryPreviewHtml({ data: { sessionId: session.sessionId } }),
+    staleTime: Infinity,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
+  })
 
-  // PNG `imageUrl` is intentionally never used as a gallery preview source.
-  // Previews must be server-rendered static HTML or a generated thumbnail.
-  return getGalleryThumbnailUrl(session)
-}
-
-function getPreviewDocument(html?: string | null) {
-  const cleaned = html?.trim()
-  if (!cleaned?.length) return undefined
-  if (
-    cleaned.includes('Generated OpenUI source is ready') ||
-    cleaned.includes('Failed to render:')
-  ) {
-    return undefined
-  }
-  if (
-    cleaned.includes('id="ship-fast-generated-module"') &&
-    !cleaned.includes('<main')
-  ) {
-    return undefined
-  }
-
-  return cleaned
+  return (
+    <div
+      className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]"
+      aria-hidden="true"
+    >
+      {html ? (
+        <iframe
+          srcDoc={html}
+          className="pointer-events-none absolute inset-0 h-[250%] w-[250%] origin-top-left scale-[0.4] border-0"
+          scrolling="no"
+          tabIndex={-1}
+          title={title}
+        />
+      ) : (
+        <div
+          className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_78%_30%,rgba(168,85,247,0.16),transparent_36%),linear-gradient(135deg,#050816,#111827)]"
+          aria-label={title}
+        />
+      )}
+      {isPending && !html ? (
+        <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.18),transparent_32%),radial-gradient(circle_at_80%_26%,rgba(168,85,247,0.18),transparent_35%),linear-gradient(135deg,#050816,#111827)]" />
+      ) : null}
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/8" />
+    </div>
+  )
 }
 
 export function GalleryCategoryTabs({
@@ -241,66 +239,6 @@ export function GalleryCategoryTabs({
   )
 }
 
-function GalleryPreview({ session }: { session: GallerySession }) {
-  const title = getPromptTitle(session.prompt)
-  const previewDocument = getPreviewDocument(session.html)
-  const imageSrc =
-    previewDocument === undefined ? getGalleryImageUrl(session) : ''
-  const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
-    imageSrc.startsWith('/api/sessions/') ? '' : imageSrc,
-  )
-
-  useEffect(() => {
-    if (!imageSrc.startsWith('/api/sessions/')) {
-      setResolvedImageSrc(imageSrc)
-      return
-    }
-
-    let cancelled = false
-    setResolvedImageSrc('')
-
-    const resolveImage = async () => {
-      const objectUrl = await resolveGalleryThumbnail(imageSrc)
-      if (!cancelled) setResolvedImageSrc(objectUrl ?? '')
-    }
-
-    void resolveImage()
-
-    return () => {
-      cancelled = true
-    }
-  }, [imageSrc])
-
-  return (
-    <div
-      className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]"
-      aria-hidden="true"
-    >
-      {previewDocument !== undefined ? (
-        <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
-          <div
-            className="size-full"
-            dangerouslySetInnerHTML={{ __html: previewDocument }}
-          />
-        </div>
-      ) : resolvedImageSrc ? (
-        <img
-          src={resolvedImageSrc}
-          alt={title}
-          className="absolute inset-0 h-full w-full object-cover"
-          loading="lazy"
-        />
-      ) : (
-        <div
-          className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_78%_30%,rgba(168,85,247,0.16),transparent_36%),linear-gradient(135deg,#050816,#111827)]"
-          aria-label={title}
-        />
-      )}
-      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/8" />
-    </div>
-  )
-}
-
 function GalleryCard({
   onHoverEnd,
   onHoverStart,
@@ -322,7 +260,7 @@ function GalleryCard({
       onPointerEnter={() => onHoverStart(session.sessionId)}
       onPointerLeave={() => onHoverEnd(session.sessionId)}
     >
-      <GalleryPreview session={session} />
+      <GalleryCardPreview session={session} />
       <div className="sf-gallery-card-body p-4">
         <p className="mb-3 line-clamp-2 min-h-10 text-sm leading-5 text-slate-100">
           {getPromptTitle(session.prompt)}
@@ -367,28 +305,17 @@ function GallerySkeletonCard({ index }: { index: number }) {
     >
       <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
         <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.18),transparent_32%),radial-gradient(circle_at_80%_26%,rgba(168,85,247,0.18),transparent_35%),linear-gradient(135deg,#050816,#111827)]" />
-        <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
-          <div className="h-2 w-24 rounded-full bg-white/15" />
-          <div className="flex gap-1.5">
-            <span className="size-2 rounded-full bg-white/18" />
-            <span className="size-2 rounded-full bg-white/18" />
-            <span className="size-2 rounded-full bg-white/18" />
-          </div>
-        </div>
-        <div className="absolute left-5 top-14 h-5 w-2/3 rounded bg-white/14" />
-        <div className="absolute bottom-4 left-5 right-5 grid grid-cols-3 gap-2">
-          <span className="h-8 rounded-md bg-white/10" />
-          <span className="h-8 rounded-md bg-white/10" />
-          <span className="h-8 rounded-md bg-white/10" />
-        </div>
       </div>
-      <div className="space-y-3 p-4">
-        <div className="h-3 w-28 rounded bg-white/12" />
-        <div className="h-4 w-full rounded bg-white/10" />
-        <div className="h-4 w-4/5 rounded bg-white/10" />
-        <div className="flex justify-between">
-          <div className="h-5 w-24 rounded-full bg-white/10" />
-          <div className="h-3 w-8 rounded bg-white/10" />
+      <div className="sf-gallery-card-body p-4">
+        <div className="mb-3 min-h-10 text-sm leading-5">
+          <div className="h-4 w-full animate-pulse rounded bg-white/10" />
+        </div>
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap gap-1.5">
+            <span className="h-5 w-14 animate-pulse rounded-full bg-white/10" />
+            <span className="h-5 w-16 animate-pulse rounded-full bg-white/10" />
+          </div>
+          <span className="h-5 w-12 animate-pulse rounded-full bg-white/10" />
         </div>
       </div>
     </div>

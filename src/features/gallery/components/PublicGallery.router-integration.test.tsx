@@ -14,6 +14,14 @@ vi.mock('convex/react', () => ({
   useMutation: () => vi.fn().mockResolvedValue({ deleted: 0 }),
 }))
 
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: undefined, isPending: true }),
+}))
+
+vi.mock('../server/gallery-preview-server-fn', () => ({
+  fetchGalleryPreviewHtml: vi.fn(async () => null),
+}))
+
 import { GalleryGrid, type GalleryPayload } from './PublicGallery'
 
 const gallery: GalleryPayload = {
