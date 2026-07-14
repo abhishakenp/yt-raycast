@@ -292,15 +292,19 @@ export async function listPublicGallerySessions(
   const limit = readGalleryLimit(args.limit)
   const requestedPage = readGalleryPage(args.page)
   const scanLimit = Math.max(requestedPage * limit * 2, limit)
-  const publicSessionQuery = ctx.db
-    .query('sessions')
-    .withIndex('by_public_createdAt', (index) => index.eq('isPrivate', false))
-    .order('desc')
-  const scannedPublicSessions = await publicSessionQuery.take(scanLimit)
+  // Convex query builders are single-use: once a terminal operator (.take /
+  // .collect / .first) is chained, the same builder cannot be reused. Build a
+  // fresh query for each terminal call instead of sharing one reference.
+  const buildPublicSessionQuery = () =>
+    ctx.db
+      .query('sessions')
+      .withIndex('by_public_createdAt', (index) => index.eq('isPrivate', false))
+      .order('desc')
+  const scannedPublicSessions = await buildPublicSessionQuery().take(scanLimit)
   const publicSessions =
     scannedPublicSessions.length < scanLimit
       ? scannedPublicSessions
-      : await publicSessionQuery.collect()
+      : await buildPublicSessionQuery().collect()
   const visibleSessions = publicSessions.filter(isGalleryVisibleSession)
   const searchFilteredSessions = visibleSessions.filter((session) =>
     matchesGalleryFilters(session, args.search, undefined),
