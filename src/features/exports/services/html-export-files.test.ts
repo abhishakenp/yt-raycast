@@ -7,10 +7,9 @@ import {
   createReactExportFiles,
 } from './html-export-files'
 
-const expectShipFastReadme = (readme = '') => {
-  expect(readme).toContain(
-    'Generated with [ShipFast](https://ship-fast.io) 🚀.',
-  )
+const expectPortableReadme = (readme = '') => {
+  expect(readme).not.toMatch(/ShipFast|ship-fast\.io|OpenUI/i)
+  expect(readme).toContain('Run locally')
   expect(readme).not.toContain('Session:')
   expect(readme).not.toContain('Target:')
 }
@@ -57,7 +56,7 @@ describe('createHtmlExportFiles', () => {
     // llms.txt is plain text: title heading + description summary line
     expect(files['llms.txt']).toContain('# Atlas Notes')
     expect(files['llms.txt']).toContain('Shared launch docs for small teams.')
-    expectShipFastReadme(files['README.md'])
+    expectPortableReadme(files['README.md'])
   })
 
   it('does not inject an example.com canonical URL when no public site URL exists', () => {
@@ -75,7 +74,7 @@ describe('createHtmlExportFiles', () => {
     expect(files['robots.txt']).toContain('https://example.com/sitemap.xml')
   })
 
-  it('writes branded README files for React and Next exports without session metadata', () => {
+  it('writes portable README files for React and Next exports without internal identity or session metadata', () => {
     const reactFiles = createReactExportFiles(
       'session_123',
       'react',
@@ -89,7 +88,7 @@ describe('createHtmlExportFiles', () => {
       { includeBadge: false },
     )
 
-    expectShipFastReadme(reactFiles['README.md'])
-    expectShipFastReadme(nextFiles['README.md'])
+    expectPortableReadme(reactFiles['README.md'])
+    expectPortableReadme(nextFiles['README.md'])
   })
 })

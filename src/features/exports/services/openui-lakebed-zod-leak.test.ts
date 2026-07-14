@@ -39,9 +39,9 @@ export const Block = () => {
   return ref ? api : null
 }
 `
-    expect(findUnboundClientReferences(broken, 'client/components/x.tsx')).toEqual(
-      ['useEmblaCarousel'],
-    )
+    expect(
+      findUnboundClientReferences(broken, 'client/components/x.tsx'),
+    ).toEqual(['useEmblaCarousel'])
   })
 
   it('passes when the value binding is present (default import restored)', () => {
@@ -51,9 +51,9 @@ export const Block = () => {
   return ref ? api : null
 }
 `
-    expect(findUnboundClientReferences(fixed, 'client/components/x.tsx')).toEqual(
-      [],
-    )
+    expect(
+      findUnboundClientReferences(fixed, 'client/components/x.tsx'),
+    ).toEqual([])
   })
 
   it('does not false-positive on JSX intrinsics, member access, or type names', () => {
@@ -72,9 +72,9 @@ export const Block = ({ items }: { items: string[] }) => {
   )
 }
 `
-    expect(findUnboundClientReferences(clean, 'client/components/x.tsx')).toEqual(
-      [],
-    )
+    expect(
+      findUnboundClientReferences(clean, 'client/components/x.tsx'),
+    ).toEqual([])
   })
 })
 
