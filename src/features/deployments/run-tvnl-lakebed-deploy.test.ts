@@ -37,10 +37,12 @@ async function call(
 }
 
 // Integration test requiring a real Convex deployment + session.
-// Skipped via skipIf when TVNL_SESSION/TVNL_SECRET are absent.
+// Skipped via skipIf when TVNL_SESSION is absent.
+// The Convex deployment has VITE_DISABLE_CLERK=true so anonymousOwnerSecret
+// is not required — any session is accessible.
 // Excluded from vitest-policy.release.test.ts (which bans skipIf).
 describe('deploy tvnl to lakebed', () => {
-  it.skipIf(!process.env.TVNL_SESSION || !process.env.TVNL_SECRET)(
+  it.skipIf(!process.env.TVNL_SESSION)(
     'builds and deploys, preserving the stable URL on update',
     async () => {
       const prepared = await call(
