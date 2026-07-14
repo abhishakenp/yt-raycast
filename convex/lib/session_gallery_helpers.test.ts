@@ -481,6 +481,50 @@ describe('listPublicGallerySessions', () => {
     expect(result.items.map((item) => item.sessionId)).toEqual([firstSessionId])
   })
 
+  it('reuses batch-loaded artifacts for paginated items instead of re-fetching from DB', async () => {
+    // The renderability check loads base artifacts for every session.
+    // The paginated items should reuse those artifacts and only fetch
+    // translations, not re-query generatedModules/siteSpecs/previews/edits.
+    const sessions: Doc<'sessions'>[] = []
+    const previews: Doc<'previews'>[] = []
+    for (let i = 0; i < 10; i++) {
+      const sid = `session_batch_${i}` as Id<'sessions'>
+      sessions.push(
+        sessionDoc({
+          _id: sid,
+          prompt: `Batch test session ${i}`,
+          createdAt: 1000 - i,
+        }),
+      )
+      previews.push(
+        previewDoc({
+          _id: `preview_batch_${i}` as Id<'previews'>,
+          sessionId: sid,
+        }),
+      )
+    }
+    const ctx = ctxFor({ sessions, previews })
+
+    await listPublicGallerySessions(ctx, { limit: 12, page: 1 })
+
+    // The batch load queries each artifact table once per session (10×).
+    // Without artifact reuse, pagination would re-query them AGAIN for the
+    // 10 paginated items (another 10×), totaling 20× per table.
+    // With reuse, each table is queried exactly 10 times, NOT 20.
+    const moduleQueries = ctx.queriedTables.filter(
+      (t) => t === 'generatedModules',
+    ).length
+    const siteSpecQueries = ctx.queriedTables.filter(
+      (t) => t === 'siteSpecs',
+    ).length
+
+    expect(moduleQueries).toBe(10)
+    expect(siteSpecQueries).toBe(10)
+    // If pagination re-fetched, these would be 20
+    expect(moduleQueries).not.toBe(20)
+    expect(siteSpecQueries).not.toBe(20)
+  })
+
   it('filters gallery lists by search before reporting category options and clamps requested pages', async () => {
     const analyticsSessionId = 'session_analytics' as Id<'sessions'>
     const dashboardSessionId = 'session_dashboard' as Id<'sessions'>
