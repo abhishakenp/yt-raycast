@@ -171,7 +171,7 @@ describe('useTextEdit: icon deletion prevention (end-to-end)', () => {
   }
 
   /** Simulate clicking the button to activate editing. */
-  function activateEdit(btn: HTMLButtonElement) {
+  function activateEdit(btn: HTMLElement) {
     const event = new MouseEvent('click', {
       bubbles: true,
       cancelable: true,
@@ -254,6 +254,101 @@ describe('useTextEdit: icon deletion prevention (end-to-end)', () => {
     expect(btn.contains(svg)).toBe(true)
     expect(textNode.textContent).toBe('Google Play')
 
+    cleanup(container)
+  })
+
+  it('clears the final character without allowing Backspace to remove a leading SVG', () => {
+    const { container, btn, svg, textNode } = setupButtonWithIcon('A')
+    const onTextChange = vi.fn()
+    renderHook(() => {
+      const ref = useRef(container)
+      return useTextEdit(ref, true, onTextChange)
+    })
+
+    act(() => {
+      activateEdit(btn)
+    })
+    placeCaret(textNode, 1)
+
+    const backspace = new KeyboardEvent('keydown', {
+      key: 'Backspace',
+      bubbles: true,
+      cancelable: true,
+    })
+    act(() => {
+      container.dispatchEvent(backspace)
+    })
+
+    expect(backspace.defaultPrevented).toBe(true)
+    expect(textNode.textContent).toBe('')
+    expect(btn.contains(svg)).toBe(true)
+    cleanup(container)
+  })
+
+  it('clears the final character without allowing Delete to remove a trailing SVG', () => {
+    const container = document.createElement('div')
+    const btn = document.createElement('button')
+    const textNode = document.createTextNode('A')
+    const svg = document.createElement('svg')
+    btn.append(textNode, svg)
+    container.appendChild(btn)
+    document.body.appendChild(container)
+    const onTextChange = vi.fn()
+    renderHook(() => {
+      const ref = useRef(container)
+      return useTextEdit(ref, true, onTextChange)
+    })
+
+    act(() => {
+      activateEdit(btn)
+    })
+    placeCaret(textNode, 0)
+
+    const deleteEvent = new KeyboardEvent('keydown', {
+      key: 'Delete',
+      bubbles: true,
+      cancelable: true,
+    })
+    act(() => {
+      container.dispatchEvent(deleteEvent)
+    })
+
+    expect(deleteEvent.defaultPrevented).toBe(true)
+    expect(textNode.textContent).toBe('')
+    expect(btn.contains(svg)).toBe(true)
+    cleanup(container)
+  })
+
+  it('applies a multi-character beforeinput replacement as one text run', () => {
+    const container = document.createElement('div')
+    const heading = document.createElement('h1')
+    const textNode = document.createTextNode('Original heading')
+    heading.appendChild(textNode)
+    container.appendChild(heading)
+    document.body.appendChild(container)
+    const onTextChange = vi.fn()
+    renderHook(() => {
+      const ref = useRef(container)
+      return useTextEdit(ref, true, onTextChange)
+    })
+
+    act(() => {
+      activateEdit(heading)
+    })
+    placeCaret(textNode, textNode.length)
+
+    const replacement = new InputEvent('beforeinput', {
+      inputType: 'insertText',
+      data: 'Translated heading',
+      bubbles: true,
+      cancelable: true,
+    })
+    act(() => {
+      container.dispatchEvent(replacement)
+    })
+
+    expect(replacement.defaultPrevented).toBe(true)
+    expect(heading.textContent).toBe('Translated heading')
     cleanup(container)
   })
 
