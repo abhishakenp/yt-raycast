@@ -214,7 +214,32 @@ function ctxFor(input: {
             collect: async () => rows(),
           }
 
-          return queryResult
+          // Convex query builders are single-use: once ANY terminal operator
+          // (.take / .collect / .first) runs, ALL subsequent terminal calls on
+          // the same builder throw. Simulate that so tests catch accidental
+          // query reuse regressions (e.g. calling .take then .collect on the
+          // same builder reference).
+          let builderUsed = false
+          const singleUse =
+            (terminal) =>
+            async (...args) => {
+              if (builderUsed) {
+                throw new Error(
+                  "This query has been chained with another operator and can't be reused.",
+                )
+              }
+              builderUsed = true
+              return terminal(...args)
+            }
+
+          const guardedResult = {
+            order: (_direction) => guardedResult,
+            first: singleUse(queryResult.first),
+            take: singleUse(queryResult.take),
+            collect: singleUse(queryResult.collect),
+          }
+
+          return guardedResult
         },
       }
       return query
@@ -405,6 +430,55 @@ describe('listPublicGallerySessions', () => {
     expect(
       result.availableCategories.map((category) => category.value),
     ).toEqual(expect.arrayContaining(['saas', 'blog', 'service']))
+  })
+
+  it('falls back to collect without reusing the query builder when public sessions exceed scanLimit', async () => {
+    // scanLimit = max(page * limit * 2, limit) = max(1 * 1 * 2, 1) = 2.
+    // With 3 public sessions, take(2) returns 2 rows (>= scanLimit), so the
+    // code must rebuild the query and call .collect() on a fresh builder.
+    // Reusing the same builder throws in real Convex (and in this mock).
+    const firstSessionId = 'session_collect_1' as Id<'sessions'>
+    const secondSessionId = 'session_collect_2' as Id<'sessions'>
+    const thirdSessionId = 'session_collect_3' as Id<'sessions'>
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          _id: firstSessionId,
+          prompt: 'SaaS analytics',
+          createdAt: 300,
+        }),
+        sessionDoc({
+          _id: secondSessionId,
+          prompt: 'Blog publication',
+          createdAt: 200,
+        }),
+        sessionDoc({
+          _id: thirdSessionId,
+          prompt: 'Local service',
+          createdAt: 100,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: 'preview_collect_1' as Id<'previews'>,
+          sessionId: firstSessionId,
+        }),
+        previewDoc({
+          _id: 'preview_collect_2' as Id<'previews'>,
+          sessionId: secondSessionId,
+        }),
+        previewDoc({
+          _id: 'preview_collect_3' as Id<'previews'>,
+          sessionId: thirdSessionId,
+        }),
+      ],
+    })
+
+    const result = await listPublicGallerySessions(ctx, { limit: 1, page: 1 })
+
+    expect(result.total).toBe(3)
+    expect(result.totalPages).toBe(3)
+    expect(result.items.map((item) => item.sessionId)).toEqual([firstSessionId])
   })
 
   it('filters gallery lists by search before reporting category options and clamps requested pages', async () => {
