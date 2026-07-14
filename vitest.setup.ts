@@ -8,6 +8,11 @@
 // implementation only when running in a DOM-like environment that is missing it,
 // so pure `node`-environment tests are left untouched.
 
+// Load .env into process.env so integration tests (e.g. TVNL_SESSION) can read
+// non-VITE-prefixed vars. Vite only exposes VITE_* to import.meta.env.
+import { config } from 'dotenv'
+config()
+
 process.env.VITE_DISABLE_CLERK = 'false'
 
 type CrossRealmHTMLElement = {

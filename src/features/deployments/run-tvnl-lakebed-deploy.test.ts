@@ -11,6 +11,8 @@ import type { BrandLogoSelection } from '@/features/exports/services/openui-expo
 // outbound route to api.lakebed.dev, so the in-Convex deploy action fails with
 // `fetch failed`; this runs the identical builder + deploy path from a machine
 // that CAN reach Lakebed. Gated on TVNL_DEPLOY=1 so it never runs in CI.
+// TVNL_SESSION is loaded from .env by vitest.setup.ts. The Convex deployment
+// has VITE_DISABLE_CLERK=true so anonymousOwnerSecret is not required.
 const SESSION = process.env.TVNL_SESSION ?? ''
 const SECRET = process.env.TVNL_SECRET ?? ''
 const SLUG = process.env.TVNL_SLUG ?? 'tvnl'
@@ -36,13 +38,11 @@ async function call(
   return (json.value ?? {}) as Record<string, unknown>
 }
 
-// Integration test requiring a real Convex deployment + session.
-// Skipped via skipIf when TVNL_SESSION is absent.
-// The Convex deployment has VITE_DISABLE_CLERK=true so anonymousOwnerSecret
-// is not required — any session is accessible.
+// Real external side effect: deploys to *.lakebed.app and pushes data to the
+// live deployed DB. Gated on TVNL_DEPLOY=1 so it only runs on explicit request.
 // Excluded from vitest-policy.release.test.ts (which bans skipIf).
 describe('deploy tvnl to lakebed', () => {
-  it.skipIf(!process.env.TVNL_SESSION)(
+  it.skipIf(!process.env.TVNL_DEPLOY)(
     'builds and deploys, preserving the stable URL on update',
     async () => {
       const prepared = await call(
