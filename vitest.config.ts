@@ -44,6 +44,7 @@ export default defineConfig({
             'packages/ship-fast-engine/src/llm/**/*.test.js',
             'packages/ship-fast-engine/src/llm/**/*.test.ts',
             'packages/ship-fast-engine/src/pipeline/**/*.test.ts',
+            'packages/ship-fast-engine/src/prompts/**/*.test.ts',
             'packages/ship-fast-engine/src/renderers/**/*.test.ts',
             'packages/ship-fast-engine/src/renderers/**/*.test.js',
             'packages/ship-fast-engine/src/spec/**/*.test.js',

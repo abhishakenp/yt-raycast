@@ -141,6 +141,7 @@ describe('top-level route behavior', () => {
 
   it.each([
     ['./generate.$sessionId', '/generate/$sessionId', 'GenerateRoute'],
+    ['./generate.$sessionId.$', '/generate/$sessionId/$', 'GenerateRoute'],
     [
       './generate.$sessionId.admin',
       '/generate/$sessionId/admin',
