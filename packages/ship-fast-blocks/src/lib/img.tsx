@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ImgHTMLAttributes,
   type ReactNode,
@@ -300,7 +301,7 @@ function ImageCarousel({
       <CarouselContent className="ml-0 h-full" viewportClassName="h-full">
         {srcs.map((src, index) => (
           <CarouselItem key={`${src}-${index}`} className="basis-full pl-0">
-            <img
+            <ImgElement
               src={src}
               alt={alt}
               width={w}
@@ -315,6 +316,38 @@ function ImageCarousel({
       <CarouselPrevious className="left-3 z-10 border-white/40 bg-black/25 text-white backdrop-blur hover:bg-black/45 hover:text-white" />
       <CarouselNext className="right-3 z-10 border-white/40 bg-black/25 text-white backdrop-blur hover:bg-black/45 hover:text-white" />
     </Carousel>
+  )
+}
+
+/** Internal <img> wrapper that shows a pulsing skeleton background until the
+ *  image has loaded (or errored). Prevents the dark-mode "empty box" flash
+ *  before network images resolve. The skeleton uses the theme-aware
+ *  `bg-accent` + `animate-pulse` tokens so it adapts to light/dark modes. */
+function ImgElement({
+  className,
+  onLoad,
+  onError,
+  ...rest
+}: ImgHTMLAttributes<HTMLImageElement>) {
+  const [loaded, setLoaded] = useState(false)
+  const ref = useRef<HTMLImageElement>(null)
+  useEffect(() => {
+    if (ref.current?.complete) setLoaded(true)
+  }, [])
+  return (
+    <img
+      ref={ref}
+      className={cn(className, !loaded && 'animate-pulse bg-accent')}
+      onLoad={(e) => {
+        setLoaded(true)
+        onLoad?.(e)
+      }}
+      onError={(e) => {
+        setLoaded(true)
+        onError?.(e)
+      }}
+      {...rest}
+    />
   )
 }
 
@@ -374,7 +407,7 @@ export function Image({
         : getPexelsProxyUrl(normalizedAlt, w, h, effectiveContext)
 
   return (
-    <img
+    <ImgElement
       src={imageSrc}
       alt={normalizedAlt}
       width={w}
