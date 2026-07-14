@@ -26,9 +26,11 @@ async function query(path: string, args: unknown) {
 
 describe('inspect tvnl lakebed build', () => {
   // Integration test requiring a real Convex deployment + session.
-  // Skipped via skipIf when TVNL_SESSION/TVNL_SECRET are absent.
+  // Skipped via skipIf when TVNL_SESSION is absent.
+  // The Convex deployment has VITE_DISABLE_CLERK=true so anonymousOwnerSecret
+  // is not required — any session is accessible.
   // Excluded from vitest-policy.release.test.ts (which bans skipIf).
-  it.skipIf(!process.env.TVNL_SESSION || !process.env.TVNL_SECRET)(
+  it.skipIf(!process.env.TVNL_SESSION)(
     'builds and dumps files, flags unbound client references',
     async () => {
       const prepared = await query(
