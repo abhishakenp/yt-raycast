@@ -140,4 +140,43 @@ home = Stack([home_hero_anchor, home_features_anchor])`
     expect(result.current.reorderError).toBe('Could not load current source')
     expect(createEditMock).not.toHaveBeenCalled()
   })
+
+  it('refuses to reorder without a session id before loading source', async () => {
+    const getSource = vi.fn(async () => SOURCE)
+    const { result } = renderHook(() =>
+      useReorderElement({
+        sessionId: undefined,
+        getSource,
+      }),
+    )
+
+    await act(async () => {
+      await expect(result.current.reorder('home_features', 'up')).resolves.toBe(
+        false,
+      )
+    })
+
+    expect(getSource).not.toHaveBeenCalled()
+    expect(createEditMock).not.toHaveBeenCalled()
+    expect(result.current.isReordering).toBe(false)
+  })
+
+  it('normalizes a non-Error persistence rejection and clears pending state', async () => {
+    createEditMock.mockRejectedValueOnce('connection lost')
+    const { result } = renderHook(() =>
+      useReorderElement({
+        sessionId: 'session_reorder',
+        getSource: async () => SOURCE,
+      }),
+    )
+
+    await act(async () => {
+      await expect(result.current.reorder('home_features', 'up')).resolves.toBe(
+        false,
+      )
+    })
+
+    expect(result.current.reorderError).toBe('Reorder failed')
+    expect(result.current.isReordering).toBe(false)
+  })
 })

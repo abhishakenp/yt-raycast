@@ -181,6 +181,63 @@ describe('useElementInspector — behavioral', () => {
     expect(selected!.style.left).toBe('1px')
   })
 
+  it('repositions the selected overlay when the preview viewport changes', () => {
+    const { getByTestId } = render(<Harness active={true} />)
+    const card = getByTestId('card')
+    const getRect = vi
+      .spyOn(card, 'getBoundingClientRect')
+      .mockReturnValueOnce(new DOMRect(1, 2, 3, 4))
+      .mockReturnValue(new DOMRect(20, 30, 40, 50))
+
+    act(() => {
+      fireClick(card)
+    })
+    act(() => {
+      window.dispatchEvent(new Event('resize'))
+    })
+
+    const selected = overlayByRole('selected')
+    expect(selected).not.toBeNull()
+    if (!selected) throw new Error('Selected inspector overlay was not created')
+    expect(selected.style.left).toBe('20px')
+    expect(selected.style.top).toBe('30px')
+    expect(selected.style.width).toBe('40px')
+    expect(selected.style.height).toBe('50px')
+    expect(getRect).toHaveBeenCalledTimes(2)
+  })
+
+  it('clears the persistent overlay when the toolbar dispatches its close event', () => {
+    const { getByTestId } = render(<Harness active={true} />)
+    const card = getByTestId('card')
+    act(() => {
+      fireClick(card)
+    })
+    const selected = overlayByRole('selected')
+    expect(selected).not.toBeNull()
+    if (!selected) throw new Error('Selected inspector overlay was not created')
+    expect(selected.style.display).toBe('block')
+
+    act(() => {
+      document.dispatchEvent(new Event('ship-fast-inspector-clear'))
+    })
+
+    expect(selected.style.display).toBe('none')
+  })
+
+  it('cancels a stale hover frame when pointer movement schedules a newer one', () => {
+    const cancelFrame = vi.spyOn(window, 'cancelAnimationFrame')
+    const { getByTestId } = render(<Harness active={true} />)
+    const hero = getByTestId('hero')
+    const card = getByTestId('card')
+
+    act(() => {
+      fireMouse(hero, 'mousemove')
+      fireMouse(card, 'mousemove')
+    })
+
+    expect(cancelFrame).toHaveBeenCalledTimes(1)
+  })
+
   it('does NOT call onSectionSelect when clicking a text leaf (defers to useTextEdit)', () => {
     const onSectionSelect = vi.fn()
     const { getByText } = render(
