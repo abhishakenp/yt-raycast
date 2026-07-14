@@ -17,7 +17,10 @@ import {
 import type { ReactNode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
+import { toast } from 'sonner'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import DirectPreview from '@/components/GenUI/DirectPreview'
 
 import { Dashboard } from './Dashboard'
 
@@ -34,6 +37,7 @@ type EditEntry = {
   afterText?: string
   occurrenceIndex?: number
   previewVersion?: number
+  locale?: string
 }
 
 type SessionState = {
@@ -96,11 +100,58 @@ type EditControllerStub = {
   isForking?: boolean
 }
 
+type ClonePageNavTestState = {
+  currentHtml: string | null
+  currentUrl: string | null
+  currentPath: string
+  pages: Array<{
+    pathname: string
+    title: string | undefined
+    isHome: boolean
+    failed: boolean
+  }>
+  isClone: boolean
+}
+
+interface LanguagePickerStubProps {
+  value: string | null
+  onSelect: (language: string) => void
+  trigger: ReactNode
+}
+
+interface BrandMediaPanelStubProps {
+  onSelectBrand: (brand: NonNullable<SessionState['selectedBrandLogo']>) => void
+}
+
+interface ExportPanelStubProps {
+  sessionId: string
+}
+
+interface RealDashboardEditSurfaceProps {
+  editMode?: boolean
+  onTextChange?: (change: {
+    oldText: string
+    newText: string
+    element: HTMLElement
+    occurrenceIndex: number
+  }) => void
+  onImageChange?: (change: {
+    oldSrc: string
+    newSrc: string
+    element: HTMLImageElement
+    alt: string
+  }) => void
+  onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
+  onCommitText?: (commitEdit: () => void, cancelEdit: () => void) => void
+}
+
 type ConvexTestState = {
   generationView: GenerationView | null | undefined
   sidePanelData: { status?: string; url?: string; slug?: string } | null
   publishMutation: ReturnType<typeof vi.fn>
   themeMutation: ReturnType<typeof vi.fn>
+  exportDownload: ReturnType<typeof vi.fn>
+  realEditSurface: boolean
   editController: EditControllerStub
   undoRedo: {
     canUndo: boolean
@@ -115,6 +166,7 @@ type ConvexTestState = {
     commit: ReturnType<typeof vi.fn>
     cancel: ReturnType<typeof vi.fn>
   }
+  clonePageNav: ClonePageNavTestState
 }
 
 function getConvexState(): ConvexTestState {
@@ -126,6 +178,8 @@ function getConvexState(): ConvexTestState {
     sidePanelData: null,
     publishMutation: vi.fn().mockResolvedValue(undefined),
     themeMutation: vi.fn().mockResolvedValue(undefined),
+    exportDownload: vi.fn(),
+    realEditSurface: false,
     editController: {
       edits: [],
       history: [],
@@ -149,6 +203,13 @@ function getConvexState(): ConvexTestState {
     pendingTextEdit: {
       commit: vi.fn(),
       cancel: vi.fn(),
+    },
+    clonePageNav: {
+      currentHtml: null,
+      currentUrl: null,
+      currentPath: '',
+      pages: [],
+      isClone: false,
     },
   }
   return testGlobal.__shipFastDashboardSessionConvexState
@@ -185,6 +246,35 @@ const ensureWindowStorage = () => {
       value: createMemoryStorage(),
     })
   }
+}
+
+const originalWindowLocation = window.location
+
+const restoreWindowLocation = () => {
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    value: originalWindowLocation,
+  })
+}
+
+const installLocationMock = () => {
+  const hrefSetter = vi.fn()
+  const reloadSpy = vi.fn()
+  const mockLocation = {
+    ...originalWindowLocation,
+    get href() {
+      return originalWindowLocation.href
+    },
+    set href(value: string) {
+      hrefSetter(value)
+    },
+    reload: reloadSpy,
+  }
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    value: mockLocation,
+  })
+  return { hrefSetter, reloadSpy }
 }
 
 // ─── mocks ─────────────────────────────────────────────────────────────────
@@ -239,6 +329,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@ship-fast/lakebed/react', () => ({
   LakebedSessionProvider: ({ children }) => <>{children}</>,
+  useOptionalSessionState: () => ({ data: null }),
 }))
 
 vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
@@ -250,8 +341,23 @@ vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
   CommercePanel: () => <div data-testid="commerce-panel-stub" />,
 }))
+
+function ExportPanelStub({ sessionId }: ExportPanelStubProps) {
+  return (
+    <div data-testid="export-panel-stub">
+      <button
+        type="button"
+        data-testid="export-panel-download"
+        onClick={() => getConvexState().exportDownload(sessionId)}
+      >
+        download export
+      </button>
+    </div>
+  )
+}
+
 vi.mock('@/features/exports/components/ExportPanel', () => ({
-  ExportPanel: () => <div data-testid="export-panel-stub" />,
+  ExportPanel: ExportPanelStub,
 }))
 vi.mock('@/features/deployments/components/DeploymentPanel', () => ({
   DeploymentPanel: () => <div data-testid="deployment-panel-stub" />,
@@ -260,7 +366,36 @@ vi.mock('@/features/github/components/GitHubPanel', () => ({
   GitHubPanel: () => <div data-testid="github-panel-stub" />,
 }))
 
+function BrandMediaPanelStub({ onSelectBrand }: BrandMediaPanelStubProps) {
+  return (
+    <div data-testid="brand-media-panel-stub">
+      <button
+        type="button"
+        data-testid="brand-media-select-acme"
+        onClick={() =>
+          onSelectBrand({
+            name: 'Acme',
+            domain: 'acme.example',
+            brandId: 'acme-brand',
+            icon: 'https://assets.example/acme-icon.svg',
+            logo: 'https://assets.example/acme-logo.svg',
+          })
+        }
+      >
+        select Acme brand
+      </button>
+    </div>
+  )
+}
+
+vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
+  BrandMediaPanel: BrandMediaPanelStub,
+}))
+
 vi.mock('@/genui/theme-apply', () => ({
+  applyThemeVars: vi.fn(),
+  clearThemeVars: vi.fn(),
+  injectThemeFonts: vi.fn(),
   THEME_CATALOG: [
     { label: 'Modern Minimal', name: 'modern-minimal' },
     { label: 'Vintage Paper', name: 'vintage-paper' },
@@ -341,13 +476,38 @@ vi.mock('@/features/editing/hooks/useReorderElement', () => ({
 }))
 
 vi.mock('@/features/clone/hooks/useClonePageNav', () => ({
-  useClonePageNav: () => ({
-    currentHtml: null,
-    currentUrl: null,
-    currentPath: '',
-    pages: [],
-    isClone: false,
-  }),
+  useClonePageNav: () => getConvexState().clonePageNav,
+}))
+
+function LanguagePickerStub({
+  value,
+  onSelect,
+  trigger,
+}: LanguagePickerStubProps) {
+  return (
+    <div>
+      {trigger}
+      <span data-testid="language-picker-value">{value ?? ''}</span>
+      <button
+        type="button"
+        data-testid="language-picker-select-fr"
+        onClick={() => onSelect('fr')}
+      >
+        select French
+      </button>
+      <button
+        type="button"
+        data-testid="language-picker-select-en"
+        onClick={() => onSelect('en')}
+      >
+        select English
+      </button>
+    </div>
+  )
+}
+
+vi.mock('@/genui/components/LanguagePicker', () => ({
+  default: LanguagePickerStub,
 }))
 
 vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
@@ -363,6 +523,7 @@ vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
     onMoveUp,
     onMoveDown,
     onClose,
+    onCommitText,
     activeElement,
     isApplying,
     isForking,
@@ -376,6 +537,15 @@ vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
         <span data-testid="toolbar-is-forking">{String(isForking)}</span>
         <span data-testid="toolbar-is-section-submitting">
           {String(isSectionSubmitting)}
+        </span>
+        <span data-testid="toolbar-active-connected">
+          {String(activeElement?.isConnected ?? false)}
+        </span>
+        <span data-testid="toolbar-active-tag">
+          {activeElement?.tagName ?? ''}
+        </span>
+        <span data-testid="toolbar-active-testid">
+          {activeElement?.dataset.testid ?? ''}
         </span>
         {sectionError ? (
           <p data-testid="toolbar-section-error">{sectionError}</p>
@@ -416,6 +586,30 @@ vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
           onClick={() => onClose?.()}
         >
           close toolbar
+        </button>
+        <button
+          type="button"
+          data-testid="toolbar-trigger-outside-close"
+          onClick={() => onClose?.()}
+        >
+          outside close toolbar
+        </button>
+        <button
+          type="button"
+          data-testid="toolbar-trigger-escape-close"
+          onClick={() => onClose?.()}
+        >
+          escape close toolbar
+        </button>
+        <button
+          type="button"
+          data-testid="toolbar-trigger-apply"
+          onClick={() => {
+            onCommitText?.()
+            onClose?.()
+          }}
+        >
+          apply toolbar
         </button>
         <button
           type="button"
@@ -502,170 +696,383 @@ function setupPreviewScroll(el: HTMLElement | null) {
   })
 }
 
-vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: (props) => (
-    <div
-      data-testid="generated-module-preview"
-      className="genui-preview"
-      ref={setupPreviewScroll}
+function RealDashboardEditSurface({
+  editMode,
+  onTextChange,
+  onImageChange,
+  onElementActivate,
+  onCommitText,
+}: RealDashboardEditSurfaceProps) {
+  return (
+    <DirectPreview
+      themeStyles={null}
+      isDark={false}
+      editMode={editMode}
+      onTextChange={onTextChange}
+      onImageChange={onImageChange}
+      onElementActivate={onElementActivate}
+      onCommitText={onCommitText}
     >
-      <span data-testid="gmp-source">{props.source ?? ''}</span>
-      <span data-testid="gmp-image-overrides">
-        {JSON.stringify(props.imageOverrides ?? null)}
-      </span>
-      <span data-testid="gmp-style-overrides">
-        {JSON.stringify(props.styleOverrides ?? null)}
-      </span>
-      <span data-testid="gmp-text-overrides">
-        {JSON.stringify(props.textOverrides ?? null)}
-      </span>
-      <span data-testid="gmp-theme-styles">
-        {JSON.stringify(props.themeStyles ?? null)}
-      </span>
-      <span data-testid="gmp-is-dark">{String(props.isDark)}</span>
-      <span data-testid="gmp-device-mode">{props.deviceMode ?? ''}</span>
-      <span data-testid="gmp-edit-mode">{String(props.editMode)}</span>
-      <span data-testid="gmp-site-spec">{props.siteSpecJson ?? ''}</span>
-      <span data-testid="gmp-locale">{props.locale ?? ''}</span>
-      <span data-testid="gmp-selected-brand-logo">
-        {JSON.stringify(props.selectedBrandLogo ?? null)}
-      </span>
-      <h1 data-testid="gmp-editable-heading">Hello world</h1>
-      <img
-        data-testid="gmp-editable-image"
-        src="https://images.example/old.jpg"
-        alt="Hero product showcase"
-      />
-      <button
-        type="button"
-        data-testid="gmp-trigger-text-change"
-        onClick={() => {
-          const el = document.createElement('h1')
-          el.textContent = 'Hello world'
-          props.onTextChange?.({
-            oldText: 'Hello world',
-            newText: 'Hi there',
-            element: el,
-            occurrenceIndex: 0,
-          })
-        }}
+      <h1 data-testid="real-edit-first-heading">First heading</h1>
+      <h2 data-testid="real-edit-second-heading">Second heading</h2>
+      <img data-testid="real-edit-image" src="/product.jpg" alt="Product" />
+    </DirectPreview>
+  )
+}
+
+vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
+  GeneratedModulePreview: (props) =>
+    getConvexState().realEditSurface ? (
+      <RealDashboardEditSurface {...props} />
+    ) : (
+      <div
+        data-testid="generated-module-preview"
+        className="genui-preview"
+        ref={setupPreviewScroll}
       >
-        trigger text change
-      </button>
-      <button
-        type="button"
-        data-testid="gmp-trigger-attached-text-change"
-        onClick={(event) => {
-          const el = event.currentTarget
-            .closest('.genui-preview')
-            ?.querySelector<HTMLElement>('[data-testid="gmp-editable-heading"]')
-          if (!el) return
-          el.textContent = 'Hi there'
-          props.onTextChange?.({
-            oldText: 'Hello world',
-            newText: 'Hi there',
-            element: el,
-            occurrenceIndex: 0,
-          })
-        }}
-      >
-        trigger attached text change
-      </button>
-      <button
-        type="button"
-        data-testid="gmp-register-text-edit"
-        onClick={() => {
-          const state = (
-            globalThis as typeof globalThis & {
-              __shipFastDashboardSessionConvexState?: ConvexTestState
-            }
-          ).__shipFastDashboardSessionConvexState
-          props.onCommitText?.(
-            (state?.pendingTextEdit.commit as () => void) ?? (() => undefined),
-            (state?.pendingTextEdit.cancel as () => void) ?? (() => undefined),
-          )
-        }}
-      >
-        register text edit
-      </button>
-      <button
-        type="button"
-        data-testid="gmp-trigger-image-change"
-        onClick={(event) => {
-          const el = event.currentTarget
-            .closest('.genui-preview')
-            ?.querySelector<HTMLImageElement>(
-              '[data-testid="gmp-editable-image"]',
-            )
-          if (!el) return
-          props.onImageChange?.({
-            oldSrc: 'https://images.example/old.jpg',
-            newSrc: 'https://images.example/new.jpg',
-            element: el,
-            alt: 'Hero product showcase',
-          })
-        }}
-      >
-        trigger image change
-      </button>
-      <button
-        type="button"
-        data-testid="gmp-trigger-element-activate"
-        onClick={() => {
-          const el = document.createElement('section')
-          el.textContent = 'Hero section'
-          props.onElementActivate?.(el, new DOMRect(10, 20, 300, 120))
-        }}
-      >
-        trigger element activate
-      </button>
-      <button
-        type="button"
-        data-testid="gmp-trigger-attached-section-activate"
-        onClick={(event) => {
-          const preview = event.currentTarget.closest('.genui-preview')
-          const section = document.createElement('section')
-          section.setAttribute('data-openui-component', 'MarketingAgencyHero')
-          section.setAttribute('data-openui-var', 'home_hero')
-          section.innerHTML = '<h2>Hero section</h2>'
-          preview?.append(section)
-          const heading = section.querySelector('h2')
-          if (heading instanceof HTMLElement) {
-            props.onElementActivate?.(heading, new DOMRect(10, 20, 300, 120))
+        <span data-testid="gmp-source">{props.source ?? ''}</span>
+        <span data-testid="gmp-image-overrides">
+          {JSON.stringify(props.imageOverrides ?? null)}
+        </span>
+        <span data-testid="gmp-style-overrides">
+          {JSON.stringify(props.styleOverrides ?? null)}
+        </span>
+        <span data-testid="gmp-text-overrides">
+          {JSON.stringify(props.textOverrides ?? null)}
+        </span>
+        <span data-testid="gmp-theme-styles">
+          {JSON.stringify(props.themeStyles ?? null)}
+        </span>
+        <span data-testid="gmp-is-dark">{String(props.isDark)}</span>
+        <span data-testid="gmp-device-mode">{props.deviceMode ?? ''}</span>
+        <span data-testid="gmp-edit-mode">{String(props.editMode)}</span>
+        <span data-testid="gmp-site-spec">{props.siteSpecJson ?? ''}</span>
+        <span data-testid="gmp-locale">{props.locale ?? ''}</span>
+        <span data-testid="gmp-selected-brand-logo">
+          {JSON.stringify(props.selectedBrandLogo ?? null)}
+        </span>
+        <h1 data-testid="gmp-editable-heading">
+          {props.locale === 'fr'
+            ? 'Bonjour'
+            : props.locale === 'hi'
+              ? 'नमस्ते'
+              : 'Hello world'}
+        </h1>
+        <img
+          data-testid="gmp-editable-image"
+          src={
+            props.locale === 'fr'
+              ? 'https://images.example/french.jpg'
+              : 'https://images.example/old.jpg'
           }
-        }}
-      >
-        trigger attached section activate
-      </button>
-      <button
-        type="button"
-        data-testid="gmp-trigger-section-select"
-        onClick={(event) => {
-          const preview = event.currentTarget.closest('.genui-preview')
-          const section = document.createElement('section')
-          section.setAttribute('data-testid', 'gmp-inspector-section')
-          section.setAttribute('data-openui-component', 'MarketingAgencyHero')
-          section.setAttribute('data-openui-var', 'home_inspector_hero')
-          section.innerHTML = '<h2>Inspector selected section</h2>'
-          preview?.append(section)
-          props.onSectionSelect?.({
-            tag: 'section',
-            elementPath: '[data-testid="gmp-inspector-section"]',
-            textContent: 'Inspector selected section',
-            outerHTML: section.outerHTML,
-            boundingBox: { x: 10, y: 20, width: 300, height: 120 },
-            openuiComponent: 'MarketingAgencyHero',
-            openuiVar: 'home_inspector_hero',
-          })
-        }}
-      >
-        trigger section select
-      </button>
-    </div>
-  ),
+          alt="Hero product showcase"
+        />
+        <div
+          data-testid="gmp-localized-style-target"
+          style={{
+            backgroundColor:
+              props.locale === 'fr' ? 'rgb(0, 0, 255)' : 'rgb(0, 128, 0)',
+          }}
+        >
+          Locale style target
+        </div>
+        <button
+          type="button"
+          data-testid="gmp-trigger-text-change"
+          onClick={() => {
+            const el = document.createElement('h1')
+            el.textContent = 'Hello world'
+            props.onTextChange?.({
+              oldText: 'Hello world',
+              newText: 'Hi there',
+              element: el,
+              occurrenceIndex: 0,
+            })
+          }}
+        >
+          trigger text change
+        </button>
+        <button
+          type="button"
+          data-testid="gmp-trigger-attached-text-change"
+          onClick={(event) => {
+            const el = event.currentTarget
+              .closest('.genui-preview')
+              ?.querySelector<HTMLElement>(
+                '[data-testid="gmp-editable-heading"]',
+              )
+            if (!el) return
+            el.textContent = 'Hi there'
+            props.onTextChange?.({
+              oldText: 'Hello world',
+              newText: 'Hi there',
+              element: el,
+              occurrenceIndex: 0,
+            })
+          }}
+        >
+          trigger attached text change
+        </button>
+        <button
+          type="button"
+          data-testid="gmp-trigger-capsule-text-change"
+          onClick={() => {
+            const el = document.createElement('h1')
+            el.textContent = 'Hello world'
+            props.onTextChange?.({
+              oldText: 'Hello world',
+              newText: 'Hi there',
+              element: el,
+              occurrenceIndex: 0,
+              capsuleProp: {
+                lakebedKey: 'MarketingHero:home_hero',
+                capsuleName: 'MarketingHero',
+                statementId: 'home_hero',
+                propKey: 'heading',
+                kind: 'scalar',
+              },
+            })
+          }}
+        >
+          trigger capsule text change
+        </button>
+        <input
+          data-testid="gmp-duplicate-text-commit"
+          aria-label="Duplicate text completion"
+          onBlur={(event) => {
+            const heading = event.currentTarget
+              .closest('.genui-preview')
+              ?.querySelector('[data-testid="gmp-editable-heading"]')
+            if (!(heading instanceof HTMLElement)) return
+            props.onTextChange?.({
+              oldText: 'Hello world',
+              newText: 'Hi there',
+              element: heading,
+              occurrenceIndex: 0,
+            })
+          }}
+          onClick={(event) => {
+            const heading = event.currentTarget
+              .closest('.genui-preview')
+              ?.querySelector('[data-testid="gmp-editable-heading"]')
+            if (!(heading instanceof HTMLElement)) return
+            props.onTextChange?.({
+              oldText: 'Hello world',
+              newText: 'Hi there',
+              element: heading,
+              occurrenceIndex: 0,
+            })
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') return
+            const heading = event.currentTarget
+              .closest('.genui-preview')
+              ?.querySelector('[data-testid="gmp-editable-heading"]')
+            if (!(heading instanceof HTMLElement)) return
+            props.onTextChange?.({
+              oldText: 'Hello world',
+              newText: 'Hi there',
+              element: heading,
+              occurrenceIndex: 0,
+            })
+          }}
+        />
+        <button
+          type="button"
+          data-testid="gmp-register-text-edit"
+          onClick={() => {
+            const state = (
+              globalThis as typeof globalThis & {
+                __shipFastDashboardSessionConvexState?: ConvexTestState
+              }
+            ).__shipFastDashboardSessionConvexState
+            props.onCommitText?.(
+              (state?.pendingTextEdit.commit as () => void) ??
+                (() => undefined),
+              (state?.pendingTextEdit.cancel as () => void) ??
+                (() => undefined),
+            )
+          }}
+        >
+          register text edit
+        </button>
+        <button
+          type="button"
+          data-testid="gmp-register-localized-text-edit"
+          onClick={(event) => {
+            const heading = event.currentTarget
+              .closest('.genui-preview')
+              ?.querySelector('[data-testid="gmp-editable-heading"]')
+            if (!(heading instanceof HTMLElement)) return
+            const persistedText = heading.textContent ?? ''
+            const draftText =
+              props.locale === 'fr'
+                ? 'Brouillon français'
+                : props.locale === 'hi'
+                  ? 'हिंदी मसौदा'
+                  : 'Unapplied English draft'
+            const state = getConvexState()
+            heading.textContent = draftText
+
+            function commitLocalizedDraft(): void {
+              state.pendingTextEdit.commit()
+              props.onTextChange?.({
+                oldText: persistedText,
+                newText: draftText,
+                element: heading,
+                occurrenceIndex: 0,
+              })
+            }
+
+            function cancelLocalizedDraft(): void {
+              state.pendingTextEdit.cancel()
+              heading.textContent = persistedText
+            }
+
+            props.onCommitText?.(commitLocalizedDraft, cancelLocalizedDraft)
+          }}
+        >
+          register localized text edit
+        </button>
+        <button
+          type="button"
+          data-testid="gmp-trigger-image-change"
+          onClick={(event) => {
+            const el = event.currentTarget
+              .closest('.genui-preview')
+              ?.querySelector<HTMLImageElement>(
+                '[data-testid="gmp-editable-image"]',
+              )
+            if (!el) return
+            props.onImageChange?.({
+              oldSrc: 'https://images.example/old.jpg',
+              newSrc: 'https://images.example/new.jpg',
+              element: el,
+              alt: 'Hero product showcase',
+            })
+          }}
+        >
+          trigger image change
+        </button>
+        <button
+          type="button"
+          data-testid="gmp-trigger-element-activate"
+          onClick={() => {
+            const el = document.createElement('section')
+            el.textContent = 'Hero section'
+            props.onElementActivate?.(el, new DOMRect(10, 20, 300, 120))
+          }}
+        >
+          trigger element activate
+        </button>
+        <button
+          type="button"
+          data-testid="gmp-trigger-attached-section-activate"
+          onClick={(event) => {
+            const preview = event.currentTarget.closest('.genui-preview')
+            const section = document.createElement('section')
+            section.setAttribute('data-openui-component', 'MarketingAgencyHero')
+            section.setAttribute('data-openui-var', 'home_hero')
+            section.innerHTML = '<h2>Hero section</h2>'
+            preview?.append(section)
+            const heading = section.querySelector('h2')
+            if (heading instanceof HTMLElement) {
+              props.onElementActivate?.(heading, new DOMRect(10, 20, 300, 120))
+            }
+          }}
+        >
+          trigger attached section activate
+        </button>
+        <button
+          type="button"
+          data-testid="gmp-trigger-localized-style-activate"
+          onClick={(event) => {
+            const target = event.currentTarget
+              .closest('.genui-preview')
+              ?.querySelector<HTMLElement>(
+                '[data-testid="gmp-localized-style-target"]',
+              )
+            if (!target) return
+            props.onElementActivate?.(target, new DOMRect(10, 20, 300, 120))
+          }}
+        >
+          trigger localized style target
+        </button>
+        <button
+          type="button"
+          data-testid="gmp-trigger-section-select"
+          onClick={(event) => {
+            const preview = event.currentTarget.closest('.genui-preview')
+            const section = document.createElement('section')
+            section.setAttribute('data-testid', 'gmp-inspector-section')
+            section.setAttribute('data-openui-component', 'MarketingAgencyHero')
+            section.setAttribute('data-openui-var', 'home_inspector_hero')
+            section.innerHTML = '<h2>Inspector selected section</h2>'
+            preview?.append(section)
+            props.onSectionSelect?.({
+              tag: 'section',
+              elementPath: '[data-testid="gmp-inspector-section"]',
+              textContent: 'Inspector selected section',
+              outerHTML: section.outerHTML,
+              boundingBox: { x: 10, y: 20, width: 300, height: 120 },
+              openuiComponent: 'MarketingAgencyHero',
+              openuiVar: 'home_inspector_hero',
+            })
+          }}
+        >
+          trigger section select
+        </button>
+      </div>
+    ),
 }))
 
 // ─── fixtures ──────────────────────────────────────────────────────────────
+type DeferredCommandValue = true | 'fork_needed' | { error: string }
+
+interface DeferredCommandResult {
+  promise: Promise<DeferredCommandValue>
+  resolve: (value: DeferredCommandValue) => void
+}
+
+interface DeferredForkResult {
+  promise: Promise<true | null>
+  resolve: (value: true | null) => void
+}
+
+function createDeferredCommandResult(): DeferredCommandResult {
+  function unresolvedCommand(_value: DeferredCommandValue): void {}
+  let resolvePromise = unresolvedCommand
+  const promise = new Promise<DeferredCommandValue>((resolve) => {
+    resolvePromise = resolve
+  })
+  return { promise, resolve: resolvePromise }
+}
+
+function createDeferredForkResult(): DeferredForkResult {
+  function unresolvedFork(_value: true | null): void {}
+  let resolvePromise = unresolvedFork
+  const promise = new Promise<true | null>((resolve) => {
+    resolvePromise = resolve
+  })
+  return { promise, resolve: resolvePromise }
+}
+
+function clonePageState(
+  currentPath: string,
+  currentHtml: string,
+): ClonePageNavTestState {
+  return {
+    currentHtml,
+    currentUrl: null,
+    currentPath,
+    pages: [
+      { pathname: '/', title: 'Home', isHome: true, failed: false },
+      { pathname: '/about', title: 'About', isHome: false, failed: false },
+    ],
+    isClone: true,
+  }
+}
+
 function readyGenerationView(
   overrides: Partial<GenerationView> = {},
 ): GenerationView {
@@ -803,16 +1210,84 @@ const resetEditController = () => {
     commit: vi.fn(),
     cancel: vi.fn(),
   }
+  getConvexState().clonePageNav = {
+    currentHtml: null,
+    currentUrl: null,
+    currentPath: '',
+    pages: [],
+    isClone: false,
+  }
+}
+
+async function startRealDashboardTextDraft(): Promise<HTMLElement> {
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+  )
+  const firstHeading = screen.getByTestId('real-edit-first-heading')
+  fireEvent.click(firstHeading)
+  firstHeading.textContent = 'Unapplied first draft'
+  fireEvent.input(firstHeading, {
+    data: 'Unapplied first draft',
+    inputType: 'insertText',
+  })
+  expect(firstHeading.dataset.shipFastInlineEditing).toBe('true')
+  expect(await screen.findAllByTestId('inline-edit-toolbar')).toHaveLength(1)
+  return firstHeading
+}
+
+async function startStubDashboardTextDraft(): Promise<HTMLElement> {
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+  )
+  fireEvent.click(screen.getByTestId('gmp-trigger-attached-section-activate'))
+  fireEvent.click(screen.getByTestId('gmp-register-localized-text-edit'))
+  const heading = screen.getByTestId('gmp-editable-heading')
+  expect(heading.textContent).toBe('Unapplied English draft')
+  expect(await screen.findAllByTestId('inline-edit-toolbar')).toHaveLength(1)
+  expect(screen.getByTestId('toolbar-active-connected').textContent).toBe(
+    'true',
+  )
+  return heading
+}
+
+function expectStubDashboardDraftDiscarded(): void {
+  expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+    'Hello world',
+  )
+  expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+  expect(getConvexState().pendingTextEdit.cancel).toHaveBeenCalledTimes(1)
+  expect(getConvexState().pendingTextEdit.commit).not.toHaveBeenCalled()
+  expect(getConvexState().editController.applyCommand).not.toHaveBeenCalled()
+}
+
+async function selectCorporateTheme(): Promise<void> {
+  const themeTrigger = document.querySelector<HTMLButtonElement>(
+    '[data-rail-action="palette"]',
+  )
+  if (!themeTrigger) throw new Error('Missing dashboard theme trigger')
+  fireEvent.pointerDown(themeTrigger)
+  fireEvent.pointerUp(themeTrigger)
+  fireEvent.click(themeTrigger)
+
+  const corporateOption = (await screen.findByText('Corporate')).closest(
+    '[role="option"]',
+  )
+  if (!corporateOption) throw new Error('Missing Corporate theme option')
+  fireEvent.pointerUp(corporateOption)
+  fireEvent.click(corporateOption)
 }
 
 // ─── tests ─────────────────────────────────────────────────────────────────
 describe('Dashboard session workspace + Convex realtime + intro loader', () => {
   beforeEach(() => {
+    restoreWindowLocation()
     ensureWindowStorage()
     getConvexState().generationView = null
     getConvexState().sidePanelData = null
     getConvexState().publishMutation = vi.fn().mockResolvedValue(undefined)
     getConvexState().themeMutation = vi.fn().mockResolvedValue(undefined)
+    getConvexState().exportDownload = vi.fn()
+    getConvexState().realEditSurface = false
     resetEditController()
     window.localStorage.clear()
     window.sessionStorage.clear()
@@ -838,6 +1313,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     // try/finally; if one times out the finally may not run, so ensure real
     // timers are restored for subsequent tests (waitFor hangs under faked timers).
     vi.useRealTimers()
+    restoreWindowLocation()
     window.localStorage.clear()
     window.sessionStorage.clear()
     window.history.replaceState(null, '', '/')
@@ -1849,6 +2325,87 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     expect(rewriteSource).toContain('rel: "noopener noreferrer"')
   })
 
+  it('persists capsule-backed inline text through Lakebed without creating a generic text override', async () => {
+    setupReady()
+    getConvexState()
+      .publishMutation.mockResolvedValueOnce({
+        heading: 'Hello world',
+        subheading: 'Welcome',
+      })
+      .mockResolvedValueOnce({ heading: 'Hi there', subheading: 'Welcome' })
+    render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(screen.getByTestId('gmp-trigger-capsule-text-change'))
+
+    await waitFor(() => {
+      expect(getConvexState().publishMutation).toHaveBeenNthCalledWith(1, {
+        sessionId: 'ready-session',
+        capsule: 'MarketingHero:home_hero',
+        patch: {},
+      })
+      expect(getConvexState().publishMutation).toHaveBeenNthCalledWith(2, {
+        sessionId: 'ready-session',
+        capsule: 'MarketingHero:home_hero',
+        patch: { heading: 'Hi there' },
+      })
+    })
+    expect(getConvexState().editController.applyCommand).not.toHaveBeenCalled()
+  })
+
+  it('forks a shared session before persisting a link edit', async () => {
+    setupReady({
+      homeModule: {
+        source: `links: [{ label: "Docs", href: "/docs" }]`,
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    getConvexState().editController.applyCommand.mockResolvedValueOnce(
+      'fork_needed',
+    )
+    render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
+
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.forkCurrentSession,
+      ).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('reports a rejected link edit instead of silently leaving an unsaved preview', async () => {
+    setupReady({
+      homeModule: {
+        source: `links: [{ label: "Docs", href: "/docs" }]`,
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    getConvexState().editController.applyCommand.mockResolvedValueOnce({
+      ok: false,
+      error: 'LINK_NOT_FOUND: selected link changed',
+    })
+    const toastError = vi.spyOn(toast, 'error').mockImplementation(() => '')
+    render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
+
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith(
+        'LINK_NOT_FOUND: selected link changed',
+      )
+    })
+  })
+
   it('submits section AI edits for the selected preview element when Clerk is disabled locally', async () => {
     setupReady()
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn() })
@@ -2428,5 +2985,1267 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
       expect(restored).not.toBeNull()
       expect(restored!.scrollTop).toBe(140)
     })
+  })
+
+  it('clears a selected inline element when the live locale changes', async () => {
+    setupReady()
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    expect(await screen.findByTestId('inline-edit-toolbar')).toBeTruthy()
+
+    fireEvent.click(screen.getByTestId('language-picker-select-fr'))
+    await waitFor(() => {
+      expect(getConvexState().publishMutation).toHaveBeenCalledWith({
+        sessionId: 'ready-session',
+        anonymousOwnerSecret: undefined,
+        preferredLanguage: 'fr',
+      })
+    })
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 200,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-locale').textContent).toBe('fr')
+      expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+        'Bonjour',
+      )
+      expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+    })
+  })
+
+  it('keeps English authoritative when a stale Hindi draft receives an outside cancel', async () => {
+    setupReady({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'hi',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>नमस्ते</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(screen.getByTestId('gmp-register-localized-text-edit'))
+    expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+      'हिंदी मसौदा',
+    )
+
+    fireEvent.click(screen.getByTestId('language-picker-select-en'))
+    await waitFor(() => {
+      expect(getConvexState().publishMutation).toHaveBeenCalledWith({
+        sessionId: 'ready-session',
+        anonymousOwnerSecret: undefined,
+        preferredLanguage: 'en',
+      })
+    })
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'en',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Hello world</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-locale').textContent).toBe('en')
+      expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+        'Hello world',
+      )
+    })
+    const staleCancel = screen.queryByTestId('toolbar-trigger-outside-close')
+    if (staleCancel) fireEvent.click(staleCancel)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+        'Hello world',
+      )
+      expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+      expect(getConvexState().pendingTextEdit.commit).not.toHaveBeenCalled()
+      expect(
+        getConvexState().editController.applyCommand,
+      ).not.toHaveBeenCalled()
+    })
+  })
+
+  it('keeps English authoritative when a stale Hindi draft receives Apply', async () => {
+    setupReady({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'hi',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>नमस्ते</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(screen.getByTestId('gmp-register-localized-text-edit'))
+
+    fireEvent.click(screen.getByTestId('language-picker-select-en'))
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'en',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Hello world</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+        'Hello world',
+      )
+    })
+    const staleApply = screen.queryByTestId('toolbar-trigger-apply')
+    if (staleApply) fireEvent.click(staleApply)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+        'Hello world',
+      )
+      expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+      expect(getConvexState().pendingTextEdit.commit).not.toHaveBeenCalled()
+      expect(
+        getConvexState().editController.applyCommand,
+      ).not.toHaveBeenCalled()
+    })
+  })
+
+  it('cancels a pending inline edit when the active clone page changes', async () => {
+    setupReady()
+    getConvexState().clonePageNav = clonePageState(
+      '/',
+      '<main>Clone home</main>',
+    )
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(screen.getByTestId('gmp-register-text-edit'))
+    expect(await screen.findByTestId('inline-edit-toolbar')).toBeTruthy()
+
+    getConvexState().clonePageNav = clonePageState(
+      '/about',
+      '<main>Clone about</main>',
+    )
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-source').textContent).toContain(
+        'Clone about',
+      )
+      expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+      expect(getConvexState().pendingTextEdit.cancel).toHaveBeenCalledTimes(1)
+      expect(getConvexState().pendingTextEdit.commit).not.toHaveBeenCalled()
+    })
+  })
+
+  it('cancels a pending inline edit when the dashboard session changes', async () => {
+    setupReady()
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(screen.getByTestId('gmp-register-text-edit'))
+    expect(await screen.findByTestId('inline-edit-toolbar')).toBeTruthy()
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'second-session',
+        status: 'preview_ready',
+        preferredLanguage: 'en',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Second</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 300,
+      },
+    })
+    view.rerender(<Dashboard sessionId="second-session" />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-source').textContent).toContain('Second')
+      expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+      expect(getConvexState().pendingTextEdit.cancel).toHaveBeenCalledTimes(1)
+      expect(getConvexState().pendingTextEdit.commit).not.toHaveBeenCalled()
+    })
+  })
+
+  it.each([
+    'toolbar-trigger-close',
+    'toolbar-trigger-outside-close',
+    'toolbar-trigger-escape-close',
+  ])('discards without committing through %s', async (triggerTestId) => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(screen.getByTestId('gmp-register-text-edit'))
+    fireEvent.click(await screen.findByTestId(triggerTestId))
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+      expect(getConvexState().pendingTextEdit.cancel).toHaveBeenCalledTimes(1)
+      expect(getConvexState().pendingTextEdit.commit).not.toHaveBeenCalled()
+    })
+  })
+
+  it('commits Apply exactly once without routing the completed edit through cancel', async () => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(screen.getByTestId('gmp-register-text-edit'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-apply'))
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+      expect(getConvexState().pendingTextEdit.commit).toHaveBeenCalledTimes(1)
+      expect(getConvexState().pendingTextEdit.cancel).not.toHaveBeenCalled()
+    })
+  })
+
+  it('coalesces blur, click, and Enter completion for one text edit', async () => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    const completion = screen.getByTestId('gmp-duplicate-text-commit')
+    fireEvent.click(completion)
+    fireEvent.blur(completion)
+    fireEvent.keyDown(completion, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.applyCommand,
+      ).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('keeps the reloaded locale DOM authoritative when an earlier save finishes late', async () => {
+    setupReady()
+    const deferred = createDeferredCommandResult()
+    getConvexState().editController.applyCommand.mockReturnValueOnce(
+      deferred.promise,
+    )
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    const originalHeading = screen.getByTestId('gmp-editable-heading')
+    fireEvent.click(screen.getByTestId('gmp-trigger-attached-text-change'))
+    expect(originalHeading.textContent).toBe('Hi there')
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 400,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+    expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+      'Bonjour',
+    )
+
+    await act(async () => {
+      deferred.resolve(true)
+      await deferred.promise
+    })
+
+    expect(getConvexState().editController.applyCommand).toHaveBeenCalledTimes(
+      1,
+    )
+    expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+      'Bonjour',
+    )
+  })
+
+  it('does not roll an English save failure back over a newer French locale', async () => {
+    setupReady()
+    const deferred = createDeferredCommandResult()
+    getConvexState().editController.applyCommand.mockReturnValueOnce(
+      deferred.promise,
+    )
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined)
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-attached-text-change'))
+    expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+      'Hi there',
+    )
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+    expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+      'Bonjour',
+    )
+
+    await act(async () => {
+      deferred.resolve({ error: 'English save failed late' })
+      await deferred.promise
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+        'Bonjour',
+      )
+    })
+    consoleError.mockRestore()
+  })
+
+  it('does not roll a failed English fork back over a newer French locale', async () => {
+    setupReady()
+    const deferred = createDeferredCommandResult()
+    getConvexState().editController.applyCommand.mockReturnValueOnce(
+      deferred.promise,
+    )
+    getConvexState().editController.forkCurrentSession.mockResolvedValueOnce(
+      null,
+    )
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-attached-text-change'))
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    await act(async () => {
+      deferred.resolve('fork_needed')
+      await deferred.promise
+    })
+
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.forkCurrentSession,
+      ).toHaveBeenCalledTimes(1)
+      expect(screen.getByTestId('gmp-editable-heading').textContent).toBe(
+        'Bonjour',
+      )
+    })
+  })
+
+  it('routes undo and redo to the current locale history after a locale switch', async () => {
+    setupReady()
+    const oldUndo = vi.fn()
+    const oldRedo = vi.fn()
+    getConvexState().undoRedo = {
+      canUndo: true,
+      canRedo: true,
+      undo: oldUndo,
+      redo: oldRedo,
+    }
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+
+    const currentUndo = vi.fn()
+    const currentRedo = vi.fn()
+    getConvexState().undoRedo = {
+      canUndo: true,
+      canRedo: true,
+      undo: currentUndo,
+      redo: currentRedo,
+    }
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 200,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-undo'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-redo'))
+
+    await waitFor(() => {
+      expect(currentUndo).toHaveBeenCalledTimes(1)
+      expect(currentRedo).toHaveBeenCalledTimes(1)
+      expect(oldUndo).not.toHaveBeenCalled()
+      expect(oldRedo).not.toHaveBeenCalled()
+    })
+  })
+
+  it('builds link edits from the active clone page instead of the home page', async () => {
+    setupReady({
+      homeModule: {
+        source:
+          'const page = "HOME_ONLY"; links: [{ label: "Docs", href: "/docs" }]',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    getConvexState().clonePageNav = clonePageState(
+      '/about',
+      'const page = "ABOUT_ONLY"; links: [{ label: "Docs", href: "/docs" }]',
+    )
+    render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
+
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.applyCommand,
+      ).toHaveBeenCalledTimes(1)
+    })
+    const command =
+      getConvexState().editController.applyCommand.mock.calls.at(-1)?.[0]
+    expect(command?.args?.editType).toBe('ai_rewrite')
+    expect(typeof command?.args?.afterHtml).toBe('string')
+    expect(command?.args?.afterHtml).toContain('ABOUT_ONLY')
+    expect(command?.args?.afterHtml).not.toContain('HOME_ONLY')
+  })
+
+  it('does not leak home-page text, image, or style overrides into a clone subpage', async () => {
+    setupReady()
+    getConvexState().editController.edits = [
+      {
+        editType: 'text',
+        beforeText: 'Home heading',
+        afterText: 'Edited home heading',
+      },
+      {
+        editType: 'image',
+        beforeText: 'Home hero',
+        afterText: 'https://images.example/home-only.jpg',
+      },
+      {
+        editType: 'style',
+        beforeText: 'home-card',
+        afterText: 'color: red;',
+      },
+    ]
+    getConvexState().clonePageNav = clonePageState(
+      '/',
+      '<main>Clone home</main>',
+    )
+    const view = render(<Dashboard sessionId="ready-session" />)
+    expect(screen.getByTestId('gmp-text-overrides').textContent).toContain(
+      'Edited home heading',
+    )
+
+    getConvexState().clonePageNav = clonePageState(
+      '/about',
+      '<main>Clone about</main>',
+    )
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-source').textContent).toContain(
+        'Clone about',
+      )
+      expect(screen.getByTestId('gmp-text-overrides').textContent).toBe('[]')
+      expect(screen.getByTestId('gmp-image-overrides').textContent).toBe('{}')
+      expect(screen.getByTestId('gmp-style-overrides').textContent).toBe('[]')
+    })
+  })
+
+  it('keeps mixed edit records in their native preview override channels', () => {
+    setupReady()
+    getConvexState().editController.edits = [
+      {
+        editType: 'text',
+        beforeText: 'Text only',
+        afterText: 'Text replacement',
+        occurrenceIndex: 2,
+      },
+      {
+        editType: 'image',
+        beforeText: 'Image only',
+        afterText: 'https://images.example/channel.jpg',
+      },
+      {
+        editType: 'style',
+        beforeText: 'style-only',
+        afterText: 'display: grid;',
+        occurrenceIndex: 1,
+      },
+      {
+        editType: 'ai_rewrite',
+        beforeText: 'Link only',
+        afterText: 'Link rewrite',
+      },
+    ]
+    render(<Dashboard sessionId="ready-session" />)
+
+    expect(screen.getByTestId('gmp-text-overrides').textContent).toBe(
+      '[{"beforeText":"Text only","afterText":"Text replacement","occurrenceIndex":2}]',
+    )
+    expect(screen.getByTestId('gmp-image-overrides').textContent).toBe(
+      '{"Image only":"https://images.example/channel.jpg"}',
+    )
+    expect(screen.getByTestId('gmp-style-overrides').textContent).toBe(
+      '[{"classAnchor":"style-only","occurrenceIndex":1,"style":"display: grid;"}]',
+    )
+  })
+
+  it('commits one active text draft before activating a second text target', async () => {
+    setupReady()
+    getConvexState().realEditSurface = true
+    render(<Dashboard sessionId="ready-session" />)
+
+    const firstHeading = await startRealDashboardTextDraft()
+    const secondHeading = screen.getByTestId('real-edit-second-heading')
+    fireEvent.click(secondHeading)
+
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.applyCommand,
+      ).toHaveBeenCalledTimes(1)
+    })
+    expect(getConvexState().editController.applyCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        args: expect.objectContaining({
+          editType: 'text',
+          beforeText: 'First heading',
+          afterText: 'Unapplied first draft',
+        }),
+      }),
+    )
+    expect(firstHeading.textContent).toBe('Unapplied first draft')
+    expect(firstHeading.hasAttribute('contenteditable')).toBe(false)
+    expect(secondHeading.dataset.shipFastInlineEditing).toBe('true')
+    expect(
+      document.querySelectorAll('[data-ship-fast-inline-editing="true"]'),
+    ).toHaveLength(1)
+    expect(screen.getAllByTestId('inline-edit-toolbar')).toHaveLength(1)
+    expect(screen.getByTestId('toolbar-active-testid').textContent).toBe(
+      'real-edit-second-heading',
+    )
+    expect(screen.getByTestId('toolbar-active-connected').textContent).toBe(
+      'true',
+    )
+  })
+
+  it('cancels an active text draft before selecting an image target', async () => {
+    setupReady()
+    getConvexState().realEditSurface = true
+    render(<Dashboard sessionId="ready-session" />)
+
+    const firstHeading = await startRealDashboardTextDraft()
+    fireEvent.click(screen.getByTestId('real-edit-image'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('toolbar-active-tag').textContent).toBe('IMG')
+    })
+    expect(firstHeading.textContent).toBe('First heading')
+    expect(firstHeading.hasAttribute('contenteditable')).toBe(false)
+    expect(
+      document.querySelectorAll('[data-ship-fast-inline-editing="true"]'),
+    ).toHaveLength(0)
+    expect(getConvexState().editController.applyCommand).not.toHaveBeenCalled()
+    expect(screen.getAllByTestId('inline-edit-toolbar')).toHaveLength(1)
+    expect(screen.getByTestId('toolbar-active-testid').textContent).toBe(
+      'real-edit-image',
+    )
+    expect(screen.getByTestId('toolbar-active-connected').textContent).toBe(
+      'true',
+    )
+  })
+
+  it('preserves one connected pending editor across desktop, tablet, and mobile viewports', async () => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+    const heading = await startStubDashboardTextDraft()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tablet viewport' }))
+    expect(screen.getByTestId('gmp-device-mode').textContent).toBe('tablet')
+    fireEvent.click(screen.getByRole('button', { name: 'Mobile viewport' }))
+    expect(screen.getByTestId('gmp-device-mode').textContent).toBe('mobile')
+    fireEvent.click(screen.getByRole('button', { name: 'Desktop viewport' }))
+
+    expect(screen.getByTestId('gmp-device-mode').textContent).toBe('desktop')
+    expect(heading.textContent).toBe('Unapplied English draft')
+    expect(screen.getAllByTestId('inline-edit-toolbar')).toHaveLength(1)
+    expect(screen.getByTestId('toolbar-active-connected').textContent).toBe(
+      'true',
+    )
+    expect(getConvexState().pendingTextEdit.cancel).not.toHaveBeenCalled()
+    expect(getConvexState().pendingTextEdit.commit).not.toHaveBeenCalled()
+    expect(getConvexState().editController.applyCommand).not.toHaveBeenCalled()
+  })
+
+  it('preserves one connected pending editor while collapsing and expanding site tools', async () => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+    const heading = await startStubDashboardTextDraft()
+    const rail = document.getElementById('preview-site-rail')
+    if (!rail) throw new Error('Missing site tools rail')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse site tools' }))
+    expect(rail.className).toContain('w-0')
+    fireEvent.click(screen.getByRole('button', { name: 'Expand site tools' }))
+
+    expect(rail.className).toContain('w-[280px]')
+    expect(heading.textContent).toBe('Unapplied English draft')
+    expect(screen.getAllByTestId('inline-edit-toolbar')).toHaveLength(1)
+    expect(screen.getByTestId('toolbar-active-connected').textContent).toBe(
+      'true',
+    )
+    expect(getConvexState().pendingTextEdit.cancel).not.toHaveBeenCalled()
+    expect(getConvexState().pendingTextEdit.commit).not.toHaveBeenCalled()
+    expect(getConvexState().editController.applyCommand).not.toHaveBeenCalled()
+  })
+
+  it('discards one pending draft before a rapid double publish and publishes once', async () => {
+    setupReady()
+    const state = getConvexState()
+    render(<Dashboard sessionId="ready-session" />)
+    await startStubDashboardTextDraft()
+    const publish = screen.getByRole('button', { name: 'Publish preview' })
+
+    fireEvent.click(publish)
+    fireEvent.click(publish)
+
+    await waitFor(() => {
+      expect(state.publishMutation).toHaveBeenCalledTimes(1)
+    })
+    expect(state.publishMutation).toHaveBeenCalledWith({
+      sessionId: 'ready-session',
+      anonymousOwnerSecret: undefined,
+    })
+    expectStubDashboardDraftDiscarded()
+    expect(
+      state.pendingTextEdit.cancel.mock.invocationCallOrder[0],
+    ).toBeLessThan(state.publishMutation.mock.invocationCallOrder[0])
+  })
+
+  it('discards one pending draft before reloading the preview', async () => {
+    setupReady()
+    const { reloadSpy } = installLocationMock()
+    render(<Dashboard sessionId="ready-session" />)
+    await startStubDashboardTextDraft()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reload page' }))
+
+    expect(reloadSpy).toHaveBeenCalledTimes(1)
+    expectStubDashboardDraftDiscarded()
+    expect(
+      getConvexState().pendingTextEdit.cancel.mock.invocationCallOrder[0],
+    ).toBeLessThan(reloadSpy.mock.invocationCallOrder[0])
+  })
+
+  it('discards one pending draft before navigating back home', async () => {
+    setupReady()
+    const { hrefSetter } = installLocationMock()
+    render(<Dashboard sessionId="ready-session" />)
+    await startStubDashboardTextDraft()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back to home' }))
+
+    expect(hrefSetter).toHaveBeenCalledWith('/')
+    expectStubDashboardDraftDiscarded()
+    expect(
+      getConvexState().pendingTextEdit.cancel.mock.invocationCallOrder[0],
+    ).toBeLessThan(hrefSetter.mock.invocationCallOrder[0])
+  })
+
+  it('discards one pending draft before starting an export download', async () => {
+    setupReady()
+    const state = getConvexState()
+    render(<Dashboard sessionId="ready-session" />)
+    await startStubDashboardTextDraft()
+    const exportTrigger = document.querySelector<HTMLButtonElement>(
+      '[data-rail-action="export"]',
+    )
+    if (!exportTrigger) throw new Error('Missing export trigger')
+
+    fireEvent.click(exportTrigger)
+    fireEvent.click(await screen.findByTestId('export-panel-download'))
+
+    expect(state.exportDownload).toHaveBeenCalledWith('ready-session')
+    expectStubDashboardDraftDiscarded()
+    expect(
+      state.pendingTextEdit.cancel.mock.invocationCallOrder[0],
+    ).toBeLessThan(state.exportDownload.mock.invocationCallOrder[0])
+  })
+
+  it('discards one pending draft before applying a theme change', async () => {
+    setupReady()
+    const state = getConvexState()
+    render(<Dashboard sessionId="ready-session" />)
+    await startStubDashboardTextDraft()
+
+    await selectCorporateTheme()
+
+    await waitFor(() => {
+      expect(state.publishMutation).toHaveBeenCalledWith({
+        sessionId: 'ready-session',
+        anonymousOwnerSecret: undefined,
+        themeMode: 'dark',
+        themeOverride: 'corporate',
+      })
+    })
+    expectStubDashboardDraftDiscarded()
+    expect(
+      state.pendingTextEdit.cancel.mock.invocationCallOrder[0],
+    ).toBeLessThan(state.publishMutation.mock.invocationCallOrder[0])
+  })
+
+  it('discards one pending draft before applying a brand and logo change', async () => {
+    setupReady()
+    const state = getConvexState()
+    render(<Dashboard sessionId="ready-session" />)
+    await startStubDashboardTextDraft()
+    const brandTrigger = document.querySelector<HTMLButtonElement>(
+      '[data-rail-action="brand-media"]',
+    )
+    if (!brandTrigger) throw new Error('Missing brand and media trigger')
+
+    fireEvent.click(brandTrigger)
+    fireEvent.click(await screen.findByTestId('brand-media-select-acme'))
+
+    await waitFor(() => {
+      expect(state.publishMutation).toHaveBeenCalledWith({
+        sessionId: 'ready-session',
+        anonymousOwnerSecret: undefined,
+        brandLogo: {
+          name: 'Acme',
+          domain: 'acme.example',
+          brandId: 'acme-brand',
+          icon: 'https://assets.example/acme-icon.svg',
+          logo: 'https://assets.example/acme-logo.svg',
+        },
+      })
+    })
+    expect(screen.getByTestId('gmp-selected-brand-logo').textContent).toContain(
+      'acme-brand',
+    )
+    expectStubDashboardDraftDiscarded()
+    expect(
+      state.pendingTextEdit.cancel.mock.invocationCallOrder[0],
+    ).toBeLessThan(state.publishMutation.mock.invocationCallOrder[0])
+  })
+
+  it('discards a visible draft when generated-site navigation changes clone pages', async () => {
+    setupReady()
+    getConvexState().clonePageNav = clonePageState(
+      '/',
+      '<main>Clone home</main>',
+    )
+    const view = render(<Dashboard sessionId="ready-session" />)
+    await startStubDashboardTextDraft()
+
+    getConvexState().clonePageNav = clonePageState(
+      '/about',
+      '<main>Clone about</main>',
+    )
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('gmp-source').textContent).toContain(
+        'Clone about',
+      )
+    })
+    expectStubDashboardDraftDiscarded()
+  })
+
+  it('isolates persisted text overrides to the locale where they were authored', () => {
+    setupReady()
+    getConvexState().editController.edits = [
+      {
+        editType: 'text',
+        beforeText: 'Hello world',
+        afterText: 'English-only headline',
+        occurrenceIndex: 0,
+        locale: 'en',
+      },
+    ]
+    const view = render(<Dashboard sessionId="ready-session" />)
+    expect(screen.getByTestId('gmp-text-overrides').textContent).toContain(
+      'English-only headline',
+    )
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    expect(screen.getByTestId('gmp-locale').textContent).toBe('fr')
+    expect(screen.getByTestId('gmp-text-overrides').textContent).toBe('[]')
+  })
+
+  it('keeps image and style edits global when the live locale changes', () => {
+    setupReady()
+    getConvexState().editController.edits = [
+      {
+        editType: 'image',
+        beforeText: 'Hero product showcase',
+        afterText: 'https://images.example/global.jpg',
+        locale: 'en',
+      },
+      {
+        editType: 'style',
+        beforeText: 'hero-section',
+        afterText: 'display: grid;',
+        occurrenceIndex: 0,
+        locale: 'en',
+      },
+    ]
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    expect(screen.getByTestId('gmp-image-overrides').textContent).toContain(
+      'https://images.example/global.jpg',
+    )
+    expect(screen.getByTestId('gmp-style-overrides').textContent).toContain(
+      'display: grid;',
+    )
+  })
+
+  it('builds global link edits from the current source after a locale switch', async () => {
+    setupReady({
+      homeModule: {
+        source:
+          'const page = "EN_CURRENT"; links: [{ label: "Docs", href: "/docs" }]',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const view = render(<Dashboard sessionId="ready-session" />)
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source:
+          'const page = "FR_CURRENT"; links: [{ label: "Docs", href: "/docs" }]',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-element-activate'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
+
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.applyCommand,
+      ).toHaveBeenCalledTimes(1)
+    })
+    const command =
+      getConvexState().editController.applyCommand.mock.calls[0]?.[0]
+    expect(command?.args?.afterHtml).toContain('FR_CURRENT')
+    expect(command?.args?.afterHtml).not.toContain('EN_CURRENT')
+    expect(command?.args?.locale).toBeUndefined()
+  })
+
+  it('does not let a late image save failure overwrite the newer French image', async () => {
+    setupReady()
+    const deferred = createDeferredCommandResult()
+    getConvexState().editController.applyCommand.mockReturnValueOnce(
+      deferred.promise,
+    )
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined)
+    try {
+      const view = render(<Dashboard sessionId="ready-session" />)
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+      )
+      fireEvent.click(screen.getByTestId('gmp-trigger-image-change'))
+
+      getConvexState().generationView = readyGenerationView({
+        session: {
+          sessionId: 'ready-session',
+          status: 'preview_ready',
+          preferredLanguage: 'fr',
+        },
+        homeModule: {
+          source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+          status: 'succeeded',
+          updatedAt: 100,
+        },
+      })
+      view.rerender(<Dashboard sessionId="ready-session" />)
+      const image = screen.getByTestId('gmp-editable-image')
+      expect(image.getAttribute('src')).toBe(
+        'https://images.example/french.jpg',
+      )
+
+      await act(async () => {
+        deferred.resolve({ error: 'English image save failed late' })
+        await deferred.promise
+      })
+
+      expect(image.getAttribute('src')).toBe(
+        'https://images.example/french.jpg',
+      )
+    } finally {
+      consoleError.mockRestore()
+    }
+  })
+
+  it('does not let a failed pending image fork overwrite the newer French image', async () => {
+    setupReady()
+    const fork = createDeferredForkResult()
+    getConvexState().editController.applyCommand.mockResolvedValueOnce(
+      'fork_needed',
+    )
+    getConvexState().editController.forkCurrentSession.mockReturnValueOnce(
+      fork.promise,
+    )
+    const view = render(<Dashboard sessionId="ready-session" />)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-image-change'))
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.forkCurrentSession,
+      ).toHaveBeenCalledTimes(1)
+    })
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+    const image = screen.getByTestId('gmp-editable-image')
+    expect(image.getAttribute('src')).toBe('https://images.example/french.jpg')
+
+    await act(async () => {
+      fork.resolve(null)
+      await fork.promise
+    })
+
+    expect(image.getAttribute('src')).toBe('https://images.example/french.jpg')
+  })
+
+  it('does not let a late style save failure overwrite newer French styling', async () => {
+    setupReady()
+    const deferred = createDeferredCommandResult()
+    getConvexState().editController.applyCommand.mockReturnValueOnce(
+      deferred.promise,
+    )
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined)
+    try {
+      const view = render(<Dashboard sessionId="ready-session" />)
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+      )
+      fireEvent.click(
+        screen.getByTestId('gmp-trigger-localized-style-activate'),
+      )
+      fireEvent.click(await screen.findByTestId('toolbar-trigger-style-apply'))
+
+      getConvexState().generationView = readyGenerationView({
+        session: {
+          sessionId: 'ready-session',
+          status: 'preview_ready',
+          preferredLanguage: 'fr',
+        },
+        homeModule: {
+          source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+          status: 'succeeded',
+          updatedAt: 100,
+        },
+      })
+      view.rerender(<Dashboard sessionId="ready-session" />)
+      const target = screen.getByTestId('gmp-localized-style-target')
+      expect(target.style.backgroundColor).toBe('rgb(0, 0, 255)')
+
+      await act(async () => {
+        deferred.resolve({ error: 'English style save failed late' })
+        await deferred.promise
+      })
+
+      expect(target.style.backgroundColor).toBe('rgb(0, 0, 255)')
+    } finally {
+      consoleError.mockRestore()
+    }
+  })
+
+  it('does not let a failed pending style fork overwrite newer French styling', async () => {
+    setupReady()
+    const fork = createDeferredForkResult()
+    getConvexState().editController.applyCommand.mockResolvedValueOnce(
+      'fork_needed',
+    )
+    getConvexState().editController.forkCurrentSession.mockReturnValueOnce(
+      fork.promise,
+    )
+    const view = render(<Dashboard sessionId="ready-session" />)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-localized-style-activate'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-style-apply'))
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.forkCurrentSession,
+      ).toHaveBeenCalledTimes(1)
+    })
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+    const target = screen.getByTestId('gmp-localized-style-target')
+    expect(target.style.backgroundColor).toBe('rgb(0, 0, 255)')
+
+    await act(async () => {
+      fork.resolve(null)
+      await fork.promise
+    })
+
+    expect(target.style.backgroundColor).toBe('rgb(0, 0, 255)')
+  })
+
+  it('keeps newer French DOM authoritative after a late link save failure', async () => {
+    setupReady({
+      homeModule: {
+        source: 'links: [{ label: "Docs", href: "/docs" }]',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const deferred = createDeferredCommandResult()
+    getConvexState().editController.applyCommand.mockReturnValueOnce(
+      deferred.promise,
+    )
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined)
+    try {
+      const view = render(<Dashboard sessionId="ready-session" />)
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+      )
+      fireEvent.click(
+        screen.getByTestId('gmp-trigger-localized-style-activate'),
+      )
+      fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
+
+      getConvexState().generationView = readyGenerationView({
+        session: {
+          sessionId: 'ready-session',
+          status: 'preview_ready',
+          preferredLanguage: 'fr',
+        },
+        homeModule: {
+          source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+          status: 'succeeded',
+          updatedAt: 100,
+        },
+      })
+      view.rerender(<Dashboard sessionId="ready-session" />)
+
+      await act(async () => {
+        deferred.resolve({ error: 'English link save failed late' })
+        await deferred.promise
+      })
+
+      expect(screen.getByTestId('gmp-locale').textContent).toBe('fr')
+      expect(screen.getByTestId('gmp-source').textContent).toContain('Bonjour')
+      expect(screen.getByTestId('toolbar-active-connected').textContent).toBe(
+        'true',
+      )
+    } finally {
+      consoleError.mockRestore()
+    }
+  })
+
+  it('keeps newer French DOM authoritative while a link fork finishes late', async () => {
+    setupReady({
+      homeModule: {
+        source: 'links: [{ label: "Docs", href: "/docs" }]',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const fork = createDeferredForkResult()
+    getConvexState().editController.applyCommand.mockResolvedValueOnce(
+      'fork_needed',
+    )
+    getConvexState().editController.forkCurrentSession.mockReturnValueOnce(
+      fork.promise,
+    )
+    const view = render(<Dashboard sessionId="ready-session" />)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+    fireEvent.click(screen.getByTestId('gmp-trigger-localized-style-activate'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-link-edit'))
+    await waitFor(() => {
+      expect(
+        getConvexState().editController.forkCurrentSession,
+      ).toHaveBeenCalledTimes(1)
+    })
+
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        preferredLanguage: 'fr',
+      },
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Bonjour</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    view.rerender(<Dashboard sessionId="ready-session" />)
+
+    await act(async () => {
+      fork.resolve(null)
+      await fork.promise
+    })
+
+    expect(screen.getByTestId('gmp-locale').textContent).toBe('fr')
+    expect(screen.getByTestId('gmp-source').textContent).toContain('Bonjour')
+    expect(screen.getByTestId('toolbar-active-connected').textContent).toBe(
+      'true',
+    )
   })
 })
