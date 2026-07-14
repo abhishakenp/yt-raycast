@@ -102,4 +102,34 @@ describe('Image + ImageContextProvider', () => {
     expect(markup).toContain('aspect-ratio:1200/600')
     expect(markup).not.toContain('relative h-full w-full')
   })
+
+  it('renders skeleton classes before the image loads (SSR)', () => {
+    const markup = renderToStaticMarkup(
+      <Image alt="skeleton test" className="size-full object-cover" />,
+    )
+    expect(markup).toContain('animate-pulse')
+    expect(markup).toContain('bg-accent')
+    // Caller classes are preserved alongside skeleton classes
+    expect(markup).toContain('size-full object-cover')
+  })
+
+  it('preserves skeleton classes on carousel images before load', () => {
+    const markup = renderToStaticMarkup(
+      <ImageContextProvider
+        value={{
+          overrides: {
+            Hero: encodeMultiImageSrc([
+              'https://cdn.example.com/one.jpg',
+              'https://cdn.example.com/two.jpg',
+            ]),
+          },
+        }}
+      >
+        <Image alt="Hero" w={1200} h={600} />
+      </ImageContextProvider>,
+    )
+    expect(markup).toContain('data-ship-image-carousel')
+    expect(markup).toContain('animate-pulse')
+    expect(markup).toContain('bg-accent')
+  })
 })
