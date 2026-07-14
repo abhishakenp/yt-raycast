@@ -6,7 +6,6 @@ import {
   render,
   waitFor,
 } from '@testing-library/react'
-import type { PointerEventHandler, ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { GalleryPayload, GallerySession } from './PublicGallery'
@@ -58,25 +57,20 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
   ),
 }))
 
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: undefined, isPending: true }),
+}))
+
+vi.mock('../server/gallery-preview-server-fn', () => ({
+  fetchGalleryPreviewHtml: vi.fn(async () => null),
+}))
+
 const controllerState = {
   loading: false,
   sessions: [] as GallerySession[],
 }
 
 vi.mock('../hooks/useGalleryController', () => ({
-  getGalleryThumbnailUrl: (session) =>
-    `/api/sessions/${encodeURIComponent(session.sessionId)}/gallery-thumb?v=${encodeURIComponent(String(session.previewVersion ?? 0))}`,
-  resolveGalleryThumbnail: async (thumbnailUrl) => {
-    try {
-      const response = await fetch(thumbnailUrl, {
-        signal: new AbortController().signal,
-      })
-      if (!response.ok) return undefined
-      return URL.createObjectURL(await response.blob())
-    } catch {
-      return undefined
-    }
-  },
   useGalleryController: ({
     category = '',
     limit = 12,
@@ -141,25 +135,20 @@ const baseSessions: GallerySession[] = [
     prompt: 'AI image studio',
     categories: ['ai', 'design'],
     elapsed: 4200,
-    previewVersion: 1,
   },
   {
     sessionId: 'session_crypto_dashboard',
     prompt: 'Crypto dashboard',
     categories: ['finance', 'dashboard'],
     elapsed: 8800,
-    previewVersion: 1,
   },
   {
     sessionId: 'session_blog_dogs',
     prompt: 'Blog about dogs',
     categories: ['blog'],
     elapsed: 65000,
-    previewVersion: 1,
   },
 ]
-
-let originalFetch: typeof globalThis.fetch
 
 function resetController(sessions: GallerySession[] = baseSessions) {
   controllerState.loading = false
@@ -168,10 +157,6 @@ function resetController(sessions: GallerySession[] = baseSessions) {
 
 describe('GalleryPage behavioral', () => {
   beforeEach(() => {
-    originalFetch = globalThis.fetch
-    globalThis.fetch = vi
-      .fn()
-      .mockRejectedValue(new Error('thumbnail unavailable'))
     galleryMocks.deleteMine.mockReset()
     galleryMocks.deleteMine.mockResolvedValue({ deleted: 1 })
     window.localStorage.clear()
@@ -181,7 +166,6 @@ describe('GalleryPage behavioral', () => {
   afterEach(() => {
     cleanup()
     document.body.innerHTML = ''
-    globalThis.fetch = originalFetch
   })
 
   it('search input filters gallery items', () => {
@@ -242,13 +226,11 @@ describe('GalleryPage behavioral', () => {
   })
 
   it('clicking next advances page and prev returns', () => {
-    // 14 sessions -> 2 pages of 12
     const many: GallerySession[] = Array.from({ length: 14 }, (_, i) => ({
       sessionId: `session_${i}`,
       prompt: `Project ${i}`,
       categories: ['demo'],
       elapsed: 1000,
-      previewVersion: 1,
     }))
     resetController(many)
 
@@ -284,11 +266,8 @@ describe('GalleryPage behavioral', () => {
     expect(getByText('AI image studio')).not.toBeNull()
     expect(grid.textContent).toContain('ai')
     expect(grid.textContent).toContain('design')
-    // 4200ms -> "4.2s"
     expect(getByLabelText('Generated in 4.2s')).not.toBeNull()
-    // 8800ms -> "8.8s"
     expect(getByLabelText('Generated in 8.8s')).not.toBeNull()
-    // 65000ms -> "1m 5s"
     expect(getByLabelText('Generated in 1m 5s')).not.toBeNull()
   })
 
@@ -298,15 +277,13 @@ describe('GalleryPage behavioral', () => {
 
     const grid = container.querySelector('.sf-gallery-grid') as HTMLElement
     expect(grid).not.toBeNull()
-    // skeleton cards use animate-pulse
-    expect(grid.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0)
+    expect(grid.querySelectorAll('[data-gallery-session-id]').length).toBe(0)
 
     controllerState.loading = false
     rerender(<GalleryPage />)
 
     const gridAfter = container.querySelector('.sf-gallery-grid') as HTMLElement
     expect(gridAfter).not.toBeNull()
-    expect(gridAfter.querySelectorAll('.animate-pulse').length).toBe(0)
     expect(gridAfter.querySelectorAll('[data-gallery-session-id]').length).toBe(
       3,
     )
@@ -320,7 +297,6 @@ describe('GalleryPage behavioral', () => {
     expect(grid).not.toBeNull()
     expect(grid.querySelector('[data-gallery-session-id]')).toBeNull()
     expect(grid.querySelectorAll('.animate-pulse').length).toBe(0)
-    // observable count text reflects zero previews
     expect(getByText('0 previews')).not.toBeNull()
   })
 
@@ -348,31 +324,6 @@ describe('GalleryPage behavioral', () => {
     await waitFor(() => {
       expect(queryByText('AI image studio')).toBeNull()
     })
-  })
-
-  it('missing static HTML shows gradient placeholder without fetching a PNG thumbnail', async () => {
-    globalThis.fetch = vi.fn().mockRejectedValue(new Error('network down'))
-    resetController([
-      {
-        sessionId: 'thumb_fail_session',
-        prompt: 'Gradient fallback project',
-        previewVersion: 1,
-      },
-    ])
-
-    const { container, getByText } = render(<GalleryPage />)
-
-    expect(getByText('Gradient fallback project')).not.toBeNull()
-
-    await Promise.resolve()
-
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-    expect(container.querySelector('img')).toBeNull()
-    const placeholder = container.querySelector(
-      '[aria-hidden="true"] [aria-label="Gradient fallback project"]',
-    )
-    expect(placeholder).not.toBeNull()
-    expect(placeholder?.className).toContain('radial-gradient')
   })
 
   it('"View all" link is present on the home gallery section', () => {

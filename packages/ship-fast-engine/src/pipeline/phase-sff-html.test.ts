@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import {
   SFF_HTML_SYSTEM_PROMPT,
   buildSffHtmlPrompt,
+  ensureImagePreloadAsAttribute,
   isCompleteSffHtml,
   sanitizeSffHtml,
   stripDangerousScripts,
@@ -213,6 +214,56 @@ describe('phase-sff-html', () => {
     expect(result).toContain(
       '<script src="https://cdn.tailwindcss.com"></script>',
     )
+    expect(isCompleteSffHtml(result)).toBe(true)
+  })
+
+  it('ensureImagePreloadAsAttribute adds as="image" to pexels preload links missing it', () => {
+    const html = `<head><link rel="preload" href="/api/pexels?query=portrait+photography&w=100&h=100&seed=test"></head>`
+    const result = ensureImagePreloadAsAttribute(html)
+    expect(result).toContain('as="image"')
+    expect(result).toContain('/api/pexels?query=portrait+photography')
+  })
+
+  it('ensureImagePreloadAsAttribute adds as="image" to image file extension preload links', () => {
+    const html = `<head><link rel="preload" href="https://example.com/photo.jpg"></head>`
+    const result = ensureImagePreloadAsAttribute(html)
+    expect(result).toContain('as="image"')
+  })
+
+  it('ensureImagePreloadAsAttribute preserves existing as attribute', () => {
+    const html = `<head><link rel="preload" as="image" href="/api/pexels?query=test&w=100&h=100&seed=test"></head>`
+    const result = ensureImagePreloadAsAttribute(html)
+    // Should not duplicate the as attribute
+    const asCount = (result.match(/\bas\s*=\s*["']image["']/gi) || []).length
+    expect(asCount).toBe(1)
+  })
+
+  it('ensureImagePreloadAsAttribute does not modify non-image preload links', () => {
+    const html = `<head><link rel="preload" href="https://example.com/style.css"></head>`
+    const result = ensureImagePreloadAsAttribute(html)
+    expect(result).not.toContain('as="image"')
+  })
+
+  it('ensureImagePreloadAsAttribute does not modify non-preload links', () => {
+    const html = `<head><link rel="stylesheet" href="/api/pexels?query=test&w=100&h=100&seed=test"></head>`
+    const result = ensureImagePreloadAsAttribute(html)
+    expect(result).not.toContain('as="image"')
+  })
+
+  it('ensureImagePreloadAsAttribute handles self-closing and spaced link tags', () => {
+    const html = `<link rel="preload" href="/api/pexels?query=test&w=100&h=100&seed=test" />`
+    const result = ensureImagePreloadAsAttribute(html)
+    expect(result).toContain('as="image"')
+  })
+
+  it('sanitizeSffHtml adds as="image" to pexels preload links end-to-end', () => {
+    const raw = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><script src="https://cdn.tailwindcss.com"></script><link rel="preload" href="/api/pexels?query=portrait+photography+confident+businessman+laptop&w=100&h=100&seed=Portrait+of+confident+businessman+with+laptop"></head>
+<body><main><h1>Test</h1></main></body>
+</html>`
+    const result = sanitizeSffHtml(raw)
+    expect(result).toContain('as="image"')
     expect(isCompleteSffHtml(result)).toBe(true)
   })
 })

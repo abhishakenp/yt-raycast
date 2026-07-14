@@ -1,19 +1,8 @@
 // @vitest-environment jsdom
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { GalleryPayload } from '@/features/gallery/components/PublicGallery'
-import { useGalleryController } from './useGalleryController'
-
-interface DeferredResponse {
-  promise: Promise<GalleryResponse>
-  resolve: (response: GalleryResponse) => void
-}
-
-interface GalleryResponse {
-  ok: boolean
-  json: () => Promise<GalleryPayload>
-}
 
 const emptyGallery: GalleryPayload = {
   availableCategories: [],
@@ -26,111 +15,85 @@ const emptyGallery: GalleryPayload = {
   totalPages: 1,
 }
 
-function createResponse(total: number): GalleryResponse {
-  const payload = { ...emptyGallery, total }
-  return {
-    ok: true,
-    json: async function readPayload() {
-      return payload
-    },
-  }
-}
+const queryMock = vi.fn()
+let useQueryResult: { data?: GalleryPayload } = { data: undefined }
+let capturedQueryFn: (() => Promise<GalleryPayload>) | undefined
 
-function createDeferredResponse(): DeferredResponse {
-  function unresolvedResponse(_response: GalleryResponse) {}
-  let resolvePromise = unresolvedResponse
-  const promise = new Promise<GalleryResponse>(function captureResolve(
-    resolve,
-  ) {
-    resolvePromise = resolve
-  })
-  return { promise, resolve: resolvePromise }
-}
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: vi.fn(function useQueryMock(options: {
+    queryFn: () => Promise<GalleryPayload>
+  }) {
+    capturedQueryFn = options.queryFn
+    return useQueryResult
+  }),
+}))
+
+vi.mock('@/shared/convex/http-client', () => ({
+  createRuntimeConvexHttpClient: vi.fn(function createClient() {
+    return { query: queryMock }
+  }),
+}))
+
+vi.mock('../../../../convex/_generated/api', () => ({
+  api: {
+    sessions: {
+      listPublicSessions: 'listPublicSessions',
+    },
+  },
+}))
+
+const { useGalleryController } = await import('./useGalleryController')
 
 describe('useGalleryController release resilience', () => {
-  const originalFetch = globalThis.fetch
-
   beforeEach(() => {
-    globalThis.fetch = originalFetch
+    queryMock.mockReset()
+    useQueryResult = { data: undefined }
+    capturedQueryFn = undefined
   })
 
   afterEach(() => {
-    cleanup()
-    globalThis.fetch = originalFetch
-    vi.useRealTimers()
+    vi.clearAllMocks()
   })
 
-  it('retries after an offline response instead of caching failure as an empty gallery', async () => {
-    const fetchGallery = vi
-      .fn()
-      .mockRejectedValueOnce(new TypeError('network offline'))
-      .mockResolvedValue(createResponse(4))
-    globalThis.fetch = fetchGallery
+  it('returns gallery undefined while the Convex query has not resolved', () => {
+    queryMock.mockReturnValue(new Promise(() => {}))
+    useQueryResult = { data: undefined }
 
-    const firstView = renderHook(function renderOfflineGallery() {
-      return useGalleryController({ search: 'offline-route-remount-release' })
-    })
-    await waitFor(function waitForOfflineFallback() {
-      expect(firstView.result.current.gallery?.total).toBe(0)
-    })
-    firstView.unmount()
-
-    const recoveredView = renderHook(function renderRecoveredGallery() {
-      return useGalleryController({ search: 'offline-route-remount-release' })
-    })
-    await waitFor(function waitForRecoveredGallery() {
-      expect(recoveredView.result.current.gallery?.total).toBe(4)
+    const { result } = renderHook(function renderLoadingGallery() {
+      return useGalleryController({ search: 'pending' })
     })
 
-    expect(fetchGallery).toHaveBeenCalledTimes(2)
+    expect(result.current.gallery).toBeUndefined()
+    expect(result.current.sessions).toBeUndefined()
   })
 
-  it('ignores a late response from a superseded search', async () => {
-    const staleResponse = createDeferredResponse()
-    const fetchGallery = vi
-      .fn()
-      .mockImplementationOnce(function fetchStaleGallery() {
-        return staleResponse.promise
-      })
-      .mockResolvedValueOnce(createResponse(7))
-    globalThis.fetch = fetchGallery
-    let search = 'superseded-search-release'
-    const view = renderHook(function renderGallery() {
-      return useGalleryController({ search })
+  it('returns gallery data when the Convex query resolves', async () => {
+    const gallery: GalleryPayload = { ...emptyGallery, total: 4 }
+    queryMock.mockResolvedValue(gallery)
+    useQueryResult = { data: gallery }
+
+    const { result } = renderHook(function renderResolvedGallery() {
+      return useGalleryController({ search: 'resolved' })
     })
 
-    search = 'current-search-release'
-    view.rerender()
-    await waitFor(function waitForCurrentGallery() {
-      expect(view.result.current.gallery?.total).toBe(7)
+    await waitFor(function waitForGallery() {
+      expect(result.current.gallery?.total).toBe(4)
     })
 
-    await act(async function resolveStaleGallery() {
-      staleResponse.resolve(createResponse(2))
-      await staleResponse.promise
-    })
-
-    expect(view.result.current.gallery?.total).toBe(7)
-    expect(fetchGallery).toHaveBeenCalledTimes(2)
+    expect(result.current.sessions).toEqual(gallery.items)
   })
 
-  it('settles a hung request instead of rendering gallery skeletons indefinitely', async () => {
-    vi.useFakeTimers()
-    const fetchGallery = vi.fn(function fetchHungGallery() {
-      return new Promise<Response>(function keepRequestPending(resolve) {
-        void resolve
-      })
-    })
-    globalThis.fetch = fetchGallery
-    const view = renderHook(function renderHungGallery() {
-      return useGalleryController({ search: 'hung-gallery-release' })
+  it('does not crash when the Convex query rejects', async () => {
+    queryMock.mockRejectedValue(new Error('convex down'))
+    useQueryResult = { data: undefined }
+
+    const { result } = renderHook(function renderRejectedGallery() {
+      return useGalleryController({ search: 'rejected' })
     })
 
-    await act(async function elapseRequestTimeout() {
-      await vi.advanceTimersByTimeAsync(15_000)
-    })
+    await expect(capturedQueryFn).rejects.toThrow('convex down')
 
-    expect(fetchGallery).toHaveBeenCalledTimes(1)
-    expect(view.result.current.gallery).not.toBeUndefined()
+    expect(result.current.gallery).toBeUndefined()
+    expect(() => result.current).not.toThrow()
   })
 })

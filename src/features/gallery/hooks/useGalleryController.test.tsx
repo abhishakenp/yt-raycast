@@ -1,130 +1,124 @@
 // @vitest-environment jsdom
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { GalleryPayload } from '@/features/gallery/components/PublicGallery'
-import {
-  prewarmGalleryPayload,
-  prewarmGalleryThumbnails,
-  useGalleryController,
-} from './useGalleryController'
 
-let originalFetch: typeof globalThis.fetch
+const queryMock = vi.hoisted(() => ({
+  useQuery: vi.fn(),
+}))
 
-const emptyGallery: GalleryPayload = {
-  availableCategories: [],
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual<typeof import('@tanstack/react-query')>(
+    '@tanstack/react-query',
+  )
+  return {
+    ...actual,
+    useQuery: queryMock.useQuery,
+  }
+})
+
+const convexClientMock = vi.hoisted(() => ({
+  query: vi.fn(),
+}))
+
+vi.mock('@/shared/convex/http-client', () => ({
+  createRuntimeConvexHttpClient: () => convexClientMock,
+}))
+
+const apiMock = vi.hoisted(() => ({
+  sessions: { listPublicSessions: 'listPublicSessions' as const },
+}))
+
+vi.mock('../../../../convex/_generated/api', () => ({
+  api: apiMock,
+}))
+
+import { useGalleryController } from './useGalleryController'
+
+const sampleGallery: GalleryPayload = {
+  items: [
+    { sessionId: 'session-1', prompt: 'a polished landing page' },
+    { sessionId: 'session-2', prompt: 'a blog about dogs' },
+  ],
+  page: 1,
+  limit: 12,
+  total: 2,
+  totalPages: 1,
   hasNext: false,
   hasPrev: false,
-  items: [],
-  limit: 12,
-  page: 1,
-  total: 0,
-  totalPages: 1,
 }
 
-const dbObservedPublicSession = {
-  prompt:
-    'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
-  sessionId: 'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+function createWrapper(client: QueryClient) {
+  return ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  )
 }
 
-describe('useGalleryController cache prewarm', () => {
+function withData(data: GalleryPayload | undefined) {
+  queryMock.useQuery.mockReturnValue({ data })
+}
+
+function withQueryFnResolved(data: GalleryPayload) {
+  queryMock.useQuery.mockImplementation(
+    (opts: { queryFn: () => Promise<GalleryPayload> }) => {
+      void opts.queryFn()
+      return { data }
+    },
+  )
+}
+
+describe('useGalleryController', () => {
   beforeEach(() => {
-    originalFetch = globalThis.fetch
+    queryMock.useQuery.mockReset()
+    convexClientMock.query.mockReset()
   })
 
   afterEach(() => {
     cleanup()
-    globalThis.fetch = originalFetch
   })
 
-  it('reuses a prewarmed public gallery payload when the gallery later mounts', async () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      total: 3,
-    }
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => gallery,
+  it('returns gallery data from the mocked Convex client query', async () => {
+    convexClientMock.query.mockResolvedValue(sampleGallery)
+    withQueryFnResolved(sampleGallery)
+
+    const { result } = renderHook(() => useGalleryController(), {
+      wrapper: createWrapper(new QueryClient()),
     })
-
-    await prewarmGalleryPayload({ search: 'prewarmed-public-gallery' })
-
-    const { result } = renderHook(() =>
-      useGalleryController({ search: 'prewarmed-public-gallery' }),
-    )
 
     await waitFor(() => {
-      expect(result.current.gallery?.total).toBe(3)
+      expect(result.current.gallery).toEqual(sampleGallery)
     })
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+    expect(convexClientMock.query).toHaveBeenCalledWith(
+      apiMock.sessions.listPublicSessions,
+      { limit: 12, page: 1, search: undefined, category: undefined },
+    )
   })
 
-  it('falls back to an empty gallery when the public gallery API returns malformed JSON', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => {
-        throw new SyntaxError('Unexpected token < in JSON')
-      },
-    })
+  it('derives sessions from gallery.items', async () => {
+    withData(sampleGallery)
 
-    const { result } = renderHook(() =>
-      useGalleryController({ search: 'malformed-public-gallery-payload' }),
-    )
+    const { result } = renderHook(() => useGalleryController(), {
+      wrapper: createWrapper(new QueryClient()),
+    })
 
     await waitFor(() => {
-      expect(result.current.gallery).toEqual(emptyGallery)
-      expect(result.current.sessions).toEqual([])
+      expect(result.current.sessions).toEqual(sampleGallery.items)
     })
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      '/api/sessions/recent?limit=12&page=1&search=malformed-public-gallery-payload',
-      { headers: { accept: 'application/json' } },
-    )
   })
 
-  it('falls back to an empty gallery when the public gallery API returns a parseable payload with malformed items', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        ...emptyGallery,
-        items: {
-          [dbObservedPublicSession.sessionId]: dbObservedPublicSession,
-        },
-        total: 1,
-      }),
-    })
+  it('returns gallery undefined while loading', async () => {
+    withData(undefined)
 
-    const { result } = renderHook(() =>
-      useGalleryController({ search: 'parseable-malformed-gallery-payload' }),
-    )
+    const { result } = renderHook(() => useGalleryController(), {
+      wrapper: createWrapper(new QueryClient()),
+    })
 
     await waitFor(() => {
-      expect(result.current.gallery).toEqual(emptyGallery)
-      expect(result.current.sessions).toEqual([])
+      expect(result.current.gallery).toBeUndefined()
+      expect(result.current.sessions).toBeUndefined()
     })
-  })
-
-  it('does not prewarm PNG thumbnails because gallery previews must come from server-rendered HTML', async () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      items: [
-        {
-          sessionId: 'thumb-session',
-          previewVersion: 7,
-        },
-      ],
-      total: 1,
-    }
-    globalThis.URL.createObjectURL = vi.fn(() => 'blob:gallery-thumb')
-    globalThis.URL.revokeObjectURL = vi.fn()
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      blob: async () => new Blob(['thumb']),
-    })
-
-    await prewarmGalleryThumbnails(gallery)
-
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-    expect(globalThis.URL.createObjectURL).not.toHaveBeenCalled()
   })
 })

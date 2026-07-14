@@ -66,13 +66,21 @@ const FOOTER = [
   'तेनुघाट तापीय विद्युत केंद्र बोकारो में तेनुघाट बांध के निकट स्थित है, जो झारखंड ग्रिड को विश्वसनीय तापीय विद्युत प्रदान करता है।',
   [
     { label: 'Tender Notices', labelHi: 'निविदा सूचनाएँ', target: 'Tenders' },
-    { label: 'Extension Notices', labelHi: 'विस्तार सूचनाएँ', target: 'Tenders' },
+    {
+      label: 'Extension Notices',
+      labelHi: 'विस्तार सूचनाएँ',
+      target: 'Tenders',
+    },
     { label: 'Contact Us', labelHi: 'संपर्क करें', target: 'Contact Us' },
   ],
   officeArg(head, headHi),
   officeArg(plant, plantHi),
 ]
-const CONTACT = ['Contact Us', officeArg(head, headHi), officeArg(plant, plantHi)]
+const CONTACT = [
+  'Contact Us',
+  officeArg(head, headHi),
+  officeArg(plant, plantHi),
+]
 
 // Real company narrative scraped from tvnl.in (fallback kept short if missing).
 const aboutText =
@@ -89,7 +97,9 @@ const q = (v) => JSON.stringify(v)
 /** Emit a section + its anchor; return the anchor var name. */
 const section = (varName, capsule, args, anchorId) => {
   lines.push(`${varName} = ${capsule}(${args.map(q).join(', ')})`)
-  lines.push(`${varName}_a = SectionAnchor(${q(anchorId)}, ${varName}, "scroll-mt-28")`)
+  lines.push(
+    `${varName}_a = SectionAnchor(${q(anchorId)}, ${varName}, "scroll-mt-28")`,
+  )
   return `${varName}_a`
 }
 
@@ -106,17 +116,32 @@ const PAGES = [
     slug: 'home',
     sections: (s) => [
       nav(s),
-      [`${s}_hero`, 'GovPortalHero', [
-        'Powering Jharkhand',
-        'Reliable Thermal Power for a Growing State',
-        'Tenughat Vidyut Nigam Limited — a Govt. of Jharkhand undertaking operating the 2×210 MW Tenughat Thermal Power Station.',
-        'View Tenders',
-        'About TVNL',
-      ], 'hero'],
+      [
+        `${s}_hero`,
+        'GovPortalHero',
+        [
+          'Powering Jharkhand',
+          'Reliable Thermal Power for a Growing State',
+          'Tenughat Vidyut Nigam Limited — a Govt. of Jharkhand undertaking operating the 2×210 MW Tenughat Thermal Power Station.',
+          'View Tenders',
+          'About TVNL',
+        ],
+        'hero',
+      ],
       [`${s}_quick`, 'GovPortalQuickLinks', ['Explore Our Work'], 'quicklinks'],
       [`${s}_stats`, 'GovPortalStats', ['Performance Highlights'], 'stats'],
-      [`${s}_lead`, 'GovPortalLeadership', ["Managing Director's Message"], 'leadership'],
-      [`${s}_board`, 'GovPortalTenderBoard', ['Latest Tenders & Notices'], 'board'],
+      [
+        `${s}_lead`,
+        'GovPortalLeadership',
+        ["Managing Director's Message"],
+        'leadership',
+      ],
+      [
+        `${s}_board`,
+        'GovPortalTenderBoard',
+        ['Latest Tenders & Notices'],
+        'board',
+      ],
       foot(s),
     ],
   },
@@ -125,24 +150,39 @@ const PAGES = [
     slug: 'company',
     sections: (s) => [
       nav(s),
-      [`${s}_about`, 'GovPortalAbout', [
-        'TVNL Overview',
-        aboutText,
+      [
+        `${s}_about`,
+        'GovPortalAbout',
         [
-          'A Govt. of Jharkhand undertaking',
-          'CIN No. ' + cin,
-          'Only Govt. thermal power utility in Jharkhand',
+          'TVNL Overview',
+          aboutText,
+          [
+            'A Govt. of Jharkhand undertaking',
+            'CIN No. ' + cin,
+            'Only Govt. thermal power utility in Jharkhand',
+          ],
+          'टीवीएनएल अवलोकन',
+          aboutTextHi,
+          [
+            'झारखंड सरकार का एक उपक्रम',
+            'सीआईएन ' + cin,
+            'झारखंड की एकमात्र सरकारी तापीय विद्युत उपयोगिता',
+          ],
         ],
-        'टीवीएनएल अवलोकन',
-        aboutTextHi,
-        [
-          'झारखंड सरकार का एक उपक्रम',
-          'सीआईएन ' + cin,
-          'झारखंड की एकमात्र सरकारी तापीय विद्युत उपयोगिता',
-        ],
-      ], 'about'],
-      [`${s}_lead`, 'GovPortalLeadership', ['Leadership & Board of Directors'], 'leadership'],
-      [`${s}_plants`, 'GovPortalPowerPlants', ['Our Generating Stations'], 'plants'],
+        'about',
+      ],
+      [
+        `${s}_lead`,
+        'GovPortalLeadership',
+        ['Leadership & Board of Directors'],
+        'leadership',
+      ],
+      [
+        `${s}_plants`,
+        'GovPortalPowerPlants',
+        ['Our Generating Stations'],
+        'plants',
+      ],
       foot(s),
     ],
   },
@@ -151,8 +191,18 @@ const PAGES = [
     slug: 'power',
     sections: (s) => [
       nav(s),
-      [`${s}_plants`, 'GovPortalPowerPlants', ['Operational Power Plants'], 'plants'],
-      [`${s}_stats`, 'GovPortalStats', ['Installed Capacity & Performance'], 'stats'],
+      [
+        `${s}_plants`,
+        'GovPortalPowerPlants',
+        ['Operational Power Plants'],
+        'plants',
+      ],
+      [
+        `${s}_stats`,
+        'GovPortalStats',
+        ['Installed Capacity & Performance'],
+        'stats',
+      ],
       foot(s),
     ],
   },
@@ -161,8 +211,18 @@ const PAGES = [
     slug: 'tenders',
     sections: (s) => [
       nav(s),
-      [`${s}_board`, 'GovPortalTenderBoard', ['Tenders, Extensions, Corrigendum & Cancellations'], 'board'],
-      [`${s}_dl`, 'GovPortalDownloads', ['Bidder Downloads & Formats'], 'downloads'],
+      [
+        `${s}_board`,
+        'GovPortalTenderBoard',
+        ['Tenders, Extensions, Corrigendum & Cancellations'],
+        'board',
+      ],
+      [
+        `${s}_dl`,
+        'GovPortalDownloads',
+        ['Bidder Downloads & Formats'],
+        'downloads',
+      ],
       foot(s),
     ],
   },
@@ -180,24 +240,29 @@ const PAGES = [
     slug: 'sustain',
     sections: (s) => [
       nav(s),
-      [`${s}_about`, 'GovPortalAbout', [
-        'Sustainability, Environment & Safety',
-        'TVNL is committed to responsible ash utilisation, environmental compliance and workplace safety across its operations, alongside CSR initiatives for local communities.',
+      [
+        `${s}_about`,
+        'GovPortalAbout',
         [
-          'Environmental compliance & monitoring',
-          'Ash disposal & utilisation',
-          'Occupational health & safety',
-          'Community CSR programmes',
+          'Sustainability, Environment & Safety',
+          'TVNL is committed to responsible ash utilisation, environmental compliance and workplace safety across its operations, alongside CSR initiatives for local communities.',
+          [
+            'Environmental compliance & monitoring',
+            'Ash disposal & utilisation',
+            'Occupational health & safety',
+            'Community CSR programmes',
+          ],
+          'सततता, पर्यावरण एवं सुरक्षा',
+          'टीवीएनएल अपने समस्त संचालन में जिम्मेदार राख उपयोग, पर्यावरण अनुपालन और कार्यस्थल सुरक्षा के प्रति प्रतिबद्ध है, साथ ही स्थानीय समुदायों के लिए सीएसआर पहलों का संचालन करता है।',
+          [
+            'पर्यावरण अनुपालन एवं निगरानी',
+            'राख निपटान एवं उपयोग',
+            'व्यावसायिक स्वास्थ्य एवं सुरक्षा',
+            'सामुदायिक सीएसआर कार्यक्रम',
+          ],
         ],
-        'सततता, पर्यावरण एवं सुरक्षा',
-        'टीवीएनएल अपने समस्त संचालन में जिम्मेदार राख उपयोग, पर्यावरण अनुपालन और कार्यस्थल सुरक्षा के प्रति प्रतिबद्ध है, साथ ही स्थानीय समुदायों के लिए सीएसआर पहलों का संचालन करता है।',
-        [
-          'पर्यावरण अनुपालन एवं निगरानी',
-          'राख निपटान एवं उपयोग',
-          'व्यावसायिक स्वास्थ्य एवं सुरक्षा',
-          'सामुदायिक सीएसआर कार्यक्रम',
-        ],
-      ], 'about'],
+        'about',
+      ],
       foot(s),
     ],
   },
@@ -227,7 +292,12 @@ const PAGES = [
     slug: 'vendor',
     sections: (s) => [
       nav(s),
-      [`${s}_vp`, 'GovPortalVendor', ['Vendor Registration, Bidding & Payment'], 'vendor'],
+      [
+        `${s}_vp`,
+        'GovPortalVendor',
+        ['Vendor Registration, Bidding & Payment'],
+        'vendor',
+      ],
       foot(s),
     ],
   },
@@ -273,7 +343,8 @@ const rowify = (row) => {
 
 const finYear = (nit) => (String(nit ?? '').match(/(\d{4}-\d{2})/) ?? [''])[0]
 const lastDate = (n) => {
-  if (Array.isArray(n.dates) && n.dates.length) return n.dates[n.dates.length - 1]
+  if (Array.isArray(n.dates) && n.dates.length)
+    return n.dates[n.dates.length - 1]
   return n.date ?? ''
 }
 // Map a scraped notice-family row → the shared `{nitNo,title,date,docUrl}` shape.
@@ -354,12 +425,36 @@ const govData = {
     )
   })(),
   media: [
-    { title: 'TTPS control room', alt: 'Thermal power plant control room', category: 'Photo' },
-    { title: 'Cooling towers at TTPS', alt: 'Power plant cooling towers at dusk', category: 'Photo' },
-    { title: 'Turbine hall', alt: 'Steam turbine generator hall', category: 'Photo' },
-    { title: 'Safety Week drill', alt: 'Workers at a safety drill', category: 'Photo' },
-    { title: 'Ash utilisation site', alt: 'Fly ash utilisation yard', category: 'Photo' },
-    { title: 'Township view', alt: 'TVNL residential township', category: 'Photo' },
+    {
+      title: 'TTPS control room',
+      alt: 'Thermal power plant control room',
+      category: 'Photo',
+    },
+    {
+      title: 'Cooling towers at TTPS',
+      alt: 'Power plant cooling towers at dusk',
+      category: 'Photo',
+    },
+    {
+      title: 'Turbine hall',
+      alt: 'Steam turbine generator hall',
+      category: 'Photo',
+    },
+    {
+      title: 'Safety Week drill',
+      alt: 'Workers at a safety drill',
+      category: 'Photo',
+    },
+    {
+      title: 'Ash utilisation site',
+      alt: 'Fly ash utilisation yard',
+      category: 'Photo',
+    },
+    {
+      title: 'Township view',
+      alt: 'TVNL residential township',
+      category: 'Photo',
+    },
   ].map(rowify),
   newsEvents: [],
   downloads: (scraped.downloads ?? []).map((d) =>
@@ -443,7 +538,9 @@ const created = convexRun(
   TIMEOUT,
 )
 if (typeof created?.sessionId !== 'string') {
-  throw new Error(`sessions:create did not return sessionId: ${JSON.stringify(created)}`)
+  throw new Error(
+    `sessions:create did not return sessionId: ${JSON.stringify(created)}`,
+  )
 }
 const sessionId = created.sessionId
 
@@ -469,11 +566,7 @@ const sleep = (ms) =>
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 const homeHasOurProgram = () => {
   try {
-    const view = convexRun(
-      'sessions:getGenerationView',
-      { sessionId },
-      TIMEOUT,
-    )
+    const view = convexRun('sessions:getGenerationView', { sessionId }, TIMEOUT)
     return String(view?.homeModule?.source ?? '').includes('GovPortalNavbar')
   } catch {
     return false
@@ -661,7 +754,8 @@ const worker = async () => {
 await Promise.all(Array.from({ length: CONCURRENCY }, worker))
 for (const [table, field] of PDF_FIELDS) {
   for (const row of govData[table]) {
-    if (row[field] && urlMap.has(row[field])) row[field] = urlMap.get(row[field])
+    if (row[field] && urlMap.has(row[field]))
+      row[field] = urlMap.get(row[field])
   }
 }
 console.error(`  PDFs migrated: ${migrated}, failed (kept original): ${failed}`)

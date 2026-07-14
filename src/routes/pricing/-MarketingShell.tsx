@@ -58,12 +58,6 @@ export function MarketingShell({
       void import('@/routes/index')
       void import('@/features/home/components/HomePage')
       void import('@/features/gallery/components/PublicGallery')
-      void import('@/features/gallery/hooks/useGalleryController').then(
-        ({ prewarmGalleryPayload, prewarmGalleryThumbnails }) =>
-          prewarmGalleryPayload({ limit: 12 }).then((gallery) =>
-            prewarmGalleryThumbnails(gallery, 12),
-          ),
-      )
       void import('@/routes/pricing')
       void import('@/routes/pricing/-PricingPage')
       void import('@/routes/pricing/-MarketingShell')

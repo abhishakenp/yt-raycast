@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
-import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { GalleryPayload, GallerySession } from './PublicGallery'
@@ -51,8 +50,12 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
   ),
 }))
 
-vi.mock('@/features/gallery/services/delete-gallery-session', () => ({
-  deleteGallerySession: ownedMocks.deleteMine,
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: undefined, isPending: true }),
+}))
+
+vi.mock('../server/gallery-preview-server-fn', () => ({
+  fetchGalleryPreviewHtml: vi.fn(async () => null),
 }))
 
 const controllerState = {
@@ -61,9 +64,6 @@ const controllerState = {
 }
 
 vi.mock('../hooks/useGalleryController', () => ({
-  getGalleryThumbnailUrl: (session) =>
-    `/api/sessions/${session.sessionId}/thumbnail`,
-  resolveGalleryThumbnail: vi.fn(async () => undefined),
   useOwnedGalleryController: ({
     category = '',
     limit = 12,
@@ -129,14 +129,12 @@ const baseSessions: GallerySession[] = [
     prompt: 'My private portfolio',
     categories: ['portfolio'],
     elapsed: 4200,
-    previewVersion: 1,
   },
   {
     sessionId: 'session_my_public',
     prompt: 'My public SaaS dashboard',
     categories: ['saas', 'dashboard'],
     elapsed: 8800,
-    previewVersion: 1,
   },
 ]
 
@@ -147,7 +145,6 @@ const realPrivatePetWellnessSessions: GallerySession[] = [
       'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
     categories: ['app', 'health', 'services'],
     elapsed: 4200,
-    previewVersion: 43,
   },
   {
     sessionId: 'k5771j4djf89f2rh3nk1q3nkq588sdjp',
@@ -155,11 +152,8 @@ const realPrivatePetWellnessSessions: GallerySession[] = [
       'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
     categories: ['app', 'health', 'services'],
     elapsed: 3900,
-    previewVersion: 12,
   },
 ]
-
-let originalFetch: typeof globalThis.fetch
 
 function resetController(sessions: GallerySession[] = baseSessions) {
   controllerState.loading = false
@@ -168,10 +162,6 @@ function resetController(sessions: GallerySession[] = baseSessions) {
 
 describe('MinePage behavioral', () => {
   beforeEach(() => {
-    originalFetch = globalThis.fetch
-    globalThis.fetch = vi
-      .fn()
-      .mockRejectedValue(new Error('thumbnail unavailable'))
     ownedMocks.deleteMine.mockReset()
     ownedMocks.deleteMine.mockResolvedValue({ deleted: 1 })
     window.localStorage.clear()
@@ -181,7 +171,6 @@ describe('MinePage behavioral', () => {
   afterEach(() => {
     cleanup()
     document.body.innerHTML = ''
-    globalThis.fetch = originalFetch
   })
 
   it('renders the "My generations" header and a link to the public gallery', () => {

@@ -6,7 +6,6 @@ import {
   render,
   waitFor,
 } from '@testing-library/react'
-import type { PointerEventHandler, ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const galleryMocks = vi.hoisted(() => ({
@@ -53,10 +52,19 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
   ),
 }))
 
-import { GalleryGrid, type GalleryPayload } from './PublicGallery'
-import { useGalleryController } from '@/features/gallery/hooks/useGalleryController'
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: undefined, isPending: true }),
+}))
 
-let originalFetch: typeof globalThis.fetch
+vi.mock('../server/gallery-preview-server-fn', () => ({
+  fetchGalleryPreviewHtml: vi.fn(async () => null),
+}))
+
+vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
+  useGalleryController: () => ({ gallery: undefined, sessions: undefined }),
+}))
+
+import { GalleryGrid, type GalleryPayload } from './PublicGallery'
 
 const emptyGallery: GalleryPayload = {
   availableCategories: [],
@@ -93,18 +101,9 @@ const ensureLocalStorage = () => {
   })
 }
 
-function GalleryControllerProbe({ search }: { search: string }) {
-  const { gallery } = useGalleryController({ search })
-  return <span data-testid="gallery-total">{gallery?.total ?? 'loading'}</span>
-}
-
 describe('GalleryGrid', () => {
   beforeEach(() => {
     ensureLocalStorage()
-    originalFetch = globalThis.fetch
-    globalThis.fetch = vi
-      .fn()
-      .mockRejectedValue(new Error('thumbnail unavailable'))
     galleryMocks.deleteMine.mockReset()
     galleryMocks.deleteMine.mockResolvedValue({ deleted: 1 })
     window.localStorage.clear()
@@ -113,7 +112,6 @@ describe('GalleryGrid', () => {
   afterEach(() => {
     cleanup()
     document.body.innerHTML = ''
-    globalThis.fetch = originalFetch
   })
 
   it('shows skeleton cards only before gallery data resolves', () => {
@@ -131,7 +129,6 @@ describe('GalleryGrid', () => {
         {
           sessionId: 'session_public_link',
           prompt: 'Public project link',
-          previewVersion: 1,
         },
       ],
       total: 1,
@@ -174,35 +171,6 @@ describe('GalleryGrid', () => {
     },
   )
 
-  it('coalesces identical public gallery requests across duplicate consumers', async () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      total: 2,
-    }
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => gallery,
-    })
-
-    const { getAllByTestId } = render(
-      <>
-        <GalleryControllerProbe search="coalesced-public-gallery" />
-        <GalleryControllerProbe search="coalesced-public-gallery" />
-      </>,
-    )
-
-    await waitFor(() => {
-      expect(
-        getAllByTestId('gallery-total').map((node) => node.textContent),
-      ).toEqual(['2', '2'])
-    })
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      '/api/sessions/recent?limit=12&page=1&search=coalesced-public-gallery',
-      { headers: { accept: 'application/json' } },
-    )
-  })
-
   it('renders a helpful empty state after an empty gallery response', () => {
     const { container, getByText } = render(
       <GalleryGrid gallery={emptyGallery} skeletonCount={3} />,
@@ -222,12 +190,10 @@ describe('GalleryGrid', () => {
       ...emptyGallery,
       items: [
         null,
-        { prompt: 'Missing session id', previewVersion: 1 },
+        { prompt: 'Missing session id' },
         {
-          categories: { primary: 'saas' },
-          elapsed: Number.NaN,
-          html: '<main><h1>Valid preview</h1></main>',
-          previewVersion: 2,
+          categories: ['saas'],
+          elapsed: 4200,
           prompt: 'Valid public project',
           sessionId: 'valid_public_project',
         },
@@ -288,168 +254,24 @@ describe('GalleryGrid', () => {
     expect(queryByText('Generate a site to fill this wall')).toBeNull()
   })
 
-  it('prefers stored HTML over generated module source and thumbnail fetches', async () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      items: [
-        {
-          sessionId: 'thumbnail-session',
-          prompt: 'AI image studio',
-          html: '<main><h1>Rendered product preview</h1></main>',
-          moduleSource: '$page = "Home"\nroot = Hero("LumenAI Studio")',
-          previewVersion: 1,
-        },
-      ],
-      total: 1,
-    }
-
-    const { container } = render(<GalleryGrid gallery={gallery} />)
-
-    await waitFor(() => {
-      expect(container.querySelector('h1')?.textContent).toBe(
-        'Rendered product preview',
-      )
-    })
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-    expect(container.querySelector('img')).toBeNull()
-    expect(
-      container.querySelector('[data-testid="generated-module-preview"]'),
-    ).toBeNull()
-  })
-
-  it('keeps visual preview content out of the gallery card accessible name', async () => {
+  it('keeps visual preview content out of the gallery card accessible name', () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
         {
           sessionId: 'accessible-session',
           prompt: 'AI image studio',
-          html: '<main><h1>AI image studio</h1></main>',
           elapsed: 1200,
-          previewVersion: 1,
         },
       ],
       total: 1,
     }
 
-    const { container, getByRole } = render(<GalleryGrid gallery={gallery} />)
+    const { getByRole } = render(<GalleryGrid gallery={gallery} />)
 
-    await waitFor(() => {
-      expect(
-        getByRole('link', { name: 'AI image studio, generated in 1.2s' }),
-      ).toBeTruthy()
-    })
     expect(
-      container.querySelector('[aria-hidden="true"] h1')?.textContent,
-    ).toBe('AI image studio')
-  })
-
-  it('falls back to stored generated HTML when the thumbnail is unavailable', async () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      items: [
-        {
-          sessionId: 'preview-session',
-          prompt: 'AI image studio',
-          html: '<main><h1>Rendered product preview</h1></main>',
-          previewVersion: 1,
-        },
-      ],
-      total: 1,
-    }
-
-    const { container } = render(<GalleryGrid gallery={gallery} />)
-
-    expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
-      1,
-    )
-    await waitFor(() => {
-      expect(container.querySelector('h1')?.textContent).toBe(
-        'Rendered product preview',
-      )
-    })
-    expect(container.querySelector('img')).toBeNull()
-  })
-
-  it('does not publish a real renderer-error HTML document as a public gallery preview', () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      items: [
-        {
-          sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
-          prompt:
-            'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a polished interactive product experience. It should be dark mode. Focus on making it beautiful.',
-          categories: ['saas', 'commerce', 'portfolio', 'app'],
-          elapsed: 123,
-          html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
-          preferredLanguage: 'en',
-          previewVersion: 1,
-        },
-      ],
-      total: 1,
-    }
-
-    const { container, queryByText } = render(<GalleryGrid gallery={gallery} />)
-
-    expect(queryByText(/failed to render/i)).toBeNull()
-    expect(container.querySelector('.openui-error')).toBeNull()
-    expect(container.querySelector('img')).toBeNull()
-  })
-
-  it('prefers server-rendered static HTML over a gallery image URL', () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      items: [
-        {
-          sessionId: 'preview-with-image-session',
-          prompt: 'AI image studio',
-          imageUrl: 'https://cdn.example.test/generated-theme.png',
-          html: '<main><h1>Rendered stock HTML preview</h1></main>',
-          previewVersion: 1,
-        },
-      ],
-      total: 1,
-    }
-
-    const { container } = render(<GalleryGrid gallery={gallery} />)
-
-    expect(container.querySelector('h1')?.textContent).toBe(
-      'Rendered stock HTML preview',
-    )
-    expect(container.querySelector('img')).toBeNull()
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-  })
-
-  it('uses a local placeholder instead of fetching a PNG when static HTML is missing', async () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      items: [
-        {
-          sessionId: 'module-session',
-          prompt: 'AI image studio',
-          html: '<main><h1>Generated OpenUI source is ready.</h1></main>',
-          moduleSource: '$page = "Home"\nroot = Hero("LumenAI Studio")',
-          previewVersion: 1,
-        },
-      ],
-      total: 1,
-    }
-
-    const { container } = render(<GalleryGrid gallery={gallery} />)
-
-    await Promise.resolve()
-
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-    expect(container.querySelector('h1')).toBeNull()
-    expect(container.querySelector('img')).toBeNull()
-    expect(
-      container.querySelector('[data-testid="generated-module-preview"]'),
-    ).toBeNull()
-    expect(
-      container.querySelector(
-        '[aria-hidden="true"] [aria-label="AI image studio"]',
-      ),
-    ).not.toBeNull()
+      getByRole('link', { name: 'AI image studio, generated in 1.2s' }),
+    ).toBeTruthy()
   })
 
   it('deletes the hovered gallery session when the physical D key is pressed', async () => {
@@ -461,12 +283,10 @@ describe('GalleryGrid', () => {
         {
           sessionId: 'session_hovered',
           prompt: 'Hovered project',
-          previewVersion: 1,
         },
         {
           sessionId: 'session_kept',
           prompt: 'Kept project',
-          previewVersion: 1,
         },
       ],
       total: 2,
@@ -510,7 +330,6 @@ describe('GalleryGrid', () => {
         {
           sessionId: 'session_hovered',
           prompt: 'Hovered project',
-          previewVersion: 1,
         },
       ],
       total: 1,

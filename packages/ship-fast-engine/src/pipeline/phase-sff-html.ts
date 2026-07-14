@@ -135,6 +135,29 @@ export function stripJavascriptUrls(html: string): string {
     )
 }
 
+// Image URL patterns — preload links pointing at these must carry `as="image"`
+// or the browser emits a "preloaded but not used" warning (and may deprioritize
+// the fetch). The LLM sometimes emits `<link rel="preload" href="/api/pexels…">`
+// without an `as` attribute; this adds it deterministically.
+const IMAGE_PRELOAD_HREF_RE =
+  /(?:\/api\/pexels|[.](?:jpe?g|png|webp|gif|svg|avif|bmp|ico)(?:[?#]|$))/i
+
+export function ensureImagePreloadAsAttribute(html: string): string {
+  return html.replace(/<link\b([^>]*?)\/?>/gi, (match, attrs: string) => {
+    const relMatch = attrs.match(/\brel\s*=\s*["']([^"']*)["']/i)
+    if (!relMatch) return match
+    const rels = relMatch[1].toLowerCase().split(/\s+/)
+    if (!rels.includes('preload')) return match
+    // Already has an `as` attribute — leave it.
+    if (/\bas\s*=/i.test(attrs)) return match
+    const hrefMatch = attrs.match(/\bhref\s*=\s*["']([^"']*)["']/i)
+    if (!hrefMatch) return match
+    if (!IMAGE_PRELOAD_HREF_RE.test(hrefMatch[1])) return match
+    // Insert `as="image"` before the closing `>` (self-closing or not).
+    return match.replace(/\/?>$/, ' as="image"$&')
+  })
+}
+
 export function sanitizeSffHtml(raw: string): string {
   let html = cleanFence(String(raw || ''))
   const start = html.search(/<!doctype\s+html/i)
@@ -144,6 +167,7 @@ export function sanitizeSffHtml(raw: string): string {
   html = stripDangerousScripts(html)
   html = stripInlineEventHandlers(html)
   html = stripJavascriptUrls(html)
+  html = ensureImagePreloadAsAttribute(html)
   return html
 }
 

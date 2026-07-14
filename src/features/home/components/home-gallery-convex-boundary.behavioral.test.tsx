@@ -19,6 +19,14 @@ vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
   }),
 }))
 
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: undefined, isPending: true }),
+}))
+
+vi.mock('@/features/gallery/server/gallery-preview-server-fn', () => ({
+  fetchGalleryPreviewHtml: vi.fn(async () => null),
+}))
+
 describe('home gallery Convex boundary', () => {
   afterEach(() => {
     cleanup()

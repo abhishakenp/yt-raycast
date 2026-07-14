@@ -52,6 +52,14 @@ vi.mock('../../../../convex/_generated/api', () => ({
   api: { sessions: { deleteMine: 'deleteMine' } },
 }))
 
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: undefined, isPending: true }),
+}))
+
+vi.mock('../server/gallery-preview-server-fn', () => ({
+  fetchGalleryPreviewHtml: vi.fn(async () => null),
+}))
+
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
   GeneratedModulePreview: () => null,
 }))

@@ -1,1108 +1,1108 @@
 {
- "brand": {
-  "name": "Tenughat Vidyut Nigam Limited",
-  "short": "TVNL",
-  "tagline": "A Govt. of Jharkhand Undertaking",
-  "cin": "U40101JH1987SGC013153"
- },
- "contact": {
-  "headOffice": {
-   "name": "Head Office",
-   "addr": "JUPMI Building, ABD Area, Ranchi Smart City, P.O & P.S Dhurwa, Dist. Ranchi, Jharkhand, 834004",
-   "email": "ho@tvnl.in",
-   "phone": "+91-651-2501015, 2506055",
-   "hours": "Mon–Fri, 10:00 AM – 6:00 PM"
-  },
-  "plantOffice": {
-   "name": "Plant Office",
-   "addr": "Tenughat Thermal Power Station, P.O T.T.P.S., Lalpania, Dist. Bokaro, Jharkhand, 829149",
-   "email": "ttps@tvnl.in",
-   "phone": "+91-0654-225434",
-   "hours": "Mon–Sat, 10:00 AM – 6:00 PM"
-  }
- },
- "leadership": [
-  {
-   "role": "Managing Director",
-   "name": "Sri. Anil Kumar Sharma",
-   "bio": "Sri. Anil Kumar Sharma, currently holding the post of Managing Director, Tenughat Vidyut Nigam Limited, leads the organisation's mission to deliver reliable thermal power for the people of Jharkhand.",
-   "photoUrl": "https://tvnl.in/img/MD_Tvnl.jpg"
-  }
- ],
- "powerPlants": [
-  {
-   "name": "Tenughat Thermal Power Station (TTPS)",
-   "capacity": "2×210 MW",
-   "status": "Operational",
-   "location": "Lalpania, Bokaro, Jharkhand",
-   "specs": "Coal-fired thermal units near Tenughat Dam; nearest railway station Gomia (~22 km)."
-  }
- ],
- "importantLinks": [
-  {
-   "label": "india.gov.in",
-   "url": "https://www.india.gov.in/"
-  },
-  {
-   "label": "mygov.in",
-   "url": "https://www.mygov.in/"
-  },
-  {
-   "label": "coal.nic.in",
-   "url": "https://coal.nic.in/"
-  },
-  {
-   "label": "jharkhand.gov.in",
-   "url": "http://www.jharkhand.gov.in/"
-  },
-  {
-   "label": "Government of Jharkhand",
-   "url": "https://www.jharkhand.gov.in/"
-  },
-  {
-   "label": "Digital India",
-   "url": "https://www.digitalindia.gov.in/"
-  }
- ],
- "extensionNotices": [
-  {
-   "title": "Extension Notices",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/extnoti.php"
-  },
-  {
-   "title": "Extension Notices",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/#menu4"
-  },
-  {
-   "title": "Extension notice of NIT No:- 068/BMD(Mill & Aux)/P/TVNL/RAN /2019-20",
-   "nitNo": "068/BMD",
-   "date": "",
-   "finYear": "2019-20",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_doc_ext/extnsn_notc_2_068.pdf"
-  },
-  {
-   "title": "Extension notice of NIT No:- 06/C&I-II/W/TVNL/RAN/2020-21",
-   "nitNo": "06/C&I-II/W/TVNL/RAN/2020-21",
-   "date": "",
-   "finYear": "2020-21",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_doc_ext/27_10_2020_extnsn_notc_nit_06.pdf"
-  },
-  {
-   "title": "e-Tender Extension Notice for NIT No:- 08/OP/P/TVNL/RAN/2026-27, Dated 04-06-2026",
-   "nitNo": "08/OP/P/TVNL/RAN/2026-27",
-   "date": "04-06-2026",
-   "finYear": "2026-27",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/tender_extension_notics_04062026.pdf"
-  },
-  {
-   "title": "e-Tender Extension Notice for NIT No:- 42/BMD/P/TVNL/RAN/2025-26, Dated 21-05-2026",
-   "nitNo": "42/BMD/P/TVNL/RAN/2025-26",
-   "date": "21-05-2026",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e_tender_extension_notice_22052026.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 05/CIVIL/W/TVNL/RAN/2026-27, Dated: 04-05-2026",
-   "nitNo": "05/CIVIL/W/TVNL/RAN/2026-27",
-   "date": "04-05-2026",
-   "finYear": "2026-27",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/nit_05_extnsn_notc_127_tvnl_2627.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No: 29/HR/W/TVNL/RAN/2025– 26, Dated: 27-04-2026",
-   "nitNo": "29/HR/W/TVNL/RAN/2025–",
-   "date": "27-04-2026",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e-tender_extension_notices.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- NIT No:- 46/OP/P/TVNL/RAN/2025-26, Dated : 15-04-2026",
-   "nitNo": "46/OP/P/TVNL/RAN/2025-26",
-   "date": "15-04-2026",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e-tender-ex-not_46.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 39/OPERATION/P/TVNL/RAN/2025-26, Dated : 15-04-2026",
-   "nitNo": "39/OPERATION/P/TVNL/RAN/2025-26",
-   "date": "15-04-2026",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e-tender-ex-not39.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 42/BMD/P/TVNL/RAN/2025-2026, Dated : 15-04-2026",
-   "nitNo": "42/BMD/P/TVNL/RAN/2025-2026",
-   "date": "15-04-2026",
-   "finYear": "2025-2026",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e-tender-ex-not.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 42/BMD/P/TVNL/RAN/2025-2026, Dated : 09-04-2026",
-   "nitNo": "42/BMD/P/TVNL/RAN/2025-2026",
-   "date": "09-04-2026",
-   "finYear": "2025-2026",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/090426_nit_42_extnsn_notc__nit_42_2627.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 29/HR/W/TVNL/RAN/2025–26, Dated : 09-04-2026",
-   "nitNo": "29/HR/W/TVNL/RAN/2025–26",
-   "date": "09-04-2026",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/090426_ltr_33_2627_extnsn_notc_nit_29_tvnl.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 39/OPERATION/P/TVNL/RAN/2025-26, Dated : 26-03-2026",
-   "nitNo": "39/OPERATION/P/TVNL/RAN/2025-26",
-   "date": "26-03-2026",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/2603_26_39_operation_p_tvnl_ran_2526_extnsn.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 37/C&I-I/P/TVNL/RAN/2025–26",
-   "nitNo": "37/C&I-I/P/TVNL/RAN/2025–26",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/090226_extnsn_notc_nit_37_cni_2526.pdf"
-  },
-  {
-   "title": "2nd Tender Extension Notice for NIT No:- 26/ HR/W /TVNL/RAN/2025-26, Dated : 26-12-2025",
-   "nitNo": "26/",
-   "date": "26-12-2025",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/261225_2nd_extnsn_notc _nit_26_tvnl.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 31/EM-II/P/TVNL/RAN/2025–26",
-   "nitNo": "31/EM-II/P/TVNL/RAN/2025–26",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/171225_extnsn_notc_nit_31_em_ii_2526.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 26/ HR/W /TVNL/RAN/2025-26, Dated : 01-12-2025",
-   "nitNo": "26/",
-   "date": "01-12-2025",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/011225_extns_notc_nit_26_hr_2526_tvnl.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT NO- 27/COMM./W/TVNL/RAN/2025–26, Dated : 07-11-2025",
-   "nitNo": "",
-   "date": "07-11-2025",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/071125_extnsn_notc_nit_27_tvnl.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 25/CIVIL/W/TVNL/RAN/2025-26 Dated: 15-10-25",
-   "nitNo": "25/CIVIL/W/TVNL/RAN/2025-26",
-   "date": "15-10-25",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/151025_nit_extnsn_notc_civil_time.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 19/CIVIL/W/TVNL/RAN/2025-26 RFX No-1000012171 Dated: 04-09-25",
-   "nitNo": "19/CIVIL/W/TVNL/RAN/2025-26",
-   "date": "04-09-25",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/260925_nit_19_doc.pdf"
-  },
-  {
-   "title": "2nd Tender Extension Notice for NIT No:- 08/TM/P/TVNL/RAN/25-26 (GEM Tender No. GEM/2025/B/6268604), Dated : 11-08-2025",
-   "nitNo": "08/TM/P/TVNL/RAN/25-26",
-   "date": "11-08-2025",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/110825_2nd_extnsn_notc_nit_8_dg_2526.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 07/CIVIL/W/TVNL/RAN/2025-26, Dated : 07-08-2025",
-   "nitNo": "07/CIVIL/W/TVNL/RAN/2025-26",
-   "date": "07-08-2025",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/070825_nit_extnsn_notc_civil2526.pdf"
-  },
-  {
-   "title": "3rd Tender Extension Notice for NIT : 02/Solar/EPC/TVNL/RAN/2025–26",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/240725_tndr_extnsn_nit_02_solar_2526.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 08/TM/P/TVNL/RAN/25-26 (GEM Tender No. GEM/2025/B/6268604), Dated : 23-07-2025",
-   "nitNo": "08/TM/P/TVNL/RAN/25-26",
-   "date": "23-07-2025",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/230725_extnsn_notc1_nit_08_2526.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No:- 07/CIVIL/W/TVNL/RAN/2025-26, Dated : 17-07-2025",
-   "nitNo": "07/CIVIL/W/TVNL/RAN/2025-26",
-   "date": "17-07-2025",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/170725_extnsn_notc_nit_07_civil_memo_no_529_2526.pdf"
-  },
-  {
-   "title": "2nd Tender Extension Notice for NIT : 02/Solar/EPC/TVNL/RAN/2025–26",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/030725_tndr_extnsn_nit_02_2526.pdf"
-  },
-  {
-   "title": "Tender Extension Notice for NIT No. 05/BMD/P/TVNL/RAN/2024-25",
-   "nitNo": "05/BMD/P/TVNL/RAN/2024-25",
-   "date": "",
-   "finYear": "2024-25",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/260625_extnsn_notc_nit_05_2425.pdf"
-  },
-  {
-   "title": "Tender Extension",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/#."
-  }
- ],
- "cancellationNotices": [
-  {
-   "title": "Cancellation Notices",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": ""
-  },
-  {
-   "title": "Cancellation Notices",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/#menu3"
-  },
-  {
-   "title": "Tender Cancellation Notice for 02/Solar/EPC/TVNL/RAN/2025-26, Dated : 08-07-2026",
-   "nitNo": "",
-   "date": "08-07-2026",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/08_07_26_cncl_notc_nit_02_solar_epc_tvnl_ran_2526.pdf"
-  },
-  {
-   "title": "Cancellation Notice for NIT No:- 45/BMD/W/TVNL/RAN/2025-26 (SRM RFx No-1000013162), Dated : 08-04-2026",
-   "nitNo": "45/BMD/W/TVNL/RAN/2025-26",
-   "date": "08-04-2026",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/080426_memo_no_29_2627_cancl_notc_tvnl.pdf"
-  },
-  {
-   "title": "Cancellation Notice for NIT No:- 23/MTP/W/TVNL/RAN/2025-26 (GEM/2025/B/6704284), Dated : 09-03-2026",
-   "nitNo": "23/MTP/W/TVNL/RAN/2025-26",
-   "date": "09-03-2026",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/090326_cancl_notc_nit_23_2526.pdf"
-  },
-  {
-   "title": "Tender Cancellation Notice for NIT No:- 28/BMD/W/TVNL/RAN/2025-26, Dated : 24-12-2025",
-   "nitNo": "28/BMD/W/TVNL/RAN/2025-26",
-   "date": "24-12-2025",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/241225_cancl_notc__nit_28_bmd_2526.pdf"
-  },
-  {
-   "title": "Tender Cancellation Notice for NIT No:- 04/C&I-II/P/TVNL/RAN/2025–26, Dated : 24-11-2025",
-   "nitNo": "04/C&I-II/P/TVNL/RAN/2025–26",
-   "date": "24-11-2025",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/241125_1148_nit_04_cni_ii_cancl_notc_2526_nw.pdf"
-  },
-  {
-   "title": "Tender Cancellation Notice for NIT No:- 22/C&I-I/P/TVNL/RAN/2025–26 (RFX No-1000011095), Dated : 24-11-2025",
-   "nitNo": "22/C&I-I/P/TVNL/RAN/2025–26",
-   "date": "24-11-2025",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/241125_1147_nit_22_cni_ii_cancl_notc_2526.pdf"
-  },
-  {
-   "title": "Cancellation Notice for NIT No:- 03/BMD/W/TVNL/RAN/2024-25, Dated : 14-11-2025",
-   "nitNo": "03/BMD/W/TVNL/RAN/2024-25",
-   "date": "14-11-2025",
-   "finYear": "2024-25",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/141125_cancl_notc_nit_03_bmd_tvnl.pdf"
-  },
-  {
-   "title": "Tender Cancellation Notice for NIT No:- 34/EMG/W/TVNL/RAN/24-25, Dated : 07-08/2025",
-   "nitNo": "34/EMG/W/TVNL/RAN/24-25",
-   "date": "07-08/2025",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/070825_nit_34_emg_2425_cancl_notc.pdf"
-  },
-  {
-   "title": "Tender Cancellation Notice for NIT No:- 09/CHP-II/W/TVNL/RAN/2025-26 (GEM/2025/B/6412787) and NIT No:- 10/CHP-II/W/TVNL/RAN/2025-26 (GEM/2025/B/6412586), Dated : 30-07-2025",
-   "nitNo": "09/CHP-II/W/TVNL/RAN/2025-26",
-   "date": "30-07-2025",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/30_07_2025_cancl_notc_nit_09_10_chp_ii_2526 - Copy.pdf"
-  }
- ],
- "corrigendums": [
-  {
-   "title": "Corrigendum Notice for NIT No. 51/CIVIL/W/TVNL/RAN/2025-26, Dated: 30-03-2026",
-   "nitNo": "51/CIVIL/W/TVNL/RAN/2025-26",
-   "date": "30-03-2026",
-   "finYear": "2025-26",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/30_03_26_crgdm_notc_nit_51.pdf"
-  }
- ],
- "updates": [
-  {
-   "title": "Tenders Tenders Notices",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/javascript:void(0)"
-  },
-  {
-   "title": "Tender Calender Search",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": ""
-  },
-  {
-   "title": "Tender advanced Search",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": ""
-  },
-  {
-   "title": "Notices Circulars/Office Orders",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/javascript:void(0)"
-  },
-  {
-   "title": "Public Notices",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/p_notice.php"
-  },
-  {
-   "title": "Employment Notices",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/empNoti.php"
-  },
-  {
-   "title": "Tender Payment",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/tvnlmtbs/"
-  },
-  {
-   "title": "Public Notices",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/#pn"
-  },
-  {
-   "title": "Vendor Bidding Manual for Open Tender",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/pdf/TVNL_Vendor_Manual_for_Open_Tender.pdf"
-  },
-  {
-   "title": "Public Notice - Objections/Comment invited from various stakeholders on the Petition submitted by TVNL for Business Plan and MYT (Multi-Year Tariff) for the Control Period FY 2026-27 to FY 2030-31, Letter No. 38/26-27, Dated : 10-04-2026",
-   "nitNo": "",
-   "date": "10-04-2026",
-   "finYear": "2026-27",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/10_04_26_publc_notc_ltr_no_38_2627doc.pdf"
-  },
-  {
-   "title": "Public Notice - Objections / Comments invited from various stakeholders on the Petition submitted by Tenughat Vidyut Nigam Limited (TVNL) for True-up petition for FY 2021-22 & FY 2022-23 (Falling under Third Control Period), Letter No. 941/25-26, Dated : 06-10-2025",
-   "nitNo": "",
-   "date": "06-10-2025",
-   "finYear": "2021-22",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/06_10_25_publc_notc_ltr_no_941_1526.pdf"
-  },
-  {
-   "title": "Public Notice - Objections/Comments invited from various stakeholders on the Petitions for the approval of True-up for FY 2016-17 to FY 2020-21, Letter No. 378/24-25, Date: 12-07-2024",
-   "nitNo": "",
-   "date": "12-07-2024",
-   "finYear": "2016-17",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/12_07_24_publc_notc_ltr_no_378_2425.pdf"
-  },
-  {
-   "title": "Blacklisting of National Insurance Company Ltd., Munger Branch for two years from participation in any tender of TVNL",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/blcklst_nicl_2022.pdf"
-  },
-  {
-   "title": "Tender Notice",
-   "nitNo": "",
-   "date": "",
-   "finYear": "",
-   "docUrl": "https://tvnl.in/#."
-  }
- ],
- "tenders": [
-  {
-   "nitNo": "05/CIVIL/W/TVNL/RAN/2026-27",
-   "title": "Civil maintenance works at TTPS Lalpania",
-   "category": "Works",
-   "finYear": "2026-27",
-   "date": "04-05-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Civil maintenance works at TTPS Lalpania — SRM e-tender, NIT 05/CIVIL/W/TVNL/RAN/2026-27."
-  },
-  {
-   "nitNo": "08/OP/P/TVNL/RAN/2026-27",
-   "title": "Operation (shift) duty of 2×210 MW units at Tenughat Thermal Power Station, Lalpania for 01 (One) Year",
-   "category": "Services",
-   "finYear": "2026-27",
-   "date": "04-06-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Operation (shift) duty of 2×210 MW units at Tenughat Thermal Power Station, Lalpania for 01 (One) Year — SRM e-tender, NIT 08/OP/P/TVNL/RAN/2026-27."
-  },
-  {
-   "nitNo": "26/EM-I/W/TVNL/RAN/2026-27",
-   "title": "Electrical maintenance package — EM-I division",
-   "category": "Works",
-   "finYear": "2026-27",
-   "date": "12-05-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Electrical maintenance package — EM-I division — SRM e-tender, NIT 26/EM-I/W/TVNL/RAN/2026-27."
-  },
-  {
-   "nitNo": "06/TM/P/TVNL/RAN/26-27",
-   "title": "Procurement of turbine-maintenance spares",
-   "category": "Procurement",
-   "finYear": "2026-27",
-   "date": "20-05-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Procurement of turbine-maintenance spares — SRM e-tender, NIT 06/TM/P/TVNL/RAN/26-27."
-  },
-  {
-   "nitNo": "02/Solar/EPC/TVNL/RAN/2025-26",
-   "title": "EPC for grid-connected solar PV plant",
-   "category": "Works",
-   "finYear": "2025-26",
-   "date": "18-02-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "EPC for grid-connected solar PV plant — SRM e-tender, NIT 02/Solar/EPC/TVNL/RAN/2025-26."
-  },
-  {
-   "nitNo": "23/MTP/W/TVNL/RAN/2025-26",
-   "title": "Mechanical & thermal plant overhaul works",
-   "category": "Works",
-   "finYear": "2025-26",
-   "date": "09-03-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Mechanical & thermal plant overhaul works — SRM e-tender, NIT 23/MTP/W/TVNL/RAN/2025-26."
-  },
-  {
-   "nitNo": "13/IT/W/TVNL/RAN/2025-26",
-   "title": "IT infrastructure & networking works",
-   "category": "Works",
-   "finYear": "2025-26",
-   "date": "22-01-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "IT infrastructure & networking works — SRM e-tender, NIT 13/IT/W/TVNL/RAN/2025-26."
-  },
-  {
-   "nitNo": "09/CHP-II/W/TVNL/RAN/2025-26",
-   "title": "Coal Handling Plant (CHP-II) refurbishment works",
-   "category": "Works",
-   "finYear": "2025-26",
-   "date": "15-12-2025",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Coal Handling Plant (CHP-II) refurbishment works — SRM e-tender, NIT 09/CHP-II/W/TVNL/RAN/2025-26."
-  },
-  {
-   "nitNo": "28/BMD/W/TVNL/RAN/2025-26",
-   "title": "Boiler Maintenance Division (BMD) capital works",
-   "category": "Works",
-   "finYear": "2025-26",
-   "date": "03-02-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Boiler Maintenance Division (BMD) capital works — SRM e-tender, NIT 28/BMD/W/TVNL/RAN/2025-26."
-  },
-  {
-   "nitNo": "25/CIVIL/W/TVNL/RAN/2025-26",
-   "title": "Township civil upgradation works",
-   "category": "Works",
-   "finYear": "2025-26",
-   "date": "11-11-2025",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Township civil upgradation works — SRM e-tender, NIT 25/CIVIL/W/TVNL/RAN/2025-26."
-  },
-  {
-   "nitNo": "20/EM-II/W/TVNL/RAN/2025-26",
-   "title": "Switchyard & EM-II electrical works",
-   "category": "Works",
-   "finYear": "2025-26",
-   "date": "28-10-2025",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "Switchyard & EM-II electrical works — SRM e-tender, NIT 20/EM-II/W/TVNL/RAN/2025-26."
-  },
-  {
-   "nitNo": "29/HR/W/TVNL/RAN/2025-26",
-   "title": "HR & administrative support services",
-   "category": "Services",
-   "finYear": "2025-26",
-   "date": "27-04-2026",
-   "docUrl": "https://tvnl.in/tndr_noti.php",
-   "description": "HR & administrative support services — SRM e-tender, NIT 29/HR/W/TVNL/RAN/2025-26."
-  },
-  {
-   "nitNo": "",
-   "title": "Tender Clarification Notice against the NIT NO-05/CIVIL/W/TVNL/RAN/2026-27, Dated : 08-05-2026",
-   "description": "Tender Clarification Notice against the NIT NO-05/CIVIL/W/TVNL/RAN/2026-27, Dated : 08-05-2026",
-   "finYear": "2026-27",
-   "category": "Tender",
-   "date": "08-05-2026",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/080526_crgdm_notc_nit_05_civil_2627_nw.pdf"
-  },
-  {
-   "nitNo": "25/CIVIL/W/TVNL/RAN/2025-26",
-   "title": "Clarification Notice against the NIT No-25/CIVIL/W/TVNL/RAN/2025-26 due on 31.10.2025.",
-   "description": "Clarification Notice against the NIT No-25/CIVIL/W/TVNL/RAN/2025-26 due on 31.10.2025.",
-   "finYear": "2025-26",
-   "category": "Tender",
-   "date": "",
-   "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/clarification_notice_no._1014.pdf"
-  }
- ],
- "directory": [
-  {
-   "slNo": 1,
-   "name": "Shri Anil Kumar Sharma",
-   "designation": "Managing Director — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 2,
-   "name": "Shri Ghanshyam Kumar",
-   "designation": "ESE (Commercial) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 3,
-   "name": "Shri Rajesh Ranjan",
-   "designation": "ESE (P&S , C&M , Coal Cell, Extension) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 4,
-   "name": "Shri Uday Kumar Singh",
-   "designation": "ESE (Fuel & Ash) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 5,
-   "name": "Shri Nurul Hoda",
-   "designation": "ESE (O & S) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 6,
-   "name": "Shri S. R. Singh",
-   "designation": "ESE — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 7,
-   "name": "Shri Kavindra Ram",
-   "designation": "EEE (C&M) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 8,
-   "name": "Shri Ganga Ravidas",
-   "designation": "EEE (New Project and Environment) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 9,
-   "name": "Shri Rajeev Prasad",
-   "designation": "EEE (C&M) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 10,
-   "name": "Shri Ramkinkar Prasad",
-   "designation": "EEE (C&M) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 11,
-   "name": "Shri Bhola Singh",
-   "designation": "Sr. Law Officier — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 12,
-   "name": "Shri Dipak Kumar Singh",
-   "designation": "Company Secretary — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 13,
-   "name": "Shri Saurabh Jha",
-   "designation": "DDA — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 14,
-   "name": "Smt Shweta Lovely Purti",
-   "designation": "D.D.P.(HR) — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 15,
-   "name": "Shri P. R. Remnan",
-   "designation": "PS to MD — TVNL HEAD QUARTER",
-   "email": ""
-  },
-  {
-   "slNo": 16,
-   "name": "Shri Anil Kumar Sharma",
-   "designation": "General Manager cum Chief Engineer — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 17,
-   "name": "Shri K. D. Singh",
-   "designation": "ESE(Fire & safety) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 18,
-   "name": "Shri P. Dungdung",
-   "designation": "ESE(CHP-1/Purchase) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 19,
-   "name": "Shri Ajay Kr. Pandey",
-   "designation": "ESE(O&EE/EMG) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 20,
-   "name": "Shri Dharmendra Kumar",
-   "designation": "ESE(CHP-II) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 21,
-   "name": "Shri Ashok Prasad",
-   "designation": "ESE(HR/Civil) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 22,
-   "name": "Shri Rajiv Kr. Agrawal",
-   "designation": "ESE(Operation & IT) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 23,
-   "name": "Shri Ashish Kr. Sharma",
-   "designation": "ESE(EM-II) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 24,
-   "name": "Shri Imroz Alam",
-   "designation": "ESE(TMD) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 25,
-   "name": "Shri Dhirendra Prasad",
-   "designation": "HOD(ESP, AHP) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 26,
-   "name": "Shri Bhaskar Kumar",
-   "designation": "HOD(C&I-I) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 27,
-   "name": "Shri Sarvesh Prasad",
-   "designation": "HOD(EM-I) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 28,
-   "name": "Shri Rajeev Kumar",
-   "designation": "HOD(MTP & C&I-II) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 29,
-   "name": "Shri Niraj Kumar",
-   "designation": "HOD(BMD) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 30,
-   "name": "Shri Balwant Kr. Yadav",
-   "designation": "EEE(Contract) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 31,
-   "name": "Shri J. K. Sinha",
-   "designation": "EEE(EM-II) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 32,
-   "name": "Shri Shambhu Sharan Prabhat",
-   "designation": "EEE(CHP-I) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 33,
-   "name": "Shri Jitendra Kumar SINGH",
-   "designation": "EEE(AHP) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 34,
-   "name": "Shri Gopal Prasad Singh",
-   "designation": "EEE(EM-II) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 35,
-   "name": "Shri Ramesh kumar singh",
-   "designation": "EEE(C&I) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 36,
-   "name": "MD. Nasim Ather",
-   "designation": "EEE(CHP-II) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 37,
-   "name": "Shri Hemant Kumar",
-   "designation": "EEE(TMD) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 38,
-   "name": "Shri NISHANT ORAON",
-   "designation": "EEE(Purchase) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 39,
-   "name": "Shri JULIET TIRKEY",
-   "designation": "EEE(BMD) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 40,
-   "name": "Shri Rajendra Prasad Rakesh",
-   "designation": "EEE(MTP & O&EE) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 41,
-   "name": "Shri Suraj Kr. Sinha",
-   "designation": "EEE(F&S) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 42,
-   "name": "Shri S K P Srivastava",
-   "designation": "EEE(O&E) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 43,
-   "name": "Shri Ramkishor Singh Munda",
-   "designation": "EEE(CHP-II) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 44,
-   "name": "Shri Ajay khakha",
-   "designation": "EEE(Store) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 45,
-   "name": "Shri Ranjeet Kachhap",
-   "designation": "EEE(EM-I) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 46,
-   "name": "Smt. Chandmani Munda",
-   "designation": "EEE(MTP) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 47,
-   "name": "Md. Nehaluddin Ansari",
-   "designation": "EE (Civil-I) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 48,
-   "name": "Shri Sona Ram Manjhi",
-   "designation": "EEE(CHP-Track hooper) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 49,
-   "name": "Shri Niraj Kr Mehta",
-   "designation": "EEE(CMC) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 50,
-   "name": "Shri Sanjoy Yadav",
-   "designation": "EEE(CHP-II) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 51,
-   "name": "Shri Maneesh Kr Pandey",
-   "designation": "EEE(Operation General) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 52,
-   "name": "Shri Rakesh Kr Singh",
-   "designation": "DDP(HR) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 53,
-   "name": "Shri Tajendar Singh Malhotra",
-   "designation": "DDA(Accounts) — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 54,
-   "name": "Shri Birendra Kumar",
-   "designation": "SCE Gr-A — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 55,
-   "name": "Shri Vijay Topno",
-   "designation": "SCE Gr-B — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 56,
-   "name": "Shri Sundar Murmu",
-   "designation": "SCE Gr-C — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 57,
-   "name": "Shri B.N.Singh",
-   "designation": "SCE Gr-D — TTPS PLANT",
-   "email": ""
-  },
-  {
-   "slNo": 58,
-   "name": "Shri Himanshu Lakra",
-   "designation": "Chief Engineer (Coal Block) — TVNL LATEHAR OFFICE",
-   "email": ""
-  },
-  {
-   "slNo": 59,
-   "name": "Shri R. R. Prasad",
-   "designation": "ESE — TVNL LATEHAR OFFICE",
-   "email": ""
-  }
- ],
- "employmentNotices": [
-  {
-   "title": "Engagement of Apprentices under Apprentices Act, 1961",
-   "date": "2026-05-10",
-   "docUrl": "https://tvnl.in/empNoti.php"
-  },
-  {
-   "title": "Recruitment of Assistant Engineers (Electrical/Mechanical)",
-   "date": "2026-03-01",
-   "docUrl": "https://tvnl.in/empNoti.php"
-  }
- ],
- "circulars": [
-  {
-   "title": "Office Order — revised working hours at Head Office",
-   "date": "2026-04-01",
-   "docUrl": "https://tvnl.in/cir_off_ord.php"
-  },
-  {
-   "title": "Circular — implementation of e-office across divisions",
-   "date": "2026-02-14",
-   "docUrl": "https://tvnl.in/cir_off_ord.php"
-  }
- ],
- "publicNotices": [
-  {
-   "title": "Public Notice — ash disposal utilisation guidelines",
-   "date": "2026-03-20",
-   "docUrl": "https://tvnl.in/p_notice.php"
-  },
-  {
-   "title": "Public Notice — vendor registration open for 2026-27",
-   "date": "2026-04-05",
-   "docUrl": "https://tvnl.in/p_notice.php"
-  }
- ],
- "downloads": [
-  {
-   "title": "Bidder Form for ID & Password",
-   "category": "Bidder",
-   "fileUrl": "https://tvnl.in/pdf/bidder_form.pdf"
-  },
-  {
-   "title": "Vendor Bidding Manual for Open Tender",
-   "category": "Bidder",
-   "fileUrl": "https://tvnl.in/pdf/vendor_manual.pdf"
-  },
-  {
-   "title": "Format of BG for EMD",
-   "category": "Bidder",
-   "fileUrl": "https://tvnl.in/pdf/bg_emd.pdf"
-  },
-  {
-   "title": "Download",
-   "category": "Format",
-   "fileUrl": "https://tvnl.in/../master_login/dashboard/upload_doc_ext/tender_extension_notics_04062026.pdf"
-  }
- ],
- "newsEvents": [
-  {
-   "title": "TTPS achieves record PLF for the quarter",
-   "date": "2026-04-15",
-   "body": "Tenughat Thermal Power Station recorded its highest quarterly plant load factor, reinforcing reliable supply to the Jharkhand grid.",
-   "imageUrl": ""
-  },
-  {
-   "title": "Safety Week observed at TTPS Lalpania",
-   "date": "2026-03-04",
-   "body": "TVNL observed National Safety Week with drills and awareness sessions across plant divisions.",
-   "imageUrl": ""
-  }
- ],
- "boardMembers": [
-  {
-   "name": "Sri. Sudhir Tripathi, IAS",
-   "designation": "Chief secretary GOJ cum CMD JUVNL and Director TVNL",
-   "bio": "",
-   "photoUrl": ""
-  },
-  {
-   "name": "Sri. Devendra Kumar Tiwari, IAS",
-   "designation": "Development Commissioner, GoJ & Chairman, TVNL",
-   "bio": "",
-   "photoUrl": ""
-  },
-  {
-   "name": "Shri Avinash Kumar, IAS",
-   "designation": "Principal Secretary, Energy, Government of Jharkhand And Chairman, TVNL",
-   "bio": "",
-   "photoUrl": ""
-  },
-  {
-   "name": "Shri. Ajoy Kumar Singh (IAS)",
-   "designation": "Principal Secretary, Finance, Government of Jharkhand And Director TVNL",
-   "bio": "",
-   "photoUrl": ""
-  },
-  {
-   "name": "Dr. Nitin Madan Kulkarni, IAS",
-   "designation": "Secretary, Energy, GoJ & Director, TVNL",
-   "bio": "",
-   "photoUrl": ""
-  },
-  {
-   "name": "Sri. Anil Kumar Sharma",
-   "designation": "Managing Director, TVNL",
-   "bio": "",
-   "photoUrl": ""
-  }
- ],
- "ashReports": [
-  {
-   "period": "Details of Ash utilization during the Month of June 2026",
-   "fileUrl": ""
-  },
-  {
-   "period": "SI NO. Name of Ash Disposal Area Ash disposal area in Hectare Design Life of Ash disposal area Pond Ash Availability in ",
-   "fileUrl": ""
-  },
-  {
-   "period": "Dry ESP Fly Ash Bottom Ash Pond Ash",
-   "fileUrl": ""
-  },
-  {
-   "period": "ASH UTILIZATION DETAILS June 2026",
-   "fileUrl": ""
-  },
-  {
-   "period": "SI NO. Area of Utilization For the Month (June 2026) Ash utilized in MT Cummulative for Year (FY 26-27) Ash Utilized in ",
-   "fileUrl": ""
-  },
-  {
-   "period": "Dry ESP Fly Ash Bottom Ash Pond Ash Dry ESP Fly Ash Bottom Ash Pond Ash",
-   "fileUrl": ""
-  },
-  {
-   "period": "Second Form is incomplate....",
-   "fileUrl": ""
-  },
-  {
-   "period": "Third Form is incomplate....",
-   "fileUrl": ""
-  },
-  {
-   "period": "Fourth Form is incomplate....",
-   "fileUrl": ""
-  },
-  {
-   "period": "Fifth Form is incomplate....",
-   "fileUrl": ""
-  },
-  {
-   "period": "Sixth Form is incomplate....",
-   "fileUrl": ""
-  },
-  {
-   "period": "Seventh Form is incomplate....",
-   "fileUrl": ""
-  },
-  {
-   "period": "Bottom ash -collected from the bottom of furnace Dry ESP Fly Ash - Colected from ESP and stored in Silo Pond Ash - Fly a",
-   "fileUrl": ""
-  }
- ]
+  "brand": {
+    "name": "Tenughat Vidyut Nigam Limited",
+    "short": "TVNL",
+    "tagline": "A Govt. of Jharkhand Undertaking",
+    "cin": "U40101JH1987SGC013153"
+  },
+  "contact": {
+    "headOffice": {
+      "name": "Head Office",
+      "addr": "JUPMI Building, ABD Area, Ranchi Smart City, P.O & P.S Dhurwa, Dist. Ranchi, Jharkhand, 834004",
+      "email": "ho@tvnl.in",
+      "phone": "+91-651-2501015, 2506055",
+      "hours": "Mon–Fri, 10:00 AM – 6:00 PM"
+    },
+    "plantOffice": {
+      "name": "Plant Office",
+      "addr": "Tenughat Thermal Power Station, P.O T.T.P.S., Lalpania, Dist. Bokaro, Jharkhand, 829149",
+      "email": "ttps@tvnl.in",
+      "phone": "+91-0654-225434",
+      "hours": "Mon–Sat, 10:00 AM – 6:00 PM"
+    }
+  },
+  "leadership": [
+    {
+      "role": "Managing Director",
+      "name": "Sri. Anil Kumar Sharma",
+      "bio": "Sri. Anil Kumar Sharma, currently holding the post of Managing Director, Tenughat Vidyut Nigam Limited, leads the organisation's mission to deliver reliable thermal power for the people of Jharkhand.",
+      "photoUrl": "https://tvnl.in/img/MD_Tvnl.jpg"
+    }
+  ],
+  "powerPlants": [
+    {
+      "name": "Tenughat Thermal Power Station (TTPS)",
+      "capacity": "2×210 MW",
+      "status": "Operational",
+      "location": "Lalpania, Bokaro, Jharkhand",
+      "specs": "Coal-fired thermal units near Tenughat Dam; nearest railway station Gomia (~22 km)."
+    }
+  ],
+  "importantLinks": [
+    {
+      "label": "india.gov.in",
+      "url": "https://www.india.gov.in/"
+    },
+    {
+      "label": "mygov.in",
+      "url": "https://www.mygov.in/"
+    },
+    {
+      "label": "coal.nic.in",
+      "url": "https://coal.nic.in/"
+    },
+    {
+      "label": "jharkhand.gov.in",
+      "url": "http://www.jharkhand.gov.in/"
+    },
+    {
+      "label": "Government of Jharkhand",
+      "url": "https://www.jharkhand.gov.in/"
+    },
+    {
+      "label": "Digital India",
+      "url": "https://www.digitalindia.gov.in/"
+    }
+  ],
+  "extensionNotices": [
+    {
+      "title": "Extension Notices",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/extnoti.php"
+    },
+    {
+      "title": "Extension Notices",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/#menu4"
+    },
+    {
+      "title": "Extension notice of NIT No:- 068/BMD(Mill & Aux)/P/TVNL/RAN /2019-20",
+      "nitNo": "068/BMD",
+      "date": "",
+      "finYear": "2019-20",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_doc_ext/extnsn_notc_2_068.pdf"
+    },
+    {
+      "title": "Extension notice of NIT No:- 06/C&I-II/W/TVNL/RAN/2020-21",
+      "nitNo": "06/C&I-II/W/TVNL/RAN/2020-21",
+      "date": "",
+      "finYear": "2020-21",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_doc_ext/27_10_2020_extnsn_notc_nit_06.pdf"
+    },
+    {
+      "title": "e-Tender Extension Notice for NIT No:- 08/OP/P/TVNL/RAN/2026-27, Dated 04-06-2026",
+      "nitNo": "08/OP/P/TVNL/RAN/2026-27",
+      "date": "04-06-2026",
+      "finYear": "2026-27",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/tender_extension_notics_04062026.pdf"
+    },
+    {
+      "title": "e-Tender Extension Notice for NIT No:- 42/BMD/P/TVNL/RAN/2025-26, Dated 21-05-2026",
+      "nitNo": "42/BMD/P/TVNL/RAN/2025-26",
+      "date": "21-05-2026",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e_tender_extension_notice_22052026.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 05/CIVIL/W/TVNL/RAN/2026-27, Dated: 04-05-2026",
+      "nitNo": "05/CIVIL/W/TVNL/RAN/2026-27",
+      "date": "04-05-2026",
+      "finYear": "2026-27",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/nit_05_extnsn_notc_127_tvnl_2627.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No: 29/HR/W/TVNL/RAN/2025– 26, Dated: 27-04-2026",
+      "nitNo": "29/HR/W/TVNL/RAN/2025–",
+      "date": "27-04-2026",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e-tender_extension_notices.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- NIT No:- 46/OP/P/TVNL/RAN/2025-26, Dated : 15-04-2026",
+      "nitNo": "46/OP/P/TVNL/RAN/2025-26",
+      "date": "15-04-2026",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e-tender-ex-not_46.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 39/OPERATION/P/TVNL/RAN/2025-26, Dated : 15-04-2026",
+      "nitNo": "39/OPERATION/P/TVNL/RAN/2025-26",
+      "date": "15-04-2026",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e-tender-ex-not39.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 42/BMD/P/TVNL/RAN/2025-2026, Dated : 15-04-2026",
+      "nitNo": "42/BMD/P/TVNL/RAN/2025-2026",
+      "date": "15-04-2026",
+      "finYear": "2025-2026",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/e-tender-ex-not.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 42/BMD/P/TVNL/RAN/2025-2026, Dated : 09-04-2026",
+      "nitNo": "42/BMD/P/TVNL/RAN/2025-2026",
+      "date": "09-04-2026",
+      "finYear": "2025-2026",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/090426_nit_42_extnsn_notc__nit_42_2627.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 29/HR/W/TVNL/RAN/2025–26, Dated : 09-04-2026",
+      "nitNo": "29/HR/W/TVNL/RAN/2025–26",
+      "date": "09-04-2026",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/090426_ltr_33_2627_extnsn_notc_nit_29_tvnl.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 39/OPERATION/P/TVNL/RAN/2025-26, Dated : 26-03-2026",
+      "nitNo": "39/OPERATION/P/TVNL/RAN/2025-26",
+      "date": "26-03-2026",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/2603_26_39_operation_p_tvnl_ran_2526_extnsn.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 37/C&I-I/P/TVNL/RAN/2025–26",
+      "nitNo": "37/C&I-I/P/TVNL/RAN/2025–26",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/090226_extnsn_notc_nit_37_cni_2526.pdf"
+    },
+    {
+      "title": "2nd Tender Extension Notice for NIT No:- 26/ HR/W /TVNL/RAN/2025-26, Dated : 26-12-2025",
+      "nitNo": "26/",
+      "date": "26-12-2025",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/261225_2nd_extnsn_notc _nit_26_tvnl.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 31/EM-II/P/TVNL/RAN/2025–26",
+      "nitNo": "31/EM-II/P/TVNL/RAN/2025–26",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/171225_extnsn_notc_nit_31_em_ii_2526.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 26/ HR/W /TVNL/RAN/2025-26, Dated : 01-12-2025",
+      "nitNo": "26/",
+      "date": "01-12-2025",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/011225_extns_notc_nit_26_hr_2526_tvnl.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT NO- 27/COMM./W/TVNL/RAN/2025–26, Dated : 07-11-2025",
+      "nitNo": "",
+      "date": "07-11-2025",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/071125_extnsn_notc_nit_27_tvnl.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 25/CIVIL/W/TVNL/RAN/2025-26 Dated: 15-10-25",
+      "nitNo": "25/CIVIL/W/TVNL/RAN/2025-26",
+      "date": "15-10-25",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/151025_nit_extnsn_notc_civil_time.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 19/CIVIL/W/TVNL/RAN/2025-26 RFX No-1000012171 Dated: 04-09-25",
+      "nitNo": "19/CIVIL/W/TVNL/RAN/2025-26",
+      "date": "04-09-25",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/260925_nit_19_doc.pdf"
+    },
+    {
+      "title": "2nd Tender Extension Notice for NIT No:- 08/TM/P/TVNL/RAN/25-26 (GEM Tender No. GEM/2025/B/6268604), Dated : 11-08-2025",
+      "nitNo": "08/TM/P/TVNL/RAN/25-26",
+      "date": "11-08-2025",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/110825_2nd_extnsn_notc_nit_8_dg_2526.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 07/CIVIL/W/TVNL/RAN/2025-26, Dated : 07-08-2025",
+      "nitNo": "07/CIVIL/W/TVNL/RAN/2025-26",
+      "date": "07-08-2025",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/070825_nit_extnsn_notc_civil2526.pdf"
+    },
+    {
+      "title": "3rd Tender Extension Notice for NIT : 02/Solar/EPC/TVNL/RAN/2025–26",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/240725_tndr_extnsn_nit_02_solar_2526.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 08/TM/P/TVNL/RAN/25-26 (GEM Tender No. GEM/2025/B/6268604), Dated : 23-07-2025",
+      "nitNo": "08/TM/P/TVNL/RAN/25-26",
+      "date": "23-07-2025",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/230725_extnsn_notc1_nit_08_2526.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No:- 07/CIVIL/W/TVNL/RAN/2025-26, Dated : 17-07-2025",
+      "nitNo": "07/CIVIL/W/TVNL/RAN/2025-26",
+      "date": "17-07-2025",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/170725_extnsn_notc_nit_07_civil_memo_no_529_2526.pdf"
+    },
+    {
+      "title": "2nd Tender Extension Notice for NIT : 02/Solar/EPC/TVNL/RAN/2025–26",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/030725_tndr_extnsn_nit_02_2526.pdf"
+    },
+    {
+      "title": "Tender Extension Notice for NIT No. 05/BMD/P/TVNL/RAN/2024-25",
+      "nitNo": "05/BMD/P/TVNL/RAN/2024-25",
+      "date": "",
+      "finYear": "2024-25",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/260625_extnsn_notc_nit_05_2425.pdf"
+    },
+    {
+      "title": "Tender Extension",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/#."
+    }
+  ],
+  "cancellationNotices": [
+    {
+      "title": "Cancellation Notices",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": ""
+    },
+    {
+      "title": "Cancellation Notices",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/#menu3"
+    },
+    {
+      "title": "Tender Cancellation Notice for 02/Solar/EPC/TVNL/RAN/2025-26, Dated : 08-07-2026",
+      "nitNo": "",
+      "date": "08-07-2026",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/08_07_26_cncl_notc_nit_02_solar_epc_tvnl_ran_2526.pdf"
+    },
+    {
+      "title": "Cancellation Notice for NIT No:- 45/BMD/W/TVNL/RAN/2025-26 (SRM RFx No-1000013162), Dated : 08-04-2026",
+      "nitNo": "45/BMD/W/TVNL/RAN/2025-26",
+      "date": "08-04-2026",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/080426_memo_no_29_2627_cancl_notc_tvnl.pdf"
+    },
+    {
+      "title": "Cancellation Notice for NIT No:- 23/MTP/W/TVNL/RAN/2025-26 (GEM/2025/B/6704284), Dated : 09-03-2026",
+      "nitNo": "23/MTP/W/TVNL/RAN/2025-26",
+      "date": "09-03-2026",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/090326_cancl_notc_nit_23_2526.pdf"
+    },
+    {
+      "title": "Tender Cancellation Notice for NIT No:- 28/BMD/W/TVNL/RAN/2025-26, Dated : 24-12-2025",
+      "nitNo": "28/BMD/W/TVNL/RAN/2025-26",
+      "date": "24-12-2025",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/241225_cancl_notc__nit_28_bmd_2526.pdf"
+    },
+    {
+      "title": "Tender Cancellation Notice for NIT No:- 04/C&I-II/P/TVNL/RAN/2025–26, Dated : 24-11-2025",
+      "nitNo": "04/C&I-II/P/TVNL/RAN/2025–26",
+      "date": "24-11-2025",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/241125_1148_nit_04_cni_ii_cancl_notc_2526_nw.pdf"
+    },
+    {
+      "title": "Tender Cancellation Notice for NIT No:- 22/C&I-I/P/TVNL/RAN/2025–26 (RFX No-1000011095), Dated : 24-11-2025",
+      "nitNo": "22/C&I-I/P/TVNL/RAN/2025–26",
+      "date": "24-11-2025",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/241125_1147_nit_22_cni_ii_cancl_notc_2526.pdf"
+    },
+    {
+      "title": "Cancellation Notice for NIT No:- 03/BMD/W/TVNL/RAN/2024-25, Dated : 14-11-2025",
+      "nitNo": "03/BMD/W/TVNL/RAN/2024-25",
+      "date": "14-11-2025",
+      "finYear": "2024-25",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/141125_cancl_notc_nit_03_bmd_tvnl.pdf"
+    },
+    {
+      "title": "Tender Cancellation Notice for NIT No:- 34/EMG/W/TVNL/RAN/24-25, Dated : 07-08/2025",
+      "nitNo": "34/EMG/W/TVNL/RAN/24-25",
+      "date": "07-08/2025",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/070825_nit_34_emg_2425_cancl_notc.pdf"
+    },
+    {
+      "title": "Tender Cancellation Notice for NIT No:- 09/CHP-II/W/TVNL/RAN/2025-26 (GEM/2025/B/6412787) and NIT No:- 10/CHP-II/W/TVNL/RAN/2025-26 (GEM/2025/B/6412586), Dated : 30-07-2025",
+      "nitNo": "09/CHP-II/W/TVNL/RAN/2025-26",
+      "date": "30-07-2025",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/30_07_2025_cancl_notc_nit_09_10_chp_ii_2526 - Copy.pdf"
+    }
+  ],
+  "corrigendums": [
+    {
+      "title": "Corrigendum Notice for NIT No. 51/CIVIL/W/TVNL/RAN/2025-26, Dated: 30-03-2026",
+      "nitNo": "51/CIVIL/W/TVNL/RAN/2025-26",
+      "date": "30-03-2026",
+      "finYear": "2025-26",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/30_03_26_crgdm_notc_nit_51.pdf"
+    }
+  ],
+  "updates": [
+    {
+      "title": "Tenders Tenders Notices",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/javascript:void(0)"
+    },
+    {
+      "title": "Tender Calender Search",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": ""
+    },
+    {
+      "title": "Tender advanced Search",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": ""
+    },
+    {
+      "title": "Notices Circulars/Office Orders",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/javascript:void(0)"
+    },
+    {
+      "title": "Public Notices",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/p_notice.php"
+    },
+    {
+      "title": "Employment Notices",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/empNoti.php"
+    },
+    {
+      "title": "Tender Payment",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/tvnlmtbs/"
+    },
+    {
+      "title": "Public Notices",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/#pn"
+    },
+    {
+      "title": "Vendor Bidding Manual for Open Tender",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/pdf/TVNL_Vendor_Manual_for_Open_Tender.pdf"
+    },
+    {
+      "title": "Public Notice - Objections/Comment invited from various stakeholders on the Petition submitted by TVNL for Business Plan and MYT (Multi-Year Tariff) for the Control Period FY 2026-27 to FY 2030-31, Letter No. 38/26-27, Dated : 10-04-2026",
+      "nitNo": "",
+      "date": "10-04-2026",
+      "finYear": "2026-27",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/10_04_26_publc_notc_ltr_no_38_2627doc.pdf"
+    },
+    {
+      "title": "Public Notice - Objections / Comments invited from various stakeholders on the Petition submitted by Tenughat Vidyut Nigam Limited (TVNL) for True-up petition for FY 2021-22 & FY 2022-23 (Falling under Third Control Period), Letter No. 941/25-26, Dated : 06-10-2025",
+      "nitNo": "",
+      "date": "06-10-2025",
+      "finYear": "2021-22",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/06_10_25_publc_notc_ltr_no_941_1526.pdf"
+    },
+    {
+      "title": "Public Notice - Objections/Comments invited from various stakeholders on the Petitions for the approval of True-up for FY 2016-17 to FY 2020-21, Letter No. 378/24-25, Date: 12-07-2024",
+      "nitNo": "",
+      "date": "12-07-2024",
+      "finYear": "2016-17",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/12_07_24_publc_notc_ltr_no_378_2425.pdf"
+    },
+    {
+      "title": "Blacklisting of National Insurance Company Ltd., Munger Branch for two years from participation in any tender of TVNL",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/blcklst_nicl_2022.pdf"
+    },
+    {
+      "title": "Tender Notice",
+      "nitNo": "",
+      "date": "",
+      "finYear": "",
+      "docUrl": "https://tvnl.in/#."
+    }
+  ],
+  "tenders": [
+    {
+      "nitNo": "05/CIVIL/W/TVNL/RAN/2026-27",
+      "title": "Civil maintenance works at TTPS Lalpania",
+      "category": "Works",
+      "finYear": "2026-27",
+      "date": "04-05-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Civil maintenance works at TTPS Lalpania — SRM e-tender, NIT 05/CIVIL/W/TVNL/RAN/2026-27."
+    },
+    {
+      "nitNo": "08/OP/P/TVNL/RAN/2026-27",
+      "title": "Operation (shift) duty of 2×210 MW units at Tenughat Thermal Power Station, Lalpania for 01 (One) Year",
+      "category": "Services",
+      "finYear": "2026-27",
+      "date": "04-06-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Operation (shift) duty of 2×210 MW units at Tenughat Thermal Power Station, Lalpania for 01 (One) Year — SRM e-tender, NIT 08/OP/P/TVNL/RAN/2026-27."
+    },
+    {
+      "nitNo": "26/EM-I/W/TVNL/RAN/2026-27",
+      "title": "Electrical maintenance package — EM-I division",
+      "category": "Works",
+      "finYear": "2026-27",
+      "date": "12-05-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Electrical maintenance package — EM-I division — SRM e-tender, NIT 26/EM-I/W/TVNL/RAN/2026-27."
+    },
+    {
+      "nitNo": "06/TM/P/TVNL/RAN/26-27",
+      "title": "Procurement of turbine-maintenance spares",
+      "category": "Procurement",
+      "finYear": "2026-27",
+      "date": "20-05-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Procurement of turbine-maintenance spares — SRM e-tender, NIT 06/TM/P/TVNL/RAN/26-27."
+    },
+    {
+      "nitNo": "02/Solar/EPC/TVNL/RAN/2025-26",
+      "title": "EPC for grid-connected solar PV plant",
+      "category": "Works",
+      "finYear": "2025-26",
+      "date": "18-02-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "EPC for grid-connected solar PV plant — SRM e-tender, NIT 02/Solar/EPC/TVNL/RAN/2025-26."
+    },
+    {
+      "nitNo": "23/MTP/W/TVNL/RAN/2025-26",
+      "title": "Mechanical & thermal plant overhaul works",
+      "category": "Works",
+      "finYear": "2025-26",
+      "date": "09-03-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Mechanical & thermal plant overhaul works — SRM e-tender, NIT 23/MTP/W/TVNL/RAN/2025-26."
+    },
+    {
+      "nitNo": "13/IT/W/TVNL/RAN/2025-26",
+      "title": "IT infrastructure & networking works",
+      "category": "Works",
+      "finYear": "2025-26",
+      "date": "22-01-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "IT infrastructure & networking works — SRM e-tender, NIT 13/IT/W/TVNL/RAN/2025-26."
+    },
+    {
+      "nitNo": "09/CHP-II/W/TVNL/RAN/2025-26",
+      "title": "Coal Handling Plant (CHP-II) refurbishment works",
+      "category": "Works",
+      "finYear": "2025-26",
+      "date": "15-12-2025",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Coal Handling Plant (CHP-II) refurbishment works — SRM e-tender, NIT 09/CHP-II/W/TVNL/RAN/2025-26."
+    },
+    {
+      "nitNo": "28/BMD/W/TVNL/RAN/2025-26",
+      "title": "Boiler Maintenance Division (BMD) capital works",
+      "category": "Works",
+      "finYear": "2025-26",
+      "date": "03-02-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Boiler Maintenance Division (BMD) capital works — SRM e-tender, NIT 28/BMD/W/TVNL/RAN/2025-26."
+    },
+    {
+      "nitNo": "25/CIVIL/W/TVNL/RAN/2025-26",
+      "title": "Township civil upgradation works",
+      "category": "Works",
+      "finYear": "2025-26",
+      "date": "11-11-2025",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Township civil upgradation works — SRM e-tender, NIT 25/CIVIL/W/TVNL/RAN/2025-26."
+    },
+    {
+      "nitNo": "20/EM-II/W/TVNL/RAN/2025-26",
+      "title": "Switchyard & EM-II electrical works",
+      "category": "Works",
+      "finYear": "2025-26",
+      "date": "28-10-2025",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "Switchyard & EM-II electrical works — SRM e-tender, NIT 20/EM-II/W/TVNL/RAN/2025-26."
+    },
+    {
+      "nitNo": "29/HR/W/TVNL/RAN/2025-26",
+      "title": "HR & administrative support services",
+      "category": "Services",
+      "finYear": "2025-26",
+      "date": "27-04-2026",
+      "docUrl": "https://tvnl.in/tndr_noti.php",
+      "description": "HR & administrative support services — SRM e-tender, NIT 29/HR/W/TVNL/RAN/2025-26."
+    },
+    {
+      "nitNo": "",
+      "title": "Tender Clarification Notice against the NIT NO-05/CIVIL/W/TVNL/RAN/2026-27, Dated : 08-05-2026",
+      "description": "Tender Clarification Notice against the NIT NO-05/CIVIL/W/TVNL/RAN/2026-27, Dated : 08-05-2026",
+      "finYear": "2026-27",
+      "category": "Tender",
+      "date": "08-05-2026",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/080526_crgdm_notc_nit_05_civil_2627_nw.pdf"
+    },
+    {
+      "nitNo": "25/CIVIL/W/TVNL/RAN/2025-26",
+      "title": "Clarification Notice against the NIT No-25/CIVIL/W/TVNL/RAN/2025-26 due on 31.10.2025.",
+      "description": "Clarification Notice against the NIT No-25/CIVIL/W/TVNL/RAN/2025-26 due on 31.10.2025.",
+      "finYear": "2025-26",
+      "category": "Tender",
+      "date": "",
+      "docUrl": "https://tvnl.in/master_login/dashboard/upload_notice_all_type/clarification_notice_no._1014.pdf"
+    }
+  ],
+  "directory": [
+    {
+      "slNo": 1,
+      "name": "Shri Anil Kumar Sharma",
+      "designation": "Managing Director — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 2,
+      "name": "Shri Ghanshyam Kumar",
+      "designation": "ESE (Commercial) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 3,
+      "name": "Shri Rajesh Ranjan",
+      "designation": "ESE (P&S , C&M , Coal Cell, Extension) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 4,
+      "name": "Shri Uday Kumar Singh",
+      "designation": "ESE (Fuel & Ash) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 5,
+      "name": "Shri Nurul Hoda",
+      "designation": "ESE (O & S) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 6,
+      "name": "Shri S. R. Singh",
+      "designation": "ESE — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 7,
+      "name": "Shri Kavindra Ram",
+      "designation": "EEE (C&M) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 8,
+      "name": "Shri Ganga Ravidas",
+      "designation": "EEE (New Project and Environment) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 9,
+      "name": "Shri Rajeev Prasad",
+      "designation": "EEE (C&M) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 10,
+      "name": "Shri Ramkinkar Prasad",
+      "designation": "EEE (C&M) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 11,
+      "name": "Shri Bhola Singh",
+      "designation": "Sr. Law Officier — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 12,
+      "name": "Shri Dipak Kumar Singh",
+      "designation": "Company Secretary — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 13,
+      "name": "Shri Saurabh Jha",
+      "designation": "DDA — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 14,
+      "name": "Smt Shweta Lovely Purti",
+      "designation": "D.D.P.(HR) — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 15,
+      "name": "Shri P. R. Remnan",
+      "designation": "PS to MD — TVNL HEAD QUARTER",
+      "email": ""
+    },
+    {
+      "slNo": 16,
+      "name": "Shri Anil Kumar Sharma",
+      "designation": "General Manager cum Chief Engineer — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 17,
+      "name": "Shri K. D. Singh",
+      "designation": "ESE(Fire & safety) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 18,
+      "name": "Shri P. Dungdung",
+      "designation": "ESE(CHP-1/Purchase) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 19,
+      "name": "Shri Ajay Kr. Pandey",
+      "designation": "ESE(O&EE/EMG) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 20,
+      "name": "Shri Dharmendra Kumar",
+      "designation": "ESE(CHP-II) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 21,
+      "name": "Shri Ashok Prasad",
+      "designation": "ESE(HR/Civil) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 22,
+      "name": "Shri Rajiv Kr. Agrawal",
+      "designation": "ESE(Operation & IT) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 23,
+      "name": "Shri Ashish Kr. Sharma",
+      "designation": "ESE(EM-II) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 24,
+      "name": "Shri Imroz Alam",
+      "designation": "ESE(TMD) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 25,
+      "name": "Shri Dhirendra Prasad",
+      "designation": "HOD(ESP, AHP) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 26,
+      "name": "Shri Bhaskar Kumar",
+      "designation": "HOD(C&I-I) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 27,
+      "name": "Shri Sarvesh Prasad",
+      "designation": "HOD(EM-I) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 28,
+      "name": "Shri Rajeev Kumar",
+      "designation": "HOD(MTP & C&I-II) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 29,
+      "name": "Shri Niraj Kumar",
+      "designation": "HOD(BMD) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 30,
+      "name": "Shri Balwant Kr. Yadav",
+      "designation": "EEE(Contract) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 31,
+      "name": "Shri J. K. Sinha",
+      "designation": "EEE(EM-II) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 32,
+      "name": "Shri Shambhu Sharan Prabhat",
+      "designation": "EEE(CHP-I) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 33,
+      "name": "Shri Jitendra Kumar SINGH",
+      "designation": "EEE(AHP) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 34,
+      "name": "Shri Gopal Prasad Singh",
+      "designation": "EEE(EM-II) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 35,
+      "name": "Shri Ramesh kumar singh",
+      "designation": "EEE(C&I) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 36,
+      "name": "MD. Nasim Ather",
+      "designation": "EEE(CHP-II) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 37,
+      "name": "Shri Hemant Kumar",
+      "designation": "EEE(TMD) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 38,
+      "name": "Shri NISHANT ORAON",
+      "designation": "EEE(Purchase) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 39,
+      "name": "Shri JULIET TIRKEY",
+      "designation": "EEE(BMD) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 40,
+      "name": "Shri Rajendra Prasad Rakesh",
+      "designation": "EEE(MTP & O&EE) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 41,
+      "name": "Shri Suraj Kr. Sinha",
+      "designation": "EEE(F&S) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 42,
+      "name": "Shri S K P Srivastava",
+      "designation": "EEE(O&E) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 43,
+      "name": "Shri Ramkishor Singh Munda",
+      "designation": "EEE(CHP-II) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 44,
+      "name": "Shri Ajay khakha",
+      "designation": "EEE(Store) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 45,
+      "name": "Shri Ranjeet Kachhap",
+      "designation": "EEE(EM-I) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 46,
+      "name": "Smt. Chandmani Munda",
+      "designation": "EEE(MTP) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 47,
+      "name": "Md. Nehaluddin Ansari",
+      "designation": "EE (Civil-I) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 48,
+      "name": "Shri Sona Ram Manjhi",
+      "designation": "EEE(CHP-Track hooper) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 49,
+      "name": "Shri Niraj Kr Mehta",
+      "designation": "EEE(CMC) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 50,
+      "name": "Shri Sanjoy Yadav",
+      "designation": "EEE(CHP-II) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 51,
+      "name": "Shri Maneesh Kr Pandey",
+      "designation": "EEE(Operation General) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 52,
+      "name": "Shri Rakesh Kr Singh",
+      "designation": "DDP(HR) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 53,
+      "name": "Shri Tajendar Singh Malhotra",
+      "designation": "DDA(Accounts) — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 54,
+      "name": "Shri Birendra Kumar",
+      "designation": "SCE Gr-A — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 55,
+      "name": "Shri Vijay Topno",
+      "designation": "SCE Gr-B — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 56,
+      "name": "Shri Sundar Murmu",
+      "designation": "SCE Gr-C — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 57,
+      "name": "Shri B.N.Singh",
+      "designation": "SCE Gr-D — TTPS PLANT",
+      "email": ""
+    },
+    {
+      "slNo": 58,
+      "name": "Shri Himanshu Lakra",
+      "designation": "Chief Engineer (Coal Block) — TVNL LATEHAR OFFICE",
+      "email": ""
+    },
+    {
+      "slNo": 59,
+      "name": "Shri R. R. Prasad",
+      "designation": "ESE — TVNL LATEHAR OFFICE",
+      "email": ""
+    }
+  ],
+  "employmentNotices": [
+    {
+      "title": "Engagement of Apprentices under Apprentices Act, 1961",
+      "date": "2026-05-10",
+      "docUrl": "https://tvnl.in/empNoti.php"
+    },
+    {
+      "title": "Recruitment of Assistant Engineers (Electrical/Mechanical)",
+      "date": "2026-03-01",
+      "docUrl": "https://tvnl.in/empNoti.php"
+    }
+  ],
+  "circulars": [
+    {
+      "title": "Office Order — revised working hours at Head Office",
+      "date": "2026-04-01",
+      "docUrl": "https://tvnl.in/cir_off_ord.php"
+    },
+    {
+      "title": "Circular — implementation of e-office across divisions",
+      "date": "2026-02-14",
+      "docUrl": "https://tvnl.in/cir_off_ord.php"
+    }
+  ],
+  "publicNotices": [
+    {
+      "title": "Public Notice — ash disposal utilisation guidelines",
+      "date": "2026-03-20",
+      "docUrl": "https://tvnl.in/p_notice.php"
+    },
+    {
+      "title": "Public Notice — vendor registration open for 2026-27",
+      "date": "2026-04-05",
+      "docUrl": "https://tvnl.in/p_notice.php"
+    }
+  ],
+  "downloads": [
+    {
+      "title": "Bidder Form for ID & Password",
+      "category": "Bidder",
+      "fileUrl": "https://tvnl.in/pdf/bidder_form.pdf"
+    },
+    {
+      "title": "Vendor Bidding Manual for Open Tender",
+      "category": "Bidder",
+      "fileUrl": "https://tvnl.in/pdf/vendor_manual.pdf"
+    },
+    {
+      "title": "Format of BG for EMD",
+      "category": "Bidder",
+      "fileUrl": "https://tvnl.in/pdf/bg_emd.pdf"
+    },
+    {
+      "title": "Download",
+      "category": "Format",
+      "fileUrl": "https://tvnl.in/../master_login/dashboard/upload_doc_ext/tender_extension_notics_04062026.pdf"
+    }
+  ],
+  "newsEvents": [
+    {
+      "title": "TTPS achieves record PLF for the quarter",
+      "date": "2026-04-15",
+      "body": "Tenughat Thermal Power Station recorded its highest quarterly plant load factor, reinforcing reliable supply to the Jharkhand grid.",
+      "imageUrl": ""
+    },
+    {
+      "title": "Safety Week observed at TTPS Lalpania",
+      "date": "2026-03-04",
+      "body": "TVNL observed National Safety Week with drills and awareness sessions across plant divisions.",
+      "imageUrl": ""
+    }
+  ],
+  "boardMembers": [
+    {
+      "name": "Sri. Sudhir Tripathi, IAS",
+      "designation": "Chief secretary GOJ cum CMD JUVNL and Director TVNL",
+      "bio": "",
+      "photoUrl": ""
+    },
+    {
+      "name": "Sri. Devendra Kumar Tiwari, IAS",
+      "designation": "Development Commissioner, GoJ & Chairman, TVNL",
+      "bio": "",
+      "photoUrl": ""
+    },
+    {
+      "name": "Shri Avinash Kumar, IAS",
+      "designation": "Principal Secretary, Energy, Government of Jharkhand And Chairman, TVNL",
+      "bio": "",
+      "photoUrl": ""
+    },
+    {
+      "name": "Shri. Ajoy Kumar Singh (IAS)",
+      "designation": "Principal Secretary, Finance, Government of Jharkhand And Director TVNL",
+      "bio": "",
+      "photoUrl": ""
+    },
+    {
+      "name": "Dr. Nitin Madan Kulkarni, IAS",
+      "designation": "Secretary, Energy, GoJ & Director, TVNL",
+      "bio": "",
+      "photoUrl": ""
+    },
+    {
+      "name": "Sri. Anil Kumar Sharma",
+      "designation": "Managing Director, TVNL",
+      "bio": "",
+      "photoUrl": ""
+    }
+  ],
+  "ashReports": [
+    {
+      "period": "Details of Ash utilization during the Month of June 2026",
+      "fileUrl": ""
+    },
+    {
+      "period": "SI NO. Name of Ash Disposal Area Ash disposal area in Hectare Design Life of Ash disposal area Pond Ash Availability in ",
+      "fileUrl": ""
+    },
+    {
+      "period": "Dry ESP Fly Ash Bottom Ash Pond Ash",
+      "fileUrl": ""
+    },
+    {
+      "period": "ASH UTILIZATION DETAILS June 2026",
+      "fileUrl": ""
+    },
+    {
+      "period": "SI NO. Area of Utilization For the Month (June 2026) Ash utilized in MT Cummulative for Year (FY 26-27) Ash Utilized in ",
+      "fileUrl": ""
+    },
+    {
+      "period": "Dry ESP Fly Ash Bottom Ash Pond Ash Dry ESP Fly Ash Bottom Ash Pond Ash",
+      "fileUrl": ""
+    },
+    {
+      "period": "Second Form is incomplate....",
+      "fileUrl": ""
+    },
+    {
+      "period": "Third Form is incomplate....",
+      "fileUrl": ""
+    },
+    {
+      "period": "Fourth Form is incomplate....",
+      "fileUrl": ""
+    },
+    {
+      "period": "Fifth Form is incomplate....",
+      "fileUrl": ""
+    },
+    {
+      "period": "Sixth Form is incomplate....",
+      "fileUrl": ""
+    },
+    {
+      "period": "Seventh Form is incomplate....",
+      "fileUrl": ""
+    },
+    {
+      "period": "Bottom ash -collected from the bottom of furnace Dry ESP Fly Ash - Colected from ESP and stored in Silo Pond Ash - Fly a",
+      "fileUrl": ""
+    }
+  ]
 }

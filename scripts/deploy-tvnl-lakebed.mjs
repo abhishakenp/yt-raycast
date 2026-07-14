@@ -12,7 +12,9 @@ import { deployLakebedProjectFiles } from '../src/features/deployments/server/la
 
 const [sessionId, ownerSecret, slug = 'tvnl'] = process.argv.slice(2)
 if (!sessionId || !ownerSecret) {
-  console.error('usage: bun scripts/deploy-tvnl-lakebed.mjs <sessionId> <ownerSecret> [slug]')
+  console.error(
+    'usage: bun scripts/deploy-tvnl-lakebed.mjs <sessionId> <ownerSecret> [slug]',
+  )
   process.exit(1)
 }
 
@@ -64,7 +66,8 @@ console.error('Deploying to api.lakebed.dev…')
 const result = await deployLakebedProjectFiles({
   files: built.files,
   inspectPolicy: 'public',
-  log: (m, d) => console.error('  [deploy]', m, d ? JSON.stringify(d).slice(0, 140) : ''),
+  log: (m, d) =>
+    console.error('  [deploy]', m, d ? JSON.stringify(d).slice(0, 140) : ''),
 })
 
 // Best-effort: record the deployment back on the session (ignore failures).
