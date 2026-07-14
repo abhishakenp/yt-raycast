@@ -328,15 +328,25 @@ export async function listPublicGallerySessions(
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
   const pageSessions = filteredSessions.slice((page - 1) * limit, page * limit)
+  // Reuse the base artifacts already loaded during the renderability check
+  // above instead of re-fetching them from the DB. Only translations are
+  // fetched per paginated item, saving 3-4 DB queries per page item.
   const translatedPageSessions = await Promise.all(
-    pageSessions.map(async ({ session }) => ({
-      session,
-      artifacts: await loadPublicGalleryArtifacts(
+    pageSessions.map(async ({ session, artifacts: baseArtifacts }) => {
+      const translations = await loadCachedTranslationsForSource(
         ctx,
-        session._id,
         session.preferredLanguage,
-      ),
-    })),
+        applyGalleryEditsToSource(
+          resolveGalleryOpenUISource(baseArtifacts),
+          baseArtifacts.edits,
+        ),
+      )
+      const artifacts =
+        translations.length > 0
+          ? { ...baseArtifacts, translations }
+          : baseArtifacts
+      return { session, artifacts }
+    }),
   )
   const items = translatedPageSessions.map(({ session, artifacts }) =>
     serializePublicGallerySession(session, artifacts, {
