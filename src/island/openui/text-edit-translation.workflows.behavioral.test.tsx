@@ -24,6 +24,51 @@ vi.mock('./_providers/chrome-translator', function mockChromeTranslator() {
   }
 })
 
+// In-memory IndexedDB (idb-keyval) mock. The real translation cache persists
+// to IndexedDB; jsdom has no IndexedDB, so we back idb-keyval with a Map.
+// Individual tests can override get/set to reject to exercise the
+// storage-failure fallback paths.
+const idbMock = vi.hoisted(() => {
+  const store = new Map<string, unknown>()
+
+  function defaultGet(key: string): Promise<unknown> {
+    return Promise.resolve(store.get(key) ?? undefined)
+  }
+  function defaultSet(key: string, value: unknown): Promise<void> {
+    store.set(key, value)
+    return Promise.resolve()
+  }
+  function defaultDel(key: string): Promise<void> {
+    store.delete(key)
+    return Promise.resolve()
+  }
+  function defaultClear(): Promise<void> {
+    store.clear()
+    return Promise.resolve()
+  }
+  function defaultCreateStore(): unknown {
+    return {}
+  }
+
+  return {
+    store,
+    get: vi.fn(defaultGet),
+    set: vi.fn(defaultSet),
+    del: vi.fn(defaultDel),
+    clear: vi.fn(defaultClear),
+    createStore: vi.fn(defaultCreateStore),
+    defaults: { defaultGet, defaultSet, defaultDel, defaultClear },
+  }
+})
+
+vi.mock('idb-keyval', () => ({
+  get: idbMock.get,
+  set: idbMock.set,
+  del: idbMock.del,
+  clear: idbMock.clear,
+  createStore: idbMock.createStore,
+}))
+
 type TestLocale = 'en' | 'fr' | 'hi'
 type TextChangeHandler = Parameters<typeof useTextEdit>[2]
 type TextChange = Parameters<TextChangeHandler>[0]
@@ -540,6 +585,11 @@ async function flushTranslation(): Promise<void> {
 describe('preview text editing across locale transitions', function previewTextEditingSuite() {
   beforeEach(function setupBrowserMocks() {
     window.localStorage.clear()
+    idbMock.store.clear()
+    idbMock.get.mockImplementation(idbMock.defaults.defaultGet)
+    idbMock.set.mockImplementation(idbMock.defaults.defaultSet)
+    idbMock.del.mockImplementation(idbMock.defaults.defaultDel)
+    idbMock.clear.mockImplementation(idbMock.defaults.defaultClear)
     vi.stubGlobal('fetch', vi.fn(fetchTranslations))
     vi.stubGlobal('requestAnimationFrame', scheduleAnimationFrame)
     vi.stubGlobal('cancelAnimationFrame', cancelAnimationFrameTimer)
@@ -765,15 +815,11 @@ describe('preview text editing across locale transitions', function previewTextE
     expect(onTextChange).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps translation usable when localStorage reads throw', async function storageReadFailureFallsBackToNetwork() {
-    function throwStorageRead(): string | null {
-      throw new DOMException('Storage blocked', 'SecurityError')
-    }
-
+  it('keeps translation usable when IndexedDB reads throw', async function storageReadFailureFallsBackToNetwork() {
     const fetchMock = vi.fn(fetchTranslations)
     vi.stubGlobal('fetch', fetchMock)
-    vi.spyOn(window.localStorage, 'getItem').mockImplementation(
-      throwStorageRead,
+    idbMock.get.mockRejectedValue(
+      new DOMException('IndexedDB blocked', 'SecurityError'),
     )
     const onTextChange = vi.fn()
     renderWorkflow('Storage read failure source', 'hi', onTextChange)
@@ -783,15 +829,11 @@ describe('preview text editing across locale transitions', function previewTextE
     expect(onTextChange).not.toHaveBeenCalled()
   })
 
-  it('keeps the translated result visible when localStorage writes exceed quota', async function storageQuotaDoesNotBreakTranslation() {
-    function throwStorageQuota(): void {
-      throw new DOMException('Storage quota exceeded', 'QuotaExceededError')
-    }
-
+  it('keeps the translated result visible when IndexedDB writes exceed quota', async function storageQuotaDoesNotBreakTranslation() {
     const fetchMock = vi.fn(fetchTranslations)
     vi.stubGlobal('fetch', fetchMock)
-    vi.spyOn(window.localStorage, 'setItem').mockImplementation(
-      throwStorageQuota,
+    idbMock.set.mockRejectedValue(
+      new DOMException('Storage quota exceeded', 'QuotaExceededError'),
     )
     const onTextChange = vi.fn()
     renderWorkflow('Storage quota source', 'hi', onTextChange)
@@ -803,7 +845,7 @@ describe('preview text editing across locale transitions', function previewTextE
 
   it('ignores an empty malformed cached translation and repairs it from the network', async function malformedCacheFallsBackToNetwork() {
     const sourceText = 'Malformed cache source'
-    window.localStorage.setItem(`sf-translation:hi\n${sourceText}`, '')
+    idbMock.store.set(`hi\n${sourceText}`, '')
     const fetchMock = vi.fn(fetchTranslations)
     vi.stubGlobal('fetch', fetchMock)
     const onTextChange = vi.fn()

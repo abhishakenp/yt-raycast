@@ -11,6 +11,11 @@ import { shouldPreserveTranslationText } from '@/features/localization/native-sc
 import { transliterateLatinFallback } from '@/features/localization/client/transliterate-latin-fallback'
 import { localeTextDirection } from '@/features/localization/locale-direction'
 import { translateOnDeviceBatch } from './chrome-translator'
+import { getCachedTranslation, setCachedTranslation } from './translation-cache'
+
+// Re-export so existing importers (`@/island/openui/_providers/translation`)
+// keep resolving after the cache moved to its own module.
+export { setCachedTranslation } from './translation-cache'
 
 type Locale = string
 
@@ -34,52 +39,9 @@ export function useI18n() {
   return ctx
 }
 
-const memoryTranslationCache = new Map<string, string>()
 const MAX_BROWSER_TRANSLATION_BATCH_TEXTS = 20
 const MAX_BROWSER_TRANSLATION_BATCH_CHARS = 1800
 const MAX_SIMULTANEOUS_SHIMMER_NODES = 24
-
-function translationCacheKey(locale: string, text: string): string {
-  return `${locale.trim().toLowerCase()}\n${text.trim()}`
-}
-
-function getCachedTranslation(locale: string, text: string): string | null {
-  const key = translationCacheKey(locale, text)
-  const memory = memoryTranslationCache.get(key)
-  if (memory !== undefined) {
-    if (memory.trim()) return memory
-    memoryTranslationCache.delete(key)
-  }
-  if (typeof window === 'undefined') return null
-  try {
-    const stored = window.localStorage.getItem(`sf-translation:${key}`)
-    if (stored?.trim()) {
-      memoryTranslationCache.set(key, stored)
-      return stored
-    }
-    if (stored !== null) {
-      window.localStorage.removeItem(`sf-translation:${key}`)
-    }
-  } catch {
-    return null
-  }
-  return null
-}
-
-export function setCachedTranslation(
-  locale: string,
-  text: string,
-  translation: string,
-): void {
-  const key = translationCacheKey(locale, text)
-  memoryTranslationCache.set(key, translation)
-  if (typeof window === 'undefined') return
-  try {
-    window.localStorage.setItem(`sf-translation:${key}`, translation)
-  } catch {
-    // Best-effort browser cache; server-side Convex cache remains authoritative.
-  }
-}
 
 async function persistTranslationEntries(
   locale: string,
@@ -118,7 +80,7 @@ export async function fetchTranslationBatch(
       continue
     }
 
-    const cached = getCachedTranslation(locale, text)
+    const cached = await getCachedTranslation(locale, text)
     if (cached !== null) {
       translations[index] = cached
       continue
