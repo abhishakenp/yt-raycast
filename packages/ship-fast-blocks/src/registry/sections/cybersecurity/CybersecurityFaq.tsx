@@ -3,6 +3,13 @@ import { useState } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * CybersecurityFaq — accordion FAQ. A narrow, muted-band section with a
@@ -69,46 +76,40 @@ export const CybersecurityFaq = defineCapsule({
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item, i) => {
               const open = openFaq === i
               return (
-                <div
-                  key={item.q}
-                  className="overflow-hidden rounded-xl border border-border bg-card"
-                >
-                  <button
-                    type="button"
-                    aria-expanded={open}
-                    onClick={() => setOpenFaq(open ? null : i)}
-                    className="flex w-full cursor-pointer items-center justify-between p-6 text-left transition-colors hover:bg-muted/50"
-                  >
-                    <span className="text-lg font-semibold">{item.q}</span>
-                    <svg
-                      className={cn(
-                        'size-5 shrink-0 text-muted-foreground transition-transform',
-                        open && 'rotate-180',
-                      )}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
+                <FaqItem key={item.q} asChild variant="overflow-bordered">
+                  <div>
+                    <FaqQuestion
+                      asChild
+                      className="w-full cursor-pointer p-6 text-left transition-colors hover:bg-muted/50"
                     >
-                      <path d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {open && (
-                    <div className="px-6 pb-6 text-muted-foreground">
-                      {item.a}
-                    </div>
-                  )}
-                </div>
+                      <button
+                        type="button"
+                        aria-expanded={open}
+                        onClick={() => setOpenFaq(open ? null : i)}
+                      >
+                        <span className="text-lg font-semibold">{item.q}</span>
+                        <FaqQuestionIcon
+                          className={cn(
+                            'shrink-0 transition-transform',
+                            open && 'rotate-180',
+                          )}
+                        />
+                      </button>
+                    </FaqQuestion>
+                    {open && (
+                      <FaqAnswer asChild className="px-6 pb-6">
+                        <div>{item.a}</div>
+                      </FaqAnswer>
+                    )}
+                  </div>
+                </FaqItem>
               )
             })}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -66,39 +75,21 @@ export const CleaningServiceFaq = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
-                key={item.q}
-                className="group overflow-hidden rounded-xl border border-border bg-card"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-6">
+              <FaqItem key={item.q} variant="overflow-bordered">
+                <FaqQuestion className="p-6">
                   <h3 className="text-lg font-semibold text-card-foreground">
                     {item.q}
                   </h3>
-                  <span className="ml-6 shrink-0 text-muted-foreground">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="transition-transform group-open:rotate-180"
-                      aria-hidden="true"
-                    >
-                      <path d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
-                  {item.a}
-                </div>
-              </details>
+                  <FaqQuestionIcon className="ml-6" />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6">
+                  <div>{item.a}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

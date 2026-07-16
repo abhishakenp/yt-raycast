@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -53,22 +62,6 @@ export const FitnessFaq = defineCapsule({
             a: 'Monthly memberships can be cancelled anytime with 7 days notice before your next billing date. Annual memberships cancelled early incur a $99 early termination fee. We do not offer refunds for partial months.',
           },
         ]
-
-    const ChevronIcon = () => (
-      <svg
-        className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M19 9l-7 7-7-7" />
-      </svg>
-    )
-
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -79,22 +72,21 @@ export const FitnessFaq = defineCapsule({
             <p className="text-muted-foreground">{faqDesc}</p>
           </div>
 
-          <div className="space-y-4">
+          <FaqAccordion>
             {faqItems.map((item) => (
-              <details
+              <FaqItem
                 key={item.q}
-                className="group cursor-pointer rounded-lg border border-border bg-card p-6"
+                variant="bordered-lg"
+                className="cursor-pointer p-6"
               >
-                <summary className="flex list-none items-center justify-between font-medium text-card-foreground">
+                <FaqQuestion className="font-medium text-card-foreground">
                   {item.q}
-                  <ChevronIcon />
-                </summary>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {item.a}
-                </p>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer className="mt-4 text-sm">{item.a}</FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

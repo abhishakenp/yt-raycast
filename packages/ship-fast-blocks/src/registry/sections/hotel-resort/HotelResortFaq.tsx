@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -77,32 +86,21 @@ export const HotelResortFaq = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details key={item.q} className="group rounded-lg bg-muted p-6">
-                <summary className="flex cursor-pointer list-none items-center justify-between">
+              <FaqItem
+                key={item.q}
+                variant="muted"
+                className="rounded-lg bg-muted p-6"
+              >
+                <FaqQuestion>
                   <span className="font-medium">{item.q}</span>
-                  <svg
-                    className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </summary>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {item.a}
-                </p>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer className="mt-4 text-sm">{item.a}</FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

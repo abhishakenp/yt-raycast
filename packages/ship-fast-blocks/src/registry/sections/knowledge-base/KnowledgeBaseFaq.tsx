@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -63,24 +72,6 @@ export const KnowledgeBaseFaq = defineCapsule({
               'Your data is encrypted at rest (AES-256) and in transit (TLS 1.3). We store data in SOC 2 Type II certified data centers in the US (Oregon), EU (Frankfurt), and APAC (Singapore). You can choose your data region during account setup. We never sell your data and comply with GDPR and CCPA.',
           },
         ]
-
-    const ChevronDown = ({ className }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    )
-
     return (
       <section
         className={cn('bg-background py-16 sm:py-20', props.className)}
@@ -96,26 +87,23 @@ export const KnowledgeBaseFaq = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
-                key={item.question}
-                className="group overflow-hidden rounded-xl border border-border bg-card"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-6 transition-colors hover:bg-muted">
+              <FaqItem key={item.question} variant="overflow-bordered">
+                <FaqQuestion className="p-6 transition-colors hover:bg-muted">
                   <span className="pr-8 text-base font-medium text-card-foreground">
                     {item.question}
                   </span>
-                  <span className="ml-4 flex-shrink-0 text-muted-foreground transition-transform group-open:rotate-180">
-                    <ChevronDown className="size-5" />
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 text-muted-foreground">
-                  <p>{item.answer}</p>
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6">
+                  <div>
+                    <p>{item.answer}</p>
+                  </div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

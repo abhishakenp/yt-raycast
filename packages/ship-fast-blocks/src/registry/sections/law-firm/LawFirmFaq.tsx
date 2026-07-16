@@ -2,6 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * LawFirmFaq — a centered-heading, single-column FAQ stack for a law firm. A
@@ -69,21 +75,23 @@ export const LawFirmFaq = defineCapsule({
               {heading}
             </h2>
           </div>
-          <div className="space-y-6">
+          <FaqAccordion variant="wide">
             {items.map((item) => (
-              <div
-                key={item.question}
-                className="border border-border bg-card p-8"
-              >
-                <h3 className="mb-3 font-serif text-xl text-foreground">
-                  {item.question}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.answer}
-                </p>
-              </div>
+              <FaqItem key={item.question} asChild className="p-8">
+                <div>
+                  <FaqQuestion
+                    asChild
+                    className="mb-3 font-serif text-xl text-foreground"
+                  >
+                    <h3>{item.question}</h3>
+                  </FaqQuestion>
+                  <FaqAnswer className="leading-relaxed">
+                    {item.answer}
+                  </FaqAnswer>
+                </div>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

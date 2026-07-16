@@ -3,6 +3,13 @@ import { useState } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * ContactFaq — two-column FAQ accordion for a contact / support page.
@@ -79,60 +86,59 @@ export const ContactFaq = defineCapsule({
             {description}
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <FaqAccordion className="grid gap-4 md:grid-cols-2">
           {items.map((item, i) => {
             const open = openFaq === i
             return (
-              <div
+              <FaqItem
                 key={item.question}
+                asChild
                 className={cn(
-                  'rounded-lg border border-border px-6 py-5 transition-colors hover:border-border/60',
+                  'px-6 py-5 transition-colors hover:border-border/60',
                   open ? 'bg-muted/40' : 'bg-card',
                 )}
               >
-                <button
-                  type="button"
-                  aria-expanded={open}
-                  onClick={() => setOpenFaq(open ? null : i)}
-                  className="flex w-full items-center justify-between gap-3 text-left text-[0.98rem] font-semibold leading-[1.4] text-foreground"
-                >
-                  {item.question}
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
+                <div>
+                  <FaqQuestion
+                    asChild
+                    className="w-full text-left text-[0.98rem] font-semibold leading-[1.4]"
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={open}
+                      onClick={() => setOpenFaq(open ? null : i)}
+                    >
+                      {item.question}
+                      <FaqQuestionIcon
+                        className={cn(
+                          'shrink-0 transition-transform',
+                          open
+                            ? 'rotate-180 text-primary'
+                            : 'text-muted-foreground',
+                        )}
+                      />
+                    </button>
+                  </FaqQuestion>
+                  <FaqAnswer
+                    asChild
                     className={cn(
-                      'shrink-0 transition-transform',
+                      'grid overflow-hidden transition-all duration-300',
                       open
-                        ? 'rotate-180 text-primary'
-                        : 'text-muted-foreground',
+                        ? 'grid-rows-[1fr] pt-3 opacity-100'
+                        : 'grid-rows-[0fr] opacity-0',
                     )}
                   >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-                <div
-                  className={cn(
-                    'grid overflow-hidden transition-all duration-300',
-                    open
-                      ? 'grid-rows-[1fr] pt-3 opacity-100'
-                      : 'grid-rows-[0fr] opacity-0',
-                  )}
-                >
-                  <p className="min-h-0 text-[0.92rem] leading-[1.7] text-muted-foreground">
-                    {item.answer}
-                  </p>
+                    <div>
+                      <p className="min-h-0 text-[0.92rem] leading-[1.7] text-muted-foreground">
+                        {item.answer}
+                      </p>
+                    </div>
+                  </FaqAnswer>
                 </div>
-              </div>
+              </FaqItem>
             )
           })}
-        </div>
+        </FaqAccordion>
       </section>
     )
   },

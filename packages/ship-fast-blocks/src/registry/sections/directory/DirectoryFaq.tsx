@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -71,35 +80,25 @@ export const DirectoryFaq = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
+              <FaqItem
                 key={item.question}
-                className="group overflow-hidden rounded-lg border border-border bg-card"
+                variant="bordered-lg"
+                className="overflow-hidden"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-6">
+                <FaqQuestion className="p-6">
                   <span className="font-semibold text-card-foreground">
                     {item.question}
                   </span>
-                  <svg
-                    className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="px-6 pb-6 text-muted-foreground">
-                  {item.answer}
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6">
+                  <div>{item.answer}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

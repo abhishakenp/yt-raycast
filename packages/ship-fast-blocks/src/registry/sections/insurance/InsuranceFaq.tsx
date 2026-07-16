@@ -2,6 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * InsuranceFaq — frequently-asked-questions stack for an insurance page. On a
@@ -87,21 +93,27 @@ export const InsuranceFaq = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <div
+              <FaqItem
                 key={item.question}
-                className="rounded-xl border border-border bg-background p-6 shadow-sm"
+                asChild
+                className="bg-background p-6 shadow-sm"
               >
-                <h3 className="mb-3 text-lg font-semibold text-foreground">
-                  {item.question}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.answer}
-                </p>
-              </div>
+                <div>
+                  <FaqQuestion
+                    asChild
+                    className="mb-3 text-lg font-semibold text-foreground"
+                  >
+                    <h3>{item.question}</h3>
+                  </FaqQuestion>
+                  <FaqAnswer className="leading-relaxed">
+                    {item.answer}
+                  </FaqAnswer>
+                </div>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

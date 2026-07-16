@@ -2,6 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * IllustratorFaq — a narrow, centered FAQ list for an illustrator /
@@ -70,16 +76,27 @@ export const IllustratorFaq = defineCapsule({
               {heading}
             </h2>
           </div>
-          <dl className="space-y-4">
-            {items.map((item) => (
-              <div key={item.question} className="rounded-lg bg-background p-6">
-                <dt className="mb-2 font-serif text-lg">{item.question}</dt>
-                <dd className="leading-relaxed text-muted-foreground">
-                  {item.answer}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <FaqAccordion asChild>
+            <dl>
+              {items.map((item) => (
+                <FaqItem
+                  key={item.question}
+                  asChild
+                  variant="minimal"
+                  className="rounded-lg p-6"
+                >
+                  <div>
+                    <FaqQuestion asChild className="mb-2 font-serif text-lg">
+                      <dt>{item.question}</dt>
+                    </FaqQuestion>
+                    <FaqAnswer asChild className="leading-relaxed">
+                      <dd>{item.answer}</dd>
+                    </FaqAnswer>
+                  </div>
+                </FaqItem>
+              ))}
+            </dl>
+          </FaqAccordion>
         </div>
       </section>
     )

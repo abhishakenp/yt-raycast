@@ -2,6 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 export const ProductDetailFaq = defineCapsule({
   name: 'ProductDetailFaq',
@@ -64,27 +71,23 @@ export const ProductDetailFaq = defineCapsule({
               {subheading}
             </p>
           ) : null}
-          <div className="mt-10 flex flex-col gap-3">
+          <FaqAccordion variant="compact" className="mt-10">
             {items.map((it, i) => (
-              <details
-                key={it.question}
-                open={i === 0}
-                className="group rounded-xl border border-border bg-muted/40 open:bg-card open:shadow-sm"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-5">
+              <FaqItem key={it.question} variant="open-raised" open={i === 0}>
+                <FaqQuestion className="p-5">
                   <h3 className="pr-4 font-medium text-foreground">
                     {it.question}
                   </h3>
-                  <span className="text-muted-foreground" aria-hidden>
-                    +
-                  </span>
-                </summary>
-                <div className="px-5 pb-5 text-sm leading-relaxed text-muted-foreground">
-                  <p>{it.answer}</p>
-                </div>
-              </details>
+                  <FaqQuestionIcon variant="plus" />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-5 pb-5 text-sm">
+                  <div>
+                    <p>{it.answer}</p>
+                  </div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

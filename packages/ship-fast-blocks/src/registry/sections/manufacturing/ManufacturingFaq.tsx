@@ -2,6 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+} from '#/section-kit/FaqAccordion.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
 /**
@@ -84,16 +90,25 @@ export const ManufacturingFaq = defineCapsule({
               {heading}
             </h2>
           </div>
-          <dl className="space-y-4">
-            {items.map((item) => (
-              <Card key={item.question} rounded="lg">
-                <dt className="mb-2 font-semibold text-card-foreground">
-                  {item.question}
-                </dt>
-                <dd className="text-muted-foreground">{item.answer}</dd>
-              </Card>
-            ))}
-          </dl>
+          <FaqAccordion asChild>
+            <dl>
+              {items.map((item) => (
+                <FaqItem key={item.question} asChild variant="minimal">
+                  <Card rounded="lg">
+                    <FaqQuestion
+                      asChild
+                      className="mb-2 font-semibold text-card-foreground"
+                    >
+                      <dt>{item.question}</dt>
+                    </FaqQuestion>
+                    <FaqAnswer asChild>
+                      <dd>{item.answer}</dd>
+                    </FaqAnswer>
+                  </Card>
+                </FaqItem>
+              ))}
+            </dl>
+          </FaqAccordion>
         </div>
       </section>
     )

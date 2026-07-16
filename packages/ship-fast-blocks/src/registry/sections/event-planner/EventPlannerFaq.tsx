@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -69,24 +78,6 @@ export const EventPlannerFaq = defineCapsule({
               "Simply fill out our inquiry form below or call us at (415) 555-0147. We'll schedule a complimentary 30-minute consultation to discuss your vision, date, and needs. From there, we'll provide a custom proposal outlining our recommended package and approach for your specific event. No pressure, no obligation—just an opportunity to see if we're the right fit.",
           },
         ]
-
-    const Chevron = () => (
-      <svg
-        className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    )
-
     return (
       <section
         className={cn(
@@ -104,24 +95,23 @@ export const EventPlannerFaq = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{faqDesc}</p>
           </div>
-          <div className="space-y-6">
+          <FaqAccordion variant="wide">
             {faqItems.map((item) => (
-              <details
+              <FaqItem
                 key={item.question}
-                className="group rounded-xl bg-muted p-6"
+                variant="muted"
+                className="bg-muted p-6"
               >
-                <summary className="flex cursor-pointer items-center justify-between gap-4">
+                <FaqQuestion>
                   <h3 className="text-lg font-medium text-foreground">
                     {item.question}
                   </h3>
-                  <Chevron />
-                </summary>
-                <p className="mt-4 leading-relaxed text-muted-foreground">
-                  {item.answer}
-                </p>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer className="mt-4">{item.answer}</FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

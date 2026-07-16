@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -82,13 +91,10 @@ export const CloudInfraFaq = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-xl border border-border bg-card open:border-primary"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-6">
+              <FaqItem key={item.q} className="open:border-primary">
+                <FaqQuestion className="p-6">
                   <h3 className="pr-8 text-lg font-medium text-card-foreground">
                     {item.q}
                   </h3>
@@ -98,13 +104,14 @@ export const CloudInfraFaq = defineCapsule({
                   >
                     <Chevron className="size-5 text-muted-foreground" />
                   </span>
-                </summary>
-                <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
-                  {item.a}
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6">
+                  <div>{item.a}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

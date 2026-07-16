@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -80,35 +89,21 @@ export const MusicFestivalFaq = defineCapsule({
               {heading}
             </h2>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
-                key={item.question}
-                className="group rounded-lg bg-background"
-              >
-                <summary className="flex cursor-pointer items-center justify-between p-6">
+              <FaqItem key={item.question} variant="minimal">
+                <FaqQuestion className="p-6">
                   <span className="font-semibold">{item.question}</span>
-                  <svg
-                    className="size-5 transition-transform group-open:rotate-180"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="px-6 pb-6 text-foreground/70">
-                  <p>{item.answer}</p>
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6 text-foreground/70">
+                  <div>
+                    <p>{item.answer}</p>
+                  </div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

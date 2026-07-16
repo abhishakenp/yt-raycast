@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -82,39 +91,25 @@ export const KidsEducationFaq = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
+              <FaqItem
                 key={item.question}
-                className="group rounded-2xl bg-muted/40"
+                variant="muted"
+                className="rounded-2xl bg-muted/40"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-6">
+                <FaqQuestion className="p-6">
                   <h3 className="text-lg font-semibold text-foreground">
                     {item.question}
                   </h3>
-                  <span className="transition-transform group-open:rotate-180">
-                    <svg
-                      className="size-5 text-muted-foreground"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 text-muted-foreground">
-                  {item.answer}
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6">
+                  <div>{item.answer}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

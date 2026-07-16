@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -60,35 +69,23 @@ export const NewsletterFaq = defineCapsule({
             </h2>
           </div>
 
-          <div className="space-y-6">
+          <FaqAccordion variant="wide">
             {items.map((item) => (
-              <details
+              <FaqItem
                 key={item.q}
-                className="group overflow-hidden rounded-xl border border-border bg-card text-card-foreground"
+                variant="overflow-bordered"
+                className="text-card-foreground"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-6">
+                <FaqQuestion className="p-6">
                   <span className="font-medium text-foreground">{item.q}</span>
-                  <svg
-                    className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </summary>
-                <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
-                  {item.a}
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6">
+                  <div>{item.a}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

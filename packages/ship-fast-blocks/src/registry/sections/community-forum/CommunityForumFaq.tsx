@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -68,35 +77,22 @@ export const CommunityForumFaq = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
+              <FaqItem
                 key={item.question}
-                className="group rounded-xl border border-border bg-card p-6 transition-colors open:border-foreground/20"
+                className="p-6 transition-colors open:border-foreground/20"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between">
+                <FaqQuestion>
                   <h3 className="text-lg font-semibold text-card-foreground">
                     {item.question}
                   </h3>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-                    aria-hidden="true"
-                  >
-                    <path d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <p className="mt-4 leading-relaxed text-muted-foreground">
-                  {item.answer}
-                </p>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer className="mt-4">{item.answer}</FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

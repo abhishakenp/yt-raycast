@@ -130,6 +130,16 @@ export {
   listingCardVariants,
   listingBadgeVariants,
 } from './ListingCard.tsx'
+export {
+  FaqAccordion,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+  FaqAnswer,
+  faqAccordionVariants,
+  faqItemVariants,
+  faqQuestionIconVariants,
+} from './FaqAccordion.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

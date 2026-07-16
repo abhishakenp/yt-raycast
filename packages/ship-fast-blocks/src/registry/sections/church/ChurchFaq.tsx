@@ -2,6 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * ChurchFaq — accordion FAQ section for a church or faith-community site. A centered
@@ -68,39 +75,21 @@ export const ChurchFaq = defineCapsule({
               {heading}
             </h2>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-xl border border-border bg-card"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-6">
+              <FaqItem key={item.q}>
+                <FaqQuestion className="p-6">
                   <span className="font-medium text-card-foreground">
                     {item.q}
                   </span>
-                  <span className="ml-4 flex-shrink-0 text-muted-foreground transition-transform group-open:rotate-180">
-                    <svg
-                      className="size-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.5"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
-                  {item.a}
-                </div>
-              </details>
+                  <FaqQuestionIcon className="ml-4" />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6 leading-relaxed">
+                  <div>{item.a}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

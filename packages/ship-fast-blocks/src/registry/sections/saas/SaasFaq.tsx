@@ -2,6 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * SaasFaq — a centered accordion-style FAQ band for a SaaS / AI-product landing
@@ -90,34 +97,20 @@ export const SaasFaq = defineCapsule({
               {subheading}
             </p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item, i) => (
-              <details
+              <FaqItem
                 key={i}
-                className="group rounded-xl border border-border bg-card px-6 py-1 transition-colors hover:border-input"
+                className="px-6 py-1 transition-colors hover:border-input"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-base font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                <FaqQuestion className="py-4">
                   {item.question}
-                  <svg
-                    className="size-5 flex-shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-45"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </summary>
-                <p className="pb-5 text-base leading-relaxed text-muted-foreground">
-                  {item.answer}
-                </p>
-              </details>
+                  <FaqQuestionIcon variant="plus" />
+                </FaqQuestion>
+                <FaqAnswer className="pb-5">{item.answer}</FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

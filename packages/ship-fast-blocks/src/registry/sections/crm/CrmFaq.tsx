@@ -2,6 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * CrmFaq — centered FAQ accordion for a CRM / SaaS landing page on a subtle
@@ -65,21 +72,6 @@ export const CrmFaq = defineCapsule({
           },
         ]
 
-    const ChevronDown = () => (
-      <svg
-        className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M19 9l-7 7-7-7" />
-      </svg>
-    )
-
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -89,24 +81,21 @@ export const CrmFaq = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item) => (
-              <details
-                key={item.question}
-                className="group rounded-lg border border-border bg-card"
-              >
-                <summary className="flex cursor-pointer select-none items-center justify-between p-6">
+              <FaqItem key={item.question} variant="bordered-lg">
+                <FaqQuestion className="select-none p-6">
                   <span className="font-semibold text-card-foreground">
                     {item.question}
                   </span>
-                  <ChevronDown />
-                </summary>
-                <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
-                  {item.answer}
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6 leading-relaxed">
+                  <div>{item.answer}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

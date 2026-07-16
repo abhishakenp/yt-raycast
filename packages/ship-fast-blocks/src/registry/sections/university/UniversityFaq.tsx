@@ -1,6 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 
@@ -76,27 +83,19 @@ export const UniversityFaq = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <div className="mt-12 divide-y divide-border border-y border-border">
+          <FaqAccordion variant="divided" className="mt-12">
             {faqs.map((faq, i) => (
-              <details
-                key={`${faq.question ?? 'faq'}-${i}`}
-                className="group py-5"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-semibold text-foreground">
+              <FaqItem key={`${faq.question ?? 'faq'}-${i}`} variant="divided">
+                <FaqQuestion className="text-left">
                   {faq.question}
-                  <span
-                    aria-hidden="true"
-                    className="text-muted-foreground transition-transform group-open:rotate-45"
-                  >
-                    +
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                  <FaqQuestionIcon variant="plus" />
+                </FaqQuestion>
+                <FaqAnswer className="mt-3 text-sm leading-7">
                   {faq.answer}
-                </p>
-              </details>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

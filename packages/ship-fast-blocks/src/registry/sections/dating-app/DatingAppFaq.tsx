@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -67,22 +76,6 @@ export const DatingAppFaq = defineCapsule({
               'Your safety is our priority. You can block or report anyone with one tap. We offer 24/7 support, date safety check-ins, and the ability to share your location with trusted friends during meetups. Our team responds to all safety concerns within minutes.',
           },
         ]
-
-    const ChevronDown = ({ className }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M19 9l-7 7-7-7" />
-      </svg>
-    )
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -92,24 +85,22 @@ export const DatingAppFaq = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{faqDesc}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {faqItems.map((item) => (
-              <details
+              <FaqItem
                 key={item.question}
-                className="group overflow-hidden rounded-xl bg-muted"
+                variant="muted"
+                className="overflow-hidden bg-muted"
               >
-                <summary className="flex cursor-pointer items-center justify-between p-6 transition-colors hover:bg-accent">
-                  <span className="font-semibold text-foreground">
-                    {item.question}
-                  </span>
-                  <ChevronDown className="size-5 text-muted-foreground transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
-                  {item.answer}
-                </div>
-              </details>
+                <FaqQuestion className="p-6 transition-colors hover:bg-accent">
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6">
+                  <div>{item.answer}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

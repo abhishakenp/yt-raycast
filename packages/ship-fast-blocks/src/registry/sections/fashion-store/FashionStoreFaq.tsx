@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * FashionStoreFaq — native disclosure FAQ accordion for a minimalist fashion
@@ -117,39 +124,23 @@ export const FashionStoreFaq = defineCapsule({
             </h2>
           </div>
 
-          <div className="space-y-6">
+          <FaqAccordion variant="wide">
             {faqItems.map((item) => (
-              <details
-                key={item.q}
-                className="group border border-border bg-background"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-6">
+              <FaqItem key={item.q} className="bg-background">
+                <FaqQuestion className="p-6">
                   <h3 className="pr-4 font-medium text-foreground">{item.q}</h3>
-                  <span className="text-muted-foreground transition-transform group-open:rotate-180">
-                    <svg
-                      className="size-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.5"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </span>
-                </summary>
-                <div className="space-y-3 px-6 pb-6 text-muted-foreground">
-                  {item.a.map((para) => (
-                    <p key={para}>{para}</p>
-                  ))}
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="space-y-3 px-6 pb-6">
+                  <div>
+                    {item.a.map((para) => (
+                      <p key={para}>{para}</p>
+                    ))}
+                  </div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
 
           <div className="mt-12 text-center">
             <p className="mb-4 text-muted-foreground">{faqFooterNote}</p>

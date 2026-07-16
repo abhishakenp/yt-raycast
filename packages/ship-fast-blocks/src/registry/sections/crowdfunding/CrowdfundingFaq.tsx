@@ -1,4 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
+
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
+
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -67,33 +76,19 @@ export const CrowdfundingFaq = defineCapsule({
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <FaqAccordion>
             {faqItems.map((item) => (
-              <details
-                key={item.q}
-                className="group overflow-hidden rounded-xl border border-border"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between bg-card p-6 transition-colors hover:bg-muted">
+              <FaqItem key={item.q} variant="overflow-bordered">
+                <FaqQuestion className="bg-card p-6 transition-colors hover:bg-muted">
                   <span className="font-medium">{item.q}</span>
-                  <svg
-                    className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
-                  {item.a}
-                </div>
-              </details>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-6 pb-6">
+                  <div>{item.a}</div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

@@ -2,6 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * AeoFaq — bespoke, accessible FAQ section for an Answer-Engine-Optimization
@@ -78,27 +85,23 @@ export const AeoFaq = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{intro}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item, i) => (
-              <details
-                key={item.question}
-                open={i === 0}
-                className="group rounded-xl border border-border bg-muted/40 open:bg-card open:shadow-sm"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-5">
+              <FaqItem key={item.question} variant="open-raised" open={i === 0}>
+                <FaqQuestion className="p-5">
                   <h3 className="pr-4 font-medium text-foreground">
                     {item.question}
                   </h3>
-                  <span className="text-muted-foreground" aria-hidden>
-                    +
-                  </span>
-                </summary>
-                <div className="px-5 pb-5 text-sm leading-relaxed text-muted-foreground">
-                  <p>{item.answer}</p>
-                </div>
-              </details>
+                  <FaqQuestionIcon variant="plus" />
+                </FaqQuestion>
+                <FaqAnswer asChild className="px-5 pb-5 text-sm">
+                  <div>
+                    <p>{item.answer}</p>
+                  </div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )
