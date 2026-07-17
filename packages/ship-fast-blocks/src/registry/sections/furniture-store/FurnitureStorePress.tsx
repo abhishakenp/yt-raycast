@@ -3,6 +3,9 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
+import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+
 /**
  * FurnitureStorePress — a slim "featured in" press / publication-logo strip. A
  * bordered-bottom band with a centered caption above a horizontal, wrapping row
@@ -11,7 +14,6 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for furniture, home-decor, interiors, or any editorial retail brand citing
  * design-magazine press. Renders fully with no props via baked-in defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const FurnitureStorePress = defineCapsule({
   name: 'FurnitureStorePress',
   description:
@@ -35,21 +37,15 @@ export const FurnitureStorePress = defineCapsule({
         aria-label="Featured in"
       >
         <Container>
-          <p className="mb-8 text-center text-sm text-muted-foreground">
-            {label}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground/60 lg:gap-16">
-            {logos.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="font-serif text-lg font-semibold tracking-tight transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </div>
+          <LogoStrip
+            lead={label}
+            logos={logos}
+            layout="flex"
+            logoStyle="text-bold"
+            onClickLogo={(logo) => go(logo)}
+            leadClassName="text-center text-sm text-muted-foreground normal-case font-normal tracking-normal"
+            logoClassName="font-serif text-lg text-muted-foreground/60"
+          />
         </Container>
       </section>
     )

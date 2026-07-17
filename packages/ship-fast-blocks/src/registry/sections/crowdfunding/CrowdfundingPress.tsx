@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * CrowdfundingPress — a compact "Featured in" press-logo strip for a
@@ -36,21 +37,15 @@ export const CrowdfundingPress = defineCapsule({
         className={cn('border-y border-border bg-card py-12', props.className)}
       >
         <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {pressHeading}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 opacity-60 md:gap-16">
-            {pressLogos.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="text-xl font-semibold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </div>
+          <LogoStrip
+            lead={pressHeading}
+            logos={pressLogos}
+            layout="flex"
+            logoStyle="text-bold"
+            onClickLogo={(logo) => go(logo)}
+            leadClassName="tracking-wider"
+            logoClassName="text-xl opacity-60 tracking-normal"
+          />
         </Container>
       </section>
     )
