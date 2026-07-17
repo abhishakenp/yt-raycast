@@ -6,6 +6,11 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  StorySplit,
+  StorySplitGrid,
+  StorySplitContent,
+} from '#/section-kit/StorySplit.tsx'
 
 // About "Our Story" feature chips, keyed by intent; falls back to a soup bowl.
 const FEATURE_ICONS = [Flame, Wheat, Leaf]
@@ -85,8 +90,8 @@ export const RestaurantStory = defineCapsule({
         ]
 
     return (
-      <section className={cn('w-full bg-background', props.className)}>
-        <div className="mx-auto grid w-[min(1200px,92vw)] items-center gap-16 py-24 lg:grid-cols-2">
+      <StorySplit className={cn('w-full bg-background', props.className)}>
+        <StorySplitGrid className="mx-auto w-[min(1200px,92vw)] gap-16 py-24">
           <div className="relative order-1">
             <div className="overflow-hidden rounded-3xl shadow-2xl shadow-black/15">
               <Image
@@ -108,7 +113,7 @@ export const RestaurantStory = defineCapsule({
             </div>
           </div>
 
-          <div className="order-2">
+          <StorySplitContent className="order-2 space-y-0">
             <SectionHeading
               eyebrow={eyebrow}
               title={heading}
@@ -152,9 +157,9 @@ export const RestaurantStory = defineCapsule({
             >
               {cta}
             </button>
-          </div>
-        </div>
-      </section>
+          </StorySplitContent>
+        </StorySplitGrid>
+      </StorySplit>
     )
   },
 })

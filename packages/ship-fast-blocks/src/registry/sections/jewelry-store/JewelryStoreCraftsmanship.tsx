@@ -5,6 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { FeatureListItem } from '#/section-kit/FeatureListItem.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  StorySplit,
+  StorySplitGrid,
+  StorySplitContent,
+} from '#/section-kit/StorySplit.tsx'
 
 /**
  * JewelryStoreCraftsmanship — split craftsmanship / values band for a luxury
@@ -133,15 +138,13 @@ export const JewelryStoreCraftsmanship = defineCapsule({
     const icons = [CheckBadge, StarIcon, ShieldIcon, SparkleIcon]
 
     return (
-      <section
-        className={cn(
-          'bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
-          props.className,
-        )}
+      <StorySplit
+        variant="muted"
+        className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <div className="grid items-center gap-20 lg:grid-cols-2">
-            <div>
+          <StorySplitGrid className="gap-20">
+            <StorySplitContent className="space-y-0">
               <SectionHeading
                 eyebrow={eyebrow}
                 title={heading}
@@ -169,7 +172,7 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                   )
                 })}
               </div>
-            </div>
+            </StorySplitContent>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4">
                 <div className="aspect-[3/4] overflow-hidden bg-card">
@@ -212,9 +215,9 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                 </div>
               </div>
             </div>
-          </div>
+          </StorySplitGrid>
         </div>
-      </section>
+      </StorySplit>
     )
   },
 })

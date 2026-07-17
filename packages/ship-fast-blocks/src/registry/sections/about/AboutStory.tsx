@@ -6,6 +6,12 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  StorySplit,
+  StorySplitGrid,
+  StorySplitContent,
+  StorySplitBody,
+} from '#/section-kit/StorySplit.tsx'
 
 /**
  * AboutStory — "our story" split band for a modern company / ABOUT page. A
@@ -75,7 +81,7 @@ export const AboutStory = defineCapsule({
     )
 
     return (
-      <section className={cn('py-16 sm:py-20 lg:py-24', props.className)}>
+      <StorySplit className={cn('py-16 sm:py-20 lg:py-24', props.className)}>
         <div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
           <div className="mb-10 max-w-2xl">
             <Eyebrow
@@ -96,7 +102,7 @@ export const AboutStory = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid items-center gap-10 lg:grid-cols-2">
+          <StorySplitGrid className="items-center gap-10">
             <Card
               variant="muted"
               rounded="2xl"
@@ -120,25 +126,27 @@ export const AboutStory = defineCapsule({
                 {badge}
               </span>
             </Card>
-            <div>
-              {paragraphs.map((para, i) => (
-                <p
-                  key={i}
-                  className={cn(
-                    'leading-relaxed text-muted-foreground',
-                    i > 0 && 'mt-4',
-                  )}
-                >
-                  {para}
-                </p>
-              ))}
+            <StorySplitContent className="space-y-0">
+              <StorySplitBody className="space-y-0">
+                {paragraphs.map((para, i) => (
+                  <p
+                    key={i}
+                    className={cn(
+                      'leading-relaxed text-muted-foreground',
+                      i > 0 && 'mt-4',
+                    )}
+                  >
+                    {para}
+                  </p>
+                ))}
+              </StorySplitBody>
               <blockquote className="mt-5 rounded-r-xl border-l-[3px] border-primary bg-primary/[0.06] px-4 py-4 font-semibold text-foreground">
                 &ldquo;{quote}&rdquo;
               </blockquote>
-            </div>
-          </div>
+            </StorySplitContent>
+          </StorySplitGrid>
         </div>
-      </section>
+      </StorySplit>
     )
   },
 })
