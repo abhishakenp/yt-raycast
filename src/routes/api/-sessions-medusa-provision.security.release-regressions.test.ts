@@ -15,7 +15,7 @@ vi.mock('@/features/commerce/server/commerce-api-response', () => ({
 }))
 
 import { Route } from './sessions.$sessionId.provision.medusa'
-import { callRouteHandler } from './route-handler.test-helper'
+import { callRouteHandler } from './-route-handler.test-helper'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)

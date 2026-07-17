@@ -5,7 +5,15 @@ import type { ExtractedTokens } from './types.ts'
 
 // Mock the LLM text generator so convertSection is deterministic and offline.
 const generateMocks = vi.hoisted(() => ({
-  generateText: vi.fn(async (): Promise<string> => ''),
+  generateText: vi.fn(
+    async (
+      _modelId: string,
+      _system: string,
+      _user: string,
+      _signal: AbortSignal,
+      _retries?: number,
+    ): Promise<string> => '',
+  ),
 }))
 
 vi.mock('../generate.ts', () => ({

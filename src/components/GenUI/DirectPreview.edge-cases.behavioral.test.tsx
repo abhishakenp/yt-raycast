@@ -77,11 +77,21 @@ const { useTextEditMock, useElementInspectorMock } = vi.hoisted(() => ({
 // DirectPreview's wiring without running the full contentEditable machinery.
 vi.mock('@/features/editing/hooks/useTextEdit', () => ({
   useTextEdit: (
-    ref,
-    editMode,
-    onTextChange,
-    onImageChange,
-    onElementActivate,
+    ref: React.RefObject<HTMLElement | null>,
+    editMode: boolean,
+    onTextChange: (change: {
+      oldText: string
+      newText: string
+      element: HTMLElement
+      occurrenceIndex: number
+    }) => void,
+    onImageChange?: (change: {
+      oldSrc: string
+      newSrc: string
+      element: HTMLImageElement
+      alt: string
+    }) => void,
+    onElementActivate?: (element: HTMLElement, rect: DOMRect) => void,
   ) => {
     useTextEditMock(
       ref,
@@ -95,7 +105,11 @@ vi.mock('@/features/editing/hooks/useTextEdit', () => ({
 }))
 
 vi.mock('@/features/editing/hooks/useElementInspector', () => ({
-  useElementInspector: (ref, active, onSectionSelect) => {
+  useElementInspector: (
+    ref: React.RefObject<HTMLElement | null>,
+    active: boolean,
+    onSectionSelect?: (selection: unknown) => void,
+  ) => {
     useElementInspectorMock(ref, active, onSectionSelect)
   },
 }))

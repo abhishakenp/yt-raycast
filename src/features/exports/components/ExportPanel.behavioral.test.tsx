@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ExportPanel } from './ExportPanel'
+import { ExportPanel, artifactProgressPercent } from './ExportPanel'
 import { persistAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 type ExportTargetTuple = {
@@ -15,6 +15,9 @@ type ExportTargetTuple = {
   artifactReady?: boolean
   artifactStatus?: string
   artifactError?: string
+  artifactProgressStage?: string
+  artifactProgressPercent?: number
+  artifactProgressStartedAt?: number
   previewVersion?: number | null
   currentPreviewVersion?: number | null
   downloadUrl: string | null
@@ -204,7 +207,7 @@ describe('ExportPanel behavioral', () => {
     expect(actionSlot?.querySelector('.animate-spin')).toBeNull()
   })
 
-  it('status "building" shows progress percentage when activated', async () => {
+  it('status "building" shows the real server-pushed stage + percentage when activated', async () => {
     setExportTargets([
       target({
         target: 'html',
@@ -212,6 +215,8 @@ describe('ExportPanel behavioral', () => {
         status: 'available',
         artifactReady: false,
         artifactStatus: 'building',
+        artifactProgressStage: 'Generating components',
+        artifactProgressPercent: 76,
         downloadUrl: null,
       }),
     ])
@@ -228,7 +233,9 @@ describe('ExportPanel behavioral', () => {
     expect(button).toBeTruthy()
     if (button) fireEvent.click(button)
 
-    await waitFor(() => expect(view.getByText('72%')).toBeTruthy())
+    await waitFor(() =>
+      expect(view.getByText('Generating components · 76%')).toBeTruthy(),
+    )
     // Spinner shown while actively working.
     expect(
       view.container.querySelector('[data-export-action="html"] .animate-spin'),
@@ -237,7 +244,7 @@ describe('ExportPanel behavioral', () => {
     pending.resolve(Response.json({ ok: true }))
   })
 
-  it('status "queued" shows queued progress state when activated', async () => {
+  it('status "queued" shows the real early-stage progress when activated', async () => {
     setExportTargets([
       target({
         target: 'react',
@@ -245,6 +252,8 @@ describe('ExportPanel behavioral', () => {
         status: 'available',
         artifactReady: false,
         artifactStatus: 'queued',
+        artifactProgressStage: 'Starting build',
+        artifactProgressPercent: 4,
         downloadUrl: null,
       }),
     ])
@@ -261,7 +270,9 @@ describe('ExportPanel behavioral', () => {
     expect(button).toBeTruthy()
     if (button) fireEvent.click(button)
 
-    await waitFor(() => expect(view.getByText('26%')).toBeTruthy())
+    await waitFor(() =>
+      expect(view.getByText('Starting build · 4%')).toBeTruthy(),
+    )
 
     pending.resolve(Response.json({ ok: true }))
   })
@@ -615,14 +626,20 @@ describe('ExportPanel behavioral', () => {
     )
   })
 
-  it('progress percentage maps to artifact status (12% loading, 26% queued, 72% building)', async () => {
+  it('progress text tracks whatever real stage + percent the server last pushed', async () => {
+    // These three snapshots mirror real backend stage checkpoints from
+    // convex/lib/export_progress_stages.ts (loading-generator=26%,
+    // parsing=38%, generating=76%) — the UI must render exactly what the
+    // server computed, not a client-side status→percent guess.
     setExportTargets([
       target({
         target: 'html',
         ready: false,
         status: 'available',
         artifactReady: false,
-        artifactStatus: 'loading',
+        artifactStatus: 'building',
+        artifactProgressStage: 'Loading generator',
+        artifactProgressPercent: 26,
         downloadUrl: null,
       }),
     ])
@@ -639,36 +656,17 @@ describe('ExportPanel behavioral', () => {
     expect(button).toBeTruthy()
     if (button) fireEvent.click(button)
 
-    // loading → 12%
-    await waitFor(() => expect(view.getByText('12%')).toBeTruthy())
+    await waitFor(() =>
+      expect(view.getByText('Loading generator · 26%')).toBeTruthy(),
+    )
     pending.resolve(Response.json({ ok: true }))
 
     // Wait for the active target to clear before re-rendering with next status.
-    await waitFor(() => expect(view.queryByText('12%')).toBeNull())
+    await waitFor(() =>
+      expect(view.queryByText('Loading generator · 26%')).toBeNull(),
+    )
 
-    // queued → 26%
-    setExportTargets([
-      target({
-        target: 'html',
-        ready: false,
-        status: 'available',
-        artifactReady: false,
-        artifactStatus: 'queued',
-        downloadUrl: null,
-      }),
-    ])
-    const pendingQueued = deferred()
-    fetchMock.mockImplementation(async (url) => {
-      if (String(url).endsWith('/export')) return pendingQueued.promise
-      return new Response('zip-bytes')
-    })
-    const buttonQueued = view.getByText('HTML').closest('button')
-    if (buttonQueued) fireEvent.click(buttonQueued)
-    await waitFor(() => expect(view.getByText('26%')).toBeTruthy())
-    pendingQueued.resolve(Response.json({ ok: true }))
-    await waitFor(() => expect(view.queryByText('26%')).toBeNull())
-
-    // building → 72%
+    // parsing → 38%
     setExportTargets([
       target({
         target: 'html',
@@ -676,18 +674,50 @@ describe('ExportPanel behavioral', () => {
         status: 'available',
         artifactReady: false,
         artifactStatus: 'building',
+        artifactProgressStage: 'Parsing source',
+        artifactProgressPercent: 38,
         downloadUrl: null,
       }),
     ])
-    const pendingBuilding = deferred()
+    const pendingParsing = deferred()
     fetchMock.mockImplementation(async (url) => {
-      if (String(url).endsWith('/export')) return pendingBuilding.promise
+      if (String(url).endsWith('/export')) return pendingParsing.promise
       return new Response('zip-bytes')
     })
-    const buttonBuilding = view.getByText('HTML').closest('button')
-    if (buttonBuilding) fireEvent.click(buttonBuilding)
-    await waitFor(() => expect(view.getByText('72%')).toBeTruthy())
-    pendingBuilding.resolve(Response.json({ ok: true }))
+    const buttonParsing = view.getByText('HTML').closest('button')
+    if (buttonParsing) fireEvent.click(buttonParsing)
+    await waitFor(() =>
+      expect(view.getByText('Parsing source · 38%')).toBeTruthy(),
+    )
+    pendingParsing.resolve(Response.json({ ok: true }))
+    await waitFor(() =>
+      expect(view.queryByText('Parsing source · 38%')).toBeNull(),
+    )
+
+    // generating → 76%
+    setExportTargets([
+      target({
+        target: 'html',
+        ready: false,
+        status: 'available',
+        artifactReady: false,
+        artifactStatus: 'building',
+        artifactProgressStage: 'Generating components',
+        artifactProgressPercent: 76,
+        downloadUrl: null,
+      }),
+    ])
+    const pendingGenerating = deferred()
+    fetchMock.mockImplementation(async (url) => {
+      if (String(url).endsWith('/export')) return pendingGenerating.promise
+      return new Response('zip-bytes')
+    })
+    const buttonGenerating = view.getByText('HTML').closest('button')
+    if (buttonGenerating) fireEvent.click(buttonGenerating)
+    await waitFor(() =>
+      expect(view.getByText('Generating components · 76%')).toBeTruthy(),
+    )
+    pendingGenerating.resolve(Response.json({ ok: true }))
   })
 
   it('file count prop is accepted without breaking the target render', () => {
@@ -858,5 +888,68 @@ describe('ExportPanel behavioral', () => {
     }
     expect(fetchMock).not.toHaveBeenCalled()
     expect(exportTargetsState.ensureExportArtifact).not.toHaveBeenCalled()
+  })
+})
+
+describe('artifactProgressPercent', () => {
+  const baseTarget = {
+    target: 'html' as const,
+    label: 'HTML',
+    status: 'available',
+    requiresPayment: false,
+    fileCount: null,
+    downloadUrl: null,
+  }
+
+  it('regression: a stale "ready" flag from the legacy exports table never masks a genuinely in-progress rebuild', () => {
+    // Real bug found via live browser verification: `ready` comes from the
+    // separate `exports` table and stays true from the LAST successful
+    // build while a fresh same-previewVersion force-rebuild is genuinely
+    // underway in `exportArtifacts`. The percent must follow the LIVE
+    // artifactStatus/artifactProgressPercent, never the stale `ready` flag.
+    expect(
+      artifactProgressPercent({
+        ...baseTarget,
+        ready: true, // stale — left over from the previous successful build
+        artifactReady: false, // the fresh rebuild has NOT finished
+        artifactStatus: 'building',
+        artifactProgressPercent: 26,
+      }),
+    ).toBe(26)
+  })
+
+  it('also holds for the "queued" stage, before any progress event has landed', () => {
+    expect(
+      artifactProgressPercent({
+        ...baseTarget,
+        ready: true,
+        artifactReady: false,
+        artifactStatus: 'queued',
+        artifactProgressPercent: 4,
+      }),
+    ).toBe(4)
+  })
+
+  it('returns 100 once the artifact is genuinely ready', () => {
+    expect(
+      artifactProgressPercent({
+        ...baseTarget,
+        ready: true,
+        artifactReady: true,
+        artifactStatus: 'ready',
+        artifactProgressPercent: 100,
+      }),
+    ).toBe(100)
+  })
+
+  it('falls back to the legacy ready flag only outside an active build (e.g. failed/not_ready)', () => {
+    expect(
+      artifactProgressPercent({
+        ...baseTarget,
+        ready: true,
+        artifactReady: false,
+        artifactStatus: 'failed',
+      }),
+    ).toBe(100)
   })
 })

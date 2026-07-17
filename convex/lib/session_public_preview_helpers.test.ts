@@ -86,23 +86,28 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
     previews: [...(input.previews ?? [])],
   }
 
-  const rowsFor = (table) => tables[table]
+  const rowsFor = (table: TableName) => tables[table]
 
   const db = {
-    normalizeId: (table, value) =>
+    normalizeId: (table: TableName, value: string) =>
       rowsFor(table).some((row) => row._id === value) ? value : null,
-    get: async (id) =>
+    get: async (id: string) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table) => {
+    query: (table: TableName) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -118,7 +123,7 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
 
           return builder
         },
-        order: (direction) => {
+        order: (direction: 'asc' | 'desc') => {
           rows = [...rows].sort((left, right) => {
             const leftVersion = (left as { version?: number }).version ?? 0
             const rightVersion = (right as { version?: number }).version ?? 0

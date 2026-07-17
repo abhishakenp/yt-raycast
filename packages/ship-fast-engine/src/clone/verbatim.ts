@@ -220,7 +220,7 @@ async function fetchHttpsFontBytesWithInsecureTls(
 
   return await new Promise<Buffer | null>((resolve) => {
     let settled = false
-    const finish = (value) => {
+    const finish = (value: Buffer | null) => {
       if (settled) return
       settled = true
       resolve(value)

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import type { Doc, Id } from '../_generated/dataModel'
 import {
   hasGalleryReadySignal,
   isGalleryVisibleSession,
@@ -9,8 +10,26 @@ import {
   matchesGalleryFilters,
 } from './gallery_helpers'
 
-function makeSession(overrides: Record<string, unknown> = {}) {
-  return { _id: 'session-1', prompt: '', ...overrides }
+function makeSession(
+  overrides: Partial<Omit<Doc<'sessions'>, 'status' | '_id'>> & {
+    status?: string
+    _id?: string
+  } = {},
+): Doc<'sessions'> {
+  const { status, _id, ...rest } = overrides
+  return {
+    _id: (_id ?? 'session-1') as Id<'sessions'>,
+    _creationTime: 0,
+    prompt: '',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    createdAt: 0,
+    ...rest,
+    ...(status !== undefined
+      ? { status: status as Doc<'sessions'>['status'] }
+      : {}),
+  }
 }
 
 describe('hasGalleryReadySignal', () => {

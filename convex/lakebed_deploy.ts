@@ -159,6 +159,14 @@ export const deploy = action({
                 `lakebed-api:${message}`,
                 details,
               ),
+            onProgress: (stageKey) =>
+              ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
+                sessionId: artifact.sessionId,
+                target: 'lakebed',
+                previewVersion: artifact.previewVersion,
+                stageKey,
+                willDeploy: true,
+              }),
           })
           const result: unknown = await ctx.runMutation(
             internal.sessions.recordLakebedDeploymentSuccess,
@@ -256,6 +264,14 @@ export const deploy = action({
             `lakebed-api:${message}`,
             details,
           ),
+        onProgress: (stageKey) =>
+          ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
+            sessionId: prepared!.sessionId,
+            target: 'lakebed',
+            previewVersion: prepared!.previewVersion,
+            stageKey,
+            willDeploy: true,
+          }),
       })
       logLakebedDeploy(prepared.sessionId, 'lakebed-api:complete', {
         clientBundleBytes: deployed.clientBundleBytes,

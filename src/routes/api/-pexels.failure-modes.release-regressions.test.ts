@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Route } from './pexels'
-import { callRouteHandler } from './route-handler.test-helper'
+import { callRouteHandler } from './-route-handler.test-helper'
 
 const originalEnv = { ...process.env }
 

@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { createElement } from 'react'
 
 import { applyImageSwap, applyPreviewTextEdit } from '@/lib/edit-helpers'
-import { Image } from '../../../packages/ship-fast-blocks/src/lib/img'
-import { encodeMultiImageSrc } from '../../../packages/ship-fast-blocks/src/lib/multi-image-src'
+import { Image } from '@ship-fast/blocks'
+import { encodeMultiImageSrc } from '@ship-fast/blocks/multi-image-src'
 
 /**
  * Image swap edit persistence contract tests.

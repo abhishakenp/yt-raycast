@@ -346,7 +346,7 @@ Rules:
   }
 
   // Normalize keys — models may return snake_case or PascalCase variants.
-  const pick = (keys) => {
+  const pick = (keys: string[]): string | undefined => {
     for (const k of keys) {
       const value = obj[k]
       if (typeof value === 'string' && value.trim()) return value.trim()
@@ -402,7 +402,7 @@ Rules:
  */
 export const resolveOrCreate = action({
   args: { languageInput: v.string() },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Doc<'customLanguages'> | null> => {
     const input = args.languageInput.trim()
     if (!input) {
       throw new Error('Language input is empty.')

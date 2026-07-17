@@ -301,7 +301,7 @@ vi.mock('convex/react', () => ({
     ).__shipFastDashboardSessionConvexState
     return state?.publishMutation ?? vi.fn().mockResolvedValue(undefined)
   },
-  useQuery: (_query, args) => {
+  useQuery: (_query: unknown, args: unknown) => {
     const state = (
       globalThis as typeof globalThis & {
         __shipFastDashboardSessionConvexState?: ConvexTestState
@@ -321,14 +321,18 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }) => <a href={to}>{children}</a>,
+  Link: ({ children, to }: { children: ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
   useNavigate: () => vi.fn(),
   useParams: () => ({}),
   useRouter: () => ({ state: { location: { pathname: '/' } } }),
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }) => <>{children}</>,
+  LakebedSessionProvider: ({ children }: { children: ReactNode }) => (
+    <>{children}</>
+  ),
   useOptionalSessionState: () => ({ data: null }),
 }))
 
@@ -403,7 +407,7 @@ vi.mock('@/genui/theme-apply', () => ({
   ],
   // resolveThemeStyles must return a palette object with both modes plus a
   // themeName label so themeButtonStyle can read styles[isDark ? 'dark' : 'light'].
-  resolveThemeStyles: (name) =>
+  resolveThemeStyles: (name: string | null) =>
     name
       ? {
           themeName: name,
@@ -529,6 +533,36 @@ vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
     isForking,
     isSectionSubmitting,
     sectionError,
+  }: {
+    isOpen: boolean
+    onStyleApply?: (payload: {
+      sourceAnchor: string
+      style: string
+      occurrenceIndex: number
+    }) => void
+    onLinkEdit?: (payload: {
+      oldHref: string
+      newHref: string
+      oldText: string
+      newText: string
+      target: string
+      rel: string
+      occurrenceIndex: number
+    }) => void
+    onSectionEdit?: (instruction: string) => void
+    canUndo: boolean
+    canRedo: boolean
+    onUndo?: () => void
+    onRedo?: () => void
+    onMoveUp?: () => void
+    onMoveDown?: () => void
+    onClose?: () => void
+    onCommitText?: () => void
+    activeElement: HTMLElement | null
+    isApplying: boolean
+    isForking: boolean
+    isSectionSubmitting: boolean
+    sectionError: string | undefined
   }) =>
     isOpen ? (
       <div data-testid="inline-edit-toolbar">
@@ -661,7 +695,7 @@ vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
 // handoff and progress wiring can be observed without depending on the real
 // loader's internal animation timers.
 vi.mock('@/components/GenUI/IntroLoader', () => ({
-  IntroLoader: (props) => (
+  IntroLoader: (props: { progress?: number; phase?: string }) => (
     <div
       data-testid="intro-loader"
       data-progress={props.progress}
@@ -721,7 +755,21 @@ function RealDashboardEditSurface({
 }
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: (props) =>
+  GeneratedModulePreview: (
+    props: RealDashboardEditSurfaceProps & {
+      source?: string
+      imageOverrides?: unknown
+      styleOverrides?: unknown
+      textOverrides?: unknown
+      themeStyles?: unknown
+      isDark?: boolean
+      deviceMode?: string
+      editMode?: boolean
+      siteSpecJson?: string
+      locale?: string
+      selectedBrandLogo?: unknown
+    },
+  ) =>
     getConvexState().realEditSurface ? (
       <RealDashboardEditSurface {...props} />
     ) : (

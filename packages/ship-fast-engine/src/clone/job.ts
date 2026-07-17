@@ -3,7 +3,6 @@ import type {
   CloneOptions,
   CloneResult,
   ExtractedTokens,
-  ClonedSection,
 } from './types.ts'
 import { crawlSite, normalizeUrl } from './crawler.ts'
 import { capturePages } from './capture.ts'
@@ -99,7 +98,7 @@ export async function cloneSite(
       const missing = urls.filter((u) => !have.has(normalizeUrl(u)))
       // Always re-attempt home first; cap the retry batch so a huge crawl can't
       // double its capture cost.
-      const retryHomeFirst = (a, b) => {
+      const retryHomeFirst = (a: string, b: string) => {
         const an = normalizeUrl(a) === normalizeUrl(seedUrl) ? -1 : 0
         const bn = normalizeUrl(b) === normalizeUrl(seedUrl) ? -1 : 0
         return an - bn
@@ -287,7 +286,12 @@ export async function cloneSite(
     // `section_${kind}_${newIndex}` (keeping index === ClonedSection.index), and
     // return the re-keyed ClonedSection. Sections never reference each other, so
     // replacing the var's own name globally in the program is sufficient.
-    const rekeySection = (base, kind, url, newIndex) => {
+    const rekeySection = (
+      base: import('./types.ts').ClonedSection,
+      kind: string,
+      url: string,
+      newIndex: number,
+    ) => {
       const oldVar = `section_${kind}_${base.index}`
       const newVar = `section_${kind}_${newIndex}`
       // Match the section var AND any derived helper var (`section_kind_N_h`,
@@ -308,7 +312,7 @@ export async function cloneSite(
     // Convert one page's deduped sections, reusing the cross-page cache. Cache
     // identity is the structural hash, threaded explicitly per section (no
     // reverse-matching on startIndex for the emit path).
-    const convertPage = async (url) => {
+    const convertPage = async (url: string) => {
       const sections = dedupedPageSections.get(url) ?? []
 
       // Structural hash per section, in page order — the single source of truth

@@ -115,11 +115,16 @@ function ctxFor(
   let nextGeneratedModule = generatedModules.length + 1
 
   const db = {
-    query: (table) => ({
-      withIndex: (indexName, applyIndex) => {
+    query: (table: string) => ({
+      withIndex: (
+        indexName: string,
+        applyIndex: (index: {
+          eq: (field: string, value: unknown) => typeof index
+        }) => void,
+      ) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field, value) => {
+          eq: (field: string, value: unknown) => {
             filters.set(field, value)
             return index
           },
@@ -155,7 +160,7 @@ function ctxFor(
         }
       },
     }),
-    insert: async (table, value) => {
+    insert: async (table: string, value: Record<string, unknown>) => {
       if (table === 'siteSpecs') {
         const id = `site_spec_${nextSiteSpec++}` as Id<'siteSpecs'>
         siteSpecs.push({
@@ -175,7 +180,7 @@ function ctxFor(
       } as GeneratedModuleRecord)
       return id
     },
-    patch: async (id, value) => {
+    patch: async (id: string, value: Record<string, unknown>) => {
       const specIndex = siteSpecs.findIndex((siteSpec) => siteSpec._id === id)
       if (specIndex >= 0) {
         siteSpecs[specIndex] = {
@@ -223,28 +228,28 @@ function cloneCtxFor(input: {
   }> = []
   let nextId = 1
 
-  const rowsFor = (table) => {
+  const rowsFor = (table: string): Record<string, unknown>[] => {
     switch (table) {
       case 'sessions':
-        return sessions
+        return sessions as unknown as Record<string, unknown>[]
       case 'previews':
-        return previews
+        return previews as unknown as Record<string, unknown>[]
       case 'generatedModules':
-        return generatedModules
+        return generatedModules as unknown as Record<string, unknown>[]
       case 'siteSpecs':
-        return siteSpecs
+        return siteSpecs as unknown as Record<string, unknown>[]
       case 'tasks':
-        return tasks
+        return tasks as unknown as Record<string, unknown>[]
       case 'generationEvents':
-        return generationEvents
+        return generationEvents as unknown as Record<string, unknown>[]
       case 'usageMetrics':
-        return usageMetrics
+        return usageMetrics as unknown as Record<string, unknown>[]
       default:
         return []
     }
   }
 
-  const filterRows = (table, filters) => {
+  const filterRows = (table: string, filters: Map<string, unknown>) => {
     const rows = rowsFor(table)
 
     return rows.filter((row) =>
@@ -255,12 +260,18 @@ function cloneCtxFor(input: {
   }
 
   const db = {
-    get: async (id) => sessions.find((session) => session._id === id) ?? null,
-    query: (table) => ({
-      withIndex: (_indexName, applyIndex) => {
+    get: async (id: string) =>
+      sessions.find((session) => session._id === id) ?? null,
+    query: (table: string) => ({
+      withIndex: (
+        _indexName: string,
+        applyIndex: (index: {
+          eq: (field: string, value: unknown) => typeof index
+        }) => void,
+      ) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field, value) => {
+          eq: (field: string, value: unknown) => {
             filters.set(field, value)
             return index
           },
@@ -268,18 +279,19 @@ function cloneCtxFor(input: {
         applyIndex(index)
 
         const first = async () => filterRows(table, filters)[0] ?? null
-        const take = async (limit) => filterRows(table, filters).slice(0, limit)
+        const take = async (limit: number) =>
+          filterRows(table, filters).slice(0, limit)
 
         return {
           first,
           take,
-          order: (_direction) => ({
+          order: (_direction: 'asc' | 'desc') => ({
             first,
           }),
         }
       },
     }),
-    insert: async (table, value) => {
+    insert: async (table: string, value: Record<string, unknown>) => {
       const row = {
         _id: `${table}_${nextId++}`,
         _creationTime: 1,
@@ -288,7 +300,7 @@ function cloneCtxFor(input: {
       rowsFor(table).push(row as never)
       return row._id
     },
-    patch: async (id, value) => {
+    patch: async (id: string, value: Record<string, unknown>) => {
       for (const rows of [
         sessions,
         previews,
@@ -309,7 +321,11 @@ function cloneCtxFor(input: {
   } as unknown as Pick<MutationCtx, 'db'>['db']
 
   const scheduler = {
-    runAfter: async (delayMs, _ref, event) => {
+    runAfter: async (
+      delayMs: number,
+      _ref: unknown,
+      event: Record<string, unknown>,
+    ) => {
       schedulerCalls.push({ delayMs, event })
     },
   } as unknown as Pick<MutationCtx, 'scheduler'>['scheduler']

@@ -70,17 +70,23 @@ function mutationCtxForSessions(input: {
     []
 
   const db = {
-    get: async (id) => sessions.find((session) => session._id === id) ?? null,
-    query: (table) => {
+    get: async (id: Id<'sessions'>) =>
+      sessions.find((session) => session._id === id) ?? null,
+    query: (table: string) => {
       expect(table).toBe('sessions')
       let rows = [...sessions]
 
       const builder = {
-        withIndex: (indexName, applyIndex) => {
+        withIndex: (
+          indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           expect(['by_userId', 'by_anonymousClientIdHash']).toContain(indexName)
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -101,12 +107,12 @@ function mutationCtxForSessions(input: {
 
       return builder
     },
-    delete: async (id) => {
+    delete: async (id: Id<'sessions'>) => {
       deletedIds.push(id)
       const index = sessions.findIndex((session) => session._id === id)
       if (index >= 0) sessions.splice(index, 1)
     },
-    patch: async (id, patch) => {
+    patch: async (id: Id<'sessions'>, patch: Record<string, unknown>) => {
       patches.push({ id, patch })
       const session = sessions.find((next) => next._id === id)
       if (session !== undefined) Object.assign(session, patch)

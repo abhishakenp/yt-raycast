@@ -11,7 +11,7 @@ vi.mock('@ship-fast/engine/model-list.js', () => ({
 }))
 
 import { Route } from './rewrite'
-import { callRouteHandler } from './route-handler.test-helper'
+import { callRouteHandler } from './-route-handler.test-helper'
 
 function postRewrite(body: string, headers?: HeadersInit) {
   const request = new Request('https://ship-fast.io/api/rewrite', {

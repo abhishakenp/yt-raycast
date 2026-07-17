@@ -64,7 +64,7 @@ function extractCandidates(homeHtml: string): string[] {
   const out: string[] = []
   const seen = new Set<string>()
 
-  const push = (raw) => {
+  const push = (raw: string | null | undefined) => {
     if (!raw) return
     const text = raw.replace(/\s+/g, ' ').trim()
     if (!text || text.length > MAX_CANDIDATE_CHARS) return

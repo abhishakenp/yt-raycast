@@ -128,6 +128,14 @@ export type LakebedDeployInput = {
   fetchImpl?: FetchLike
   inspectPolicy?: 'public'
   log?: LakebedDeployLogger
+  /**
+   * Real deploy-stage hook — called once bundling/upload actually reaches a
+   * named milestone (bundling-server, bundling-client, uploading,
+   * finalizing). See convex/lib/export_progress_stages.ts for the full
+   * stage list. Omitted in contexts without a progress sink (tests, direct
+   * calls) — deploying behaves identically either way.
+   */
+  onProgress?: (stageKey: string) => void | Promise<void>
 }
 
 export type LakebedBuildResult = {
@@ -1096,14 +1104,29 @@ export async function deployLakebedProjectFiles({
   files,
   inspectPolicy,
   log,
+  onProgress,
 }: LakebedDeployInput): Promise<LakebedDeployResult> {
+  // Progress calls run a real Convex mutation over the network — never block
+  // the deploy hot path waiting on one. Fire-and-collect, then flush once at
+  // the end so nothing is dropped if the function returns quickly.
+  const pendingProgress: Array<Promise<unknown>> = []
+  const emitProgress = (stageKey: string) => {
+    if (onProgress === undefined) return
+    pendingProgress.push(Promise.resolve(onProgress(stageKey)))
+  }
+  const wrappedLog: LakebedDeployLogger = (message, details) => {
+    log?.(message, details)
+    if (message === 'bundle:server:complete') emitProgress('bundling-server')
+    if (message === 'bundle:client:complete') emitProgress('bundling-client')
+  }
+
   const buildStartedAt = Date.now()
-  log?.('anonymous-request:start', summarizeFiles(files))
+  wrappedLog('anonymous-request:start', summarizeFiles(files))
   const built = await buildLakebedAnonymousDeployRequest(files, {
     inspectPolicy,
-    log,
+    log: wrappedLog,
   })
-  log?.('anonymous-request:complete', {
+  wrappedLog('anonymous-request:complete', {
     clientBundleBytes: built.clientBundleBytes,
     requestBodyBytes: built.requestBodyBytes,
     serverBundleBytes: built.serverBundleBytes,
@@ -1124,10 +1147,11 @@ export async function deployLakebedProjectFiles({
   const requestUrl = updateUrl ?? `${deployApi}/v1/anonymous-deploys`
   const requestMethod = updateUrl === null ? 'POST' : 'PUT'
   const postStartedAt = Date.now()
-  log?.('post:start', {
+  wrappedLog('post:start', {
     requestBodyBytes: built.requestBodyBytes,
     url: requestUrl,
   })
+  emitProgress('uploading')
   const response = await fetchImpl(requestUrl, {
     body: built.requestBody,
     headers: {
@@ -1136,26 +1160,28 @@ export async function deployLakebedProjectFiles({
     },
     method: requestMethod,
   })
-  log?.('post:response', {
+  wrappedLog('post:response', {
     elapsedMs: Date.now() - postStartedAt,
     ok: response.ok,
     status: response.status,
     statusText: response.statusText,
   })
+  emitProgress('finalizing')
   const responseParseStartedAt = Date.now()
-  log?.('post:json:start')
+  wrappedLog('post:json:start')
   const deployed = await readResponseJson(response)
-  log?.('post:json:complete', {
+  wrappedLog('post:json:complete', {
     elapsedMs: Date.now() - responseParseStartedAt,
     responseKeys: Object.keys(deployed),
   })
-  log?.('post:complete', {
+  wrappedLog('post:complete', {
     deployId: deployed.deployId,
     mode: updateUrl === null ? 'created' : 'updated',
     status: response.status,
     url: deployed.url,
     elapsedMs: Date.now() - postStartedAt,
   })
+  await Promise.all(pendingProgress)
 
   const deployId =
     typeof deployed.deployId === 'string' ? deployed.deployId.trim() : ''

@@ -39,6 +39,7 @@ describe('generated route manifest release operations', () => {
       routes.map((route) => [route.fullPath, handlerMethods(route)]),
     )
 
+    expect(methodsByPath.get('/health')).toEqual(['GET'])
     expect(methodsByPath.get('/api/health')).toEqual(['GET'])
     expect(methodsByPath.get('/api/sessions/create')).toEqual(['POST'])
     expect(methodsByPath.get('/api/checkout/start')).toEqual(['POST'])

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { Route as RazorpayAliasRoute } from './payments.razorpay.webhook'
 import { Route as StripeAliasRoute } from './payments.stripe.webhook'
-import { callRouteHandler } from './route-handler.test-helper'
+import { callRouteHandler } from './-route-handler.test-helper'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)

@@ -51,24 +51,31 @@ function ctxFor(input: {
   const events = [...(input.events ?? [])]
 
   const db = {
-    normalizeId: (table, value) =>
+    normalizeId: (table: string, value: string) =>
       table === 'sessions' && sessions.some((session) => session._id === value)
         ? value
         : null,
-    get: async (id) => sessions.find((session) => session._id === id) ?? null,
-    query: (table) => {
+    get: async (id: string) =>
+      sessions.find((session) => session._id === id) ?? null,
+    query: (table: string) => {
       let rows = table === 'generationEvents' ? [...events] : []
 
       const builder = {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+            gt: (field: string, value: number) => typeof index
+          }) => void,
+        ) => {
           const equalFilters = new Map<string, unknown>()
           const gtFilters = new Map<string, number>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               equalFilters.set(field, value)
               return index
             },
-            gt: (field, value) => {
+            gt: (field: string, value: number) => {
               gtFilters.set(field, value)
               return index
             },
@@ -90,7 +97,7 @@ function ctxFor(input: {
 
           return builder
         },
-        order: (direction) => {
+        order: (direction: 'asc' | 'desc') => {
           rows = [...rows].sort((left, right) =>
             direction === 'desc'
               ? right.createdAt - left.createdAt
@@ -99,7 +106,7 @@ function ctxFor(input: {
 
           return builder
         },
-        take: async (limit) => rows.slice(0, limit),
+        take: async (limit: number) => rows.slice(0, limit),
       }
 
       return builder

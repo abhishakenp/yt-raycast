@@ -65,7 +65,7 @@ const mutationCtxForUsageMetrics = () => {
   const inserted: Array<{ table: string; value: Record<string, unknown> }> = []
   const ctx = {
     db: {
-      insert: async (table, value) => {
+      insert: async (table: string, value: Record<string, unknown>) => {
         inserted.push({ table, value })
         return `${table}_id`
       },
@@ -90,12 +90,12 @@ type FakeQuery = {
 
 function queryCtxForUsageMetrics(metrics: UsageMetricRecord[]) {
   const reads: ReadLog[] = []
-  const makeQuery = (table) => {
+  const makeQuery = (table: string) => {
     let indexName: string | undefined
     let direction: 'asc' | 'desc' | undefined
     const filters: Record<string, unknown> = {}
     const fakeIndex: FakeIndex = {
-      eq: (field, value) => {
+      eq: (field: string, value: unknown) => {
         filters[field] = value
         return fakeIndex
       },

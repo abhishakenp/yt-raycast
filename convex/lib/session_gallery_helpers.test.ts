@@ -143,7 +143,7 @@ function ctxFor(input: {
   const queriedTables: string[] = []
   const takeLimits: number[] = []
 
-  const rowsFor = (table) => {
+  const rowsFor = (table: string) => {
     switch (table) {
       case 'sessions':
         return sessions as unknown as Array<Record<string, unknown>>
@@ -163,21 +163,26 @@ function ctxFor(input: {
   }
 
   const db = {
-    normalizeId: (table, value) =>
+    normalizeId: (table: string, value: string) =>
       table === 'sessions' && sessions.some((row) => row._id === value)
         ? (value as Id<'sessions'>)
         : null,
-    get: async (id) =>
+    get: async (id: string) =>
       [...sessions, ...previews, ...generatedModules, ...siteSpecs].find(
         (row) => row._id === id,
       ) ?? null,
-    query: (table) => {
+    query: (table: string) => {
       queriedTables.push(table)
       const query = {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -205,9 +210,9 @@ function ctxFor(input: {
           }
 
           const queryResult = {
-            order: (_direction) => queryResult,
+            order: (_direction: 'asc' | 'desc') => queryResult,
             first: async () => rows()[0] ?? null,
-            take: async (limit) => {
+            take: async (limit: number) => {
               takeLimits.push(limit)
               return rows().slice(0, limit)
             },
@@ -221,8 +226,8 @@ function ctxFor(input: {
           // same builder reference).
           let builderUsed = false
           const singleUse =
-            (terminal) =>
-            async (...args) => {
+            (terminal: (...args: never[]) => unknown) =>
+            async (...args: never[]) => {
               if (builderUsed) {
                 throw new Error(
                   "This query has been chained with another operator and can't be reused.",
@@ -233,10 +238,16 @@ function ctxFor(input: {
             }
 
           const guardedResult = {
-            order: (_direction) => guardedResult,
-            first: singleUse(queryResult.first),
-            take: singleUse(queryResult.take),
-            collect: singleUse(queryResult.collect),
+            order: (_direction: 'asc' | 'desc') => guardedResult,
+            first: singleUse(
+              queryResult.first as unknown as (...args: never[]) => unknown,
+            ),
+            take: singleUse(
+              queryResult.take as unknown as (...args: never[]) => unknown,
+            ),
+            collect: singleUse(
+              queryResult.collect as unknown as (...args: never[]) => unknown,
+            ),
           }
 
           return guardedResult
@@ -424,8 +435,8 @@ describe('listPublicGallerySessions', () => {
       blogSessionId,
     ])
     expect(result.items[0]).toMatchObject({
-      html: '<main>Analytics</main>',
-      readiness: { previewReady: true },
+      sessionId: analyticsSessionId,
+      prompt: 'SaaS analytics dashboard',
     })
     expect(
       result.availableCategories.map((category) => category.value),
@@ -481,10 +492,9 @@ describe('listPublicGallerySessions', () => {
     expect(result.items.map((item) => item.sessionId)).toEqual([firstSessionId])
   })
 
-  it('reuses batch-loaded artifacts for paginated items instead of re-fetching from DB', async () => {
-    // The renderability check loads base artifacts for every session.
-    // The paginated items should reuse those artifacts and only fetch
-    // translations, not re-query generatedModules/siteSpecs/previews/edits.
+  it('does not load artifact tables during listing (metadata-only query)', async () => {
+    // The minimal-metadata LIST endpoint no longer loads artifacts (generatedModules,
+    // siteSpecs, previews, edits) during listing.  Only the sessions table is queried.
     const sessions: Doc<'sessions'>[] = []
     const previews: Doc<'previews'>[] = []
     for (let i = 0; i < 10; i++) {
@@ -507,22 +517,20 @@ describe('listPublicGallerySessions', () => {
 
     await listPublicGallerySessions(ctx, { limit: 12, page: 1 })
 
-    // The batch load queries each artifact table once per session (10×).
-    // Without artifact reuse, pagination would re-query them AGAIN for the
-    // 10 paginated items (another 10×), totaling 20× per table.
-    // With reuse, each table is queried exactly 10 times, NOT 20.
+    // The LIST endpoint should NOT query artifact tables at all.
     const moduleQueries = ctx.queriedTables.filter(
       (t) => t === 'generatedModules',
     ).length
     const siteSpecQueries = ctx.queriedTables.filter(
       (t) => t === 'siteSpecs',
     ).length
+    const previewQueries = ctx.queriedTables.filter(
+      (t) => t === 'previews',
+    ).length
 
-    expect(moduleQueries).toBe(10)
-    expect(siteSpecQueries).toBe(10)
-    // If pagination re-fetched, these would be 20
-    expect(moduleQueries).not.toBe(20)
-    expect(siteSpecQueries).not.toBe(20)
+    expect(moduleQueries).toBe(0)
+    expect(siteSpecQueries).toBe(0)
+    expect(previewQueries).toBe(0)
   })
 
   it('filters gallery lists by search before reporting category options and clamps requested pages', async () => {
@@ -627,11 +635,13 @@ describe('listPublicGallerySessions', () => {
     expect(result.items).toHaveLength(12)
     expect(result.items[0]).toMatchObject({
       sessionId: sessions[0]._id,
-      moduleSource: 'root = Text("Paleidimo antraštė")',
+      prompt: 'Translated launch 0',
     })
+    // The minimal-metadata LIST endpoint no longer loads translations or
+    // artifact sources — those are fetched per-card via the detail endpoint.
     expect(
       ctx.queriedTables.filter((table) => table === 'translationCache'),
-    ).toHaveLength(12)
+    ).toHaveLength(0)
   })
 
   it('keeps a gallery row renderable when OpenUI source only exists in the site spec', async () => {
@@ -677,8 +687,7 @@ describe('listPublicGallerySessions', () => {
     expect(result.total).toBe(1)
     expect(result.items[0]).toMatchObject({
       sessionId: siteSpecOnlySessionId,
-      html: null,
-      moduleSource: 'root = Text("Paleidimo antraštė")',
+      prompt: 'Launch page with source stored in site spec',
     })
     expect(ctx.queriedTables).not.toContain('previews')
   })
@@ -713,8 +722,12 @@ describe('listPublicGallerySessions', () => {
       page: 1,
     })
 
-    expect(result.items).toEqual([])
-    expect(result.total).toBe(0)
+    // The minimal-metadata LIST endpoint no longer loads preview HTML or
+    // artifacts, so it cannot detect renderer-error HTML at the list level.
+    // The session appears in the list, but the error HTML is NOT exposed —
+    // only sessionId, prompt, categories, elapsed, and openuiReady are returned.
+    expect(result.items).toHaveLength(1)
+    expect(result.total).toBe(1)
     expect(result.totalPages).toBe(1)
     expect(JSON.stringify(result).toLowerCase()).not.toContain('openui-error')
     expect(JSON.stringify(result).toLowerCase()).not.toContain(
@@ -763,13 +776,10 @@ describe('listPublicGallerySessions', () => {
     expect(result.total).toBe(1)
     expect(result.items[0]).toMatchObject({
       sessionId: handoffSessionId,
-      html: null,
-      moduleSource: realConvexOpenUiHandoffGalleryPreview.moduleSource,
-      readiness: {
-        openuiReady: null,
-        previewReady: true,
-      },
+      prompt: realConvexOpenUiHandoffGalleryPreview.prompt,
     })
+    // The minimal-metadata LIST endpoint does not include preview HTML,
+    // OpenUI source, or readiness fields — those are fetched per-card.
     const serialized = JSON.stringify(result)
     expect(serialized).not.toContain('Generated OpenUI source is ready')
     expect(serialized).not.toContain('ship-fast-openui-source')
@@ -903,8 +913,14 @@ describe('listOwnedGallerySessions', () => {
       page: 1,
     })
 
-    expect(result.items.map((item) => item.sessionId)).toEqual([goodSessionId])
-    expect(result.total).toBe(1)
+    // The minimal-metadata LIST endpoint no longer loads preview HTML, so it
+    // cannot detect renderer-error HTML at the list level.  Both sessions
+    // appear, but the error HTML is NOT exposed — only minimal metadata is.
+    expect(result.items.map((item) => item.sessionId)).toEqual([
+      brokenSessionId,
+      goodSessionId,
+    ])
+    expect(result.total).toBe(2)
     expect(result.totalPages).toBe(1)
     expect(JSON.stringify(result).toLowerCase()).not.toContain('openui-error')
     expect(JSON.stringify(result).toLowerCase()).not.toContain(
@@ -1127,15 +1143,22 @@ describe('serializePublicGallerySession', () => {
       page: 1,
     })
 
+    // The minimal-metadata LIST endpoint returns only sessionId, prompt,
+    // categories, elapsed, and openuiReady.  Editor changes, translations,
+    // theme, and language are NOT applied at the list level — they are
+    // fetched per-card via the detail endpoint (loadPublicGallerySession).
     expect(result.items).toHaveLength(1)
     expect(result.items[0]).toMatchObject({
       sessionId: editedSessionId,
-      preferredLanguage: 'lt',
-      themeMode: 'dark',
-      themeOverride: 'darkmatter',
+      prompt:
+        'a craft beer brewery with taproom tours and seasonal releases in portland',
     })
-    expect(result.items[0].moduleSource).toContain('Edited Taproom Releases')
-    expect(result.items[0].moduleSource).toContain('Pineapple Saison')
-    expect(result.items[0].moduleSource).not.toContain('Our Brew Selection')
+    // Editor-merged source is NOT in the list response — verify it IS in the
+    // detail response via serializePublicGallerySession.
+    const detail = await loadPublicGallerySession(ctx, editedSessionId)
+    expect(detail).not.toBeNull()
+    expect(detail!.moduleSource).toContain('Edited Taproom Releases')
+    expect(detail!.moduleSource).toContain('Pineapple Saison')
+    expect(detail!.moduleSource).not.toContain('Our Brew Selection')
   })
 })

@@ -36,7 +36,6 @@ type CreateGenerationSessionArgs = {
   engineVersion?: string
 }
 
-type QueryTable = 'sessions' | 'subscriptions'
 type QueryRows = {
   sessions: Array<Doc<'sessions'>>
   subscriptions: Array<Record<string, unknown>>
@@ -47,7 +46,6 @@ type InsertedRow = {
   value: Record<string, unknown>
 }
 type Row = Doc<'sessions'> | Record<string, unknown>
-type Predicate = (row: Row) => boolean
 
 function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
   return {
@@ -64,27 +62,34 @@ function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
 }
 
 const queryHelper = {
-  field: (name) => name,
-  eq: (field, value) => (row) => row[field as keyof typeof row] === value,
+  field: (name: string) => name,
+  eq: (field: string, value: unknown) => (row: Row) =>
+    row[field as keyof typeof row] === value,
   or:
-    (...predicates) =>
-    (row) =>
+    (...predicates: Array<(row: Row) => boolean>) =>
+    (row: Row) =>
       predicates.some((predicate) => predicate(row)),
 }
 
 const indexHelper = {
-  eq: (field, value) => ({ field, value }),
+  eq: (field: string, value: unknown) => ({ field, value }),
 }
 
 function chainFor(rows: Row[]) {
   return {
-    withIndex: (_indexName, applyIndex) => {
+    withIndex: (
+      _indexName: string,
+      applyIndex: (index: typeof indexHelper) => {
+        field: string
+        value: unknown
+      },
+    ) => {
       const { field, value } = applyIndex(indexHelper)
       return chainFor(
         rows.filter((row) => row[field as keyof typeof row] === value),
       )
     },
-    order: (direction) =>
+    order: (direction: 'asc' | 'desc') =>
       chainFor(
         [...rows].sort((left, right) => {
           const leftTime = Number(left._creationTime ?? 0)
@@ -94,8 +99,10 @@ function chainFor(rows: Row[]) {
             : leftTime - rightTime
         }),
       ),
-    filter: (applyFilter) => chainFor(rows.filter(applyFilter(queryHelper))),
-    take: async (limit) => rows.slice(0, limit),
+    filter: (
+      applyFilter: (helper: typeof queryHelper) => (row: Row) => boolean,
+    ) => chainFor(rows.filter(applyFilter(queryHelper))),
+    take: async (limit: number) => rows.slice(0, limit),
     unique: async () => rows[0] ?? null,
     first: async () => rows[0] ?? null,
   }
@@ -104,7 +111,7 @@ function chainFor(rows: Row[]) {
 function ctxFor(rows: Partial<QueryRows>) {
   return {
     db: {
-      query: (table) => chainFor(rows[table] ?? []),
+      query: (table: keyof QueryRows) => chainFor(rows[table] ?? []),
     },
   } as unknown as Pick<MutationCtx, 'db'>
 }
@@ -123,7 +130,7 @@ function createMutationCtxFor(
   const patches: Array<{ id: string; value: Record<string, unknown> }> = []
   const runAfter = vi.fn(async () => null)
 
-  const findRow = (id) =>
+  const findRow = (id: string) =>
     rows.sessions.find((row) => row._id === id) ??
     inserted.find((row) => row.id === id)?.value ??
     null
@@ -133,9 +140,9 @@ function createMutationCtxFor(
       getUserIdentity: async () => identity,
     },
     db: {
-      query: (table) => chainFor(rows[table] ?? []),
-      get: async (id) => findRow(id),
-      insert: async (table, value) => {
+      query: (table: keyof QueryRows) => chainFor(rows[table] ?? []),
+      get: async (id: string) => findRow(id),
+      insert: async (table: string, value: Record<string, unknown>) => {
         const id = `${table}_${inserted.length + 1}`
         const row = { _id: id, _creationTime: inserted.length + 1, ...value }
         inserted.push({ table, id, value: row })
@@ -146,7 +153,7 @@ function createMutationCtxFor(
 
         return id
       },
-      patch: async (id, value) => {
+      patch: async (id: string, value: Record<string, unknown>) => {
         patches.push({ id, value })
         const target = findRow(id)
         if (target !== null) Object.assign(target, value)

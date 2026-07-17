@@ -3,7 +3,16 @@ import { cleanup, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, ...props }) => {
+  Link: ({
+    children,
+    to,
+    ...props
+  }: {
+    children?: React.ReactNode
+    to?: string
+    params?: unknown
+    [key: string]: unknown
+  }) => {
     const anchorProps = { ...props }
     delete anchorProps.params
 
@@ -20,7 +29,7 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }) => (
+  GeneratedModulePreview: ({ source }: { source: string }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))

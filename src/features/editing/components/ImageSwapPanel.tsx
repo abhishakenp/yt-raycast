@@ -243,7 +243,7 @@ export function ImageSwapPanel({
   // ── File upload ──────────────────────────────────────────────────────
 
   const uploadFile = useCallback(
-    async (file) => {
+    async (file: File) => {
       const validationError = validateImageFile(file)
       if (validationError) {
         setUploadError(validationError)
@@ -294,7 +294,7 @@ export function ImageSwapPanel({
 
   // ── Drag-and-drop ────────────────────────────────────────────────────
 
-  const handleDragEnter = useCallback((e) => {
+  const handleDragEnter = useCallback((e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     dragCounterRef.current++
@@ -303,7 +303,7 @@ export function ImageSwapPanel({
     }
   }, [])
 
-  const handleDragLeave = useCallback((e) => {
+  const handleDragLeave = useCallback((e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     dragCounterRef.current--
@@ -312,13 +312,13 @@ export function ImageSwapPanel({
     }
   }, [])
 
-  const handleDragOver = useCallback((e) => {
+  const handleDragOver = useCallback((e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
   }, [])
 
   const handleDrop = useCallback(
-    (e) => {
+    (e: DragEvent) => {
       e.preventDefault()
       e.stopPropagation()
       dragCounterRef.current = 0
@@ -335,7 +335,7 @@ export function ImageSwapPanel({
   // ── Multi-select toggle ──────────────────────────────────────────────
   // 1 selected → plain URL (single swap, as before). 2+ selected → encoded
   // payload rendered as an auto-sliding carousel. 0 → clear the preview.
-  const toggleImage = (url) => {
+  const toggleImage = (url: string) => {
     const next = selectedSrcs.includes(url)
       ? selectedSrcs.filter((selected) => selected !== url)
       : [...selectedSrcs, url]
@@ -354,7 +354,7 @@ export function ImageSwapPanel({
   const uploadedImages: DisplayImage[] =
     userImages
       ?.filter((img): img is typeof img & { url: string } => img.url !== null)
-      .map((img) => ({
+      .map((img: { url: string; filename: string | null }) => ({
         imageUrl: img.url,
         kind: 'upload' as const,
         alt: img.filename ?? 'Uploaded image',

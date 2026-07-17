@@ -9,6 +9,9 @@ type MockDeploymentTarget = {
   artifactReady?: boolean
   artifactStatus?: string
   artifactError?: string
+  artifactProgressStage?: string
+  artifactProgressPercent?: number
+  artifactProgressStartedAt?: number
   deployedUrl?: string | null
 }
 
@@ -102,6 +105,8 @@ describe('DeploymentPanel', () => {
         target: 'lakebed',
         artifactReady: false,
         artifactStatus: 'building',
+        artifactProgressStage: 'Generating components',
+        artifactProgressPercent: 76,
       },
     ])
     const fetchMock = vi.fn(async () =>
@@ -112,7 +117,7 @@ describe('DeploymentPanel', () => {
     const view = render(<DeploymentPanel sessionId="session_123" />)
 
     expect(view.getByText('Publish Lakebed')).toBeTruthy()
-    expect(view.queryByText('72%')).toBeNull()
+    expect(view.queryByText('Generating components · 76%')).toBeNull()
     expect(view.queryByText('Preparing')).toBeNull()
 
     const button = view.getByText('Publish Lakebed').closest('button')
@@ -126,7 +131,7 @@ describe('DeploymentPanel', () => {
         ),
       ).toBeTruthy()
     })
-    expect(view.getByText('72%')).toBeTruthy()
+    expect(view.getByText('Generating components · 76%')).toBeTruthy()
     expect(button?.style.backgroundImage).toContain('110deg')
 
     await new Promise((resolve) => window.setTimeout(resolve, 650))

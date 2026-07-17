@@ -182,23 +182,28 @@ function ctxFor(
     siteSpecs: [...(input.siteSpecs ?? [])],
   }
 
-  const rowsFor = (table) => tables[table]
+  const rowsFor = (table: TableName) => tables[table]
 
   const db = {
-    normalizeId: (table, value) =>
+    normalizeId: (table: TableName, value: string) =>
       rowsFor(table).some((row) => row._id === value) ? value : null,
-    get: async (id) =>
+    get: async (id: string) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table) => {
+    query: (table: TableName) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -214,7 +219,7 @@ function ctxFor(
 
           return builder
         },
-        order: (direction) => {
+        order: (direction: 'asc' | 'desc') => {
           rows = [...rows].sort((left, right) => {
             const leftTime = (left as { updatedAt?: number }).updatedAt ?? 0
             const rightTime = (right as { updatedAt?: number }).updatedAt ?? 0
@@ -226,7 +231,7 @@ function ctxFor(
           return builder
         },
         first: async () => rows[0] ?? null,
-        take: async (limit) => rows.slice(0, limit),
+        take: async (limit: number) => rows.slice(0, limit),
       }
 
       return builder

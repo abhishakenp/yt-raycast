@@ -262,7 +262,7 @@ function ctxFor(input: {
   const creditLedger: CreditLedgerRecord[] = []
   let nextLedgerId = 1
 
-  const rowsFor = (table) => {
+  const rowsFor = (table: string) => {
     switch (table) {
       case 'subscriptions':
         return subscriptions
@@ -274,11 +274,16 @@ function ctxFor(input: {
   }
 
   const db = {
-    query: (table) => ({
-      withIndex: (_indexName, applyIndex) => {
+    query: (table: string) => ({
+      withIndex: (
+        _indexName: string,
+        applyIndex: (index: {
+          eq: (field: string, value: unknown) => typeof index
+        }) => void,
+      ) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field, value) => {
+          eq: (field: string, value: unknown) => {
             filters.set(field, value)
             return index
           },
@@ -290,12 +295,15 @@ function ctxFor(input: {
           rowsFor(table).filter((row) => row.userId === filters.get('userId'))
 
         return {
-          take: async (limit) => matches().slice(0, limit),
+          take: async (limit: number) => matches().slice(0, limit),
           first: async () => matches()[0] ?? null,
         }
       },
     }),
-    patch: async (id, value) => {
+    patch: async (
+      id: Id<'customerCredits'>,
+      value: Partial<CustomerCreditsRecord>,
+    ) => {
       const index = customerCredits.findIndex((credit) => credit._id === id)
       expect(index).toBeGreaterThanOrEqual(0)
       customerCredits[index] = {
@@ -303,7 +311,7 @@ function ctxFor(input: {
         ...value,
       } as CustomerCreditsRecord
     },
-    insert: async (table, value) => {
+    insert: async (table: string, value: Partial<CreditLedgerRecord>) => {
       expect(table).toBe('creditLedger')
       const id = `credit_ledger_${nextLedgerId++}` as Id<'creditLedger'>
       creditLedger.push({
@@ -324,14 +332,19 @@ function ctxFor(input: {
 
 function queryCtxFor(exportRows: ExportRecord[]) {
   const db = {
-    query: (table) => {
+    query: (table: string) => {
       expect(table).toBe('exports')
 
       return {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -402,7 +415,7 @@ function workflowCtxFor(input: {
   let nextLedgerId = 1
   let nextEventId = 1
 
-  const rowsFor = (table) => {
+  const rowsFor = (table: string) => {
     switch (table) {
       case 'previews':
         return previews
@@ -427,11 +440,14 @@ function workflowCtxFor(input: {
     }
   }
 
-  const matchesFilters = (row, filters) =>
+  const matchesFilters = (
+    row: Record<string, unknown>,
+    filters: Map<string, unknown>,
+  ) =>
     Array.from(filters.entries()).every(
       ([field, value]) => row[field] === value,
     )
-  const orderValue = (row) =>
+  const orderValue = (row: Record<string, unknown>) =>
     typeof row.version === 'number'
       ? row.version
       : typeof row._creationTime === 'number'
@@ -439,12 +455,18 @@ function workflowCtxFor(input: {
         : 0
 
   const db = {
-    get: async (id) => sessions.find((session) => session._id === id) ?? null,
-    query: (table) => ({
-      withIndex: (_indexName, applyIndex) => {
+    get: async (id: Id<'sessions'>) =>
+      sessions.find((session) => session._id === id) ?? null,
+    query: (table: string) => ({
+      withIndex: (
+        _indexName: string,
+        applyIndex: (index: {
+          eq: (field: string, value: unknown) => typeof index
+        }) => void,
+      ) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field, value) => {
+          eq: (field: string, value: unknown) => {
             filters.set(field, value)
             return index
           },
@@ -458,9 +480,9 @@ function workflowCtxFor(input: {
           )
         const queryResult = {
           first: async () => matchingRows()[0] ?? null,
-          take: async (limit) => matchingRows().slice(0, limit),
+          take: async (limit: number) => matchingRows().slice(0, limit),
           collect: async () => matchingRows(),
-          order: (direction) => ({
+          order: (direction: 'asc' | 'desc') => ({
             first: async () => {
               const rows = [...matchingRows()]
               rows.sort((left, right) => {
@@ -482,7 +504,7 @@ function workflowCtxFor(input: {
         return queryResult
       },
     }),
-    insert: async (table, value) => {
+    insert: async (table: string, value: Record<string, unknown>) => {
       if (table === 'exports') {
         const id = `export_created_${nextExportId++}` as Id<'exports'>
         exportRows.push({
@@ -526,7 +548,7 @@ function workflowCtxFor(input: {
 
       throw new Error(`Unexpected insert table ${table}`)
     },
-    patch: async (id, value) => {
+    patch: async (id: string, value: Record<string, unknown>) => {
       const exportIndex = exportRows.findIndex((row) => row._id === id)
       if (exportIndex >= 0) {
         exportRows[exportIndex] = {
@@ -569,11 +591,22 @@ function workflowCtxFor(input: {
   } as unknown as MutationCtx['auth'] & QueryCtx['auth']
 
   const storage = {
-    getUrl: async (storageId) => `https://storage.test/${storageId}`,
+    getUrl: async (storageId: Id<'_storage'>) =>
+      `https://storage.test/${storageId}`,
   } as QueryCtx['storage']
 
   const scheduler = {
-    runAfter: async (delayMs, _reference, args) => {
+    runAfter: async (
+      delayMs: number,
+      _reference: unknown,
+      args: {
+        sessionId: Id<'sessions'>
+        target: string
+        previewVersion: number
+        autoDeployPublic?: boolean
+        buildStartedAt?: number
+      },
+    ) => {
       scheduledBuilds.push({ delayMs, args })
     },
   } as unknown as MutationCtx['scheduler']

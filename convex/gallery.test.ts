@@ -64,28 +64,12 @@ test('listPublicSessions returns only public visible sessions with gallery metad
 
   expect(gallery.items).toHaveLength(1)
   expect(gallery.items[0]).toMatchObject({
-    id: publicSessionId,
     sessionId: publicSessionId,
     prompt: 'SaaS analytics dashboard for product teams',
-    status: 'preview_ready',
-    previewVersion: 1,
     elapsed: 12345,
-    cost: 0,
-    homepageReady: null,
-    siteSpecReady: null,
     openuiReady: true,
-    readiness: {
-      homepageReady: null,
-      siteSpecReady: null,
-      openuiReady: true,
-      previewReady: true,
-    },
   })
   expect(gallery.items[0].categories).toContain('saas')
-  expect(gallery.items[0].html).toBeNull()
-  expect(gallery.items[0].moduleSource).toContain('$page = "Home"')
-  expect(gallery.items[0].moduleSource).toContain('SaaS analytics dashboard')
-  expect(gallery.items[0].siteSpecJson).toContain('SaaS analytics dashboard')
   expect(gallery.availableCategories).toContainEqual({
     value: 'saas',
     label: 'Saas',

@@ -120,7 +120,7 @@ function ctxFor(input: {
   const usageMetrics: Array<Record<string, unknown>> = []
   const schedulerCalls: Array<{ delayMs: number; functionRef: unknown }> = []
 
-  const rowsFor = (table) => {
+  const rowsFor = (table: string): Array<Record<string, unknown>> => {
     switch (table) {
       case 'sessions':
         return sessions as unknown as Array<Record<string, unknown>>
@@ -149,7 +149,11 @@ function ctxFor(input: {
     }
   }
 
-  const queryRows = (table, filters, direction?) => {
+  const queryRows = (
+    table: string,
+    filters: Array<{ field: string; value: unknown }>,
+    direction?: 'asc' | 'desc',
+  ) => {
     const rows = rowsFor(table).filter((row) =>
       filters.every((filter) => row[filter.field] === filter.value),
     )
@@ -176,7 +180,7 @@ function ctxFor(input: {
             },
     },
     db: {
-      get: async (id) =>
+      get: async (id: string) =>
         [
           ...sessions,
           ...previews,
@@ -186,7 +190,7 @@ function ctxFor(input: {
           ...translationCache,
           ...aiCapsules,
         ].find((row) => row._id === id) ?? null,
-      insert: async (table, value) => {
+      insert: async (table: string, value: Record<string, unknown>) => {
         const rows = rowsFor(table)
         const nextId =
           table === 'sessions'
@@ -199,7 +203,7 @@ function ctxFor(input: {
         })
         return nextId
       },
-      patch: async (id, value) => {
+      patch: async (id: string, value: Record<string, unknown>) => {
         const row = [
           ...sessions,
           ...previews,
@@ -213,13 +217,18 @@ function ctxFor(input: {
         if (row === undefined) throw new Error(`Missing row ${id}`)
         Object.assign(row, value)
       },
-      query: (table) => {
+      query: (table: string) => {
         const filters: Array<{ field: string; value: unknown }> = []
         let direction: 'asc' | 'desc' | undefined
         const builder = {
-          withIndex: (_name, callback) => {
+          withIndex: (
+            _name: string,
+            callback: (index: {
+              eq: (field: string, value: unknown) => typeof index
+            }) => void,
+          ) => {
             const index = {
-              eq: (field, value) => {
+              eq: (field: string, value: unknown) => {
                 filters.push({ field, value })
                 return index
               },
@@ -227,19 +236,19 @@ function ctxFor(input: {
             callback(index)
             return builder
           },
-          order: (nextDirection) => {
+          order: (nextDirection: 'asc' | 'desc') => {
             direction = nextDirection
             return builder
           },
           first: async () => queryRows(table, filters, direction)[0] ?? null,
-          take: async (limit) =>
+          take: async (limit: number) =>
             queryRows(table, filters, direction).slice(0, limit),
         }
         return builder
       },
     },
     scheduler: {
-      runAfter: async (delayMs, functionRef) => {
+      runAfter: async (delayMs: number, functionRef: unknown) => {
         schedulerCalls.push({ delayMs, functionRef })
       },
     },

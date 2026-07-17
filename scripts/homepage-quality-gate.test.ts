@@ -12,6 +12,15 @@ type RunResult = {
   stdout: string
 }
 
+type QualityCheck = {
+  name: string
+  pass: boolean
+  points: number
+  failureLeaks?: string[]
+  placeholderLeaks?: string[]
+  [key: string]: unknown
+}
+
 const tempDirs: string[] = []
 
 function createWorkspace(html: string) {
@@ -131,13 +140,13 @@ describe('homepage-quality-gate script', () => {
     expect(payload.ok).toBe(false)
     expect(payload.errors).toContain('quality.no_runtime_failures failed')
     const runtimeCheck = payload.checks.find(
-      (check) => check.name === 'quality.no_runtime_failures',
+      (check: QualityCheck) => check.name === 'quality.no_runtime_failures',
     )
     expect(runtimeCheck.failureLeaks).toEqual(
       expect.arrayContaining(['cannot read properties', 'typeerror:']),
     )
     const placeholderCheck = payload.checks.find(
-      (check) => check.name === 'quality.no_placeholder_leaks',
+      (check: QualityCheck) => check.name === 'quality.no_placeholder_leaks',
     )
     expect(placeholderCheck.placeholderLeaks).toContain(
       'waiting for generated module',

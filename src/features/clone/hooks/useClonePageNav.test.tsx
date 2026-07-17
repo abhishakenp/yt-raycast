@@ -60,7 +60,10 @@ function getState(): CloneHookState {
 }
 
 vi.mock('convex/react', () => ({
-  useQuery: (query, args) => {
+  useQuery: (
+    query: { __name?: string },
+    args: Record<string, unknown> | 'skip',
+  ) => {
     const state = getState()
     state.queryArgs.push(args)
     if (args === 'skip') return undefined

@@ -149,7 +149,7 @@ export function extractContentNodes(html: string): ContentNode[] {
   // dedup so a parent row and its child link don't both emit.
   const emitted: string[] = []
 
-  const norm = (s) => normForMatch(s)
+  const norm = (s: string) => normForMatch(s)
 
   // True when `t` is ALREADY FULLY COVERED by something we emitted — i.e. its
   // normalized text is a substring of (or equal to) an emitted node. This is the
@@ -162,7 +162,7 @@ export function extractContentNodes(html: string): ContentNode[] {
   // url). Superstrings are handled by `subsumeShorter` instead, which upgrades the
   // shorter emitted fragment to the richer text. Short fragments (<4 chars) are
   // never containment matches, to avoid eating tiny distinct labels.
-  const isContained = (t) => {
+  const isContained = (t: string) => {
     const nt = norm(t)
     if (nt.length < 4) return false
     for (const e of emitted) {
@@ -179,7 +179,7 @@ export function extractContentNodes(html: string): ContentNode[] {
   // truncation. Returns true when at least one shorter fragment was subsumed.
   // Length-guarded (>=4) and only fires when the shorter is a real prefix/substring
   // worth half the longer, so distinct short labels are not swallowed.
-  const subsumeShorter = (t) => {
+  const subsumeShorter = (t: string) => {
     const nt = norm(t)
     if (nt.length < 4) return false
     let changed = false
@@ -199,9 +199,9 @@ export function extractContentNodes(html: string): ContentNode[] {
     return changed
   }
 
-  const text = (el) => clean(el.textContent).slice(0, MAX_LEN)
+  const text = (el: Element) => clean(el.textContent).slice(0, MAX_LEN)
 
-  const push = (n) => {
+  const push = (n: ContentNode) => {
     const primary = n.t === 'row' ? `${n.text} ${n.link}` : n.text
     const exactKey = `${n.t}:${primary.toLowerCase()}`
     if (seenExact.has(exactKey)) return true
@@ -215,7 +215,7 @@ export function extractContentNodes(html: string): ContentNode[] {
   // Direct-anchor of a list/paragraph row: the single <a> that is (effectively)
   // the actionable label of the row. Returns its label when the row decomposes
   // into "lead text + one trailing link", else "".
-  const rowLink = (el) => {
+  const rowLink = (el: Element) => {
     const anchors = Array.from(el.querySelectorAll('a')) as Element[]
     if (anchors.length !== 1) return ''
     const label = clean(anchors[0].textContent)

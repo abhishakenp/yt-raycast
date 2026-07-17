@@ -54,7 +54,9 @@ function unescapeAttributeSelectorValue(value: string): string {
 function cssPropertyToJsxStyleKey(property: string): string {
   const trimmed = property.trim()
   if (trimmed.startsWith('--')) return JSON.stringify(trimmed)
-  const camel = trimmed.replace(/-([a-z])/g, () => char.toUpperCase())
+  const camel = trimmed.replace(/-([a-z])/g, (_match, char: string) =>
+    char.toUpperCase(),
+  )
   return /^[A-Za-z_$][\w$]*$/.test(camel) ? camel : JSON.stringify(trimmed)
 }
 

@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { GitHubPanel } from './GitHubPanel'
+import { GitHubPanel, artifactProgressPercent } from './GitHubPanel'
 import { persistAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 /**
@@ -561,5 +561,42 @@ describe('GitHubPanel (behavioral)', () => {
       (el) => el.querySelector('.text-sm.font-semibold')?.textContent,
     )
     expect(labels).toEqual(['HTML', 'React', 'Next.js', 'Lakebed'])
+  })
+})
+
+describe('artifactProgressPercent', () => {
+  const baseTarget = {
+    target: 'html' as const,
+    label: 'HTML',
+    ready: false,
+    status: 'available',
+    requiresPayment: false,
+    fileCount: null,
+  }
+
+  it('regression: a stale "ready" flag from the legacy exports table never masks a genuinely in-progress rebuild', () => {
+    // Mirrors the identical bug found (and fixed) in ExportPanel — GitHubPanel
+    // carries its own copy of this function and had the same vulnerability.
+    expect(
+      artifactProgressPercent({
+        ...baseTarget,
+        ready: true, // stale — left over from the previous successful build
+        artifactReady: false, // the fresh rebuild has NOT finished
+        artifactStatus: 'building',
+        artifactProgressPercent: 26,
+      }),
+    ).toBe(26)
+  })
+
+  it('returns 100 once the artifact is genuinely ready', () => {
+    expect(
+      artifactProgressPercent({
+        ...baseTarget,
+        ready: true,
+        artifactReady: true,
+        artifactStatus: 'ready',
+        artifactProgressPercent: 100,
+      }),
+    ).toBe(100)
   })
 })

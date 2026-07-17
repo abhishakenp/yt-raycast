@@ -6,7 +6,11 @@ import { renderToString } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, ...props }) => (
+  Link: ({
+    children,
+    to,
+    ...props
+  }: { children: ReactNode; to: string } & Record<string, unknown>) => (
     <a href={to} {...props}>
       {children}
     </a>

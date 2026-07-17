@@ -72,14 +72,18 @@ function ctxFor(session: Doc<'sessions'> | null) {
   const scheduled: ScheduledRecord[] = []
   const ctx = {
     db: {
-      get: async (id) => (id === sessionId ? session : null),
-      insert: async (table, value) => {
+      get: async (id: string) => (id === sessionId ? session : null),
+      insert: async (table: string, value: Record<string, unknown>) => {
         inserted.push({ table, value })
         return `${table}_id`
       },
     },
     scheduler: {
-      runAfter: async (delay, _functionReference, args) => {
+      runAfter: async (
+        delay: number,
+        _functionReference: unknown,
+        args: Record<string, unknown>,
+      ) => {
         scheduled.push({ delay, args })
       },
     },

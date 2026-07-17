@@ -4232,7 +4232,9 @@ async function buildReactExport(
   )
   const routeComponentNames = routeComponents.map((component) => component.name)
   const usesLakebed = components.some((component) => component.usesLakebed)
+  await input.onProgress?.('generating')
   const imageSources = await extractImageSources(input.previewHtml)
+  await input.onProgress?.('resolving-images')
   const styleOverrides = extractStyleOverrides(input.previewHtml)
   if (usesLakebed) {
     dependencies['@tanstack/react-query'] =
@@ -4315,7 +4317,8 @@ async function buildReactExport(
   }
 
   stripGeneratedOwnedTypes(files)
-  const formattedFiles = await formatExportFiles(files)
+  await input.onProgress?.('formatting')
+  const formattedFiles = await formatExportFiles(files, input.formatCache)
   return {
     body: zipFiles(formattedFiles),
     contentType: 'application/zip',
@@ -4358,7 +4361,9 @@ async function buildNextExport(
   )
   const usesLakebed = components.some((component) => component.usesLakebed)
   const endpoints = collectNextEndpoints(nestedComponentNames, input.source)
+  await input.onProgress?.('generating')
   const imageSources = await extractImageSources(input.previewHtml)
+  await input.onProgress?.('resolving-images')
   const styleOverrides = extractStyleOverrides(input.previewHtml)
   if (usesLakebed) {
     dependencies['@tanstack/react-query'] =
@@ -4497,7 +4502,8 @@ export default function Page() {
   }
 
   stripGeneratedOwnedTypes(files)
-  const formattedFiles = await formatExportFiles(files)
+  await input.onProgress?.('formatting')
+  const formattedFiles = await formatExportFiles(files, input.formatCache)
   return {
     body: zipFiles(formattedFiles),
     contentType: 'application/zip',
@@ -4574,6 +4580,7 @@ export async function buildOpenUIExport(
   }
 
   const parsed = parseOpenUIForExport(input.source, input.siteSpecJson)
+  await input.onProgress?.('parsing')
 
   return input.target === 'react'
     ? await buildReactExport(input, parsed)

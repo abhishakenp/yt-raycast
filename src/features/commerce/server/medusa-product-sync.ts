@@ -65,7 +65,7 @@ export function parsePriceToMedusaAmount(price: number | string): number {
   return Math.max(0, numericPrice)
 }
 
-async function readJson(response: Response): Promise<T> {
+async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T
 }
 

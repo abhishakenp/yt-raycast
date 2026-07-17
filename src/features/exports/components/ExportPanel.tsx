@@ -7,6 +7,11 @@ import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { readJsonOrThrow } from '@/lib/safe-fetch'
+import { useProgressTick } from '../hooks/use-progress-tick'
+import {
+  estimateRemainingMs,
+  formatDurationShort,
+} from '../services/format-progress-duration'
 import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from './ExportIcons'
 
 type ExportTarget = {
@@ -19,6 +24,11 @@ type ExportTarget = {
   artifactReady?: boolean
   artifactStatus?: string
   artifactError?: string
+  // Real, event-driven progress pushed by the build action as each actual
+  // pipeline stage completes — never a simulated/timed value.
+  artifactProgressStage?: string
+  artifactProgressPercent?: number
+  artifactProgressStartedAt?: number
   previewVersion?: number | null
   currentPreviewVersion?: number | null
   downloadUrl: string | null
@@ -79,18 +89,20 @@ function statusLabel(target: ExportTarget): string {
   return target.status.replaceAll('_', ' ')
 }
 
-function artifactProgressPercent(target: ExportTarget) {
-  return target.artifactReady
-    ? 100
-    : target.artifactStatus === 'building'
-      ? 72
-      : target.artifactStatus === 'queued'
-        ? 26
-        : target.artifactStatus === 'loading'
-          ? 12
-          : target.ready
-            ? 100
-            : 0
+export function artifactProgressPercent(target: ExportTarget) {
+  // artifactStatus (exportArtifacts table) is the live source of truth for
+  // an in-flight build. target.ready comes from the separate legacy
+  // `exports` table, which can still say "ready" from the LAST successful
+  // build while a fresh same-previewVersion rebuild is genuinely underway —
+  // never let that stale flag force 100% over a real in-progress percent.
+  if (
+    target.artifactStatus === 'building' ||
+    target.artifactStatus === 'queued'
+  ) {
+    return target.artifactProgressPercent ?? 0
+  }
+  if (target.artifactReady || target.ready) return 100
+  return target.artifactProgressPercent ?? 0
 }
 
 function readOwnerSecret(sessionId: string): string | undefined {
@@ -256,6 +268,12 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
   const visibleTargets = hasResolvedTargets
     ? exportTargets.targets
     : loadingTargets
+  const hasActiveBuild = visibleTargets.some(
+    (item) =>
+      !item.artifactReady &&
+      (item.artifactStatus === 'queued' || item.artifactStatus === 'building'),
+  )
+  const now = useProgressTick(hasActiveBuild)
 
   return (
     <div className="grid gap-3">
@@ -295,8 +313,18 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
             showProgress && progressPercent > 0
               ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${progressPercent}%, transparent ${progressPercent}%, transparent 100%)`
               : undefined
+          const elapsedMs =
+            item.artifactProgressStartedAt !== undefined
+              ? now - item.artifactProgressStartedAt
+              : 0
+          const remainingMs = estimateRemainingMs(elapsedMs, progressPercent)
+          const stageLabel = item.artifactProgressStage ?? 'Working'
           const statusText = showProgress
-            ? `${progressPercent}%`
+            ? `${stageLabel} · ${progressPercent}%${
+                remainingMs !== null
+                  ? ` · ~${formatDurationShort(remainingMs)} left`
+                  : ''
+              }`
             : activeTarget === item.target || downloadingTarget === item.target
               ? 'Working...'
               : item.artifactStatus === 'failed'

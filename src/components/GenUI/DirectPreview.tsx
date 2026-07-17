@@ -330,7 +330,7 @@ const DirectPreview = forwardRef<
     const capsuleResolver = useCapsulePropResolver()
 
     const setRootRef = useCallback(
-      (node) => {
+      (node: HTMLDivElement | null) => {
         if (internalRef.current === node) return
 
         internalRef.current = node
@@ -347,7 +347,7 @@ const DirectPreview = forwardRef<
 
     // Wrap onElementActivate to track the active capsule for prop resolution.
     const handleElementActivate = useCallback(
-      (element, rect) => {
+      (element: HTMLElement, rect: DOMRect) => {
         capsuleResolver.setActiveElement(element)
         onElementActivate?.(element, rect)
       },
@@ -358,7 +358,7 @@ const DirectPreview = forwardRef<
     // matches a capsule prop value, the change carries a `capsuleProp` field
     // so the parent can route the edit through Lakebed instead of text overrides.
     const handleTextChange = useCallback(
-      (change) => {
+      (change: CapsuleTextChange) => {
         const propContext = capsuleResolver.resolveProp(change.element)
         onTextChange?.({
           ...change,
@@ -499,7 +499,7 @@ const DirectPreview = forwardRef<
         return
       }
 
-      const handleClick = (event) => {
+      const handleClick = (event: MouseEvent) => {
         const target = event.target
         if (!(target instanceof HTMLElement) || !currentRoot.contains(target)) {
           return

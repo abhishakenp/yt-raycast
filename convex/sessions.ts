@@ -94,6 +94,7 @@ import {
   recordExportArtifactReady,
   recordExportArtifactStalled,
   recordGitHubExportRepository,
+  updateExportArtifactBuildProgress,
 } from './lib/session_export_helpers'
 import { loadSessionEventStream } from './lib/session_event_stream_helpers'
 import {
@@ -142,6 +143,7 @@ import {
   exportRecordArgs,
   exportArtifactBuildArgs,
   exportArtifactFailureArgs,
+  exportArtifactProgressArgs,
   exportArtifactReadyArgs,
   exportArtifactStalledArgs,
   failGenerationArgs,
@@ -684,6 +686,11 @@ export const markExportArtifactBuildStarted = internalMutation({
 export const recordExportArtifactBuildReady = internalMutation({
   args: exportArtifactReadyArgs,
   handler: (ctx, args) => recordExportArtifactReady(ctx, args),
+})
+
+export const updateExportArtifactProgress = internalMutation({
+  args: exportArtifactProgressArgs,
+  handler: (ctx, args) => updateExportArtifactBuildProgress(ctx, args),
 })
 
 export const recordExportArtifactBuildFailure = internalMutation({

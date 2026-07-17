@@ -44,13 +44,13 @@ export const MinePage = () => {
     anonymousClientId,
   })
 
-  const handleCategoryChange = (nextCategory) => {
+  const handleCategoryChange = (nextCategory: GalleryCategory) => {
     setCategory(nextCategory)
     setPage(1)
   }
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
         searchInputRef.current?.focus()

@@ -21,6 +21,14 @@ vi.mock('@tanstack/react-router', () => ({
     onPointerLeave,
     preload: _preload,
     ...props
+  }: {
+    children?: React.ReactNode
+    onPointerEnter?: React.PointerEventHandler
+    onPointerLeave?: React.PointerEventHandler
+    preload?: unknown
+    params?: unknown
+    to?: string
+    [key: string]: unknown
   }) => {
     const anchorProps = { ...props }
     delete anchorProps.params
@@ -52,7 +60,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }) => (
+  GeneratedModulePreview: ({ source }: { source: string }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))

@@ -44,6 +44,9 @@ declare module '@ship-fast/blocks' {
     navigateToPage: ((pageSlug: string | null) => void) | null
     pageFromUrl: string | null
   }
+  export const Image: ComponentType<any>
+  export function picsum(alt: unknown, w?: number, h?: number): string
+  export function defineCapsule(input: any): any
 }
 
 declare module '@ship-fast/blocks/runtime' {
@@ -136,4 +139,84 @@ declare module '@ship-fast/blocks/component-names' {
 declare module '@ship-fast/blocks/portal' {
   export const PortalContainerProvider: ComponentType<any>
   export function usePortalContainer(): HTMLElement | null
+}
+
+declare module '@ship-fast/blocks/capsules' {
+  export type CollectionFieldType =
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'array-string'
+    | 'unknown'
+
+  export type CollectionField = {
+    key: string
+    type: CollectionFieldType
+    optional: boolean
+  }
+
+  export type CollectionProp = {
+    key: string
+    itemFields: CollectionField[]
+  }
+
+  export type VariantOption = {
+    value: string | number | boolean
+    label: string
+  }
+
+  export type VariantProp = {
+    key: string
+    options: VariantOption[]
+  }
+
+  export type ScalarProp = {
+    key: string
+    type: 'string' | 'number' | 'boolean'
+    optional: boolean
+  }
+
+  export type CapsuleSchemaInfo = {
+    collections: CollectionProp[]
+    variants: VariantProp[]
+    scalars: ScalarProp[]
+  }
+
+  export type CapsulePropContext = {
+    lakebedKey: string
+    capsuleName: string
+    statementId: string
+    propKey: string
+    index?: number
+    fieldKey?: string
+    kind: 'scalar' | 'collection'
+  }
+
+  export function introspectCapsuleSchema(
+    propsSchema: unknown,
+  ): CapsuleSchemaInfo
+  export function createDefaultItem(
+    collection: CollectionProp,
+  ): Record<string, unknown>
+  export function hasContextInfo(info: CapsuleSchemaInfo): boolean
+  export function matchElementToProp(
+    element: HTMLElement,
+    capsuleName: string,
+    statementId: string,
+    mergedProps: Record<string, unknown>,
+  ): CapsulePropContext | null
+  export function buildPropPatch(
+    context: CapsulePropContext,
+    newValue: string,
+    currentData: Record<string, unknown>,
+  ): Partial<Record<string, unknown>>
+  export function defineCapsule(input: any): any
+}
+
+declare module '@ship-fast/blocks/multi-image-src' {
+  export function encodeMultiImageSrc(urls: string[]): string
+  export function decodeMultiImageSrc(
+    value: string | null | undefined,
+  ): string[] | null
+  export function firstImageSrc(value: string | null | undefined): string | null
 }

@@ -148,7 +148,7 @@ vi.mock('convex/react', () => ({
     // the call shape to distinguish. Default resolves; tests override.
     return state?.publishMutation ?? vi.fn().mockResolvedValue(undefined)
   },
-  useQuery: (_query, args) => {
+  useQuery: (_query: unknown, args: unknown) => {
     const state = (
       globalThis as typeof globalThis & {
         __shipFastDashboardToolbarConvexState?: ConvexTestState
@@ -166,14 +166,18 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }) => <a href={to}>{children}</a>,
+  Link: ({ children, to }: { children: ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
   useNavigate: () => vi.fn(),
   useParams: () => ({}),
   useRouter: () => ({ state: { location: { pathname: '/' } } }),
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }) => <>{children}</>,
+  LakebedSessionProvider: ({ children }: { children: ReactNode }) => (
+    <>{children}</>
+  ),
 }))
 
 vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
@@ -183,27 +187,27 @@ vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
 }))
 
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
-  CommercePanel: ({ sessionId }) => (
+  CommercePanel: ({ sessionId }: { sessionId: string }) => (
     <div data-testid="commerce-panel-stub">Commerce panel {sessionId}</div>
   ),
 }))
 vi.mock('@/features/exports/components/ExportPanel', () => ({
-  ExportPanel: ({ sessionId }) => (
+  ExportPanel: ({ sessionId }: { sessionId: string }) => (
     <div data-testid="export-panel-stub">Export panel {sessionId}</div>
   ),
 }))
 vi.mock('@/features/deployments/components/DeploymentPanel', () => ({
-  DeploymentPanel: ({ sessionId }) => (
+  DeploymentPanel: ({ sessionId }: { sessionId: string }) => (
     <div data-testid="deployment-panel-stub">Deployment panel {sessionId}</div>
   ),
 }))
 vi.mock('@/features/github/components/GitHubPanel', () => ({
-  GitHubPanel: ({ sessionId }) => (
+  GitHubPanel: ({ sessionId }: { sessionId: string }) => (
     <div data-testid="github-panel-stub">GitHub panel {sessionId}</div>
   ),
 }))
 vi.mock('@/genui/components/ThemePicker', () => ({
-  default: ({ trigger }) => <>{trigger}</>,
+  default: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>,
 }))
 vi.mock('@/genui/theme-apply', () => ({
   resolveThemeStyles: () => undefined,
@@ -215,6 +219,11 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
     editMode,
     deviceMode,
     onElementActivate,
+  }: {
+    source: string
+    editMode: boolean
+    deviceMode: string
+    onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
   }) => (
     <div data-testid="generated-module-preview">
       <span data-testid="gmp-source">{source}</span>
@@ -244,7 +253,7 @@ vi.mock('@/components/GenUI/IntroLoader', () => ({
 }))
 
 vi.mock('@/features/editing/components/InlineEditToolbar', () => ({
-  InlineEditToolbar: ({ isOpen }) =>
+  InlineEditToolbar: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? (
       <div data-testid="inline-edit-toolbar">Inline edit toolbar</div>
     ) : null,

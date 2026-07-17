@@ -17,7 +17,7 @@ vi.mock('@/shared/convex/http-client', () => ({
 }))
 
 import { Route } from './clone'
-import { callRouteHandler } from './route-handler.test-helper'
+import { callRouteHandler } from './-route-handler.test-helper'
 
 const sessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
 

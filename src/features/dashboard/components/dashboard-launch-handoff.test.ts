@@ -18,11 +18,11 @@ function makeStorage(): Map<string, string> & {
 } {
   const store = new Map<string, string>()
   return Object.assign(store, {
-    getItem: (key) => store.get(key) ?? null,
-    setItem: (key, value) => {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => {
       store.set(key, value)
     },
-    removeItem: (key) => {
+    removeItem: (key: string) => {
       store.delete(key)
     },
   }) as Map<string, string> & {
