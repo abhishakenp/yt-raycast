@@ -12,6 +12,8 @@ export function SectionHeading(props: {
   subtitle?: string
   align?: 'center' | 'left'
   titleClassName?: string
+  eyebrowClassName?: string
+  subtitleClassName?: string
   className?: string
 }) {
   const align = props.align ?? 'center'
@@ -25,7 +27,12 @@ export function SectionHeading(props: {
       )}
     >
       {props.eyebrow ? (
-        <span className="text-sm font-medium uppercase tracking-wide text-accent">
+        <span
+          className={cn(
+            'text-sm font-medium uppercase tracking-wide text-accent',
+            props.eyebrowClassName,
+          )}
+        >
           {props.eyebrow}
         </span>
       ) : null}
@@ -38,7 +45,12 @@ export function SectionHeading(props: {
         {props.title}
       </h2>
       {props.subtitle ? (
-        <p className="text-base text-muted-foreground md:text-lg">
+        <p
+          className={cn(
+            'text-base text-muted-foreground md:text-lg',
+            props.subtitleClassName,
+          )}
+        >
           {props.subtitle}
         </p>
       ) : null}
