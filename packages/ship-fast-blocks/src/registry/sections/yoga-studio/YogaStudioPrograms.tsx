@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
+import { ProgramGrid, ProgramCard } from '#/section-kit/ProgramGrid.tsx'
 
 /**
  * YogaStudioPrograms — class-types grid for a yoga-studio page. A warm
@@ -98,13 +98,13 @@ export const YogaStudioPrograms = defineCapsule({
             <p className="text-lg text-muted-foreground">{subheading}</p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <ProgramGrid cols="1-md-2-3">
             {programs.map((program) => (
-              <Card
+              <ProgramCard
                 key={program.name}
+                variant="default"
                 rounded="2xl"
-                shadow="sm"
-                className="flex flex-col text-card-foreground transition-shadow hover:shadow-md lg:p-8"
+                className="flex flex-col p-6 text-card-foreground shadow-sm transition-shadow hover:shadow-md lg:p-8"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-xl font-semibold text-foreground">
@@ -117,9 +117,9 @@ export const YogaStudioPrograms = defineCapsule({
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                   {program.description}
                 </p>
-              </Card>
+              </ProgramCard>
             ))}
-          </div>
+          </ProgramGrid>
         </div>
       </section>
     )

@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { NavSidebar } from '#/section-kit/NavSidebar.tsx'
 import { Image } from '#/lib/img.tsx'
 import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
 
@@ -69,7 +70,7 @@ export const AnalyticsSidebar = defineCapsule({
       'Professional headshot of a product manager with short brown hair and a friendly smile'
 
     // Brand logo tile — solid token mark with the brand initial (decorative).
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary font-black text-primary-foreground',
@@ -129,9 +130,10 @@ export const AnalyticsSidebar = defineCapsule({
     }
 
     return (
-      <aside
+      <NavSidebar
+        variant="card"
         className={cn(
-          'fixed left-0 top-0 z-50 hidden h-full w-64 flex-col border-r border-border bg-card lg:flex',
+          'fixed left-0 top-0 z-50 hidden h-full w-64 lg:flex',
           props.className,
         )}
       >
@@ -200,7 +202,7 @@ export const AnalyticsSidebar = defineCapsule({
             </div>
           </button>
         </div>
-      </aside>
+      </NavSidebar>
     )
   },
 })

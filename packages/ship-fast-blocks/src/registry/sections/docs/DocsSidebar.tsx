@@ -3,6 +3,11 @@ import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  NavSidebar,
+  NavSidebarSection,
+  NavSidebarLink,
+} from '#/section-kit/NavSidebar.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed } from './docs-lakebed.ts'
@@ -224,7 +229,7 @@ export const DocsSidebar = defineCapsule({
     const matchingArticles = articleCatalog.filter(matchesQuery)
     const showingResults = activeQuery.length > 0
 
-    const SearchIcon = ({ className }) => (
+    const SearchIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -242,11 +247,9 @@ export const DocsSidebar = defineCapsule({
     )
 
     return (
-      <aside
-        className={cn(
-          'hidden w-64 shrink-0 border-r border-border lg:block',
-          props.className,
-        )}
+      <NavSidebar
+        variant="default"
+        className={cn('hidden w-64 shrink-0 lg:block', props.className)}
       >
         <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto p-6">
           {/* Search */}
@@ -316,7 +319,7 @@ export const DocsSidebar = defineCapsule({
           {/* Navigation groups */}
           <nav className="space-y-6" aria-label="Sidebar navigation">
             {groups.map((group, gi) => (
-              <div key={group.title}>
+              <NavSidebarSection key={group.title} spacing="sm" className="p-0">
                 <Eyebrow
                   asChild
                   variant="text"
@@ -329,23 +332,25 @@ export const DocsSidebar = defineCapsule({
                     const active = gi === 0 && ii === 0
                     return (
                       <li key={item}>
-                        <button
-                          type="button"
-                          onClick={() => go(item)}
-                          className={cn(
-                            'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
-                            active
-                              ? 'bg-muted font-medium text-foreground'
-                              : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                          )}
-                        >
-                          {item}
-                        </button>
+                        <NavSidebarLink asChild active={active}>
+                          <button
+                            type="button"
+                            onClick={() => go(item)}
+                            className={cn(
+                              'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                              active
+                                ? 'bg-muted font-medium text-foreground'
+                                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                            )}
+                          >
+                            {item}
+                          </button>
+                        </NavSidebarLink>
                       </li>
                     )
                   })}
                 </ul>
-              </div>
+              </NavSidebarSection>
             ))}
           </nav>
 
@@ -366,7 +371,7 @@ export const DocsSidebar = defineCapsule({
             </select>
           </div>
         </div>
-      </aside>
+      </NavSidebar>
     )
   },
 })

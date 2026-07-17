@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { ProgramCard } from '#/section-kit/ProgramGrid.tsx'
 
 /**
  * OnlineCoursePrograms — bespoke curriculum-modules band for an online-course
@@ -73,10 +73,9 @@ export const OnlineCoursePrograms = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <Card
+          <ProgramCard
             variant="default"
             rounded="2xl"
-            padding="none"
             className="mt-12 overflow-hidden"
           >
             {modules.map((module, i) => (
@@ -98,7 +97,7 @@ export const OnlineCoursePrograms = defineCapsule({
                 </span>
               </div>
             ))}
-          </Card>
+          </ProgramCard>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {summary}
           </p>

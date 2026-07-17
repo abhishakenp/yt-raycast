@@ -1,8 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ProgramGrid, ProgramCard } from '#/section-kit/ProgramGrid.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { cn } from '#/lib/utils.ts'
 
@@ -90,12 +90,12 @@ export const UniversityPrograms = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <ProgramGrid cols="1-md-2-3" className="mt-14">
             {programs.map((program, i) => (
-              <Card
+              <ProgramCard
                 key={`${program.degree ?? 'program'}-${i}`}
+                variant="default"
                 rounded="2xl"
-                padding="md"
                 className="flex flex-col p-7 text-card-foreground transition hover:border-primary/40 hover:shadow-lg"
               >
                 <p className="font-serif text-sm font-semibold uppercase tracking-wide text-primary">
@@ -115,9 +115,9 @@ export const UniversityPrograms = defineCapsule({
                   {linkLabel}
                   <span aria-hidden="true">→</span>
                 </button>
-              </Card>
+              </ProgramCard>
             ))}
-          </div>
+          </ProgramGrid>
         </div>
       </section>
     )

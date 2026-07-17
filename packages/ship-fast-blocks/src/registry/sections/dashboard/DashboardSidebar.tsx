@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { NavSidebar } from '#/section-kit/NavSidebar.tsx'
 import { Image } from '#/lib/img.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
@@ -102,7 +103,7 @@ export const DashboardSidebar = defineCapsule({
     const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
     // ── Brand mark — indigo tile + orbit glyph (decorative brand asset). ──
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm',
@@ -188,7 +189,7 @@ export const DashboardSidebar = defineCapsule({
 
     const navIcon = (label) => icons[label] ?? icons.Settings
 
-    const NavButton = ({ label }) => {
+    const NavButton = ({ label }: { label: string }) => {
       const active = activeNav === label
       const badgeText = label === badgeLabel && badgeCount ? badgeCount : ''
       return (
@@ -336,9 +337,12 @@ export const DashboardSidebar = defineCapsule({
         </button>
 
         {/* Sidebar (desktop) */}
-        <aside className="z-30 hidden w-64 shrink-0 flex-col border-r border-border bg-card md:flex">
+        <NavSidebar
+          variant="card"
+          className="z-30 hidden w-64 shrink-0 md:flex"
+        >
           {sidebarBody}
-        </aside>
+        </NavSidebar>
 
         {/* Sidebar (mobile drawer) */}
         {mobileNavOpen ? (
@@ -348,9 +352,12 @@ export const DashboardSidebar = defineCapsule({
               onClick={() => setMobileNavOpen(false)}
               aria-hidden="true"
             />
-            <aside className="fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-border bg-card md:hidden">
+            <NavSidebar
+              variant="card"
+              className="fixed inset-y-0 left-0 z-30 w-64 md:hidden"
+            >
               {sidebarBody}
-            </aside>
+            </NavSidebar>
           </>
         ) : null}
       </div>
