@@ -196,6 +196,15 @@ export {
   articleGridVariants,
   articleCardVariants,
 } from './ArticleGrid.tsx'
+export {
+  ScheduleList,
+  ScheduleItem,
+  ScheduleTime,
+  ScheduleContent,
+  ScheduleTitle,
+  ScheduleDetail,
+  scheduleListVariants,
+} from './ScheduleList.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

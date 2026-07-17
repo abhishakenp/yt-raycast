@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  ScheduleList,
+  ScheduleItem,
+  ScheduleTime,
+  ScheduleContent,
+  ScheduleTitle,
+  ScheduleDetail,
+} from '#/section-kit/ScheduleList.tsx'
 
 export const WebinarSchedule = defineCapsule({
   name: 'WebinarSchedule',
@@ -84,28 +92,21 @@ export const WebinarSchedule = defineCapsule({
             variant="default"
             rounded="2xl"
             padding="none"
-            className="mt-14 divide-y divide-border overflow-hidden"
+            className="mt-14 overflow-hidden"
           >
-            <ul>
+            <ScheduleList layout="list">
               {items.map((item, i) => (
-                <li
-                  key={`${item.title}-${i}`}
-                  className="flex flex-col gap-2 px-6 py-6 sm:flex-row sm:gap-8"
-                >
-                  <p className="shrink-0 text-sm font-semibold tabular-nums text-primary sm:w-24">
-                    {item.time}
-                  </p>
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                <ScheduleItem key={`${item.title}-${i}`} className="px-6 py-6">
+                  <ScheduleTime>{item.time}</ScheduleTime>
+                  <ScheduleContent>
+                    <ScheduleTitle>{item.title}</ScheduleTitle>
+                    <ScheduleDetail className="leading-6">
                       {item.blurb}
-                    </p>
-                  </div>
-                </li>
+                    </ScheduleDetail>
+                  </ScheduleContent>
+                </ScheduleItem>
               ))}
-            </ul>
+            </ScheduleList>
           </Card>
         </div>
       </section>

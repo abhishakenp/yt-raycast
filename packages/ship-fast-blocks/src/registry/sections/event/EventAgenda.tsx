@@ -3,6 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  ScheduleList,
+  ScheduleItem,
+  ScheduleTime,
+  ScheduleContent,
+  ScheduleTitle,
+  ScheduleDetail,
+} from '#/section-kit/ScheduleList.tsx'
 
 /**
  * EventAgenda — a day-by-day agenda timeline for a conference or event page. A
@@ -181,24 +189,24 @@ export const EventAgenda = defineCapsule({
                     </p>
                   </div>
                 </div>
-                <div className="space-y-4">
+                <ScheduleList layout="timeline">
                   {day.sessions.map((s) => (
-                    <div
+                    <ScheduleItem
                       key={`${day.dayNum}-${s.time}-${s.title}`}
-                      className="flex gap-4 rounded-xl border border-transparent p-4 transition-colors hover:border-border hover:bg-muted"
+                      className="flex-row gap-4 rounded-xl border border-transparent p-4 transition-colors hover:border-border hover:bg-muted"
                     >
-                      <span className="w-16 shrink-0 text-sm text-muted-foreground">
+                      <ScheduleTime className="w-16 shrink-0 text-sm text-muted-foreground">
                         {s.time}
-                      </span>
-                      <div>
-                        <h4 className="font-medium">{s.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {s.detail}
-                        </p>
-                      </div>
-                    </div>
+                      </ScheduleTime>
+                      <ScheduleContent>
+                        <ScheduleTitle className="font-medium">
+                          {s.title}
+                        </ScheduleTitle>
+                        <ScheduleDetail>{s.detail}</ScheduleDetail>
+                      </ScheduleContent>
+                    </ScheduleItem>
                   ))}
-                </div>
+                </ScheduleList>
               </div>
             ))}
           </div>

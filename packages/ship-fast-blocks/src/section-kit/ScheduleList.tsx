@@ -1,0 +1,115 @@
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+
+import { cn } from '#/lib/utils.ts'
+
+const scheduleListVariants = cva('', {
+  variants: {
+    layout: {
+      list: 'divide-y divide-border',
+      grid: 'grid gap-8',
+      timeline: 'space-y-4',
+    },
+  },
+  defaultVariants: {
+    layout: 'list',
+  },
+})
+
+const ScheduleList = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentProps<'ul'> & VariantProps<typeof scheduleListVariants>
+>(({ className, layout, ...props }, ref) => (
+  <ul
+    data-slot="schedule-list"
+    className={cn(scheduleListVariants({ layout }), className)}
+    ref={ref}
+    {...props}
+  />
+))
+ScheduleList.displayName = 'ScheduleList'
+
+const ScheduleItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<'li'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'li'
+  return (
+    <Comp
+      data-slot="schedule-item"
+      className={cn('flex flex-col gap-2 sm:flex-row sm:gap-8', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+ScheduleItem.displayName = 'ScheduleItem'
+
+const ScheduleTime = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'>
+>(({ className, ...props }, ref) => (
+  <p
+    data-slot="schedule-time"
+    className={cn(
+      'shrink-0 text-sm font-semibold tabular-nums text-primary sm:w-24',
+      className,
+    )}
+    ref={ref}
+    {...props}
+  />
+))
+ScheduleTime.displayName = 'ScheduleTime'
+
+const ScheduleContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    data-slot="schedule-content"
+    className={cn('flex flex-col', className)}
+    ref={ref}
+    {...props}
+  />
+))
+ScheduleContent.displayName = 'ScheduleContent'
+
+const ScheduleTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h3'>
+>(({ className, ...props }, ref) => (
+  <h3
+    data-slot="schedule-title"
+    className={cn('text-base font-semibold text-foreground', className)}
+    ref={ref}
+    {...props}
+  />
+))
+ScheduleTitle.displayName = 'ScheduleTitle'
+
+const ScheduleDetail = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'>
+>(({ className, ...props }, ref) => (
+  <p
+    data-slot="schedule-detail"
+    className={cn(
+      'mt-1 text-sm leading-relaxed text-muted-foreground',
+      className,
+    )}
+    ref={ref}
+    {...props}
+  />
+))
+ScheduleDetail.displayName = 'ScheduleDetail'
+
+export {
+  ScheduleList,
+  ScheduleItem,
+  ScheduleTime,
+  ScheduleContent,
+  ScheduleTitle,
+  ScheduleDetail,
+  scheduleListVariants,
+}
