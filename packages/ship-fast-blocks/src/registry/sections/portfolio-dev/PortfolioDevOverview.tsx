@@ -1,9 +1,24 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  OverviewSection,
+  OverviewGrid,
+  OverviewContent,
+  OverviewEyebrow,
+  OverviewBrand,
+  OverviewHeading,
+  OverviewSubheading,
+  OverviewFeatures,
+  OverviewFeature,
+  OverviewCta,
+  OverviewStats,
+  OverviewStat,
+  OverviewStatValue,
+  OverviewStatLabel,
+  OverviewImagePanel,
+} from '#/section-kit/OverviewSection.tsx'
 
 export const PortfolioDevOverview = defineCapsule({
   name: 'PortfolioDevOverview',
@@ -60,37 +75,19 @@ export const PortfolioDevOverview = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'overflow-hidden bg-background py-20 text-foreground sm:py-24',
-          props.className,
-        )}
-      >
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8">
-          <div>
-            <div className="mb-6 inline-flex rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
-              {eyebrow}
-            </div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-primary">
-              {brand}
-            </p>
-            <h2 className="max-w-3xl text-4xl font-bold leading-tight text-foreground sm:text-5xl">
-              {heading}
-            </h2>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-              {subheading}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              {features.map((feature) => (
-                <span
-                  key={feature}
-                  className="rounded-full border border-border bg-card px-4 py-2 text-sm text-card-foreground"
-                >
-                  {feature}
-                </span>
+      <OverviewSection className={props.className}>
+        <OverviewGrid>
+          <OverviewContent>
+            <OverviewEyebrow>{eyebrow}</OverviewEyebrow>
+            <OverviewBrand>{brand}</OverviewBrand>
+            <OverviewHeading>{heading}</OverviewHeading>
+            <OverviewSubheading>{subheading}</OverviewSubheading>
+            <OverviewFeatures>
+              {features.map((feature: string) => (
+                <OverviewFeature key={feature}>{feature}</OverviewFeature>
               ))}
-            </div>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            </OverviewFeatures>
+            <OverviewCta>
               <button
                 type="button"
                 onClick={() => go(primaryCta)}
@@ -105,45 +102,23 @@ export const PortfolioDevOverview = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </div>
-            <div className="mt-12 grid grid-cols-3 gap-4 border-t border-border pt-8">
-              {stats.map((stat) => (
-                <div key={stat.label}>
-                  <div className="text-2xl font-bold text-foreground">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {stat.label}
-                  </div>
-                </div>
+            </OverviewCta>
+            <OverviewStats>
+              {stats.map((stat: { value: string; label: string }) => (
+                <OverviewStat key={stat.label}>
+                  <OverviewStatValue>{stat.value}</OverviewStatValue>
+                  <OverviewStatLabel>{stat.label}</OverviewStatLabel>
+                </OverviewStat>
               ))}
-            </div>
-          </div>
-          <div className="relative">
-            <div
-              className="absolute inset-6 rounded-3xl bg-primary/10 blur-3xl"
-              aria-hidden="true"
-            />
-            <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.12)]">
-              <Image
-                alt={imageAlt}
-                w={900}
-                h={700}
-                className="aspect-[4/3] w-full object-cover"
-              />
-              <div className="border-t border-border bg-card/95 p-6">
-                <p className="text-sm font-semibold text-card-foreground">
-                  {brand}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Section-level building block for generated multi-page
-                  experiences.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            </OverviewStats>
+          </OverviewContent>
+          <OverviewImagePanel
+            alt={imageAlt}
+            brand={brand}
+            caption="Section-level building block for generated multi-page experiences."
+          />
+        </OverviewGrid>
+      </OverviewSection>
     )
   },
 })

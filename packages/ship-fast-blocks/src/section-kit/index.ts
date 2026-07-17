@@ -140,6 +140,23 @@ export {
   faqItemVariants,
   faqQuestionIconVariants,
 } from './FaqAccordion.tsx'
+export {
+  OverviewSection,
+  OverviewGrid,
+  OverviewContent,
+  OverviewEyebrow,
+  OverviewBrand,
+  OverviewHeading,
+  OverviewSubheading,
+  OverviewFeatures,
+  OverviewFeature,
+  OverviewCta,
+  OverviewStats,
+  OverviewStat,
+  OverviewStatValue,
+  OverviewStatLabel,
+  OverviewImagePanel,
+} from './OverviewSection.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'
