@@ -12,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * gyms, fitness studios, CrossFit boxes, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const FitnessClasses = defineCapsule({
   name: 'FitnessClasses',
   description:
@@ -135,34 +136,40 @@ export const FitnessClasses = defineCapsule({
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {classItems.map((item) => (
-              <article
+              <Card
+                asChild
                 key={item.title}
-                className="group overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-lg"
+                variant="default"
+                rounded="lg"
+                padding="none"
+                className="group overflow-hidden transition-shadow hover:shadow-lg"
               >
-                <Image
-                  alt={item.imageAlt}
-                  w={600}
-                  h={400}
-                  loading="lazy"
-                  className="h-48 w-full object-cover"
-                />
-                <div className="p-6">
-                  <h3 className="mb-2 text-lg font-semibold text-card-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    {item.description}
-                  </p>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <ClockIcon /> {item.duration}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <BoltIcon /> {item.intensity}
-                    </span>
+                <article>
+                  <Image
+                    alt={item.imageAlt}
+                    w={600}
+                    h={400}
+                    loading="lazy"
+                    className="h-48 w-full object-cover"
+                  />
+                  <div className="p-6">
+                    <h3 className="mb-2 text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <ClockIcon /> {item.duration}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <BoltIcon /> {item.intensity}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </article>
+                </article>
+              </Card>
             ))}
           </div>
         </Container>

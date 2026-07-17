@@ -5,6 +5,7 @@ import { DownloadIcon, FileTextIcon, SearchIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { FilterChip } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   Select,
   SelectContent,
@@ -29,51 +30,64 @@ function str(row: GovRow, key: string) {
 function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
   if (!rows.length) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+      <Card
+        variant="default"
+        rounded="xl"
+        padding="lg"
+        className="border-dashed text-center text-sm text-muted-foreground"
+      >
         {pickLang(lang, 'No records available.', 'कोई रिकॉर्ड उपलब्ध नहीं।')}
-      </div>
+      </Card>
     )
   }
   return (
-    <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-      {rows.map((row, i) => {
-        const nit = str(row, 'nitNo')
-        const title = str(row, 'title')
-        const date = str(row, 'date')
-        const docUrl = str(row, 'docUrl')
-        return (
-          <li
-            key={`${nit}-${i}`}
-            className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-start sm:justify-between"
-          >
-            <div className="min-w-0">
-              {nit ? (
-                <span className="text-sm font-semibold text-destructive">
-                  {pickLang(lang, 'NIT No', 'एनआईटी सं.')}: {nit}
-                </span>
+    <Card
+      asChild
+      variant="default"
+      rounded="xl"
+      padding="none"
+      className="divide-y divide-border overflow-hidden"
+    >
+      <ul>
+        {rows.map((row, i) => {
+          const nit = str(row, 'nitNo')
+          const title = str(row, 'title')
+          const date = str(row, 'date')
+          const docUrl = str(row, 'docUrl')
+          return (
+            <li
+              key={`${nit}-${i}`}
+              className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-start sm:justify-between"
+            >
+              <div className="min-w-0">
+                {nit ? (
+                  <span className="text-sm font-semibold text-destructive">
+                    {pickLang(lang, 'NIT No', 'एनआईटी सं.')}: {nit}
+                  </span>
+                ) : null}
+                <p className="text-sm text-card-foreground">{title}</p>
+                {date ? (
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {pickLang(lang, 'Dated', 'दिनांक')}: {date}
+                  </p>
+                ) : null}
+              </div>
+              {docUrl ? (
+                <a
+                  href={docUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg border border-input px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  <FileTextIcon className="size-3.5" aria-hidden />
+                  {pickLang(lang, 'View PDF', 'पीडीएफ देखें')}
+                </a>
               ) : null}
-              <p className="text-sm text-card-foreground">{title}</p>
-              {date ? (
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {pickLang(lang, 'Dated', 'दिनांक')}: {date}
-                </p>
-              ) : null}
-            </div>
-            {docUrl ? (
-              <a
-                href={docUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg border border-input px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                <FileTextIcon className="size-3.5" aria-hidden />
-                {pickLang(lang, 'View PDF', 'पीडीएफ देखें')}
-              </a>
-            ) : null}
-          </li>
-        )
-      })}
-    </ul>
+            </li>
+          )
+        })}
+      </ul>
+    </Card>
   )
 }
 
@@ -385,27 +399,34 @@ export const GovPortalDownloads = defineCapsule({
               const category = str(row, 'category')
               const fileUrl = str(row, 'fileUrl')
               return (
-                <a
+                <Card
+                  asChild
                   key={`${title}-${i}`}
-                  href={fileUrl || undefined}
-                  target={fileUrl ? '_blank' : undefined}
-                  rel="noreferrer"
-                  className="group flex items-start gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-md"
+                  variant="default"
+                  rounded="xl"
+                  padding="none"
+                  className="group flex items-start gap-3 p-5 transition-all hover:border-primary/40 hover:shadow-md"
                 >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <DownloadIcon className="size-5" aria-hidden />
-                  </span>
-                  <span className="min-w-0">
-                    {category ? (
-                      <span className="mb-1 inline-block rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-medium uppercase text-muted-foreground">
-                        {category}
-                      </span>
-                    ) : null}
-                    <span className="block text-sm font-medium text-card-foreground">
-                      {title}
+                  <a
+                    href={fileUrl || undefined}
+                    target={fileUrl ? '_blank' : undefined}
+                    rel="noreferrer"
+                  >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <DownloadIcon className="size-5" aria-hidden />
                     </span>
-                  </span>
-                </a>
+                    <span className="min-w-0">
+                      {category ? (
+                        <span className="mb-1 inline-block rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-medium uppercase text-muted-foreground">
+                          {category}
+                        </span>
+                      ) : null}
+                      <span className="block text-sm font-medium text-card-foreground">
+                        {title}
+                      </span>
+                    </span>
+                  </a>
+                </Card>
               )
             })}
           </div>

@@ -15,6 +15,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const KidsEducationPricing = defineCapsule({
   name: 'KidsEducationPricing',
   description:
@@ -121,9 +123,12 @@ export const KidsEducationPricing = defineCapsule({
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 text-sm tracking-wider text-secondary"
+            >
               {eyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
               {heading}
             </h2>
@@ -132,13 +137,16 @@ export const KidsEducationPricing = defineCapsule({
 
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {plans.map((plan) => (
-              <div
+              <Card
                 key={plan.name}
+                variant="muted"
+                rounded="3xl"
+                padding="lg"
                 className={cn(
-                  'relative rounded-3xl p-8',
+                  'relative',
                   plan.popular
-                    ? 'bg-foreground text-background shadow-2xl md:-translate-y-4'
-                    : 'border border-border bg-muted/40 transition-colors hover:border-foreground/20',
+                    ? 'border-0 bg-foreground text-background shadow-2xl md:-translate-y-4'
+                    : 'bg-muted/40 transition-colors hover:border-foreground/20',
                 )}
               >
                 {plan.popular && (
@@ -220,7 +228,7 @@ export const KidsEducationPricing = defineCapsule({
                 >
                   {plan.cta}
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
 

@@ -14,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * series, or any multi-day ticketed event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const MusicFestivalTickets = defineCapsule({
   name: 'MusicFestivalTickets',
   description:
@@ -157,13 +158,14 @@ export const MusicFestivalTickets = defineCapsule({
 
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
             {tiers.map((tier) => (
-              <div
+              <Card
                 key={tier.name}
+                variant="default"
+                rounded="xl"
+                padding="lg"
                 className={cn(
-                  'relative rounded-xl bg-card p-8 text-card-foreground',
-                  tier.popular
-                    ? 'border-2 border-primary'
-                    : 'border border-border',
+                  'relative',
+                  tier.popular ? 'border-2 border-primary' : '',
                 )}
               >
                 {tier.badge ? (
@@ -194,7 +196,7 @@ export const MusicFestivalTickets = defineCapsule({
                 >
                   {tier.cta}
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
 
@@ -204,15 +206,19 @@ export const MusicFestivalTickets = defineCapsule({
             </h3>
             <div className="grid gap-4 sm:grid-cols-3">
               {addOns.map((a) => (
-                <button
+                <Card
+                  asChild
                   key={a.name}
-                  type="button"
-                  onClick={() => go(a.name)}
-                  className="rounded-lg border border-border bg-card p-4 text-center text-card-foreground transition-colors hover:border-primary/40"
+                  variant="default"
+                  rounded="lg"
+                  padding="sm"
+                  className="text-center transition-colors hover:border-primary/40"
                 >
-                  <p className="font-semibold">{a.name}</p>
-                  <p className="text-sm text-card-foreground/60">{a.price}</p>
-                </button>
+                  <button type="button" onClick={() => go(a.name)}>
+                    <p className="font-semibold">{a.name}</p>
+                    <p className="text-sm text-card-foreground/60">{a.price}</p>
+                  </button>
+                </Card>
               ))}
             </div>
           </div>

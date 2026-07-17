@@ -14,6 +14,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * success stories.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const BootcampTestimonials = defineCapsule({
   name: 'BootcampTestimonials',
   description:
@@ -98,9 +99,12 @@ export const BootcampTestimonials = defineCapsule({
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
-            <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
+            <Eyebrow
+              variant="text"
+              className="mb-4 inline-block tracking-wider text-primary"
+            >
               {testimonialsEyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
               {testimonialsHeading}
             </h2>

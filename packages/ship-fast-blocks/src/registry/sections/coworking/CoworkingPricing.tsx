@@ -7,6 +7,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * CoworkingPricing — calm, dimensional membership pricing for a coworking or
@@ -136,12 +137,18 @@ export const CoworkingPricing = defineCapsule({
           />
 
           <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
-              <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Membership plans
-              </span>
-            </span>
+            <Eyebrow
+              variant="default"
+              icon={
+                <Sparkles
+                  className="size-3.5 text-primary"
+                  aria-hidden="true"
+                />
+              }
+              className="border-border/60 bg-card/70 px-4 py-1.5 font-semibold backdrop-blur tracking-[0.18em]"
+            >
+              Membership plans
+            </Eyebrow>
             <h2 className="mt-5 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
               {heading}
             </h2>
@@ -173,10 +180,15 @@ export const CoworkingPricing = defineCapsule({
                   )}
                 >
                   {highlighted ? (
-                    <span className="absolute -top-3.5 left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/30 bg-card/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary shadow-md shadow-primary/15 backdrop-blur">
-                      <Sparkles className="size-3.5" aria-hidden="true" />
+                    <Eyebrow
+                      variant="text"
+                      icon={
+                        <Sparkles className="size-3.5" aria-hidden="true" />
+                      }
+                      className="absolute -top-3.5 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-primary/30 bg-card/90 px-4 py-1.5 tracking-wider shadow-md shadow-primary/15 backdrop-blur"
+                    >
                       Most popular
-                    </span>
+                    </Eyebrow>
                   ) : null}
 
                   <div
@@ -202,9 +214,12 @@ export const CoworkingPricing = defineCapsule({
                         )}
                       />
 
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      <Eyebrow
+                        variant="text"
+                        className="text-sm tracking-[0.16em] text-muted-foreground"
+                      >
                         {tier.name}
-                      </p>
+                      </Eyebrow>
                       <div className="mt-4 flex items-baseline gap-1">
                         <span className="text-5xl font-semibold tracking-tight text-card-foreground">
                           {price}

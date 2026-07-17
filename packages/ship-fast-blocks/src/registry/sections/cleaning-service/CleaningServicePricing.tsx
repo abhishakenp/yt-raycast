@@ -15,6 +15,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * CleaningServicePricing — a 3-tier transparent pricing table for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of pricing cards: the middle "Most Popular" plan is elevated, highlighted with the primary brand color and a badge pill; side plans sit on card surfaces with secondary CTAs. A footnote row with a phone-icon link sits below the grid. Every CTA and the footnote link route through useNavigate. Use for service-pricing / plan-selection blocks for residential cleaning companies, maid services, or any local home-service business. Renders fully with no props via three baked-in default plans.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const CleaningServicePricing = defineCapsule({
   name: 'CleaningServicePricing',
   description:
@@ -163,9 +164,12 @@ export const CleaningServicePricing = defineCapsule({
                 >
                   {plan.badge ? (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="rounded-full bg-primary-foreground px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+                      <Eyebrow
+                        variant="text"
+                        className="rounded-full bg-primary-foreground px-4 py-1.5 font-bold tracking-wider text-primary"
+                      >
                         {plan.badge}
-                      </span>
+                      </Eyebrow>
                     </div>
                   ) : null}
                   <h3 className="mb-2 text-lg font-semibold text-primary-foreground">

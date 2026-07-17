@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CommunityForumTopics — colorful topic / category directory grid for a
@@ -106,25 +107,29 @@ export const CommunityForumTopics = defineCapsule({
           />
           <ResponsiveGrid cols="1-2-4" gap="sm">
             {items.map((topic, i) => (
-              <button
+              <Card
+                asChild
                 key={topic.title}
-                type="button"
-                onClick={() => go(topic.title)}
-                className="group rounded-xl border border-border bg-card p-6 text-left transition-all hover:border-foreground/20 hover:shadow-sm"
+                variant="default"
+                rounded="xl"
+                padding="md"
+                className="group text-left transition-all hover:border-foreground/20 hover:shadow-sm"
               >
-                <div
-                  className={cn(
-                    'mb-4 flex size-10 items-center justify-center rounded-lg text-xl',
-                    topicTints[i % topicTints.length],
-                  )}
-                >
-                  <span aria-hidden="true">{topic.emoji}</span>
-                </div>
-                <h4 className="mb-1 font-semibold text-card-foreground">
-                  {topic.title}
-                </h4>
-                <p className="text-sm text-muted-foreground">{topic.count}</p>
-              </button>
+                <button type="button" onClick={() => go(topic.title)}>
+                  <div
+                    className={cn(
+                      'mb-4 flex size-10 items-center justify-center rounded-lg text-xl',
+                      topicTints[i % topicTints.length],
+                    )}
+                  >
+                    <span aria-hidden="true">{topic.emoji}</span>
+                  </div>
+                  <h4 className="mb-1 font-semibold text-card-foreground">
+                    {topic.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">{topic.count}</p>
+                </button>
+              </Card>
             ))}
           </ResponsiveGrid>
         </div>

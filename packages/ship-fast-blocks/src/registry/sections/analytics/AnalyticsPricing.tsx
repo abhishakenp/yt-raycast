@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -118,13 +119,14 @@ export const AnalyticsPricing = defineCapsule({
           />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {tiers.map((tier) => (
-              <div
+              <Card
                 key={tier.name}
+                variant="default"
+                rounded="xl"
+                padding="lg"
                 className={cn(
-                  'relative flex flex-col gap-6 rounded-xl border bg-card p-8',
-                  tier.highlighted
-                    ? 'border-2 border-primary shadow-lg'
-                    : 'border-border',
+                  'relative flex flex-col gap-6',
+                  tier.highlighted ? 'border-2 border-primary shadow-lg' : '',
                 )}
               >
                 {tier.highlighted ? (
@@ -194,7 +196,7 @@ export const AnalyticsPricing = defineCapsule({
                 >
                   {tier.cta ?? 'Get started'}
                 </SaasPlanActionButton>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

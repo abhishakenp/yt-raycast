@@ -15,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
@@ -155,58 +156,62 @@ export const InvestingMarkets = defineCapsule({
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {quotes.map((q, i) => (
-              <button
+              <Card
                 key={q.symbol}
-                type="button"
-                onClick={() => go(q.symbol)}
-                className="rounded-xl border border-border bg-muted/50 p-6 text-left transition-shadow hover:shadow-lg"
+                asChild
+                variant="outline"
+                rounded="xl"
+                padding="md"
+                className="bg-muted/50 text-left transition-shadow hover:shadow-lg"
               >
-                <div className="mb-4 flex items-center gap-3">
-                  <div
-                    className={cn(
-                      'grid size-10 place-items-center rounded-lg text-sm font-bold',
-                      symbolTones[i % symbolTones.length],
-                    )}
-                  >
-                    {q.symbol}
-                  </div>
-                  <div>
-                    <p className="font-semibold">{q.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {q.exchange}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-2xl font-semibold">{q.price}</p>
-                    <p
+                <button type="button" onClick={() => go(q.symbol)}>
+                  <div className="mb-4 flex items-center gap-3">
+                    <div
                       className={cn(
-                        'text-sm font-medium',
-                        q.up ? 'text-chart-1' : 'text-destructive',
+                        'grid size-10 place-items-center rounded-lg text-sm font-bold',
+                        symbolTones[i % symbolTones.length],
                       )}
                     >
-                      {q.change}
-                    </p>
+                      {q.symbol}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{q.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {q.exchange}
+                      </p>
+                    </div>
                   </div>
-                  <svg
-                    className={cn(
-                      'h-10 w-20',
-                      q.up ? 'text-chart-1' : 'text-destructive',
-                    )}
-                    viewBox="0 0 80 40"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      d={q.up ? trendUp : trendDown}
-                    />
-                  </svg>
-                </div>
-              </button>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-2xl font-semibold">{q.price}</p>
+                      <p
+                        className={cn(
+                          'text-sm font-medium',
+                          q.up ? 'text-chart-1' : 'text-destructive',
+                        )}
+                      >
+                        {q.change}
+                      </p>
+                    </div>
+                    <svg
+                      className={cn(
+                        'h-10 w-20',
+                        q.up ? 'text-chart-1' : 'text-destructive',
+                      )}
+                      viewBox="0 0 80 40"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        d={q.up ? trendUp : trendDown}
+                      />
+                    </svg>
+                  </div>
+                </button>
+              </Card>
             ))}
           </div>
 

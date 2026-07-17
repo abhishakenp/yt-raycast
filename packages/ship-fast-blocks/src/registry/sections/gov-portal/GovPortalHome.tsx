@@ -19,6 +19,7 @@ import {
   type CarouselApi,
 } from '#/components/ui/carousel.tsx'
 import { StatGrid } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
@@ -262,28 +263,35 @@ export const GovPortalQuickLinks = defineCapsule({
             {items.map((item, i) => {
               const Icon = QUICK_ICONS[i % QUICK_ICONS.length]
               return (
-                <button
+                <Card
+                  asChild
                   key={item.label}
-                  type="button"
-                  onClick={() => go(item.target ?? 'Home')}
-                  className="group flex flex-col items-start gap-3 rounded-xl border border-border bg-card p-6 text-left transition-all hover:border-primary/40 hover:shadow-lg"
+                  variant="default"
+                  rounded="xl"
+                  padding="md"
+                  className="group flex flex-col items-start gap-3 text-left transition-all hover:border-primary/40 hover:shadow-lg"
                 >
-                  <span className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="size-6" aria-hidden />
-                  </span>
-                  <span className="font-semibold text-card-foreground">
-                    {item.label}
-                  </span>
-                  {item.description ? (
-                    <span className="text-sm text-muted-foreground">
-                      {item.description}
+                  <button
+                    type="button"
+                    onClick={() => go(item.target ?? 'Home')}
+                  >
+                    <span className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="size-6" aria-hidden />
                     </span>
-                  ) : null}
-                  <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                    {openLabel}
-                    <ArrowRightIcon className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </span>
-                </button>
+                    <span className="font-semibold text-card-foreground">
+                      {item.label}
+                    </span>
+                    {item.description ? (
+                      <span className="text-sm text-muted-foreground">
+                        {item.description}
+                      </span>
+                    ) : null}
+                    <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                      {openLabel}
+                      <ArrowRightIcon className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </button>
+                </Card>
               )
             })}
           </div>

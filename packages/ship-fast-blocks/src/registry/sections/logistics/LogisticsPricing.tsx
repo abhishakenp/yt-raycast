@@ -15,6 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * shipping, courier or cargo/transport companies. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const LogisticsPricing = defineCapsule({
   name: 'LogisticsPricing',
   description:
@@ -123,13 +124,16 @@ export const LogisticsPricing = defineCapsule({
             {tiers.map((tier) => {
               const featured = tier.featured
               return (
-                <div
+                <Card
                   key={tier.name}
+                  variant="default"
+                  rounded="2xl"
+                  padding="lg"
                   className={cn(
-                    'relative rounded-2xl p-8',
+                    'relative',
                     featured
-                      ? 'bg-primary text-primary-foreground'
-                      : 'border border-border bg-card',
+                      ? 'border-0 bg-primary text-primary-foreground'
+                      : '',
                   )}
                 >
                   {tier.badge ? (
@@ -211,7 +215,7 @@ export const LogisticsPricing = defineCapsule({
                   >
                     {tier.cta}
                   </button>
-                </div>
+                </Card>
               )
             })}
           </div>

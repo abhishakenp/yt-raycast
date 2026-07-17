@@ -14,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * props via Essential / Pro / Elite defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const InvestingPricing = defineCapsule({
   name: 'InvestingPricing',
   description:
@@ -199,13 +200,15 @@ export const InvestingPricing = defineCapsule({
           </div>
           <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-3">
             {tiers.map((tier) => (
-              <div
+              <Card
                 key={tier.name}
+                variant="default"
+                rounded="2xl"
+                padding="lg"
                 className={cn(
-                  'relative rounded-2xl p-8',
-                  tier.popular
-                    ? 'border-2 border-primary bg-primary text-primary-foreground'
-                    : 'border border-border bg-card text-card-foreground',
+                  'relative',
+                  tier.popular &&
+                    'border-2 border-primary bg-primary text-primary-foreground',
                 )}
               >
                 {tier.popular && (
@@ -290,7 +293,7 @@ export const InvestingPricing = defineCapsule({
                 >
                   {tier.cta}
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

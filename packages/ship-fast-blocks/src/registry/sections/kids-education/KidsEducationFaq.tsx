@@ -11,6 +11,7 @@ import {
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * KidsEducationFaq — native disclosure FAQ accordion for a kids / family
@@ -82,9 +83,12 @@ export const KidsEducationFaq = defineCapsule({
       <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 text-sm tracking-wider text-secondary"
+            >
               {eyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
               {heading}
             </h2>

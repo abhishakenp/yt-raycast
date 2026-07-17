@@ -22,6 +22,7 @@ import {
  * board-certified dentists, orthodontists, or oral surgeons for a clinic site.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const DentalTeam = defineCapsule({
   name: 'DentalTeam',
   description:
@@ -85,9 +86,12 @@ export const DentalTeam = defineCapsule({
       <section className={cn('bg-muted py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 inline-block text-sm tracking-wider text-primary"
+            >
               {teamEyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {teamHeading}
             </h2>

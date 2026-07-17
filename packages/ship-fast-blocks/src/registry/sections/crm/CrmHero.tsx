@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { cn } from '#/lib/utils.ts'
 import {
   SaasMutationSpinner,
@@ -191,9 +192,12 @@ export const CrmHero = defineCapsule({
                   <div className="grid grid-cols-4 gap-3">
                     {columns.map((col, ci) => (
                       <div key={col.label} className="space-y-2">
-                        <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Eyebrow
+                          variant="text"
+                          className="mb-3 block tracking-wider text-muted-foreground"
+                        >
                           {col.label}
-                        </div>
+                        </Eyebrow>
                         {(col.deals ?? []).map((deal) => (
                           <div
                             key={deal.name}

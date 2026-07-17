@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * DocsStoryGrid — bespoke, token-styled "popular guides" cards grid for a
@@ -111,39 +112,43 @@ export const DocsStoryGrid = defineCapsule({
         />
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {guides.map((guide, i) => (
-            <button
+            <Card
+              asChild
               key={`${guide.title}-${i}`}
-              type="button"
-              onClick={() => go(guide.title)}
-              className="group flex flex-col rounded-xl border border-border bg-card p-6 text-left transition hover:shadow-md"
+              variant="default"
+              rounded="xl"
+              padding="md"
+              className="group flex flex-col text-left transition hover:shadow-md"
             >
-              <span className="text-xs font-medium uppercase tracking-wide text-primary">
-                {guide.category}
-              </span>
-              <h3 className="mt-3 font-semibold text-foreground">
-                {guide.title}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {guide.description}
-              </p>
-              <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-                <span className="text-xs text-muted-foreground">
-                  {guide.readTime}
+              <button type="button" onClick={() => go(guide.title)}>
+                <span className="text-xs font-medium uppercase tracking-wide text-primary">
+                  {guide.category}
                 </span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="size-4 text-primary transition-transform group-hover:translate-x-1"
-                  aria-hidden="true"
-                >
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </div>
-            </button>
+                <h3 className="mt-3 font-semibold text-foreground">
+                  {guide.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {guide.description}
+                </p>
+                <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+                  <span className="text-xs text-muted-foreground">
+                    {guide.readTime}
+                  </span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-4 text-primary transition-transform group-hover:translate-x-1"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </div>
+              </button>
+            </Card>
           ))}
         </div>
       </section>

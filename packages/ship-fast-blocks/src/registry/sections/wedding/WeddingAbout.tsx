@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 export const WeddingAbout = defineCapsule({
   name: 'WeddingAbout',
@@ -78,7 +79,12 @@ export const WeddingAbout = defineCapsule({
                 className="absolute -inset-4 rounded-3xl bg-primary/10 blur-2xl"
                 aria-hidden="true"
               />
-              <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.12)]">
+              <Card
+                variant="default"
+                rounded="2xl"
+                padding="none"
+                className="relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.12)]"
+              >
                 <Image
                   alt={imageAlt}
                   w={800}
@@ -86,7 +92,7 @@ export const WeddingAbout = defineCapsule({
                   loading="lazy"
                   className="aspect-[4/5] w-full object-cover"
                 />
-              </div>
+              </Card>
             </div>
 
             <ol className="relative ml-2 border-l border-border pl-8">

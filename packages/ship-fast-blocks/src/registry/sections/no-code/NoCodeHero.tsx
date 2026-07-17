@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -269,9 +270,12 @@ export const NoCodeHero = defineCapsule({
                 </div>
                 <div className="grid min-h-[400px] grid-cols-12">
                   <div className="col-span-3 space-y-3 border-r border-border bg-muted/50 p-4">
-                    <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <Eyebrow
+                      variant="text"
+                      className="mb-3 tracking-wider text-muted-foreground"
+                    >
                       Components
-                    </div>
+                    </Eyebrow>
                     {['Text', 'Image', 'Button', 'Form'].map((c, i) => (
                       <Card
                         key={c}
@@ -325,9 +329,12 @@ export const NoCodeHero = defineCapsule({
                     </div>
                   </div>
                   <div className="col-span-3 border-l border-border bg-muted/50 p-4">
-                    <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <Eyebrow
+                      variant="text"
+                      className="mb-3 tracking-wider text-muted-foreground"
+                    >
                       Properties
-                    </div>
+                    </Eyebrow>
                     <div className="space-y-4">
                       <div>
                         <span className="mb-1.5 block text-xs text-muted-foreground">

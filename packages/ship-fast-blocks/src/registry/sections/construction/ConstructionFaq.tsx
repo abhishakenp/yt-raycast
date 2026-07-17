@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 import { z } from 'zod/v4'
 
@@ -74,9 +75,12 @@ export const ConstructionFaq = defineCapsule({
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            <Eyebrow
+              variant="text"
+              className="text-sm tracking-wider text-muted-foreground"
+            >
               {eyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
             </h2>

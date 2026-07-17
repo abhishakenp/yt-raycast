@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const ManufacturingTestimonials = defineCapsule({
   name: 'ManufacturingTestimonials',
   description:
@@ -128,59 +129,69 @@ export const ManufacturingTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {featured.map((t) => (
-              <blockquote
+              <Card
+                asChild
                 key={t.name}
-                className="rounded-lg border border-border bg-muted p-6"
+                variant="muted"
+                rounded="lg"
+                padding="md"
               >
-                <div className="mb-4 flex items-center gap-1">
-                  {[0, 1, 2, 3, 4].map((n) => (
-                    <Star key={n} />
-                  ))}
-                </div>
-                <p className="mb-6 leading-relaxed text-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <footer className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-semibold text-foreground">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
+                <blockquote>
+                  <div className="mb-4 flex items-center gap-1">
+                    {[0, 1, 2, 3, 4].map((n) => (
+                      <Star key={n} />
+                    ))}
                   </div>
-                </footer>
-              </blockquote>
+                  <p className="mb-6 leading-relaxed text-foreground">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <footer className="flex items-center gap-4">
+                    <Image
+                      alt={t.avatarAlt}
+                      w={100}
+                      h={100}
+                      loading="lazy"
+                      className="size-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="font-semibold text-foreground">{t.name}</p>
+                      <p className="text-sm text-muted-foreground">{t.role}</p>
+                    </div>
+                  </footer>
+                </blockquote>
+              </Card>
             ))}
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {compact.map((t) => (
-              <blockquote
+              <Card
+                asChild
                 key={t.name}
-                className="rounded-lg border border-border bg-muted p-6"
+                variant="muted"
+                rounded="lg"
+                padding="md"
               >
-                <p className="mb-4 text-sm leading-relaxed text-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <footer className="flex items-center gap-3">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {t.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                </footer>
-              </blockquote>
+                <blockquote>
+                  <p className="mb-4 text-sm leading-relaxed text-foreground">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <footer className="flex items-center gap-3">
+                    <Image
+                      alt={t.avatarAlt}
+                      w={100}
+                      h={100}
+                      loading="lazy"
+                      className="size-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {t.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{t.role}</p>
+                    </div>
+                  </footer>
+                </blockquote>
+              </Card>
             ))}
           </div>
         </Container>

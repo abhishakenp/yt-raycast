@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * JobBoardCategories — a browse-by-category icon grid for a job-board / careers
@@ -210,20 +211,24 @@ export const JobBoardCategories = defineCapsule({
           </div>
           <ResponsiveGrid cols="2-3-4" gap="sm">
             {items.map((cat, i) => (
-              <button
+              <Card
                 key={cat.title}
-                type="button"
-                onClick={() => go(cat.title)}
-                className="group rounded-xl border border-border bg-muted/40 p-6 text-left transition-all hover:border-foreground/30 hover:shadow-md"
+                asChild
+                variant="muted"
+                rounded="xl"
+                padding="md"
+                className="group bg-muted/40 text-left transition-all hover:border-foreground/30 hover:shadow-md"
               >
-                <div className="mb-4 grid size-12 place-items-center rounded-lg bg-card text-foreground shadow-sm transition-transform group-hover:scale-105">
-                  {categoryIcons[i % categoryIcons.length]}
-                </div>
-                <h3 className="mb-1 font-semibold text-foreground">
-                  {cat.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{cat.count}</p>
-              </button>
+                <button type="button" onClick={() => go(cat.title)}>
+                  <div className="mb-4 grid size-12 place-items-center rounded-lg bg-card text-foreground shadow-sm transition-transform group-hover:scale-105">
+                    {categoryIcons[i % categoryIcons.length]}
+                  </div>
+                  <h3 className="mb-1 font-semibold text-foreground">
+                    {cat.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{cat.count}</p>
+                </button>
+              </Card>
             ))}
           </ResponsiveGrid>
         </Container>

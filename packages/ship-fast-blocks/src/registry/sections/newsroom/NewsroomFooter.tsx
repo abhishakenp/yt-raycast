@@ -8,6 +8,7 @@ import { PublicationSubscribeForm } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * NewsroomFooter — refined editorial footer for a digital newsroom or online
@@ -133,9 +134,13 @@ export const NewsroomFooter = defineCapsule({
           <div className="grid grid-cols-2 gap-10 py-12 md:grid-cols-3 lg:grid-cols-5">
             {columns.map((col) => (
               <div key={col.heading}>
-                <h4 className="mb-4 text-xs font-semibold uppercase tracking-wider text-accent">
-                  {col.heading}
-                </h4>
+                <Eyebrow
+                  asChild
+                  variant="text"
+                  className="mb-4 block tracking-wider text-accent"
+                >
+                  <h4>{col.heading}</h4>
+                </Eyebrow>
                 <ul className="space-y-3">
                   {col.links.map((link) => (
                     <li key={link}>

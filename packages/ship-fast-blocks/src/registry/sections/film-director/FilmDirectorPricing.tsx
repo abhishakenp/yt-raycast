@@ -15,6 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * filmmakers, directors, DPs, or video production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const FilmDirectorPricing = defineCapsule({
   name: 'FilmDirectorPricing',
   description:
@@ -124,13 +125,14 @@ export const FilmDirectorPricing = defineCapsule({
           </div>
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
             {pricingTiers.map((tier) => (
-              <div
+              <Card
                 key={tier.name}
+                variant="default"
+                rounded="none"
+                padding="lg"
                 className={cn(
-                  'relative rounded-md p-8',
-                  tier.popular
-                    ? 'bg-foreground text-background'
-                    : 'border border-border bg-card text-card-foreground',
+                  'relative rounded-md',
+                  tier.popular ? 'border-0 bg-foreground text-background' : '',
                 )}
               >
                 {tier.popular && (
@@ -192,7 +194,7 @@ export const FilmDirectorPricing = defineCapsule({
                 >
                   {tier.cta}
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

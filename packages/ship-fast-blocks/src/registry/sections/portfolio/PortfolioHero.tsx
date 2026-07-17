@@ -9,6 +9,7 @@ import {
   HeroHighlight,
   HeroCtas,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * PortfolioHero — split, cinematic hero band for a dark creative-individual
@@ -106,34 +107,41 @@ export const PortfolioHero = defineCapsule({
               </HeroCtas>
             </div>
 
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              aria-label="Watch showreel"
-              className="group relative block aspect-[16/10] w-full overflow-hidden rounded-2xl border border-border bg-card text-left shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
+            <Card
+              asChild
+              variant="default"
+              rounded="2xl"
+              padding="none"
+              className="group relative block aspect-[16/10] w-full overflow-hidden text-left shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
             >
-              <Image
-                alt={reelAlt}
-                w={1600}
-                h={1000}
-                loading="eager"
-                className="h-full w-full object-cover opacity-90 transition-all duration-700 group-hover:scale-[1.04] group-hover:opacity-100"
-              />
-              <span className="absolute inset-0 flex items-center justify-center bg-background/25 transition-colors duration-300 group-hover:bg-background/15">
-                <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-foreground/20 bg-foreground/10 backdrop-blur-md transition-all duration-300 group-hover:scale-105 group-hover:bg-foreground/20">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="ml-1 h-6 w-6 fill-foreground"
-                    aria-hidden="true"
-                  >
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
+              <button
+                type="button"
+                onClick={() => go(primaryCta)}
+                aria-label="Watch showreel"
+              >
+                <Image
+                  alt={reelAlt}
+                  w={1600}
+                  h={1000}
+                  loading="eager"
+                  className="h-full w-full object-cover opacity-90 transition-all duration-700 group-hover:scale-[1.04] group-hover:opacity-100"
+                />
+                <span className="absolute inset-0 flex items-center justify-center bg-background/25 transition-colors duration-300 group-hover:bg-background/15">
+                  <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-foreground/20 bg-foreground/10 backdrop-blur-md transition-all duration-300 group-hover:scale-105 group-hover:bg-foreground/20">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="ml-1 h-6 w-6 fill-foreground"
+                      aria-hidden="true"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </span>
                 </span>
-              </span>
-              <span className="absolute bottom-4 left-4 rounded-full bg-background/45 px-3 py-1.5 text-xs font-medium text-foreground/85 backdrop-blur-sm">
-                {reelCaption}
-              </span>
-            </button>
+                <span className="absolute bottom-4 left-4 rounded-full bg-background/45 px-3 py-1.5 text-xs font-medium text-foreground/85 backdrop-blur-sm">
+                  {reelCaption}
+                </span>
+              </button>
+            </Card>
           </div>
         </div>
       </HeroSection>

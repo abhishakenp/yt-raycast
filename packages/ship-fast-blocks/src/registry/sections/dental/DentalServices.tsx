@@ -20,6 +20,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * orthodontists, or cosmetic / restorative dental clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const DentalServices = defineCapsule({
   name: 'DentalServices',
   description:
@@ -224,9 +225,12 @@ export const DentalServices = defineCapsule({
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 inline-block text-sm tracking-wider text-primary"
+            >
               {servicesEyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {servicesHeading}
             </h2>

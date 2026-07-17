@@ -20,6 +20,8 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * dentists, dental offices, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const DentalPricing = defineCapsule({
   name: 'DentalPricing',
   description:
@@ -130,9 +132,12 @@ export const DentalPricing = defineCapsule({
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 inline-block text-sm tracking-wider text-primary"
+            >
               {pricingEyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {pricingHeading}
             </h2>
@@ -140,13 +145,16 @@ export const DentalPricing = defineCapsule({
           </div>
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {pricingPlans.map((plan) => (
-              <div
+              <Card
                 key={plan.name}
+                variant={plan.featured ? 'outline' : 'muted'}
+                rounded="2xl"
+                padding="lg"
                 className={cn(
-                  'relative overflow-hidden rounded-2xl p-8',
+                  'relative overflow-hidden',
                   plan.featured
-                    ? 'bg-primary text-primary-foreground'
-                    : 'border border-border bg-muted',
+                    ? 'border-0 bg-primary text-primary-foreground'
+                    : '',
                 )}
               >
                 {plan.badge ? (
@@ -230,7 +238,7 @@ export const DentalPricing = defineCapsule({
                 >
                   {plan.cta}
                 </LocalServiceBookingButton>
-              </div>
+              </Card>
             ))}
           </div>
           <p className="mt-8 text-center text-sm text-muted-foreground">

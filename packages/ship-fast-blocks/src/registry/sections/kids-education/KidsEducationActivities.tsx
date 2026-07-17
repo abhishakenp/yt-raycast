@@ -17,6 +17,8 @@ import { Image } from '#/lib/img.tsx'
  * apps. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const KidsEducationActivities = defineCapsule({
   name: 'KidsEducationActivities',
   description:
@@ -221,9 +223,12 @@ export const KidsEducationActivities = defineCapsule({
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 text-sm tracking-wider text-secondary"
+            >
               {eyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
               {heading}
             </h2>
@@ -232,9 +237,12 @@ export const KidsEducationActivities = defineCapsule({
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group rounded-3xl border border-border bg-muted/40 p-6 transition-all duration-300 hover:bg-card hover:shadow-xl"
+                variant="outline"
+                rounded="3xl"
+                padding="md"
+                className="group bg-muted/40 transition-all duration-300 hover:bg-card hover:shadow-xl"
               >
                 <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-2xl">
                   <Image
@@ -268,7 +276,7 @@ export const KidsEducationActivities = defineCapsule({
                   {item.cta}
                   <ArrowRight className="size-4" />
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

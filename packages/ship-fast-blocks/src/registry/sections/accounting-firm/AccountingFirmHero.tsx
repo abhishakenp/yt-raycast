@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * AccountingFirmHero — split, editorial hero band for a CPA / accounting-firm
@@ -91,9 +92,12 @@ export const AccountingFirmHero = defineCapsule({
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <Eyebrow
+                variant="text"
+                className="mb-4 block text-sm tracking-wider text-muted-foreground"
+              >
                 {eyebrow}
-              </p>
+              </Eyebrow>
               <h1 className="mb-6 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                 {headingTop}
                 <br />

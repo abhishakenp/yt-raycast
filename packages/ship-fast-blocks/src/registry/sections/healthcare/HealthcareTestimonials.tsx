@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * baked-in patient-testimonial defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const HealthcareTestimonials = defineCapsule({
   name: 'HealthcareTestimonials',
   description:
@@ -123,37 +124,42 @@ export const HealthcareTestimonials = defineCapsule({
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
-              <blockquote
+              <Card
                 key={t.name}
-                className="rounded-2xl border border-border bg-card p-8"
+                asChild
+                variant="default"
+                rounded="2xl"
+                padding="lg"
               >
-                <div
-                  className="mb-4 flex items-center gap-1 text-primary"
-                  aria-label="5 out of 5 stars"
-                >
-                  {[0, 1, 2, 3, 4].map((n) => (
-                    <Star key={n} />
-                  ))}
-                </div>
-                <p className="mb-6 leading-relaxed text-card-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <footer className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={128}
-                    h={128}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-semibold text-card-foreground">
-                      {t.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{t.meta}</p>
+                <blockquote>
+                  <div
+                    className="mb-4 flex items-center gap-1 text-primary"
+                    aria-label="5 out of 5 stars"
+                  >
+                    {[0, 1, 2, 3, 4].map((n) => (
+                      <Star key={n} />
+                    ))}
                   </div>
-                </footer>
-              </blockquote>
+                  <p className="mb-6 leading-relaxed text-card-foreground">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <footer className="flex items-center gap-4">
+                    <Image
+                      alt={t.avatarAlt}
+                      w={128}
+                      h={128}
+                      loading="lazy"
+                      className="size-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="font-semibold text-card-foreground">
+                        {t.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{t.meta}</p>
+                    </div>
+                  </footer>
+                </blockquote>
+              </Card>
             ))}
           </div>
         </Container>

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -74,9 +75,12 @@ export const LinkInBioSubscribe = defineCapsule({
             </svg>
           </div>
 
-          <p className="mt-4 text-xs font-medium uppercase tracking-wider text-accent">
+          <Eyebrow
+            variant="text"
+            className="mt-4 block font-medium tracking-wider text-accent"
+          >
             {eyebrow}
-          </p>
+          </Eyebrow>
           <h2 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
             {heading}
           </h2>

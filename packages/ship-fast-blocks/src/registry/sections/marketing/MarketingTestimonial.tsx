@@ -11,6 +11,7 @@ import {
   PullQuoteRole,
   PullQuoteText,
 } from '#/section-kit/PullQuote.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * MarketingTestimonial — a single large, centered testimonial card for a SaaS /
@@ -41,36 +42,44 @@ export const MarketingTestimonial = defineCapsule({
     return (
       <PullQuote variant="gradient" className={cn('py-20', props.className)}>
         <div className="mx-auto max-w-6xl px-6">
-          <figure className="relative mx-auto max-w-3xl rounded-2xl border border-border bg-card px-8 py-12 text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] sm:px-10">
-            <PullQuoteIcon>
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                stroke="none"
-                aria-hidden="true"
-              >
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </svg>
-            </PullQuoteIcon>
-            <PullQuoteText>&ldquo;{quote}&rdquo;</PullQuoteText>
-            <figcaption>
-              <PullQuoteAttribution>
-                <PullQuoteAvatar>
-                  {name
-                    .split(' ')
-                    .map((w) => w.charAt(0))
-                    .join('')
-                    .slice(0, 2)}
-                </PullQuoteAvatar>
-                <div className="text-left">
-                  <PullQuoteName>{name}</PullQuoteName>
-                  <PullQuoteRole>{role}</PullQuoteRole>
-                </div>
-              </PullQuoteAttribution>
-            </figcaption>
-          </figure>
+          <Card
+            asChild
+            variant="default"
+            rounded="2xl"
+            padding="none"
+            className="relative mx-auto max-w-3xl px-8 py-12 text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] sm:px-10"
+          >
+            <figure>
+              <PullQuoteIcon>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  stroke="none"
+                  aria-hidden="true"
+                >
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                </svg>
+              </PullQuoteIcon>
+              <PullQuoteText>&ldquo;{quote}&rdquo;</PullQuoteText>
+              <figcaption>
+                <PullQuoteAttribution>
+                  <PullQuoteAvatar>
+                    {name
+                      .split(' ')
+                      .map((w) => w.charAt(0))
+                      .join('')
+                      .slice(0, 2)}
+                  </PullQuoteAvatar>
+                  <div className="text-left">
+                    <PullQuoteName>{name}</PullQuoteName>
+                    <PullQuoteRole>{role}</PullQuoteRole>
+                  </div>
+                </PullQuoteAttribution>
+              </figcaption>
+            </figure>
+          </Card>
         </div>
       </PullQuote>
     )

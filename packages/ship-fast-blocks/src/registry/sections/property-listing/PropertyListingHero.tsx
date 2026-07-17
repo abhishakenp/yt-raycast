@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { FilterChip } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import { usePropertyListingSearch } from './property-listing-interactions.tsx'
 
@@ -79,55 +80,63 @@ export const PropertyListingHero = defineCapsule({
               {subheading}
             </p>
 
-            <form
-              key={`${locationValue}:${activeFilter}`}
-              onSubmit={propertySearch.submitSearch}
-              className="mt-8 rounded-2xl border border-border bg-card p-3 shadow-sm"
+            <Card
+              asChild
+              variant="default"
+              rounded="2xl"
+              padding="none"
+              shadow="sm"
+              className="mt-8 p-3"
             >
-              <label className="sr-only" htmlFor="property-location-search">
-                Search by city, area, or ZIP
-              </label>
-              <input
-                id="property-location-search"
-                name="location"
-                defaultValue={locationValue}
-                placeholder={locationPlaceholder}
-                className="w-full rounded-xl border-0 bg-muted px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
-              <input type="hidden" name="filter" value={activeFilter} />
-              <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="flex flex-1 flex-wrap gap-2">
-                  {filters.map((filter) => {
-                    const isActive = activeFilter === filter
-                    return (
-                      <FilterChip
-                        key={filter}
-                        active={isActive}
-                        variant={isActive ? 'default' : 'outline'}
-                        className="rounded-lg"
-                        onClick={() =>
-                          propertySearch.chooseSearch({
-                            filter,
-                            location: locationValue,
-                            query: '',
-                          })
-                        }
-                      >
-                        {filter}
-                      </FilterChip>
-                    )
-                  })}
+              <form
+                key={`${locationValue}:${activeFilter}`}
+                onSubmit={propertySearch.submitSearch}
+              >
+                <label className="sr-only" htmlFor="property-location-search">
+                  Search by city, area, or ZIP
+                </label>
+                <input
+                  id="property-location-search"
+                  name="location"
+                  defaultValue={locationValue}
+                  placeholder={locationPlaceholder}
+                  className="w-full rounded-xl border-0 bg-muted px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <input type="hidden" name="filter" value={activeFilter} />
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div className="flex flex-1 flex-wrap gap-2">
+                    {filters.map((filter) => {
+                      const isActive = activeFilter === filter
+                      return (
+                        <FilterChip
+                          key={filter}
+                          active={isActive}
+                          variant={isActive ? 'default' : 'outline'}
+                          className="rounded-lg"
+                          onClick={() =>
+                            propertySearch.chooseSearch({
+                              filter,
+                              location: locationValue,
+                              query: '',
+                            })
+                          }
+                        >
+                          {filter}
+                        </FilterChip>
+                      )
+                    })}
+                  </div>
+                  <button
+                    type="submit"
+                    aria-busy={propertySearch.isPending}
+                    disabled={propertySearch.isPending}
+                    className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    {propertySearch.isPending ? 'Searching' : searchLabel}
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  aria-busy={propertySearch.isPending}
-                  disabled={propertySearch.isPending}
-                  className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  {propertySearch.isPending ? 'Searching' : searchLabel}
-                </button>
-              </div>
-            </form>
+              </form>
+            </Card>
 
             <p
               className="mt-3 text-sm text-muted-foreground"

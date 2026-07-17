@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { FilterChip } from '#/section-kit/index.ts'
 import { knowledgeBaseLakebed } from './knowledge-base-lakebed.ts'
 import {
@@ -172,20 +173,26 @@ export const KnowledgeBaseHero = defineCapsule({
               </p>
               <ul className="space-y-3">
                 {results.map((article) => (
-                  <li
+                  <Card
                     key={article.id}
-                    className="rounded-xl border border-border bg-background p-4 transition-colors hover:border-foreground/30"
+                    asChild
+                    variant="outline"
+                    rounded="xl"
+                    padding="sm"
+                    className="bg-background transition-colors hover:border-foreground/30"
                   >
-                    <p className="text-sm font-medium text-foreground">
-                      {article.title}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {article.category}
-                    </p>
-                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                      {article.content}
-                    </p>
-                  </li>
+                    <li>
+                      <p className="text-sm font-medium text-foreground">
+                        {article.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {article.category}
+                      </p>
+                      <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                        {article.content}
+                      </p>
+                    </li>
+                  </Card>
                 ))}
                 {!results.length ? (
                   <li className="rounded-xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">

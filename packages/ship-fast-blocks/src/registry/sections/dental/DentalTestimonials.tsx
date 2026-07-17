@@ -13,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * offices, orthodontists, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const DentalTestimonials = defineCapsule({
   name: 'DentalTestimonials',
   description:
@@ -105,9 +106,12 @@ export const DentalTestimonials = defineCapsule({
       <section className={cn('bg-muted py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 inline-block text-sm tracking-wider text-primary"
+            >
               {testimonialsEyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {testimonialsHeading}
             </h2>

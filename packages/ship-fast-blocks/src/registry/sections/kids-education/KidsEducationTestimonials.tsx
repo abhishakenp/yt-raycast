@@ -13,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const KidsEducationTestimonials = defineCapsule({
   name: 'KidsEducationTestimonials',
   description:
@@ -85,9 +86,12 @@ export const KidsEducationTestimonials = defineCapsule({
       <section className={cn('bg-muted/40 py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 text-sm tracking-wider text-secondary"
+            >
               {eyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
               {heading}
             </h2>

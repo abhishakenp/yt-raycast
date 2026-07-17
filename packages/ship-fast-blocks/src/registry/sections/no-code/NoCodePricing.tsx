@@ -21,6 +21,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * subscription product. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const NoCodePricing = defineCapsule({
   name: 'NoCodePricing',
   description:
@@ -193,13 +194,16 @@ export const NoCodePricing = defineCapsule({
             {plans.map((plan) => {
               const featured = plan.featured ?? false
               return (
-                <div
+                <Card
                   key={plan.name}
+                  variant="default"
+                  rounded="2xl"
+                  padding="lg"
+                  shadow="sm"
                   className={cn(
-                    'relative rounded-2xl p-8 shadow-sm',
-                    featured
-                      ? 'border border-foreground bg-foreground text-background shadow-xl'
-                      : 'border border-border bg-card',
+                    'relative',
+                    featured &&
+                      'border border-foreground bg-foreground text-background shadow-xl',
                   )}
                 >
                   {plan.badge && (
@@ -293,7 +297,7 @@ export const NoCodePricing = defineCapsule({
                       </li>
                     ))}
                   </ul>
-                </div>
+                </Card>
               )
             })}
           </div>

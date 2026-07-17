@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * JobBoardFooter — a fat, multi-column site footer for a job-board / careers
@@ -183,15 +184,22 @@ export const JobBoardFooter = defineCapsule({
               </p>
               <div className="flex gap-4">
                 {socials.map((label) => (
-                  <button
+                  <Card
                     key={label}
-                    type="button"
-                    aria-label={label}
-                    onClick={() => go(label)}
-                    className="grid size-10 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+                    asChild
+                    variant="default"
+                    rounded="lg"
+                    padding="none"
+                    className="grid size-10 cursor-pointer place-items-center text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
                   >
-                    {socialIconMap[label] ?? fallbackIcon}
-                  </button>
+                    <button
+                      type="button"
+                      aria-label={label}
+                      onClick={() => go(label)}
+                    >
+                      {socialIconMap[label] ?? fallbackIcon}
+                    </button>
+                  </Card>
                 ))}
               </div>
             </div>

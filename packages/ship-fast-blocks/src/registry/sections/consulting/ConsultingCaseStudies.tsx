@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ConsultingCaseStudies — 6-up case-study gallery with industry tags and
@@ -156,40 +157,44 @@ export const ConsultingCaseStudies = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <button
+              <Card
                 key={item.title}
-                type="button"
-                onClick={() => go(item.title)}
-                className="group block w-full cursor-pointer overflow-hidden rounded-xl border border-border bg-card text-left shadow-sm transition-all hover:shadow-xl"
+                asChild
+                variant="elevated"
+                rounded="xl"
+                padding="none"
+                className="group block w-full cursor-pointer overflow-hidden text-left transition-all hover:shadow-xl"
               >
-                <div className="relative h-56 overflow-hidden">
-                  <Image
-                    alt={item.imageAlt}
-                    w={600}
-                    h={400}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute left-4 top-4">
-                    <span className="rounded-full bg-background/95 px-3 py-1 text-xs font-semibold text-foreground">
-                      {item.tag}
-                    </span>
+                <button type="button" onClick={() => go(item.title)}>
+                  <div className="relative h-56 overflow-hidden">
+                    <Image
+                      alt={item.imageAlt}
+                      w={600}
+                      h={400}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute left-4 top-4">
+                      <span className="rounded-full bg-background/95 px-3 py-1 text-xs font-semibold text-foreground">
+                        {item.tag}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                    {item.description}
-                  </p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{item.duration}</span>
-                    <span className="h-4 w-px bg-border" />
-                    <span>{item.period}</span>
+                  <div className="p-6">
+                    <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>{item.duration}</span>
+                      <span className="h-4 w-px bg-border" />
+                      <span>{item.period}</span>
+                    </div>
                   </div>
-                </div>
-              </button>
+                </button>
+              </Card>
             ))}
           </div>
         </Container>

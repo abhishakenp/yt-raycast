@@ -14,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const MarketingAgencyPricing = defineCapsule({
   name: 'MarketingAgencyPricing',
   description:
@@ -203,13 +204,16 @@ export const MarketingAgencyPricing = defineCapsule({
           </div>
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {plans.map((plan) => (
-              <div
+              <Card
                 key={plan.name}
+                variant="default"
+                rounded="xl"
+                padding="lg"
                 className={cn(
-                  'relative rounded-xl p-8',
+                  'relative',
                   plan.featured
-                    ? 'bg-primary text-primary-foreground'
-                    : 'border border-border bg-card text-card-foreground',
+                    ? 'border-0 bg-primary text-primary-foreground'
+                    : '',
                 )}
               >
                 {plan.badge && (
@@ -296,7 +300,7 @@ export const MarketingAgencyPricing = defineCapsule({
                 >
                   {plan.cta}
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
           <p className="mt-8 text-center text-sm text-muted-foreground">

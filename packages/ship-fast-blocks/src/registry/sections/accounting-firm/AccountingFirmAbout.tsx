@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * AccountingFirmAbout — split about band for a CPA / accounting-firm site. A
@@ -81,9 +82,12 @@ export const AccountingFirmAbout = defineCapsule({
               />
             </div>
             <div className="order-1 lg:order-2">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <Eyebrow
+                variant="text"
+                className="mb-3 block text-sm tracking-wider text-muted-foreground"
+              >
                 {eyebrow}
-              </p>
+              </Eyebrow>
               <h2 className="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                 {heading}
               </h2>

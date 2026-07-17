@@ -12,6 +12,8 @@ import { cn } from '#/lib/utils.ts'
  * bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const BootcampCurriculum = defineCapsule({
   name: 'BootcampCurriculum',
   description:
@@ -208,9 +210,12 @@ export const BootcampCurriculum = defineCapsule({
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
-            <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
+            <Eyebrow
+              variant="text"
+              className="mb-4 inline-block tracking-wider text-primary"
+            >
               {curriculumEyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
               {curriculumHeading}
             </h2>
@@ -218,9 +223,12 @@ export const BootcampCurriculum = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {curriculumItems.map((mod, i) => (
-              <div
+              <Card
                 key={mod.title}
-                className="group rounded-2xl border border-border bg-muted/40 p-6 transition-colors hover:border-primary/30 lg:p-8"
+                variant="muted"
+                rounded="2xl"
+                padding="md"
+                className="group bg-muted/40 transition-colors hover:border-primary/30 lg:p-8"
               >
                 <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
                   {moduleIcons[i % moduleIcons.length]}
@@ -235,7 +243,7 @@ export const BootcampCurriculum = defineCapsule({
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

@@ -10,6 +10,7 @@ import {
   HeroSubheading,
   HeroCtas,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -128,7 +129,13 @@ export const AuthHero = defineCapsule({
           </div>
 
           <div className="relative">
-            <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+            <Card
+              variant="default"
+              rounded="xl"
+              padding="none"
+              shadow="sm"
+              className="overflow-hidden"
+            >
               <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
                 <span
                   aria-hidden="true"
@@ -159,7 +166,7 @@ export const AuthHero = defineCapsule({
                   </div>
                 ))}
               </pre>
-            </div>
+            </Card>
           </div>
         </div>
       </HeroSection>

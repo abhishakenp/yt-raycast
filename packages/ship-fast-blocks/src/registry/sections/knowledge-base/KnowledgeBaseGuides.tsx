@@ -7,6 +7,7 @@ import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * KnowledgeBaseGuides — featured step-by-step guides gallery for a help center.
@@ -157,61 +158,69 @@ export const KnowledgeBaseGuides = defineCapsule({
               </h2>
               <p className="text-muted-foreground">{description}</p>
             </div>
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-muted"
+            <Card
+              asChild
+              variant="default"
+              rounded="lg"
+              padding="none"
+              className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-muted"
             >
-              {viewAll}
-              <ChevronRight className="size-4" />
-            </button>
+              <button type="button" onClick={() => go(viewAll)}>
+                {viewAll}
+                <ChevronRight className="size-4" />
+              </button>
+            </Card>
           </div>
           <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((guide) => (
-              <button
+              <Card
                 key={guide.title}
-                type="button"
-                onClick={() => go(guide.title)}
-                className="group block overflow-hidden rounded-xl border border-border bg-card text-left transition-all hover:shadow-lg"
+                asChild
+                variant="default"
+                rounded="xl"
+                padding="none"
+                className="group block cursor-pointer overflow-hidden text-left transition-all hover:shadow-lg"
               >
-                <div className="relative aspect-video overflow-hidden bg-muted">
-                  <Image
-                    alt={guide.imageAlt}
-                    w={800}
-                    h={450}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <span className="absolute left-3 top-3">
-                    <span
-                      className={cn(
-                        'rounded px-2 py-1 text-xs font-medium',
-                        levelTone(guide.level),
-                      )}
-                    >
-                      {guide.level}
-                    </span>
-                  </span>
-                </div>
-                <div className="p-6">
-                  <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
-                    {guide.title}
-                  </h3>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    {guide.description}
-                  </p>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <ClockIcon />
-                      {guide.readTime}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <ListIcon />
-                      {guide.steps}
+                <button type="button" onClick={() => go(guide.title)}>
+                  <div className="relative aspect-video overflow-hidden bg-muted">
+                    <Image
+                      alt={guide.imageAlt}
+                      w={800}
+                      h={450}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute left-3 top-3">
+                      <span
+                        className={cn(
+                          'rounded px-2 py-1 text-xs font-medium',
+                          levelTone(guide.level),
+                        )}
+                      >
+                        {guide.level}
+                      </span>
                     </span>
                   </div>
-                </div>
-              </button>
+                  <div className="p-6">
+                    <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
+                      {guide.title}
+                    </h3>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      {guide.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <ClockIcon />
+                        {guide.readTime}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <ListIcon />
+                        {guide.steps}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              </Card>
             ))}
           </ResponsiveGrid>
         </Container>

@@ -12,6 +12,7 @@ import {
   HeroTrustRow,
   HeroTrustItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 export const TutoringHero = defineCapsule({
   name: 'TutoringHero',
@@ -116,7 +117,12 @@ export const TutoringHero = defineCapsule({
               className="absolute inset-6 rounded-3xl bg-primary/10 blur-3xl"
               aria-hidden="true"
             />
-            <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.12)]">
+            <Card
+              variant="default"
+              rounded="3xl"
+              padding="none"
+              className="relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.12)]"
+            >
               <HeroImage
                 alt={imageAlt}
                 w={900}
@@ -150,7 +156,7 @@ export const TutoringHero = defineCapsule({
                   </p>
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </HeroSection>

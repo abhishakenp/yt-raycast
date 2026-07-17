@@ -9,6 +9,7 @@ import {
   HeroSubheading,
   HeroCtas,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -204,7 +205,12 @@ export const SaasHero = defineCapsule({
 
           {/* Product demo mockup card */}
           <div className="flex justify-center">
-            <div className="w-full max-w-[520px] overflow-hidden rounded-3xl border border-border bg-card shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)]">
+            <Card
+              variant="default"
+              rounded="3xl"
+              padding="none"
+              className="w-full max-w-[520px] overflow-hidden shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)]"
+            >
               <div className="flex items-center gap-2 border-b border-border/60 px-5 py-4">
                 <span className="size-2.5 rounded-full bg-chart-5" />
                 <span className="size-2.5 rounded-full bg-chart-4" />
@@ -285,7 +291,7 @@ export const SaasHero = defineCapsule({
                   ))}
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </HeroSection>

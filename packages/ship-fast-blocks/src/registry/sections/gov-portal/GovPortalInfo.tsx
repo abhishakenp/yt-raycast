@@ -5,6 +5,7 @@ import { MailIcon } from 'lucide-react'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { GalleryGrid } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
   pickLang,
@@ -203,30 +204,36 @@ export const GovPortalNewsEvents = defineCapsule({
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {rows.map((row, i) => (
-              <article
+              <Card
+                asChild
                 key={`${str(row, 'title')}-${i}`}
-                className="overflow-hidden rounded-2xl border border-border bg-card"
+                variant="default"
+                rounded="2xl"
+                padding="none"
+                className="overflow-hidden"
               >
-                <Image
-                  alt={str(row, 'title') || 'News image'}
-                  w={640}
-                  h={360}
-                  className="aspect-video w-full object-cover"
-                />
-                <div className="p-5">
-                  {str(row, 'date') ? (
-                    <p className="text-xs font-medium uppercase tracking-wide text-primary">
-                      {str(row, 'date')}
+                <article>
+                  <Image
+                    alt={str(row, 'title') || 'News image'}
+                    w={640}
+                    h={360}
+                    className="aspect-video w-full object-cover"
+                  />
+                  <div className="p-5">
+                    {str(row, 'date') ? (
+                      <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                        {str(row, 'date')}
+                      </p>
+                    ) : null}
+                    <h3 className="mt-1 text-base font-semibold text-card-foreground">
+                      {str(row, 'title')}
+                    </h3>
+                    <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
+                      {str(row, 'body')}
                     </p>
-                  ) : null}
-                  <h3 className="mt-1 text-base font-semibold text-card-foreground">
-                    {str(row, 'title')}
-                  </h3>
-                  <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
-                    {str(row, 'body')}
-                  </p>
-                </div>
-              </article>
+                  </div>
+                </article>
+              </Card>
             ))}
           </div>
         </Container>

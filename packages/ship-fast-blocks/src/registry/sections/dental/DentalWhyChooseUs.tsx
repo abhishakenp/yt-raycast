@@ -13,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * pricing, family care) for dentists, dental offices, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const DentalWhyChooseUs = defineCapsule({
   name: 'DentalWhyChooseUs',
   description:
@@ -81,9 +82,12 @@ export const DentalWhyChooseUs = defineCapsule({
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
+              <Eyebrow
+                variant="text"
+                className="mb-3 inline-block text-sm tracking-wider text-primary"
+              >
                 {whyEyebrow}
-              </span>
+              </Eyebrow>
               <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl">
                 {whyHeading}
               </h2>

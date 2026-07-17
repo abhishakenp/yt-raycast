@@ -22,6 +22,7 @@ import {
  * directories, marketplaces, or review-and-discovery sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const DirectoryFeatured = defineCapsule({
   name: 'DirectoryFeatured',
   description:
@@ -196,61 +197,71 @@ export const DirectoryFeatured = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {matchingItems.map((biz) => (
-              <button
+              <Card
+                asChild
                 key={biz.name}
-                type="button"
-                aria-pressed={selectedName === biz.name}
-                onClick={() => {
-                  void directoryListings.select({
-                    category: biz.category,
-                    name: biz.name,
-                  })
-                }}
+                variant="default"
+                rounded="xl"
+                padding="none"
                 className={cn(
-                  'group block overflow-hidden rounded-xl border bg-card text-left transition-shadow hover:shadow-md',
-                  selectedName === biz.name
-                    ? 'border-primary shadow-md'
-                    : 'border-border',
+                  'group block overflow-hidden text-left transition-shadow hover:shadow-md',
+                  selectedName === biz.name ? 'border-primary shadow-md' : '',
                 )}
               >
-                <div className="relative aspect-[4/3] bg-muted">
-                  <Image
-                    alt={biz.imageAlt}
-                    w={600}
-                    h={450}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                  <span className="absolute left-3 top-3 rounded bg-card px-2 py-1 text-xs font-medium text-card-foreground">
-                    {biz.category}
-                  </span>
-                  <span className="absolute right-3 top-3 flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
-                    <Star className="size-3" />
-                    {biz.rating}
-                  </span>
-                </div>
-                <div className="p-5">
-                  <h3 className="mb-1 text-lg font-semibold text-card-foreground">
-                    {biz.name}
-                  </h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    {biz.address}
-                  </p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="size-4" />
-                      {biz.hours}
+                <button
+                  type="button"
+                  aria-pressed={selectedName === biz.name}
+                  onClick={() => {
+                    void directoryListings.select({
+                      category: biz.category,
+                      name: biz.name,
+                    })
+                  }}
+                >
+                  <div className="relative aspect-[4/3] bg-muted">
+                    <Image
+                      alt={biz.imageAlt}
+                      w={600}
+                      h={450}
+                      loading="lazy"
+                      className="size-full object-cover"
+                    />
+                    <span className="absolute left-3 top-3 rounded bg-card px-2 py-1 text-xs font-medium text-card-foreground">
+                      {biz.category}
                     </span>
-                    <span>·</span>
-                    <span>{biz.reviews}</span>
+                    <span className="absolute right-3 top-3 flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
+                      <Star className="size-3" />
+                      {biz.rating}
+                    </span>
                   </div>
-                </div>
-              </button>
+                  <div className="p-5">
+                    <h3 className="mb-1 text-lg font-semibold text-card-foreground">
+                      {biz.name}
+                    </h3>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      {biz.address}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="size-4" />
+                        {biz.hours}
+                      </span>
+                      <span>·</span>
+                      <span>{biz.reviews}</span>
+                    </div>
+                  </div>
+                </button>
+              </Card>
             ))}
             {!matchingItems.length ? (
-              <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">
+              <Card
+                variant="default"
+                rounded="xl"
+                padding="lg"
+                className="border-dashed text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3"
+              >
                 No featured businesses match the current search.
-              </div>
+              </Card>
             ) : null}
           </div>
         </Container>

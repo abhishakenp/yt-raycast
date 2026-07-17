@@ -17,6 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const LawFirmPracticeAreas = defineCapsule({
   name: 'LawFirmPracticeAreas',
   description:
@@ -180,9 +181,12 @@ export const LawFirmPracticeAreas = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <Card
                 key={item.title}
-                className="group border border-border bg-card p-8 transition-colors hover:border-foreground/40"
+                variant="default"
+                rounded="none"
+                padding="lg"
+                className="group transition-colors hover:border-foreground/40"
               >
                 <div className="mb-6 grid size-12 place-items-center bg-muted text-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                   {practiceIcons[i % practiceIcons.length]}
@@ -200,7 +204,7 @@ export const LawFirmPracticeAreas = defineCapsule({
                 >
                   {linkLabel} &rarr;
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

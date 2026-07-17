@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * AboutHero — mission hero band for a modern company / ABOUT page. A spacious
@@ -110,13 +111,18 @@ export const AboutHero = defineCapsule({
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center rounded-xl border border-border bg-card px-5 py-3 text-[0.95rem] font-semibold text-foreground shadow-sm transition-all hover:-translate-y-px hover:border-muted-foreground/30 hover:shadow-sm"
+            <Card
+              asChild
+              variant="default"
+              rounded="xl"
+              padding="none"
+              shadow="sm"
+              className="inline-flex items-center px-5 py-3 text-[0.95rem] font-semibold text-foreground transition-all hover:-translate-y-px hover:border-muted-foreground/30 hover:shadow-sm"
             >
-              {secondaryCta}
-            </button>
+              <button type="button" onClick={() => go(secondaryCta)}>
+                {secondaryCta}
+              </button>
+            </Card>
           </div>
         </div>
       </section>

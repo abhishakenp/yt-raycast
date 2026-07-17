@@ -13,6 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * with no props; built-in line icons rotate across the items.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const JobBoardFeatures = defineCapsule({
   name: 'JobBoardFeatures',
   description:
@@ -114,9 +115,14 @@ export const JobBoardFeatures = defineCapsule({
           <div className="grid gap-8 md:grid-cols-3">
             {items.map((item, i) => (
               <div key={item.title} className="text-center">
-                <div className="mx-auto mb-6 grid size-14 place-items-center rounded-2xl border border-border bg-card text-foreground shadow-sm">
+                <Card
+                  variant="elevated"
+                  rounded="2xl"
+                  padding="none"
+                  className="mx-auto mb-6 grid size-14 place-items-center text-foreground"
+                >
                   {featureIcons[i % featureIcons.length]}
-                </div>
+                </Card>
                 <h3 className="mb-3 text-lg font-semibold text-foreground">
                   {item.title}
                 </h3>

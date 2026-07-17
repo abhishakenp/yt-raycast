@@ -10,6 +10,7 @@ import {
   HeroSubheading,
   HeroCtas,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * MarketingHero — split product hero for a SaaS / product-marketing landing page.
@@ -190,17 +191,27 @@ export const MarketingHero = defineCapsule({
                       </div>
                     </div>
                   </div>
-                  <div className="mb-4 overflow-hidden rounded-xl border border-border bg-muted/40">
+                  <Card
+                    variant="outline"
+                    rounded="xl"
+                    padding="none"
+                    className="mb-4 overflow-hidden bg-muted/40"
+                  >
                     <Image
                       alt={previewAlt}
                       w={1000}
                       h={520}
                       className="aspect-[16/7] w-full object-cover opacity-85"
                     />
-                  </div>
+                  </Card>
                   <div className="grid gap-4 sm:grid-cols-2">
                     {/* Chart widget */}
-                    <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <Card
+                      variant="outline"
+                      rounded="xl"
+                      padding="sm"
+                      className="bg-muted/40"
+                    >
                       <div className="mb-3 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
                         {chartTitle}
                       </div>
@@ -213,9 +224,14 @@ export const MarketingHero = defineCapsule({
                           />
                         ))}
                       </div>
-                    </div>
+                    </Card>
                     {/* Tasks widget */}
-                    <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <Card
+                      variant="outline"
+                      rounded="xl"
+                      padding="sm"
+                      className="bg-muted/40"
+                    >
                       <div className="mb-3 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
                         {tasksTitle}
                       </div>
@@ -239,7 +255,7 @@ export const MarketingHero = defineCapsule({
                           </div>
                         ))}
                       </div>
-                    </div>
+                    </Card>
                   </div>
                 </div>
               </div>

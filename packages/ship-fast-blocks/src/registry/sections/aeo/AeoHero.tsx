@@ -9,6 +9,7 @@ import {
   HeroBadge,
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -123,14 +124,20 @@ export const AeoHero = defineCapsule({
           </div>
         </HeroContent>
         <div className="mx-auto max-w-5xl px-4 pb-20 sm:px-6 lg:px-8">
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
+          <Card
+            variant="default"
+            rounded="xl"
+            shadow="2xl"
+            padding="none"
+            className="overflow-hidden"
+          >
             <Image
               alt={imageAlt}
               w={1600}
               h={900}
               className="h-auto w-full object-cover"
             />
-          </div>
+          </Card>
         </div>
       </HeroSection>
     )

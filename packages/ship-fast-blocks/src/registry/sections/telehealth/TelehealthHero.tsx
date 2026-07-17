@@ -11,6 +11,7 @@ import {
   HeroHeading,
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 export const TelehealthHero = defineCapsule({
   name: 'TelehealthHero',
@@ -123,14 +124,19 @@ export const TelehealthHero = defineCapsule({
               className="absolute inset-6 rounded-3xl bg-primary/10 blur-3xl"
               aria-hidden="true"
             />
-            <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.12)]">
+            <Card
+              variant="default"
+              rounded="3xl"
+              padding="none"
+              className="relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.12)]"
+            >
               <Image
                 alt={imageAlt}
                 w={900}
                 h={760}
                 className="aspect-[4/3] w-full object-cover"
               />
-            </div>
+            </Card>
           </div>
         </HeroContent>
       </HeroSection>

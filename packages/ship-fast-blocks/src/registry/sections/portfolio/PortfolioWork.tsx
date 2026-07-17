@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * PortfolioWork — selected-work / project gallery for a dark creative portfolio.
@@ -120,38 +121,44 @@ export const PortfolioWork = defineCapsule({
 
           <ResponsiveGrid cols="1-2-3" gap="md">
             {items.map((item) => (
-              <button
+              <Card
+                asChild
                 key={item.title}
-                type="button"
-                onClick={() => go(cardTarget)}
-                className="group relative block overflow-hidden rounded-2xl border border-border bg-card text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
+                variant="default"
+                rounded="2xl"
+                padding="none"
+                className="group relative block overflow-hidden text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
               >
-                <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-muted to-card">
-                  <Image
-                    alt={item.alt}
-                    w={1200}
-                    h={750}
-                    loading="lazy"
-                    className="h-full w-full object-cover opacity-85 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="mb-1.5 text-xl font-semibold">{item.title}</h3>
-                  <p className="text-sm leading-[1.6] text-muted-foreground">
-                    {item.description}
-                  </p>
-                  <div className="mt-3.5 flex flex-wrap gap-2">
-                    {item.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                <button type="button" onClick={() => go(cardTarget)}>
+                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-muted to-card">
+                    <Image
+                      alt={item.alt}
+                      w={1200}
+                      h={750}
+                      loading="lazy"
+                      className="h-full w-full object-cover opacity-85 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
+                    />
                   </div>
-                </div>
-              </button>
+                  <div className="p-6">
+                    <h3 className="mb-1.5 text-xl font-semibold">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm leading-[1.6] text-muted-foreground">
+                      {item.description}
+                    </p>
+                    <div className="mt-3.5 flex flex-wrap gap-2">
+                      {item.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </button>
+              </Card>
             ))}
           </ResponsiveGrid>
         </div>

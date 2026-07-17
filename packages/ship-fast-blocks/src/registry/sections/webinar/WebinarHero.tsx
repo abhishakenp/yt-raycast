@@ -11,6 +11,7 @@ import {
   HeroHeading,
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 export const WebinarHero = defineCapsule({
   name: 'WebinarHero',
@@ -97,7 +98,12 @@ export const WebinarHero = defineCapsule({
             </p>
           </div>
 
-          <div className="mt-10 inline-flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 text-left text-card-foreground">
+          <Card
+            variant="default"
+            rounded="none"
+            padding="none"
+            className="mt-10 inline-flex items-center gap-3 rounded-full px-4 py-2 text-left"
+          >
             <Image
               alt={presenterAvatarAlt}
               w={96}
@@ -111,13 +117,16 @@ export const WebinarHero = defineCapsule({
               </p>
               <p className="text-xs text-muted-foreground">{presenterRole}</p>
             </div>
-          </div>
+          </Card>
 
           <div className="mx-auto mt-12 grid max-w-md grid-cols-4 gap-3">
             {countdown.map((unit, i) => (
-              <div
+              <Card
                 key={`${unit.label}-${i}`}
-                className="rounded-xl border border-border bg-card px-2 py-4 text-card-foreground"
+                variant="default"
+                rounded="xl"
+                padding="none"
+                className="px-2 py-4"
               >
                 <p className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">
                   {unit.value}
@@ -125,7 +134,7 @@ export const WebinarHero = defineCapsule({
                 <p className="mt-1 text-[0.65rem] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                   {unit.label}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         </HeroContent>

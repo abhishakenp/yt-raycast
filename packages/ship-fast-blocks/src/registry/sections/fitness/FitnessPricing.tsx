@@ -12,6 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use for membership tiers / plans on gyms, fitness studios, yoga or boxing studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const FitnessPricing = defineCapsule({
   name: 'FitnessPricing',
   description:
@@ -187,116 +188,125 @@ export const FitnessPricing = defineCapsule({
 
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
             {pricingTiers.map((tier) => (
-              <article
+              <Card
+                asChild
                 key={tier.name}
+                variant={tier.popular ? 'outline' : 'default'}
+                rounded="lg"
+                padding="lg"
                 className={cn(
-                  'relative rounded-lg p-8',
+                  'relative',
                   tier.popular
-                    ? 'bg-primary text-primary-foreground'
-                    : 'border border-border bg-card',
+                    ? 'border-0 bg-primary text-primary-foreground'
+                    : '',
                 )}
               >
-                {tier.popular ? (
-                  <div className="absolute right-0 top-0 rounded-bl-sm bg-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground">
-                    Popular
-                  </div>
-                ) : null}
-                <h3
-                  className={cn(
-                    'mb-2 text-lg font-semibold',
-                    tier.popular
-                      ? 'text-primary-foreground'
-                      : 'text-card-foreground',
-                  )}
-                >
-                  {tier.name}
-                </h3>
-                <p
-                  className={cn(
-                    'mb-6 text-sm',
-                    tier.popular
-                      ? 'text-primary-foreground/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.tagline}
-                </p>
-                <div className="mb-6">
-                  <span
+                <article>
+                  {tier.popular ? (
+                    <div className="absolute right-0 top-0 rounded-bl-sm bg-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground">
+                      Popular
+                    </div>
+                  ) : null}
+                  <h3
                     className={cn(
-                      'text-4xl font-semibold',
+                      'mb-2 text-lg font-semibold',
                       tier.popular
                         ? 'text-primary-foreground'
                         : 'text-card-foreground',
                     )}
                   >
-                    {tier.price}
-                  </span>
-                  <span
+                    {tier.name}
+                  </h3>
+                  <p
                     className={cn(
+                      'mb-6 text-sm',
                       tier.popular
                         ? 'text-primary-foreground/70'
                         : 'text-muted-foreground',
                     )}
                   >
-                    {tier.period}
-                  </span>
-                </div>
-                <ul
-                  className={cn(
-                    'mb-8 space-y-3 text-sm',
-                    tier.popular
-                      ? 'text-primary-foreground/90'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.features.map((feature) => (
-                    <li key={feature.label} className="flex items-center gap-2">
-                      {feature.included ? (
-                        <CheckIcon
-                          className={cn(
-                            'size-4',
-                            tier.popular
-                              ? 'text-primary-foreground'
-                              : 'text-primary',
-                          )}
-                        />
-                      ) : (
-                        <CrossIcon
-                          className={cn(
-                            'size-4',
-                            tier.popular
-                              ? 'text-primary-foreground/50'
-                              : 'text-muted-foreground/50',
-                          )}
-                        />
+                    {tier.tagline}
+                  </p>
+                  <div className="mb-6">
+                    <span
+                      className={cn(
+                        'text-4xl font-semibold',
+                        tier.popular
+                          ? 'text-primary-foreground'
+                          : 'text-card-foreground',
                       )}
-                      <span
-                        className={cn(
-                          !feature.included &&
-                            (tier.popular
-                              ? 'text-primary-foreground/60'
-                              : 'text-muted-foreground/70'),
-                        )}
+                    >
+                      {tier.price}
+                    </span>
+                    <span
+                      className={cn(
+                        tier.popular
+                          ? 'text-primary-foreground/70'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {tier.period}
+                    </span>
+                  </div>
+                  <ul
+                    className={cn(
+                      'mb-8 space-y-3 text-sm',
+                      tier.popular
+                        ? 'text-primary-foreground/90'
+                        : 'text-muted-foreground',
+                    )}
+                  >
+                    {tier.features.map((feature) => (
+                      <li
+                        key={feature.label}
+                        className="flex items-center gap-2"
                       >
-                        {feature.label}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
-                  className={cn(
-                    'w-full rounded-sm py-3 text-sm font-medium transition-colors',
-                    tier.popular
-                      ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
-                      : 'border border-input text-foreground hover:border-border',
-                  )}
-                >
-                  {tier.cta}
-                </button>
-              </article>
+                        {feature.included ? (
+                          <CheckIcon
+                            className={cn(
+                              'size-4',
+                              tier.popular
+                                ? 'text-primary-foreground'
+                                : 'text-primary',
+                            )}
+                          />
+                        ) : (
+                          <CrossIcon
+                            className={cn(
+                              'size-4',
+                              tier.popular
+                                ? 'text-primary-foreground/50'
+                                : 'text-muted-foreground/50',
+                            )}
+                          />
+                        )}
+                        <span
+                          className={cn(
+                            !feature.included &&
+                              (tier.popular
+                                ? 'text-primary-foreground/60'
+                                : 'text-muted-foreground/70'),
+                          )}
+                        >
+                          {feature.label}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => go(tier.cta)}
+                    className={cn(
+                      'w-full rounded-sm py-3 text-sm font-medium transition-colors',
+                      tier.popular
+                        ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
+                        : 'border border-input text-foreground hover:border-border',
+                    )}
+                  >
+                    {tier.cta}
+                  </button>
+                </article>
+              </Card>
             ))}
           </div>
 

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed } from './docs-lakebed.ts'
@@ -316,9 +317,13 @@ export const DocsSidebar = defineCapsule({
           <nav className="space-y-6" aria-label="Sidebar navigation">
             {groups.map((group, gi) => (
               <div key={group.title}>
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {group.title}
-                </h3>
+                <Eyebrow
+                  asChild
+                  variant="text"
+                  className="mb-3 block tracking-wider text-muted-foreground"
+                >
+                  <h3>{group.title}</h3>
+                </Eyebrow>
                 <ul className="space-y-1">
                   {(group.items ?? []).map((item, ii) => {
                     const active = gi === 0 && ii === 0

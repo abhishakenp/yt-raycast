@@ -10,6 +10,7 @@ import {
   HeroTrustRow,
   HeroTrustItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -191,7 +192,13 @@ export const AiProductHero = defineCapsule({
 
             {/* Preview card */}
             <div className="relative">
-              <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
+              <Card
+                variant="default"
+                rounded="xl"
+                padding="none"
+                shadow="2xl"
+                className="relative overflow-hidden"
+              >
                 <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-3">
                   <div className="flex gap-1.5">
                     <span className="size-3 rounded-full bg-destructive/70" />
@@ -225,7 +232,12 @@ export const AiProductHero = defineCapsule({
                         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </span>
-                    <div className="flex-1 rounded-lg border border-border bg-muted/50 p-4">
+                    <Card
+                      variant="outline"
+                      rounded="lg"
+                      padding="sm"
+                      className="flex-1 bg-muted/50"
+                    >
                       <p className="mb-2 text-sm text-muted-foreground">
                         {previewIntro}
                       </p>
@@ -252,7 +264,7 @@ export const AiProductHero = defineCapsule({
                           </SaasPlanActionButton>
                         ))}
                       </div>
-                    </div>
+                    </Card>
                   </div>
                   <div className="flex gap-3">
                     <span className="size-8 shrink-0 rounded-full bg-muted" />
@@ -263,7 +275,7 @@ export const AiProductHero = defineCapsule({
                     </div>
                   </div>
                 </div>
-              </div>
+              </Card>
               <div
                 aria-hidden="true"
                 className="absolute -bottom-6 -right-6 size-24 rounded-full bg-muted blur-2xl"

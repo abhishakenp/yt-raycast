@@ -10,6 +10,7 @@ import {
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * NewsroomSubscribe — editorial subscription / membership band for a digital
@@ -162,13 +163,17 @@ export const NewsroomSubscribe = defineCapsule({
 
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {plans.map((plan) => (
-              <div
+              <Card
                 key={plan.name}
+                variant="default"
+                rounded="xl"
+                padding="lg"
+                shadow="sm"
                 className={cn(
-                  'relative rounded-xl p-8 shadow-sm',
+                  'relative',
                   plan.featured
-                    ? 'border border-primary bg-primary text-primary-foreground shadow-xl'
-                    : 'border border-border bg-card',
+                    ? 'border-primary bg-primary text-primary-foreground shadow-xl'
+                    : '',
                 )}
               >
                 {plan.featured ? (
@@ -251,7 +256,7 @@ export const NewsroomSubscribe = defineCapsule({
                 >
                   {plan.cta}
                 </PublicationActionButton>
-              </div>
+              </Card>
             ))}
           </div>
 

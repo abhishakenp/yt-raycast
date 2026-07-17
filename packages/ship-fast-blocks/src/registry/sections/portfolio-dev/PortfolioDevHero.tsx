@@ -10,6 +10,7 @@ import {
   HeroSubheading,
   HeroCtas,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 export const PortfolioDevHero = defineCapsule({
   name: 'PortfolioDevHero',
@@ -87,7 +88,13 @@ export const PortfolioDevHero = defineCapsule({
               ))}
             </div>
           </div>
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <Card
+            variant="default"
+            rounded="xl"
+            padding="none"
+            shadow="sm"
+            className="overflow-hidden"
+          >
             <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
               <span className="size-3 rounded-full bg-muted-foreground/40" />
               <span className="size-3 rounded-full bg-muted-foreground/30" />
@@ -116,7 +123,7 @@ export const PortfolioDevHero = defineCapsule({
                 <span className="text-accent">✓</span>
               </p>
             </div>
-          </div>
+          </Card>
         </div>
       </HeroSection>
     )

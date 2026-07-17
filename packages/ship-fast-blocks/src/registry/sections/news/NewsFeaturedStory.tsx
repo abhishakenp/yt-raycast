@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * NewsFeaturedStory — featured big lead story band for a news / editorial
@@ -202,14 +203,15 @@ export const NewsFeaturedStory = defineCapsule({
                       className="flex w-full gap-4 text-left"
                     >
                       <div className="flex-1">
-                        <span
+                        <Eyebrow
+                          variant="text"
                           className={cn(
-                            'text-xs font-semibold uppercase tracking-wider',
+                            'tracking-wider',
                             toneFor(story.category),
                           )}
                         >
                           {story.category}
-                        </span>
+                        </Eyebrow>
                         <h2 className="mt-1 text-base font-semibold leading-snug text-foreground transition-colors group-hover:text-muted-foreground lg:text-lg">
                           {story.title}
                         </h2>

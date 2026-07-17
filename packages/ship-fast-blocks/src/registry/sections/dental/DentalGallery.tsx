@@ -12,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * rooms, and waiting area for dentists, dental offices, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 export const DentalGallery = defineCapsule({
   name: 'DentalGallery',
@@ -44,9 +45,12 @@ export const DentalGallery = defineCapsule({
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
+            <Eyebrow
+              variant="text"
+              className="mb-3 inline-block text-sm tracking-wider text-primary"
+            >
               {galleryEyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {galleryHeading}
             </h2>

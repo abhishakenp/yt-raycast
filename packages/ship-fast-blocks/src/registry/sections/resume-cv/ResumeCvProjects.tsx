@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
@@ -100,50 +101,56 @@ export const ResumeCvProjects = defineCapsule({
 
           <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
             {projects.map((project, i) => (
-              <article
+              <Card
+                asChild
                 key={i}
-                className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
+                variant="default"
+                rounded="2xl"
+                padding="none"
+                className="flex flex-col overflow-hidden"
               >
-                <div className="overflow-hidden bg-muted">
-                  <Image
-                    alt={project.imageAlt}
-                    w={800}
-                    h={500}
-                    loading="lazy"
-                    className="aspect-[16/10] size-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col p-6">
-                  <h3 className="text-lg font-semibold text-card-foreground">
-                    {project.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {project.description}
-                  </p>
-                  {project.tags?.length ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {project.tags.map((tag, j) => (
-                        <span
-                          key={j}
-                          className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                  <div className="mt-6 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => go(project.target ?? 'Projects')}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
-                    >
-                      {project.linkLabel ?? 'Case study'}
-                      <span aria-hidden="true">&rarr;</span>
-                    </button>
+                <article>
+                  <div className="overflow-hidden bg-muted">
+                    <Image
+                      alt={project.imageAlt}
+                      w={800}
+                      h={500}
+                      loading="lazy"
+                      className="aspect-[16/10] size-full object-cover"
+                    />
                   </div>
-                </div>
-              </article>
+                  <div className="flex flex-1 flex-col p-6">
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {project.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {project.description}
+                    </p>
+                    {project.tags?.length ? (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {project.tags.map((tag, j) => (
+                          <span
+                            key={j}
+                            className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div className="mt-6 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => go(project.target ?? 'Projects')}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                      >
+                        {project.linkLabel ?? 'Case study'}
+                        <span aria-hidden="true">&rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </Card>
             ))}
           </div>
         </div>

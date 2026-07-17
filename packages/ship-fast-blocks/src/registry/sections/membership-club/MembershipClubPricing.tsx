@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * MembershipClubPricing — 3-tier membership pricing block for a private membership
@@ -144,13 +145,16 @@ export const MembershipClubPricing = defineCapsule({
           </div>
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3 lg:gap-12">
             {tiers.map((tier) => (
-              <div
+              <Card
                 key={tier.name}
+                variant={tier.featured ? 'outline' : 'default'}
+                rounded="xl"
+                padding="lg"
                 className={cn(
-                  'relative flex flex-col rounded-xl border p-8 lg:p-10',
+                  'relative flex flex-col lg:p-10',
                   tier.featured
                     ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-card',
+                    : '',
                 )}
               >
                 {tier.badge ? (
@@ -251,7 +255,7 @@ export const MembershipClubPricing = defineCapsule({
                 >
                   {tier.cta}
                 </button>
-              </div>
+              </Card>
             ))}
           </div>
           <p className="mt-8 text-center text-sm text-muted-foreground">

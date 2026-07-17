@@ -13,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const JobBoardTestimonials = defineCapsule({
   name: 'JobBoardTestimonials',
   description:
@@ -81,31 +82,37 @@ export const JobBoardTestimonials = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {items.map((t) => (
-              <figure
+              <Card
                 key={t.name}
-                className="rounded-2xl border border-border bg-muted/40 p-8"
+                asChild
+                variant="muted"
+                rounded="2xl"
+                padding="lg"
+                className="bg-muted/40"
               >
-                <blockquote className="mb-6">
-                  <p className="leading-relaxed text-foreground/80">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                </blockquote>
-                <figcaption className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <cite className="font-semibold not-italic text-foreground">
-                      {t.name}
-                    </cite>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </figcaption>
-              </figure>
+                <figure>
+                  <blockquote className="mb-6">
+                    <p className="leading-relaxed text-foreground/80">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                  </blockquote>
+                  <figcaption className="flex items-center gap-4">
+                    <Image
+                      alt={t.avatarAlt}
+                      w={100}
+                      h={100}
+                      loading="lazy"
+                      className="size-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <cite className="font-semibold not-italic text-foreground">
+                        {t.name}
+                      </cite>
+                      <p className="text-sm text-muted-foreground">{t.role}</p>
+                    </div>
+                  </figcaption>
+                </figure>
+              </Card>
             ))}
           </div>
         </Container>

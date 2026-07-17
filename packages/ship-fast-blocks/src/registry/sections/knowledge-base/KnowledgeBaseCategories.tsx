@@ -7,6 +7,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * KnowledgeBaseCategories — "browse by category" grid for a help center. A
@@ -230,26 +231,33 @@ export const KnowledgeBaseCategories = defineCapsule({
           </div>
           <ResponsiveGrid cols="1-2-4" gap="md">
             {items.map((cat, i) => (
-              <button
+              <Card
                 key={cat.title}
-                type="button"
-                onClick={() => go(cat.title)}
-                className="group rounded-xl border border-border bg-card p-6 text-left transition-all hover:border-primary/30 hover:shadow-md"
-                aria-label={`${cat.title} category, ${cat.count}`}
+                asChild
+                variant="default"
+                rounded="xl"
+                padding="md"
+                className="group cursor-pointer text-left transition-all hover:border-primary/30 hover:shadow-md"
               >
-                <div className="mb-4 grid size-12 place-items-center rounded-lg bg-muted text-primary transition-colors group-hover:bg-accent">
-                  {categoryIcons[i % categoryIcons.length]}
-                </div>
-                <h3 className="mb-1 text-lg font-semibold text-card-foreground">
-                  {cat.title}
-                </h3>
-                <p className="mb-3 text-sm text-muted-foreground">
-                  {cat.description}
-                </p>
-                <span className="text-xs font-medium text-muted-foreground">
-                  {cat.count}
-                </span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => go(cat.title)}
+                  aria-label={`${cat.title} category, ${cat.count}`}
+                >
+                  <div className="mb-4 grid size-12 place-items-center rounded-lg bg-muted text-primary transition-colors group-hover:bg-accent">
+                    {categoryIcons[i % categoryIcons.length]}
+                  </div>
+                  <h3 className="mb-1 text-lg font-semibold text-card-foreground">
+                    {cat.title}
+                  </h3>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    {cat.description}
+                  </p>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {cat.count}
+                  </span>
+                </button>
+              </Card>
             ))}
           </ResponsiveGrid>
         </Container>

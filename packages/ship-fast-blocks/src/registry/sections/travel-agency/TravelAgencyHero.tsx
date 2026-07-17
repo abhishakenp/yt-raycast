@@ -11,6 +11,7 @@ import {
   HeroHeading,
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 export const TravelAgencyHero = defineCapsule({
   name: 'TravelAgencyHero',
@@ -72,7 +73,12 @@ export const TravelAgencyHero = defineCapsule({
             </HeroSubheading>
           </div>
 
-          <div className="mt-12 w-full max-w-4xl rounded-3xl border border-border bg-card/95 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md">
+          <Card
+            variant="default"
+            rounded="3xl"
+            padding="none"
+            className="mt-12 w-full max-w-4xl bg-card/95 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md"
+          >
             <div className="grid gap-2 sm:grid-cols-[1.3fr_1fr_1fr_auto]">
               <label className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
                 <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -112,7 +118,7 @@ export const TravelAgencyHero = defineCapsule({
                 {searchLabel}
               </button>
             </div>
-          </div>
+          </Card>
         </HeroContent>
       </HeroSection>
     )

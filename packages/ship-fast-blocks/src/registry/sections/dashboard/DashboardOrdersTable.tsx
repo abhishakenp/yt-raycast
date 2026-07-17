@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 type DashboardDisplayRow = {
@@ -181,11 +182,11 @@ export const DashboardOrdersTable = defineCapsule({
     }
 
     return (
-      <div
-        className={cn(
-          'overflow-hidden rounded-xl border border-border bg-card',
-          props.className,
-        )}
+      <Card
+        variant="default"
+        rounded="xl"
+        padding="none"
+        className={cn('overflow-hidden', props.className)}
       >
         <div className="flex flex-col justify-between gap-3 border-b border-border/60 p-5 sm:flex-row sm:items-center">
           <SectionHeading
@@ -379,7 +380,7 @@ export const DashboardOrdersTable = defineCapsule({
             })}
           </div>
         </div>
-      </div>
+      </Card>
     )
   },
 })

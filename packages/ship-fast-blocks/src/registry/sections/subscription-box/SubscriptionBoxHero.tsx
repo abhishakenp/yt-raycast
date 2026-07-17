@@ -11,6 +11,7 @@ import {
   HeroCtas,
   HeroImage,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -160,7 +161,12 @@ export const SubscriptionBoxHero = defineCapsule({
               className="absolute -inset-4 rounded-[2rem] bg-primary/10 blur-3xl"
               aria-hidden="true"
             />
-            <div className="relative overflow-hidden rounded-[2rem] border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.14)]">
+            <Card
+              variant="default"
+              rounded="none"
+              padding="none"
+              className="relative overflow-hidden rounded-[2rem] shadow-[0_24px_80px_rgba(0,0,0,0.14)]"
+            >
               <HeroImage
                 alt={imageAlt}
                 w={900}
@@ -170,7 +176,7 @@ export const SubscriptionBoxHero = defineCapsule({
               <div className="absolute right-5 top-5 rotate-3 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-lg">
                 Unbox the joy
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </HeroSection>

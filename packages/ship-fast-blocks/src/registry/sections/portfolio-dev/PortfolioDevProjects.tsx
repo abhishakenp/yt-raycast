@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const PortfolioDevProjects = defineCapsule({
@@ -84,53 +85,59 @@ export const PortfolioDevProjects = defineCapsule({
           />
           <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
-              <article
+              <Card
+                asChild
                 key={project.title}
-                className="flex flex-col overflow-hidden rounded-xl border border-border bg-card"
+                variant="default"
+                rounded="xl"
+                padding="none"
+                className="flex flex-col overflow-hidden"
               >
-                <Image
-                  alt={project.imageAlt ?? project.title}
-                  w={640}
-                  h={400}
-                  className="aspect-[16/10] w-full object-cover"
-                />
-                <div className="flex flex-1 flex-col gap-3 p-6">
-                  <h3 className="text-lg font-semibold text-card-foreground">
-                    {project.title}
-                  </h3>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    {project.description}
-                  </p>
-                  {project.tags?.length ? (
-                    <div className="flex flex-wrap gap-2">
-                      {project.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-md border border-border bg-muted px-2.5 py-1 font-mono text-xs text-muted-foreground"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                <article>
+                  <Image
+                    alt={project.imageAlt ?? project.title}
+                    w={640}
+                    h={400}
+                    className="aspect-[16/10] w-full object-cover"
+                  />
+                  <div className="flex flex-1 flex-col gap-3 p-6">
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      {project.description}
+                    </p>
+                    {project.tags?.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {project.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-md border border-border bg-muted px-2.5 py-1 font-mono text-xs text-muted-foreground"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div className="mt-auto flex gap-4 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => go(project.liveTarget ?? 'Work')}
+                        className="text-sm font-semibold text-primary hover:underline"
+                      >
+                        Live
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go(project.codeTarget ?? 'Work')}
+                        className="text-sm font-semibold text-muted-foreground hover:text-foreground"
+                      >
+                        Code
+                      </button>
                     </div>
-                  ) : null}
-                  <div className="mt-auto flex gap-4 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => go(project.liveTarget ?? 'Work')}
-                      className="text-sm font-semibold text-primary hover:underline"
-                    >
-                      Live
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => go(project.codeTarget ?? 'Work')}
-                      className="text-sm font-semibold text-muted-foreground hover:text-foreground"
-                    >
-                      Code
-                    </button>
                   </div>
-                </div>
-              </article>
+                </article>
+              </Card>
             ))}
           </div>
         </div>

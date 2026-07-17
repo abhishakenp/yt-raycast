@@ -8,6 +8,7 @@ import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * NewsroomStoryGrid — a dense editorial "Latest Stories" grid for a digital
@@ -172,19 +173,23 @@ export const NewsroomStoryGrid = defineCapsule({
           <div className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {stories.map((story) => (
               <article key={story.title} className="group flex flex-col">
-                <button
-                  type="button"
-                  onClick={() => go(story.title)}
-                  className="block w-full overflow-hidden rounded-lg border border-border bg-muted"
+                <Card
+                  asChild
+                  variant="muted"
+                  rounded="lg"
+                  padding="none"
+                  className="block w-full overflow-hidden"
                 >
-                  <Image
-                    alt={story.imageAlt}
-                    w={800}
-                    h={450}
-                    loading="lazy"
-                    className="aspect-[16/9] h-auto w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </button>
+                  <button type="button" onClick={() => go(story.title)}>
+                    <Image
+                      alt={story.imageAlt}
+                      w={800}
+                      h={450}
+                      loading="lazy"
+                      className="aspect-[16/9] h-auto w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </button>
+                </Card>
                 <div className="mt-4 flex flex-col">
                   <span className="inline-flex w-fit items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
                     {story.tag}

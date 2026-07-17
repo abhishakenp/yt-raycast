@@ -7,6 +7,7 @@ import { Image } from '#/lib/img.tsx'
  * CleaningServiceReviews — a 6-up customer reviews grid for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 2/3-column grid of review cards; each card shows a 5-star rating row (inline filled-star icons), a quoted review paragraph, and an attribution row with a round lazy-loaded avatar + name + meta line. No links — pure social proof. Use for testimonial / review blocks for residential cleaning companies, maid services, or any local home-service brand wanting homeowner credibility. Renders fully with no props via six baked-in default reviews.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const CleaningServiceReviews = defineCapsule({
   name: 'CleaningServiceReviews',
   description:
@@ -109,9 +110,12 @@ export const CleaningServiceReviews = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((review) => (
-              <div
+              <Card
                 key={review.name}
-                className="rounded-2xl border border-border bg-muted/40 p-8"
+                variant="muted"
+                rounded="2xl"
+                padding="lg"
+                className="bg-muted/40"
               >
                 <div className="mb-4 flex items-center gap-1">
                   {[0, 1, 2, 3, 4].map((n) => (
@@ -137,7 +141,7 @@ export const CleaningServiceReviews = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

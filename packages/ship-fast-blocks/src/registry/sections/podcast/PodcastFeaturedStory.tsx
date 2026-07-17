@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 const PodcastFeaturedStoryProps = z.object({
   eyebrow: z.string().optional().describe('Section eyebrow above the heading'),
@@ -56,7 +57,12 @@ export const PodcastFeaturedStory = defineCapsule({
         <div className="mx-auto max-w-6xl px-6 lg:px-8">
           <SectionHeading eyebrow={eyebrow} title={heading} align="center" />
 
-          <div className="mt-12 grid overflow-hidden rounded-2xl border border-border bg-card text-card-foreground md:grid-cols-2">
+          <Card
+            variant="default"
+            rounded="2xl"
+            padding="none"
+            className="mt-12 grid overflow-hidden md:grid-cols-2"
+          >
             <div className="relative min-h-64 md:min-h-full">
               <Image
                 alt={imageAlt}
@@ -105,7 +111,7 @@ export const PodcastFeaturedStory = defineCapsule({
                 </button>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
       </section>
     )

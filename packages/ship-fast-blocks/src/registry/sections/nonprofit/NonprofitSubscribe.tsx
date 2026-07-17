@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -61,7 +62,12 @@ export const NonprofitSubscribe = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl border border-border bg-muted/40 px-6 py-12 sm:px-12 lg:py-16">
+          <Card
+            variant="outline"
+            rounded="2xl"
+            padding="none"
+            className="bg-muted/40 px-6 py-12 sm:px-12 lg:py-16"
+          >
             <SectionHeading
               eyebrow={eyebrow}
               title={heading}
@@ -98,7 +104,7 @@ export const NonprofitSubscribe = defineCapsule({
                 </button>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
       </section>
     )

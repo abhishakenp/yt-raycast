@@ -13,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * festivals, concert series, or any multi-day live event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const MusicFestivalSchedule = defineCapsule({
   name: 'MusicFestivalSchedule',
   description:
@@ -170,9 +171,12 @@ export const MusicFestivalSchedule = defineCapsule({
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {days.map((day) => (
-              <div
+              <Card
                 key={day.name}
-                className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground"
+                variant="default"
+                rounded="xl"
+                padding="none"
+                className="overflow-hidden"
               >
                 <div className="bg-primary p-6 text-primary-foreground">
                   <p className="mb-1 text-sm opacity-70">{day.label}</p>
@@ -206,7 +210,7 @@ export const MusicFestivalSchedule = defineCapsule({
                     {day.cta}
                   </button>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

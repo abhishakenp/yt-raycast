@@ -15,6 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const ConstructionServices = defineCapsule({
   name: 'ConstructionServices',
   description:
@@ -186,9 +187,12 @@ export const ConstructionServices = defineCapsule({
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            <Eyebrow
+              variant="text"
+              className="text-sm tracking-wider text-muted-foreground"
+            >
               {eyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
             </h2>

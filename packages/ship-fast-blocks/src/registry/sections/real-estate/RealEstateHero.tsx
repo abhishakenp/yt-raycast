@@ -11,6 +11,7 @@ import {
   HeroSubheading,
   HeroCtas,
 } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * RealEstateHero — full-bleed property hero for a premium brokerage. A striking
@@ -108,7 +109,13 @@ export const RealEstateHero = defineCapsule({
             </button>
           </HeroCtas>
 
-          <div className="mt-14 w-full max-w-3xl rounded-2xl border border-border bg-background/95 p-3 shadow-lg backdrop-blur">
+          <Card
+            variant="default"
+            rounded="2xl"
+            padding="none"
+            shadow="lg"
+            className="mt-14 w-full max-w-3xl bg-background/95 p-3 backdrop-blur"
+          >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="flex-1 rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground">
                 {locationPlaceholder}
@@ -127,7 +134,7 @@ export const RealEstateHero = defineCapsule({
                 {searchLabel}
               </button>
             </div>
-          </div>
+          </Card>
         </HeroContent>
       </HeroSection>
     )

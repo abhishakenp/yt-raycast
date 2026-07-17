@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Image } from '#/lib/img.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
@@ -252,9 +253,13 @@ export const DashboardSidebar = defineCapsule({
 
           {supportNav.length > 0 ? (
             <>
-              <div className="px-3 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
-                {supportLabel}
-              </div>
+              <Eyebrow
+                asChild
+                variant="text"
+                className="block px-3 pb-2 pt-4 tracking-wider text-muted-foreground/70"
+              >
+                <div>{supportLabel}</div>
+              </Eyebrow>
               {supportNav.map((label) => (
                 <NavButton key={label} label={label} />
               ))}

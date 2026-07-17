@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * AboutStory — "our story" split band for a modern company / ABOUT page. A
@@ -96,7 +97,12 @@ export const AboutStory = defineCapsule({
             </p>
           </div>
           <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div className="relative overflow-hidden rounded-2xl border border-border bg-muted shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+            <Card
+              variant="muted"
+              rounded="2xl"
+              padding="none"
+              className="relative overflow-hidden shadow-[0_20px_50px_rgba(15,23,42,0.12)]"
+            >
               <Image
                 alt={imageAlt}
                 w={1200}
@@ -113,7 +119,7 @@ export const AboutStory = defineCapsule({
                 </SmallIcon>
                 {badge}
               </span>
-            </div>
+            </Card>
             <div>
               {paragraphs.map((para, i) => (
                 <p

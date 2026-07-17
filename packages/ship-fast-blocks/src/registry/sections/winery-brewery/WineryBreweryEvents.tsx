@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * WineryBreweryEvents — tastings, tours, and seasonal-event list for a winery
@@ -100,42 +101,46 @@ export const WineryBreweryEvents = defineCapsule({
 
           <div className="grid gap-6 md:grid-cols-2">
             {events.map((event) => (
-              <button
+              <Card
+                asChild
                 key={event.name}
-                type="button"
-                onClick={() => go(eventsTarget)}
-                className="group flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 text-left transition-colors hover:border-primary sm:flex-row sm:items-start"
+                variant="default"
+                rounded="2xl"
+                padding="md"
+                className="group flex flex-col gap-4 text-left transition-colors hover:border-primary sm:flex-row sm:items-start"
               >
-                <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-muted px-4 py-3 text-center font-serif text-sm font-medium uppercase tracking-wide text-foreground">
-                  {event.date}
-                </span>
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                    <h3 className="font-serif text-xl font-medium text-foreground transition-colors group-hover:text-primary">
-                      {event.name}
-                    </h3>
-                    {event.price ? (
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {event.price}
+                <button type="button" onClick={() => go(eventsTarget)}>
+                  <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-muted px-4 py-3 text-center font-serif text-sm font-medium uppercase tracking-wide text-foreground">
+                    {event.date}
+                  </span>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                      <h3 className="font-serif text-xl font-medium text-foreground transition-colors group-hover:text-primary">
+                        {event.name}
+                      </h3>
+                      {event.price ? (
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {event.price}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {event.blurb}
+                    </p>
+                    {event.cta ? (
+                      <span className="mt-4 inline-flex items-center text-sm font-medium text-primary">
+                        {event.cta}
+                        <span
+                          aria-hidden="true"
+                          className="ml-1 transition-transform group-hover:translate-x-0.5"
+                        >
+                          →
+                        </span>
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {event.blurb}
-                  </p>
-                  {event.cta ? (
-                    <span className="mt-4 inline-flex items-center text-sm font-medium text-primary">
-                      {event.cta}
-                      <span
-                        aria-hidden="true"
-                        className="ml-1 transition-transform group-hover:translate-x-0.5"
-                      >
-                        →
-                      </span>
-                    </span>
-                  ) : null}
-                </div>
-              </button>
+                </button>
+              </Card>
             ))}
           </div>
         </div>

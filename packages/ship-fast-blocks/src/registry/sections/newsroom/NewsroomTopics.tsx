@@ -6,6 +6,7 @@ import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * NewsroomTopics — an editorial "Browse by section" block for a digital
@@ -127,38 +128,42 @@ export const NewsroomTopics = defineCapsule({
           </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {topics.map((topic) => (
-              <button
+              <Card
+                asChild
                 key={topic.name}
-                type="button"
-                onClick={() => go(topic.name)}
-                className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card text-left transition-all hover:-translate-y-1 hover:shadow-lg"
+                variant="default"
+                rounded="xl"
+                padding="none"
+                className="group flex flex-col overflow-hidden text-left transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="relative overflow-hidden bg-muted">
-                  <Image
-                    alt={topic.imageAlt ?? topic.name}
-                    w={600}
-                    h={360}
-                    loading="lazy"
-                    className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <span className="absolute right-3 top-3 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
-                    {topic.count} stories
-                  </span>
-                </div>
-                <div className="flex flex-1 flex-col p-5">
-                  <h3 className="mb-2 font-serif text-xl font-semibold text-card-foreground transition-colors group-hover:text-accent">
-                    {topic.name}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {topic.blurb}
-                  </p>
-                  {topic.topHeadline ? (
-                    <p className="mt-4 border-t border-border pt-3 text-sm font-medium leading-snug text-foreground">
-                      {topic.topHeadline}
+                <button type="button" onClick={() => go(topic.name)}>
+                  <div className="relative overflow-hidden bg-muted">
+                    <Image
+                      alt={topic.imageAlt ?? topic.name}
+                      w={600}
+                      h={360}
+                      loading="lazy"
+                      className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <span className="absolute right-3 top-3 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+                      {topic.count} stories
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <h3 className="mb-2 font-serif text-xl font-semibold text-card-foreground transition-colors group-hover:text-accent">
+                      {topic.name}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {topic.blurb}
                     </p>
-                  ) : null}
-                </div>
-              </button>
+                    {topic.topHeadline ? (
+                      <p className="mt-4 border-t border-border pt-3 text-sm font-medium leading-snug text-foreground">
+                        {topic.topHeadline}
+                      </p>
+                    ) : null}
+                  </div>
+                </button>
+              </Card>
             ))}
           </div>
         </Container>

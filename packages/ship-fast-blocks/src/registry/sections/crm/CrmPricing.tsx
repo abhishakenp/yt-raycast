@@ -8,6 +8,7 @@ import {
   useSyncSaasPlans,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CrmPricing — centered 3-tier pricing table for a CRM / SaaS landing page on a
@@ -149,13 +150,17 @@ export const CrmPricing = defineCapsule({
           </div>
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {plans.map((plan) => (
-              <div
+              <Card
                 key={plan.name}
+                variant="default"
+                rounded="xl"
+                padding="lg"
+                shadow="sm"
                 className={cn(
-                  'relative rounded-xl p-8 shadow-sm',
+                  'relative',
                   plan.featured
-                    ? 'border border-primary bg-primary text-primary-foreground shadow-xl'
-                    : 'border border-border bg-card',
+                    ? 'border-primary bg-primary text-primary-foreground shadow-xl'
+                    : '',
                 )}
               >
                 {plan.featured ? (
@@ -256,7 +261,7 @@ export const CrmPricing = defineCapsule({
                 >
                   {plan.cta}
                 </SaasPlanActionButton>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

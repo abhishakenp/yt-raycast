@@ -9,6 +9,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * BootcampFaq — accordion FAQ section for a coding bootcamp / career-school
@@ -72,9 +73,12 @@ export const BootcampFaq = defineCapsule({
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center lg:mb-20">
-            <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
+            <Eyebrow
+              variant="text"
+              className="mb-4 inline-block tracking-wider text-primary"
+            >
               {faqEyebrow}
-            </span>
+            </Eyebrow>
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
               {faqHeading}
             </h2>

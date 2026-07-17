@@ -15,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * any multi-day live-music event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const MusicFestivalLineup = defineCapsule({
   name: 'MusicFestivalLineup',
   description:
@@ -194,17 +195,21 @@ export const MusicFestivalLineup = defineCapsule({
             </h3>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
               {featured.map((a) => (
-                <button
+                <Card
+                  asChild
                   key={a.name}
-                  type="button"
-                  onClick={() => go(a.name)}
-                  className="rounded-lg border border-border bg-card p-6 text-center text-card-foreground transition-colors hover:border-primary/40"
+                  variant="default"
+                  rounded="lg"
+                  padding="md"
+                  className="text-center transition-colors hover:border-primary/40"
                 >
-                  <p className="font-semibold">{a.name}</p>
-                  <p className="mt-1 text-sm text-card-foreground/60">
-                    {a.genre}
-                  </p>
-                </button>
+                  <button type="button" onClick={() => go(a.name)}>
+                    <p className="font-semibold">{a.name}</p>
+                    <p className="mt-1 text-sm text-card-foreground/60">
+                      {a.genre}
+                    </p>
+                  </button>
+                </Card>
               ))}
             </div>
           </div>

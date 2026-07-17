@@ -6,6 +6,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * NewsStoryGrid — latest stories grid for a news / editorial outlet. On a subtle
@@ -178,69 +180,80 @@ export const NewsStoryGrid = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             {stories.map((story) => (
-              <article
+              <Card
                 key={story.title}
-                className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+                asChild
+                variant="elevated"
+                rounded="xl"
+                padding="none"
+                className="group flex flex-col overflow-hidden"
               >
-                <button
-                  type="button"
-                  onClick={() => go(story.title)}
-                  className="flex h-full w-full flex-col text-left"
-                >
-                  <div className="aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-muted">
-                    <Image
-                      alt={story.imageAlt}
-                      w={400}
-                      h={300}
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col p-4 sm:p-5">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span
-                        className={cn(
-                          'text-xs font-semibold uppercase tracking-wider',
-                          toneFor(story.category),
-                        )}
-                      >
-                        {story.category}
-                      </span>
-                      <span
-                        aria-hidden="true"
-                        className="text-xs text-muted-foreground"
-                      >
-                        •
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {story.time}
-                      </span>
+                <article>
+                  <button
+                    type="button"
+                    onClick={() => go(story.title)}
+                    className="flex h-full w-full flex-col text-left"
+                  >
+                    <div className="aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-muted">
+                      <Image
+                        alt={story.imageAlt}
+                        w={400}
+                        h={300}
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
                     </div>
-                    <h3 className="text-lg font-semibold leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
-                      {story.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {story.excerpt}
-                    </p>
-                    <div className="mt-auto flex items-center gap-3 pt-4 text-xs text-muted-foreground">
-                      <span>{story.author}</span>
-                      <span aria-hidden="true">•</span>
-                      <span>{story.readTime}</span>
+                    <div className="flex flex-1 flex-col p-4 sm:p-5">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Eyebrow
+                          variant="text"
+                          className={cn(
+                            'tracking-wider',
+                            toneFor(story.category),
+                          )}
+                        >
+                          {story.category}
+                        </Eyebrow>
+                        <span
+                          aria-hidden="true"
+                          className="text-xs text-muted-foreground"
+                        >
+                          •
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {story.time}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-semibold leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
+                        {story.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {story.excerpt}
+                      </p>
+                      <div className="mt-auto flex items-center gap-3 pt-4 text-xs text-muted-foreground">
+                        <span>{story.author}</span>
+                        <span aria-hidden="true">•</span>
+                        <span>{story.readTime}</span>
+                      </div>
                     </div>
-                  </div>
-                </button>
-              </article>
+                  </button>
+                </article>
+              </Card>
             ))}
           </div>
 
           <div className="mt-10 text-center">
-            <button
-              type="button"
-              onClick={() => go(loadMore)}
-              className="rounded-lg border border-border bg-card px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            <Card
+              asChild
+              variant="default"
+              rounded="lg"
+              padding="none"
+              className="cursor-pointer px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >
-              {loadMore}
-            </button>
+              <button type="button" onClick={() => go(loadMore)}>
+                {loadMore}
+              </button>
+            </Card>
           </div>
         </Container>
       </section>

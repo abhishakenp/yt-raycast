@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
@@ -222,33 +223,40 @@ export const LinkInBioFeatures = defineCapsule({
 
         <nav aria-label="Links" className="space-y-4">
           {links.map((link, i) => (
-            <button
+            <Card
               key={link.title}
-              type="button"
-              onClick={() => go(linkTargets[i] ?? link.title)}
-              className="group flex w-full items-center gap-4 rounded-2xl border border-border bg-card px-5 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+              asChild
+              variant="elevated"
+              rounded="2xl"
+              padding="none"
+              className="group flex w-full cursor-pointer items-center gap-4 px-5 py-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
-              <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-                {linkIcons[link.icon]}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold text-foreground">
-                  {link.title}
+              <button
+                type="button"
+                onClick={() => go(linkTargets[i] ?? link.title)}
+              >
+                <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
+                  {linkIcons[link.icon]}
                 </span>
-                <span className="block truncate text-sm text-muted-foreground">
-                  {link.subtitle}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold text-foreground">
+                    {link.title}
+                  </span>
+                  <span className="block truncate text-sm text-muted-foreground">
+                    {link.subtitle}
+                  </span>
                 </span>
-              </span>
-              {link.badge ? (
-                <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
-                  {link.badge}
-                </span>
-              ) : (
-                <span className="shrink-0 text-muted-foreground transition-colors group-hover:text-foreground">
-                  <ExternalArrow />
-                </span>
-              )}
-            </button>
+                {link.badge ? (
+                  <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
+                    {link.badge}
+                  </span>
+                ) : (
+                  <span className="shrink-0 text-muted-foreground transition-colors group-hover:text-foreground">
+                    <ExternalArrow />
+                  </span>
+                )}
+              </button>
+            </Card>
           ))}
         </nav>
       </section>

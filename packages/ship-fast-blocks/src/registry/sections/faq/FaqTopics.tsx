@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -211,31 +212,35 @@ export const FaqTopics = defineCapsule({
 
           <ResponsiveGrid cols="1-2-3" gap="sm">
             {items.map((topic, i) => (
-              <button
+              <Card
                 key={topic.title}
-                type="button"
-                onClick={() => go(topic.title)}
-                className="group rounded-xl border border-border bg-card p-6 text-left transition-all hover:border-border/60 hover:shadow-sm"
+                asChild
+                variant="default"
+                rounded="xl"
+                padding="md"
+                className="group text-left transition-all hover:border-border/60 hover:shadow-sm"
               >
-                <div
-                  className={cn(
-                    'mb-4 grid size-12 place-items-center rounded-lg transition-transform group-hover:scale-105',
-                    topicTints[i % topicTints.length],
-                  )}
-                >
-                  {topicIcons[i % topicIcons.length]}
-                </div>
-                <h3 className="mb-1 font-semibold text-card-foreground">
-                  {topic.title}
-                </h3>
-                <p className="mb-3 text-sm text-muted-foreground">
-                  {topic.description}
-                </p>
-                <span className="inline-flex items-center text-sm font-medium text-foreground/80 group-hover:text-foreground">
-                  {topic.count}
-                  <CaretRight className="ml-1 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </button>
+                <button type="button" onClick={() => go(topic.title)}>
+                  <div
+                    className={cn(
+                      'mb-4 grid size-12 place-items-center rounded-lg transition-transform group-hover:scale-105',
+                      topicTints[i % topicTints.length],
+                    )}
+                  >
+                    {topicIcons[i % topicIcons.length]}
+                  </div>
+                  <h3 className="mb-1 font-semibold text-card-foreground">
+                    {topic.title}
+                  </h3>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    {topic.description}
+                  </p>
+                  <span className="inline-flex items-center text-sm font-medium text-foreground/80 group-hover:text-foreground">
+                    {topic.count}
+                    <CaretRight className="ml-1 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </button>
+              </Card>
             ))}
           </ResponsiveGrid>
         </Container>

@@ -22,6 +22,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 export const MobileAppPricing = defineCapsule({
   name: 'MobileAppPricing',
   description:
@@ -207,13 +208,16 @@ export const MobileAppPricing = defineCapsule({
           </div>
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3 lg:gap-6">
             {tiers.map((tier) => (
-              <div
+              <Card
                 key={tier.name}
+                variant="default"
+                rounded="2xl"
+                padding="lg"
                 className={cn(
-                  'relative rounded-2xl p-8',
+                  'relative',
                   tier.featured
-                    ? 'bg-primary text-primary-foreground md:-mt-4 md:mb-4'
-                    : 'border border-border bg-card text-card-foreground',
+                    ? 'border-0 bg-primary text-primary-foreground md:-mt-4 md:mb-4'
+                    : '',
                 )}
               >
                 {tier.featured && (
@@ -296,7 +300,7 @@ export const MobileAppPricing = defineCapsule({
                 >
                   {tier.cta}
                 </SaasPlanActionButton>
-              </div>
+              </Card>
             ))}
           </div>
         </Container>

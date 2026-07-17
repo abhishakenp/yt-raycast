@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 export const WebinarSchedule = defineCapsule({
   name: 'WebinarSchedule',
@@ -78,26 +79,34 @@ export const WebinarSchedule = defineCapsule({
             subtitle={subheading}
           />
 
-          <ul className="mt-14 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
-            {items.map((item, i) => (
-              <li
-                key={`${item.title}-${i}`}
-                className="flex flex-col gap-2 px-6 py-6 sm:flex-row sm:gap-8"
-              >
-                <p className="shrink-0 text-sm font-semibold tabular-nums text-primary sm:w-24">
-                  {item.time}
-                </p>
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    {item.blurb}
+          <Card
+            asChild
+            variant="default"
+            rounded="2xl"
+            padding="none"
+            className="mt-14 divide-y divide-border overflow-hidden"
+          >
+            <ul>
+              {items.map((item, i) => (
+                <li
+                  key={`${item.title}-${i}`}
+                  className="flex flex-col gap-2 px-6 py-6 sm:flex-row sm:gap-8"
+                >
+                  <p className="shrink-0 text-sm font-semibold tabular-nums text-primary sm:w-24">
+                    {item.time}
                   </p>
-                </div>
-              </li>
-            ))}
-          </ul>
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      {item.blurb}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
         </div>
       </section>
     )

@@ -13,6 +13,7 @@ import {
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * AutoDealershipInventory — featured-inventory card grid for an auto dealership
@@ -144,66 +145,72 @@ export const AutoDealershipInventory = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             {items.map((v) => (
-              <article
+              <Card
+                asChild
                 key={v.name}
-                className="group overflow-hidden rounded-lg border border-border bg-muted transition-colors hover:border-foreground/30"
+                variant="muted"
+                rounded="lg"
+                padding="none"
+                className="group overflow-hidden transition-colors hover:border-foreground/30"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    alt={v.imageAlt}
-                    w={600}
-                    h={450}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <span
-                    className={cn(
-                      'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
-                      v.electric
-                        ? 'bg-chart-2 text-primary-foreground'
-                        : 'bg-primary text-primary-foreground',
-                    )}
-                  >
-                    {v.badge}
-                  </span>
-                </div>
-                <div className="space-y-4 p-6">
-                  <div>
-                    <h3 className="text-lg font-semibold">{v.name}</h3>
-                    <p className="text-sm text-muted-foreground">{v.specs}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {v.features.map((f) => (
-                      <span
-                        key={f}
-                        className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
-                      >
-                        {f}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between border-t border-border pt-4">
-                    <p className="text-2xl font-semibold">{v.price}</p>
-                    <AutoLeadActionButton
-                      lakebed={lakebed}
-                      action="vehicle_interest"
-                      label="View Details"
-                      intentKey={`vehicle:${v.name}`}
-                      source="inventory"
-                      vehicle={v.name}
-                      pendingChildren={
-                        <>
-                          <AutoMutationSpinner />
-                          Sending
-                        </>
-                      }
-                      className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                <article>
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image
+                      alt={v.imageAlt}
+                      w={600}
+                      h={450}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <span
+                      className={cn(
+                        'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
+                        v.electric
+                          ? 'bg-chart-2 text-primary-foreground'
+                          : 'bg-primary text-primary-foreground',
+                      )}
                     >
-                      View Details →
-                    </AutoLeadActionButton>
+                      {v.badge}
+                    </span>
                   </div>
-                </div>
-              </article>
+                  <div className="space-y-4 p-6">
+                    <div>
+                      <h3 className="text-lg font-semibold">{v.name}</h3>
+                      <p className="text-sm text-muted-foreground">{v.specs}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {v.features.map((f) => (
+                        <span
+                          key={f}
+                          className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
+                        >
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between border-t border-border pt-4">
+                      <p className="text-2xl font-semibold">{v.price}</p>
+                      <AutoLeadActionButton
+                        lakebed={lakebed}
+                        action="vehicle_interest"
+                        label="View Details"
+                        intentKey={`vehicle:${v.name}`}
+                        source="inventory"
+                        vehicle={v.name}
+                        pendingChildren={
+                          <>
+                            <AutoMutationSpinner />
+                            Sending
+                          </>
+                        }
+                        className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                      >
+                        View Details →
+                      </AutoLeadActionButton>
+                    </div>
+                  </div>
+                </article>
+              </Card>
             ))}
           </div>
 

@@ -13,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Renders fully with no props via baked-in major-insurer defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 export const HealthcareInsurers = defineCapsule({
   name: 'HealthcareInsurers',
   description:
@@ -39,9 +40,12 @@ export const HealthcareInsurers = defineCapsule({
         aria-label="Insurance partners"
       >
         <Container>
-          <p className="mb-8 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <Eyebrow
+            variant="text"
+            className="mb-8 block text-center text-sm tracking-wider text-muted-foreground"
+          >
             {label}
-          </p>
+          </Eyebrow>
           <div className="grid grid-cols-2 items-center gap-8 opacity-70 md:grid-cols-3 lg:grid-cols-6">
             {items.map((name) => (
               <button

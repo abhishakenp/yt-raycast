@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * MusicArtistMusic — latest-release track grid for a music artist / band page.
@@ -142,9 +143,12 @@ export const MusicArtistMusic = defineCapsule({
 
           <ResponsiveGrid cols="1-md-2-3" gap="lg" className="mb-16">
             {tracks.map((track) => (
-              <div
+              <Card
                 key={track.title}
-                className="group rounded-sm border border-border bg-card p-6 transition-colors hover:border-muted-foreground/40"
+                variant="default"
+                rounded="none"
+                padding="md"
+                className="group rounded-sm transition-colors hover:border-muted-foreground/40"
               >
                 <div className="flex items-start gap-4">
                   <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">
@@ -174,7 +178,7 @@ export const MusicArtistMusic = defineCapsule({
                     </button>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </ResponsiveGrid>
 
