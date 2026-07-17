@@ -10,7 +10,7 @@ const routerMocks = vi.hoisted(() => ({
   })),
 }))
 
-const referralCaptureMock = vi.hoisted(() => vi.fn())
+const acquisitionCaptureMock = vi.hoisted(() => vi.fn())
 const installDynamicImportRecoveryMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', () => ({
@@ -45,8 +45,18 @@ vi.mock('@/app/providers/AppProviders', () => ({
   ),
 }))
 
+vi.mock('@/features/partners/hooks/useAcquisitionCapture', () => ({
+  useAcquisitionCapture: acquisitionCaptureMock,
+}))
+
+vi.mock('@/features/partners/components/MarketingConsentController', () => ({
+  MarketingConsentController: () => (
+    <div data-testid="marketing-consent-controller" />
+  ),
+}))
+
 vi.mock('@/features/referrals/hooks/useReferralCapture', () => ({
-  useReferralCapture: referralCaptureMock,
+  useReferralCapture: vi.fn(),
 }))
 
 vi.mock('@/lib/chunk-load-recovery', () => ({
@@ -67,7 +77,7 @@ describe('__root route behavior', () => {
     cleanup()
     localStorage.clear()
     document.documentElement.className = ''
-    referralCaptureMock.mockClear()
+    acquisitionCaptureMock.mockClear()
     installDynamicImportRecoveryMock.mockClear()
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
@@ -113,12 +123,13 @@ describe('__root route behavior', () => {
     ])
   })
 
-  it('mounts the provider shell, outlet, toaster, scripts, referral capture, and chunk recovery from the root component', async () => {
+  it('mounts providers, acquisition capture, consent, and recovery from the root component', async () => {
     localStorage.setItem('theme', 'dark')
 
     render(React.createElement(rootRouteOptions.component))
 
-    expect(referralCaptureMock).toHaveBeenCalledTimes(1)
+    expect(acquisitionCaptureMock).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('marketing-consent-controller')).toBeTruthy()
     expect(screen.getByTestId('app-providers')).toBeTruthy()
     expect(screen.getByTestId('route-outlet')).toBeTruthy()
     expect(screen.getByText('Toasts').getAttribute('data-rich-colors')).toBe(

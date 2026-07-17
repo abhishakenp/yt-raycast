@@ -19,6 +19,7 @@ export function shouldUseAuthenticatedProviders(pathname: string): boolean {
   return (
     pathname === '/' ||
     pathname === '/pricing' ||
+    pathname === '/partners' ||
     pathname.startsWith('/generate/')
   )
 }
@@ -27,6 +28,7 @@ export function shouldUseConvexProviders(pathname: string): boolean {
   return (
     pathname === '/' ||
     pathname === '/pricing' ||
+    pathname === '/partners' ||
     pathname.startsWith('/generate/') ||
     pathname.startsWith('/gallery') ||
     pathname.startsWith('/mine')

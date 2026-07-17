@@ -108,6 +108,7 @@ describe('top-level route behavior', () => {
   it.each([
     ['./index', '/', 'HomePage'],
     ['./pricing', '/pricing', 'PricingPage'],
+    ['./partners', '/partners', 'PartnersPage'],
     ['./privacy', '/privacy', 'PrivacyPage'],
     ['./terms', '/terms', 'TermsPage'],
     ['./gallery', '/gallery', 'GalleryPage'],

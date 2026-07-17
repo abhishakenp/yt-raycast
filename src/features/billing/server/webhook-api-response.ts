@@ -18,6 +18,28 @@ type BillingStatus =
   | 'authenticated'
   | 'past_due'
   | 'cancelled'
+type RazorpayPartnerMutation = {
+  idempotencyKey: string
+  partnerEvent:
+    | {
+        amount: number
+        currency: string
+        invoiceId: string
+        kind: 'sale'
+        providerPaymentId: string
+        providerSubscriptionId: string
+      }
+    | {
+        amount: number
+        currency: string
+        invoiceId: string
+        kind: 'refund'
+        providerPaymentId: string
+        remainingAmount: number
+        refundId: string
+      }
+  provider: 'razorpay'
+}
 
 const MAX_WEBHOOK_BODY_BYTES = 1_048_576
 
@@ -225,6 +247,111 @@ function razorpayPayloadToMutation(event: unknown) {
     : null
 }
 
+function positiveInteger(value: unknown): number | null {
+  const amount = typeof value === 'number' ? value : Number(value)
+  return Number.isSafeInteger(amount) && amount > 0 ? amount : null
+}
+
+function currencyCode(value: unknown): string | null {
+  const currency = typeof value === 'string' ? value.trim().toLowerCase() : ''
+  return /^[a-z]{3}$/.test(currency) ? currency : null
+}
+
+function razorpayPartnerPayloadToMutation(
+  event: unknown,
+): RazorpayPartnerMutation | null {
+  const eventRecord = asRecord(event)
+  const payload = asRecord(eventRecord?.payload)
+  const eventName =
+    typeof eventRecord?.event === 'string' ? eventRecord.event : ''
+  if (!payload) return null
+
+  if (eventName === 'invoice.paid') {
+    const invoice = asRecord(asRecord(payload.invoice)?.entity)
+    const payment = asRecord(asRecord(payload.payment)?.entity)
+    const invoiceId = String(invoice?.id ?? '')
+    const subscriptionId = String(invoice?.subscription_id ?? '')
+    const invoicePaymentId = String(invoice?.payment_id ?? '')
+    const paymentId = String(payment?.id ?? invoicePaymentId)
+    if (!invoiceId || !subscriptionId || !paymentId) return null
+    if (invoicePaymentId && invoicePaymentId !== paymentId) return null
+    if (payment?.invoice_id && String(payment.invoice_id) !== invoiceId) {
+      return null
+    }
+
+    const invoiceAmount = positiveInteger(invoice?.amount_paid)
+    const invoiceCurrency = currencyCode(invoice?.currency)
+    const paymentAmount = positiveInteger(payment?.amount)
+    const paymentCurrency = currencyCode(payment?.currency)
+    const amount =
+      invoiceAmount !== null && invoiceCurrency !== null
+        ? invoiceAmount
+        : paymentAmount
+    const currency =
+      invoiceAmount !== null && invoiceCurrency !== null
+        ? invoiceCurrency
+        : paymentCurrency
+    if (amount === null || currency === null) return null
+
+    return {
+      idempotencyKey: `invoice.paid:${invoiceId}`,
+      partnerEvent: {
+        amount,
+        currency,
+        invoiceId,
+        kind: 'sale',
+        providerPaymentId: paymentId,
+        providerSubscriptionId: subscriptionId,
+      },
+      provider: 'razorpay',
+    }
+  }
+
+  if (eventName === 'refund.processed') {
+    const payment = asRecord(asRecord(payload.payment)?.entity)
+    const refund = asRecord(asRecord(payload.refund)?.entity)
+    const paymentId = String(payment?.id ?? '')
+    const refundPaymentId = String(refund?.payment_id ?? '')
+    const invoiceId = String(payment?.invoice_id ?? '')
+    const refundId = String(refund?.id ?? '')
+    const amount = positiveInteger(refund?.amount)
+    const paymentAmount = positiveInteger(payment?.amount)
+    const amountRefunded = positiveInteger(payment?.amount_refunded)
+    const currency =
+      currencyCode(refund?.currency) ?? currencyCode(payment?.currency)
+    if (
+      !paymentId ||
+      !refundPaymentId ||
+      paymentId !== refundPaymentId ||
+      !invoiceId ||
+      !refundId ||
+      amount === null ||
+      paymentAmount === null ||
+      amountRefunded === null ||
+      amountRefunded > paymentAmount ||
+      currency === null
+    ) {
+      return null
+    }
+
+    return {
+      idempotencyKey: `refund.processed:${refundId}`,
+      partnerEvent: {
+        amount,
+        currency,
+        invoiceId,
+        kind: 'refund',
+        providerPaymentId: paymentId,
+        remainingAmount: paymentAmount - amountRefunded,
+        refundId,
+      },
+      provider: 'razorpay',
+    }
+  }
+
+  return null
+}
+
 export async function createWebhookApiResponse(
   request: Request,
   provider: Provider,
@@ -266,6 +393,24 @@ export async function createWebhookApiResponse(
   } catch {
     return json({ error: 'Invalid webhook body.' }, { status: 400 })
   }
+  const partnerMutationPayload =
+    provider === 'razorpay' &&
+    env.DUB_PARTNERS_ENABLED?.trim().toLowerCase() === 'true'
+      ? razorpayPartnerPayloadToMutation(event)
+      : null
+  if (partnerMutationPayload !== null) {
+    const client = clientOverride ?? createRuntimeConvexHttpClient()
+    try {
+      await client.mutation(api.partners.applyPartnerBillingWebhook, {
+        secret: mutationSecret,
+        ...partnerMutationPayload,
+      })
+    } catch {
+      return json({ error: 'Webhook processing failed.' }, { status: 502 })
+    }
+    return json({ received: true })
+  }
+
   const mutationPayload =
     provider === 'stripe'
       ? stripePayloadToMutation(event)

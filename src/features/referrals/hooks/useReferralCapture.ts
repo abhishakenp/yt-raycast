@@ -11,6 +11,7 @@ import {
   REFERRAL_QUERY_PARAM,
   storePendingReferral,
 } from '@/features/referrals/lib/referral-client'
+import { getEarliestPendingAcquisition } from '@/features/partners/lib/acquisition-client'
 
 const POLL_INTERVAL_MS = 2000
 const MAX_ATTEMPT_WINDOW_MS = 120000
@@ -57,6 +58,13 @@ export function useReferralCapture(): void {
       }
       if (Date.now() - startedAt > MAX_ATTEMPT_WINDOW_MS) {
         stop()
+        return
+      }
+      const acquisition = getEarliestPendingAcquisition()
+      if (
+        acquisition?.source !== 'native_referral' ||
+        acquisition.sourceKey !== code
+      ) {
         return
       }
       if (!isClerkSignedIn()) return

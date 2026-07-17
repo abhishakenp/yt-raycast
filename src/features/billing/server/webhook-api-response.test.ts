@@ -167,6 +167,186 @@ describe('createWebhookApiResponse', () => {
     })
   })
 
+  it('maps a signed Razorpay subscription invoice to a partner sale', async () => {
+    const body = JSON.stringify({
+      event: 'invoice.paid',
+      payload: {
+        invoice: {
+          entity: {
+            amount_paid: 4900,
+            currency: 'INR',
+            id: 'inv_123',
+            payment_id: 'pay_123',
+            subscription_id: 'sub_123',
+          },
+        },
+        payment: {
+          entity: {
+            amount: 4900,
+            currency: 'INR',
+            id: 'pay_123',
+            invoice_id: 'inv_123',
+          },
+        },
+      },
+    })
+    const signature = await sign('rzp_secret', body)
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/razorpay/webhook', {
+        body,
+        headers: { 'x-razorpay-signature': signature },
+        method: 'POST',
+      }),
+      'razorpay',
+      {
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+        DUB_PARTNERS_ENABLED: 'true',
+        RAZORPAY_WEBHOOK_SECRET: 'rzp_secret',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
+      idempotencyKey: 'invoice.paid:inv_123',
+      partnerEvent: {
+        amount: 4900,
+        currency: 'inr',
+        invoiceId: 'inv_123',
+        kind: 'sale',
+        providerPaymentId: 'pay_123',
+        providerSubscriptionId: 'sub_123',
+      },
+      provider: 'razorpay',
+      secret: 'mutation_secret',
+    })
+  })
+
+  it('maps a signed Razorpay partial refund with its cumulative remaining amount', async () => {
+    const body = JSON.stringify({
+      event: 'refund.processed',
+      payload: {
+        payment: {
+          entity: {
+            amount: 4900,
+            amount_refunded: 1200,
+            currency: 'INR',
+            id: 'pay_123',
+            invoice_id: 'inv_123',
+            refund_status: 'partial',
+          },
+        },
+        refund: {
+          entity: {
+            amount: 1200,
+            currency: 'INR',
+            id: 'rfnd_123',
+            payment_id: 'pay_123',
+          },
+        },
+      },
+    })
+    const signature = await sign('rzp_secret', body)
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/razorpay/webhook', {
+        body,
+        headers: { 'x-razorpay-signature': signature },
+        method: 'POST',
+      }),
+      'razorpay',
+      {
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+        DUB_PARTNERS_ENABLED: 'true',
+        RAZORPAY_WEBHOOK_SECRET: 'rzp_secret',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
+      idempotencyKey: 'refund.processed:rfnd_123',
+      partnerEvent: {
+        amount: 1200,
+        currency: 'inr',
+        invoiceId: 'inv_123',
+        kind: 'refund',
+        providerPaymentId: 'pay_123',
+        remainingAmount: 3700,
+        refundId: 'rfnd_123',
+      },
+      provider: 'razorpay',
+      secret: 'mutation_secret',
+    })
+  })
+
+  it('ignores generic invoices and mismatched Razorpay payment entities', async () => {
+    const payloads = [
+      {
+        event: 'invoice.paid',
+        payload: {
+          invoice: {
+            entity: {
+              amount_paid: 4900,
+              currency: 'INR',
+              id: 'inv_generic',
+              payment_id: 'pay_123',
+            },
+          },
+        },
+      },
+      {
+        event: 'refund.processed',
+        payload: {
+          payment: {
+            entity: {
+              currency: 'INR',
+              id: 'pay_other',
+              invoice_id: 'inv_123',
+            },
+          },
+          refund: {
+            entity: {
+              amount: 4900,
+              currency: 'INR',
+              id: 'rfnd_mismatch',
+              payment_id: 'pay_123',
+            },
+          },
+        },
+      },
+    ]
+
+    for (const payload of payloads) {
+      const body = JSON.stringify(payload)
+      const signature = await sign('rzp_secret', body)
+      const client = { mutation: vi.fn() }
+      const response = await createWebhookApiResponse(
+        new Request('https://ship-fast.test/api/razorpay/webhook', {
+          body,
+          headers: { 'x-razorpay-signature': signature },
+          method: 'POST',
+        }),
+        'razorpay',
+        {
+          BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+          RAZORPAY_WEBHOOK_SECRET: 'rzp_secret',
+        },
+        client,
+      )
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual({
+        ignored: true,
+        received: true,
+      })
+      expect(client.mutation).not.toHaveBeenCalled()
+    }
+  })
+
   it('returns JSON instead of throwing for a signed malformed webhook body', async () => {
     const body = '{not-json'
     const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`

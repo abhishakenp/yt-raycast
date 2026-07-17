@@ -34,6 +34,29 @@ const exportArtifactStatus = v.union(
 )
 
 const provider = v.union(v.literal('stripe'), v.literal('razorpay'))
+const acquisitionSource = v.union(
+  v.literal('native_referral'),
+  v.literal('dub_partner'),
+)
+const dubOutboxStatus = v.union(
+  v.literal('pending'),
+  v.literal('processing'),
+  v.literal('completed'),
+  v.literal('dead_letter'),
+)
+const dubOutboxBase = {
+  userId: v.string(),
+  idempotencyKey: v.string(),
+  status: dubOutboxStatus,
+  attemptCount: v.number(),
+  nextAttemptAt: v.number(),
+  leaseExpiresAt: v.optional(v.number()),
+  lastError: v.optional(v.string()),
+  completedAt: v.optional(v.number()),
+  invoiceId: v.optional(v.string()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+}
 
 const integrationStatus = v.union(
   v.literal('not_configured'),
@@ -507,7 +530,11 @@ export default defineSchema({
   })
     .index('by_userId', ['userId'])
     .index('by_userId_status', ['userId', 'status'])
-    .index('by_providerSubscriptionId', ['providerSubscriptionId']),
+    .index('by_providerSubscriptionId', ['providerSubscriptionId'])
+    .index('by_provider_and_providerSubscriptionId', [
+      'provider',
+      'providerSubscriptionId',
+    ]),
 
   webhookEvents: defineTable({
     provider,
@@ -516,6 +543,52 @@ export default defineSchema({
   }).index('by_provider_idempotencyKey', ['provider', 'idempotencyKey']),
 
   // ── Referral / sponsorship program ──────────────────────────────────────
+  acquisitionAttributions: defineTable({
+    userId: v.string(),
+    source: acquisitionSource,
+    sourceKey: v.string(),
+    claimedAt: v.number(),
+  }).index('by_userId', ['userId']),
+
+  dubEventOutbox: defineTable(
+    v.union(
+      v.object({
+        ...dubOutboxBase,
+        kind: v.literal('lead'),
+        clickId: v.string(),
+        customerName: v.optional(v.string()),
+        customerEmail: v.optional(v.string()),
+        customerAvatar: v.optional(v.string()),
+      }),
+      v.object({
+        ...dubOutboxBase,
+        kind: v.literal('sale'),
+        invoiceId: v.string(),
+        amount: v.number(),
+        currency: v.string(),
+        provider: v.literal('razorpay'),
+        providerSubscriptionId: v.string(),
+        providerPaymentId: v.optional(v.string()),
+        paymentProcessor: v.literal('custom'),
+      }),
+      v.object({
+        ...dubOutboxBase,
+        kind: v.literal('refund'),
+        invoiceId: v.string(),
+        refundId: v.string(),
+        amount: v.number(),
+        remainingAmount: v.number(),
+        currency: v.string(),
+        provider: v.literal('razorpay'),
+        providerPaymentId: v.optional(v.string()),
+      }),
+    ),
+  )
+    .index('by_idempotencyKey', ['idempotencyKey'])
+    .index('by_status_and_nextAttemptAt', ['status', 'nextAttemptAt'])
+    .index('by_kind_and_invoiceId', ['kind', 'invoiceId'])
+    .index('by_userId', ['userId']),
+
   // Each user owns one stable referral code. Sharing /?ref=CODE attributes new
   // signups to the owner.
   referralCodes: defineTable({

@@ -123,6 +123,9 @@ async function fetchStripeCheckout(
     // Stripe rejects subscription_data in payment mode.
     checkoutFields['subscription_data[metadata][userId]'] = userId
     checkoutFields['subscription_data[metadata][tier]'] = tier
+    if (env.DUB_PARTNERS_ENABLED?.trim().toLowerCase() === 'true') {
+      checkoutFields['metadata[dubCustomerExternalId]'] = userId
+    }
   }
   if (mode === 'subscription' && referralCouponId) {
     checkoutFields['discounts[0][coupon]'] = referralCouponId

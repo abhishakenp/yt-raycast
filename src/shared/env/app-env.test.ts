@@ -23,6 +23,14 @@ describe('app env', () => {
       NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: 'pk_public_medusa',
       VITE_MEDUSA_BACKEND_URL: 'https://vite-commerce.ship-fast.io',
       VITE_MEDUSA_PUBLISHABLE_KEY: 'pk_vite_medusa',
+      BILLING_WEBHOOK_MUTATION_SECRET: 'billing-secret',
+      DUB_API_KEY: 'dub-secret',
+      DUB_PARTNER_GROUP_ID: 'grp_ship_fast',
+      DUB_PARTNERS_ENABLED: 'true',
+      VITE_DUB_PARTNERS_ENABLED: 'true',
+      VITE_DUB_PUBLISHABLE_KEY: 'dub-publishable',
+      VITE_DUB_REFERRAL_DOMAIN: 'refer.ship-fast.ai',
+      VITE_DUB_SITE_DOMAIN: 'ship-fast.ai',
     })
 
     expect(env.CONVEX_URL).toBe('https://convex.ship-fast.io')
@@ -41,6 +49,14 @@ describe('app env', () => {
       'https://vite-commerce.ship-fast.io',
     )
     expect(env.VITE_MEDUSA_PUBLISHABLE_KEY).toBe('pk_vite_medusa')
+    expect(env.BILLING_WEBHOOK_MUTATION_SECRET).toBe('billing-secret')
+    expect(env.DUB_API_KEY).toBe('dub-secret')
+    expect(env.DUB_PARTNER_GROUP_ID).toBe('grp_ship_fast')
+    expect(env.DUB_PARTNERS_ENABLED).toBe('true')
+    expect(env.VITE_DUB_PARTNERS_ENABLED).toBe('true')
+    expect(env.VITE_DUB_PUBLISHABLE_KEY).toBe('dub-publishable')
+    expect(env.VITE_DUB_REFERRAL_DOMAIN).toBe('refer.ship-fast.ai')
+    expect(env.VITE_DUB_SITE_DOMAIN).toBe('ship-fast.ai')
   })
 
   it('rejects invalid URLs', () => {

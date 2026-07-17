@@ -3,9 +3,9 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 const rootMocks = vi.hoisted(() => ({
+  acquisitionCapture: vi.fn(),
   claimOnSignIn: vi.fn(),
   installDynamicImportRecovery: vi.fn(() => vi.fn()),
-  useReferralCapture: vi.fn(),
 }))
 
 // Stub the root's heavy dependencies so we can render the root component and
@@ -28,8 +28,18 @@ vi.mock('@/app/providers/clerk-appearance', () => ({
   clerkFrostedGlassAppearance: {},
 }))
 
+vi.mock('@/features/partners/hooks/useAcquisitionCapture', () => ({
+  useAcquisitionCapture: rootMocks.acquisitionCapture,
+}))
+
+vi.mock('@/features/partners/components/MarketingConsentController', () => ({
+  MarketingConsentController: () => (
+    <div data-testid="marketing-consent-controller" />
+  ),
+}))
+
 vi.mock('@/features/referrals/hooks/useReferralCapture', () => ({
-  useReferralCapture: rootMocks.useReferralCapture,
+  useReferralCapture: vi.fn(),
 }))
 
 vi.mock('@/lib/chunk-load-recovery', () => ({
@@ -82,7 +92,7 @@ describe('root document hydration hardening', () => {
   afterEach(() => {
     cleanup()
     rootMocks.claimOnSignIn.mockReset()
-    rootMocks.useReferralCapture.mockReset()
+    rootMocks.acquisitionCapture.mockReset()
     rootMocks.installDynamicImportRecovery.mockClear()
     document.documentElement.className = ''
     window.localStorage.clear()
@@ -176,7 +186,8 @@ describe('root document hydration hardening', () => {
     expect(rootMocks.claimOnSignIn).not.toHaveBeenCalled()
     // Referral attribution capture is app-wide and must mount before route
     // content so ?ref= links are handled from any entry route.
-    expect(rootMocks.useReferralCapture).toHaveBeenCalled()
+    expect(rootMocks.acquisitionCapture).toHaveBeenCalled()
+    expect(screen.getByTestId('marketing-consent-controller')).toBeTruthy()
   })
 
   it('hydrates the document theme from localStorage and installs dynamic import recovery', async () => {

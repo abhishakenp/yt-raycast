@@ -15,6 +15,7 @@ const controller = vi.hoisted(() => ({
   shareBonusClaimed: false,
   submitPrompt: vi.fn(),
 }))
+const partnerConfig = vi.hoisted(() => ({ enabled: false }))
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
@@ -60,6 +61,10 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
     isLoaded: true,
     isSignedIn: true,
   }),
+}))
+
+vi.mock('@/features/partners/lib/partner-config', () => ({
+  isPartnerProgramClientEnabled: () => partnerConfig.enabled,
 }))
 
 vi.mock('@/lib/home/prompt-language-core', () => ({
@@ -117,6 +122,7 @@ describe('HomePage rendered entry surface', () => {
     controller.selectExamplePrompt.mockReset()
     controller.setPrompt.mockReset()
     controller.submitPrompt.mockReset()
+    partnerConfig.enabled = false
 
     globalThis.fetch = vi.fn(async () => ({
       ok: true,
@@ -182,5 +188,17 @@ describe('HomePage rendered entry surface', () => {
         '[data-gallery-session-id="home_static_gallery_session"]',
       ),
     ).not.toBeNull()
+  })
+
+  it('shows partner navigation only while the feature is enabled', () => {
+    partnerConfig.enabled = true
+    const { getAllByRole } = render(createElement(HomePage))
+
+    expect(getAllByRole('link', { name: 'Partners' })).toHaveLength(2)
+    expect(
+      getAllByRole('link', { name: 'Partners' }).every(
+        (link) => link.getAttribute('href') === '/partners',
+      ),
+    ).toBe(true)
   })
 })

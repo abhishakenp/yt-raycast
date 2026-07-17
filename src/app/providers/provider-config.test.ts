@@ -27,13 +27,14 @@ describe('provider config', () => {
     ).toBe('clerk_convex')
   })
 
-  it('enables authenticated providers on homepage, pricing and generate routes', () => {
+  it('enables authenticated providers on homepage, pricing, partners and generate routes', () => {
     // `/` is included so AppProviders mounts ClerkConvexProvider from first
     // paint: the homepage renders Clerk's <Waitlist /> for non-approved users,
     // which must live inside a <ClerkProvider>. The clerkMounted flag prevents
     // SignInModalHost from stacking a second ClerkProvider on `/`.
     expect(shouldUseAuthenticatedProviders('/')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
+    expect(shouldUseAuthenticatedProviders('/partners')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(true)
   })
 
@@ -52,6 +53,7 @@ describe('provider config', () => {
     // shouldUseConvexProviders to get a ClerkProvider mounted.
     expect(shouldUseConvexProviders('/')).toBe(true)
     expect(shouldUseConvexProviders('/pricing')).toBe(true)
+    expect(shouldUseConvexProviders('/partners')).toBe(true)
     expect(shouldUseConvexProviders('/generate/session_123')).toBe(true)
     expect(shouldUseConvexProviders('/generate/missing-session')).toBe(true)
     expect(shouldUseConvexProviders('/gallery')).toBe(true)

@@ -12,6 +12,7 @@ import {
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
 import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
+import { isPartnerProgramClientEnabled } from '@/features/partners/lib/partner-config'
 import { usePromptHomeController } from '@/features/home/hooks/usePromptHomeController'
 import {
   buildLocalPromptSuggestions,
@@ -97,6 +98,7 @@ export { GlassDefs, GlassPillAnchor, GlassPillButton } from './GlassPill'
 
 const TopActions = () => {
   const [authRequested, setAuthRequested] = useState(false)
+  const partnersEnabled = isPartnerProgramClientEnabled()
 
   return (
     <nav
@@ -110,6 +112,14 @@ const TopActions = () => {
         >
           Pricing
         </GlassPillAnchor>
+        {partnersEnabled ? (
+          <GlassPillAnchor
+            className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
+            href="/partners"
+          >
+            Partners
+          </GlassPillAnchor>
+        ) : null}
         {isClerkConfigured ? (
           <Suspense
             fallback={
@@ -203,6 +213,7 @@ export const HomePage = () => {
   const [promptSuggestions, setPromptSuggestions] = useState<string[]>([])
   const [submitCtaShaking, setSubmitCtaShaking] = useState(false)
   const [showSharePanel, setShowSharePanel] = useState(false)
+  const partnersEnabled = isPartnerProgramClientEnabled()
   const promptLanguageDetectTokenRef = useRef(0)
   const promptSuggestAbortRef = useRef<AbortController | null>(null)
   const promptSuggestTokenRef = useRef(0)
@@ -978,6 +989,7 @@ export const HomePage = () => {
         >
           <a href="/">Home</a>
           <a href="/pricing">Pricing</a>
+          {partnersEnabled ? <a href="/partners">Partners</a> : null}
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
         </nav>

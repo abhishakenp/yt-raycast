@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const router = vi.hoisted(() => ({
   preloadRoute: vi.fn(async () => undefined),
 }))
+const partnerConfig = vi.hoisted(() => ({ enabled: false }))
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, ...props }) => (
@@ -24,6 +25,10 @@ vi.mock('@/features/home/components/GlassPill', () => ({
   GlassDefs: () => <svg data-testid="glass-defs" />,
 }))
 
+vi.mock('@/features/partners/lib/partner-config', () => ({
+  isPartnerProgramClientEnabled: () => partnerConfig.enabled,
+}))
+
 vi.mock('@/routes/index', () => ({}))
 vi.mock('@/features/home/components/HomePage', () => ({}))
 vi.mock('@/features/gallery/components/PublicGallery', () => ({}))
@@ -34,6 +39,7 @@ import { MarketingShell } from './-MarketingShell'
 
 describe('MarketingShell', () => {
   beforeEach(() => {
+    partnerConfig.enabled = false
     router.preloadRoute.mockClear()
     vi.stubGlobal(
       'Image',
@@ -108,5 +114,18 @@ describe('MarketingShell', () => {
 
     view.unmount()
     expect(document.body.classList.contains('sf-marketing-page')).toBe(false)
+  })
+
+  it('adds the partner portal to the footer only while enabled', () => {
+    partnerConfig.enabled = true
+    const view = render(
+      <MarketingShell footer>
+        <main>Privacy content</main>
+      </MarketingShell>,
+    )
+
+    expect(
+      view.getByRole('link', { name: 'Partners' }).getAttribute('href'),
+    ).toBe('/partners')
   })
 })

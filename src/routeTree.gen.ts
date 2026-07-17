@@ -15,6 +15,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ReferralsRouteImport } from './routes/referrals'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as MineRouteImport } from './routes/mine'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as GalleryRouteImport } from './routes/gallery'
@@ -45,6 +46,8 @@ import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.
 import { Route as ApiReferralsStatusRouteImport } from './routes/api/referrals.status'
 import { Route as ApiReferralsRecordRouteImport } from './routes/api/referrals.record'
 import { Route as ApiRazorpayWebhookRouteImport } from './routes/api/razorpay.webhook'
+import { Route as ApiPartnersEmbedTokenRouteImport } from './routes/api/partners.embed-token'
+import { Route as ApiPartnersAttributionRouteImport } from './routes/api/partners.attribution'
 import { Route as ApiMedusaStoreConfigRouteImport } from './routes/api/medusa-store.config'
 import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-store.cart'
 import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-admin.config'
@@ -106,6 +109,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartnersRoute = PartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
+  getParentRoute: () => rootRouteImport,
+})
 const MineRoute = MineRouteImport.update({
   id: '/mine',
   path: '/mine',
@@ -257,6 +265,16 @@ const ApiRazorpayWebhookRoute = ApiRazorpayWebhookRouteImport.update({
   path: '/api/razorpay/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPartnersEmbedTokenRoute = ApiPartnersEmbedTokenRouteImport.update({
+  id: '/api/partners/embed-token',
+  path: '/api/partners/embed-token',
+  getParentRoute: () => rootRouteImport,
+})
+const ApiPartnersAttributionRoute = ApiPartnersAttributionRouteImport.update({
+  id: '/api/partners/attribution',
+  path: '/api/partners/attribution',
+  getParentRoute: () => rootRouteImport,
+})
 const ApiMedusaStoreConfigRoute = ApiMedusaStoreConfigRouteImport.update({
   id: '/api/medusa-store/config',
   path: '/api/medusa-store/config',
@@ -437,6 +455,7 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mine': typeof MineRoute
+  '/partners': typeof PartnersRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/referrals': typeof ReferralsRoute
@@ -461,6 +480,8 @@ export interface FileRoutesByFullPath {
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
+  '/api/partners/attribution': typeof ApiPartnersAttributionRoute
+  '/api/partners/embed-token': typeof ApiPartnersEmbedTokenRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
   '/api/referrals/record': typeof ApiReferralsRecordRoute
   '/api/referrals/status': typeof ApiReferralsStatusRoute
@@ -505,6 +526,7 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mine': typeof MineRoute
+  '/partners': typeof PartnersRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/referrals': typeof ReferralsRoute
@@ -529,6 +551,8 @@ export interface FileRoutesByTo {
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
+  '/api/partners/attribution': typeof ApiPartnersAttributionRoute
+  '/api/partners/embed-token': typeof ApiPartnersEmbedTokenRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
   '/api/referrals/record': typeof ApiReferralsRecordRoute
   '/api/referrals/status': typeof ApiReferralsStatusRoute
@@ -574,6 +598,7 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mine': typeof MineRoute
+  '/partners': typeof PartnersRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/referrals': typeof ReferralsRoute
@@ -598,6 +623,8 @@ export interface FileRoutesById {
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
+  '/api/partners/attribution': typeof ApiPartnersAttributionRoute
+  '/api/partners/embed-token': typeof ApiPartnersEmbedTokenRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
   '/api/referrals/record': typeof ApiReferralsRecordRoute
   '/api/referrals/status': typeof ApiReferralsStatusRoute
@@ -644,6 +671,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/llms.txt'
     | '/mine'
+    | '/partners'
     | '/pricing'
     | '/privacy'
     | '/referrals'
@@ -668,6 +696,8 @@ export interface FileRouteTypes {
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
+    | '/api/partners/attribution'
+    | '/api/partners/embed-token'
     | '/api/razorpay/webhook'
     | '/api/referrals/record'
     | '/api/referrals/status'
@@ -712,6 +742,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/llms.txt'
     | '/mine'
+    | '/partners'
     | '/pricing'
     | '/privacy'
     | '/referrals'
@@ -736,6 +767,8 @@ export interface FileRouteTypes {
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
+    | '/api/partners/attribution'
+    | '/api/partners/embed-token'
     | '/api/razorpay/webhook'
     | '/api/referrals/record'
     | '/api/referrals/status'
@@ -780,6 +813,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/llms.txt'
     | '/mine'
+    | '/partners'
     | '/pricing'
     | '/privacy'
     | '/referrals'
@@ -804,6 +838,8 @@ export interface FileRouteTypes {
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
+    | '/api/partners/attribution'
+    | '/api/partners/embed-token'
     | '/api/razorpay/webhook'
     | '/api/referrals/record'
     | '/api/referrals/status'
@@ -849,6 +885,7 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   MineRoute: typeof MineRoute
+  PartnersRoute: typeof PartnersRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ReferralsRoute: typeof ReferralsRoute
@@ -873,6 +910,8 @@ export interface RootRouteChildren {
   ApiMedusaAdminConfigRoute: typeof ApiMedusaAdminConfigRoute
   ApiMedusaStoreCartRoute: typeof ApiMedusaStoreCartRouteWithChildren
   ApiMedusaStoreConfigRoute: typeof ApiMedusaStoreConfigRoute
+  ApiPartnersAttributionRoute: typeof ApiPartnersAttributionRoute
+  ApiPartnersEmbedTokenRoute: typeof ApiPartnersEmbedTokenRoute
   ApiRazorpayWebhookRoute: typeof ApiRazorpayWebhookRoute
   ApiReferralsRecordRoute: typeof ApiReferralsRecordRoute
   ApiReferralsStatusRoute: typeof ApiReferralsStatusRoute
@@ -933,6 +972,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partners': {
+      id: '/partners'
+      path: '/partners'
+      fullPath: '/partners'
+      preLoaderRoute: typeof PartnersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mine': {
@@ -1143,6 +1189,20 @@ declare module '@tanstack/react-router' {
       path: '/api/razorpay/webhook'
       fullPath: '/api/razorpay/webhook'
       preLoaderRoute: typeof ApiRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/partners/embed-token': {
+      id: '/api/partners/embed-token'
+      path: '/api/partners/embed-token'
+      fullPath: '/api/partners/embed-token'
+      preLoaderRoute: typeof ApiPartnersEmbedTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/partners/attribution': {
+      id: '/api/partners/attribution'
+      path: '/api/partners/attribution'
+      fullPath: '/api/partners/attribution'
+      preLoaderRoute: typeof ApiPartnersAttributionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/medusa-store/config': {
@@ -1465,6 +1525,7 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   MineRoute: MineRoute,
+  PartnersRoute: PartnersRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ReferralsRoute: ReferralsRoute,
@@ -1489,6 +1550,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMedusaAdminConfigRoute: ApiMedusaAdminConfigRoute,
   ApiMedusaStoreCartRoute: ApiMedusaStoreCartRouteWithChildren,
   ApiMedusaStoreConfigRoute: ApiMedusaStoreConfigRoute,
+  ApiPartnersAttributionRoute: ApiPartnersAttributionRoute,
+  ApiPartnersEmbedTokenRoute: ApiPartnersEmbedTokenRoute,
   ApiRazorpayWebhookRoute: ApiRazorpayWebhookRoute,
   ApiReferralsRecordRoute: ApiReferralsRecordRoute,
   ApiReferralsStatusRoute: ApiReferralsStatusRoute,

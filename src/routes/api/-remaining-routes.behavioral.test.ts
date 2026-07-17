@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const routeMocks = vi.hoisted(() => ({
+  partnerAttribution: vi.fn(),
+  partnerEmbedToken: vi.fn(),
   referralRecord: vi.fn(),
   referralStatus: vi.fn(),
   previewHistory: vi.fn(),
@@ -25,6 +27,11 @@ vi.mock('@tanstack/react-router', () => ({
 vi.mock('@/features/referrals/server/referral-api-response', () => ({
   createReferralRecordApiResponse: routeMocks.referralRecord,
   createReferralStatusApiResponse: routeMocks.referralStatus,
+}))
+
+vi.mock('@/features/partners/server/partner-api-response', () => ({
+  createPartnerAttributionApiResponse: routeMocks.partnerAttribution,
+  createPartnerEmbedTokenApiResponse: routeMocks.partnerEmbedToken,
 }))
 
 vi.mock('@/features/session/server/session-preview-edit-response', () => ({
@@ -93,6 +100,20 @@ describe('remaining API route behavior', () => {
   })
 
   it.each([
+    [
+      './partners.attribution',
+      '/api/partners/attribution',
+      'POST',
+      routeMocks.partnerAttribution,
+      'claimed',
+    ],
+    [
+      './partners.embed-token',
+      '/api/partners/embed-token',
+      'GET',
+      routeMocks.partnerEmbedToken,
+      'public token',
+    ],
     [
       './referrals.record',
       '/api/referrals/record',

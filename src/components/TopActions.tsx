@@ -4,6 +4,7 @@ import {
   GlassPillAnchor,
   GlassPillButton,
 } from '@/features/home/components/HomePage'
+import { isPartnerProgramClientEnabled } from '@/features/partners/lib/partner-config'
 import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
 
 const LazyHomepageAuthControls = lazy(() =>
@@ -16,12 +17,18 @@ const isClerkConfigured = isClerkClientEnabled()
 
 export const TopActions = () => {
   const [authRequested, setAuthRequested] = useState(false)
+  const partnersEnabled = isPartnerProgramClientEnabled()
   return (
     <nav className="top-actions" aria-label="Primary">
       <div className="top-actions-right">
         <GlassPillAnchor className="pill--top-actions" href="/pricing">
           Pricing
         </GlassPillAnchor>
+        {partnersEnabled ? (
+          <GlassPillAnchor className="pill--top-actions" href="/partners">
+            Partners
+          </GlassPillAnchor>
+        ) : null}
         {isClerkConfigured ? (
           <>
             <Show when="signed-out">
