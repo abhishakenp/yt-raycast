@@ -8,6 +8,13 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  ArticleGrid,
+  ArticleCard,
+  ArticleMedia,
+  ArticleContent,
+  ArticleMeta,
+} from '#/section-kit/ArticleGrid.tsx'
 
 /**
  * NewsStoryGrid — latest stories grid for a news / editorial outlet. On a subtle
@@ -178,15 +185,13 @@ export const NewsStoryGrid = defineCapsule({
             </div>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          <ArticleGrid cols="1-2-3" className="gap-6 lg:gap-8">
             {stories.map((story) => (
-              <Card
+              <ArticleCard
                 key={story.title}
                 asChild
                 variant="elevated"
                 rounded="xl"
-                padding="none"
-                className="group flex flex-col overflow-hidden"
               >
                 <article>
                   <button
@@ -194,7 +199,7 @@ export const NewsStoryGrid = defineCapsule({
                     onClick={() => go(story.title)}
                     className="flex h-full w-full flex-col text-left"
                   >
-                    <div className="aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-muted">
+                    <ArticleMedia aspect="4-3" className="w-full flex-shrink-0">
                       <Image
                         alt={story.imageAlt}
                         w={400}
@@ -202,9 +207,9 @@ export const NewsStoryGrid = defineCapsule({
                         loading="lazy"
                         className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
-                    </div>
-                    <div className="flex flex-1 flex-col p-4 sm:p-5">
-                      <div className="mb-2 flex items-center gap-2">
+                    </ArticleMedia>
+                    <ArticleContent className="p-4 sm:p-5">
+                      <ArticleMeta className="mb-2 gap-2">
                         <Eyebrow
                           variant="text"
                           className={cn(
@@ -223,7 +228,7 @@ export const NewsStoryGrid = defineCapsule({
                         <span className="text-xs text-muted-foreground">
                           {story.time}
                         </span>
-                      </div>
+                      </ArticleMeta>
                       <h3 className="text-lg font-semibold leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
                         {story.title}
                       </h3>
@@ -235,12 +240,12 @@ export const NewsStoryGrid = defineCapsule({
                         <span aria-hidden="true">•</span>
                         <span>{story.readTime}</span>
                       </div>
-                    </div>
+                    </ArticleContent>
                   </button>
                 </article>
-              </Card>
+              </ArticleCard>
             ))}
-          </div>
+          </ArticleGrid>
 
           <div className="mt-10 text-center">
             <Card

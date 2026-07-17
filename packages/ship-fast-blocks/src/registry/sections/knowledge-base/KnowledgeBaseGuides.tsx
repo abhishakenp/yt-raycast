@@ -4,10 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  ArticleGrid,
+  ArticleCard,
+  ArticleMedia,
+  ArticleContent,
+} from '#/section-kit/ArticleGrid.tsx'
 
 /**
  * KnowledgeBaseGuides — featured step-by-step guides gallery for a help center.
@@ -171,18 +176,17 @@ export const KnowledgeBaseGuides = defineCapsule({
               </button>
             </Card>
           </div>
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
+          <ArticleGrid cols="1-md-2-3">
             {items.map((guide) => (
-              <Card
+              <ArticleCard
                 key={guide.title}
                 asChild
                 variant="default"
                 rounded="xl"
-                padding="none"
-                className="group block cursor-pointer overflow-hidden text-left transition-all hover:shadow-lg"
+                className="block cursor-pointer text-left transition-all hover:shadow-lg"
               >
                 <button type="button" onClick={() => go(guide.title)}>
-                  <div className="relative aspect-video overflow-hidden bg-muted">
+                  <ArticleMedia aspect="16-9">
                     <Image
                       alt={guide.imageAlt}
                       w={800}
@@ -200,8 +204,8 @@ export const KnowledgeBaseGuides = defineCapsule({
                         {guide.level}
                       </span>
                     </span>
-                  </div>
-                  <div className="p-6">
+                  </ArticleMedia>
+                  <ArticleContent className="p-6">
                     <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
                       {guide.title}
                     </h3>
@@ -218,11 +222,11 @@ export const KnowledgeBaseGuides = defineCapsule({
                         {guide.steps}
                       </span>
                     </div>
-                  </div>
+                  </ArticleContent>
                 </button>
-              </Card>
+              </ArticleCard>
             ))}
-          </ResponsiveGrid>
+          </ArticleGrid>
         </Container>
       </section>
     )

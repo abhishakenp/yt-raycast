@@ -4,7 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import {
+  ArticleGrid,
+  ArticleCard,
+  ArticleContent,
+} from '#/section-kit/ArticleGrid.tsx'
 
 /**
  * DocsStoryGrid — bespoke, token-styled "popular guides" cards grid for a
@@ -110,47 +114,48 @@ export const DocsStoryGrid = defineCapsule({
           subtitle={subtitle}
           align={align}
         />
-        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ArticleGrid cols="1-2-3" className="mt-12 gap-6">
           {guides.map((guide, i) => (
-            <Card
+            <ArticleCard
               asChild
               key={`${guide.title}-${i}`}
               variant="default"
               rounded="xl"
-              padding="md"
-              className="group flex flex-col text-left transition hover:shadow-md"
+              className="text-left transition hover:shadow-md"
             >
               <button type="button" onClick={() => go(guide.title)}>
-                <span className="text-xs font-medium uppercase tracking-wide text-primary">
-                  {guide.category}
-                </span>
-                <h3 className="mt-3 font-semibold text-foreground">
-                  {guide.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {guide.description}
-                </p>
-                <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-                  <span className="text-xs text-muted-foreground">
-                    {guide.readTime}
+                <ArticleContent className="p-6">
+                  <span className="text-xs font-medium uppercase tracking-wide text-primary">
+                    {guide.category}
                   </span>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="size-4 text-primary transition-transform group-hover:translate-x-1"
-                    aria-hidden="true"
-                  >
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </div>
+                  <h3 className="mt-3 font-semibold text-foreground">
+                    {guide.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {guide.description}
+                  </p>
+                  <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+                    <span className="text-xs text-muted-foreground">
+                      {guide.readTime}
+                    </span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="size-4 text-primary transition-transform group-hover:translate-x-1"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </div>
+                </ArticleContent>
               </button>
-            </Card>
+            </ArticleCard>
           ))}
-        </div>
+        </ArticleGrid>
       </section>
     )
   },
