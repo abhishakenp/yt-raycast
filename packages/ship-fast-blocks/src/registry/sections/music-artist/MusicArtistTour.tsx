@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * MusicArtistTour — long tour-date list for a music artist / band page. A
@@ -139,15 +140,16 @@ export const MusicArtistTour = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-6xl">
-          <div className="mb-16 text-center lg:mb-24">
-            <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            align="center"
+            eyebrowClassName="text-muted-foreground tracking-wide"
+            titleClassName="text-3xl font-light lg:text-5xl"
+            subtitleClassName="text-lg"
+            className="mb-16 gap-6 lg:mb-24"
+          />
 
           <div className="mx-auto max-w-3xl">
             {dates.map((date, i) => (

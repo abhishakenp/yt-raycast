@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * JewelryStoreCraftsmanship — split craftsmanship / values band for a luxury
@@ -140,15 +141,16 @@ export const JewelryStoreCraftsmanship = defineCapsule({
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="grid items-center gap-20 lg:grid-cols-2">
             <div>
-              <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
-                {eyebrow}
-              </p>
-              <h2 className="mb-8 font-serif text-4xl text-foreground lg:text-5xl">
-                {heading}
-              </h2>
-              <p className="mb-12 text-lg leading-relaxed text-muted-foreground">
-                {description}
-              </p>
+              <SectionHeading
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                align="left"
+                eyebrowClassName="text-primary tracking-[0.3em]"
+                titleClassName="mb-4 font-serif text-4xl lg:text-5xl"
+                subtitleClassName="text-lg leading-relaxed"
+                className="mb-12 gap-4"
+              />
               <div className="space-y-8">
                 {items.map((item, i) => {
                   const Icon = icons[i % icons.length]

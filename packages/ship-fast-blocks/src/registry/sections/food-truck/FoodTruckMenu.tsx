@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -205,13 +206,16 @@ export const FoodTruckMenu = defineCapsule({
     return (
       <section className={cn('px-6 pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-6xl">
-          <div className="mb-16 space-y-4 text-center">
-            <span className="text-sm uppercase tracking-widest text-muted-foreground">
-              {menuEyebrow}
-            </span>
-            <h2 className="text-3xl font-bold md:text-4xl">{menuHeading}</h2>
-            <p className="mx-auto max-w-lg text-muted-foreground">{menuDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={menuEyebrow}
+            title={menuHeading}
+            subtitle={menuDesc}
+            align="center"
+            eyebrowClassName="text-muted-foreground tracking-widest"
+            titleClassName="text-3xl font-bold md:text-4xl"
+            subtitleClassName="mx-auto max-w-lg"
+            className="mb-16"
+          />
 
           <div className="grid gap-8 md:grid-cols-2">
             {menuCategories.map((cat) => (

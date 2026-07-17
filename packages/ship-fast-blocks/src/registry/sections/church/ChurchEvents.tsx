@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
  * ChurchEvents — featured-events grid for a church or faith-community site. A
@@ -148,7 +150,7 @@ export const ChurchEvents = defineCapsule({
               <ArrowRight className="ml-1 size-4" />
             </button>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((ev) => (
               <button
                 key={ev.title}
@@ -156,7 +158,7 @@ export const ChurchEvents = defineCapsule({
                 onClick={() => go(ev.title)}
                 className="group block w-full cursor-pointer text-left"
               >
-                <div className="mb-5 aspect-[16/10] overflow-hidden rounded-xl bg-muted">
+                <ImageTile className="mb-5 aspect-[16/10] rounded-xl bg-muted">
                   <Image
                     alt={ev.imageAlt}
                     w={800}
@@ -164,7 +166,7 @@ export const ChurchEvents = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
+                </ImageTile>
                 <div className="mb-3 flex items-center gap-3 text-sm text-muted-foreground">
                   <span className="rounded-full bg-muted px-3 py-1 font-medium text-muted-foreground">
                     {ev.date}
@@ -183,7 +185,7 @@ export const ChurchEvents = defineCapsule({
                 </span>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

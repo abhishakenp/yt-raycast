@@ -7,6 +7,7 @@ import {
   InquiryActionButton,
   InquiryMutationSpinner,
 } from '../contact/inquiry-interactions.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventPlannerPricing — three-tier planning-packages block on a muted band. A
@@ -119,15 +120,16 @@ export const EventPlannerPricing = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {pricingEyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl">
-              {pricingHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{pricingDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={pricingEyebrow}
+            title={pricingHeading}
+            subtitle={pricingDesc}
+            align="center"
+            eyebrowClassName="text-muted-foreground tracking-widest"
+            titleClassName="text-3xl font-light sm:text-4xl lg:text-5xl"
+            subtitleClassName="text-lg"
+            className="mx-auto mb-16 max-w-3xl gap-6 lg:mb-24"
+          />
           <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
             {pricingTiers.map((tier) => (
               <article

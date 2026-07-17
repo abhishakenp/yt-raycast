@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CafeLocation — visit / location block for a cozy cafe / coffee shop page,
@@ -181,15 +182,15 @@ export const CafeLocation = defineCapsule({
         className={cn('bg-card pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
-              {cap}
-            </p>
-            <h2 className="mb-6 font-serif text-3xl font-medium text-foreground sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={cap}
+            title={heading}
+            subtitle={description}
+            align="center"
+            eyebrowClassName="text-primary tracking-wider"
+            titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
+            className="mx-auto mb-16 max-w-2xl gap-6"
+          />
 
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">

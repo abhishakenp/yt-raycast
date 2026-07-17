@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventAgenda — a day-by-day agenda timeline for a conference or event page. A
@@ -158,12 +159,14 @@ export const EventAgenda = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            align="center"
+            titleClassName="tracking-tight"
+            subtitleClassName="text-lg"
+            className="mx-auto mb-12 max-w-2xl gap-6"
+          />
           <div className="grid gap-12 lg:grid-cols-2">
             {days.map((day) => (
               <div key={day.title}>

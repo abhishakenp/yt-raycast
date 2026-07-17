@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * IllustratorAbout — a split about / bio band for an illustrator / visual-artist
@@ -89,12 +90,14 @@ export const IllustratorAbout = defineCapsule({
               </div>
             </div>
             <div>
-              <p className="mb-4 text-sm font-medium uppercase tracking-wider text-chart-1">
-                {eyebrow}
-              </p>
-              <h2 className="mb-6 font-serif text-3xl sm:text-4xl lg:text-5xl">
-                {heading}
-              </h2>
+              <SectionHeading
+                eyebrow={eyebrow}
+                title={heading}
+                align="left"
+                eyebrowClassName="text-chart-1 tracking-wider"
+                titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
+                className="mb-6 gap-4"
+              />
               <div className="space-y-4 leading-relaxed text-muted-foreground">
                 {paragraphs.map((para) => (
                   <p key={para.slice(0, 24)}>{para}</p>

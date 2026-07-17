@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -96,15 +97,16 @@ export const FoodTruckCatering = defineCapsule({
         <div className="mx-auto max-w-6xl">
           <div className="grid items-center gap-12 md:grid-cols-2">
             <div className="space-y-6">
-              <span className="text-sm uppercase tracking-widest text-background/70">
-                {cateringEyebrow}
-              </span>
-              <h2 className="text-3xl font-bold md:text-4xl">
-                {cateringHeading}
-              </h2>
-              <p className="leading-relaxed text-background/80">
-                {cateringDesc}
-              </p>
+              <SectionHeading
+                eyebrow={cateringEyebrow}
+                title={cateringHeading}
+                subtitle={cateringDesc}
+                align="left"
+                eyebrowClassName="text-background/70 tracking-widest"
+                titleClassName="text-3xl font-bold text-background md:text-4xl"
+                subtitleClassName="leading-relaxed text-background/80"
+                className="gap-4"
+              />
 
               <div className="space-y-4 pt-4">
                 {cateringOptions.map((opt) => (

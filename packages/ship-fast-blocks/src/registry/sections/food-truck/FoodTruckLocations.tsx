@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * FoodTruckLocations — a weekly LOCATIONS schedule section for a food-truck site. On a
@@ -124,15 +126,18 @@ export const FoodTruckLocations = defineCapsule({
     return (
       <section className={cn('bg-muted px-6 pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-6xl">
-          <div className="mb-16 space-y-4 text-center">
-            <span className="text-sm uppercase tracking-widest text-muted-foreground">
-              {locEyebrow}
-            </span>
-            <h2 className="text-3xl font-bold md:text-4xl">{locHeading}</h2>
-            <p className="mx-auto max-w-lg text-muted-foreground">{locDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={locEyebrow}
+            title={locHeading}
+            subtitle={locDesc}
+            align="center"
+            eyebrowClassName="text-muted-foreground tracking-widest"
+            titleClassName="text-3xl font-bold md:text-4xl"
+            subtitleClassName="mx-auto max-w-lg"
+            className="mb-16"
+          />
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <ResponsiveGrid gap="md" className="md:grid-cols-3">
             {locDays.map((d, i) => (
               <div
                 key={d.day}
@@ -164,7 +169,7 @@ export const FoodTruckLocations = defineCapsule({
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-xl bg-foreground p-6 text-background md:flex-row">
             <div className="flex items-center gap-4">

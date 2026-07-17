@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * AgencyWork — selected-work / case-study gallery for a creative digital-agency
@@ -117,7 +119,7 @@ export const AgencyWork = defineCapsule({
             </button>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <ResponsiveGrid cols="1-md-2" gap="lg">
             {items.map((proj) => (
               <button
                 key={proj.title}
@@ -125,7 +127,7 @@ export const AgencyWork = defineCapsule({
                 onClick={() => go(proj.title)}
                 className="group block w-full cursor-pointer text-left"
               >
-                <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-2xl bg-muted">
+                <ImageTile treatment="4-3-2xl-muted" className="relative mb-6">
                   <Image
                     alt={proj.title}
                     w={800}
@@ -138,7 +140,7 @@ export const AgencyWork = defineCapsule({
                       View case study
                     </span>
                   </div>
-                </div>
+                </ImageTile>
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="mb-2 text-2xl font-semibold transition-colors group-hover:text-primary">
@@ -152,7 +154,7 @@ export const AgencyWork = defineCapsule({
                 </div>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

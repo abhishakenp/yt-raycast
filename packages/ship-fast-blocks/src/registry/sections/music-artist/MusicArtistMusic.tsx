@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * MusicArtistMusic — latest-release track grid for a music artist / band page.
@@ -127,19 +129,18 @@ export const MusicArtistMusic = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-6xl">
-          <div className="mb-16 text-center lg:mb-24">
-            <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            align="center"
+            eyebrowClassName="text-muted-foreground tracking-wide"
+            titleClassName="text-3xl font-light lg:text-5xl"
+            subtitleClassName="text-lg"
+            className="mb-16 gap-6 lg:mb-24"
+          />
 
-          <div className="mb-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg" className="mb-16">
             {tracks.map((track) => (
               <div
                 key={track.title}
@@ -175,7 +176,7 @@ export const MusicArtistMusic = defineCapsule({
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="text-center">
             <button

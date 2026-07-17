@@ -9,6 +9,7 @@ import {
   useSyncEventTickets,
 } from './event-interactions.tsx'
 import { eventLakebed } from './event-lakebed.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventTickets — a 3-tier ticket pricing block for a conference or event page. A
@@ -162,12 +163,14 @@ export const EventTickets = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            align="center"
+            titleClassName="tracking-tight"
+            subtitleClassName="text-lg"
+            className="mx-auto mb-12 max-w-2xl gap-6"
+          />
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
             {tiers.map((tier) => (
               <div

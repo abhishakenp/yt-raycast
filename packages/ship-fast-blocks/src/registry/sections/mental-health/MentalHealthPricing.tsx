@@ -9,6 +9,7 @@ import {
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * MentalHealthPricing — a transparent 3-tier pricing block for a therapy
@@ -132,17 +133,15 @@ export const MentalHealthPricing = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-primary">
-              {eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-4 leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            align="center"
+            eyebrowClassName="text-primary tracking-wider"
+            subtitleClassName="leading-relaxed"
+            className="mx-auto mb-16 max-w-2xl"
+          />
 
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
             {tiers.map((tier) => (

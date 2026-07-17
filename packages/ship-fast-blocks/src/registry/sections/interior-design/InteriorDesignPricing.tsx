@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -82,15 +83,16 @@ export const InteriorDesignPricing = defineCapsule({
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-16 lg:grid-cols-2 lg:gap-24">
             <div>
-              <p className="mb-4 text-xs font-medium uppercase tracking-widest text-background/60">
-                {eyebrow}
-              </p>
-              <h2 className="mb-8 text-3xl font-light md:text-4xl">
-                {heading}
-              </h2>
-              <p className="mb-12 max-w-lg leading-relaxed text-background/70">
-                {description}
-              </p>
+              <SectionHeading
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                align="left"
+                eyebrowClassName="text-xs text-background/60 tracking-widest"
+                titleClassName="text-3xl font-light text-background md:text-4xl"
+                subtitleClassName="max-w-lg leading-relaxed text-background/70"
+                className="mb-12 gap-4"
+              />
               <button
                 type="button"
                 onClick={() => go(cta)}

@@ -3,6 +3,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   HotelBookingActionButton,
   HotelMutationSpinner,
@@ -113,18 +116,17 @@ export const HotelResortRooms = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mb-16 max-w-2xl">
-            <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-3xl font-light text-foreground lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
-          <div className="grid gap-8 lg:grid-cols-3">
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            align="left"
+            eyebrowClassName="text-muted-foreground tracking-widest"
+            titleClassName="text-3xl font-light lg:text-4xl"
+            subtitleClassName="leading-relaxed"
+            className="mb-16 max-w-2xl gap-4"
+          />
+          <ResponsiveGrid gap="lg" className="lg:grid-cols-3">
             {items.map((room) => (
               <div
                 key={room.name}
@@ -133,7 +135,7 @@ export const HotelResortRooms = defineCapsule({
                   room.featured && 'ring-2 ring-primary',
                 )}
               >
-                <div className="aspect-[4/3] overflow-hidden">
+                <ImageTile treatment="4-3-xl" className="rounded-none">
                   <Image
                     alt={room.imageAlt}
                     w={800}
@@ -141,7 +143,7 @@ export const HotelResortRooms = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                </div>
+                </ImageTile>
                 <div className="p-6">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <div className="flex items-baseline gap-2">
@@ -199,7 +201,7 @@ export const HotelResortRooms = defineCapsule({
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

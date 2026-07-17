@@ -3,6 +3,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
  * CrowdfundingStory — a long-form founder STORY section for a crowdfunding /
@@ -86,34 +89,34 @@ export const CrowdfundingStory = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-16 text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-primary">
-              {storyEyebrow}
-            </span>
-            <h2 className="mb-4 mt-3 text-3xl font-semibold sm:text-4xl">
-              {storyHeading}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              {storyIntro}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={storyEyebrow}
+            title={storyHeading}
+            subtitle={storyIntro}
+            align="center"
+            eyebrowClassName="text-primary tracking-wider"
+            subtitleClassName="text-lg"
+            className="mb-16 gap-6"
+          />
 
-          <div className="mb-12 grid gap-8 md:grid-cols-2">
+          <ResponsiveGrid cols="1-md-2" gap="lg" className="mb-12">
             {storyBlocks.map((block) => (
               <div key={block.imageAlt}>
-                <Image
-                  alt={block.imageAlt}
-                  w={800}
-                  h={600}
-                  loading="lazy"
-                  className="mb-4 w-full rounded-xl object-cover"
-                />
+                <ImageTile treatment="4-3-xl" className="mb-4">
+                  <Image
+                    alt={block.imageAlt}
+                    w={800}
+                    h={600}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </ImageTile>
                 <p className="leading-relaxed text-muted-foreground">
                   {block.body}
                 </p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <blockquote className="my-12 border-l-4 border-primary py-2 pl-6 text-xl italic text-foreground/80">
             &ldquo;{storyQuote}&rdquo;

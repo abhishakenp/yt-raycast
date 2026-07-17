@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventVenue — a venue-spotlight split for a conference or event page. A muted
@@ -119,12 +120,14 @@ export const EventVenue = defineCapsule({
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <h2 className="mb-6 text-3xl font-semibold tracking-tight sm:text-4xl">
-                {heading}
-              </h2>
-              <p className="mb-6 text-lg leading-relaxed text-muted-foreground">
-                {description}
-              </p>
+              <SectionHeading
+                title={heading}
+                subtitle={description}
+                align="left"
+                titleClassName="tracking-tight"
+                subtitleClassName="text-lg leading-relaxed"
+                className="mb-6 gap-6"
+              />
               <div className="mb-8 space-y-4">
                 {details.map((d, i) => (
                   <div key={d.title} className="flex items-start gap-4">

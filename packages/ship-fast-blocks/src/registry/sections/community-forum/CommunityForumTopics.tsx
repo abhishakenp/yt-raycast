@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * CommunityForumTopics — colorful topic / category directory grid for a
@@ -94,13 +96,15 @@ export const CommunityForumTopics = defineCapsule({
     return (
       <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            align="center"
+            titleClassName="text-3xl font-bold sm:text-4xl"
+            subtitleClassName="text-lg"
+            className="mx-auto mb-16 max-w-2xl gap-6"
+          />
+          <ResponsiveGrid cols="1-2-4" gap="sm">
             {items.map((topic, i) => (
               <button
                 key={topic.title}
@@ -122,7 +126,7 @@ export const CommunityForumTopics = defineCapsule({
                 <p className="text-sm text-muted-foreground">{topic.count}</p>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

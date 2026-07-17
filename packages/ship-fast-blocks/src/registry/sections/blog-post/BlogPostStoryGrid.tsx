@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -86,10 +88,13 @@ export const BlogPostStoryGrid = defineCapsule({
     return (
       <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-5xl px-6 lg:px-8">
-          <h2 className="mb-10 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <SectionHeading
+            title={heading}
+            align="left"
+            titleClassName="text-2xl font-semibold tracking-tight"
+            className="mb-10"
+          />
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((post) => (
               <article key={post.title} className="group">
                 <button
@@ -120,7 +125,7 @@ export const BlogPostStoryGrid = defineCapsule({
                 </button>
               </article>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

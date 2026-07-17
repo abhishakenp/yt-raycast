@@ -22,6 +22,7 @@ const imageTileVariants = cva('group relative overflow-hidden', {
       '4-3-2xl-muted': 'aspect-[4/3] rounded-2xl bg-muted',
       '4-3-xl-muted': 'aspect-[4/3] rounded-xl bg-muted',
       '4-5-xl-muted': 'aspect-[4/5] rounded-xl bg-muted',
+      '4-5-lg-muted': 'aspect-[4/5] rounded-lg bg-muted',
       'h-72-2xl': 'h-72 rounded-2xl',
       'h-72-xl': 'h-72 rounded-xl',
       'fixed-lg': 'rounded-lg',

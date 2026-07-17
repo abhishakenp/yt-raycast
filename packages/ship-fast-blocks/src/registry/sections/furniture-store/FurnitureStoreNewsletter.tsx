@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * FurnitureStoreNewsletter — a centered newsletter subscribe CTA on a soft muted
@@ -86,13 +87,15 @@ export const FurnitureStoreNewsletter = defineCapsule({
         aria-labelledby="furniture-newsletter-heading"
       >
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <h2
-            id="furniture-newsletter-heading"
-            className="mb-4 text-3xl font-medium lg:text-4xl"
-          >
-            {heading}
-          </h2>
-          <p className="mb-8 text-lg text-muted-foreground">{description}</p>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            align="center"
+            titleId="furniture-newsletter-heading"
+            titleClassName="text-3xl font-medium lg:text-4xl"
+            subtitleClassName="text-lg"
+            className="mb-8 gap-6"
+          />
 
           <NewsletterSubscribeForm
             lakebed={lakebed}

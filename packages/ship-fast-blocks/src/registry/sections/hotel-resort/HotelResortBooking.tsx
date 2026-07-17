@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useHotelAvailabilitySubmission } from './hotel-resort-interactions.tsx'
 import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
@@ -102,13 +103,16 @@ export const HotelResortBooking = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mb-16 max-w-2xl">
-            <p className="mb-3 text-sm uppercase tracking-widest text-background/60">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-3xl font-light lg:text-4xl">{heading}</h2>
-            <p className="leading-relaxed text-background/70">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            align="left"
+            eyebrowClassName="text-background/60 tracking-widest"
+            titleClassName="text-3xl font-light text-background lg:text-4xl"
+            subtitleClassName="leading-relaxed text-background/70"
+            className="mb-16 max-w-2xl gap-4"
+          />
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="space-y-8">
               {steps.map((step, i) => (

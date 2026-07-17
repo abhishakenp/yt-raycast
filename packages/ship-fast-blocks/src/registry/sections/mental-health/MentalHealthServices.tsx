@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -212,18 +214,16 @@ export const MentalHealthServices = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-primary">
-              {eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-4 leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            align="center"
+            eyebrowClassName="text-primary tracking-wider"
+            subtitleClassName="leading-relaxed"
+            className="mx-auto mb-16 max-w-2xl"
+          />
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((item, i) => (
               <LocalServiceBookingButton
                 key={item.title}
@@ -253,7 +253,7 @@ export const MentalHealthServices = defineCapsule({
                 </ul>
               </LocalServiceBookingButton>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

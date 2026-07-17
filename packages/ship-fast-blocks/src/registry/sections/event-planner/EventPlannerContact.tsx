@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -85,15 +86,16 @@ export const EventPlannerContact = defineCapsule({
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
             <div>
-              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary-foreground/70">
-                {contactEyebrow}
-              </p>
-              <h2 className="mb-6 text-3xl font-light text-primary-foreground sm:text-4xl lg:text-5xl">
-                {contactHeading}
-              </h2>
-              <p className="mb-8 text-lg leading-relaxed text-primary-foreground/80">
-                {contactDesc}
-              </p>
+              <SectionHeading
+                eyebrow={contactEyebrow}
+                title={contactHeading}
+                subtitle={contactDesc}
+                align="left"
+                eyebrowClassName="text-primary-foreground/70 tracking-widest"
+                titleClassName="text-3xl font-light text-primary-foreground sm:text-4xl lg:text-5xl"
+                subtitleClassName="text-lg leading-relaxed text-primary-foreground/80"
+                className="mb-8 gap-4"
+              />
               <div className="space-y-4 text-primary-foreground/80">
                 <button
                   type="button"

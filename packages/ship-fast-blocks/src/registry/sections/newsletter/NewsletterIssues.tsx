@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * NewsletterIssues — recent-issues archive grid for an editorial newsletter.
@@ -130,14 +132,16 @@ export const NewsletterIssues = defineCapsule({
     return (
       <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-12 max-w-2xl text-center md:mb-16">
-            <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            align="center"
+            titleClassName="font-serif text-3xl font-medium sm:text-4xl"
+            subtitleClassName="text-lg"
+            className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
+          />
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          <ResponsiveGrid cols="1-md-2-3" gap="md" className="lg:gap-8">
             {items.map((issue) => (
               <article
                 key={issue.number}
@@ -175,7 +179,7 @@ export const NewsletterIssues = defineCapsule({
                 </div>
               </article>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-12 text-center">
             <button

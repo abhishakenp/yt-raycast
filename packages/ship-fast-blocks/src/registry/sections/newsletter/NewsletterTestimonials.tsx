@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * NewsletterTestimonials — reader testimonials band for an editorial newsletter.
@@ -90,14 +92,16 @@ export const NewsletterTestimonials = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-12 max-w-2xl text-center md:mb-16">
-            <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            align="center"
+            titleClassName="font-serif text-3xl font-medium sm:text-4xl"
+            subtitleClassName="text-lg"
+            className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
+          />
 
-          <div className="grid gap-6 md:grid-cols-3 lg:gap-8">
+          <ResponsiveGrid gap="md" className="md:grid-cols-3 lg:gap-8">
             {items.map((t) => (
               <div
                 key={t.name}
@@ -121,7 +125,7 @@ export const NewsletterTestimonials = defineCapsule({
                 </p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-8 grid gap-4 text-center sm:grid-cols-2 lg:grid-cols-4">
             {mini.map((m) => (

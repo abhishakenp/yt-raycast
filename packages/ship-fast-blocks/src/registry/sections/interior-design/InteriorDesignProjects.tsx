@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * InteriorDesignProjects — filterable project portfolio gallery for an upscale
@@ -116,7 +117,7 @@ export const InteriorDesignProjects = defineCapsule({
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="md" className="md:gap-8">
             {items.map((project) => (
               <button
                 key={project.title}
@@ -142,7 +143,7 @@ export const InteriorDesignProjects = defineCapsule({
                 <p className="text-sm text-muted-foreground">{project.meta}</p>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-16 text-center">
             <button

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * SaasBento — an asymmetric bento grid of product capabilities for a B2B SaaS /
@@ -82,16 +83,14 @@ export const SaasBento = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            {subheading ? (
-              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                {subheading}
-              </p>
-            ) : null}
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={subheading}
+            align="center"
+            titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg leading-relaxed"
+            className="mx-auto max-w-2xl"
+          />
 
           <div className="mt-14 grid auto-rows-[200px] grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-6 lg:gap-6">
             {tiles.map((tile, i) => {

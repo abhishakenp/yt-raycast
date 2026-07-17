@@ -9,6 +9,7 @@ import {
   useSyncSaasPlans,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * AuthPricing — three-tier pricing table for Authly, a developer authentication
@@ -111,14 +112,14 @@ export const AuthPricing = defineCapsule({
     return (
       <section className={cn('bg-background py-20 sm:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-4 text-base leading-7 text-muted-foreground sm:text-lg">
-              {subheading}
-            </p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={subheading}
+            align="center"
+            titleClassName="tracking-tight"
+            subtitleClassName="leading-7"
+            className="mx-auto max-w-3xl"
+          />
 
           <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
             {tiers.map((tier) => (

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
 
@@ -158,7 +159,7 @@ export const BlogStoryGrid = defineCapsule({
           </button>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ResponsiveGrid cols="1-2-3" gap="md">
           {posts.map((post) => (
             <button
               key={post.title}
@@ -199,7 +200,7 @@ export const BlogStoryGrid = defineCapsule({
               </div>
             </button>
           ))}
-        </div>
+        </ResponsiveGrid>
       </section>
     )
   },

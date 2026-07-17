@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * IllustratorWork — a selected-work project gallery for an illustrator /
@@ -94,7 +96,7 @@ export const IllustratorWork = defineCapsule({
               <ArrowRight className="size-4" />
             </button>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-2-3" gap="sm" className="sm:gap-6">
             {items.map((proj) => (
               <button
                 key={proj.title}
@@ -102,7 +104,7 @@ export const IllustratorWork = defineCapsule({
                 onClick={() => go(proj.title)}
                 className="group block w-full text-left"
               >
-                <div className="mb-4 aspect-[4/5] overflow-hidden rounded-lg bg-muted">
+                <ImageTile treatment="4-5-lg-muted" className="mb-4">
                   <Image
                     alt={proj.title}
                     w={600}
@@ -110,12 +112,12 @@ export const IllustratorWork = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
+                </ImageTile>
                 <h3 className="mb-1 font-serif text-lg">{proj.title}</h3>
                 <p className="text-sm text-muted-foreground">{proj.meta}</p>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

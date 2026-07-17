@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   RestaurantMutationSpinner,
   useRestaurantExperience,
@@ -163,10 +164,13 @@ export const RestaurantMenu = defineCapsule({
       <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-6 font-serif text-3xl font-medium text-foreground sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">{description}</p>
+            <SectionHeading
+              title={heading}
+              subtitle={description}
+              align="center"
+              titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
+              className="gap-6"
+            />
             {experience?.selectedMenuItem ? (
               <p
                 className="mx-auto mt-4 max-w-xl rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
