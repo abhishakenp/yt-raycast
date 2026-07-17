@@ -4,6 +4,16 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  ContactForm,
+  ContactFormField,
+  ContactFormLabel,
+  ContactFormInput,
+  ContactFormSelect,
+  ContactFormTextarea,
+  ContactFormSubmit,
+  ContactFormFooter,
+} from '#/section-kit/ContactForm.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -87,19 +97,14 @@ export const AgencyContactCta = defineCapsule({
           aria-hidden="true"
           className="absolute left-1/2 top-0 h-[400px] w-[800px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
         />
-        <form
+        <ContactForm
           className="relative z-10 mx-auto max-w-xl space-y-5"
           onSubmit={inquiry.submitForm}
         >
           <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="agency-name"
-                className="mb-2 block text-sm font-medium text-muted-foreground"
-              >
-                Name
-              </label>
-              <input
+            <ContactFormField className="mb-0">
+              <ContactFormLabel htmlFor="agency-name">Name</ContactFormLabel>
+              <ContactFormInput
                 id="agency-name"
                 name="name"
                 type="text"
@@ -107,15 +112,10 @@ export const AgencyContactCta = defineCapsule({
                 placeholder="Jane Doe"
                 className={inputCls}
               />
-            </div>
-            <div>
-              <label
-                htmlFor="agency-email"
-                className="mb-2 block text-sm font-medium text-muted-foreground"
-              >
-                Email
-              </label>
-              <input
+            </ContactFormField>
+            <ContactFormField className="mb-0">
+              <ContactFormLabel htmlFor="agency-email">Email</ContactFormLabel>
+              <ContactFormInput
                 id="agency-email"
                 name="email"
                 type="email"
@@ -123,16 +123,13 @@ export const AgencyContactCta = defineCapsule({
                 placeholder="jane@company.com"
                 className={inputCls}
               />
-            </div>
+            </ContactFormField>
           </div>
-          <div>
-            <label
-              htmlFor="agency-type"
-              className="mb-2 block text-sm font-medium text-muted-foreground"
-            >
+          <ContactFormField className="mb-0">
+            <ContactFormLabel htmlFor="agency-type">
               Project type
-            </label>
-            <select
+            </ContactFormLabel>
+            <ContactFormSelect
               id="agency-type"
               name="projectType"
               className={cn(inputCls, 'appearance-none')}
@@ -142,16 +139,13 @@ export const AgencyContactCta = defineCapsule({
                   {opt}
                 </option>
               ))}
-            </select>
-          </div>
-          <div>
-            <label
-              htmlFor="agency-message"
-              className="mb-2 block text-sm font-medium text-muted-foreground"
-            >
+            </ContactFormSelect>
+          </ContactFormField>
+          <ContactFormField className="mb-0">
+            <ContactFormLabel htmlFor="agency-message">
               Message
-            </label>
-            <textarea
+            </ContactFormLabel>
+            <ContactFormTextarea
               id="agency-message"
               name="message"
               rows={4}
@@ -159,8 +153,8 @@ export const AgencyContactCta = defineCapsule({
               placeholder="Tell us about your project, goals, and timeline."
               className={cn(inputCls, 'resize-none')}
             />
-          </div>
-          <button
+          </ContactFormField>
+          <ContactFormSubmit
             type="submit"
             aria-busy={inquiry.isPending}
             disabled={inquiry.isPending}
@@ -181,11 +175,14 @@ export const AgencyContactCta = defineCapsule({
               <line x1="22" y1="2" x2="11" y2="13" />
               <polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
-          </button>
-          <p className="text-sm text-muted-foreground" aria-live="polite">
+          </ContactFormSubmit>
+          <ContactFormFooter
+            className="text-sm text-muted-foreground"
+            aria-live="polite"
+          >
             {inquiry.statusText}
-          </p>
-        </form>
+          </ContactFormFooter>
+        </ContactForm>
 
         <div className="relative z-10 mt-16 flex flex-col items-center justify-between gap-6 border-t border-border pt-10 sm:flex-row">
           <div className="text-center sm:text-left">
