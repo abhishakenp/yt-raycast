@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * IllustratorServices — a centered-heading "what I create" services grid for an
@@ -54,24 +55,6 @@ export const IllustratorServices = defineCapsule({
           },
         ]
 
-    const accentText = [
-      'text-chart-1',
-      'text-chart-2',
-      'text-chart-3',
-      'text-chart-4',
-    ]
-    const accentBgSoft = [
-      'bg-chart-1/10',
-      'bg-chart-2/10',
-      'bg-chart-3/10',
-      'bg-chart-4/10',
-    ]
-    const accentBorderHover = [
-      'hover:border-chart-1/50',
-      'hover:border-chart-2/50',
-      'hover:border-chart-3/50',
-    ]
-
     const icons: ReactNode[] = [
       // book
       <svg
@@ -121,48 +104,19 @@ export const IllustratorServices = defineCapsule({
     ]
 
     return (
-      <section
+      <FeatureGrid
+        heading={heading}
+        subheading={description}
+        features={items.map((item, i) => ({
+          ...item,
+          icon: icons[i % icons.length],
+        }))}
+        columns={3}
         className={cn(
           'px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
           props.className,
         )}
-      >
-        <div className="mx-auto max-w-7xl">
-          <div className="mx-auto mb-16 max-w-3xl text-center sm:mb-20">
-            <h2 className="mb-6 font-serif text-3xl sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
-            {items.map((item, i) => (
-              <article
-                key={item.title}
-                className={cn(
-                  'group rounded-xl border border-border/60 bg-card p-8 transition-colors',
-                  accentBorderHover[i % accentBorderHover.length],
-                )}
-              >
-                <div
-                  className={cn(
-                    'mb-6 flex size-12 items-center justify-center rounded-lg transition-transform group-hover:scale-110',
-                    accentBgSoft[i % accentBgSoft.length],
-                    accentText[i % accentText.length],
-                  )}
-                >
-                  {icons[i % icons.length]}
-                </div>
-                <h3 className="mb-3 font-serif text-xl text-card-foreground">
-                  {item.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      />
     )
   },
 })

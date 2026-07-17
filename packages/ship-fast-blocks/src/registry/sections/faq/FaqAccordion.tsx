@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  FaqAccordion as KitFaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 /**
  * FaqAccordion — an expandable frequently-asked-questions accordion for a
@@ -110,22 +117,6 @@ export const FaqAccordion = defineCapsule({
           },
         ]
 
-    const CaretDown = () => (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    )
-
     return (
       <section
         className={cn(
@@ -151,29 +142,25 @@ export const FaqAccordion = defineCapsule({
             </p>
           </div>
 
-          <div className="space-y-4">
+          <KitFaqAccordion>
             {items.map((item, i) => (
-              <details
-                key={item.question}
-                open={i === 0}
-                className="group rounded-xl border border-border bg-muted/40 transition-all open:bg-card open:shadow-sm"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-5">
+              <FaqItem key={item.question} variant="open-raised" open={i === 0}>
+                <FaqQuestion className="p-5">
                   <h3 className="pr-4 font-medium text-foreground">
                     {item.question}
                   </h3>
-                  <span className="flex size-8 flex-shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-transform group-open:rotate-180">
-                    <CaretDown />
-                  </span>
-                </summary>
-                <div className="space-y-3 px-5 pb-5 text-sm leading-relaxed text-muted-foreground">
-                  {item.answers.map((a, j) => (
-                    <p key={j}>{a}</p>
-                  ))}
-                </div>
-              </details>
+                  <FaqQuestionIcon variant="chevron-badge" />
+                </FaqQuestion>
+                <FaqAnswer asChild className="space-y-3 px-5 pb-5 text-sm">
+                  <div>
+                    {item.answers.map((a, j) => (
+                      <p key={j}>{a}</p>
+                    ))}
+                  </div>
+                </FaqAnswer>
+              </FaqItem>
             ))}
-          </div>
+          </KitFaqAccordion>
         </div>
       </section>
     )

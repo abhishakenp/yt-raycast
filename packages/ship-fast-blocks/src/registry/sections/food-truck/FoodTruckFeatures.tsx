@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * FoodTruckFeatures — a compact "why us" feature strip for a food-truck site. A
@@ -42,40 +43,32 @@ export const FoodTruckFeatures = defineCapsule({
           },
         ]
 
+    const sparkleIcon = (
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+        />
+      </svg>
+    )
+
     return (
-      <section
+      <FeatureGrid
+        features={features.map((f) => ({ ...f, icon: sparkleIcon }))}
+        columns={3}
         className={cn(
           'border-t border-border px-6 pt-28 pb-16',
           props.className,
         )}
-      >
-        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-          {features.map((f) => (
-            <div key={f.title} className="space-y-3">
-              <div className="grid size-10 place-items-center rounded-lg bg-muted text-foreground">
-                <svg
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {f.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      />
     )
   },
 })

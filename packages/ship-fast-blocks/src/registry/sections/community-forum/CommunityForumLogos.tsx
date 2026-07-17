@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * CommunityForumLogos — logo trust strip for a community-platform / discussion-forum
@@ -30,33 +31,18 @@ export const CommunityForumLogos = defineCapsule({
       : ['Vercel', 'Notion', 'Linear', 'Figma', 'Stripe', 'Slack']
 
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="text-bold"
+        onClickLogo={(logo) => go(logo)}
+        leadClassName="normal-case tracking-normal"
+        logoClassName="text-foreground/80"
         className={cn(
-          'border-y border-border bg-muted/50 py-12',
+          'border-y border-border bg-muted/50 py-12 opacity-60',
           props.className,
         )}
-      >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <p className="mb-8 text-center text-sm font-medium text-muted-foreground">
-            {heading}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-60">
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex items-center gap-2 font-semibold text-foreground/80 transition-opacity hover:opacity-100"
-              >
-                <span className="grid size-6 place-items-center rounded-sm bg-foreground/10 text-xs font-bold text-foreground">
-                  {logo.charAt(0)}
-                </span>
-                {logo}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+      />
     )
   },
 })

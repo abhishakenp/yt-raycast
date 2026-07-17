@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * EventLogos — a trusted-by sponsor / company logo strip for a conference or event
@@ -30,27 +31,18 @@ export const EventLogos = defineCapsule({
       : ['Vercel', 'Notion', 'Linear', 'Figma', 'Stripe', 'Shopify']
 
     return (
-      <section
-        className={cn('border-y border-border bg-muted', props.className)}
-      >
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <p className="mb-8 text-center text-sm text-muted-foreground">
-            {label}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 opacity-60 lg:gap-12">
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="text-lg font-semibold text-foreground transition-opacity hover:opacity-80"
-              >
-                {logo}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LogoStrip
+        lead={label}
+        logos={items}
+        layout="flex"
+        onClickLogo={(logo) => go(logo)}
+        leadClassName="text-sm normal-case tracking-normal"
+        logoClassName="text-foreground transition-opacity hover:opacity-80"
+        className={cn(
+          'border-y border-border bg-muted py-12 opacity-60',
+          props.className,
+        )}
+      />
     )
   },
 })

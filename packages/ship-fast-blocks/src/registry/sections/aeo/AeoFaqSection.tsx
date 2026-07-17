@@ -2,6 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FaqAccordion,
+  FaqAnswer,
+  FaqItem,
+  FaqQuestion,
+  FaqQuestionIcon,
+} from '#/section-kit/FaqAccordion.tsx'
 
 export const AeoFaqSection = defineCapsule({
   name: 'AeoFaqSection',
@@ -59,27 +66,25 @@ export const AeoFaqSection = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{intro}</p>
           </div>
-          <div className="space-y-4">
+          <FaqAccordion>
             {items.map((item, index) => (
-              <details
+              <FaqItem
                 key={item.question}
                 open={index === 0}
-                className="group rounded-xl border border-border bg-muted/40 open:bg-card open:shadow-sm"
+                variant="open-raised"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between p-5">
-                  <h3 className="pr-4 font-medium text-foreground">
+                <FaqQuestion className="p-5">
+                  <span className="pr-4 font-medium text-foreground">
                     {item.question}
-                  </h3>
-                  <span className="text-muted-foreground" aria-hidden="true">
-                    +
                   </span>
-                </summary>
+                  <FaqQuestionIcon variant="plus" />
+                </FaqQuestion>
                 <div className="px-5 pb-5 text-sm leading-relaxed text-muted-foreground">
-                  <p>{item.answer}</p>
+                  <FaqAnswer>{item.answer}</FaqAnswer>
                 </div>
-              </details>
+              </FaqItem>
             ))}
-          </div>
+          </FaqAccordion>
         </div>
       </section>
     )

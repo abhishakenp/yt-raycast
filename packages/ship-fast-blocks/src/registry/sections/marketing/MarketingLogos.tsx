@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * MarketingLogos — slim grayscale "trusted by" logo strip for a SaaS /
@@ -27,23 +28,15 @@ export const MarketingLogos = defineCapsule({
       : ['Acme Corp', 'Globex', 'Initech', 'Massive Dynamic', 'Stark Ind']
 
     return (
-      <section className={cn('border-y border-border py-10', props.className)}>
-        <div className="mx-auto max-w-6xl px-6">
-          <p className="mb-6 text-center text-sm font-medium uppercase tracking-[0.08em] text-muted-foreground">
-            {label}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
-            {names.map((name) => (
-              <span
-                key={name}
-                className="text-lg font-bold tracking-tight text-muted-foreground/60 transition-colors hover:text-muted-foreground"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LogoStrip
+        lead={label}
+        logos={names}
+        layout="flex"
+        logoStyle="text"
+        leadClassName="text-sm font-medium uppercase tracking-[0.08em]"
+        logoClassName="font-bold text-muted-foreground/60 hover:text-muted-foreground"
+        className={cn('border-y border-border py-10', props.className)}
+      />
     )
   },
 })

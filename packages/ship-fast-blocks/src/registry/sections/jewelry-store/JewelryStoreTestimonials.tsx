@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * JewelryStoreTestimonials — client testimonials grid for a luxury jewelry
@@ -65,63 +65,24 @@ export const JewelryStoreTestimonials = defineCapsule({
           },
         ]
 
-    const StarRating = () => (
-      <div className="mb-6 flex gap-1 text-primary" aria-hidden="true">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <svg
-            key={i}
-            className="h-4 w-4"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-          </svg>
-        ))}
-      </div>
-    )
-
     return (
-      <section
+      <TestimonialGrid
+        eyebrow={eyebrow}
+        heading={heading}
+        items={items.map((t) => ({
+          quote: t.quote,
+          name: t.name,
+          role: t.location,
+          rating: 5,
+          avatarAlt: t.avatarAlt,
+        }))}
+        columns={3}
+        cardClassName="bg-background p-8 lg:p-10"
         className={cn(
           'bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
-      >
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="mx-auto mb-20 max-w-2xl text-center">
-            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
-              {eyebrow}
-            </p>
-            <h2 className="font-serif text-4xl text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-          </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {items.map((t) => (
-              <blockquote key={t.name} className="bg-background p-8 lg:p-10">
-                <StarRating />
-                <p className="mb-8 text-lg leading-relaxed text-foreground/90">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-foreground">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t.location}
-                    </p>
-                  </div>
-                </div>
-              </blockquote>
-            ))}
-          </div>
-        </div>
-      </section>
+      />
     )
   },
 })

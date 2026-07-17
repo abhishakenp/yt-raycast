@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * CafeValues — 4-up values / highlights grid for a cozy cafe / coffee shop
@@ -111,23 +112,14 @@ export const CafeValues = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-card pt-28 pb-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {items.map((v, i) => (
-              <div key={v.title} className="space-y-4 text-center">
-                <div className="mx-auto grid size-16 place-items-center rounded-full bg-muted text-primary">
-                  {valueIcons[i % valueIcons.length]}
-                </div>
-                <h3 className="font-serif text-lg font-medium text-foreground">
-                  {v.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{v.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeatureGrid
+        features={items.map((v, i) => ({
+          ...v,
+          icon: valueIcons[i % valueIcons.length],
+        }))}
+        columns={4}
+        className={cn('bg-card pt-28 pb-20', props.className)}
+      />
     )
   },
 })

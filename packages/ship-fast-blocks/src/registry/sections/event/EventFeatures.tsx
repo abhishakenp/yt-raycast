@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * EventFeatures — an "everything you get" feature grid for a conference or event
@@ -172,29 +173,16 @@ export const EventFeatures = defineCapsule({
     ]
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12">
-            {items.map((item, i) => (
-              <div key={item.title} className="group">
-                <div className="mb-5 grid size-12 place-items-center rounded-xl bg-muted text-foreground transition-colors group-hover:bg-accent">
-                  {featureIcons[i % featureIcons.length]}
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeatureGrid
+        heading={heading}
+        subheading={description}
+        features={items.map((item, i) => ({
+          ...item,
+          icon: featureIcons[i % featureIcons.length],
+        }))}
+        columns={3}
+        className={cn('py-20 lg:py-28', props.className)}
+      />
     )
   },
 })

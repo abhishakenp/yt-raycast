@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * ComingSoonLogos — "trusted by" logo strip for a "launching soon" / waitlist
@@ -32,31 +33,19 @@ export const ComingSoonLogos = defineCapsule({
       : ['Notion', 'Linear', 'Vercel', 'Figma', 'Stripe', 'Shopify']
 
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={names}
+        layout="flex"
+        onClickLogo={(name) => go(name)}
+        leadClassName="text-xs font-medium uppercase tracking-widest"
+        logoClassName="text-lg font-semibold tracking-tight sm:text-xl"
+        aria-label="Trusted by innovative teams"
         className={cn(
-          'w-full border-t border-border px-4 py-16 sm:px-6 lg:px-8 xl:px-12',
+          'w-full border-t border-border px-4 py-16 opacity-60 sm:px-6 lg:px-8 xl:px-12',
           props.className,
         )}
-        aria-label="Trusted by innovative teams"
-      >
-        <div className="mx-auto max-w-6xl">
-          <p className="mb-10 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            {heading}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8 opacity-60 sm:gap-x-16 lg:gap-x-20">
-            {names.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => go(name)}
-                className="text-lg font-semibold tracking-tight text-muted-foreground sm:text-xl"
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+      />
     )
   },
 })

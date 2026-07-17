@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * InteriorDesignServices — left-aligned three-up design-services grid for an
@@ -97,38 +98,19 @@ export const InteriorDesignServices = defineCapsule({
     ]
 
     return (
-      <section
+      <FeatureGrid
+        heading={heading}
+        subheading={description}
+        features={items.map((item, i) => ({
+          ...item,
+          icon: icons[i % icons.length],
+        }))}
+        columns={3}
         className={cn(
           'px-4 pt-28 pb-20 sm:px-6 md:pt-32 md:pb-28 lg:px-8',
           props.className,
         )}
-      >
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-16 max-w-2xl md:mb-24">
-            <h2 className="mb-6 text-3xl font-light text-foreground md:text-4xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
-          <div className="grid gap-12 md:grid-cols-3 md:gap-16">
-            {items.map((item, i) => (
-              <div key={item.title} className="space-y-6">
-                <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  {icons[i % icons.length]}
-                </div>
-                <h3 className="text-xl font-medium text-foreground">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      />
     )
   },
 })

@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * MusicArtistPress — press / review testimonial grid for a music artist / band
@@ -71,75 +71,24 @@ export const MusicArtistPress = defineCapsule({
           },
         ]
 
-    const StarIcon = ({ filled }) => (
-      <svg
-        className={cn(
-          'size-4',
-          filled ? 'text-foreground' : 'text-muted-foreground/40',
-        )}
-        fill="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-      </svg>
-    )
-
     return (
-      <section
+      <TestimonialGrid
+        eyebrow={eyebrow}
+        heading={heading}
+        items={reviews.map((r) => ({
+          quote: r.quote,
+          name: r.name,
+          role: r.outlet,
+          rating: r.stars,
+          avatarAlt: r.avatarAlt,
+        }))}
+        columns={3}
+        cardClassName="rounded-sm p-8"
         className={cn(
           'bg-muted px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-28',
           props.className,
         )}
-      >
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-16 text-center lg:mb-24">
-            <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {reviews.map((review) => (
-              <div
-                key={review.name}
-                className="rounded-sm border border-border bg-card p-8"
-              >
-                <div className="mb-4 flex gap-1">
-                  {Array.from({ length: 5 }).map((_, s) => (
-                    <StarIcon key={s} filled={s < review.stars} />
-                  ))}
-                </div>
-                <p className="mb-6 leading-relaxed text-card-foreground/80">
-                  &ldquo;{review.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <span className="size-10 overflow-hidden rounded-full bg-muted">
-                    <Image
-                      alt={review.avatarAlt}
-                      w={100}
-                      h={100}
-                      loading="lazy"
-                      className="size-full object-cover"
-                    />
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium text-card-foreground">
-                      {review.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {review.outlet}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      />
     )
   },
 })

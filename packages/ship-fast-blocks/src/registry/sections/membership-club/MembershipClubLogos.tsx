@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * MembershipClubLogos — quiet "members come from" wordmark strip for a private
@@ -30,32 +31,20 @@ export const MembershipClubLogos = defineCapsule({
       : ['Stripe', 'Notion', 'Figma', 'Linear', 'Vercel', 'Webflow']
 
     return (
-      <section
-        className={cn('w-full border-y border-border bg-card', props.className)}
+      <LogoStrip
+        lead={label}
+        logos={companies}
+        layout="grid"
+        logoStyle="opacity-hover"
+        onClickLogo={(company) => go(company)}
+        leadClassName="text-sm font-medium uppercase tracking-wider"
+        logoClassName="text-muted-foreground/70"
         aria-label="Member companies"
-      >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <div className="grid grid-cols-2 items-center justify-items-center gap-8 md:grid-cols-4 lg:grid-cols-6">
-            {companies.map((company, i) => (
-              <button
-                key={company}
-                type="button"
-                onClick={() => go(company)}
-                aria-label={`${company} company`}
-                className={cn(
-                  'text-lg font-medium tracking-tight text-muted-foreground/70 transition-colors hover:text-foreground',
-                  i >= 4 && 'hidden md:block',
-                )}
-              >
-                {company}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+        className={cn(
+          'w-full border-y border-border bg-card py-12',
+          props.className,
+        )}
+      />
     )
   },
 })

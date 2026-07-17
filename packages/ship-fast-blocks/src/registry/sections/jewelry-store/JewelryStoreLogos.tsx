@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * JewelryStoreLogos — press / awards recognition strip for a luxury jewelry
@@ -28,31 +29,17 @@ export const JewelryStoreLogos = defineCapsule({
       : ['VOGUE', 'BAZAAR', 'TATLER', 'WWD', 'JCK JEWELRY', 'ELLE']
 
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={items}
+        layout="grid"
+        leadClassName="text-xs tracking-[0.3em]"
+        logoClassName="font-serif tracking-widest"
         className={cn(
-          'border-b border-border bg-background py-20',
+          'border-b border-border bg-background py-20 opacity-60',
           props.className,
         )}
-      >
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <p className="mb-12 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            {label}
-          </p>
-          <div className="grid grid-cols-2 items-center gap-12 opacity-60 md:grid-cols-4 lg:grid-cols-6">
-            {items.map((logo, i) => (
-              <div
-                key={logo}
-                className={cn(
-                  'flex justify-center font-serif text-lg tracking-widest text-muted-foreground',
-                  i >= 4 && 'hidden lg:flex',
-                )}
-              >
-                {logo}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      />
     )
   },
 })
