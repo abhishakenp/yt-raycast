@@ -4,6 +4,16 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  ContactForm,
+  ContactFormField,
+  ContactFormLabel,
+  ContactFormInput,
+  ContactFormSelect,
+  ContactFormTextarea,
+  ContactFormSubmit,
+  ContactFormFooter,
+} from '#/section-kit/ContactForm.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -189,16 +199,16 @@ export const InteriorDesignContactCta = defineCapsule({
             </div>
           </div>
 
-          <form className="space-y-6" onSubmit={inquiry.submitForm}>
+          <ContactForm className="space-y-6" onSubmit={inquiry.submitForm}>
             <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <label
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
                   htmlFor="interior-design-contact-first-name"
-                  className="mb-2 block text-sm font-medium text-foreground"
+                  className="text-foreground"
                 >
                   First Name
-                </label>
-                <input
+                </ContactFormLabel>
+                <ContactFormInput
                   id="interior-design-contact-first-name"
                   name="firstName"
                   type="text"
@@ -206,15 +216,15 @@ export const InteriorDesignContactCta = defineCapsule({
                   placeholder="Enter first name"
                   className={inputCls}
                 />
-              </div>
-              <div>
-                <label
+              </ContactFormField>
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
                   htmlFor="interior-design-contact-last-name"
-                  className="mb-2 block text-sm font-medium text-foreground"
+                  className="text-foreground"
                 >
                   Last Name
-                </label>
-                <input
+                </ContactFormLabel>
+                <ContactFormInput
                   id="interior-design-contact-last-name"
                   name="lastName"
                   type="text"
@@ -222,17 +232,17 @@ export const InteriorDesignContactCta = defineCapsule({
                   placeholder="Enter last name"
                   className={inputCls}
                 />
-              </div>
+              </ContactFormField>
             </div>
 
-            <div>
-              <label
+            <ContactFormField className="mb-0">
+              <ContactFormLabel
                 htmlFor="interior-design-contact-email"
-                className="mb-2 block text-sm font-medium text-foreground"
+                className="text-foreground"
               >
                 Email Address
-              </label>
-              <input
+              </ContactFormLabel>
+              <ContactFormInput
                 id="interior-design-contact-email"
                 name="email"
                 type="email"
@@ -240,16 +250,16 @@ export const InteriorDesignContactCta = defineCapsule({
                 placeholder="you@example.com"
                 className={inputCls}
               />
-            </div>
+            </ContactFormField>
 
-            <div>
-              <label
+            <ContactFormField className="mb-0">
+              <ContactFormLabel
                 htmlFor="interior-design-contact-project-type"
-                className="mb-2 block text-sm font-medium text-foreground"
+                className="text-foreground"
               >
                 Project Type
-              </label>
-              <select
+              </ContactFormLabel>
+              <ContactFormSelect
                 id="interior-design-contact-project-type"
                 name="projectType"
                 className={cn(inputCls, 'appearance-none')}
@@ -259,17 +269,17 @@ export const InteriorDesignContactCta = defineCapsule({
                     {opt}
                   </option>
                 ))}
-              </select>
-            </div>
+              </ContactFormSelect>
+            </ContactFormField>
 
-            <div>
-              <label
+            <ContactFormField className="mb-0">
+              <ContactFormLabel
                 htmlFor="interior-design-contact-budget"
-                className="mb-2 block text-sm font-medium text-foreground"
+                className="text-foreground"
               >
                 Estimated Budget
-              </label>
-              <select
+              </ContactFormLabel>
+              <ContactFormSelect
                 id="interior-design-contact-budget"
                 name="budget"
                 className={cn(inputCls, 'appearance-none')}
@@ -279,42 +289,42 @@ export const InteriorDesignContactCta = defineCapsule({
                     {opt}
                   </option>
                 ))}
-              </select>
-            </div>
+              </ContactFormSelect>
+            </ContactFormField>
 
-            <div>
-              <label
+            <ContactFormField className="mb-0">
+              <ContactFormLabel
                 htmlFor="interior-design-contact-message"
-                className="mb-2 block text-sm font-medium text-foreground"
+                className="text-foreground"
               >
                 Tell Us About Your Project
-              </label>
-              <textarea
+              </ContactFormLabel>
+              <ContactFormTextarea
                 id="interior-design-contact-message"
                 name="message"
                 rows={4}
                 placeholder="Describe your space, timeline, and any specific design goals..."
                 className={cn(inputCls, 'resize-none')}
               />
-            </div>
+            </ContactFormField>
 
-            <button
+            <ContactFormSubmit
               type="submit"
               aria-busy={inquiry.isPending}
               disabled={inquiry.isPending}
               className="w-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {inquiry.isPending ? 'Sending' : submit}
-            </button>
+            </ContactFormSubmit>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <ContactFormFooter className="text-center text-sm text-muted-foreground">
               {inquiry.statusText}
-            </p>
+            </ContactFormFooter>
 
             <p className="text-center text-xs text-muted-foreground">
               {footnote}
             </p>
-          </form>
+          </ContactForm>
         </div>
       </CtaBand>
     )

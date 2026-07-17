@@ -3,8 +3,17 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { FormField } from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  ContactForm,
+  ContactFormField,
+  ContactFormLabel,
+  ContactFormInput,
+  ContactFormSelect,
+  ContactFormTextarea,
+  ContactFormSubmit,
+  ContactFormFooter,
+} from '#/section-kit/ContactForm.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -165,93 +174,146 @@ export const EventPlannerContact = defineCapsule({
                 </div>
               </div>
             </div>
-            <form
+            <ContactForm
+              variant="card"
               className="rounded-2xl bg-card p-8 lg:p-10"
               onSubmit={inquiry.submitForm}
             >
               <div className="space-y-6">
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <FormField
-                    id="ep-first"
-                    name="firstName"
-                    label="First Name"
-                    required
-                    placeholder="Jane"
-                    inputClassName={inputCls}
-                    labelClassName="text-card-foreground"
-                  />
-                  <FormField
-                    id="ep-last"
-                    name="lastName"
-                    label="Last Name"
-                    required
-                    placeholder="Smith"
-                    inputClassName={inputCls}
-                    labelClassName="text-card-foreground"
-                  />
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
+                      htmlFor="ep-first"
+                      className="text-card-foreground"
+                    >
+                      First Name
+                    </ContactFormLabel>
+                    <ContactFormInput
+                      id="ep-first"
+                      name="firstName"
+                      required
+                      placeholder="Jane"
+                      className={inputCls}
+                    />
+                  </ContactFormField>
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
+                      htmlFor="ep-last"
+                      className="text-card-foreground"
+                    >
+                      Last Name
+                    </ContactFormLabel>
+                    <ContactFormInput
+                      id="ep-last"
+                      name="lastName"
+                      required
+                      placeholder="Smith"
+                      className={inputCls}
+                    />
+                  </ContactFormField>
                 </div>
-                <FormField
-                  id="ep-email"
-                  name="email"
-                  label="Email Address"
-                  type="email"
-                  required
-                  placeholder="jane@example.com"
-                  inputClassName={inputCls}
-                  labelClassName="text-card-foreground"
-                />
-                <FormField
-                  id="ep-type"
-                  name="eventType"
-                  label="Event Type"
-                  as="select"
-                  required
-                  options={eventTypes}
-                  inputClassName={inputCls}
-                  labelClassName="text-card-foreground"
-                />
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
+                    htmlFor="ep-email"
+                    className="text-card-foreground"
+                  >
+                    Email Address
+                  </ContactFormLabel>
+                  <ContactFormInput
+                    id="ep-email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="jane@example.com"
+                    className={inputCls}
+                  />
+                </ContactFormField>
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
+                    htmlFor="ep-type"
+                    className="text-card-foreground"
+                  >
+                    Event Type
+                  </ContactFormLabel>
+                  <ContactFormSelect
+                    id="ep-type"
+                    name="eventType"
+                    required
+                    className={inputCls}
+                  >
+                    {eventTypes.map((opt) => (
+                      <option key={opt} className="bg-background">
+                        {opt}
+                      </option>
+                    ))}
+                  </ContactFormSelect>
+                </ContactFormField>
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <FormField
-                    id="ep-date"
-                    name="date"
-                    label="Event Date"
-                    type="date"
-                    inputClassName={inputCls}
-                    labelClassName="text-card-foreground"
-                  />
-                  <FormField
-                    id="ep-guests"
-                    name="guestCount"
-                    label="Guest Count"
-                    as="select"
-                    options={guestRanges}
-                    inputClassName={inputCls}
-                    labelClassName="text-card-foreground"
-                  />
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
+                      htmlFor="ep-date"
+                      className="text-card-foreground"
+                    >
+                      Event Date
+                    </ContactFormLabel>
+                    <ContactFormInput
+                      id="ep-date"
+                      name="date"
+                      type="date"
+                      className={inputCls}
+                    />
+                  </ContactFormField>
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
+                      htmlFor="ep-guests"
+                      className="text-card-foreground"
+                    >
+                      Guest Count
+                    </ContactFormLabel>
+                    <ContactFormSelect
+                      id="ep-guests"
+                      name="guestCount"
+                      className={inputCls}
+                    >
+                      {guestRanges.map((opt) => (
+                        <option key={opt} className="bg-background">
+                          {opt}
+                        </option>
+                      ))}
+                    </ContactFormSelect>
+                  </ContactFormField>
                 </div>
-                <FormField
-                  id="ep-message"
-                  name="vision"
-                  label="Tell Us About Your Vision"
-                  as="textarea"
-                  rows={4}
-                  placeholder="Share details about your dream event, preferred style, venues you're considering, or any questions you have..."
-                  inputClassName={inputCls}
-                  labelClassName="text-card-foreground"
-                />
-                <button
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
+                    htmlFor="ep-message"
+                    className="text-card-foreground"
+                  >
+                    Tell Us About Your Vision
+                  </ContactFormLabel>
+                  <ContactFormTextarea
+                    id="ep-message"
+                    name="vision"
+                    rows={4}
+                    placeholder="Share details about your dream event, preferred style, venues you're considering, or any questions you have..."
+                    className={inputCls}
+                  />
+                </ContactFormField>
+                <ContactFormSubmit
                   type="submit"
                   aria-busy={inquiry.isPending}
                   disabled={inquiry.isPending}
                   className="w-full rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {inquiry.isPending ? 'Sending' : contactSubmit}
-                </button>
-                <p className="text-sm text-muted-foreground" aria-live="polite">
+                </ContactFormSubmit>
+                <ContactFormFooter
+                  className="text-sm text-muted-foreground"
+                  aria-live="polite"
+                >
                   {inquiry.statusText}
-                </p>
+                </ContactFormFooter>
               </div>
-            </form>
+            </ContactForm>
           </div>
         </div>
       </section>

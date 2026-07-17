@@ -4,7 +4,16 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { FormField } from '#/section-kit/FormField.tsx'
+import {
+  ContactForm,
+  ContactFormField,
+  ContactFormLabel,
+  ContactFormInput,
+  ContactFormSelect,
+  ContactFormTextarea,
+  ContactFormSubmit,
+  ContactFormFooter,
+} from '#/section-kit/ContactForm.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
@@ -104,108 +113,162 @@ export const ConstructionQuote = defineCapsule({
             className="mb-12 gap-6"
           />
 
-          <form
+          <ContactForm
+            variant="card"
             className="rounded-xl bg-card p-8 shadow-xl lg:p-12"
             onSubmit={inquiry.submitForm}
           >
             <div className="mb-6 grid gap-6 md:grid-cols-2">
-              <FormField
-                id="con-quote-name"
-                name="name"
-                label="Full Name"
-                required
-                placeholder="John Smith"
-                inputClassName={inputCls}
-                labelClassName="text-foreground/80"
-              />
-              <FormField
-                id="con-quote-email"
-                name="email"
-                label="Email Address"
-                type="email"
-                required
-                placeholder="john@example.com"
-                inputClassName={inputCls}
-                labelClassName="text-foreground/80"
-              />
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="con-quote-name"
+                  className="text-foreground/80"
+                >
+                  Full Name
+                </ContactFormLabel>
+                <ContactFormInput
+                  id="con-quote-name"
+                  name="name"
+                  required
+                  placeholder="John Smith"
+                  className={inputCls}
+                />
+              </ContactFormField>
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="con-quote-email"
+                  className="text-foreground/80"
+                >
+                  Email Address
+                </ContactFormLabel>
+                <ContactFormInput
+                  id="con-quote-email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="john@example.com"
+                  className={inputCls}
+                />
+              </ContactFormField>
             </div>
 
             <div className="mb-6 grid gap-6 md:grid-cols-2">
-              <FormField
-                id="con-quote-phone"
-                name="phone"
-                label="Phone Number"
-                type="tel"
-                required
-                placeholder="(206) 555-1234"
-                inputClassName={inputCls}
-                labelClassName="text-foreground/80"
-              />
-              <FormField
-                id="con-quote-type"
-                name="projectType"
-                label="Project Type"
-                as="select"
-                required
-                options={projectTypes}
-                inputClassName={inputCls}
-                labelClassName="text-foreground/80"
-              />
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="con-quote-phone"
+                  className="text-foreground/80"
+                >
+                  Phone Number
+                </ContactFormLabel>
+                <ContactFormInput
+                  id="con-quote-phone"
+                  name="phone"
+                  type="tel"
+                  required
+                  placeholder="(206) 555-1234"
+                  className={inputCls}
+                />
+              </ContactFormField>
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="con-quote-type"
+                  className="text-foreground/80"
+                >
+                  Project Type
+                </ContactFormLabel>
+                <ContactFormSelect
+                  id="con-quote-type"
+                  name="projectType"
+                  required
+                  className={inputCls}
+                >
+                  {projectTypes.map((opt) => (
+                    <option key={opt} className="bg-background">
+                      {opt}
+                    </option>
+                  ))}
+                </ContactFormSelect>
+              </ContactFormField>
             </div>
 
             <div className="mb-6 grid gap-6 md:grid-cols-2">
-              <FormField
-                id="con-quote-budget"
-                name="budget"
-                label="Estimated Budget"
-                as="select"
-                required
-                options={budgets}
-                inputClassName={inputCls}
-                labelClassName="text-foreground/80"
-              />
-              <FormField
-                id="con-quote-timeline"
-                name="timeline"
-                label="Desired Timeline"
-                as="select"
-                required
-                options={timelines}
-                inputClassName={inputCls}
-                labelClassName="text-foreground/80"
-              />
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="con-quote-budget"
+                  className="text-foreground/80"
+                >
+                  Estimated Budget
+                </ContactFormLabel>
+                <ContactFormSelect
+                  id="con-quote-budget"
+                  name="budget"
+                  required
+                  className={inputCls}
+                >
+                  {budgets.map((opt) => (
+                    <option key={opt} className="bg-background">
+                      {opt}
+                    </option>
+                  ))}
+                </ContactFormSelect>
+              </ContactFormField>
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="con-quote-timeline"
+                  className="text-foreground/80"
+                >
+                  Desired Timeline
+                </ContactFormLabel>
+                <ContactFormSelect
+                  id="con-quote-timeline"
+                  name="timeline"
+                  required
+                  className={inputCls}
+                >
+                  {timelines.map((opt) => (
+                    <option key={opt} className="bg-background">
+                      {opt}
+                    </option>
+                  ))}
+                </ContactFormSelect>
+              </ContactFormField>
             </div>
 
             <div className="mb-6">
-              <FormField
-                id="con-quote-message"
-                name="message"
-                label="Project Details"
-                as="textarea"
-                rows={4}
-                placeholder="Tell us about your project, goals, and any specific requirements..."
-                inputClassName={inputCls}
-                labelClassName="text-foreground/80"
-              />
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="con-quote-message"
+                  className="text-foreground/80"
+                >
+                  Project Details
+                </ContactFormLabel>
+                <ContactFormTextarea
+                  id="con-quote-message"
+                  name="message"
+                  rows={4}
+                  placeholder="Tell us about your project, goals, and any specific requirements..."
+                  className={inputCls}
+                />
+              </ContactFormField>
             </div>
 
-            <button
+            <ContactFormSubmit
               type="submit"
               aria-busy={inquiry.isPending}
               disabled={inquiry.isPending}
               className="w-full rounded-lg bg-foreground py-4 text-lg font-semibold text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {inquiry.isPending ? 'Sending' : submitLabel}
-            </button>
+            </ContactFormSubmit>
 
-            <p className="mt-4 text-center text-sm text-muted-foreground">
+            <ContactFormFooter className="mt-4 text-center text-sm text-muted-foreground">
               {inquiry.statusText}
-            </p>
+            </ContactFormFooter>
 
             <p className="mt-4 text-center text-sm text-muted-foreground">
               {disclaimer}
             </p>
-          </form>
+          </ContactForm>
         </Container>
       </section>
     )

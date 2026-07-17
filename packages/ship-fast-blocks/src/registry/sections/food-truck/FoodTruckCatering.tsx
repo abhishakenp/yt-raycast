@@ -2,8 +2,17 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { FormField } from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  ContactForm,
+  ContactFormField,
+  ContactFormLabel,
+  ContactFormInput,
+  ContactFormSelect,
+  ContactFormTextarea,
+  ContactFormSubmit,
+  ContactFormFooter,
+} from '#/section-kit/ContactForm.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -154,76 +163,119 @@ export const FoodTruckCatering = defineCapsule({
               <h3 className="mb-6 text-xl font-semibold">
                 {cateringFormTitle}
               </h3>
-              <form className="space-y-4" onSubmit={inquiry.submitForm}>
+              <ContactForm className="space-y-4" onSubmit={inquiry.submitForm}>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    id="ft-catering-name"
-                    name="name"
-                    label="Name"
-                    placeholder="Your name"
-                    inputClassName={inputCls}
-                    labelClassName="mb-1"
-                  />
-                  <FormField
-                    id="ft-catering-email"
-                    name="email"
-                    label="Email"
-                    type="email"
-                    placeholder="you@email.com"
-                    inputClassName={inputCls}
-                    labelClassName="mb-1"
-                  />
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
+                      htmlFor="ft-catering-name"
+                      className="mb-1"
+                    >
+                      Name
+                    </ContactFormLabel>
+                    <ContactFormInput
+                      id="ft-catering-name"
+                      name="name"
+                      placeholder="Your name"
+                      className={inputCls}
+                    />
+                  </ContactFormField>
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
+                      htmlFor="ft-catering-email"
+                      className="mb-1"
+                    >
+                      Email
+                    </ContactFormLabel>
+                    <ContactFormInput
+                      id="ft-catering-email"
+                      name="email"
+                      type="email"
+                      placeholder="you@email.com"
+                      className={inputCls}
+                    />
+                  </ContactFormField>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    id="ft-catering-date"
-                    name="date"
-                    label="Event Date"
-                    type="date"
-                    inputClassName={inputCls}
-                    labelClassName="mb-1"
-                  />
-                  <FormField
-                    id="ft-catering-guests"
-                    name="guestCount"
-                    label="Guest Count"
-                    as="select"
-                    options={guestCounts}
-                    inputClassName={inputCls}
-                    labelClassName="mb-1"
-                  />
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
+                      htmlFor="ft-catering-date"
+                      className="mb-1"
+                    >
+                      Event Date
+                    </ContactFormLabel>
+                    <ContactFormInput
+                      id="ft-catering-date"
+                      name="date"
+                      type="date"
+                      className={inputCls}
+                    />
+                  </ContactFormField>
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
+                      htmlFor="ft-catering-guests"
+                      className="mb-1"
+                    >
+                      Guest Count
+                    </ContactFormLabel>
+                    <ContactFormSelect
+                      id="ft-catering-guests"
+                      name="guestCount"
+                      className={inputCls}
+                    >
+                      {guestCounts.map((opt) => (
+                        <option key={opt} className="bg-background">
+                          {opt}
+                        </option>
+                      ))}
+                    </ContactFormSelect>
+                  </ContactFormField>
                 </div>
-                <FormField
-                  id="ft-catering-type"
-                  name="eventType"
-                  label="Event Type"
-                  as="select"
-                  options={eventTypes}
-                  inputClassName={inputCls}
-                  labelClassName="mb-1"
-                />
-                <FormField
-                  id="ft-catering-message"
-                  name="message"
-                  label="Message"
-                  as="textarea"
-                  rows={3}
-                  placeholder="Tell us about your event..."
-                  inputClassName={inputCls}
-                  labelClassName="mb-1"
-                />
-                <button
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel htmlFor="ft-catering-type" className="mb-1">
+                    Event Type
+                  </ContactFormLabel>
+                  <ContactFormSelect
+                    id="ft-catering-type"
+                    name="eventType"
+                    className={inputCls}
+                  >
+                    {eventTypes.map((opt) => (
+                      <option key={opt} className="bg-background">
+                        {opt}
+                      </option>
+                    ))}
+                  </ContactFormSelect>
+                </ContactFormField>
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
+                    htmlFor="ft-catering-message"
+                    className="mb-1"
+                  >
+                    Message
+                  </ContactFormLabel>
+                  <ContactFormTextarea
+                    id="ft-catering-message"
+                    name="message"
+                    rows={3}
+                    placeholder="Tell us about your event..."
+                    className={inputCls}
+                  />
+                </ContactFormField>
+                <ContactFormSubmit
                   type="submit"
                   aria-busy={inquiry.isPending}
                   disabled={inquiry.isPending}
                   className="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {inquiry.isPending ? 'Sending' : cateringSubmit}
-                </button>
-                <p className="text-sm text-muted-foreground" aria-live="polite">
+                </ContactFormSubmit>
+                <ContactFormFooter
+                  className="text-sm text-muted-foreground"
+                  aria-live="polite"
+                >
                   {inquiry.statusText}
-                </p>
-              </form>
+                </ContactFormFooter>
+              </ContactForm>
             </div>
           </div>
         </div>

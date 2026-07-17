@@ -19,6 +19,16 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  ContactForm,
+  ContactFormField,
+  ContactFormLabel,
+  ContactFormInput,
+  ContactFormSelect,
+  ContactFormTextarea,
+  ContactFormSubmit,
+  ContactFormFooter,
+} from '#/section-kit/ContactForm.tsx'
 export const LawFirmContact = defineCapsule({
   name: 'LawFirmContact',
   description:
@@ -192,76 +202,76 @@ export const LawFirmContact = defineCapsule({
               <h3 className="mb-6 font-serif text-2xl text-foreground">
                 {formHeading}
               </h3>
-              <form className="space-y-6" onSubmit={inquiry.submitForm}>
+              <ContactForm className="space-y-6" onSubmit={inquiry.submitForm}>
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <div>
-                    <label
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
                       htmlFor="lawfirm-contact-first"
-                      className="mb-2 block text-sm font-medium text-foreground"
+                      className="text-foreground"
                     >
                       First Name
-                    </label>
-                    <input
+                    </ContactFormLabel>
+                    <ContactFormInput
                       id="lawfirm-contact-first"
                       name="firstName"
                       type="text"
                       required
                       className={inputCls}
                     />
-                  </div>
-                  <div>
-                    <label
+                  </ContactFormField>
+                  <ContactFormField className="mb-0">
+                    <ContactFormLabel
                       htmlFor="lawfirm-contact-last"
-                      className="mb-2 block text-sm font-medium text-foreground"
+                      className="text-foreground"
                     >
                       Last Name
-                    </label>
-                    <input
+                    </ContactFormLabel>
+                    <ContactFormInput
                       id="lawfirm-contact-last"
                       name="lastName"
                       type="text"
                       required
                       className={inputCls}
                     />
-                  </div>
+                  </ContactFormField>
                 </div>
-                <div>
-                  <label
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
                     htmlFor="lawfirm-contact-email"
-                    className="mb-2 block text-sm font-medium text-foreground"
+                    className="text-foreground"
                   >
                     Email Address
-                  </label>
-                  <input
+                  </ContactFormLabel>
+                  <ContactFormInput
                     id="lawfirm-contact-email"
                     name="email"
                     type="email"
                     required
                     className={inputCls}
                   />
-                </div>
-                <div>
-                  <label
+                </ContactFormField>
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
                     htmlFor="lawfirm-contact-phone"
-                    className="mb-2 block text-sm font-medium text-foreground"
+                    className="text-foreground"
                   >
                     Phone Number
-                  </label>
-                  <input
+                  </ContactFormLabel>
+                  <ContactFormInput
                     id="lawfirm-contact-phone"
                     name="phone"
                     type="tel"
                     className={inputCls}
                   />
-                </div>
-                <div>
-                  <label
+                </ContactFormField>
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
                     htmlFor="lawfirm-contact-practice"
-                    className="mb-2 block text-sm font-medium text-foreground"
+                    className="text-foreground"
                   >
                     Practice Area
-                  </label>
-                  <select
+                  </ContactFormLabel>
+                  <ContactFormSelect
                     id="lawfirm-contact-practice"
                     name="practiceArea"
                     className={cn(inputCls, 'appearance-none')}
@@ -271,35 +281,38 @@ export const LawFirmContact = defineCapsule({
                         {opt}
                       </option>
                     ))}
-                  </select>
-                </div>
-                <div>
-                  <label
+                  </ContactFormSelect>
+                </ContactFormField>
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
                     htmlFor="lawfirm-contact-message"
-                    className="mb-2 block text-sm font-medium text-foreground"
+                    className="text-foreground"
                   >
                     How Can We Help?
-                  </label>
-                  <textarea
+                  </ContactFormLabel>
+                  <ContactFormTextarea
                     id="lawfirm-contact-message"
                     name="message"
                     rows={4}
                     className={cn(inputCls, 'resize-none')}
                   />
-                </div>
-                <button
+                </ContactFormField>
+                <ContactFormSubmit
                   type="submit"
                   aria-busy={inquiry.isPending}
                   disabled={inquiry.isPending}
                   className="w-full bg-primary py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {inquiry.isPending ? 'Sending' : submit}
-                </button>
-                <p className="text-sm text-muted-foreground" aria-live="polite">
+                </ContactFormSubmit>
+                <ContactFormFooter
+                  className="text-sm text-muted-foreground"
+                  aria-live="polite"
+                >
                   {inquiry.statusText}
-                </p>
+                </ContactFormFooter>
                 <p className="text-xs text-muted-foreground">{disclaimer}</p>
-              </form>
+              </ContactForm>
             </div>
           </div>
         </Container>

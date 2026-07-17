@@ -5,6 +5,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  ContactForm,
+  ContactFormField,
+  ContactFormLabel,
+  ContactFormInput,
+  ContactFormTextarea,
+  ContactFormSubmit,
+  ContactFormFooter,
+} from '#/section-kit/ContactForm.tsx'
 import { inquiryLakebed } from './inquiry-lakebed.ts'
 import {
   InquiryContactSheetButton,
@@ -217,55 +226,55 @@ export const ContactFormDetails = defineCapsule({
               className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
             >
               <h2 className="sr-only">Contact form</h2>
-              <form onSubmit={inquiry.submitForm}>
-                <div className="mb-6">
-                  <label
+              <ContactForm onSubmit={inquiry.submitForm}>
+                <ContactFormField>
+                  <ContactFormLabel
                     htmlFor="cfd-name"
                     className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
                   >
                     {nameLabel}
-                  </label>
-                  <input
+                  </ContactFormLabel>
+                  <ContactFormInput
                     type="text"
                     id="cfd-name"
                     name="name"
                     placeholder={namePlaceholder}
                     className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
-                </div>
-                <div className="mb-6">
-                  <label
+                </ContactFormField>
+                <ContactFormField>
+                  <ContactFormLabel
                     htmlFor="cfd-email"
                     className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
                   >
                     {emailLabel}
-                  </label>
-                  <input
+                  </ContactFormLabel>
+                  <ContactFormInput
                     type="email"
                     id="cfd-email"
                     name="email"
                     placeholder={emailPlaceholder}
                     className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
-                </div>
-                <div className="mb-6">
-                  <label
+                </ContactFormField>
+                <ContactFormField>
+                  <ContactFormLabel
                     htmlFor="cfd-message"
                     className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
                   >
                     {messageLabel}
-                  </label>
-                  <textarea
+                  </ContactFormLabel>
+                  <ContactFormTextarea
                     id="cfd-message"
                     name="message"
                     placeholder={messagePlaceholder}
                     className="min-h-[140px] w-full resize-y rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
-                </div>
+                </ContactFormField>
                 <p className="sr-only" aria-live="polite">
                   {inquiry.statusText}
                 </p>
-                <button
+                <ContactFormSubmit
                   type="submit"
                   aria-busy={inquiry.isPending}
                   disabled={inquiry.isPending}
@@ -286,11 +295,11 @@ export const ContactFormDetails = defineCapsule({
                     <path d="M22 2 15 22l-4-9-9-4 20-7z" />
                   </svg>
                   {inquiry.isPending ? 'Sending' : submitLabel}
-                </button>
-                <p className="mt-4 text-sm text-muted-foreground">
+                </ContactFormSubmit>
+                <ContactFormFooter className="mt-4 text-sm text-muted-foreground">
                   {inquiry.statusText}
-                </p>
-              </form>
+                </ContactFormFooter>
+              </ContactForm>
             </Card>
 
             {/* Contact details */}
