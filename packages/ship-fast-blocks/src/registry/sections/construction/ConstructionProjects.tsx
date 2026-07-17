@@ -15,6 +15,12 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+} from '#/section-kit/PortfolioGrid.tsx'
 export const ConstructionProjects = defineCapsule({
   name: 'ConstructionProjects',
   description:
@@ -114,15 +120,15 @@ export const ConstructionProjects = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <PortfolioGrid cols="1-md-2-3">
             {items.map((proj) => (
-              <button
+              <PortfolioItem
                 key={proj.title}
                 type="button"
                 onClick={() => go(proj.title)}
                 className="group block w-full text-left"
               >
-                <div className="relative mb-4 overflow-hidden rounded-xl">
+                <PortfolioMedia aspect="4-3" className="mb-4 rounded-xl">
                   <Image
                     alt={proj.title}
                     w={800}
@@ -136,14 +142,16 @@ export const ConstructionProjects = defineCapsule({
                       {proj.tag}
                     </span>
                   </div>
-                </div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  {proj.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{proj.meta}</p>
-              </button>
+                </PortfolioMedia>
+                <PortfolioCaption>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {proj.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{proj.meta}</p>
+                </PortfolioCaption>
+              </PortfolioItem>
             ))}
-          </div>
+          </PortfolioGrid>
 
           <div className="mt-12 text-center">
             <button

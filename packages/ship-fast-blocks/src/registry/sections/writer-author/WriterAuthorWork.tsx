@@ -5,6 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PortfolioGrid,
+  PortfolioMedia,
+  PortfolioCaption,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 /**
  * WriterAuthorWork — a "Selected works" books grid for a literary author site.
@@ -92,29 +97,36 @@ export const WriterAuthorWork = defineCapsule({
             }
           />
 
-          <div className="mt-12 grid gap-8 sm:grid-cols-2 md:grid-cols-3">
+          <PortfolioGrid cols="1-2-3" className="mt-12">
             {books.map((book) => (
               <div key={book.title} className="flex flex-col">
-                <Image
-                  alt={book.coverAlt}
-                  w={300}
-                  h={450}
-                  className="aspect-[2/3] w-full rounded-lg border border-border object-cover"
-                />
-                <h3 className="mt-4 font-serif text-xl text-foreground">
-                  {book.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{book.year}</p>
-                <button
-                  type="button"
-                  onClick={() => go(book.target ?? 'Books')}
-                  className="mt-2 self-start text-sm font-medium text-primary hover:underline"
+                <PortfolioMedia
+                  aspect="2-3"
+                  className="w-full rounded-lg border border-border"
                 >
-                  {buyLabel}
-                </button>
+                  <Image
+                    alt={book.coverAlt}
+                    w={300}
+                    h={450}
+                    className="size-full object-cover"
+                  />
+                </PortfolioMedia>
+                <PortfolioCaption className="mt-4">
+                  <h3 className="font-serif text-xl text-foreground">
+                    {book.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{book.year}</p>
+                  <button
+                    type="button"
+                    onClick={() => go(book.target ?? 'Books')}
+                    className="mt-2 self-start text-sm font-medium text-primary hover:underline"
+                  >
+                    {buyLabel}
+                  </button>
+                </PortfolioCaption>
               </div>
             ))}
-          </div>
+          </PortfolioGrid>
         </div>
       </section>
     )

@@ -6,6 +6,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PortfolioGrid,
+  PortfolioMedia,
+  PortfolioCaption,
+  PortfolioTag,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 /**
  * ResumeCvProjects — selected-work grid for a personal resume / CV / portfolio
@@ -99,7 +105,7 @@ export const ResumeCvProjects = defineCapsule({
             subtitle={props.subheading ?? 'Selected work'}
           />
 
-          <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
+          <PortfolioGrid cols="1-md-2" className="mt-12">
             {projects.map((project, i) => (
               <Card
                 asChild
@@ -110,16 +116,16 @@ export const ResumeCvProjects = defineCapsule({
                 className="flex flex-col overflow-hidden"
               >
                 <article>
-                  <div className="overflow-hidden bg-muted">
+                  <PortfolioMedia aspect="16-10" className="bg-muted">
                     <Image
                       alt={project.imageAlt}
                       w={800}
                       h={500}
                       loading="lazy"
-                      className="aspect-[16/10] size-full object-cover"
+                      className="size-full object-cover"
                     />
-                  </div>
-                  <div className="flex flex-1 flex-col p-6">
+                  </PortfolioMedia>
+                  <PortfolioCaption className="flex flex-1 flex-col p-6">
                     <h3 className="text-lg font-semibold text-card-foreground">
                       {project.title}
                     </h3>
@@ -129,12 +135,12 @@ export const ResumeCvProjects = defineCapsule({
                     {project.tags?.length ? (
                       <div className="mt-4 flex flex-wrap gap-2">
                         {project.tags.map((tag, j) => (
-                          <span
+                          <PortfolioTag
                             key={j}
-                            className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
+                            className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
                           >
                             {tag}
-                          </span>
+                          </PortfolioTag>
                         ))}
                       </div>
                     ) : null}
@@ -148,11 +154,11 @@ export const ResumeCvProjects = defineCapsule({
                         <span aria-hidden="true">&rarr;</span>
                       </button>
                     </div>
-                  </div>
+                  </PortfolioCaption>
                 </article>
               </Card>
             ))}
-          </div>
+          </PortfolioGrid>
         </div>
       </section>
     )

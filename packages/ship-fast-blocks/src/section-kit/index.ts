@@ -179,6 +179,14 @@ export {
   heroSubheadingVariants,
 } from './HeroSection.tsx'
 export { LogoStrip } from './LogoStrip.tsx'
+export {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+  PortfolioTag,
+  portfolioGridVariants,
+} from './PortfolioGrid.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

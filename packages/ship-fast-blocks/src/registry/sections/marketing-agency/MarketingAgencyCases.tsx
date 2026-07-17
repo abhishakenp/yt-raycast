@@ -14,6 +14,13 @@ import { Image } from '#/lib/img.tsx'
  * agency. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+  PortfolioTag,
+} from '#/section-kit/PortfolioGrid.tsx'
 export const MarketingAgencyCases = defineCapsule({
   name: 'MarketingAgencyCases',
   description:
@@ -128,15 +135,15 @@ export const MarketingAgencyCases = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <PortfolioGrid cols="1-2-3">
             {items.map((c, i) => (
-              <button
+              <PortfolioItem
                 key={c.name}
                 type="button"
                 onClick={() => go(c.name)}
                 className="group block w-full overflow-hidden rounded-xl bg-card text-left shadow-sm transition-shadow hover:shadow-lg"
               >
-                <div className="relative h-48 overflow-hidden">
+                <PortfolioMedia aspect="3-2" className="h-48">
                   <Image
                     alt={`${c.name} ${c.tag} marketing case study`}
                     w={600}
@@ -144,16 +151,16 @@ export const MarketingAgencyCases = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <span
+                  <PortfolioTag
                     className={cn(
                       'absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-medium',
                       tagTones[i % tagTones.length],
                     )}
                   >
                     {c.tag}
-                  </span>
-                </div>
-                <div className="p-6">
+                  </PortfolioTag>
+                </PortfolioMedia>
+                <PortfolioCaption className="p-6">
                   <h3 className="mb-2 text-lg font-semibold text-card-foreground">
                     {c.name}
                   </h3>
@@ -179,10 +186,10 @@ export const MarketingAgencyCases = defineCapsule({
                       </p>
                     </div>
                   </div>
-                </div>
-              </button>
+                </PortfolioCaption>
+              </PortfolioItem>
             ))}
-          </div>
+          </PortfolioGrid>
         </Container>
       </section>
     )

@@ -4,8 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 /**
  * PortfolioWork — selected-work / project gallery for a dark creative portfolio.
@@ -119,7 +124,7 @@ export const PortfolioWork = defineCapsule({
             </p>
           </div>
 
-          <ResponsiveGrid cols="1-2-3" gap="md">
+          <PortfolioGrid cols="1-2-3" className="gap-6">
             {items.map((item) => (
               <Card
                 asChild
@@ -129,8 +134,11 @@ export const PortfolioWork = defineCapsule({
                 padding="none"
                 className="group relative block overflow-hidden text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
               >
-                <button type="button" onClick={() => go(cardTarget)}>
-                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-muted to-card">
+                <PortfolioItem type="button" onClick={() => go(cardTarget)}>
+                  <PortfolioMedia
+                    aspect="16-10"
+                    className="bg-gradient-to-br from-muted to-card"
+                  >
                     <Image
                       alt={item.alt}
                       w={1200}
@@ -138,8 +146,8 @@ export const PortfolioWork = defineCapsule({
                       loading="lazy"
                       className="h-full w-full object-cover opacity-85 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
                     />
-                  </div>
-                  <div className="p-6">
+                  </PortfolioMedia>
+                  <PortfolioCaption className="p-6">
                     <h3 className="mb-1.5 text-xl font-semibold">
                       {item.title}
                     </h3>
@@ -156,11 +164,11 @@ export const PortfolioWork = defineCapsule({
                         </span>
                       ))}
                     </div>
-                  </div>
-                </button>
+                  </PortfolioCaption>
+                </PortfolioItem>
               </Card>
             ))}
-          </ResponsiveGrid>
+          </PortfolioGrid>
         </div>
       </section>
     )

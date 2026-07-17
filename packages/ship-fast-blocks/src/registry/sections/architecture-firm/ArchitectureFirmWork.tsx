@@ -4,7 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -121,15 +126,14 @@ export const ArchitectureFirmWork = defineCapsule({
             </p>
           </div>
 
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
+          <PortfolioGrid cols="1-md-2-3">
             {items.map((proj) => (
-              <button
+              <PortfolioItem
                 key={proj.title}
-                type="button"
                 onClick={() => go(proj.title)}
-                className="group block w-full text-left"
+                className="block w-full"
               >
-                <div className="mb-5 aspect-[4/5] overflow-hidden bg-muted">
+                <PortfolioMedia aspect="4-5" className="mb-5 bg-muted">
                   <Image
                     alt={proj.imageAlt}
                     w={800}
@@ -137,8 +141,8 @@ export const ArchitectureFirmWork = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
-                <div className="flex items-start justify-between">
+                </PortfolioMedia>
+                <PortfolioCaption className="flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-medium text-foreground">
                       {proj.title}
@@ -150,10 +154,10 @@ export const ArchitectureFirmWork = defineCapsule({
                   <span className="text-xs text-muted-foreground">
                     {proj.location}
                   </span>
-                </div>
-              </button>
+                </PortfolioCaption>
+              </PortfolioItem>
             ))}
-          </ResponsiveGrid>
+          </PortfolioGrid>
         </Container>
       </section>
     )

@@ -4,7 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+  PortfolioTag,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 /**
  * InteriorDesignProjects — filterable project portfolio gallery for an upscale
@@ -117,15 +123,14 @@ export const InteriorDesignProjects = defineCapsule({
             </div>
           </div>
 
-          <ResponsiveGrid cols="1-md-2-3" gap="md" className="md:gap-8">
+          <PortfolioGrid cols="1-md-2-3" className="md:gap-8">
             {items.map((project) => (
-              <button
+              <PortfolioItem
                 key={project.title}
-                type="button"
                 onClick={() => go(project.title)}
-                className="group block w-full cursor-pointer text-left"
+                className="block w-full cursor-pointer"
               >
-                <div className="mb-5 overflow-hidden">
+                <PortfolioMedia aspect="4-5" className="mb-5">
                   <Image
                     alt={`${project.title} — ${project.tag} interior design project`}
                     w={800}
@@ -133,17 +138,21 @@ export const InteriorDesignProjects = defineCapsule({
                     loading="lazy"
                     className="h-80 w-full object-cover transition-transform duration-700 group-hover:scale-105 md:h-96"
                   />
-                </div>
-                <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  {project.tag}
-                </p>
-                <h3 className="mb-1 text-xl font-medium text-foreground">
-                  {project.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{project.meta}</p>
-              </button>
+                </PortfolioMedia>
+                <PortfolioCaption>
+                  <PortfolioTag className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                    {project.tag}
+                  </PortfolioTag>
+                  <h3 className="mb-1 text-xl font-medium text-foreground">
+                    {project.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {project.meta}
+                  </p>
+                </PortfolioCaption>
+              </PortfolioItem>
             ))}
-          </ResponsiveGrid>
+          </PortfolioGrid>
 
           <div className="mt-16 text-center">
             <button

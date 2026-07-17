@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 /**
  * FilmDirectorWork — an inverted, near-black "Selected Work" reel grid for a
@@ -164,15 +169,15 @@ export const FilmDirectorWork = defineCapsule({
             </div>
           </div>
 
-          <ResponsiveGrid cols="1-md-2-3" gap="md">
+          <PortfolioGrid cols="1-md-2-3" className="gap-6">
             {workItems.map((proj) => (
-              <button
+              <PortfolioItem
                 key={proj.title}
                 type="button"
                 onClick={() => go(proj.title)}
                 className="group block w-full cursor-pointer text-left"
               >
-                <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
+                <PortfolioMedia aspect="16-9" className="rounded-md bg-muted">
                   <Image
                     alt={proj.imageAlt}
                     w={800}
@@ -186,7 +191,7 @@ export const FilmDirectorWork = defineCapsule({
                       <PlayIcon className="ml-1 size-8 text-background" />
                     </div>
                   </div>
-                  <div className="absolute inset-x-4 bottom-4">
+                  <PortfolioCaption className="absolute inset-x-4 bottom-4">
                     <span className="text-xs uppercase tracking-wider text-background/70">
                       {proj.tag}
                     </span>
@@ -196,11 +201,11 @@ export const FilmDirectorWork = defineCapsule({
                     <p className="mt-1 text-sm text-background/70">
                       {proj.role}
                     </p>
-                  </div>
-                </div>
-              </button>
+                  </PortfolioCaption>
+                </PortfolioMedia>
+              </PortfolioItem>
             ))}
-          </ResponsiveGrid>
+          </PortfolioGrid>
 
           <div className="mt-12 text-center">
             <button

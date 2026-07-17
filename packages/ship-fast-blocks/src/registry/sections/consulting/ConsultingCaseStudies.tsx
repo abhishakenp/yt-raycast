@@ -7,6 +7,12 @@ import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 /**
  * ConsultingCaseStudies — 6-up case-study gallery with industry tags and
@@ -155,7 +161,7 @@ export const ConsultingCaseStudies = defineCapsule({
               <ArrowRight />
             </button>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <PortfolioGrid cols="1-2-3">
             {items.map((item) => (
               <Card
                 key={item.title}
@@ -165,8 +171,8 @@ export const ConsultingCaseStudies = defineCapsule({
                 padding="none"
                 className="group block w-full cursor-pointer overflow-hidden text-left transition-all hover:shadow-xl"
               >
-                <button type="button" onClick={() => go(item.title)}>
-                  <div className="relative h-56 overflow-hidden">
+                <PortfolioItem type="button" onClick={() => go(item.title)}>
+                  <PortfolioMedia aspect="3-2" className="h-56">
                     <Image
                       alt={item.imageAlt}
                       w={600}
@@ -179,8 +185,8 @@ export const ConsultingCaseStudies = defineCapsule({
                         {item.tag}
                       </span>
                     </div>
-                  </div>
-                  <div className="p-6">
+                  </PortfolioMedia>
+                  <PortfolioCaption className="p-6">
                     <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
                       {item.title}
                     </h3>
@@ -192,11 +198,11 @@ export const ConsultingCaseStudies = defineCapsule({
                       <span className="h-4 w-px bg-border" />
                       <span>{item.period}</span>
                     </div>
-                  </div>
-                </button>
+                  </PortfolioCaption>
+                </PortfolioItem>
               </Card>
             ))}
-          </div>
+          </PortfolioGrid>
         </Container>
       </section>
     )

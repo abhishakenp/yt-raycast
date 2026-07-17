@@ -4,8 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+  PortfolioTag,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 export const PortfolioDevProjects = defineCapsule({
   name: 'PortfolioDevProjects',
@@ -83,24 +89,23 @@ export const PortfolioDevProjects = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <PortfolioGrid cols="1-2-3" className="mt-12">
             {projects.map((project) => (
-              <Card
+              <PortfolioItem
                 asChild
                 key={project.title}
-                variant="default"
-                rounded="xl"
-                padding="none"
-                className="flex flex-col overflow-hidden"
+                className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground"
               >
                 <article>
-                  <Image
-                    alt={project.imageAlt ?? project.title}
-                    w={640}
-                    h={400}
-                    className="aspect-[16/10] w-full object-cover"
-                  />
-                  <div className="flex flex-1 flex-col gap-3 p-6">
+                  <PortfolioMedia aspect="16-10" className="w-full">
+                    <Image
+                      alt={project.imageAlt ?? project.title}
+                      w={640}
+                      h={400}
+                      className="h-full w-full object-cover"
+                    />
+                  </PortfolioMedia>
+                  <PortfolioCaption className="flex-1 gap-3 p-6">
                     <h3 className="text-lg font-semibold text-card-foreground">
                       {project.title}
                     </h3>
@@ -110,12 +115,12 @@ export const PortfolioDevProjects = defineCapsule({
                     {project.tags?.length ? (
                       <div className="flex flex-wrap gap-2">
                         {project.tags.map((tag) => (
-                          <span
+                          <PortfolioTag
                             key={tag}
                             className="rounded-md border border-border bg-muted px-2.5 py-1 font-mono text-xs text-muted-foreground"
                           >
                             {tag}
-                          </span>
+                          </PortfolioTag>
                         ))}
                       </div>
                     ) : null}
@@ -135,11 +140,11 @@ export const PortfolioDevProjects = defineCapsule({
                         Code
                       </button>
                     </div>
-                  </div>
+                  </PortfolioCaption>
                 </article>
-              </Card>
+              </PortfolioItem>
             ))}
-          </div>
+          </PortfolioGrid>
         </div>
       </section>
     )

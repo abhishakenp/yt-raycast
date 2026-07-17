@@ -4,8 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+  PortfolioTag,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 /**
  * AgencyWork — selected-work / case-study gallery for a creative digital-agency
@@ -119,15 +124,14 @@ export const AgencyWork = defineCapsule({
             </button>
           </div>
 
-          <ResponsiveGrid cols="1-md-2" gap="lg">
+          <PortfolioGrid cols="1-md-2">
             {items.map((proj) => (
-              <button
+              <PortfolioItem
                 key={proj.title}
-                type="button"
                 onClick={() => go(proj.title)}
-                className="group block w-full cursor-pointer text-left"
+                className="block w-full cursor-pointer"
               >
-                <ImageTile treatment="4-3-2xl-muted" className="relative mb-6">
+                <PortfolioMedia aspect="4-3" className="mb-6 rounded-2xl">
                   <Image
                     alt={proj.title}
                     w={800}
@@ -140,21 +144,21 @@ export const AgencyWork = defineCapsule({
                       View case study
                     </span>
                   </div>
-                </ImageTile>
-                <div className="flex items-start justify-between gap-4">
+                </PortfolioMedia>
+                <PortfolioCaption className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="mb-2 text-2xl font-semibold transition-colors group-hover:text-primary">
                       {proj.title}
                     </h3>
                     <p className="text-muted-foreground">{proj.description}</p>
                   </div>
-                  <span className="mt-2 whitespace-nowrap rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+                  <PortfolioTag className="mt-2 whitespace-nowrap rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
                     {proj.tag}
-                  </span>
-                </div>
-              </button>
+                  </PortfolioTag>
+                </PortfolioCaption>
+              </PortfolioItem>
             ))}
-          </ResponsiveGrid>
+          </PortfolioGrid>
         </div>
       </section>
     )

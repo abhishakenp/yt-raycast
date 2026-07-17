@@ -4,8 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import {
+  PortfolioGrid,
+  PortfolioItem,
+  PortfolioMedia,
+  PortfolioCaption,
+} from '#/section-kit/PortfolioGrid.tsx'
 
 /**
  * IllustratorWork — a selected-work project gallery for an illustrator /
@@ -96,15 +100,14 @@ export const IllustratorWork = defineCapsule({
               <ArrowRight className="size-4" />
             </button>
           </div>
-          <ResponsiveGrid cols="1-2-3" gap="sm" className="sm:gap-6">
+          <PortfolioGrid cols="1-2-3" className="gap-4 sm:gap-6">
             {items.map((proj) => (
-              <button
+              <PortfolioItem
                 key={proj.title}
-                type="button"
                 onClick={() => go(proj.title)}
-                className="group block w-full text-left"
+                className="block w-full"
               >
-                <ImageTile treatment="4-5-lg-muted" className="mb-4">
+                <PortfolioMedia aspect="4-5" className="mb-4">
                   <Image
                     alt={proj.title}
                     w={600}
@@ -112,12 +115,14 @@ export const IllustratorWork = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </ImageTile>
-                <h3 className="mb-1 font-serif text-lg">{proj.title}</h3>
-                <p className="text-sm text-muted-foreground">{proj.meta}</p>
-              </button>
+                </PortfolioMedia>
+                <PortfolioCaption>
+                  <h3 className="mb-1 font-serif text-lg">{proj.title}</h3>
+                  <p className="text-sm text-muted-foreground">{proj.meta}</p>
+                </PortfolioCaption>
+              </PortfolioItem>
             ))}
-          </ResponsiveGrid>
+          </PortfolioGrid>
         </div>
       </section>
     )
