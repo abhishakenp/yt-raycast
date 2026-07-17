@@ -3,7 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
 
 export const TravelAgencyHero = defineCapsule({
   name: 'TravelAgencyHero',
@@ -37,40 +44,32 @@ export const TravelAgencyHero = defineCapsule({
     const searchTarget = props.searchTarget ?? 'Plan a Trip'
 
     return (
-      <section
-        className={cn(
-          'relative isolate overflow-hidden bg-background text-foreground',
-          props.className,
-        )}
+      <HeroSection
+        variant="full-bleed"
+        className={cn('bg-background text-foreground', props.className)}
       >
-        <div className="absolute inset-0 -z-10">
-          <Image
-            alt={imageAlt}
-            w={1920}
-            h={1280}
-            className="h-full w-full object-cover"
-          />
-          <div
-            className="absolute inset-0 bg-foreground/60"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/40 to-transparent"
-            aria-hidden="true"
-          />
-        </div>
+        <HeroBackgroundImage
+          alt={imageAlt}
+          w={1920}
+          h={1280}
+          overlayClassName="bg-foreground/60"
+          gradientClassName="bg-gradient-to-t from-foreground/80 via-foreground/40 to-transparent"
+        />
 
-        <div className="mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-center px-6 py-28 lg:px-8">
+        <HeroContent className="mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-center px-6 py-28 lg:px-8">
           <div className="max-w-3xl">
-            <span className="inline-flex items-center rounded-full border border-background/30 bg-background/10 px-4 py-2 text-sm font-medium uppercase tracking-wider text-background backdrop-blur-sm">
+            <HeroBadge variant="pill" className="py-2 text-sm tracking-wider">
               {eyebrow}
-            </span>
-            <h1 className="mt-6 text-5xl font-bold leading-tight text-background sm:text-6xl lg:text-7xl">
+            </HeroBadge>
+            <HeroHeading className="mt-6 text-5xl tracking-normal text-background sm:text-6xl lg:text-7xl">
               {heading}
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-background/85">
+            </HeroHeading>
+            <HeroSubheading
+              variant="light"
+              className="text-lg leading-8 text-background/85 sm:text-lg"
+            >
               {subheading}
-            </p>
+            </HeroSubheading>
           </div>
 
           <div className="mt-12 w-full max-w-4xl rounded-3xl border border-border bg-card/95 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md">
@@ -114,8 +113,8 @@ export const TravelAgencyHero = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

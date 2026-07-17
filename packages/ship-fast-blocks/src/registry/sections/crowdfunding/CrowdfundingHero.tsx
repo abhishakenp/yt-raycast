@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * CrowdfundingHero — a 2-column campaign hero for a crowdfunding / pre-order
@@ -89,19 +96,18 @@ export const CrowdfundingHero = defineCapsule({
     const rewardsTarget = props.rewardsTarget ?? 'Rewards'
 
     return (
-      <section className={cn('bg-card', props.className)}>
+      <HeroSection className={cn('bg-card', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
           <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
             {/* Campaign image gallery */}
             <div className="order-2 lg:order-1">
-              <div className="aspect-[4/3] overflow-hidden rounded-xl bg-muted shadow-lg">
-                <Image
-                  alt={heroMainImageAlt}
-                  w={1200}
-                  h={900}
-                  className="size-full object-cover"
-                />
-              </div>
+              <HeroImage
+                alt={heroMainImageAlt}
+                w={1200}
+                h={900}
+                rounded="xl"
+                className="aspect-[4/3] bg-muted shadow-lg"
+              />
               <div className="mt-4 grid grid-cols-4 gap-3">
                 {heroThumbAlts.map((alt) => (
                   <button
@@ -125,19 +131,17 @@ export const CrowdfundingHero = defineCapsule({
             {/* Campaign info */}
             <div className="order-1 lg:order-2">
               <div className="mb-4 flex items-center gap-2">
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                <HeroBadge variant="solid" className="px-3 py-1 text-xs">
                   {heroLiveBadge}
-                </span>
+                </HeroBadge>
                 <span className="text-sm text-muted-foreground">
                   {heroCategory}
                 </span>
               </div>
-              <h1 className="mb-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+              <HeroHeading className="mb-4 text-3xl font-semibold sm:text-4xl lg:text-5xl">
                 {heroHeading}
-              </h1>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-                {heroSub}
-              </p>
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0">{heroSub}</HeroSubheading>
 
               {/* Funding progress */}
               <div className="mb-8 rounded-xl bg-muted p-6">
@@ -213,7 +217,7 @@ export const CrowdfundingHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

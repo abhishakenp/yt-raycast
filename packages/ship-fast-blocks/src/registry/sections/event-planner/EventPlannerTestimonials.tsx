@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * EventPlannerTestimonials — client-love testimonials grid on a muted band. A
@@ -89,16 +89,13 @@ export const EventPlannerTestimonials = defineCapsule({
           },
         ]
 
-    const Star = () => (
-      <svg
-        className="size-5 text-primary"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-        aria-hidden="true"
-      >
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    )
+    const gridItems = testimonialItems.map((t) => ({
+      quote: t.quote,
+      name: t.name,
+      role: t.role,
+      avatarAlt: t.avatarAlt,
+      rating: 5,
+    }))
 
     return (
       <section
@@ -108,45 +105,13 @@ export const EventPlannerTestimonials = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {testimonialsEyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl">
-              {testimonialsHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{testimonialsDesc}</p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
-            {testimonialItems.map((t) => (
-              <article
-                key={t.name}
-                className="rounded-2xl bg-card p-8 shadow-sm"
-              >
-                <div className="mb-4 flex gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} />
-                  ))}
-                </div>
-                <p className="mb-6 leading-relaxed text-card-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-card-foreground">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+          <TestimonialGrid
+            eyebrow={testimonialsEyebrow}
+            heading={testimonialsHeading}
+            subheading={testimonialsDesc}
+            items={gridItems}
+            cardClassName="rounded-2xl border-0 shadow-sm p-8"
+          />
         </div>
       </section>
     )

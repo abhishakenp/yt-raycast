@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * LinkInBioHero — the opening hero of a minimal "link in bio" / link-hub page,
@@ -255,7 +256,8 @@ export const LinkInBioHero = defineCapsule({
     )
 
     return (
-      <header
+      <HeroSection
+        variant="default"
         className={cn(
           'mx-auto max-w-md px-6 py-16 sm:py-20 lg:py-24',
           props.className,
@@ -336,7 +338,7 @@ export const LinkInBioHero = defineCapsule({
             </button>
           ))}
         </div>
-      </header>
+      </HeroSection>
     )
   },
 })

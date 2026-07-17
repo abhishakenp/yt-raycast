@@ -3,6 +3,15 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  HeroSection,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * CommunityForumHero — centered hero band for a community-platform / discussion-forum
@@ -64,25 +73,27 @@ export const CommunityForumHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'relative overflow-hidden pb-24 pt-20 lg:pt-28 lg:pb-28',
           props.className,
         )}
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+          <HeroContent className="mx-auto max-w-3xl text-center">
+            <HeroBadge
+              variant="pulsing-dot"
+              className="mb-8 bg-muted px-3 py-1 text-xs font-medium"
+            >
               <span className="flex size-2 rounded-full bg-primary" />
               {badge}
-            </div>
-            <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            </HeroBadge>
+            <HeroHeading className="mb-6">
               {headingTop}
               <br className="hidden sm:block" /> {headingBottom}
-            </h1>
-            <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-              {subheading}
-            </p>
+            </HeroHeading>
+            <HeroSubheading variant="large">{subheading}</HeroSubheading>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <button
                 type="button"
@@ -99,17 +110,17 @@ export const CommunityForumHero = defineCapsule({
                 {secondaryCta}
               </button>
             </div>
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-muted-foreground">
+            <HeroTrustRow className="mt-12 justify-center gap-x-8 gap-y-4">
               {trust.map((t) => (
-                <div key={t} className="flex items-center gap-2">
+                <HeroTrustItem key={t}>
                   <Check className="size-5 text-primary" />
                   {t}
-                </div>
+                </HeroTrustItem>
               ))}
-            </div>
-          </div>
+            </HeroTrustRow>
+          </HeroContent>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

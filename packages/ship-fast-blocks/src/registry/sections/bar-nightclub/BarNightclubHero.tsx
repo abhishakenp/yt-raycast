@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroContent,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -82,12 +87,7 @@ export const BarNightclubHero = defineCapsule({
     ])
 
     return (
-      <section
-        className={cn(
-          'relative flex min-h-screen items-center justify-center pt-20',
-          props.className,
-        )}
-      >
+      <HeroSection variant="gradient" className={cn('pt-20', props.className)}>
         <div className="absolute inset-0 z-0">
           <Image
             alt={imageAlt}
@@ -97,7 +97,7 @@ export const BarNightclubHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
         </div>
-        <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        <HeroContent className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
           <p className="mb-6 text-sm uppercase tracking-[0.3em] text-muted-foreground">
             {eyebrow}
           </p>
@@ -106,9 +106,9 @@ export const BarNightclubHero = defineCapsule({
             <br />
             {headingBottom}
           </h1>
-          <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+          <HeroSubheading variant="large" className="mb-12">
             {subheading}
-          </p>
+          </HeroSubheading>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <button
               type="button"
@@ -137,7 +137,7 @@ export const BarNightclubHero = defineCapsule({
               {addLabel}
             </CommerceAddItemButton>
           </div>
-        </div>
+        </HeroContent>
         <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-muted-foreground">
           <span className="text-xs uppercase tracking-widest">{scroll}</span>
           <svg
@@ -155,7 +155,7 @@ export const BarNightclubHero = defineCapsule({
             />
           </svg>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

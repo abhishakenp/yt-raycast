@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 
 /**
  * NewsHero — print-style newspaper masthead hero for a news outlet. A bespoke,
@@ -44,11 +45,12 @@ export const NewsHero = defineCapsule({
       'After months in the making, our newsroom opens its doors to readers everywhere — independent, ad-free, and accountable only to the public it serves.'
 
     return (
-      <section
+      <HeroSection
         aria-labelledby="news-hero-heading"
+        variant="default"
         className={cn('bg-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <HeroContent className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
           {/* Edition strip: volume · date · late edition */}
           <div className="grid grid-cols-3 items-center gap-4 border-y border-border py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             <span className="justify-self-start">{edition}</span>
@@ -87,8 +89,8 @@ export const NewsHero = defineCapsule({
               {dek}
             </p>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

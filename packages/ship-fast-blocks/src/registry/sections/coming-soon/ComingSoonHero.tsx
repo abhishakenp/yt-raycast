@@ -2,6 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  HeroSection,
+  HeroContent,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -69,13 +74,14 @@ export const ComingSoonHero = defineCapsule({
       'whitespace-nowrap rounded-lg bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
 
     return (
-      <header
+      <HeroSection
+        variant="default"
         className={cn(
           'w-full px-4 pb-24 pt-16 sm:px-6 sm:pb-32 sm:pt-24 lg:px-8 lg:pb-40 lg:pt-32 xl:px-12',
           props.className,
         )}
       >
-        <div className="mx-auto max-w-4xl text-center">
+        <HeroContent className="mx-auto max-w-4xl text-center">
           <p className="mb-6 text-xs font-medium uppercase tracking-widest text-muted-foreground sm:text-sm">
             {eyebrow}
           </p>
@@ -84,9 +90,9 @@ export const ComingSoonHero = defineCapsule({
             <br className="hidden sm:block" />{' '}
             <span className="font-normal">{headingEmphasis}</span>
           </h1>
-          <p className="mx-auto mb-12 max-w-2xl text-lg font-light leading-relaxed text-muted-foreground sm:text-xl">
+          <HeroSubheading variant="large" className="mb-12 font-light">
             {subheading}
-          </p>
+          </HeroSubheading>
 
           {/* Countdown timer */}
           <div
@@ -119,8 +125,8 @@ export const ComingSoonHero = defineCapsule({
             buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
           />
           <p className="mt-3 text-xs text-muted-foreground">{disclaimer}</p>
-        </div>
-      </header>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { HeroSection, HeroHeading } from '#/section-kit/HeroSection.tsx'
 
 /**
  * ContactHero — centered hero section for a contact / get-in-touch page.
@@ -31,7 +32,8 @@ export const ContactHero = defineCapsule({
       'Whether you have a question about our services, pricing, need a demo, or anything else, our team is ready to answer all your questions.'
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn('px-4 pt-20 pb-14 text-center lg:px-8', props.className)}
       >
         <span className="mb-5 inline-flex items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary">
@@ -41,13 +43,16 @@ export const ContactHero = defineCapsule({
           />
           {eyebrow}
         </span>
-        <h1 className="mx-auto mb-5 max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-5xl lg:text-[3.4rem]">
+        <HeroHeading
+          variant="extra-bold"
+          className="mx-auto mb-5 max-w-3xl tracking-[-0.03em] lg:text-[3.4rem]"
+        >
           {heading}
-        </h1>
+        </HeroHeading>
         <p className="mx-auto max-w-[560px] text-lg leading-[1.7] text-muted-foreground">
           {lead}
         </p>
-      </section>
+      </HeroSection>
     )
   },
 })

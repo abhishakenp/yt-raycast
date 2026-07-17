@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -67,11 +68,9 @@ export const JewelryStoreHero = defineCapsule({
     ])
 
     return (
-      <section
-        className={cn(
-          'relative flex min-h-screen items-center bg-background',
-          props.className,
-        )}
+      <HeroSection
+        variant="gradient"
+        className={cn('items-center bg-background', props.className)}
       >
         <div className="absolute inset-0 bg-muted">
           <Image
@@ -85,7 +84,7 @@ export const JewelryStoreHero = defineCapsule({
             className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent"
           />
         </div>
-        <div className="relative w-full px-6 py-32 lg:px-12 lg:py-0 xl:px-20">
+        <HeroContent className="w-full px-6 py-32 lg:px-12 lg:py-0 xl:px-20">
           <div className="max-w-3xl">
             <p className="mb-6 text-sm uppercase tracking-[0.3em] text-primary">
               {eyebrow}
@@ -115,7 +114,7 @@ export const JewelryStoreHero = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
+        </HeroContent>
         <div className="absolute bottom-12 right-6 hidden lg:right-20 lg:block">
           <div className="text-right">
             <p className="mb-2 text-sm uppercase tracking-widest text-primary">
@@ -138,7 +137,7 @@ export const JewelryStoreHero = defineCapsule({
             </CommerceAddItemButton>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

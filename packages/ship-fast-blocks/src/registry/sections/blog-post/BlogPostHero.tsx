@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 
 /**
  * BlogPostHero — bespoke single-article masthead for an editorial blog post
@@ -55,8 +56,11 @@ export const BlogPostHero = defineCapsule({
       'A sunlit wooden workshop desk with a laptop, an open notebook, and a cup of coffee, shot from above'
 
     return (
-      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+      <HeroSection
+        variant="default"
+        className={cn('bg-background py-16 lg:py-24', props.className)}
+      >
+        <HeroContent className="mx-auto max-w-3xl px-6 lg:px-8">
           <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {kicker}
           </p>
@@ -91,7 +95,7 @@ export const BlogPostHero = defineCapsule({
             </span>
             <span>{readingTime}</span>
           </div>
-        </div>
+        </HeroContent>
         <div className="mx-auto mt-12 max-w-5xl px-6 lg:px-8">
           <Image
             alt={coverAlt}
@@ -100,7 +104,7 @@ export const BlogPostHero = defineCapsule({
             className="aspect-[16/9] w-full rounded-2xl object-cover"
           />
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

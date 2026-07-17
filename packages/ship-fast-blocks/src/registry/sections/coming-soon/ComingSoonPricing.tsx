@@ -2,17 +2,17 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * ComingSoonPricing — three-tier pricing table for a "launching soon" / waitlist
- * pre-launch landing page. A centered heading and lead paragraph above a
- * responsive 1/3-column grid of plan cards: each shows the plan name, tagline,
- * price + period, a feature checklist with check icons, and a CTA button. The
- * "featured" plan gets a primary-colored background, shadow, and a floating badge.
- * All CTA buttons route through useNavigate. Use as the pricing / plans section
- * on SaaS waitlists, app pre-launch pages, or beta sign-up landers. Renders fully
- * with no props via three baked-in default plans.
+ * pre-launch landing page. Thin configuration over the shared `PricingGrid`
+ * composite: a centered heading and lead paragraph above a responsive grid of
+ * plan cards — each with a name, price + period, a feature checklist, and a CTA
+ * button. The featured plan is highlighted with a "Most popular" pill. All CTA
+ * buttons route through useNavigate. Use as the pricing / plans section on SaaS
+ * waitlists, app pre-launch pages, or beta sign-up landers. Renders fully with
+ * no props via three baked-in default plans.
  */
 export const ComingSoonPricing = defineCapsule({
   name: 'ComingSoonPricing',
@@ -41,7 +41,6 @@ export const ComingSoonPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
@@ -96,23 +95,6 @@ export const ComingSoonPricing = defineCapsule({
           },
         ]
 
-    const Check = ({ className }) => (
-      <svg
-        className={cn('size-5 shrink-0', className)}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M5 13l4 4L19 7"
-        />
-      </svg>
-    )
-
     return (
       <section
         className={cn(
@@ -121,110 +103,18 @@ export const ComingSoonPricing = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-5xl">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-2xl font-light text-foreground sm:text-3xl lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="font-light text-muted-foreground">{description}</p>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  'relative rounded-xl p-8',
-                  plan.featured
-                    ? 'border border-primary bg-primary text-primary-foreground shadow-lg'
-                    : 'border border-border bg-card text-card-foreground shadow-sm',
-                )}
-              >
-                {plan.featured && plan.badge ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-card px-3 py-1 text-xs font-medium text-card-foreground">
-                      {plan.badge}
-                    </span>
-                  </div>
-                ) : null}
-                <h3
-                  className={cn(
-                    'mb-2 text-lg font-medium',
-                    plan.featured
-                      ? 'text-primary-foreground'
-                      : 'text-card-foreground',
-                  )}
-                >
-                  {plan.name}
-                </h3>
-                <p
-                  className={cn(
-                    'mb-6 text-sm',
-                    plan.featured
-                      ? 'text-primary-foreground/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {plan.tagline}
-                </p>
-                <div className="mb-6">
-                  <span
-                    className={cn(
-                      'text-4xl font-light',
-                      plan.featured
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
-                    )}
-                  >
-                    {plan.price}
-                  </span>
-                  <span
-                    className={cn(
-                      plan.featured
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {plan.period}
-                  </span>
-                </div>
-                <ul className="mb-8 space-y-3" role="list">
-                  {plan.features.map((f) => (
-                    <li
-                      key={f}
-                      className={cn(
-                        'flex items-start gap-3 text-sm',
-                        plan.featured
-                          ? 'text-primary-foreground/80'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      <Check
-                        className={cn(
-                          'mt-0.5',
-                          plan.featured
-                            ? 'text-primary-foreground/70'
-                            : 'text-muted-foreground/60',
-                        )}
-                      />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
-                  className={cn(
-                    'w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors',
-                    plan.featured
-                      ? 'bg-card text-card-foreground hover:bg-muted'
-                      : 'border border-input text-muted-foreground hover:border-foreground hover:text-foreground',
-                  )}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            heading={heading}
+            subheading={description}
+            tiers={plans.map((plan) => ({
+              name: plan.name,
+              price: plan.price,
+              period: plan.period,
+              features: plan.features,
+              cta: plan.cta,
+              highlighted: plan.featured,
+            }))}
+          />
         </div>
       </section>
     )

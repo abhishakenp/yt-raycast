@@ -1,8 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * MembershipClubCta — full-width primary-surface conversion CTA for a private
@@ -29,7 +28,6 @@ export const MembershipClubCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to join us?'
     const description =
       props.description ??
@@ -42,42 +40,17 @@ export const MembershipClubCta = defineCapsule({
       `Questions? Email us at ${email} — we reply within 24 hours.`
 
     return (
-      <section
-        className={cn(
-          'w-full bg-primary py-20 text-primary-foreground lg:py-28',
-          props.className,
-        )}
-        aria-labelledby="cta-heading"
-      >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2
-            id="cta-heading"
-            className="mb-6 text-3xl font-light text-primary-foreground sm:text-4xl lg:text-5xl"
-          >
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-primary-foreground/80">
-            {description}
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center justify-center rounded-full border border-primary-foreground/40 px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10"
-            >
-              {secondaryCta}
-            </button>
-          </div>
-          <p className="mt-8 text-sm text-primary-foreground/60">{footnote}</p>
-        </div>
-      </section>
+      <CtaBand
+        tone="primary"
+        eyebrow={footnote}
+        title={heading}
+        subtitle={description}
+        actions={[
+          { label: primaryCta, target: primaryCta, variant: 'primary' },
+          { label: secondaryCta, target: secondaryCta, variant: 'outline' },
+        ]}
+        className={props.className}
+      />
     )
   },
 })

@@ -9,6 +9,7 @@ import { StarRating } from './StarRating.tsx'
  * footer with name + role/company meta. Theme-token only; 2 or 3 columns.
  */
 export function TestimonialGrid(props: {
+  eyebrow?: string
   heading?: string
   subheading?: string
   items: {
@@ -20,6 +21,7 @@ export function TestimonialGrid(props: {
     avatarAlt?: string
   }[]
   columns?: 2 | 3
+  cardClassName?: string
   className?: string
 }) {
   const columns = props.columns ?? 3
@@ -30,7 +32,11 @@ export function TestimonialGrid(props: {
   return (
     <section className={cn('flex flex-col gap-10', props.className)}>
       {props.heading ? (
-        <SectionHeading title={props.heading} subtitle={props.subheading} />
+        <SectionHeading
+          eyebrow={props.eyebrow}
+          title={props.heading}
+          subtitle={props.subheading}
+        />
       ) : null}
       <div className={cn('grid gap-6', 'grid-cols-1', colClass)}>
         {items.filter(Boolean).map((i, idx) => {
@@ -38,7 +44,10 @@ export function TestimonialGrid(props: {
           return (
             <figure
               key={idx}
-              className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6"
+              className={cn(
+                'flex flex-col gap-4 rounded-xl border border-border bg-card p-6',
+                props.cardClassName,
+              )}
             >
               {i.rating != null ? (
                 <StarRating rating={i.rating} size="sm" />

@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -77,62 +77,54 @@ export const CloudInfraFinalCta = defineCapsule({
     )
 
     return (
-      <section
-        className={cn(
-          'bg-primary py-20 text-primary-foreground lg:py-28',
-          props.className,
-        )}
+      <CtaBand
+        tone="primary"
+        title={heading}
+        subtitle={description}
+        className={props.className}
       >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/70">
-            {description}
-          </p>
-          <div className="mb-12 flex flex-wrap justify-center gap-4">
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={primaryCta}
-              plan={primaryCta}
-              source="cta"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Starting
-                </>
-              }
-              className="inline-flex items-center gap-2 rounded-lg bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {primaryCta}
-              <ArrowRight className="ml-2 size-5" />
-            </SaasPlanActionButton>
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={secondaryCta}
-              plan={secondaryCta}
-              source="cta"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Sending
-                </>
-              }
-              className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/40 px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {secondaryCta}
-            </SaasPlanActionButton>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
-            {trust.map((t) => (
-              <div key={t} className="flex items-center gap-2">
-                <Check className="size-5 text-chart-2" />
-                <span>{t}</span>
-              </div>
-            ))}
-          </div>
+        <div className="flex flex-wrap justify-center gap-4">
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={primaryCta}
+            plan={primaryCta}
+            source="cta"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Starting
+              </>
+            }
+            className="inline-flex items-center gap-2 rounded-lg bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {primaryCta}
+            <ArrowRight className="ml-2 size-5" />
+          </SaasPlanActionButton>
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={secondaryCta}
+            plan={secondaryCta}
+            source="cta"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Sending
+              </>
+            }
+            className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/40 px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {secondaryCta}
+          </SaasPlanActionButton>
         </div>
-      </section>
+        <div className="flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
+          {trust.map((t) => (
+            <div key={t} className="flex items-center gap-2">
+              <Check className="size-5 text-chart-2" />
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+      </CtaBand>
     )
   },
 })

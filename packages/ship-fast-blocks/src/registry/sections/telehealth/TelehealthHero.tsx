@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
 
 export const TelehealthHero = defineCapsule({
   name: 'TelehealthHero',
@@ -39,27 +46,29 @@ export const TelehealthHero = defineCapsule({
       : ['Available 24/7', 'Most insurance accepted', 'Board-certified doctors']
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'overflow-hidden bg-background py-20 text-foreground sm:py-28',
           props.className,
         )}
       >
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8">
+        <HeroContent className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8">
           <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
+            <HeroBadge
+              variant="pulsing-dot"
+              className="mb-6 bg-muted font-medium"
+            >
               <span
                 className="size-2 rounded-full bg-primary"
                 aria-hidden="true"
               />
               {badge}
-            </div>
-            <h1 className="max-w-3xl text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              {heading}
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+            </HeroBadge>
+            <HeroHeading className="max-w-3xl">{heading}</HeroHeading>
+            <HeroSubheading className="max-w-2xl leading-8">
               {subheading}
-            </p>
+            </HeroSubheading>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
@@ -123,8 +132,8 @@ export const TelehealthHero = defineCapsule({
               />
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

@@ -1,8 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * MusicFestivalCta — a dark closing call-to-action band for a music / arts
@@ -30,7 +29,6 @@ export const MusicFestivalCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Your horizon awaits'
     const description =
       props.description ??
@@ -40,56 +38,18 @@ export const MusicFestivalCta = defineCapsule({
     const note =
       props.note ?? 'Questions? Email us at hello@horizonfestival.com'
 
-    const ArrowRight = () => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-      </svg>
-    )
-
     return (
-      <section
-        className={cn(
-          'bg-foreground py-24 text-background lg:py-28',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-4xl font-bold tracking-tight lg:text-6xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-xl text-background/70">
-            {description}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center gap-2 rounded-full bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90"
-            >
-              {primaryCta}
-              <ArrowRight />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center rounded-full border border-background/30 px-8 py-4 font-medium transition-colors hover:bg-background/10"
-            >
-              {secondaryCta}
-            </button>
-          </div>
-          <p className="mt-8 text-sm text-background/50">{note}</p>
-        </div>
-      </section>
+      <CtaBand
+        tone="primary"
+        eyebrow={note}
+        title={heading}
+        subtitle={description}
+        actions={[
+          { label: primaryCta, target: primaryCta, variant: 'primary' },
+          { label: secondaryCta, target: secondaryCta, variant: 'outline' },
+        ]}
+        className={`bg-foreground text-background ${props.className ?? ''}`}
+      />
     )
   },
 })

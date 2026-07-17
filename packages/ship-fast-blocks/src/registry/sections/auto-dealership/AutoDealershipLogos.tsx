@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * AutoDealershipLogos — trusted-brands wordmark strip for an auto dealership
@@ -32,27 +33,18 @@ export const AutoDealershipLogos = defineCapsule({
       : ['BMW', 'Mercedes', 'Audi', 'Lexus', 'Tesla', 'Toyota']
 
     return (
-      <section
-        className={cn('border-b border-border bg-card', props.className)}
-      >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {heading}
-          </p>
-          <div className="grid grid-cols-3 items-center gap-8 opacity-60 md:grid-cols-6">
-            {brands.map((b) => (
-              <button
-                key={b}
-                type="button"
-                onClick={() => go(b)}
-                className="text-center text-lg font-semibold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {b}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LogoStrip
+        lead={heading}
+        logos={brands}
+        layout="grid"
+        logoStyle="opacity-hover"
+        onClickLogo={(b) => go(b)}
+        leadClassName="tracking-wider"
+        className={cn(
+          'border-b border-border bg-card px-4 py-12 sm:px-6 lg:px-8',
+          props.className,
+        )}
+      />
     )
   },
 })

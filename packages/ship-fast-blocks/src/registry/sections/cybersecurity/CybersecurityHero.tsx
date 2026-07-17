@@ -2,7 +2,15 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -83,7 +91,7 @@ export const CybersecurityHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative overflow-hidden bg-background',
           props.className,
@@ -98,13 +106,11 @@ export const CybersecurityHero = defineCapsule({
                   {badge}
                 </span>
               </div>
-              <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                {heading}
-              </h1>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <HeroHeading className="mb-6">{heading}</HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 sm:text-xl">
                 {subheading}
-              </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex flex-col gap-4 sm:flex-row">
                 <SaasPlanActionButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -134,27 +140,27 @@ export const CybersecurityHero = defineCapsule({
                 >
                   {secondaryCta}
                 </SaasPlanActionButton>
-              </div>
-              <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              </HeroCtas>
+              <HeroTrustRow className="gap-6">
                 {proofs.map((proof) => (
-                  <span key={proof} className="flex items-center gap-2">
+                  <HeroTrustItem key={proof}>
                     <Check className="size-5 text-primary" />
                     {proof}
-                  </span>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
             <div className="relative">
               <div
                 aria-hidden="true"
                 className="absolute inset-0 rotate-3 rounded-3xl bg-gradient-to-br from-muted to-accent"
               />
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                loading="eager"
-                className="relative aspect-[4/3] w-full rounded-2xl object-cover shadow-2xl"
+                rounded="2xl"
+                className="relative aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl bg-card p-4 shadow-xl sm:p-6">
                 <div className="mb-2 flex items-center gap-3">
@@ -186,7 +192,7 @@ export const CybersecurityHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * WriterAuthorHero — elegant two-column author hero for a literary author site.
@@ -57,22 +64,22 @@ export const WriterAuthorHero = defineCapsule({
     const heroCoverAlt = props.coverAlt ?? 'literary novel book cover'
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <HeroSection
+        className={cn('bg-background py-20 lg:py-28', props.className)}
+      >
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
           <div>
             <p className="font-serif text-sm font-medium tracking-[0.2em] text-accent uppercase">
               {heroEyebrow}
             </p>
 
-            <h1 className="mt-6 font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
+            <HeroHeading className="mt-6 font-serif font-semibold">
               {heroHeading}
-            </h1>
+            </HeroHeading>
 
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              {heroIntro}
-            </p>
+            <HeroSubheading className="max-w-xl">{heroIntro}</HeroSubheading>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(heroPrimaryTarget)}
@@ -87,16 +94,16 @@ export const WriterAuthorHero = defineCapsule({
               >
                 {heroSecondary}
               </button>
-            </div>
+            </HeroCtas>
           </div>
 
           <div className="relative mx-auto w-full max-w-md lg:mx-0">
-            <Image
+            <HeroImage
               alt={heroPortraitAlt}
               w={640}
               h={800}
-              loading="lazy"
-              className="aspect-[4/5] w-full rounded-3xl border border-border object-cover shadow-xl"
+              rounded="3xl"
+              className="aspect-[4/5] border border-border shadow-xl"
             />
             <Image
               alt={heroCoverAlt}
@@ -107,7 +114,7 @@ export const WriterAuthorHero = defineCapsule({
             />
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

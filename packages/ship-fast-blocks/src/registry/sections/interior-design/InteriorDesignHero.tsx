@@ -3,7 +3,15 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * InteriorDesignHero — refined split hero band for an upscale interior-design /
@@ -61,7 +69,7 @@ export const InteriorDesignHero = defineCapsule({
     const featuredMeta = props.featuredMeta ?? 'San Francisco, CA — Residential'
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'px-4 pt-20 pb-20 sm:px-6 lg:px-8 lg:pt-28 lg:pb-28',
           props.className,
@@ -73,18 +81,18 @@ export const InteriorDesignHero = defineCapsule({
               <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
                 {eyebrow}
               </p>
-              <h1 className="text-4xl font-light leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              <HeroHeading className="font-light">
                 {headingTop}
                 <br />
                 <span className="font-extralight italic">
                   {headingItalic}
                 </span>{' '}
                 {headingEnd}
-              </h1>
-              <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+              </HeroHeading>
+              <HeroSubheading className="mt-0 max-w-lg">
                 {subheading}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -99,10 +107,10 @@ export const InteriorDesignHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
-              <div className="flex items-center gap-8 pt-4 text-sm text-muted-foreground">
+              </HeroCtas>
+              <HeroTrustRow className="mt-0 gap-8 pt-4">
                 {badges.map((badge, i) => (
-                  <div key={badge} className="flex items-center gap-2">
+                  <HeroTrustItem key={badge}>
                     {i === 0 ? (
                       <svg
                         width="16"
@@ -129,16 +137,17 @@ export const InteriorDesignHero = defineCapsule({
                       </svg>
                     )}
                     <span>{badge}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={1200}
                 h={800}
-                className="h-[400px] w-full object-cover md:h-[500px] lg:h-[600px]"
+                rounded="2xl"
+                className="h-[400px] w-full rounded-none md:h-[500px] lg:h-[600px]"
               />
               <div className="absolute inset-x-6 bottom-6 bg-card/95 p-6 backdrop-blur-sm md:p-8">
                 <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -152,7 +161,7 @@ export const InteriorDesignHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

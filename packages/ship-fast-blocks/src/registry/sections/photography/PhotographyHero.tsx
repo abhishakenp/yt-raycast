@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 
 /**
  * PhotographyHero — full-bleed, image-overlay hero for a fine-art / wedding
@@ -50,7 +51,8 @@ export const PhotographyHero = defineCapsule({
       'Dramatic mountain landscape at golden hour with photographer silhouette'
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'relative h-screen w-full overflow-hidden',
           props.className,
@@ -66,7 +68,7 @@ export const PhotographyHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-foreground/30" />
         </div>
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-24 lg:px-8 lg:pb-32">
+        <HeroContent className="mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-24 lg:px-8 lg:pb-32">
           <div className="max-w-3xl">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-background/80">
               {kicker}
@@ -94,7 +96,7 @@ export const PhotographyHero = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
+        </HeroContent>
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-background/60">
           <svg
             width="24"
@@ -111,7 +113,7 @@ export const PhotographyHero = defineCapsule({
             <path d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

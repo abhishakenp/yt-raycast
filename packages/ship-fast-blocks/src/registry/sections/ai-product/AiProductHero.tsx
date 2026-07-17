@@ -3,6 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
+import {
   SaasMutationSpinner,
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
@@ -108,7 +116,7 @@ export const AiProductHero = defineCapsule({
     )
 
     return (
-      <section className={cn('relative overflow-hidden', props.className)}>
+      <HeroSection className={cn('relative overflow-hidden', props.className)}>
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
@@ -118,15 +126,15 @@ export const AiProductHero = defineCapsule({
                   {badge}
                 </span>
               </div>
-              <h1 className="mb-6 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <HeroHeading className="mb-6 font-semibold">
                 {headingTop}
                 <br />
                 <span className="text-muted-foreground">{headingBottom}</span>
-              </h1>
-              <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              </HeroHeading>
+              <HeroSubheading className="mb-8 max-w-xl sm:text-xl">
                 {subheading}
-              </p>
-              <div className="mb-8 flex flex-col gap-4 sm:flex-row">
+              </HeroSubheading>
+              <HeroCtas className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
                 <SaasPlanActionButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -170,15 +178,15 @@ export const AiProductHero = defineCapsule({
                   </svg>
                   {secondaryCta}
                 </SaasPlanActionButton>
-              </div>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              </HeroCtas>
+              <HeroTrustRow className="mt-0 gap-6">
                 {trust.map((t) => (
-                  <div key={t} className="flex items-center gap-2">
+                  <HeroTrustItem key={t}>
                     <Check className="size-5 text-primary" />
                     <span>{t}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
 
             {/* Preview card */}
@@ -267,7 +275,7 @@ export const AiProductHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

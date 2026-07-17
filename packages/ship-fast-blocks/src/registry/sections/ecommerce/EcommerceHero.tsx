@@ -3,7 +3,16 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -79,22 +88,18 @@ export const EcommerceHero = defineCapsule({
     ])
 
     return (
-      <section
+      <HeroSection
         aria-label="Hero"
         className={cn('bg-background', props.className)}
       >
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:py-16">
           <div className="text-center lg:text-left">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-              {heroEyebrow}
-            </span>
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              {heroHeading}
-            </h1>
-            <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground lg:mx-0">
+            <HeroBadge variant="solid">{heroEyebrow}</HeroBadge>
+            <HeroHeading className="mt-6">{heroHeading}</HeroHeading>
+            <HeroSubheading className="mx-auto mt-6 max-w-xl lg:mx-0">
               {heroSub}
-            </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
+            </HeroSubheading>
+            <HeroCtas className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
               <button
                 type="button"
                 onClick={() => go(heroPrimary)}
@@ -121,35 +126,34 @@ export const EcommerceHero = defineCapsule({
               >
                 {addLabel}
               </CommerceAddItemButton>
-            </div>
-            <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground lg:justify-start">
+            </HeroCtas>
+            <HeroTrustRow className="justify-center lg:justify-start">
               {heroTrust.filter(Boolean).map((item) => (
-                <li key={item} className="flex items-center gap-2">
+                <HeroTrustItem key={item}>
                   <span
                     aria-hidden="true"
                     className="size-1.5 rounded-full bg-accent"
                   />
                   {item}
-                </li>
+                </HeroTrustItem>
               ))}
-            </ul>
+            </HeroTrustRow>
           </div>
 
           <div className="relative">
-            <div className="overflow-hidden rounded-2xl bg-muted">
-              <Image
-                alt={heroImageAlt}
-                w={1200}
-                h={1200}
-                className="size-full object-cover"
-              />
-            </div>
+            <HeroImage
+              alt={heroImageAlt}
+              w={1200}
+              h={1200}
+              rounded="2xl"
+              className="bg-muted"
+            />
             <div className="absolute right-4 top-4 rounded-xl bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-lg sm:right-6 sm:top-6">
               {heroBadge}
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

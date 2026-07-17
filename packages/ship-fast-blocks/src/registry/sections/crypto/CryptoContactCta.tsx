@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
@@ -61,45 +61,37 @@ export const CryptoContactCta = defineCapsule({
     )
 
     return (
-      <section
-        className={cn(
-          'bg-foreground py-20 text-background lg:py-28',
-          props.className,
-        )}
+      <CtaBand
+        tone="primary"
+        title={heading}
+        subtitle={description}
+        className={`bg-foreground text-background ${props.className ?? ''}`}
       >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-background/60">
-            {description}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="rounded-lg bg-background px-8 py-3 font-medium text-foreground transition-colors hover:bg-background/90"
-            >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="rounded-lg border border-background/40 px-8 py-3 font-medium text-background transition-colors hover:bg-background/10"
-            >
-              {secondaryCta}
-            </button>
-          </div>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-background/50">
-            {trust.map((t) => (
-              <div key={t} className="flex items-center gap-2">
-                <CheckCircle className="size-4" />
-                <span>{t}</span>
-              </div>
-            ))}
-          </div>
+        <div className="flex flex-wrap justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => go(primaryCta)}
+            className="rounded-lg bg-background px-8 py-3 font-medium text-foreground transition-colors hover:bg-background/90"
+          >
+            {primaryCta}
+          </button>
+          <button
+            type="button"
+            onClick={() => go(secondaryCta)}
+            className="rounded-lg border border-background/40 px-8 py-3 font-medium text-background transition-colors hover:bg-background/10"
+          >
+            {secondaryCta}
+          </button>
         </div>
-      </section>
+        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/60">
+          {trust.map((t) => (
+            <div key={t} className="flex items-center gap-2">
+              <CheckCircle className="size-4" />
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+      </CtaBand>
     )
   },
 })

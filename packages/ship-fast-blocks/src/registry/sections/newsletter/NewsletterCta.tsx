@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
@@ -52,41 +52,38 @@ export const NewsletterCta = defineCapsule({
     const noteSuffix = props.noteSuffix ?? ' for the full experience.'
 
     return (
-      <section className={cn('bg-foreground py-16 md:py-24', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-4 font-serif text-3xl font-medium text-background sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-background/70">
-            {description}
-          </p>
+      <CtaBand
+        tone="primary"
+        title={heading}
+        subtitle={description}
+        titleClassName="font-serif font-medium"
+        className={`bg-foreground text-background ${props.className ?? ''}`}
+      >
+        <NewsletterSubscribeForm
+          lakebed={lakebed}
+          source={submit}
+          placeholder={emailPlaceholder}
+          buttonLabel={submit}
+          successMessage="You're subscribed. The next issue will arrive by email."
+          className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+          inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
+          buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+          emailLabel="Email address for newsletter subscription"
+          statusClassName="text-background/60"
+        />
 
-          <NewsletterSubscribeForm
-            lakebed={lakebed}
-            source={submit}
-            placeholder={emailPlaceholder}
-            buttonLabel={submit}
-            successMessage="You're subscribed. The next issue will arrive by email."
-            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-            inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
-            buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
-            emailLabel="Email address for newsletter subscription"
-            statusClassName="text-background/60"
-          />
-
-          <p className="mt-6 text-sm text-background/60">
-            {notePrefix}
-            <button
-              type="button"
-              onClick={() => go(noteLink)}
-              className="text-background/80 underline hover:no-underline"
-            >
-              {noteLink}
-            </button>
-            {noteSuffix}
-          </p>
-        </div>
-      </section>
+        <p className="mt-6 text-sm text-background/60">
+          {notePrefix}
+          <button
+            type="button"
+            onClick={() => go(noteLink)}
+            className="text-background/80 underline hover:no-underline"
+          >
+            {noteLink}
+          </button>
+          {noteSuffix}
+        </p>
+      </CtaBand>
     )
   },
 })

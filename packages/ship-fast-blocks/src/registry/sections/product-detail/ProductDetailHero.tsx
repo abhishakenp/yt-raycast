@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { useState } from 'react'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroImage } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -72,14 +72,17 @@ export const ProductDetailHero = defineCapsule({
     ])
 
     return (
-      <section className={cn('bg-background py-12 sm:py-20', props.className)}>
+      <HeroSection
+        className={cn('bg-background py-12 sm:py-20', props.className)}
+      >
         <div className="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-2 lg:items-start lg:px-8">
           <div>
-            <Image
+            <HeroImage
               alt={imageAlt}
               w={800}
               h={800}
-              className="aspect-square w-full rounded-xl border border-border object-cover"
+              rounded="xl"
+              className="aspect-square border border-border"
             />
           </div>
           <div>
@@ -185,7 +188,7 @@ export const ProductDetailHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

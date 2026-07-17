@@ -3,7 +3,17 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroStats,
+  HeroStat,
+  HeroStatValue,
+  HeroStatLabel,
+} from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -76,7 +86,7 @@ export const FurnitureStoreHero = defineCapsule({
       }),
     ])
 
-    const ArrowLong = ({ className }) => (
+    const ArrowLong = ({ className }: { className?: string }) => (
       <svg
         width="16"
         height="16"
@@ -94,7 +104,7 @@ export const FurnitureStoreHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn('relative bg-muted', props.className)}
         aria-labelledby="furniture-hero-heading"
       >
@@ -104,16 +114,16 @@ export const FurnitureStoreHero = defineCapsule({
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
                 {eyebrow}
               </p>
-              <h1
+              <HeroHeading
                 id="furniture-hero-heading"
-                className="mb-6 text-4xl font-medium leading-tight sm:text-5xl lg:text-6xl"
+                className="mb-6 font-medium"
               >
                 {heading}
-              </h1>
-              <p className="mb-8 max-w-md text-lg leading-relaxed text-muted-foreground">
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 max-w-md">
                 {subheading}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -129,23 +139,25 @@ export const FurnitureStoreHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
-              <div className="mt-12 flex gap-8 border-t border-border pt-8">
-                {stats.map((s) => (
-                  <div key={s.label}>
-                    <p className="text-2xl font-semibold">{s.value}</p>
-                    <p className="text-sm text-muted-foreground">{s.label}</p>
-                  </div>
+              </HeroCtas>
+              <HeroStats className="mt-12 flex gap-8 pt-8">
+                {stats.map((s: { value: string; label: string }) => (
+                  <HeroStat key={s.label}>
+                    <HeroStatValue className="text-2xl font-semibold">
+                      {s.value}
+                    </HeroStatValue>
+                    <HeroStatLabel className="mt-0">{s.label}</HeroStatLabel>
+                  </HeroStat>
                 ))}
-              </div>
+              </HeroStats>
             </div>
             <div className="relative order-1 h-[50vh] lg:order-2 lg:h-auto">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={1200}
                 h={800}
-                loading="eager"
-                className="absolute inset-0 size-full object-cover"
+                rounded="2xl"
+                className="absolute inset-0 size-full rounded-none"
               />
               <div className="absolute bottom-6 right-6 hidden rounded-lg bg-card/95 p-4 shadow-lg backdrop-blur-sm sm:block">
                 <p className="text-sm font-medium text-card-foreground">
@@ -165,7 +177,7 @@ export const FurnitureStoreHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

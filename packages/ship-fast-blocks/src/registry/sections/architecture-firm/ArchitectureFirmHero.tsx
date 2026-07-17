@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 
 /**
  * ArchitectureFirmHero — split editorial hero for an architecture-studio /
@@ -53,14 +54,15 @@ export const ArchitectureFirmHero = defineCapsule({
       'Minimalist modern building facade with clean geometric lines and natural stone cladding'
 
     return (
-      <section
+      <HeroSection
         aria-labelledby="architecture-firm-hero-heading"
+        variant="default"
         className={cn(
           'relative flex min-h-[70vh] items-center',
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+        <HeroContent className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
           <div className="max-w-3xl">
             <p className="mb-6 text-sm uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -93,7 +95,7 @@ export const ArchitectureFirmHero = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
+        </HeroContent>
         <div className="absolute right-0 top-0 hidden h-full w-2/5 lg:block">
           <Image
             alt={imageAlt}
@@ -103,7 +105,7 @@ export const ArchitectureFirmHero = defineCapsule({
             className="size-full object-cover"
           />
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

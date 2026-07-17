@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * KidsEducationHero — bright, playful split hero for a kids / family learning
@@ -119,7 +127,7 @@ export const KidsEducationHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative overflow-hidden bg-background',
           props.className,
@@ -147,16 +155,16 @@ export const KidsEducationHero = defineCapsule({
                   {badge}
                 </span>
               </div>
-              <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              <HeroHeading className="mb-6">
                 {headingTop}{' '}
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   {highlight}
                 </span>
-              </h1>
-              <p className="mx-auto mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl lg:mx-0">
+              </HeroHeading>
+              <HeroSubheading className="mx-auto mb-8 mt-0 max-w-xl sm:text-xl lg:mx-0">
                 {subheading}
-              </p>
-              <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -173,15 +181,15 @@ export const KidsEducationHero = defineCapsule({
                   <PlayIcon />
                   {secondaryCta}
                 </button>
-              </div>
-              <div className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground lg:justify-start">
+              </HeroCtas>
+              <HeroTrustRow className="mt-8 justify-center gap-6 lg:justify-start">
                 {trustPoints.map((point) => (
-                  <div key={point} className="flex items-center gap-2">
+                  <HeroTrustItem key={point}>
                     <CheckCircle className="size-5 text-secondary" />
                     <span>{point}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
 
             <div className="relative">
@@ -246,7 +254,7 @@ export const KidsEducationHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

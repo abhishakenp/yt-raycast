@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * DatingAppHero — bright, romantic split hero for a dating / matchmaking app. A
@@ -117,7 +125,7 @@ export const DatingAppHero = defineCapsule({
     )
 
     return (
-      <section className={cn('relative overflow-hidden', props.className)}>
+      <HeroSection className={cn('relative overflow-hidden', props.className)}>
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-muted"
@@ -129,14 +137,13 @@ export const DatingAppHero = defineCapsule({
                 <span className="size-2 animate-pulse rounded-full bg-primary" />
                 {heroBadge}
               </div>
-              <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingPre}{' '}
-                <span className="text-primary">{heroHighlight}</span>
-              </h1>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <HeroHeading className="mb-6">
+                {headingPre} <HeroHighlight>{heroHighlight}</HeroHighlight>
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 sm:text-xl">
                 {heroSub}
-              </p>
-              <div className="mb-8 flex flex-col gap-4 sm:flex-row">
+              </HeroSubheading>
+              <HeroCtas className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -160,7 +167,7 @@ export const DatingAppHero = defineCapsule({
                   {heroSecondary}
                   <ChevronDown className="size-5" />
                 </button>
-              </div>
+              </HeroCtas>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">
                   {avatars.map((a) => (
@@ -177,12 +184,13 @@ export const DatingAppHero = defineCapsule({
               </div>
             </div>
             <div className="relative lg:pl-8">
-              <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-primary/10">
-                <Image
+              <div className="relative">
+                <HeroImage
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-                  className="aspect-[4/5] w-full object-cover"
+                  rounded="2xl"
+                  className="aspect-[4/5] w-full shadow-2xl shadow-primary/10"
                 />
                 <div className="absolute inset-x-4 bottom-4 rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
                   <div className="flex items-center gap-3">
@@ -222,7 +230,7 @@ export const DatingAppHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * CrmLogos — slim trusted-by logo strip for a CRM / SaaS landing page. A
@@ -11,7 +12,6 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use right beneath a hero to establish social proof for CRM, sales-pipeline or
  * B2B SaaS products. Renders fully with no props.
  */
-import { Container } from '#/section-kit/Container.tsx'
 export const CrmLogos = defineCapsule({
   name: 'CrmLogos',
   description:
@@ -31,30 +31,18 @@ export const CrmLogos = defineCapsule({
       ? props.items
       : ['Stripe', 'Notion', 'Vercel', 'Slack', 'Figma', 'Mastercard']
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        layout="grid"
+        logoStyle="opacity-hover"
+        onClickLogo={(logo) => go(logo)}
+        leadClassName="tracking-wider"
         className={cn(
-          'border-b border-border bg-background py-12',
+          'border-b border-border bg-background px-4 py-12 sm:px-6 lg:px-8',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {heading}
-          </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 sm:grid-cols-3 md:grid-cols-6">
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex items-center justify-center text-lg font-semibold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })

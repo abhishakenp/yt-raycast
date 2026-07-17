@@ -1,9 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * SpaWellnessHero — tranquil full-bleed hero for a day-spa / wellness landing
@@ -62,39 +69,21 @@ export const SpaWellnessHero = defineCapsule({
     const infoItems = [hours, location].filter(Boolean)
 
     return (
-      <section
-        className={cn('relative isolate overflow-hidden', props.className)}
-      >
-        <Image
+      <HeroSection variant="full-bleed" className={props.className}>
+        <HeroBackgroundImage
           alt={imageAlt}
-          w={1920}
-          h={1080}
-          loading="lazy"
-          className="absolute inset-0 -z-10 size-full object-cover"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-foreground/50"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/60 via-foreground/20 to-foreground/40"
+          overlayClassName="bg-foreground/50"
+          gradientClassName="bg-gradient-to-t from-foreground/60 via-foreground/20 to-foreground/40"
         />
 
-        <div className="mx-auto flex max-w-7xl flex-col items-center px-6 pb-28 pt-36 text-center sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
-          <span className="inline-flex items-center rounded-full border border-background/30 bg-background/10 px-4 py-1.5 text-xs font-medium tracking-[0.2em] text-background uppercase backdrop-blur-sm">
-            {eyebrow}
-          </span>
+        <HeroContent className="mx-auto flex max-w-7xl flex-col items-center px-6 pb-28 pt-36 text-center sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
+          <HeroBadge variant="pill">{eyebrow}</HeroBadge>
 
-          <h1 className="mt-8 max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight text-background sm:text-5xl lg:text-6xl">
-            {heading}
-          </h1>
+          <HeroHeading variant="serif">{heading}</HeroHeading>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-background/80 sm:text-lg">
-            {subheading}
-          </p>
+          <HeroSubheading variant="light">{subheading}</HeroSubheading>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+          <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryTarget)}
@@ -109,7 +98,7 @@ export const SpaWellnessHero = defineCapsule({
             >
               {secondaryCta}
             </button>
-          </div>
+          </HeroCtas>
 
           <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
             {infoItems.map((item, i) => (
@@ -124,8 +113,8 @@ export const SpaWellnessHero = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

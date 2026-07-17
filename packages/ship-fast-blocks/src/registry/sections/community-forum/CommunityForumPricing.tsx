@@ -2,15 +2,15 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * CommunityForumPricing — 3-tier pricing table for a community-platform / discussion-forum
- * landing page. A centered heading + description above a responsive 3-column grid of bordered
- * pricing cards on a muted band; one tier can be highlighted (dark foreground theme). Each card
- * shows a badge, name, price, cadence, description, feature list with checkmarks, and a CTA button.
- * All buttons route through useNavigate. Use as the pricing section for SaaS community-platform
- * products, subscription services, or membership tools.
+ * landing page. Thin configuration over the shared `PricingGrid` composite: a centered
+ * heading + description above a responsive 3-column grid of pricing cards on a muted band;
+ * one tier can be highlighted. Each card shows a name, price, cadence, feature list with
+ * checkmarks, and a CTA button. All buttons route through useNavigate. Use as the pricing
+ * section for SaaS community-platform products, subscription services, or membership tools.
  */
 export const CommunityForumPricing = defineCapsule({
   name: 'CommunityForumPricing',
@@ -39,7 +39,6 @@ export const CommunityForumPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
@@ -97,114 +96,22 @@ export const CommunityForumPricing = defineCapsule({
           },
         ]
 
-    const Check = ({ className }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
     return (
       <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {tiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={cn(
-                  'relative rounded-xl border p-8',
-                  tier.featured
-                    ? 'border-foreground bg-foreground'
-                    : 'border-border bg-card',
-                )}
-              >
-                {tier.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                    {tier.badge}
-                  </div>
-                )}
-                <div
-                  className={cn(
-                    'mb-2 text-sm font-medium',
-                    tier.featured
-                      ? 'text-background/60'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.name}
-                </div>
-                <div
-                  className={cn(
-                    'mb-2 text-4xl font-bold',
-                    tier.featured ? 'text-background' : 'text-foreground',
-                  )}
-                >
-                  {tier.price}
-                </div>
-                <div
-                  className={cn(
-                    'mb-6 text-sm',
-                    tier.featured
-                      ? 'text-background/60'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.cadence}
-                </div>
-                <p
-                  className={cn(
-                    'mb-6 text-sm',
-                    tier.featured
-                      ? 'text-background/80'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.description}
-                </p>
-                <ul className="mb-8 space-y-3">
-                  {tier.features.map((feat) => (
-                    <li
-                      key={feat}
-                      className={cn(
-                        'flex items-center gap-3 text-sm',
-                        tier.featured
-                          ? 'text-background/90'
-                          : 'text-foreground/80',
-                      )}
-                    >
-                      <Check className="size-5 shrink-0 text-primary" />
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
-                  className={cn(
-                    'block w-full rounded-lg py-3 text-center text-sm font-medium transition-colors',
-                    tier.featured
-                      ? 'bg-background text-foreground hover:bg-background/90'
-                      : 'border border-input bg-card text-foreground/80 hover:bg-muted',
-                  )}
-                >
-                  {tier.cta}
-                </button>
-              </div>
-            ))}
+          <div className="mx-auto max-w-5xl">
+            <PricingGrid
+              heading={heading}
+              subheading={description}
+              tiers={tiers.map((tier) => ({
+                name: tier.name,
+                price: tier.price,
+                period: tier.cadence,
+                features: tier.features,
+                cta: tier.cta,
+                highlighted: tier.featured,
+              }))}
+            />
           </div>
         </div>
       </section>

@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
+  HeroSection,
+  HeroContent,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
+import {
   EventActionButton,
   EventMutationSpinner,
 } from './event-interactions.tsx'
@@ -55,8 +60,11 @@ export const EventHero = defineCapsule({
       : ['800+ Attendees', '24 Speakers', '16+ Hours of Content']
 
     return (
-      <section className={cn('relative overflow-hidden', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
+      <HeroSection
+        variant="default"
+        className={cn('relative overflow-hidden', props.className)}
+      >
+        <HeroContent className="mx-auto max-w-6xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
           <div className="mx-auto max-w-3xl text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -65,9 +73,7 @@ export const EventHero = defineCapsule({
               {headingTop}
               <br className="hidden sm:block" /> {headingBottom}
             </h1>
-            <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-              {subheading}
-            </p>
+            <HeroSubheading variant="large">{subheading}</HeroSubheading>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <EventActionButton
                 lakebed={lakebed}
@@ -99,8 +105,8 @@ export const EventHero = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

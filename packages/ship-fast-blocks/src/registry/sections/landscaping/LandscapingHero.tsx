@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * LandscapingHero — calm, premium two-column hero for a landscaping / outdoor-
@@ -69,17 +76,13 @@ export const LandscapingHero = defineCapsule({
     )
 
     return (
-      <section className={cn('relative bg-muted', props.className)}>
+      <HeroSection className={cn('relative bg-muted', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
-              <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heading}
-              </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-                {subheading}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              <HeroHeading className="font-semibold">{heading}</HeroHeading>
+              <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
+              <HeroCtas className="gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -94,7 +97,7 @@ export const LandscapingHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
+              </HeroCtas>
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex -space-x-2">
                   {avatars.map((alt) => (
@@ -118,11 +121,12 @@ export const LandscapingHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="h-[400px] w-full rounded-xl object-cover shadow-xl lg:h-[500px]"
+                rounded="xl"
+                className="h-[400px] w-full shadow-xl lg:h-[500px]"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-6 shadow-lg sm:block">
                 <p className="text-3xl font-semibold text-primary">
@@ -133,7 +137,7 @@ export const LandscapingHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

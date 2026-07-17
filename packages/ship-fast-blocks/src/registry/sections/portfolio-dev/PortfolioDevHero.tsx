@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 export const PortfolioDevHero = defineCapsule({
   name: 'PortfolioDevHero',
@@ -36,7 +43,7 @@ export const PortfolioDevHero = defineCapsule({
       ? props.tags
       : ['TypeScript', 'React', 'Node.js', 'Postgres', 'AWS']
     return (
-      <section
+      <HeroSection
         className={cn(
           'bg-background py-20 text-foreground sm:py-28',
           props.className,
@@ -45,15 +52,17 @@ export const PortfolioDevHero = defineCapsule({
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
           <div>
             <span className="font-mono text-sm text-primary">{eyebrow}</span>
-            <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            <HeroHeading className="mt-4">
               {name}
               <br />
-              <span className="text-muted-foreground">{role}</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
+              <HeroHighlight className="text-muted-foreground">
+                {role}
+              </HeroHighlight>
+            </HeroHeading>
+            <HeroSubheading className="max-w-xl leading-8">
               {intro}
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            </HeroSubheading>
+            <HeroCtas className="flex-col gap-3 sm:flex-row">
               <button
                 onClick={() => go(primaryTarget)}
                 className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
@@ -66,7 +75,7 @@ export const PortfolioDevHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </div>
+            </HeroCtas>
             <div className="mt-8 flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <span
@@ -109,7 +118,7 @@ export const PortfolioDevHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

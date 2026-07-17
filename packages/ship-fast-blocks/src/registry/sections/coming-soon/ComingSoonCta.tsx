@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
@@ -52,42 +52,35 @@ export const ComingSoonCta = defineCapsule({
       'whitespace-nowrap rounded-lg bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
 
     return (
-      <section
-        className={cn(
-          'w-full px-4 py-24 sm:px-6 lg:py-28 lg:px-8 xl:px-12',
-          props.className,
-        )}
+      <CtaBand
+        tone="muted"
+        title={heading}
+        subtitle={description}
+        titleClassName="font-light"
+        className={`bg-background text-foreground ${props.className ?? ''}`}
       >
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg font-light text-muted-foreground">
-            {description}
-          </p>
-          <NewsletterSubscribeForm
-            lakebed={lakebed}
-            source={submit}
-            placeholder={emailPlaceholder}
-            buttonLabel={submit}
-            successMessage="You're on the waitlist. Early access updates will arrive by email."
-            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-            inputClassName={inputCls}
-            buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
-            emailLabel="Email address for final waitlist signup"
-          />
-          <p className="mt-8 text-xs text-muted-foreground">
-            {contactPrefix}{' '}
-            <button
-              type="button"
-              onClick={() => go(contactEmail)}
-              className="underline transition-colors hover:text-foreground"
-            >
-              {contactEmail}
-            </button>
-          </p>
-        </div>
-      </section>
+        <NewsletterSubscribeForm
+          lakebed={lakebed}
+          source={submit}
+          placeholder={emailPlaceholder}
+          buttonLabel={submit}
+          successMessage="You're on the waitlist. Early access updates will arrive by email."
+          className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+          inputClassName={inputCls}
+          buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
+          emailLabel="Email address for final waitlist signup"
+        />
+        <p className="mt-8 text-xs text-muted-foreground">
+          {contactPrefix}{' '}
+          <button
+            type="button"
+            onClick={() => go(contactEmail)}
+            className="underline transition-colors hover:text-foreground"
+          >
+            {contactEmail}
+          </button>
+        </p>
+      </CtaBand>
     )
   },
 })

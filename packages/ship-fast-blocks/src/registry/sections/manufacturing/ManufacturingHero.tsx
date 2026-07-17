@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * ManufacturingHero — split hero band for a precision-manufacturing /
@@ -60,7 +66,7 @@ export const ManufacturingHero = defineCapsule({
         ]
 
     return (
-      <section className={cn('relative bg-background', props.className)}>
+      <HeroSection className={cn('relative bg-background', props.className)}>
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
@@ -70,13 +76,9 @@ export const ManufacturingHero = defineCapsule({
                   {badge}
                 </span>
               </div>
-              <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heading}
-              </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-                {subheading}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              <HeroHeading className="font-semibold">{heading}</HeroHeading>
+              <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
+              <HeroCtas className="gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -91,7 +93,7 @@ export const ManufacturingHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
+              </HeroCtas>
               <div className="flex items-center gap-6 border-t border-border pt-4">
                 {stats.map((s, i) => (
                   <div key={s.label} className="flex items-center gap-6">
@@ -107,12 +109,11 @@ export const ManufacturingHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={500}
-                loading="eager"
-                className="h-[400px] w-full rounded-lg object-cover shadow-xl lg:h-[500px]"
+                className="h-[400px] w-full rounded-lg shadow-xl lg:h-[500px]"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-lg bg-card p-4 shadow-lg sm:block">
                 <div className="flex items-center gap-3">
@@ -144,7 +145,7 @@ export const ManufacturingHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -1,8 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * KidsEducationCta — dark closing call-to-action band for a kids / family
@@ -32,7 +31,6 @@ export const KidsEducationCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to Start the Adventure?'
     const description =
       props.description ??
@@ -42,88 +40,18 @@ export const KidsEducationCta = defineCapsule({
     const note =
       props.note ?? 'Used by families in 35+ countries. Cancel anytime.'
 
-    const ArrowRight = ({ className }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-      </svg>
-    )
-
-    const PlayIcon = () => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="12" r="9" />
-        <path d="M10 9l4 3-4 3V9z" fill="currentColor" />
-      </svg>
-    )
-
     return (
-      <section
-        className={cn(
-          'relative overflow-hidden bg-foreground py-24 text-background',
-          props.className,
-        )}
-      >
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute left-0 top-0 size-96 rounded-full bg-primary/20 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute bottom-0 right-0 size-96 rounded-full bg-secondary/20 blur-3xl"
-        />
-
-        <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-xl text-background/70">
-            {description}
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {primaryCta}
-              <ArrowRight />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-background/20 bg-background/10 px-8 py-4 font-semibold text-background transition-colors hover:bg-background/20"
-            >
-              <PlayIcon />
-              {secondaryCta}
-            </button>
-          </div>
-          <p className="mt-8 text-sm text-background/60">{note}</p>
-        </div>
-      </section>
+      <CtaBand
+        tone="primary"
+        eyebrow={note}
+        title={heading}
+        subtitle={description}
+        actions={[
+          { label: primaryCta, target: primaryCta, variant: 'primary' },
+          { label: secondaryCta, target: secondaryCta, variant: 'outline' },
+        ]}
+        className={`bg-foreground text-background ${props.className ?? ''}`}
+      />
     )
   },
 })

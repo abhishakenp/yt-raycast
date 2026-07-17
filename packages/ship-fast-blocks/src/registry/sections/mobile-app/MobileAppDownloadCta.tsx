@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -79,64 +79,55 @@ export const MobileAppDownloadCta = defineCapsule({
     )
 
     return (
-      <section
-        className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
-        aria-labelledby="mobileapp-cta-heading"
+      <CtaBand
+        tone="muted"
+        title={heading}
+        subtitle={description}
+        className={props.className}
       >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2
-            id="mobileapp-cta-heading"
-            className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={primaryCta}
+            plan={primaryCta}
+            source="cta-download"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Opening
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
           >
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            {description}
-          </p>
-          <div className="mb-10 flex flex-col justify-center gap-4 sm:flex-row">
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={primaryCta}
-              plan={primaryCta}
-              source="cta-download"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Opening
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              <AppleIcon />
-              {primaryCta}
-            </SaasPlanActionButton>
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={secondaryCta}
-              plan={secondaryCta}
-              source="cta-download"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Opening
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
-            >
-              <PlayIcon />
-              {secondaryCta}
-            </SaasPlanActionButton>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-4 text-sm text-muted-foreground sm:flex-row sm:gap-6">
-            {badges.map((badge) => (
-              <span key={badge} className="flex items-center gap-2">
-                <CheckIcon className="size-4 text-primary" />
-                {badge}
-              </span>
-            ))}
-          </div>
+            <AppleIcon />
+            {primaryCta}
+          </SaasPlanActionButton>
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={secondaryCta}
+            plan={secondaryCta}
+            source="cta-download"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Opening
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+          >
+            <PlayIcon />
+            {secondaryCta}
+          </SaasPlanActionButton>
         </div>
-      </section>
+        <div className="flex flex-col items-center justify-center gap-4 text-sm text-muted-foreground sm:flex-row sm:gap-6">
+          {badges.map((badge) => (
+            <span key={badge} className="flex items-center gap-2">
+              <CheckIcon className="size-4 text-primary" />
+              {badge}
+            </span>
+          ))}
+        </div>
+      </CtaBand>
     )
   },
 })

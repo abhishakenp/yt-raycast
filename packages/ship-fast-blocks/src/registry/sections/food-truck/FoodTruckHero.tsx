@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -96,10 +97,11 @@ export const FoodTruckHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn('px-6 pt-20 pb-20 lg:pt-28 lg:pb-28', props.className)}
       >
-        <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2">
+        <HeroContent className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2">
           <div className="space-y-6">
             <span className="inline-block rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
               {heroBadge}
@@ -190,8 +192,8 @@ export const FoodTruckHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

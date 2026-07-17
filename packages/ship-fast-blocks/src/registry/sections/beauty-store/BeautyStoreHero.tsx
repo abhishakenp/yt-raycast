@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -107,7 +115,7 @@ export const BeautyStoreHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative bg-gradient-to-br from-primary/10 via-background to-muted/40',
           props.className,
@@ -119,15 +127,15 @@ export const BeautyStoreHero = defineCapsule({
               <span className="inline-block text-xs font-semibold uppercase tracking-widest text-primary">
                 {eyebrow}
               </span>
-              <h1 className="font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              <HeroHeading className="font-serif font-semibold">
                 {headingTop}
                 <br />
-                <span className="text-primary">{highlight}</span>
-              </h1>
-              <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+                <HeroHighlight>{highlight}</HeroHighlight>
+              </HeroHeading>
+              <HeroSubheading className="mt-0 max-w-lg">
                 {subheading}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -142,7 +150,7 @@ export const BeautyStoreHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
+              </HeroCtas>
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex -space-x-3">
                   {customerAlts.map((alt) => (
@@ -170,14 +178,13 @@ export const BeautyStoreHero = defineCapsule({
             </div>
 
             <div className="relative">
-              <div className="aspect-[4/5] overflow-hidden rounded-xl shadow-2xl">
-                <Image
-                  alt={imageAlt}
-                  w={800}
-                  h={1000}
-                  className="size-full object-cover"
-                />
-              </div>
+              <HeroImage
+                alt={imageAlt}
+                w={800}
+                h={1000}
+                rounded="xl"
+                className="aspect-[4/5] shadow-2xl"
+              />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-xl sm:block">
                 <div className="flex items-center gap-3">
                   <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -221,7 +228,7 @@ export const BeautyStoreHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

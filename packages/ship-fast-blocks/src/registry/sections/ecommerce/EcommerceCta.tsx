@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -41,34 +41,26 @@ export const EcommerceCta = defineCapsule({
       'No spam, just deals. Unsubscribe anytime. By subscribing you agree to our Terms.'
 
     return (
-      <section
-        className={cn(
-          'w-full bg-primary text-primary-foreground',
-          props.className,
-        )}
+      <CtaBand
+        tone="primary"
+        eyebrow={disclaimer}
+        title={heading}
+        subtitle={subheading}
+        className={props.className}
       >
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-5 px-6 py-16 text-center lg:px-8">
-          <span className="text-sm font-medium uppercase tracking-wide opacity-80">
-            {disclaimer}
-          </span>
-          <h2 className="text-3xl font-semibold md:text-4xl">{heading}</h2>
-          <p className="max-w-2xl text-base opacity-90 md:text-lg">
-            {subheading}
-          </p>
-          <NewsletterSubscribeForm
-            lakebed={lakebed}
-            source="ecommerce-cta"
-            buttonLabel={submit}
-            pendingLabel="Claiming"
-            placeholder={placeholder}
-            successMessage="You're in. Your welcome offer is ready in the live subscriber list."
-            className="mt-2 flex w-full max-w-xl flex-col gap-3 sm:flex-row"
-            inputClassName="min-h-12 flex-1 rounded-full border border-primary-foreground/30 bg-primary-foreground px-5 text-sm text-primary shadow-sm outline-none transition-colors placeholder:text-primary/60 focus:border-primary-foreground"
-            buttonClassName="inline-flex min-h-12 items-center justify-center rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-            statusClassName="text-primary-foreground/80"
-          />
-        </div>
-      </section>
+        <NewsletterSubscribeForm
+          lakebed={lakebed}
+          source="ecommerce-cta"
+          buttonLabel={submit}
+          pendingLabel="Claiming"
+          placeholder={placeholder}
+          successMessage="You're in. Your welcome offer is ready in the live subscriber list."
+          className="mt-2 flex w-full max-w-xl flex-col gap-3 sm:flex-row"
+          inputClassName="min-h-12 flex-1 rounded-full border border-primary-foreground/30 bg-primary-foreground px-5 text-sm text-primary shadow-sm outline-none transition-colors placeholder:text-primary/60 focus:border-primary-foreground"
+          buttonClassName="inline-flex min-h-12 items-center justify-center rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+          statusClassName="text-primary-foreground/80"
+        />
+      </CtaBand>
     )
   },
 })

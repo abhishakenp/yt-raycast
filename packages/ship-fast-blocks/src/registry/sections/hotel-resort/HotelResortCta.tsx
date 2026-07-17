@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HotelBookingActionButton,
@@ -52,13 +52,17 @@ export const HotelResortCta = defineCapsule({
       'Sunset view over ocean from luxury resort balcony with warm golden lighting'
 
     return (
-      <section
-        className={cn(
-          'relative overflow-hidden py-24 lg:py-28',
-          props.className,
-        )}
+      <CtaBand
+        tone="muted"
+        eyebrow={eyebrow}
+        title={heading}
+        subtitle={description}
+        titleClassName="text-background font-light md:text-4xl lg:text-5xl"
+        subtitleClassName="text-background/80 font-light"
+        eyebrowClassName="text-background/80 normal-case tracking-widest"
+        className={`relative overflow-hidden ${props.className ?? ''}`}
       >
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 -z-10">
           <Image
             alt={imageAlt}
             w={1920}
@@ -68,51 +72,40 @@ export const HotelResortCta = defineCapsule({
           />
           <div className="absolute inset-0 bg-foreground/50" />
         </div>
-        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center lg:px-8">
-          <p className="mb-4 text-sm uppercase tracking-widest text-background/80">
-            {eyebrow}
-          </p>
-          <h2 className="mb-6 text-3xl font-light text-background md:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg font-light text-background/80">
-            {description}
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <HotelBookingActionButton
-              lakebed={lakebed}
-              intentLabel={primaryCta}
-              intentKey="cta-primary-booking"
-              source="cta"
-              pendingChildren={
-                <>
-                  <HotelMutationSpinner />
-                  Sending
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-background px-10 py-4 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
-            >
-              {primaryCta}
-            </HotelBookingActionButton>
-            <HotelBookingActionButton
-              lakebed={lakebed}
-              action="inquiry"
-              intentLabel={secondaryCta}
-              intentKey="cta-secondary-inquiry"
-              source="cta"
-              pendingChildren={
-                <>
-                  <HotelMutationSpinner />
-                  Sending
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-md border border-background/30 bg-background/10 px-10 py-4 text-sm font-medium text-background backdrop-blur-sm transition-colors hover:bg-background/20 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {secondaryCta}
-            </HotelBookingActionButton>
-          </div>
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <HotelBookingActionButton
+            lakebed={lakebed}
+            intentLabel={primaryCta}
+            intentKey="cta-primary-booking"
+            source="cta"
+            pendingChildren={
+              <>
+                <HotelMutationSpinner />
+                Sending
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-background px-10 py-4 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+          >
+            {primaryCta}
+          </HotelBookingActionButton>
+          <HotelBookingActionButton
+            lakebed={lakebed}
+            action="inquiry"
+            intentLabel={secondaryCta}
+            intentKey="cta-secondary-inquiry"
+            source="cta"
+            pendingChildren={
+              <>
+                <HotelMutationSpinner />
+                Sending
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-background/30 bg-background/10 px-10 py-4 text-sm font-medium text-background backdrop-blur-sm transition-colors hover:bg-background/20 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {secondaryCta}
+          </HotelBookingActionButton>
         </div>
-      </section>
+      </CtaBand>
     )
   },
 })

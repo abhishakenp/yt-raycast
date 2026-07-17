@@ -1,8 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * CrowdfundingCta — a full-width closing CTA band for a crowdfunding / campaign
@@ -28,7 +27,6 @@ export const CrowdfundingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const ctaHeading = props.heading ?? 'Be Part of the Solution'
     const ctaDesc =
       props.description ??
@@ -41,38 +39,17 @@ export const CrowdfundingCta = defineCapsule({
     const rewardsTarget = props.rewardsTarget ?? 'Rewards'
 
     return (
-      <section
-        className={cn(
-          'bg-primary py-20 text-primary-foreground lg:py-28',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-semibold sm:text-4xl lg:text-5xl">
-            {ctaHeading}
-          </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/80 sm:text-xl">
-            {ctaDesc}
-          </p>
-          <div className="mb-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(rewardsTarget)}
-              className="rounded-xl bg-background px-8 py-4 text-lg font-semibold text-foreground transition-colors hover:bg-background/90"
-            >
-              {ctaPrimary}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(ctaSecondary)}
-              className="rounded-xl border-2 border-primary-foreground px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
-            >
-              {ctaSecondary}
-            </button>
-          </div>
-          <p className="text-sm text-primary-foreground/70">{ctaNote}</p>
-        </div>
-      </section>
+      <CtaBand
+        tone="primary"
+        eyebrow={ctaNote}
+        title={ctaHeading}
+        subtitle={ctaDesc}
+        actions={[
+          { label: ctaPrimary, target: rewardsTarget, variant: 'primary' },
+          { label: ctaSecondary, target: ctaSecondary, variant: 'outline' },
+        ]}
+        className={props.className}
+      />
     )
   },
 })

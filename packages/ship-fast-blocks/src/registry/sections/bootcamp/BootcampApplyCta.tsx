@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -76,128 +77,124 @@ export const BootcampApplyCta = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-primary py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl">
-            {applyHeading}
-          </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/80">
-            {applyDesc}
-          </p>
-
-          <div className="mx-auto max-w-xl rounded-2xl bg-card p-8 shadow-xl">
-            <form className="space-y-4 text-left" onSubmit={inquiry.submitForm}>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="bootcamp-apply-first"
-                    className="mb-1 block text-sm font-medium text-card-foreground"
-                  >
-                    First name
-                  </label>
-                  <input
-                    id="bootcamp-apply-first"
-                    name="firstName"
-                    type="text"
-                    required
-                    placeholder="Jane"
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="bootcamp-apply-last"
-                    className="mb-1 block text-sm font-medium text-card-foreground"
-                  >
-                    Last name
-                  </label>
-                  <input
-                    id="bootcamp-apply-last"
-                    name="lastName"
-                    type="text"
-                    required
-                    placeholder="Smith"
-                    className={inputCls}
-                  />
-                </div>
-              </div>
+      <CtaBand
+        tone="primary"
+        title={applyHeading}
+        subtitle={applyDesc}
+        titleClassName="font-bold sm:text-4xl lg:text-5xl"
+        subtitleClassName="text-primary-foreground/80"
+        className={props.className}
+      >
+        <div className="mx-auto max-w-xl rounded-2xl bg-card p-8 shadow-xl">
+          <form className="space-y-4 text-left" onSubmit={inquiry.submitForm}>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label
-                  htmlFor="bootcamp-apply-email"
+                  htmlFor="bootcamp-apply-first"
                   className="mb-1 block text-sm font-medium text-card-foreground"
                 >
-                  Email address
+                  First name
                 </label>
                 <input
-                  id="bootcamp-apply-email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="jane@example.com"
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="bootcamp-apply-program"
-                  className="mb-1 block text-sm font-medium text-card-foreground"
-                >
-                  Program preference
-                </label>
-                <select
-                  id="bootcamp-apply-program"
-                  name="program"
-                  className={cn(inputCls, 'appearance-none')}
-                >
-                  {applyPrograms.map((p) => (
-                    <option key={p} className="bg-background">
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="bootcamp-apply-occupation"
-                  className="mb-1 block text-sm font-medium text-card-foreground"
-                >
-                  Current occupation
-                </label>
-                <input
-                  id="bootcamp-apply-occupation"
-                  name="occupation"
+                  id="bootcamp-apply-first"
+                  name="firstName"
                   type="text"
-                  placeholder="e.g. Teacher, Retail Manager, Student"
+                  required
+                  placeholder="Jane"
                   className={inputCls}
                 />
               </div>
-              <button
-                type="submit"
-                aria-busy={inquiry.isPending}
-                disabled={inquiry.isPending}
-                className="w-full rounded-lg bg-primary py-3.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-              >
-                {inquiry.isPending ? 'Sending' : applySubmit}
-              </button>
-              <p className="text-sm text-muted-foreground" aria-live="polite">
-                {inquiry.statusText}
-              </p>
-            </form>
-            <p className="mt-4 text-xs text-muted-foreground">
-              {applyFineprint}
-            </p>
-          </div>
-
-          <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
-            {applyTrust.map((t) => (
-              <div key={t} className="flex items-center gap-2">
-                <Check className="size-5 text-primary-foreground" />
-                <span>{t}</span>
+              <div>
+                <label
+                  htmlFor="bootcamp-apply-last"
+                  className="mb-1 block text-sm font-medium text-card-foreground"
+                >
+                  Last name
+                </label>
+                <input
+                  id="bootcamp-apply-last"
+                  name="lastName"
+                  type="text"
+                  required
+                  placeholder="Smith"
+                  className={inputCls}
+                />
               </div>
-            ))}
-          </div>
+            </div>
+            <div>
+              <label
+                htmlFor="bootcamp-apply-email"
+                className="mb-1 block text-sm font-medium text-card-foreground"
+              >
+                Email address
+              </label>
+              <input
+                id="bootcamp-apply-email"
+                name="email"
+                type="email"
+                required
+                placeholder="jane@example.com"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="bootcamp-apply-program"
+                className="mb-1 block text-sm font-medium text-card-foreground"
+              >
+                Program preference
+              </label>
+              <select
+                id="bootcamp-apply-program"
+                name="program"
+                className={cn(inputCls, 'appearance-none')}
+              >
+                {applyPrograms.map((p) => (
+                  <option key={p} className="bg-background">
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="bootcamp-apply-occupation"
+                className="mb-1 block text-sm font-medium text-card-foreground"
+              >
+                Current occupation
+              </label>
+              <input
+                id="bootcamp-apply-occupation"
+                name="occupation"
+                type="text"
+                placeholder="e.g. Teacher, Retail Manager, Student"
+                className={inputCls}
+              />
+            </div>
+            <button
+              type="submit"
+              aria-busy={inquiry.isPending}
+              disabled={inquiry.isPending}
+              className="w-full rounded-lg bg-primary py-3.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {inquiry.isPending ? 'Sending' : applySubmit}
+            </button>
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              {inquiry.statusText}
+            </p>
+          </form>
+          <p className="mt-4 text-xs text-muted-foreground">{applyFineprint}</p>
         </div>
-      </section>
+
+        <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
+          {applyTrust.map((t) => (
+            <div key={t} className="flex items-center gap-2">
+              <Check className="size-5 text-primary-foreground" />
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+      </CtaBand>
     )
   },
 })

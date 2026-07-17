@@ -1,9 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 export const SalonBarberHero = defineCapsule({
   name: 'SalonBarberHero',
@@ -40,37 +47,23 @@ export const SalonBarberHero = defineCapsule({
       : ['Mon–Fri · 9am–8pm', 'Saturday · 9am–6pm', 'Sunday · 11am–5pm']
 
     return (
-      <section
-        className={cn('relative isolate overflow-hidden', props.className)}
-      >
-        <Image
+      <HeroSection variant="full-bleed" className={props.className}>
+        <HeroBackgroundImage
           alt={imageAlt}
-          w={1920}
-          h={1080}
-          loading="lazy"
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
-        />
-        <div
-          className="absolute inset-0 -z-10 bg-foreground/60"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/80 via-foreground/40 to-transparent"
-          aria-hidden="true"
+          overlayClassName="bg-foreground/60"
+          gradientClassName="bg-gradient-to-t from-foreground/80 via-foreground/40 to-transparent"
         />
 
-        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 py-28 text-center sm:py-36 lg:px-8">
-          <span className="inline-flex rounded-full border border-background/30 bg-background/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-background">
+        <HeroContent className="mx-auto flex max-w-4xl flex-col items-center px-6 py-28 text-center sm:py-36 lg:px-8">
+          <HeroBadge variant="pill" className="font-semibold tracking-widest">
             {eyebrow}
-          </span>
-          <h1 className="mt-6 text-4xl font-bold leading-tight text-background sm:text-5xl lg:text-6xl">
-            {heading}
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-background/80">
+          </HeroBadge>
+          <HeroHeading className="mt-6 text-background">{heading}</HeroHeading>
+          <HeroSubheading variant="light" className="text-lg leading-8">
             {subheading}
-          </p>
+          </HeroSubheading>
 
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+          <HeroCtas className="mt-10 flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryTarget)}
@@ -85,7 +78,7 @@ export const SalonBarberHero = defineCapsule({
             >
               {secondaryCta}
             </button>
-          </div>
+          </HeroCtas>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-background/80">
             {hours.flatMap((slot, i) =>
@@ -101,8 +94,8 @@ export const SalonBarberHero = defineCapsule({
                   ],
             )}
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

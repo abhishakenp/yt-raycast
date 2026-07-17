@@ -3,6 +3,18 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  HeroSection,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroStats,
+  HeroStat,
+  HeroStatValue,
+  HeroStatLabel,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * AgencyHero — bold full-bleed hero band for a creative digital-agency landing
@@ -78,9 +90,10 @@ export const AgencyHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="gradient"
         className={cn(
-          'relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-primary/15 via-accent/5 to-background pt-16',
+          'bg-gradient-to-b from-primary/15 via-accent/5 to-background pt-16',
           props.className,
         )}
       >
@@ -88,22 +101,18 @@ export const AgencyHero = defineCapsule({
           <div className="absolute left-1/4 top-1/4 size-96 animate-pulse rounded-full bg-primary/30 blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 size-80 animate-pulse rounded-full bg-accent/20 blur-3xl [animation-delay:2s]" />
         </div>
-        <div className="relative z-10 mx-auto max-w-6xl px-6 text-center">
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-accent/50 px-4 py-2 text-sm text-muted-foreground">
+        <HeroContent className="mx-auto max-w-6xl px-6 text-center">
+          <HeroBadge variant="pulsing-dot" className="mb-8">
             <span className="size-2 animate-pulse rounded-full bg-primary" />
             {badge}
-          </div>
-          <h1 className="mb-8 text-5xl font-black leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl">
+          </HeroBadge>
+          <HeroHeading variant="black">
             {headingTop}
             <br />
-            <span className="bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent">
-              {highlight}
-            </span>{' '}
+            <HeroHighlight variant="gradient">{highlight}</HeroHighlight>{' '}
             {headingBottom}
-          </h1>
-          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            {subheading}
-          </p>
+          </HeroHeading>
+          <HeroSubheading variant="large">{subheading}</HeroSubheading>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <button
               type="button"
@@ -122,20 +131,16 @@ export const AgencyHero = defineCapsule({
             </button>
           </div>
 
-          <div className="mt-24 grid grid-cols-2 gap-8 border-t border-border pt-10 md:grid-cols-4">
+          <HeroStats>
             {stats.map((s) => (
-              <div key={s.label}>
-                <div className="text-3xl font-bold text-foreground">
-                  {s.value}
-                </div>
-                <div className="mt-1 text-sm text-muted-foreground">
-                  {s.label}
-                </div>
-              </div>
+              <HeroStat key={s.label}>
+                <HeroStatValue>{s.value}</HeroStatValue>
+                <HeroStatLabel>{s.label}</HeroStatLabel>
+              </HeroStat>
             ))}
-          </div>
-        </div>
-      </section>
+          </HeroStats>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

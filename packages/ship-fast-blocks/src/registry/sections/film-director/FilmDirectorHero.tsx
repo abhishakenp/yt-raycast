@@ -3,7 +3,17 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroStats,
+  HeroStat,
+  HeroStatValue,
+  HeroStatLabel,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * FilmDirectorHero — full-height split hero for a film director / cinematographer
@@ -83,7 +93,7 @@ export const FilmDirectorHero = defineCapsule({
     }
 
     return (
-      <section
+      <HeroSection
         className={cn('flex min-h-screen items-center', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-24 lg:px-8">
@@ -92,13 +102,13 @@ export const FilmDirectorHero = defineCapsule({
               <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
                 {heroEyebrow}
               </p>
-              <h1 className="mb-6 text-4xl font-light leading-tight sm:text-5xl lg:text-6xl">
+              <HeroHeading className="mb-6 font-light">
                 {renderHeading()}
-              </h1>
-              <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 max-w-xl">
                 {heroSub}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -114,30 +124,33 @@ export const FilmDirectorHero = defineCapsule({
                 >
                   {heroSecondary}
                 </button>
-              </div>
-              <div className="mt-12 grid grid-cols-3 gap-8 border-t border-border pt-8">
+              </HeroCtas>
+              <HeroStats className="mt-12 grid-cols-3 pt-8 md:grid-cols-3">
                 {heroStats.map((s) => (
-                  <div key={s.label}>
-                    <p className="text-2xl font-light">{s.value}</p>
-                    <p className="text-sm text-muted-foreground">{s.label}</p>
-                  </div>
+                  <HeroStat key={s.label}>
+                    <HeroStatValue className="text-2xl font-light">
+                      {s.value}
+                    </HeroStatValue>
+                    <HeroStatLabel className="mt-0">{s.label}</HeroStatLabel>
+                  </HeroStat>
                 ))}
-              </div>
+              </HeroStats>
             </div>
             <div className="order-1 lg:order-2">
               <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-muted">
-                <Image
+                <HeroImage
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-                  className="size-full object-cover"
+                  rounded="xl"
+                  className="size-full rounded-md"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 to-transparent" />
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

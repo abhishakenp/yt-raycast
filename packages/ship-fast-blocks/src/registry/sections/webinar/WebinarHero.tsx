@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
 
 export const WebinarHero = defineCapsule({
   name: 'WebinarHero',
@@ -51,32 +58,31 @@ export const WebinarHero = defineCapsule({
         ]
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'bg-background py-20 text-foreground lg:py-28',
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+        <HeroContent className="mx-auto max-w-3xl px-6 text-center lg:px-8">
+          <HeroBadge className="bg-muted text-xs uppercase tracking-[0.2em] shadow-none">
             <span
               className="size-2 rounded-full bg-primary"
               aria-hidden="true"
             />
             {eyebrow}
-          </span>
+          </HeroBadge>
 
-          <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            {title}
-          </h1>
+          <HeroHeading className="mt-6 font-semibold">{title}</HeroHeading>
 
           <div className="mt-6 inline-flex items-center justify-center rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-sm font-semibold text-primary">
             {dateTime}
           </div>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+          <HeroSubheading className="mx-auto max-w-2xl leading-8">
             {subheading}
-          </p>
+          </HeroSubheading>
 
           <div className="mt-8 flex flex-col items-center gap-3">
             <button
@@ -122,8 +128,8 @@ export const WebinarHero = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

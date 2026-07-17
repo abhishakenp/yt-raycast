@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -144,7 +150,7 @@ export const BakeryHero = defineCapsule({
     )
 
     return (
-      <section className={cn('relative bg-muted', props.className)}>
+      <HeroSection className={cn('relative bg-muted', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
@@ -152,14 +158,12 @@ export const BakeryHero = defineCapsule({
                 <p className="text-sm font-medium uppercase tracking-wider text-primary">
                   {eyebrow}
                 </p>
-                <h1 className="text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                  {heading}
-                </h1>
-                <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+                <HeroHeading className="font-semibold">{heading}</HeroHeading>
+                <HeroSubheading className="mt-0 max-w-xl">
                   {subheading}
-                </p>
+                </HeroSubheading>
               </div>
-              <div className="flex flex-wrap gap-4">
+              <HeroCtas className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryTarget)}
@@ -189,7 +193,7 @@ export const BakeryHero = defineCapsule({
                 >
                   {addLabel}
                 </CommerceAddItemButton>
-              </div>
+              </HeroCtas>
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <span className="text-primary">
@@ -206,11 +210,12 @@ export const BakeryHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="h-[400px] w-full rounded-xl object-cover shadow-xl lg:h-[500px]"
+                rounded="xl"
+                className="h-[400px] w-full shadow-xl lg:h-[500px]"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-lg sm:block">
                 <div className="flex items-center gap-3">
@@ -242,7 +247,7 @@ export const BakeryHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

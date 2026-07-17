@@ -4,6 +4,17 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroStats,
+  HeroStat,
+  HeroStatValue,
+  HeroStatLabel,
+} from '#/section-kit/HeroSection.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import {
   InquiryActionButton,
@@ -72,7 +83,7 @@ export const EventPlannerHero = defineCapsule({
         ]
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'px-4 pt-20 pb-20 sm:px-6 lg:px-8 lg:pt-28 lg:pb-28',
           props.className,
@@ -84,13 +95,13 @@ export const EventPlannerHero = defineCapsule({
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
                 {heroEyebrow}
               </p>
-              <h1 className="mb-6 text-4xl font-light leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              <HeroHeading className="mb-6 font-light">
                 {heroHeading}
-              </h1>
-              <p className="mb-8 max-w-lg text-lg leading-relaxed text-muted-foreground">
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 max-w-lg">
                 {heroSub}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex-wrap gap-4">
                 <InquiryActionButton
                   lakebed={lakebed}
                   label={heroPrimary}
@@ -114,25 +125,26 @@ export const EventPlannerHero = defineCapsule({
                 >
                   {heroSecondary}
                 </button>
-              </div>
-              <div className="mt-12 flex items-center gap-8 border-t border-border pt-8">
+              </HeroCtas>
+              <HeroStats className="mt-12 flex items-center gap-8 pt-8">
                 {heroStats.map((s) => (
-                  <div key={s.label}>
-                    <p className="text-3xl font-light text-foreground">
+                  <HeroStat key={s.label}>
+                    <HeroStatValue className="font-light">
                       {s.value}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{s.label}</p>
-                  </div>
+                    </HeroStatValue>
+                    <HeroStatLabel className="mt-0">{s.label}</HeroStatLabel>
+                  </HeroStat>
                 ))}
-              </div>
+              </HeroStats>
             </div>
             <div className="order-1 lg:order-2">
               <div className="relative">
-                <Image
+                <HeroImage
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-                  className="h-[500px] w-full rounded-2xl object-cover lg:h-[700px]"
+                  rounded="2xl"
+                  className="h-[500px] w-full lg:h-[700px]"
                 />
                 <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl bg-card p-6 shadow-xl">
                   <div className="mb-2 flex items-center gap-3">
@@ -162,7 +174,7 @@ export const EventPlannerHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
@@ -52,13 +52,15 @@ export const JewelryStoreAppointmentCta = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'relative overflow-hidden bg-muted py-20 lg:py-28',
-          props.className,
-        )}
+      <CtaBand
+        tone="muted"
+        eyebrow={eyebrow}
+        title={heading}
+        subtitle={description}
+        titleClassName="font-serif"
+        className={`relative overflow-hidden ${props.className ?? ''}`}
       >
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 -z-10">
           <Image
             alt={imageAlt}
             w={1920}
@@ -71,42 +73,31 @@ export const JewelryStoreAppointmentCta = defineCapsule({
             className="absolute inset-0 bg-gradient-to-t from-background via-muted/90 to-muted/70"
           />
         </div>
-        <div className="relative w-full px-6 text-center lg:px-12 xl:px-20">
-          <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
-            {eyebrow}
-          </p>
-          <h2 className="mx-auto mb-6 max-w-3xl font-serif text-4xl text-foreground lg:text-6xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            {description}
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center bg-primary px-10 py-4 text-sm font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center justify-center border border-border px-10 py-4 text-sm font-medium uppercase tracking-widest text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              {secondaryCta}
-            </button>
-          </div>
-          <div className="mx-auto mt-16 grid max-w-3xl gap-8 text-center sm:grid-cols-3">
-            {locations.map((loc) => (
-              <div key={loc.city}>
-                <p className="mb-1 font-medium text-foreground">{loc.city}</p>
-                <p className="text-sm text-muted-foreground">{loc.address}</p>
-              </div>
-            ))}
-          </div>
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => go(primaryCta)}
+            className="inline-flex items-center justify-center bg-primary px-10 py-4 text-sm font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            {primaryCta}
+          </button>
+          <button
+            type="button"
+            onClick={() => go(secondaryCta)}
+            className="inline-flex items-center justify-center border border-border px-10 py-4 text-sm font-medium uppercase tracking-widest text-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            {secondaryCta}
+          </button>
         </div>
-      </section>
+        <div className="mx-auto grid max-w-3xl gap-8 text-center sm:grid-cols-3">
+          {locations.map((loc) => (
+            <div key={loc.city}>
+              <p className="mb-1 font-medium text-foreground">{loc.city}</p>
+              <p className="text-sm text-muted-foreground">{loc.address}</p>
+            </div>
+          ))}
+        </div>
+      </CtaBand>
     )
   },
 })

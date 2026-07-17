@@ -3,7 +3,16 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -77,7 +86,7 @@ export const MentalHealthHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative overflow-hidden py-20 lg:py-28',
           props.className,
@@ -90,15 +99,15 @@ export const MentalHealthHero = defineCapsule({
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <HeroHeading className="font-semibold">
                 {headingTop}
                 <br />
-                <span className="text-primary">{highlight}</span>
-              </h1>
-              <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0">
+                <HeroHighlight>{highlight}</HeroHighlight>
+              </HeroHeading>
+              <HeroSubheading className="mx-auto max-w-xl lg:mx-0">
                 {subheading}
-              </p>
-              <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+              </HeroSubheading>
+              <HeroCtas className="flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                 <LocalServiceBookingButton
                   lakebed={lakebed}
                   intentLabel={bookLabel}
@@ -118,23 +127,23 @@ export const MentalHealthHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
-              <div className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground lg:justify-start">
+              </HeroCtas>
+              <HeroTrustRow className="mt-8 justify-center gap-6 lg:justify-start">
                 {trust.map((t) => (
-                  <div key={t} className="flex items-center gap-2">
+                  <HeroTrustItem key={t}>
                     <Check className="size-5 text-primary" />
                     <span>{t}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                loading="eager"
-                className="h-[400px] w-full rounded-2xl object-cover shadow-2xl lg:h-[500px]"
+                rounded="2xl"
+                className="h-[400px] w-full shadow-2xl lg:h-[500px]"
               />
               <div className="absolute -bottom-6 -left-6 max-w-[200px] rounded-xl bg-card p-4 shadow-xl">
                 <div className="flex items-center gap-3">
@@ -167,7 +176,7 @@ export const MentalHealthHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * ResumeCvHero — clean two-column opening hero for a personal resume / CV /
@@ -56,7 +62,7 @@ export const ResumeCvHero = defineCapsule({
     const imageAlt = props.imageAlt ?? 'professional headshot portrait'
 
     return (
-      <section className={cn('bg-background', props.className)}>
+      <HeroSection className={cn('bg-background', props.className)}>
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-24 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-32">
           <div className="flex flex-col items-start">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -67,19 +73,17 @@ export const ResumeCvHero = defineCapsule({
               {eyebrow}
             </span>
 
-            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              {name}
-            </h1>
+            <HeroHeading className="mt-6 font-semibold">{name}</HeroHeading>
 
             <p className="mt-3 text-lg font-medium text-primary sm:text-xl">
               {role}
             </p>
 
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            <HeroSubheading className="max-w-xl text-base sm:text-lg">
               {pitch}
-            </p>
+            </HeroSubheading>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryTarget)}
@@ -94,22 +98,20 @@ export const ResumeCvHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </div>
+            </HeroCtas>
           </div>
 
           <div className="relative">
-            <div className="overflow-hidden rounded-2xl border border-border bg-muted">
-              <Image
-                alt={imageAlt}
-                w={720}
-                h={840}
-                loading="lazy"
-                className="aspect-[6/7] size-full object-cover"
-              />
-            </div>
+            <HeroImage
+              alt={imageAlt}
+              w={720}
+              h={840}
+              rounded="2xl"
+              className="border border-border bg-muted aspect-[6/7]"
+            />
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

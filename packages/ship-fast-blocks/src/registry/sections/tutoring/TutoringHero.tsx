@@ -3,7 +3,15 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 
 export const TutoringHero = defineCapsule({
   name: 'TutoringHero',
@@ -44,7 +52,7 @@ export const TutoringHero = defineCapsule({
       props.imageAlt ?? 'Friendly tutor helping a smiling student with homework'
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'bg-background py-20 text-foreground sm:py-24',
           props.className,
@@ -59,13 +67,13 @@ export const TutoringHero = defineCapsule({
               />
               {eyebrow}
             </span>
-            <h1 className="mt-6 max-w-xl text-4xl font-bold leading-tight text-foreground sm:text-5xl">
+            <HeroHeading className="mt-6 max-w-xl lg:text-5xl">
               {heading}
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
+            </HeroHeading>
+            <HeroSubheading className="max-w-xl leading-8">
               {subheading}
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            </HeroSubheading>
+            <HeroCtas className="flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryTarget)}
@@ -80,10 +88,10 @@ export const TutoringHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </div>
-            <ul className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-border pt-8 text-sm text-muted-foreground">
+            </HeroCtas>
+            <HeroTrustRow className="mt-10 gap-y-3 border-t border-border pt-8">
               {trust.map((item) => (
-                <li key={item} className="flex items-center gap-2">
+                <HeroTrustItem key={item}>
                   <svg
                     className="size-4 shrink-0 text-primary"
                     viewBox="0 0 24 24"
@@ -99,9 +107,9 @@ export const TutoringHero = defineCapsule({
                     />
                   </svg>
                   <span className="font-medium text-foreground">{item}</span>
-                </li>
+                </HeroTrustItem>
               ))}
-            </ul>
+            </HeroTrustRow>
           </div>
           <div className="relative">
             <div
@@ -109,11 +117,12 @@ export const TutoringHero = defineCapsule({
               aria-hidden="true"
             />
             <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.12)]">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={900}
                 h={760}
-                className="aspect-[5/4] w-full object-cover"
+                rounded="3xl"
+                className="aspect-[5/4]"
               />
               <div className="flex items-center gap-3 border-t border-border bg-card/95 p-5">
                 <span className="inline-flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -144,7 +153,7 @@ export const TutoringHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

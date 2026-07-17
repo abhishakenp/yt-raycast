@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
+import {
   SaasMutationSpinner,
   SaasPlanActionButton,
 } from './saas-interactions.tsx'
@@ -112,7 +119,7 @@ export const SaasHero = defineCapsule({
         ]
 
     return (
-      <section
+      <HeroSection
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
         <div
@@ -125,13 +132,11 @@ export const SaasHero = defineCapsule({
               <span className="inline-block size-1.5 animate-pulse rounded-full bg-primary" />
               {badge}
             </span>
-            <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              {heading} <span className="text-primary">{highlight}</span>
-            </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-              {subheading}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3.5">
+            <HeroHeading variant="extra-bold">
+              {heading} <HeroHighlight>{highlight}</HeroHighlight>
+            </HeroHeading>
+            <HeroSubheading>{subheading}</HeroSubheading>
+            <HeroCtas>
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryCta}
@@ -176,7 +181,7 @@ export const SaasHero = defineCapsule({
                 </svg>
                 {secondaryCta}
               </SaasPlanActionButton>
-            </div>
+            </HeroCtas>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <div className="flex" aria-hidden="true">
                 {['a', 'b', 'c', 'd'].map((id, i) => (
@@ -283,7 +288,7 @@ export const SaasHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

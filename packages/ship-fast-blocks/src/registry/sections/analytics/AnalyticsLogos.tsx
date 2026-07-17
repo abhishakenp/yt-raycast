@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * AnalyticsLogos — bespoke "trusted by" social-proof strip for an analytics
@@ -30,37 +31,15 @@ export const AnalyticsLogos = defineCapsule({
       : ['Northwind', 'Vertex', 'Lumen', 'Cobalt', 'Meridian', 'Apex Labs']
 
     return (
-      <section
-        className={cn('border-y border-border bg-muted/30', props.className)}
-      >
-        <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-          <p className="text-center text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            {lead}
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
-            {companies.map((name) => (
-              <span
-                key={name}
-                className="inline-flex items-center gap-2 text-base font-semibold tracking-tight text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  aria-hidden="true"
-                >
-                  <path d="M4 20V10M10 20V4M16 20v-8M22 20h-20" />
-                </svg>
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LogoStrip
+        lead={lead}
+        logos={companies}
+        logoStyle="text-bold"
+        className={cn(
+          'border-y border-border bg-muted/30 px-6 py-12 lg:px-8',
+          props.className,
+        )}
+      />
     )
   },
 })

@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroContent,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * ChurchHero — centered, image-backed hero section for a church or faith-community
@@ -56,11 +63,9 @@ export const ChurchHero = defineCapsule({
       'Sunlight streaming through tall church windows creating warm golden rays'
 
     return (
-      <section
-        className={cn(
-          'relative overflow-hidden pt-20 pb-20 lg:pt-28 lg:pb-28',
-          props.className,
-        )}
+      <HeroSection
+        variant="full-bleed"
+        className={cn('pt-20 pb-20 lg:pt-28 lg:pb-28', props.className)}
       >
         <div aria-hidden="true" className="absolute inset-0 -z-10">
           <Image
@@ -71,19 +76,19 @@ export const ChurchHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
         </div>
-        <div className="mx-auto max-w-4xl px-6 text-center lg:px-8">
+        <HeroContent className="mx-auto max-w-4xl px-6 text-center lg:px-8">
           <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {eyebrow}
           </p>
-          <h1 className="mb-6 text-4xl font-medium leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          <HeroHeading className="mb-6 font-medium">
             {headingTop}
             <br />
             <span className="text-muted-foreground">{headingBottom}</span>
-          </h1>
-          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+          </HeroHeading>
+          <HeroSubheading variant="large" className="sm:text-lg">
             {subheading}
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          </HeroSubheading>
+          <HeroCtas className="mt-0 flex-col items-center justify-center gap-4 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryCta)}
@@ -106,7 +111,7 @@ export const ChurchHero = defineCapsule({
               </svg>
               {secondaryCta}
             </button>
-          </div>
+          </HeroCtas>
           <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <svg
@@ -143,8 +148,8 @@ export const ChurchHero = defineCapsule({
               <span>{address}</span>
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

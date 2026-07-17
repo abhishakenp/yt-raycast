@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container, ResponsiveGrid } from '#/section-kit/index.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * FintechLogos — trusted-by logo strip for a fintech / neobank landing page. A
@@ -33,37 +33,18 @@ export const FintechLogos = defineCapsule({
       : ['Stripe', 'Notion', 'Slack', 'Figma', 'Webflow', 'Vercel']
 
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={items}
+        layout="grid"
+        leadClassName="normal-case tracking-normal"
+        logoClassName="text-lg font-bold tracking-tight text-foreground opacity-60 transition-opacity hover:opacity-100"
+        onClickLogo={(logo) => go(logo)}
         className={cn(
-          'border-y border-border bg-muted pt-28 pb-12',
+          'border-y border-border bg-muted px-4 pt-28 pb-12 sm:px-6 lg:px-8',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium text-muted-foreground">
-            {label}
-          </p>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo, i) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className={cn(
-                  'mx-auto text-lg font-bold tracking-tight text-foreground transition-opacity hover:opacity-100',
-                  i >= 4 && 'hidden md:block',
-                )}
-              >
-                {logo}
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

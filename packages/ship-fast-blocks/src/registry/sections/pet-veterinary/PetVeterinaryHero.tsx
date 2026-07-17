@@ -4,6 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * PetVeterinaryHero — split, two-column hero for a veterinary clinic / pet
@@ -129,7 +137,7 @@ export const PetVeterinaryHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative overflow-hidden bg-gradient-to-b from-primary/10 to-background',
           props.className,
@@ -144,14 +152,13 @@ export const PetVeterinaryHero = defineCapsule({
                   {heroBadge}
                 </span>
               </div>
-              <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heroHeadingTop}{' '}
-                <span className="text-primary">{heroHighlight}</span>
-              </h1>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground lg:text-xl">
+              <HeroHeading className="mb-6">
+                {heroHeadingTop} <HeroHighlight>{heroHighlight}</HeroHighlight>
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 lg:text-xl">
                 {heroSub}
-              </p>
-              <div className="mb-12 flex flex-col gap-4 sm:flex-row">
+              </HeroSubheading>
+              <HeroCtas className="mb-12 flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -167,7 +174,7 @@ export const PetVeterinaryHero = defineCapsule({
                 >
                   {heroSecondary}
                 </button>
-              </div>
+              </HeroCtas>
               <div className="flex flex-wrap items-center gap-8 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
@@ -198,12 +205,7 @@ export const PetVeterinaryHero = defineCapsule({
 
             <div className="relative">
               <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-                <Image
-                  alt={heroImageAlt}
-                  w={800}
-                  h={600}
-                  className="h-auto w-full object-cover"
-                />
+                <HeroImage alt={heroImageAlt} w={800} h={600} />
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent"
@@ -259,7 +261,7 @@ export const PetVeterinaryHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

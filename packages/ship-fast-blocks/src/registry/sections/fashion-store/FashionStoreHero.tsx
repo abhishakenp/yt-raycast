@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -67,8 +68,9 @@ export const FashionStoreHero = defineCapsule({
     ])
 
     return (
-      <section
+      <HeroSection
         aria-label="Hero"
+        variant="default"
         className={cn('pt-16 lg:pt-20', props.className)}
       >
         <div className="relative h-[85vh] max-h-[900px] min-h-[600px]">
@@ -83,7 +85,7 @@ export const FashionStoreHero = defineCapsule({
             className="absolute inset-0 bg-foreground/20"
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="max-w-4xl px-4 text-center text-background">
+            <HeroContent className="max-w-4xl px-4 text-center text-background">
               <p className="mb-4 text-sm font-medium uppercase tracking-[0.3em] sm:text-base">
                 {heroEyebrow}
               </p>
@@ -125,10 +127,10 @@ export const FashionStoreHero = defineCapsule({
               >
                 Add capsule · {featuredPrice}
               </CommerceAddItemButton>
-            </div>
+            </HeroContent>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

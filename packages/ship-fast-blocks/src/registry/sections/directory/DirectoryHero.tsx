@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
 import { useDirectorySearch } from './directory-interactions.tsx'
 
@@ -52,10 +53,11 @@ export const DirectoryHero = defineCapsule({
     const categoryValue = directorySearch.state?.category ?? ''
 
     return (
-      <header
+      <HeroSection
+        variant="default"
         className={cn('bg-card pb-20 pt-16 lg:pb-28 lg:pt-24', props.className)}
       >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+        <HeroContent className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h1 className="mb-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             {heading}
           </h1>
@@ -130,8 +132,8 @@ export const DirectoryHero = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
-      </header>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

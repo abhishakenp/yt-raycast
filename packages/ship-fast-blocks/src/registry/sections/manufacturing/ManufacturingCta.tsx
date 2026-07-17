@@ -1,8 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * ManufacturingCta — a dark closing call-to-action band for a precision-
@@ -26,7 +25,6 @@ export const ManufacturingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to Start Your Project?'
     const description =
       props.description ??
@@ -38,31 +36,17 @@ export const ManufacturingCta = defineCapsule({
       'Located in Kent, Washington • Serving customers nationwide since 1989'
 
     return (
-      <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-semibold tracking-tight text-background sm:text-4xl">
-            {heading}
-          </h2>
-          <p className="mt-4 text-lg text-background/70">{description}</p>
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center rounded-md bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90"
-            >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center justify-center rounded-md border border-border px-8 py-4 font-medium text-background transition-colors hover:bg-background/10"
-            >
-              {secondaryCta}
-            </button>
-          </div>
-          <p className="mt-6 text-sm text-background/60">{note}</p>
-        </div>
-      </section>
+      <CtaBand
+        tone="primary"
+        eyebrow={note}
+        title={heading}
+        subtitle={description}
+        actions={[
+          { label: primaryCta, target: primaryCta, variant: 'primary' },
+          { label: secondaryCta, target: secondaryCta, variant: 'outline' },
+        ]}
+        className={`bg-foreground text-background ${props.className ?? ''}`}
+      />
     )
   },
 })

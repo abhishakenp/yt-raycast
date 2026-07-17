@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
 import {
@@ -44,39 +44,31 @@ export const DirectoryCta = defineCapsule({
     const secondaryCta = props.secondaryCta ?? 'Contact Sales'
 
     return (
-      <section
-        className={cn(
-          'bg-foreground py-16 text-background lg:py-24',
-          props.className,
-        )}
+      <CtaBand
+        tone="primary"
+        title={heading}
+        subtitle={description}
+        className={`bg-foreground text-background ${props.className ?? ''}`}
       >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-semibold sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-background/70">
-            {description}
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <DirectoryLeadButton
-              lakebed={lakebed}
-              action={primaryCta}
-              source="cta"
-              pendingChildren={<DirectoryMutationSpinner />}
-              className="inline-flex min-h-14 items-center justify-center rounded-lg bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {primaryCta}
-            </DirectoryLeadButton>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="rounded-lg border border-background/40 px-8 py-4 font-medium text-background transition-colors hover:border-background/70"
-            >
-              {secondaryCta}
-            </button>
-          </div>
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <DirectoryLeadButton
+            lakebed={lakebed}
+            action={primaryCta}
+            source="cta"
+            pendingChildren={<DirectoryMutationSpinner />}
+            className="inline-flex min-h-14 items-center justify-center rounded-lg bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {primaryCta}
+          </DirectoryLeadButton>
+          <button
+            type="button"
+            onClick={() => go(secondaryCta)}
+            className="rounded-lg border border-background/40 px-8 py-4 font-medium text-background transition-colors hover:border-background/70"
+          >
+            {secondaryCta}
+          </button>
         </div>
-      </section>
+      </CtaBand>
     )
   },
 })

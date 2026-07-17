@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
@@ -43,64 +43,57 @@ export const IllustratorContactCta = defineCapsule({
       : ['Instagram', 'Pinterest', 'Behance', 'Dribbble']
 
     return (
-      <section
-        className={cn(
-          'bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
-          props.className,
-        )}
+      <CtaBand
+        tone="primary"
+        title={heading}
+        subtitle={description}
+        titleClassName="font-serif"
+        className={`bg-background text-foreground ${props.className ?? ''}`}
       >
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 font-serif text-3xl sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            {description}
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(email)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-muted-foreground"
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => go(email)}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-muted-foreground"
+          >
+            <svg
+              className="size-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
             >
-              <svg
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-              {email}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
-            >
-              {secondaryCta}
-            </button>
-          </div>
-          <div className="mt-12 flex justify-center gap-6">
-            {socials.map((social) => (
-              <button
-                key={social}
-                type="button"
-                aria-label={social}
-                onClick={() => go(social)}
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {social}
-              </button>
-            ))}
-          </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+            {email}
+          </button>
+          <button
+            type="button"
+            onClick={() => go(secondaryCta)}
+            className="rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
+          >
+            {secondaryCta}
+          </button>
         </div>
-      </section>
+        <div className="flex justify-center gap-6">
+          {socials.map((social) => (
+            <button
+              key={social}
+              type="button"
+              aria-label={social}
+              onClick={() => go(social)}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {social}
+            </button>
+          ))}
+        </div>
+      </CtaBand>
     )
   },
 })

@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 import {
   AutoLeadActionButton,
   AutoMutationSpinner,
@@ -66,7 +72,7 @@ export const AutoDealershipHero = defineCapsule({
         ]
 
     return (
-      <section
+      <HeroSection
         className={cn('relative overflow-hidden bg-muted', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
@@ -76,14 +82,12 @@ export const AutoDealershipHero = defineCapsule({
                 <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
                   {eyebrow}
                 </p>
-                <h1 className="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                  {heading}
-                </h1>
-                <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+                <HeroHeading className="font-semibold">{heading}</HeroHeading>
+                <HeroSubheading className="mt-0 max-w-xl">
                   {subheading}
-                </p>
+                </HeroSubheading>
               </div>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              <HeroCtas className="mt-0 flex flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -107,7 +111,7 @@ export const AutoDealershipHero = defineCapsule({
                 >
                   {secondaryCta}
                 </AutoLeadActionButton>
-              </div>
+              </HeroCtas>
               <div className="flex items-center gap-8 pt-4">
                 {stats.map((s, i) => (
                   <div key={s.label} className="flex items-center gap-8">
@@ -121,16 +125,17 @@ export const AutoDealershipHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="aspect-[4/3] w-full rounded-lg object-cover shadow-2xl"
+                rounded="xl"
+                className="aspect-[4/3] w-full rounded-lg shadow-2xl"
               />
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

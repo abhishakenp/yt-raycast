@@ -3,7 +3,16 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * MarketingAgencyHero — split, conversion-focused hero for a growth / marketing
@@ -85,7 +94,7 @@ export const MarketingAgencyHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative overflow-hidden bg-background text-foreground',
           props.className,
@@ -97,14 +106,16 @@ export const MarketingAgencyHero = defineCapsule({
               <p className="mb-4 text-sm font-medium text-muted-foreground">
                 {eyebrow}
               </p>
-              <h1 className="mb-6 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <HeroHeading className="mb-6 font-semibold">
                 {headingBefore}{' '}
-                <span className="text-muted-foreground">{highlight}</span>
-              </h1>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
+                <HeroHighlight className="text-muted-foreground">
+                  {highlight}
+                </HeroHighlight>
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0">
                 {subheading}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -120,22 +131,23 @@ export const MarketingAgencyHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
-              <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              </HeroCtas>
+              <HeroTrustRow className="mt-10 gap-6">
                 {trust.map((t) => (
-                  <div key={t} className="flex items-center gap-2">
+                  <HeroTrustItem key={t}>
                     <Check className="size-5 text-primary" />
                     <span>{t}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="w-full rounded-xl object-cover shadow-lg"
+                rounded="xl"
+                className="w-full shadow-lg"
               />
               <div className="absolute -bottom-6 -left-6 rounded-xl bg-card p-4 shadow-lg">
                 <div className="flex items-center gap-3">
@@ -164,7 +176,7 @@ export const MarketingAgencyHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

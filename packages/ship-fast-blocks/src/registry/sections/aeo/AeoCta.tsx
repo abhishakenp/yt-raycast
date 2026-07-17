@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -60,63 +60,46 @@ export const AeoCta = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'bg-primary py-20 text-primary-foreground',
-          props.className,
-        )}
+      <CtaBand
+        tone="primary"
+        align={props.align ?? 'center'}
+        eyebrow={props.eyebrow ?? 'Answer Engine Optimization'}
+        title={props.title ?? 'Win the AI answer'}
+        subtitle={
+          props.subtitle ??
+          'Start tracking how AI engines describe your brand today — and turn AI answers into your next growth channel.'
+        }
+        className={props.className}
       >
-        <div
-          className={cn(
-            'mx-auto flex max-w-4xl flex-col gap-7 px-6',
-            (props.align ?? 'center') === 'left'
-              ? 'items-start text-left'
-              : 'items-center text-center',
-          )}
-        >
-          <p className="text-sm font-medium text-primary-foreground/80">
-            {props.eyebrow ?? 'Answer Engine Optimization'}
-          </p>
-          <div className="flex flex-col gap-4">
-            <h2 className="text-3xl font-semibold tracking-tight md:text-5xl">
-              {props.title ?? 'Win the AI answer'}
-            </h2>
-            <p className="mx-auto max-w-2xl text-base text-primary-foreground/80 md:text-lg">
-              {props.subtitle ??
-                'Start tracking how AI engines describe your brand today — and turn AI answers into your next growth channel.'}
-            </p>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            {actions.map((action) => {
-              const target = action.target ?? action.label
-              const isPrimary = (action.variant ?? 'primary') === 'primary'
-              return (
-                <SaasPlanActionButton
-                  key={`${action.label}:${target}`}
-                  lakebed={lakebed}
-                  intentLabel={target}
-                  plan={action.label}
-                  source="cta"
-                  pendingChildren={
-                    <>
-                      <SaasMutationSpinner className="size-4" />
-                      {isPrimary ? 'Starting' : 'Sending'}
-                    </>
-                  }
-                  className={cn(
-                    'inline-flex min-w-40 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    isPrimary
-                      ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
-                      : 'border border-primary-foreground/35 text-primary-foreground hover:bg-primary-foreground/10',
-                  )}
-                >
-                  {action.label}
-                </SaasPlanActionButton>
-              )
-            })}
-          </div>
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+          {actions.map((action) => {
+            const target = action.target ?? action.label
+            const isPrimary = (action.variant ?? 'primary') === 'primary'
+            return (
+              <SaasPlanActionButton
+                key={`${action.label}:${target}`}
+                lakebed={lakebed}
+                intentLabel={target}
+                plan={action.label}
+                source="cta"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    {isPrimary ? 'Starting' : 'Sending'}
+                  </>
+                }
+                className={`inline-flex min-w-40 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70 ${
+                  isPrimary
+                    ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
+                    : 'border border-primary-foreground/35 text-primary-foreground hover:bg-primary-foreground/10'
+                }`}
+              >
+                {action.label}
+              </SaasPlanActionButton>
+            )
+          })}
         </div>
-      </section>
+      </CtaBand>
     )
   },
 })

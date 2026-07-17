@@ -4,6 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * InsuranceHero — two-column hero band for an insurance / fintech landing page.
@@ -125,7 +134,7 @@ export const InsuranceHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn('relative overflow-hidden bg-muted', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
@@ -135,14 +144,14 @@ export const InsuranceHero = defineCapsule({
                 <Star className="size-4 text-primary" />
                 {ratingPill}
               </div>
-              <h1 className="text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingBefore}{' '}
-                <span className="text-primary">{highlight}</span> {headingAfter}
-              </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+              <HeroHeading>
+                {headingBefore} <HeroHighlight>{highlight}</HeroHighlight>{' '}
+                {headingAfter}
+              </HeroHeading>
+              <HeroSubheading className="mt-0 max-w-xl">
                 {subheading}
-              </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -173,15 +182,15 @@ export const InsuranceHero = defineCapsule({
                   </svg>
                   {secondaryCta}
                 </button>
-              </div>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              </HeroCtas>
+              <HeroTrustRow className="mt-0 gap-6">
                 {trustItems.map((item) => (
-                  <div key={item} className="flex items-center gap-2">
+                  <HeroTrustItem key={item}>
                     <Check className="size-5 text-primary" />
                     <span>{item}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
             <div className="relative">
               <div
@@ -226,7 +235,7 @@ export const InsuranceHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

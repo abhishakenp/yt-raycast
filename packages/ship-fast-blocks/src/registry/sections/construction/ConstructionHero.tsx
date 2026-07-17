@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroContent,
+  HeroHeading,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * ConstructionHero — full-bleed dark hero section for a construction / general
@@ -89,7 +94,8 @@ export const ConstructionHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'relative overflow-hidden bg-foreground',
           props.className,
@@ -104,7 +110,7 @@ export const ConstructionHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/70 to-transparent" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+        <HeroContent className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
           <div className="max-w-2xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-background/10 px-4 py-2 backdrop-blur-sm">
               <span className="size-2 animate-pulse rounded-full bg-primary" />
@@ -112,11 +118,11 @@ export const ConstructionHero = defineCapsule({
                 {badge}
               </span>
             </div>
-            <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-background sm:text-5xl lg:text-6xl">
+            <HeroHeading className="mb-6 text-background">
               {headingTop}
               <br />
               {headingBottom}
-            </h1>
+            </HeroHeading>
             <p className="mb-8 max-w-xl text-lg leading-relaxed text-background/70 sm:text-xl">
               {subheading}
             </p>
@@ -146,8 +152,8 @@ export const ConstructionHero = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

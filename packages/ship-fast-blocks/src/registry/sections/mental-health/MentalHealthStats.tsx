@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * MentalHealthStats — a bold full-bleed stats band for a therapy practice. A
@@ -34,16 +35,15 @@ export const MentalHealthStats = defineCapsule({
     return (
       <section className={cn('bg-primary py-16', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 text-center text-primary-foreground lg:grid-cols-4">
-            {items.map((s) => (
-              <div key={s.label}>
-                <p className="mb-2 text-4xl font-semibold lg:text-5xl">
-                  {s.value}
-                </p>
-                <p className="text-primary-foreground/80">{s.label}</p>
-              </div>
-            ))}
-          </div>
+          <StatGrid
+            stats={items}
+            columns={4}
+            weight="semibold"
+            size="large"
+            valueColor="primaryFg"
+            labelColor="primaryFg"
+            className="text-center"
+          />
         </div>
       </section>
     )

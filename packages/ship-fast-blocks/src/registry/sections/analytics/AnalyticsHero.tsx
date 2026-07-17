@@ -4,6 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import {
+  HeroSection,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
+import {
   SaasMutationSpinner,
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
@@ -62,7 +71,8 @@ export const AnalyticsHero = defineCapsule({
         ]
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'relative overflow-hidden bg-background',
           props.className,
@@ -72,19 +82,18 @@ export const AnalyticsHero = defineCapsule({
           aria-hidden="true"
           className="pointer-events-none absolute -top-1/3 -right-[15%] size-[700px] rounded-full bg-primary/[0.07] blur-3xl"
         />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-6 py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:px-8 lg:py-24">
+        <HeroContent className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:px-8 lg:py-24">
           <div>
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm font-medium text-muted-foreground">
+            <HeroBadge variant="pulsing-dot" className="mb-6 bg-card py-1.5">
               <span className="inline-block size-1.5 animate-pulse rounded-full bg-primary" />
               {eyebrow}
-            </span>
-            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              {heading} <span className="text-primary">{highlight}</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              {subheading}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3.5">
+            </HeroBadge>
+            <HeroHeading variant="extra-bold" className="leading-[1.05]">
+              {heading}{' '}
+              <HeroHighlight variant="primary">{highlight}</HeroHighlight>
+            </HeroHeading>
+            <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
+            <HeroCtas>
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryCta}
@@ -129,7 +138,7 @@ export const AnalyticsHero = defineCapsule({
                 </svg>
                 {secondaryCta}
               </SaasPlanActionButton>
-            </div>
+            </HeroCtas>
             <dl className="mt-10 flex flex-wrap gap-8 border-t border-border pt-8">
               {stats.map((s) => (
                 <div key={s.label} className="flex flex-col gap-1">
@@ -163,8 +172,8 @@ export const AnalyticsHero = defineCapsule({
               />
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

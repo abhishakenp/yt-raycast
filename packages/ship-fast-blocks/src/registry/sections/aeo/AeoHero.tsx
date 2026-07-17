@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import {
+  HeroSection,
+  HeroContent,
+  HeroBadge,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
+import {
   SaasMutationSpinner,
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
@@ -60,20 +66,23 @@ export const AeoHero = defineCapsule({
       'Analytics dashboard showing AI answer citations, share-of-voice charts, and tracked prompts'
 
     return (
-      <section className={cn('bg-background', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 pb-16 pt-20 text-center sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
-          <span className="inline-flex items-center rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium text-muted-foreground">
+      <HeroSection
+        variant="default"
+        className={cn('bg-background', props.className)}
+      >
+        <HeroContent className="mx-auto max-w-4xl px-4 pb-16 pt-20 text-center sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
+          <HeroBadge className="bg-muted text-xs shadow-none">
             {eyebrow}
-          </span>
+          </HeroBadge>
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             {headingLead}{' '}
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               {headingAccent}
             </span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+          <HeroSubheading className="mx-auto max-w-2xl">
             {subheading}
-          </p>
+          </HeroSubheading>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <SaasPlanActionButton
               lakebed={lakebed}
@@ -112,7 +121,7 @@ export const AeoHero = defineCapsule({
               <span key={engine}>{engine}</span>
             ))}
           </div>
-        </div>
+        </HeroContent>
         <div className="mx-auto max-w-5xl px-4 pb-20 sm:px-6 lg:px-8">
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
             <Image
@@ -123,7 +132,7 @@ export const AeoHero = defineCapsule({
             />
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

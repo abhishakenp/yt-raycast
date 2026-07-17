@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * NutritionHero — split two-column hero for a nutrition-coaching / wellness landing
@@ -76,7 +83,7 @@ export const NutritionHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative overflow-hidden bg-background',
           props.className,
@@ -88,13 +95,13 @@ export const NutritionHero = defineCapsule({
               <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">
                 {eyebrow}
               </p>
-              <h1 className="mb-6 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <HeroHeading className="mb-6 font-semibold">
                 {heading}
-              </h1>
-              <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 max-w-xl">
                 {subheading}
-              </p>
-              <div className="mb-10 flex flex-col gap-4 sm:flex-row">
+              </HeroSubheading>
+              <HeroCtas className="mb-10 flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -109,7 +116,7 @@ export const NutritionHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
+              </HeroCtas>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">
                   {avatars.map((alt) => (
@@ -126,11 +133,12 @@ export const NutritionHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="aspect-[4/3] w-full rounded-2xl object-cover shadow-2xl"
+                rounded="2xl"
+                className="aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden max-w-xs rounded-xl bg-card p-4 shadow-lg sm:block">
                 <div className="flex items-center gap-3">
@@ -150,7 +158,7 @@ export const NutritionHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

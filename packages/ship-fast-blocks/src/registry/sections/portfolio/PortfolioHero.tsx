@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHighlight,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * PortfolioHero — split, cinematic hero band for a dark creative-individual
@@ -59,7 +64,7 @@ export const PortfolioHero = defineCapsule({
     const reelCaption = props.reelCaption ?? '2024 Showreel — 2:34'
 
     return (
-      <header
+      <HeroSection
         className={cn(
           'relative overflow-hidden pt-[140px] pb-20 lg:pt-[180px] lg:pb-[100px]',
           props.className,
@@ -76,15 +81,14 @@ export const PortfolioHero = defineCapsule({
                 {eyebrow}
               </p>
               <h1 className="mb-5 text-[clamp(2.6rem,6vw,4.5rem)] font-bold leading-[1.15] tracking-[-0.03em]">
-                {headlineLead}{' '}
-                <span className="text-primary">{headlineAccent}</span>
+                {headlineLead} <HeroHighlight>{headlineAccent}</HeroHighlight>
                 <br />
                 {headlineTail}
               </h1>
               <p className="mb-8 max-w-[520px] text-lg leading-[1.7] text-muted-foreground">
                 {description}
               </p>
-              <div className="flex flex-wrap gap-3.5">
+              <HeroCtas>
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -99,7 +103,7 @@ export const PortfolioHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
+              </HeroCtas>
             </div>
 
             <button
@@ -132,7 +136,7 @@ export const PortfolioHero = defineCapsule({
             </button>
           </div>
         </div>
-      </header>
+      </HeroSection>
     )
   },
 })

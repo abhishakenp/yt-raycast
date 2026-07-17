@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -74,71 +74,67 @@ export const CleaningServiceContactCta = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-primary p-8 text-center lg:p-16">
-            <div aria-hidden="true" className="absolute inset-0 opacity-10">
-              <svg
-                className="size-full"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                <pattern
-                  id="cleaning-service-cta-grid"
-                  width="10"
-                  height="10"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <circle cx="1" cy="1" r="1" fill="currentColor" />
-                </pattern>
-                <rect
-                  width="100"
-                  height="100"
-                  fill="url(#cleaning-service-cta-grid)"
-                  className="text-primary-foreground"
-                />
-              </svg>
-            </div>
-            <div className="relative">
-              <h2 className="mb-6 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl">
-                {heading}
-              </h2>
-              <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/80">
-                {description}
-              </p>
-              <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <LocalServiceBookingButton
-                  lakebed={lakebed}
-                  intentLabel={primaryCta}
-                  service="Home cleaning"
-                  source="final-cta"
-                  pendingChildren={
-                    <LocalServiceMutationSpinner className="text-primary" />
-                  }
-                  className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {primaryCta}
-                  <ArrowRight className="ml-2 size-5" />
-                </LocalServiceBookingButton>
-                <LocalServiceBookingButton
-                  lakebed={lakebed}
-                  intentLabel={secondaryCta}
-                  service="Phone consultation"
-                  source="final-cta-phone"
-                  pendingChildren={
-                    <LocalServiceMutationSpinner className="text-primary-foreground" />
-                  }
-                  className="inline-flex items-center justify-center rounded-full border border-primary-foreground/40 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
-                >
-                  <PhoneIcon className="mr-2 size-5" />
-                  {secondaryCta}
-                </LocalServiceBookingButton>
-              </div>
-              <p className="mt-6 text-sm text-primary-foreground/70">{note}</p>
-            </div>
-          </div>
+      <CtaBand
+        tone="muted"
+        title={heading}
+        subtitle={description}
+        titleClassName="text-primary-foreground"
+        subtitleClassName="text-primary-foreground/80"
+        innerClassName="max-w-5xl rounded-3xl bg-primary p-8 lg:p-16"
+        className={props.className}
+      >
+        <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-10">
+          <svg
+            className="size-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <pattern
+              id="cleaning-service-cta-grid"
+              width="10"
+              height="10"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="1" cy="1" r="1" fill="currentColor" />
+            </pattern>
+            <rect
+              width="100"
+              height="100"
+              fill="url(#cleaning-service-cta-grid)"
+              className="text-primary-foreground"
+            />
+          </svg>
         </div>
-      </section>
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <LocalServiceBookingButton
+            lakebed={lakebed}
+            intentLabel={primaryCta}
+            service="Home cleaning"
+            source="final-cta"
+            pendingChildren={
+              <LocalServiceMutationSpinner className="text-primary" />
+            }
+            className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {primaryCta}
+            <ArrowRight className="ml-2 size-5" />
+          </LocalServiceBookingButton>
+          <LocalServiceBookingButton
+            lakebed={lakebed}
+            intentLabel={secondaryCta}
+            service="Phone consultation"
+            source="final-cta-phone"
+            pendingChildren={
+              <LocalServiceMutationSpinner className="text-primary-foreground" />
+            }
+            className="inline-flex items-center justify-center rounded-full border border-primary-foreground/40 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+          >
+            <PhoneIcon className="mr-2 size-5" />
+            {secondaryCta}
+          </LocalServiceBookingButton>
+        </div>
+        <p className="text-sm text-primary-foreground/70">{note}</p>
+      </CtaBand>
     )
   },
 })

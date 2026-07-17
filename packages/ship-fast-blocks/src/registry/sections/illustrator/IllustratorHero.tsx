@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -100,7 +106,7 @@ export const IllustratorHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-28 lg:pt-28',
           props.className,
@@ -112,16 +118,16 @@ export const IllustratorHero = defineCapsule({
               <p className="mb-4 text-sm font-medium uppercase tracking-wider text-chart-1">
                 {eyebrow}
               </p>
-              <h1 className="mb-6 font-serif text-4xl leading-tight sm:text-5xl lg:text-6xl xl:text-7xl">
+              <HeroHeading className="mb-6 font-serif font-normal xl:text-7xl">
                 {headingStart}{' '}
                 <span className="text-chart-2">{highlightOne}</span>{' '}
                 {headingMid}{' '}
                 <span className="text-chart-3">{highlightTwo}</span>
-              </h1>
-              <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 max-w-xl sm:text-xl">
                 {subheading}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -149,7 +155,7 @@ export const IllustratorHero = defineCapsule({
                 >
                   {addLabel}
                 </CommerceAddItemButton>
-              </div>
+              </HeroCtas>
             </div>
             <div className="relative order-1 lg:order-2">
               <div className="aspect-[4/5] overflow-hidden rounded-xl bg-muted">
@@ -171,7 +177,7 @@ export const IllustratorHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

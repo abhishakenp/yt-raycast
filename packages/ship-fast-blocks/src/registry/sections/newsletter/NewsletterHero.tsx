@@ -2,6 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  HeroSection,
+  HeroContent,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
@@ -55,14 +60,15 @@ export const NewsletterHero = defineCapsule({
     const proofBrands = props.proofBrands ?? 'Notion, Figma, Stripe, and Vercel'
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'pb-12 pt-16 md:pb-16 md:pt-24 lg:pb-24 lg:pt-28',
           props.className,
         )}
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+          <HeroContent className="mx-auto max-w-3xl text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-wide text-muted-foreground">
               {eyebrow}
             </p>
@@ -70,9 +76,9 @@ export const NewsletterHero = defineCapsule({
               {headingTop}
               <br className="hidden sm:block" /> {headingBottom}
             </h1>
-            <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+            <HeroSubheading variant="large" className="mb-8">
               {subheading}
-            </p>
+            </HeroSubheading>
 
             <NewsletterSubscribeForm
               lakebed={lakebed}
@@ -91,9 +97,9 @@ export const NewsletterHero = defineCapsule({
               <span className="font-medium text-foreground">{proofBrands}</span>
               .
             </p>
-          </div>
+          </HeroContent>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

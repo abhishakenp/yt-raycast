@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import {
   JobBoardActionButton,
@@ -63,50 +63,48 @@ export const JobBoardCta = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-background py-20', props.className)}>
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl bg-foreground p-8 text-center text-background sm:p-12 lg:p-16">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-background/60">
-              {description}
-            </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <JobBoardActionButton
-                lakebed={lakebed}
-                action={primary}
-                source="cta:primary"
-                pendingChildren={
-                  <>
-                    <JobBoardMutationSpinner />
-                    Recording
-                  </>
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 font-semibold text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
-              >
-                {primary}
-                <ArrowRight className="size-5" />
-              </JobBoardActionButton>
-              <JobBoardActionButton
-                lakebed={lakebed}
-                action={secondary}
-                source="cta:secondary"
-                pendingChildren={
-                  <>
-                    <JobBoardMutationSpinner />
-                    Recording
-                  </>
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-background/30 px-8 py-4 font-semibold text-background transition-colors hover:bg-background/10 disabled:pointer-events-none disabled:opacity-70"
-              >
-                {secondary}
-              </JobBoardActionButton>
-            </div>
-            <p className="mt-6 text-sm text-background/50">{note}</p>
-          </div>
+      <CtaBand
+        tone="muted"
+        title={heading}
+        subtitle={description}
+        titleClassName="text-background"
+        subtitleClassName="text-background/60"
+        innerClassName="max-w-5xl rounded-3xl bg-foreground p-8 sm:p-12 lg:p-16"
+        className={props.className}
+      >
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <JobBoardActionButton
+            lakebed={lakebed}
+            action={primary}
+            source="cta:primary"
+            pendingChildren={
+              <>
+                <JobBoardMutationSpinner />
+                Recording
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 font-semibold text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {primary}
+            <ArrowRight className="size-5" />
+          </JobBoardActionButton>
+          <JobBoardActionButton
+            lakebed={lakebed}
+            action={secondary}
+            source="cta:secondary"
+            pendingChildren={
+              <>
+                <JobBoardMutationSpinner />
+                Recording
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-background/30 px-8 py-4 font-semibold text-background transition-colors hover:bg-background/10 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {secondary}
+          </JobBoardActionButton>
         </div>
-      </section>
+        <p className="text-sm text-background/50">{note}</p>
+      </CtaBand>
     )
   },
 })

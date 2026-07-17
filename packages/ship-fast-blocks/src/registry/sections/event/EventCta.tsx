@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import {
   EventActionButton,
   EventMutationSpinner,
@@ -47,59 +47,56 @@ export const EventCta = defineCapsule({
     const email = props.email ?? 'hello@designfront.io'
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            {description}
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <EventActionButton
-              lakebed={lakebed}
-              action="ticket"
-              label={primaryCta}
-              intentKey="cta-ticket"
-              source="cta"
-              pendingChildren={
-                <>
-                  <EventMutationSpinner />
-                  Reserving
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {primaryCta}
-            </EventActionButton>
-            <EventActionButton
-              lakebed={lakebed}
-              action="download"
-              label={secondaryCta}
-              intentKey="cta-download"
-              source="cta"
-              pendingChildren={
-                <>
-                  <EventMutationSpinner />
-                  Preparing
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
-            >
-              {secondaryCta}
-            </EventActionButton>
-          </div>
-          <p className="mt-8 text-sm text-muted-foreground">
-            {emailLabel}{' '}
-            <a
-              href={`mailto:${email}`}
-              className="text-foreground underline hover:no-underline"
-            >
-              {email}
-            </a>
-          </p>
+      <CtaBand
+        tone="muted"
+        title={heading}
+        subtitle={description}
+        className={props.className}
+      >
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <EventActionButton
+            lakebed={lakebed}
+            action="ticket"
+            label={primaryCta}
+            intentKey="cta-ticket"
+            source="cta"
+            pendingChildren={
+              <>
+                <EventMutationSpinner />
+                Reserving
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {primaryCta}
+          </EventActionButton>
+          <EventActionButton
+            lakebed={lakebed}
+            action="download"
+            label={secondaryCta}
+            intentKey="cta-download"
+            source="cta"
+            pendingChildren={
+              <>
+                <EventMutationSpinner />
+                Preparing
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+          >
+            {secondaryCta}
+          </EventActionButton>
         </div>
-      </section>
+        <p className="text-sm text-muted-foreground">
+          {emailLabel}{' '}
+          <a
+            href={`mailto:${email}`}
+            className="text-foreground underline hover:no-underline"
+          >
+            {email}
+          </a>
+        </p>
+      </CtaBand>
     )
   },
 })

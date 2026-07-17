@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -121,11 +122,12 @@ export const NewsroomHero = defineCapsule({
     ])
 
     return (
-      <section
+      <HeroSection
         aria-labelledby="newsroom-hero-heading"
+        variant="default"
         className={cn('bg-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <HeroContent className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid gap-12 lg:grid-cols-3 lg:gap-16">
             {/* Lead story */}
             <article className="lg:col-span-2">
@@ -208,8 +210,8 @@ export const NewsroomHero = defineCapsule({
               </ul>
             </aside>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * DevToolLogos — a slim "trusted by" social-proof logo strip for a developer
@@ -30,28 +30,20 @@ export const DevToolLogos = defineCapsule({
       : ['Stripe', 'Notion', 'Linear', 'Vercel', 'Shopify', 'Slack']
 
     return (
-      <section
-        className={cn('border-b border-border py-12', props.className)}
+      <LogoStrip
+        lead={label}
+        logos={companies}
+        layout="grid"
+        logoStyle="opacity-hover"
+        onClickLogo={(company) => go(company)}
+        leadClassName="tracking-wider"
+        logoClassName="text-muted-foreground/70"
         aria-label="Trusted companies"
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <div className="grid grid-cols-3 items-center justify-items-center gap-8 md:grid-cols-6">
-            {companies.map((company) => (
-              <button
-                key={company}
-                type="button"
-                onClick={() => go(company)}
-                className="text-lg font-semibold text-muted-foreground/70 transition-colors hover:text-foreground"
-              >
-                {company}
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+        className={cn(
+          'border-b border-border px-4 py-12 sm:px-6 lg:px-8',
+          props.className,
+        )}
+      />
     )
   },
 })

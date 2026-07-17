@@ -5,6 +5,16 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
+import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
 } from '../local-service/local-service-interactions.tsx'
@@ -98,7 +108,7 @@ export const DentalHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn('relative overflow-hidden bg-muted', props.className)}
       >
         <div aria-hidden="true" className="absolute inset-0 opacity-30">
@@ -114,14 +124,14 @@ export const DentalHero = defineCapsule({
                   {heroBadge}
                 </span>
               </div>
-              <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heroPre} <span className="text-primary">{heroHighlight}</span>{' '}
+              <HeroHeading className="mb-6">
+                {heroPre} <HeroHighlight>{heroHighlight}</HeroHighlight>{' '}
                 {heroPost}
-              </h1>
-              <p className="mx-auto mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0">
+              </HeroHeading>
+              <HeroSubheading className="mx-auto mb-8 mt-0 max-w-xl lg:mx-0">
                 {heroSub}
-              </p>
-              <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                 <LocalServiceBookingButton
                   lakebed={lakebed}
                   intentLabel={heroPrimary}
@@ -154,10 +164,10 @@ export const DentalHero = defineCapsule({
                   <PhoneIcon className="size-5" />
                   {heroPhone}
                 </button>
-              </div>
-              <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground lg:justify-start">
+              </HeroCtas>
+              <HeroTrustRow className="mt-10 justify-center gap-6 lg:justify-start">
                 {heroBadges.map((b) => (
-                  <div key={b} className="flex items-center gap-2">
+                  <HeroTrustItem key={b}>
                     <svg
                       viewBox="0 0 20 20"
                       fill="currentColor"
@@ -171,19 +181,18 @@ export const DentalHero = defineCapsule({
                       />
                     </svg>
                     <span>{b}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
             <div className="relative">
-              <div className="aspect-[4/3] overflow-hidden rounded-3xl shadow-2xl">
-                <Image
-                  alt={heroImageAlt}
-                  w={1200}
-                  h={900}
-                  className="size-full object-cover"
-                />
-              </div>
+              <HeroImage
+                alt={heroImageAlt}
+                w={1200}
+                h={900}
+                rounded="3xl"
+                className="aspect-[4/3] shadow-2xl"
+              />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-2xl bg-background p-6 shadow-xl">
                 <div className="flex items-center gap-4">
                   <div className="flex -space-x-3">
@@ -213,7 +222,7 @@ export const DentalHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

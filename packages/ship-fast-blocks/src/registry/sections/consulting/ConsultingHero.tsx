@@ -3,7 +3,15 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * ConsultingHero — two-column hero section for a management-consulting firm
@@ -95,7 +103,7 @@ export const ConsultingHero = defineCapsule({
     }
 
     return (
-      <section
+      <HeroSection
         className={cn('relative overflow-hidden bg-muted', props.className)}
       >
         <div
@@ -108,13 +116,11 @@ export const ConsultingHero = defineCapsule({
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-medium uppercase tracking-wide text-secondary-foreground">
                 {eyebrow}
               </div>
-              <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {renderHeading()}
-              </h1>
-              <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <HeroHeading>{renderHeading()}</HeroHeading>
+              <HeroSubheading className="mt-0 max-w-2xl sm:text-xl">
                 {subheading}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -129,26 +135,27 @@ export const ConsultingHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
-              <div className="flex flex-wrap items-center gap-8 pt-4 text-sm text-muted-foreground">
+              </HeroCtas>
+              <HeroTrustRow className="mt-0 gap-8 pt-4">
                 {trust.map((t) => (
-                  <div key={t} className="flex items-center gap-2">
+                  <HeroTrustItem key={t}>
                     <CheckIcon className="size-5 text-muted-foreground" />
                     <span>{t}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
             <div className="relative">
               <div
                 aria-hidden="true"
                 className="absolute -inset-4 rounded-2xl bg-secondary/60"
               />
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="relative aspect-[4/3] w-full rounded-xl object-cover shadow-2xl"
+                rounded="xl"
+                className="relative aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-lg bg-card p-4 shadow-xl">
                 <div className="flex items-center gap-3">
@@ -168,7 +175,7 @@ export const ConsultingHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

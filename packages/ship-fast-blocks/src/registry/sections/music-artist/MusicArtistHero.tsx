@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * MusicArtistHero — split, two-column hero for a music artist / band landing
@@ -67,7 +73,7 @@ export const MusicArtistHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'px-6 pt-20 pb-20 lg:px-8 lg:pt-28 lg:pb-28',
           props.className,
@@ -79,13 +85,13 @@ export const MusicArtistHero = defineCapsule({
               <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
                 {eyebrow}
               </p>
-              <h1 className="mb-6 text-4xl font-light leading-tight text-foreground lg:text-6xl xl:text-7xl">
+              <HeroHeading className="mb-6 font-light lg:text-6xl xl:text-7xl">
                 {title}
-              </h1>
-              <p className="mb-8 max-w-lg text-lg leading-relaxed text-muted-foreground lg:text-xl">
+              </HeroHeading>
+              <HeroSubheading className="mb-8 mt-0 lg:text-xl">
                 {description}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </HeroSubheading>
+              <HeroCtas className="gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -101,21 +107,19 @@ export const MusicArtistHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
+              </HeroCtas>
             </div>
             <div className="order-1 lg:order-2">
-              <div className="relative aspect-square overflow-hidden rounded-sm bg-muted">
-                <Image
-                  alt={imageAlt}
-                  w={800}
-                  h={800}
-                  className="size-full object-cover"
-                />
-              </div>
+              <HeroImage
+                alt={imageAlt}
+                w={800}
+                h={800}
+                className="relative aspect-square rounded-sm bg-muted"
+              />
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

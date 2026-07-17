@@ -3,7 +3,15 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * TourExperiencesHero — vivid, full-bleed adventure hero for a guided-tour /
@@ -65,36 +73,35 @@ export const TourExperiencesHero = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'relative isolate overflow-hidden bg-foreground text-background',
-          props.className,
-        )}
+      <HeroSection
+        variant="full-bleed"
+        className={cn('bg-foreground text-background', props.className)}
       >
-        <Image
+        <HeroBackgroundImage
           alt={imageAlt}
-          w={1920}
-          h={1080}
-          className="absolute inset-0 -z-10 size-full object-cover"
-        />
-        <div
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground via-foreground/70 to-foreground/30"
-          aria-hidden="true"
+          overlayClassName="bg-transparent"
+          gradientClassName="bg-gradient-to-t from-foreground via-foreground/70 to-foreground/30"
         />
 
-        <div className="mx-auto flex min-h-[36rem] max-w-7xl flex-col justify-center px-6 py-32 lg:px-8 lg:py-40">
+        <HeroContent className="mx-auto flex min-h-[36rem] max-w-7xl flex-col justify-center px-6 py-32 lg:px-8 lg:py-40">
           <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-background/30 bg-background/10 px-4 py-2 text-sm font-medium text-background backdrop-blur-sm">
+            <HeroBadge
+              variant="pill"
+              className="gap-2 py-2 text-sm tracking-normal normal-case"
+            >
               <span className="size-2 rounded-full bg-primary" />
               {eyebrow}
-            </span>
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-background sm:text-5xl lg:text-6xl">
+            </HeroBadge>
+            <HeroHeading className="mt-6 text-background">
               {heading}
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-background/80">
+            </HeroHeading>
+            <HeroSubheading
+              variant="light"
+              className="max-w-xl text-lg sm:text-lg"
+            >
               {subheading}
-            </p>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            </HeroSubheading>
+            <HeroCtas className="mt-10 flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryTarget)}
@@ -109,7 +116,7 @@ export const TourExperiencesHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </div>
+            </HeroCtas>
           </div>
 
           <div className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-background/20 pt-8">
@@ -122,8 +129,8 @@ export const TourExperiencesHero = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

@@ -157,6 +157,28 @@ export {
   OverviewStatLabel,
   OverviewImagePanel,
 } from './OverviewSection.tsx'
+export {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+  HeroStats,
+  HeroStat,
+  HeroStatValue,
+  HeroStatLabel,
+  heroSectionVariants,
+  heroBadgeVariants,
+  heroHeadingVariants,
+  heroSubheadingVariants,
+} from './HeroSection.tsx'
+export { LogoStrip } from './LogoStrip.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

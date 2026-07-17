@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -46,48 +46,45 @@ export const CrmCta = defineCapsule({
       'Free setup call included. Average onboarding time: 23 minutes.'
 
     return (
-      <section className={cn('bg-primary py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-xl text-primary-foreground/70">
-            {description}
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={primaryCta}
-              plan={primaryCta}
-              source="cta"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Starting
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
-            >
-              {primaryCta}
-            </SaasPlanActionButton>
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={secondaryCta}
-              source="cta"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Sending
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {secondaryCta}
-            </SaasPlanActionButton>
-          </div>
-          <p className="mt-6 text-sm text-primary-foreground/60">{note}</p>
+      <CtaBand
+        tone="primary"
+        title={heading}
+        subtitle={description}
+        className={props.className}
+      >
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={primaryCta}
+            plan={primaryCta}
+            source="cta"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Starting
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+          >
+            {primaryCta}
+          </SaasPlanActionButton>
+          <SaasPlanActionButton
+            lakebed={lakebed}
+            intentLabel={secondaryCta}
+            source="cta"
+            pendingChildren={
+              <>
+                <SaasMutationSpinner className="size-4" />
+                Sending
+              </>
+            }
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {secondaryCta}
+          </SaasPlanActionButton>
         </div>
-      </section>
+        <p className="text-sm text-primary-foreground/60">{note}</p>
+      </CtaBand>
     )
   },
 })

@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { Image } from '#/lib/img.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * MarketingHero — split product hero for a SaaS / product-marketing landing page.
@@ -64,7 +70,7 @@ export const MarketingHero = defineCapsule({
     const barHeights = ['40%', '70%', '55%', '85%', '65%']
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-background pt-20 pb-28',
           props.className,
@@ -88,13 +94,16 @@ export const MarketingHero = defineCapsule({
               </svg>
               {badge}
             </span>
-            <h1 className="text-balance text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-[3.6rem]">
+            <HeroHeading
+              variant="extra-bold"
+              className="text-balance lg:text-[3.6rem]"
+            >
               {heading}
-            </h1>
-            <p className="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-muted-foreground lg:mx-0">
+            </HeroHeading>
+            <HeroSubheading className="mx-auto mt-5 max-w-[48ch] lg:mx-0">
               {subheading}
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+            </HeroSubheading>
+            <HeroCtas className="justify-center gap-3 lg:justify-start">
               <button
                 type="button"
                 onClick={() => go(primaryCta)}
@@ -136,7 +145,7 @@ export const MarketingHero = defineCapsule({
                 </svg>
                 {secondaryCta}
               </button>
-            </div>
+            </HeroCtas>
             <p className="mt-4 text-sm text-muted-foreground">{note}</p>
           </div>
 
@@ -237,7 +246,7 @@ export const MarketingHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

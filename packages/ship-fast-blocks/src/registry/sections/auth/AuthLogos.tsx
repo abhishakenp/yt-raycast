@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * AuthLogos — bespoke trusted-by strip for Authly, a developer authentication
@@ -36,23 +37,12 @@ export const AuthLogos = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
-          <p className="text-center text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
-            {eyebrow}
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-6 sm:gap-x-14">
-            {logos.filter(Boolean).map((logo) => (
-              <span
-                key={logo}
-                className="text-lg font-semibold tracking-tight text-muted-foreground"
-              >
-                {logo}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LogoStrip
+        lead={eyebrow}
+        logos={logos}
+        leadClassName="text-xs tracking-[0.18em]"
+        className={cn('bg-background px-6 py-14 lg:px-8', props.className)}
+      />
     )
   },
 })

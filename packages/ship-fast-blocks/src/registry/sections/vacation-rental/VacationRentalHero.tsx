@@ -3,7 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * VacationRentalHero — a full-bleed, immersive getaway hero for a vacation-rental
@@ -61,40 +68,35 @@ export const VacationRentalHero = defineCapsule({
     ]
 
     return (
-      <section
-        className={cn(
-          'relative isolate overflow-hidden bg-background text-foreground',
-          props.className,
-        )}
+      <HeroSection
+        variant="full-bleed"
+        className={cn('bg-background text-foreground', props.className)}
       >
-        <div className="absolute inset-0 -z-10">
-          <Image
-            alt={imageAlt}
-            w={1600}
-            h={1000}
-            className="size-full object-cover"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-foreground/55"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent"
-          />
-        </div>
+        <HeroBackgroundImage
+          alt={imageAlt}
+          w={1600}
+          h={1000}
+          overlayClassName="bg-foreground/55"
+          gradientClassName="bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent"
+        />
 
-        <div className="mx-auto flex max-w-5xl flex-col items-center px-6 py-28 text-center sm:py-36 lg:px-8">
-          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-background/30 bg-background/15 px-4 py-1.5 text-sm font-medium text-background backdrop-blur-sm">
+        <HeroContent className="mx-auto flex max-w-5xl flex-col items-center px-6 py-28 text-center sm:py-36 lg:px-8">
+          <HeroBadge
+            variant="pill"
+            className="mb-5 gap-2 bg-background/15 text-sm tracking-normal normal-case"
+          >
             <span className="inline-block size-1.5 rounded-full bg-background" />
             {eyebrow}
-          </span>
-          <h1 className="max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-background sm:text-5xl lg:text-6xl">
+          </HeroBadge>
+          <HeroHeading className="max-w-3xl leading-[1.1] text-background">
             {heading}
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-background/85">
+          </HeroHeading>
+          <HeroSubheading
+            variant="light"
+            className="text-lg text-background/85 sm:text-lg"
+          >
             {subheading}
-          </p>
+          </HeroSubheading>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-background/90">
             <span className="inline-flex items-center gap-1.5">
               <svg
@@ -165,8 +167,8 @@ export const VacationRentalHero = defineCapsule({
               </button>
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

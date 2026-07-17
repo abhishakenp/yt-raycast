@@ -1,9 +1,17 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { cn } from '#/lib/utils.ts'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 export const UniversityHero = defineCapsule({
   name: 'UniversityHero',
@@ -40,33 +48,35 @@ export const UniversityHero = defineCapsule({
       : ['18,000 students', '95% graduation rate', '22:1 student-faculty ratio']
 
     return (
-      <section
+      <HeroSection
+        variant="full-bleed"
         className={cn(
-          'relative isolate flex min-h-[640px] items-center overflow-hidden bg-foreground py-20 text-background lg:py-28',
+          'flex min-h-[640px] items-center bg-foreground py-20 text-background lg:py-28',
           props.className,
         )}
       >
-        <Image
+        <HeroBackgroundImage
           alt={imageAlt}
-          w={1920}
-          h={1080}
-          className="absolute inset-0 -z-10 size-full object-cover"
+          overlayClassName="bg-foreground/60"
+          gradientClassName="bg-transparent"
         />
-        <div
-          className="absolute inset-0 -z-10 bg-foreground/60"
-          aria-hidden="true"
-        />
-        <div className="mx-auto max-w-4xl px-6 text-center lg:px-8">
-          <span className="inline-flex items-center rounded-full border border-background/30 bg-background/10 px-4 py-2 text-sm font-medium uppercase tracking-wide text-background backdrop-blur-sm">
+        <HeroContent className="mx-auto max-w-4xl px-6 text-center lg:px-8">
+          <HeroBadge variant="pill" className="py-2 text-sm tracking-wide">
             {eyebrow}
-          </span>
-          <h1 className="mt-8 font-serif text-4xl font-bold leading-tight text-background sm:text-6xl">
+          </HeroBadge>
+          <HeroHeading
+            variant="serif"
+            className="font-bold max-w-none tracking-normal sm:text-6xl"
+          >
             {heading}
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-background/85">
+          </HeroHeading>
+          <HeroSubheading
+            variant="large"
+            className="mt-6 mb-0 leading-8 text-background/85 sm:text-lg"
+          >
             {subheading}
-          </p>
-          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+          </HeroSubheading>
+          <HeroCtas className="mt-10 flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryTarget)}
@@ -81,7 +91,7 @@ export const UniversityHero = defineCapsule({
             >
               {secondaryCta}
             </button>
-          </div>
+          </HeroCtas>
           <div className="mx-auto mt-12 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-background/20 pt-8 text-sm font-medium text-background/80">
             {quickStats.map((stat, i) => (
               <span key={stat} className="flex items-center gap-3">
@@ -94,8 +104,8 @@ export const UniversityHero = defineCapsule({
               </span>
             ))}
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

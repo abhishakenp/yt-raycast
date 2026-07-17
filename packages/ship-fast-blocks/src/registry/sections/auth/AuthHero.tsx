@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
+  HeroSection,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
+import {
   SaasMutationSpinner,
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
@@ -74,22 +81,25 @@ export const AuthHero = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background', props.className)}>
+      <HeroSection className={cn('bg-background', props.className)}>
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
           <div className="flex flex-col">
-            <span className="inline-flex w-fit items-center rounded-full border border-border bg-primary/10 px-4 py-1.5 text-xs font-medium tracking-[0.18em] text-accent uppercase">
+            <HeroBadge
+              variant="solid"
+              className="w-fit border border-border text-xs tracking-[0.18em] text-accent uppercase"
+            >
               {eyebrow}
-            </span>
+            </HeroBadge>
 
-            <h1 className="mt-6 max-w-xl text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            <HeroHeading className="mt-6 max-w-xl font-semibold">
               {heading}
-            </h1>
+            </HeroHeading>
 
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            <HeroSubheading className="mt-6 max-w-xl text-base sm:text-lg">
               {subheading}
-            </p>
+            </HeroSubheading>
 
-            <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+            <HeroCtas className="mt-9 flex flex-col gap-4 sm:flex-row">
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryTarget}
@@ -112,7 +122,7 @@ export const AuthHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </div>
+            </HeroCtas>
 
             <p className="mt-6 text-sm text-muted-foreground">{trustLine}</p>
           </div>
@@ -152,7 +162,7 @@ export const AuthHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

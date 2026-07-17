@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * NewsletterStats — compact subscriber stats strip for an editorial newsletter.
@@ -39,16 +40,13 @@ export const NewsletterStats = defineCapsule({
         className={cn('border-t border-border bg-muted/40', props.className)}
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 py-12 md:grid-cols-4 md:py-16">
-            {stats.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="mb-1 font-serif text-3xl font-medium text-foreground md:text-4xl">
-                  {s.value}
-                </p>
-                <p className="text-sm text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
-          </div>
+          <StatGrid
+            stats={stats}
+            columns={4}
+            fontFamily="serif"
+            weight="medium"
+            className="py-12 md:py-16"
+          />
         </div>
       </section>
     )

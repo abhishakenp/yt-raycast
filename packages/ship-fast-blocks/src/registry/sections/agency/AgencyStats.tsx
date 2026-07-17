@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * AgencyStats — split stats / about band for a creative digital-agency page. A
@@ -57,21 +58,13 @@ export const AgencyStats = defineCapsule({
               <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
                 {description}
               </p>
-              <div className="grid grid-cols-2 gap-8">
-                {items.map((s) => (
-                  <div
-                    key={s.label}
-                    className="border-l-2 border-primary/30 pl-6"
-                  >
-                    <div className="mb-1 text-4xl font-bold text-foreground">
-                      {s.value}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {s.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <StatGrid
+                stats={items}
+                columns={2}
+                align="left"
+                accentBorder
+                size="large"
+              />
             </div>
             <div className="relative">
               <div

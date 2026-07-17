@@ -1,9 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 export const WeddingHero = defineCapsule({
   name: 'WeddingHero',
@@ -40,44 +47,32 @@ export const WeddingHero = defineCapsule({
       'romantic outdoor wedding ceremony at golden hour with floral arch and soft bokeh'
 
     return (
-      <section
-        className={cn('relative isolate overflow-hidden', props.className)}
-      >
-        <Image
+      <HeroSection variant="full-bleed" className={props.className}>
+        <HeroBackgroundImage
           alt={imageAlt}
-          w={1920}
-          h={1080}
-          loading="lazy"
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
-        />
-        <div
-          className="absolute inset-0 -z-10 bg-foreground/60"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 -z-10 bg-gradient-to-b from-foreground/40 via-transparent to-foreground/70"
-          aria-hidden="true"
+          overlayClassName="bg-foreground/60"
+          gradientClassName="bg-gradient-to-b from-foreground/40 via-transparent to-foreground/70"
         />
 
-        <div className="mx-auto flex min-h-[88vh] max-w-4xl flex-col items-center justify-center px-6 py-28 text-center lg:px-8">
-          <span className="mb-6 inline-flex items-center rounded-full border border-background/30 bg-background/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-background backdrop-blur-sm">
+        <HeroContent className="mx-auto flex min-h-[88vh] max-w-4xl flex-col items-center justify-center px-6 py-28 text-center lg:px-8">
+          <HeroBadge variant="pill" className="mb-6 py-2">
             {eyebrow}
-          </span>
+          </HeroBadge>
 
-          <h1 className="font-serif text-5xl font-medium leading-tight text-background sm:text-6xl lg:text-7xl">
+          <HeroHeading className="font-serif font-medium text-5xl tracking-normal text-background sm:text-6xl lg:text-7xl">
             {coupleNames}
-          </h1>
+          </HeroHeading>
 
           <p className="mt-6 text-lg font-medium uppercase tracking-[0.18em] text-background/80">
             {date}
           </p>
           <p className="mt-2 text-base text-background/80">{venue}</p>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-background/80">
+          <HeroSubheading variant="light" className="text-lg leading-8">
             {subheading}
-          </p>
+          </HeroSubheading>
 
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+          <HeroCtas className="mt-10 flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryTarget)}
@@ -92,9 +87,9 @@ export const WeddingHero = defineCapsule({
             >
               {secondaryCta}
             </button>
-          </div>
-        </div>
-      </section>
+          </HeroCtas>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

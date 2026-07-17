@@ -5,6 +5,17 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
+  HeroSection,
+  HeroBadge,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+} from '#/section-kit/HeroSection.tsx'
+import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
 } from '../local-service/local-service-interactions.tsx'
@@ -107,23 +118,23 @@ export const CleaningServiceHero = defineCapsule({
     )
 
     return (
-      <section className={cn('relative bg-muted/40', props.className)}>
+      <HeroSection className={cn('relative bg-muted/40', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
+              <HeroBadge variant="solid" className="gap-2 py-2">
                 <CheckCircle />
                 {badge}
-              </div>
-              <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              </HeroBadge>
+              <HeroHeading>
                 {headingTop}
                 <br />
-                <span className="text-primary">{highlight}</span>
-              </h1>
-              <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+                <HeroHighlight>{highlight}</HeroHighlight>
+              </HeroHeading>
+              <HeroSubheading className="mt-0 max-w-lg">
                 {subheading}
-              </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              </HeroSubheading>
+              <HeroCtas className="mt-0 flex flex-col gap-4 sm:flex-row">
                 <LocalServiceBookingButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -144,24 +155,25 @@ export const CleaningServiceHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              </HeroCtas>
+              <HeroTrustRow className="mt-0 gap-6">
                 {trustBadges.map((item) => (
-                  <div key={item} className="flex items-center gap-2">
+                  <HeroTrustItem key={item}>
                     <span className="text-primary">
                       <CheckCircle />
                     </span>
                     <span>{item}</span>
-                  </div>
+                  </HeroTrustItem>
                 ))}
-              </div>
+              </HeroTrustRow>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="aspect-[4/3] w-full rounded-2xl object-cover shadow-2xl"
+                rounded="2xl"
+                className="aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-xl sm:block sm:p-6">
                 <div className="flex items-center gap-4">
@@ -201,7 +213,7 @@ export const CleaningServiceHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

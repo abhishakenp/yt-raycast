@@ -3,7 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -73,7 +80,7 @@ export const SubscriptionBoxHero = defineCapsule({
     ])
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'overflow-hidden bg-background py-20 text-foreground sm:py-24',
           props.className,
@@ -88,13 +95,13 @@ export const SubscriptionBoxHero = defineCapsule({
               />
               {eyebrow}
             </div>
-            <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              {headline} <span className="text-primary">{headlineAccent}</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
+            <HeroHeading>
+              {headline} <HeroHighlight>{headlineAccent}</HeroHighlight>
+            </HeroHeading>
+            <HeroSubheading className="max-w-xl leading-8">
               {subheading}
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            </HeroSubheading>
+            <HeroCtas className="flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryCta)}
@@ -121,7 +128,7 @@ export const SubscriptionBoxHero = defineCapsule({
               >
                 {addLabel}
               </CommerceAddItemButton>
-            </div>
+            </HeroCtas>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               {badges.map((badge) => (
                 <span
@@ -154,11 +161,11 @@ export const SubscriptionBoxHero = defineCapsule({
               aria-hidden="true"
             />
             <div className="relative overflow-hidden rounded-[2rem] border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.14)]">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={900}
                 h={760}
-                className="aspect-[5/4] w-full object-cover"
+                className="aspect-[5/4] rounded-[2rem]"
               />
               <div className="absolute right-5 top-5 rotate-3 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-lg">
                 Unbox the joy
@@ -166,7 +173,7 @@ export const SubscriptionBoxHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

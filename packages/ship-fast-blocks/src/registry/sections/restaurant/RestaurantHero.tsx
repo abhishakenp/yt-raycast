@@ -1,9 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 import {
   RestaurantMutationSpinner,
   RestaurantReservationButton,
@@ -73,39 +80,21 @@ export const RestaurantHero = defineCapsule({
     const infoItems = [heroHours, heroLocation, heroPhone].filter(Boolean)
 
     return (
-      <section
-        className={cn('relative isolate overflow-hidden', props.className)}
-      >
-        <Image
+      <HeroSection variant="full-bleed" className={props.className}>
+        <HeroBackgroundImage
           alt={heroImageAlt}
-          w={1920}
-          h={1080}
-          loading="lazy"
-          className="absolute inset-0 -z-10 size-full object-cover"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-foreground/60"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/70 via-foreground/30 to-foreground/50"
+          overlayClassName="bg-foreground/60"
+          gradientClassName="bg-gradient-to-t from-foreground/70 via-foreground/30 to-foreground/50"
         />
 
-        <div className="mx-auto flex max-w-7xl flex-col items-center px-6 pb-28 pt-36 text-center sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
-          <span className="inline-flex items-center rounded-full border border-background/30 bg-background/10 px-4 py-1.5 text-xs font-medium tracking-[0.2em] text-background uppercase backdrop-blur-sm">
-            {heroEyebrow}
-          </span>
+        <HeroContent className="mx-auto flex max-w-7xl flex-col items-center px-6 pb-28 pt-36 text-center sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
+          <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
 
-          <h1 className="mt-8 max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight text-background sm:text-5xl lg:text-6xl">
-            {heroHeading}
-          </h1>
+          <HeroHeading variant="serif">{heroHeading}</HeroHeading>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-background/80 sm:text-lg">
-            {heroSub}
-          </p>
+          <HeroSubheading variant="light">{heroSub}</HeroSubheading>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+          <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
             <RestaurantReservationButton
               lakebed={lakebed}
               input={{ label: heroPrimary, source: heroPrimaryTarget }}
@@ -121,7 +110,7 @@ export const RestaurantHero = defineCapsule({
             >
               {heroSecondary}
             </button>
-          </div>
+          </HeroCtas>
 
           <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
             {infoItems.map((item, i) => (
@@ -136,8 +125,8 @@ export const RestaurantHero = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

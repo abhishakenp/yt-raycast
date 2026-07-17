@@ -1,9 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * VideoStreamingHero — full-bleed, cinematic dark hero for a video-streaming
@@ -59,39 +66,25 @@ export const VideoStreamingHero = defineCapsule({
       : ['Sci-Fi Thriller', 'TV-MA', '3 Seasons', '4K Ultra HD']
 
     return (
-      <section
-        className={cn('relative isolate overflow-hidden', props.className)}
-      >
-        <Image
+      <HeroSection variant="full-bleed" className={props.className}>
+        <HeroBackgroundImage
           alt={heroImageAlt}
-          w={1920}
-          h={1080}
-          loading="lazy"
-          className="absolute inset-0 -z-10 size-full object-cover"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-foreground/60"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/90 via-foreground/50 to-foreground/70"
+          overlayClassName="bg-foreground/60"
+          gradientClassName="bg-gradient-to-t from-foreground/90 via-foreground/50 to-foreground/70"
         />
 
-        <div className="mx-auto flex max-w-7xl flex-col items-start px-6 pb-28 pt-36 sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
-          <span className="inline-flex items-center rounded-full border border-background/30 bg-background/10 px-4 py-1.5 text-xs font-medium tracking-[0.2em] text-background uppercase backdrop-blur-sm">
-            {heroEyebrow}
-          </span>
+        <HeroContent className="mx-auto flex max-w-7xl flex-col items-start px-6 pb-28 pt-36 sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
+          <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
 
-          <h1 className="mt-8 max-w-3xl text-5xl font-bold leading-[1.05] tracking-tight text-background sm:text-6xl lg:text-7xl">
+          <HeroHeading className="mt-8 max-w-3xl text-5xl leading-[1.05] text-background sm:text-6xl lg:text-7xl">
             {heroHeading}
-          </h1>
+          </HeroHeading>
 
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-background/80 sm:text-lg">
+          <HeroSubheading variant="light" className="max-w-xl">
             {heroSub}
-          </p>
+          </HeroSubheading>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+          <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
             <button
               type="button"
               onClick={() => go(heroPrimaryTarget)}
@@ -106,7 +99,7 @@ export const VideoStreamingHero = defineCapsule({
             >
               {heroSecondary}
             </button>
-          </div>
+          </HeroCtas>
 
           <div className="mt-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-background/80">
             {meta.map((item, i) => (
@@ -121,8 +114,8 @@ export const VideoStreamingHero = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

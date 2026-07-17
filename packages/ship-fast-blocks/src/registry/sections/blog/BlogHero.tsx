@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
 
@@ -89,8 +90,9 @@ export const BlogHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
         aria-label="Featured post"
+        variant="default"
         className={cn(
           'mx-auto w-full max-w-6xl px-6 pt-12 pb-7',
           props.className,
@@ -142,7 +144,7 @@ export const BlogHero = defineCapsule({
             </button>
           </div>
         </article>
-      </section>
+      </HeroSection>
     )
   },
 })

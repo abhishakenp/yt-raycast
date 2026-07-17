@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { kitActionClasses } from '#/section-kit/types.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -58,69 +58,54 @@ export const ProductDetailCta = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'w-full bg-primary text-primary-foreground',
-          props.className,
-        )}
+      <CtaBand
+        tone="primary"
+        eyebrow={eyebrow}
+        title={title}
+        subtitle={subtitle}
+        className={props.className}
       >
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-5 px-6 py-16 text-center lg:px-8">
-          {eyebrow ? (
-            <span className="text-sm font-medium uppercase tracking-wide opacity-80">
-              {eyebrow}
-            </span>
-          ) : null}
-          <h2 className="text-3xl font-semibold md:text-4xl">{title}</h2>
-          {subtitle ? (
-            <p className="max-w-2xl text-base opacity-90 md:text-lg">
-              {subtitle}
-            </p>
-          ) : null}
-          <div className="flex flex-wrap justify-center gap-3">
-            {actions.map((action) => {
-              const isAddToCart = isProductPurchaseIntent(action.label)
-              const isInvert =
-                (action.variant ?? 'primary') === 'primary' || isAddToCart
-              const className = cn(
-                kitActionClasses(action.variant, isInvert),
-                'inline-flex items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70',
-              )
+        <div className="flex flex-wrap justify-center gap-3">
+          {actions.map((action) => {
+            const isAddToCart = isProductPurchaseIntent(action.label)
+            const isInvert =
+              (action.variant ?? 'primary') === 'primary' || isAddToCart
+            const className = `${kitActionClasses(action.variant, isInvert)} inline-flex items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70`
 
-              if (isAddToCart) {
-                return (
-                  <CommerceAddItemButton
-                    key={action.label}
-                    lakebed={lakebed}
-                    item={{ label: productTitle, price: productPrice }}
-                    pendingChildren={
-                      <>
-                        <CommerceMutationSpinner />
-                        Adding
-                      </>
-                    }
-                    className={className}
-                  >
-                    {action.label}
-                  </CommerceAddItemButton>
-                )
-              }
-
+            if (isAddToCart) {
               return (
-                <button
+                <CommerceAddItemButton
                   key={action.label}
-                  type="button"
-                  onClick={() => {
-                    go(action.target ?? action.label)
-                  }}
+                  lakebed={lakebed}
+                  item={{ label: productTitle, price: productPrice }}
+                  pendingChildren={
+                    <>
+                      <CommerceMutationSpinner />
+                      Adding
+                    </>
+                  }
                   className={className}
                 >
                   {action.label}
-                </button>
+                </CommerceAddItemButton>
               )
-            })}
-          </div>
+            }
+
+            return (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => {
+                  go(action.target ?? action.label)
+                }}
+                className={className}
+              >
+                {action.label}
+              </button>
+            )
+          })}
         </div>
-      </section>
+      </CtaBand>
     )
   },
 })

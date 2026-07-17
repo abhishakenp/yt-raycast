@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 
 /**
  * FaqHero — calm centered search hero for a help-center / FAQ / knowledge-base page.
@@ -47,10 +48,11 @@ export const FaqHero = defineCapsule({
     const searchTarget = props.searchTarget ?? 'Documentation'
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn('border-b border-border bg-background', props.className)}
       >
-        <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+        <HeroContent className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <h1 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
             {heading}
           </h1>
@@ -110,8 +112,8 @@ export const FaqHero = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })

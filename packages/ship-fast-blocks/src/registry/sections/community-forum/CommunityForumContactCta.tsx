@@ -1,8 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * CommunityForumContactCta — final dark call-to-action band for a community-platform /
@@ -29,7 +28,6 @@ export const CommunityForumContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to build your community?'
     const description =
       props.description ??
@@ -41,33 +39,17 @@ export const CommunityForumContactCta = defineCapsule({
       'Free 14-day trial on all paid plans • No credit card required'
 
     return (
-      <section className={cn('bg-foreground py-24 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-bold text-background sm:text-4xl lg:text-5xl">
-            {heading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-background/70 sm:text-xl">
-            {description}
-          </p>
-          <div className="mb-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex w-full items-center justify-center rounded-lg bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background/90 sm:w-auto"
-            >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex w-full items-center justify-center rounded-lg border border-background/30 px-8 py-4 text-base font-medium text-background transition-colors hover:bg-background/10 sm:w-auto"
-            >
-              {secondaryCta}
-            </button>
-          </div>
-          <p className="text-sm text-background/60">{note}</p>
-        </div>
-      </section>
+      <CtaBand
+        tone="primary"
+        eyebrow={note}
+        title={heading}
+        subtitle={description}
+        actions={[
+          { label: primaryCta, target: primaryCta, variant: 'primary' },
+          { label: secondaryCta, target: secondaryCta, variant: 'outline' },
+        ]}
+        className={`bg-foreground text-background ${props.className ?? ''}`}
+      />
     )
   },
 })

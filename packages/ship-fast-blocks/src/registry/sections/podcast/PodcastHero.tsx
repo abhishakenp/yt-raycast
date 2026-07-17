@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 const PodcastHeroProps = z.object({
   eyebrow: z.string().optional().describe('Small pill above the heading'),
@@ -49,7 +55,7 @@ export const PodcastHero = defineCapsule({
     ]
 
     return (
-      <section
+      <HeroSection
         className={cn(
           'bg-gradient-to-br from-accent/10 via-background to-background',
           props.className,
@@ -63,15 +69,15 @@ export const PodcastHero = defineCapsule({
               </span>
             ) : null}
 
-            <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
+            <HeroHeading className="text-5xl sm:text-6xl">
               {heading}
-            </h1>
+            </HeroHeading>
 
-            <p className="max-w-xl text-lg text-muted-foreground">
+            <HeroSubheading className="max-w-xl mt-0">
               {subheading}
-            </p>
+            </HeroSubheading>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
+            <HeroCtas className="flex-col gap-4 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryTarget)}
@@ -86,10 +92,10 @@ export const PodcastHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </div>
+            </HeroCtas>
 
             <div className="flex flex-wrap gap-2 pt-2">
-              {platforms.filter(Boolean).map((platform) => (
+              {platforms.filter(Boolean).map((platform: string) => (
                 <span
                   key={platform}
                   className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
@@ -106,17 +112,17 @@ export const PodcastHero = defineCapsule({
               className="absolute -inset-6 rounded-3xl bg-primary/10 blur-2xl"
             />
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={coverAlt}
                 w={640}
                 h={640}
-                loading="lazy"
-                className="aspect-square w-full rounded-2xl border border-border object-cover shadow-2xl"
+                rounded="2xl"
+                className="relative aspect-square border border-border shadow-2xl"
               />
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

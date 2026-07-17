@@ -3,7 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * MembershipClubHero — calm, editorial split hero for a private membership club /
@@ -67,7 +74,7 @@ export const MembershipClubHero = defineCapsule({
       props.quoteAuthor ?? '— Sarah Chen, Product Lead at Stripe'
 
     return (
-      <section
+      <HeroSection
         className={cn('w-full bg-background', props.className)}
         aria-labelledby="hero-heading"
       >
@@ -77,18 +84,15 @@ export const MembershipClubHero = defineCapsule({
               <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
                 {eyebrow}
               </p>
-              <h1
-                id="hero-heading"
-                className="text-4xl font-light leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
-              >
+              <HeroHeading id="hero-heading" className="font-light">
                 {headingBefore}
-                <span className="font-normal">{highlight}</span>
+                <HeroHighlight className="font-normal text-foreground">
+                  {highlight}
+                </HeroHighlight>
                 {headingAfter}
-              </h1>
-              <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-                {subheading}
-              </p>
-              <div className="flex flex-col gap-4 pt-4 sm:flex-row">
+              </HeroHeading>
+              <HeroSubheading>{subheading}</HeroSubheading>
+              <HeroCtas className="flex-col gap-4 pt-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -103,7 +107,7 @@ export const MembershipClubHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </div>
+              </HeroCtas>
               <div className="flex items-center gap-6 pt-6 text-sm text-muted-foreground">
                 {proof.map((p) => (
                   <div key={p.label} className="flex items-center gap-2">
@@ -116,12 +120,12 @@ export const MembershipClubHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <Image
+              <HeroImage
                 alt={imageAlt}
                 w={800}
                 h={600}
-                loading="eager"
-                className="h-80 w-full rounded-xl object-cover shadow-xl lg:h-[500px]"
+                rounded="xl"
+                className="h-80 w-full shadow-xl lg:h-[500px]"
               />
               <div className="absolute -bottom-6 -left-6 hidden max-w-xs rounded-xl bg-card p-6 shadow-lg lg:block">
                 <p className="text-sm italic text-muted-foreground">
@@ -134,7 +138,7 @@ export const MembershipClubHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import {
   HotelBookingActionButton,
   HotelMutationSpinner,
@@ -77,11 +78,9 @@ export const HotelResortHero = defineCapsule({
     )
 
     return (
-      <section
-        className={cn(
-          'relative flex min-h-screen items-center pt-20',
-          props.className,
-        )}
+      <HeroSection
+        variant="gradient"
+        className={cn('items-center pt-20', props.className)}
       >
         <div className="absolute inset-0 z-0">
           <Image
@@ -92,7 +91,7 @@ export const HotelResortHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/20 to-foreground/50" />
         </div>
-        <div className="relative z-10 mx-auto max-w-7xl px-6 py-32 lg:px-8 lg:py-48">
+        <HeroContent className="mx-auto max-w-7xl px-6 py-32 lg:px-8 lg:py-48">
           <div className="max-w-2xl">
             <p className="mb-4 text-sm uppercase tracking-widest text-background/80">
               {location}
@@ -153,8 +152,8 @@ export const HotelResortHero = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </HeroContent>
+      </HeroSection>
     )
   },
 })
