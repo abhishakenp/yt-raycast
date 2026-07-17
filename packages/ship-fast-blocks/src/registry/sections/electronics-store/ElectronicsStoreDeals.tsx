@@ -29,6 +29,7 @@ import {
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { DealsGrid } from '#/section-kit/DealsGrid.tsx'
 export const ElectronicsStoreDeals = defineCapsule({
   name: 'ElectronicsStoreDeals',
   description:
@@ -181,7 +182,7 @@ export const ElectronicsStoreDeals = defineCapsule({
             </div>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <DealsGrid cols="1-2-4" className="gap-6">
             {visibleItems.map((d) => (
               <ProductCard
                 key={d.title}
@@ -228,7 +229,7 @@ export const ElectronicsStoreDeals = defineCapsule({
                 </CommerceAddItemButton>
               </ProductCard>
             ))}
-          </div>
+          </DealsGrid>
         </Container>
       </section>
     )

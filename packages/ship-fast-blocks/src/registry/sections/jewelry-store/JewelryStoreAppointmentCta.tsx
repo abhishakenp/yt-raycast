@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import { AppointmentBand } from '#/section-kit/AppointmentBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
@@ -52,14 +52,19 @@ export const JewelryStoreAppointmentCta = defineCapsule({
         ]
 
     return (
-      <CtaBand
-        tone="muted"
-        eyebrow={eyebrow}
-        title={heading}
-        subtitle={description}
-        titleClassName="font-serif"
-        className={`relative overflow-hidden ${props.className ?? ''}`}
+      <AppointmentBand
+        variant="muted"
+        className={`relative overflow-hidden py-20 lg:py-28 ${props.className ?? ''}`}
       >
+        <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
+          {eyebrow}
+        </p>
+        <h2 className="mb-6 max-w-2xl text-center font-serif text-4xl font-bold text-foreground sm:text-5xl lg:text-6xl">
+          {heading}
+        </h2>
+        <p className="mb-10 max-w-2xl text-center text-lg leading-relaxed text-muted-foreground">
+          {description}
+        </p>
         <div className="absolute inset-0 -z-10">
           <Image
             alt={imageAlt}
@@ -97,7 +102,7 @@ export const JewelryStoreAppointmentCta = defineCapsule({
             </div>
           ))}
         </div>
-      </CtaBand>
+      </AppointmentBand>
     )
   },
 })

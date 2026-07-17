@@ -53,7 +53,7 @@ export const DatingAppDownloadCta = defineCapsule({
     const floatTitle = props.floatTitle ?? 'New Match!'
     const floatMeta = props.floatMeta ?? 'Jessica liked you'
 
-    const HeartGlyph = ({ className }) => (
+    const HeartGlyph = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -68,7 +68,7 @@ export const DatingAppDownloadCta = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

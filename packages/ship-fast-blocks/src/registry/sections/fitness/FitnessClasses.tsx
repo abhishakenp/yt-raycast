@@ -12,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * gyms, fitness studios, CrossFit boxes, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { ClassGrid, ClassCard } from '#/section-kit/ClassGrid.tsx'
 export const FitnessClasses = defineCapsule({
   name: 'FitnessClasses',
   description:
@@ -134,14 +134,11 @@ export const FitnessClasses = defineCapsule({
             <p className="text-muted-foreground">{classesDesc}</p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <ClassGrid cols="1-2-3" className="gap-6">
             {classItems.map((item) => (
-              <Card
+              <ClassCard
                 asChild
                 key={item.title}
-                variant="default"
-                rounded="lg"
-                padding="none"
                 className="group overflow-hidden transition-shadow hover:shadow-lg"
               >
                 <article>
@@ -169,9 +166,9 @@ export const FitnessClasses = defineCapsule({
                     </div>
                   </div>
                 </article>
-              </Card>
+              </ClassCard>
             ))}
-          </div>
+          </ClassGrid>
         </Container>
       </section>
     )

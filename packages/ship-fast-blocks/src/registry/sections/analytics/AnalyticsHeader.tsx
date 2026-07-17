@@ -134,7 +134,12 @@ export const AnalyticsHeader = defineCapsule({
       })
     }, [stableNotifications])
 
-    const runAction = (key, label, source, query = '') => {
+    const runAction = (
+      key: string,
+      label: string,
+      source: string,
+      query = '',
+    ) => {
       void recordAction.run(key, { label, query, source })
     }
 

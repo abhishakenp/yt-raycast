@@ -4,8 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { RoomGrid, RoomCard } from '#/section-kit/RoomGrid.tsx'
 import {
   HotelBookingActionButton,
   HotelMutationSpinner,
@@ -126,9 +126,9 @@ export const HotelResortRooms = defineCapsule({
             subtitleClassName="leading-relaxed"
             className="mb-16 max-w-2xl gap-4"
           />
-          <ResponsiveGrid gap="lg" className="lg:grid-cols-3">
+          <RoomGrid cols="1-md-2-3" className="gap-8">
             {items.map((room) => (
-              <div
+              <RoomCard
                 key={room.name}
                 className={cn(
                   'overflow-hidden rounded-lg bg-card text-card-foreground',
@@ -199,9 +199,9 @@ export const HotelResortRooms = defineCapsule({
                     {cta}
                   </HotelBookingActionButton>
                 </div>
-              </div>
+              </RoomCard>
             ))}
-          </ResponsiveGrid>
+          </RoomGrid>
         </div>
       </section>
     )

@@ -16,6 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * brands. Renders fully with no props via baked-in "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { RoomGrid, RoomCard } from '#/section-kit/RoomGrid.tsx'
 export const FurnitureStoreRooms = defineCapsule({
   name: 'FurnitureStoreRooms',
   description:
@@ -125,37 +126,38 @@ export const FurnitureStoreRooms = defineCapsule({
             </button>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <RoomGrid cols="1-2-3" className="gap-6">
             {items.map((room) => (
-              <button
-                key={room.name}
-                type="button"
-                onClick={() => go(room.name)}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-lg text-left"
-              >
-                <Image
-                  alt={
-                    roomImageAlts[room.name] ??
-                    `${room.name} interior inspiration`
-                  }
-                  w={600}
-                  h={750}
-                  loading="lazy"
-                  className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent"
-                />
-                <div className="absolute inset-x-0 bottom-0 p-6">
-                  <h3 className="mb-1 text-xl font-medium text-background">
-                    {room.name}
-                  </h3>
-                  <p className="text-sm text-background/80">{room.count}</p>
-                </div>
-              </button>
+              <RoomCard key={room.name} asChild>
+                <button
+                  type="button"
+                  onClick={() => go(room.name)}
+                  className="group relative block aspect-[4/5] overflow-hidden rounded-lg text-left"
+                >
+                  <Image
+                    alt={
+                      roomImageAlts[room.name] ??
+                      `${room.name} interior inspiration`
+                    }
+                    w={600}
+                    h={750}
+                    loading="lazy"
+                    className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 p-6">
+                    <h3 className="mb-1 text-xl font-medium text-background">
+                      {room.name}
+                    </h3>
+                    <p className="text-sm text-background/80">{room.count}</p>
+                  </div>
+                </button>
+              </RoomCard>
             ))}
-          </div>
+          </RoomGrid>
         </Container>
       </section>
     )

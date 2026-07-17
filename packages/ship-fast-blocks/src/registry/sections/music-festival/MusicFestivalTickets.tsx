@@ -15,6 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { TicketGrid, TicketCard } from '#/section-kit/TicketGrid.tsx'
 export const MusicFestivalTickets = defineCapsule({
   name: 'MusicFestivalTickets',
   description:
@@ -156,17 +157,12 @@ export const MusicFestivalTickets = defineCapsule({
             </p>
           </div>
 
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
+          <TicketGrid cols="1-3" className="mx-auto max-w-5xl gap-8">
             {tiers.map((tier) => (
-              <Card
+              <TicketCard
                 key={tier.name}
-                variant="default"
-                rounded="xl"
-                padding="lg"
-                className={cn(
-                  'relative',
-                  tier.popular ? 'border-2 border-primary' : '',
-                )}
+                variant={tier.popular ? 'featured' : 'default'}
+                className={cn('relative p-8')}
               >
                 {tier.badge ? (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-xs font-medium text-primary-foreground">
@@ -196,9 +192,9 @@ export const MusicFestivalTickets = defineCapsule({
                 >
                   {tier.cta}
                 </button>
-              </Card>
+              </TicketCard>
             ))}
-          </div>
+          </TicketGrid>
 
           <div className="mx-auto mt-12 max-w-3xl">
             <h3 className="mb-6 text-center text-lg font-semibold">

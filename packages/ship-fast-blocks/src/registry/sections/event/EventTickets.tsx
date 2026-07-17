@@ -23,6 +23,7 @@ import {
   PricingCardTagline,
 } from '#/section-kit/PricingCard.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { TicketGrid } from '#/section-kit/TicketGrid.tsx'
 
 /**
  * EventTickets — a 3-tier ticket pricing block for a conference or event page. A
@@ -167,7 +168,7 @@ export const EventTickets = defineCapsule({
             subtitleClassName="text-lg"
             className="mx-auto mb-12 max-w-2xl gap-6"
           />
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
+          <TicketGrid cols="1-3" className="mx-auto max-w-5xl gap-8">
             {tiers.map((tier) => (
               <PricingCard
                 key={tier.name}
@@ -244,7 +245,7 @@ export const EventTickets = defineCapsule({
                 </PricingCardCta>
               </PricingCard>
             ))}
-          </div>
+          </TicketGrid>
           <div className="mt-12 text-center">
             <p className="text-sm text-muted-foreground">
               {note.split(noteLink)[0]}

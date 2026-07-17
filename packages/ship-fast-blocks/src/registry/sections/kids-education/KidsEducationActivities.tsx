@@ -18,7 +18,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { ActivityGrid } from '#/section-kit/ActivityGrid.tsx'
 export const KidsEducationActivities = defineCapsule({
   name: 'KidsEducationActivities',
   description:
@@ -203,7 +203,7 @@ export const KidsEducationActivities = defineCapsule({
       'bg-accent/15 text-accent-foreground',
       'bg-secondary/15 text-secondary-foreground',
     ]
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -235,14 +235,11 @@ export const KidsEducationActivities = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ActivityGrid cols="1-2-3" className="gap-8">
             {items.map((item, i) => (
-              <Card
+              <article
                 key={item.title}
-                variant="outline"
-                rounded="3xl"
-                padding="md"
-                className="group bg-muted/40 transition-all duration-300 hover:bg-card hover:shadow-xl"
+                className="group rounded-3xl border border-border bg-muted/40 p-6 transition-all duration-300 hover:bg-card hover:shadow-xl"
               >
                 <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-2xl">
                   <Image
@@ -276,9 +273,9 @@ export const KidsEducationActivities = defineCapsule({
                   {item.cta}
                   <ArrowRight className="size-4" />
                 </button>
-              </Card>
+              </article>
             ))}
-          </div>
+          </ActivityGrid>
         </Container>
       </section>
     )
