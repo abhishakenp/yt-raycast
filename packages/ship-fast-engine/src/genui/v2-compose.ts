@@ -7,6 +7,7 @@ import {
 } from './openui-signature.ts'
 import type { GeneratedArtifact } from './events.ts'
 import { THEME_CATALOG } from '../../../ship-fast-blocks/src/theme-apply.ts'
+import { pickThemeForContext } from './theme-affinity.ts'
 import spec from './generated/component-spec.json'
 
 /**
@@ -2009,7 +2010,8 @@ export async function runV2ComposedGeneration(input: {
   let title: string | undefined
   let navLabels: Record<string, string> | undefined
   const locale = input.preferredLanguage || 'en'
-  const theme = pick(rng, THEME_CATALOG).name
+  const themeRoll = rng()
+  let theme = pick(() => themeRoll, THEME_CATALOG).name
   const emit = (e) => input.onEvent?.(e)
 
   // A flight simulator is a real-time Three.js runtime, not a composition of
@@ -2116,6 +2118,13 @@ export async function runV2ComposedGeneration(input: {
     if (firstPass.navLabels && Object.keys(firstPass.navLabels).length > 0)
       navLabels = firstPass.navLabels
   }
+
+  theme =
+    pickThemeForContext({
+      prompt: input.prompt,
+      familyName: family.name,
+      rng: () => themeRoll,
+    }) ?? theme
 
   const pages = planPages(family, seed, navLabels)
   const nav = pages.map((p) => p.label)

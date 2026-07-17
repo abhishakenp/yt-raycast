@@ -1,10 +1,12 @@
+import { withdrawMarketingConsent } from '@/features/partners/lib/marketing-consent'
+
 import { MarketingShell } from '../pricing/-MarketingShell'
 
 const SITE_NAME = 'Ship Fast'
 const SITE_URL = 'https://ship-fast.ai'
 const LEGAL_CONTROLLER_NAME = 'Surya Remanan and Abhishek Pandey'
 const PRIVACY_CONTACT_EMAIL = 'hello@ship-fast.io'
-const PRIVACY_POLICY_EFFECTIVE_DATE = '2026-06-27'
+const PRIVACY_POLICY_EFFECTIVE_DATE = '2026-07-17'
 const PRIVACY_POLICY_JURISDICTION = 'India'
 const LEGAL_CONTROLLER_ADDRESS = ''
 
@@ -128,16 +130,42 @@ export const PrivacyPage = () => {
             designed to minimise personal data; please see Plausible's
             documentation for details.
           </p>
-          <h3>3.5 Payments</h3>
+          <h3>3.5 Partner attribution and partner programme</h3>
           <p>
-            Paid features are processed through <strong>Razorpay</strong>. We do
-            not receive your full payment card number on our servers; payment
-            data is handled by the payment provider. We receive status
-            information (for example subscription state or credit purchases)
-            through our billing integration and may store it in{' '}
-            <strong>Convex</strong> associated with your account.
+            With your consent, we use <strong>Dub</strong> to attribute visits
+            from partner referral links. Dub may set a{' '}
+            <strong>dub_id marketing cookie</strong> for up to 30 days and
+            process a referral click identifier, referring page, landing page,
+            and limited browser or device information. We do not load Dub's
+            browser analytics until you allow marketing cookies.
           </p>
-          <h3>3.6 Optional operations notifications</h3>
+          <p>
+            If you create or use an account after a referral, we apply
+            first-source attribution: the earliest eligible native referral or
+            Dub partner referral is associated with your account. We may send
+            Dub a stable account identifier and limited profile information,
+            such as your name and email address, to record the referred signup
+            and provide the partner portal.
+          </p>
+          <p>
+            For enrolled partners, Dub supports referral reporting, commissions
+            and payouts. For eligible subscription purchases and refunds, we
+            send transaction identifiers, amount, currency, status, and payment
+            processor type. Payout and tax information you submit directly to
+            Dub is governed by Dub's privacy notice.
+          </p>
+          <h3>3.6 Payments</h3>
+          <p>
+            Paid features are processed through{' '}
+            <strong>Stripe and Razorpay</strong>. We do not receive your full
+            payment card number on our servers; payment data is handled by the
+            payment provider. We receive status information (for example
+            subscription state, invoices, refunds, or credit purchases) through
+            our billing integrations and may store it in <strong>Convex</strong>{' '}
+            associated with your account. Eligible partner-attributed
+            subscription events are also reported to Dub as described above.
+          </p>
+          <h3>3.7 Optional operations notifications</h3>
           <p>
             If we configure an operations webhook (for example Slack), certain
             events in production may post
@@ -147,7 +175,7 @@ export const PrivacyPage = () => {
             to that system for monitoring. This is disabled in development by
             default and only applies when such an integration is enabled.
           </p>
-          <h3>3.7 AI and media providers</h3>
+          <h3>3.8 AI and media providers</h3>
           <p>
             To generate sites and imagery we may send{' '}
             <strong>portions of your prompt and derived instructions</strong>
@@ -157,7 +185,7 @@ export const PrivacyPage = () => {
             search). Those providers act as further processors and have their
             own terms and privacy notices.
           </p>
-          <h3>3.8 GitHub integration</h3>
+          <h3>3.9 GitHub integration</h3>
           <p>
             If you connect GitHub, tokens or credentials required for repository
             actions are handled according to that integration;{' '}
@@ -179,6 +207,10 @@ export const PrivacyPage = () => {
             <li>
               To process payments and prevent abuse of billing or promotional
               programmes.
+            </li>
+            <li>
+              With consent, to attribute partner referrals; and to administer
+              partner enrollment, reporting, commissions, refunds, and payouts.
             </li>
             <li>
               To secure the service, enforce acceptable use (including automated
@@ -217,7 +249,8 @@ export const PrivacyPage = () => {
             </li>
             <li>
               <strong>Consent</strong> — where we expressly ask for it (for
-              example optional communications), which you may withdraw.
+              example Dub marketing cookies and optional communications), which
+              you may withdraw.
             </li>
           </ul>
         </section>
@@ -228,7 +261,11 @@ export const PrivacyPage = () => {
           <ul>
             <li>Clerk (Authentication services)</li>
             <li>Convex (Database and backend services for billing data)</li>
-            <li>Razorpay (payments)</li>
+            <li>Stripe and Razorpay (payments)</li>
+            <li>
+              Dub (consent-based partner attribution and partner programme
+              administration)
+            </li>
             <li>Plausible Analytics</li>
             <li>
               AI, GPU, or inference providers (for example Groq, Runpod) and
@@ -266,6 +303,16 @@ export const PrivacyPage = () => {
             until we delete them under our data lifecycle rules. Technical logs
             may be kept for a shorter operational period.
           </p>
+          <p>
+            The Dub browser attribution cookie lasts for up to 30 days unless
+            you withdraw consent sooner. Account-level attribution and partner
+            transaction records may be kept while your account or partner
+            relationship remains active and afterward where needed for
+            accounting, fraud prevention, disputes, or legal obligations.
+            Withdrawing marketing consent clears the Dub cookie from this
+            browser and stops future Dub browser tracking; it does not
+            automatically erase records already required for those purposes.
+          </p>
         </section>
 
         <section aria-labelledby="h-rights">
@@ -283,6 +330,13 @@ export const PrivacyPage = () => {
             <a href={mailtoHref}>{PRIVACY_CONTACT_EMAIL}</a>. We may need to
             verify your identity before fulfilling a request.
           </p>
+          <button
+            className="mt-2 rounded-[6px] border border-white/15 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10"
+            onClick={withdrawMarketingConsent}
+            type="button"
+          >
+            Withdraw marketing consent
+          </button>
         </section>
 
         <section aria-labelledby="h-security">

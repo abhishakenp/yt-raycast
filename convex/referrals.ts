@@ -4,6 +4,10 @@ import { mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import { classifyReferralEmail } from './lib/disposable_email'
 import {
+  getOrBackfillAcquisitionAttribution,
+  insertAcquisitionAttribution,
+} from './lib/acquisition_attribution'
+import {
   generateReferralCode,
   normalizeReferralCode,
   REFERRAL_DISCOUNT_PERCENT,
@@ -188,14 +192,11 @@ export const recordReferralSignup = mutation({
     if (owner.userId === referredUserId)
       return { recorded: false, reason: 'self_referral' as const }
 
-    // A user can only ever be attributed to one referrer.
-    const existing = await ctx.db
-      .query('referrals')
-      .withIndex('by_referred', (index) =>
-        index.eq('referredUserId', referredUserId),
-      )
-      .first()
-    if (existing !== null)
+    const existingAttribution = await getOrBackfillAcquisitionAttribution(
+      ctx,
+      referredUserId,
+    )
+    if (existingAttribution !== null)
       return { recorded: false, reason: 'already_referred' as const }
 
     const identityEmail =
@@ -208,6 +209,12 @@ export const recordReferralSignup = mutation({
     const classified = classifyReferralEmail(identityEmail || args.email)
 
     const now = Date.now()
+    await insertAcquisitionAttribution(ctx, {
+      claimedAt: now,
+      source: 'native_referral',
+      sourceKey: code,
+      userId: referredUserId,
+    })
     await ctx.db.insert('referrals', {
       referrerUserId: owner.userId,
       referredUserId,

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Link, useRouter } from '@tanstack/react-router'
 import { TopActions } from '@/components/TopActions'
 import { GlassDefs } from '@/features/home/components/GlassPill'
+import { isPartnerProgramClientEnabled } from '@/features/partners/lib/partner-config'
 import styles from './MarketingShell.module.css'
 
 const MARKETING_SHELL_PREWARM_DELAY_MS = 700
@@ -24,6 +25,7 @@ export function MarketingShell({
 }) {
   const router = useRouter()
   const routerRef = useRef(router)
+  const partnersEnabled = isPartnerProgramClientEnabled()
 
   useEffect(() => {
     routerRef.current = router
@@ -144,6 +146,11 @@ export function MarketingShell({
             <Link to="/pricing" preload="intent">
               Pricing
             </Link>
+            {partnersEnabled ? (
+              <Link to="/partners" preload="intent">
+                Partners
+              </Link>
+            ) : null}
             <Link to="/privacy" preload="intent">
               Privacy
             </Link>

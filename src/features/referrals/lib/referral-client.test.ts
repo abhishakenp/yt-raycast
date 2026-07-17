@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   REFERRAL_DONE_KEY,
+  REFERRAL_PENDING_AT_KEY,
   REFERRAL_PENDING_KEY,
   clearPendingReferral,
   getClerkUserEmail,
@@ -13,6 +14,7 @@ import {
   normalizeRefParam,
   postReferralRecord,
   readPendingReferral,
+  readPendingReferralCapturedAt,
   storePendingReferral,
 } from './referral-client'
 
@@ -41,18 +43,29 @@ describe('referral client helpers', () => {
   })
 
   it('stores pending codes only until attribution has been recorded', () => {
-    storePendingReferral('ABCD2345')
+    storePendingReferral('ABCD2345', 1_725_000_000_000)
     expect(readPendingReferral()).toBe('ABCD2345')
+    expect(readPendingReferralCapturedAt()).toBe(1_725_000_000_000)
 
     markReferralRecorded()
 
     expect(hasRecordedReferral()).toBe(true)
     expect(readPendingReferral()).toBeNull()
+    expect(readPendingReferralCapturedAt()).toBeNull()
 
     storePendingReferral('NEWCODE1')
 
     expect(window.localStorage.getItem(REFERRAL_DONE_KEY)).toBe('1')
     expect(window.localStorage.getItem(REFERRAL_PENDING_KEY)).toBeNull()
+    expect(window.localStorage.getItem(REFERRAL_PENDING_AT_KEY)).toBeNull()
+  })
+
+  it('keeps the first pending code paired with its capture timestamp', () => {
+    storePendingReferral('FIRST001', 100)
+    storePendingReferral('SECOND02', 200)
+
+    expect(readPendingReferral()).toBe('FIRST001')
+    expect(readPendingReferralCapturedAt()).toBe(100)
   })
 
   it('clears pending referral codes without clearing the recorded marker', () => {
@@ -62,7 +75,15 @@ describe('referral client helpers', () => {
     clearPendingReferral()
 
     expect(readPendingReferral()).toBeNull()
+    expect(readPendingReferralCapturedAt()).toBeNull()
     expect(hasRecordedReferral()).toBe(true)
+  })
+
+  it('ignores malformed legacy capture timestamps', () => {
+    window.localStorage.setItem(REFERRAL_PENDING_KEY, 'ABCD2345')
+    window.localStorage.setItem(REFERRAL_PENDING_AT_KEY, 'not-a-time')
+
+    expect(readPendingReferralCapturedAt()).toBeNull()
   })
 
   it('falls back to a default Clerk token when the Convex template token fails', async () => {

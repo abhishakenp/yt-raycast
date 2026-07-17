@@ -7,6 +7,7 @@
  */
 
 export const REFERRAL_PENDING_KEY = 'shipfast_ref_pending'
+export const REFERRAL_PENDING_AT_KEY = 'shipfast_ref_pending_at'
 export const REFERRAL_DONE_KEY = 'shipfast_ref_recorded'
 export const REFERRAL_QUERY_PARAM = 'ref'
 
@@ -89,16 +90,31 @@ export function readPendingReferral(): string | null {
   return safeStorage()?.getItem(REFERRAL_PENDING_KEY) ?? null
 }
 
-export function storePendingReferral(code: string): void {
+export function readPendingReferralCapturedAt(): number | null {
+  const value = safeStorage()?.getItem(REFERRAL_PENDING_AT_KEY)
+  if (!value) return null
+  const capturedAt = Number(value)
+  return Number.isFinite(capturedAt) && capturedAt > 0 ? capturedAt : null
+}
+
+export function storePendingReferral(
+  code: string,
+  capturedAt = Date.now(),
+): void {
   const storage = safeStorage()
   if (!storage || !code) return
   // Don't overwrite an already-recorded attribution.
   if (storage.getItem(REFERRAL_DONE_KEY)) return
+  // Keep first-touch attribution: code and timestamp must remain one pair.
+  if (storage.getItem(REFERRAL_PENDING_KEY)) return
   storage.setItem(REFERRAL_PENDING_KEY, code)
+  storage.setItem(REFERRAL_PENDING_AT_KEY, String(capturedAt))
 }
 
 export function clearPendingReferral(): void {
-  safeStorage()?.removeItem(REFERRAL_PENDING_KEY)
+  const storage = safeStorage()
+  storage?.removeItem(REFERRAL_PENDING_KEY)
+  storage?.removeItem(REFERRAL_PENDING_AT_KEY)
 }
 
 export function markReferralRecorded(): void {
@@ -106,6 +122,7 @@ export function markReferralRecorded(): void {
   if (!storage) return
   storage.setItem(REFERRAL_DONE_KEY, '1')
   storage.removeItem(REFERRAL_PENDING_KEY)
+  storage.removeItem(REFERRAL_PENDING_AT_KEY)
 }
 
 export function hasRecordedReferral(): boolean {

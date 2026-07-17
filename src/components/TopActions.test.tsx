@@ -6,7 +6,17 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react'
+import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+type ChildrenProps = {
+  children?: ReactNode
+}
+
+type LinkMockProps = Omit<ComponentPropsWithoutRef<'a'>, 'href'> & {
+  children?: ReactNode
+  to: string
+}
 
 const topActionMocks = vi.hoisted(() => ({
   authControls: vi.fn(({ autoOpen, wrapProvider }) => (
@@ -18,28 +28,46 @@ const topActionMocks = vi.hoisted(() => ({
   )),
 }))
 
-vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, ...props }) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
-}))
+vi.mock('@tanstack/react-router', () => {
+  function LinkMock({ children, to, ...props }: LinkMockProps) {
+    return (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    )
+  }
+
+  return { Link: LinkMock }
+})
 
 vi.mock('@/components/HomepageAuthControls', () => ({
   HomepageAuthControls: topActionMocks.authControls,
 }))
 
-vi.mock('@clerk/tanstack-react-start', () => ({
-  Show: ({ children }) => <>{children}</>,
-  SignInButton: ({ children }) => <span>{children ?? 'Sign in'}</span>,
-  UserButton: () => <span>Account</span>,
-}))
+vi.mock('@clerk/tanstack-react-start', () => {
+  function ShowMock({ children }: ChildrenProps) {
+    return <>{children}</>
+  }
 
-async function importTopActions(publishableKey: string | undefined) {
+  function SignInButtonMock({ children }: ChildrenProps) {
+    return <span>{children ?? 'Sign in'}</span>
+  }
+
+  return {
+    Show: ShowMock,
+    SignInButton: SignInButtonMock,
+    UserButton: () => <span>Account</span>,
+  }
+})
+
+async function importTopActions(
+  publishableKey: string | undefined,
+  partnersEnabled = false,
+) {
   vi.resetModules()
   vi.unstubAllEnvs()
   vi.stubEnv('VITE_DISABLE_CLERK', '')
+  vi.stubEnv('VITE_DUB_PARTNERS_ENABLED', String(partnersEnabled))
   if (publishableKey !== undefined) {
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', publishableKey)
     vi.stubEnv('CLERK_PUBLISHABLE_KEY', '')
@@ -67,6 +95,18 @@ describe('TopActions', () => {
     expect(screen.getByRole('link', { name: /pricing/i })).toHaveProperty(
       'pathname',
       '/pricing',
+    )
+    expect(screen.queryByRole('link', { name: /partners/i })).toBeNull()
+  })
+
+  it('shows the partners link only while the client feature is enabled', async () => {
+    const { TopActions } = await importTopActions(undefined, true)
+
+    render(<TopActions />)
+
+    expect(screen.getByRole('link', { name: 'Partners' })).toHaveProperty(
+      'pathname',
+      '/partners',
     )
   })
 

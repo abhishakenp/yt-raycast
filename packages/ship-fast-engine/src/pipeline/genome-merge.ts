@@ -107,6 +107,38 @@ const SKINS: Record<string, Skin> = {
       [/\bdark:bg-white\b/g, 'dark:bg-emerald-50'],
     ],
   },
+  'luxury-gallery': {
+    root: 'bg-stone-50 text-stone-900',
+    rewrites: [
+      ...allFamilyRewrites('stone'),
+      [/\bbg-white\b(?!\/)/g, 'bg-stone-50'],
+      [/\btext-white\b/g, 'text-stone-50'],
+    ],
+  },
+  'street-bold': {
+    root: 'bg-zinc-950 text-zinc-50',
+    rewrites: [
+      ...allFamilyRewrites('zinc'),
+      [/\bbg-white\b(?!\/)/g, 'bg-zinc-950'],
+      [/\btext-white\b/g, 'text-zinc-50'],
+    ],
+  },
+  'pop-retail': {
+    root: 'bg-rose-50 text-rose-950',
+    rewrites: [
+      ...allFamilyRewrites('rose'),
+      [/\bbg-white\b(?!\/)/g, 'bg-rose-50'],
+      [/\btext-white\b/g, 'text-rose-50'],
+    ],
+  },
+  'tech-mono': {
+    root: 'bg-zinc-950 text-zinc-50',
+    rewrites: [
+      ...allFamilyRewrites('zinc'),
+      [/\bbg-white\b(?!\/)/g, 'bg-zinc-950'],
+      [/\btext-white\b/g, 'text-zinc-50'],
+    ],
+  },
   'bold-conversion': {
     root: 'bg-white text-black',
     rewrites: [
@@ -205,6 +237,32 @@ const BRIEF_KEYWORD_HINTS: [RegExp, string][] = [
   ],
 ]
 
+const RETAIL_SITE_TYPES = new Set(['ecommerce', 'dtc', 'retail'])
+
+const RETAIL_GENOME_HINTS: [RegExp, string][] = [
+  [
+    /\b(luxur\w*|jewel\w*|watch(?:es)?|fragrance|perfume|couture|atelier|bespoke|heritage|diamond|gold|silk|cashmere|fine\s+(?:art|goods|leather))\b/i,
+    'luxury-gallery',
+  ],
+  [
+    /\b(sneaker\w*|streetwear|skate\w*|hype|drops?|urban|graffiti|hip.?hop|vinyl|band\s+merch)\b/i,
+    'street-bold',
+  ],
+  [
+    /\b(snack\w*|candy|sweets|toy\w*|kids?|children\w*|pet\w*|party|stationery|sticker\w*|plush\w*|bakery)\b/i,
+    'pop-retail',
+  ],
+  [
+    /\b(electronic\w*|gadget\w*|audio|headphone\w*|keyboard\w*|camera\w*|drone\w*|hardware|comput\w*|gaming|console\w*|smart\s?home|tech)\b/i,
+    'tech-mono',
+  ],
+]
+
+export const pickRetailGenome: (brief: string) => string = (brief) =>
+  RETAIL_GENOME_HINTS.find(([pattern]) =>
+    pattern.test(String(brief || '')),
+  )?.[1] ?? 'boutique-organic'
+
 interface PickGenomeContext {
   siteType?: string
   design?: { genome?: string }
@@ -220,6 +278,12 @@ export function pickGenome({
     return { genome: design.genome, source: 'design.genome' }
   }
   const st = String(siteType || '').toLowerCase()
+  if (RETAIL_SITE_TYPES.has(st)) {
+    return {
+      genome: pickRetailGenome(String(brief || '')),
+      source: `retail:${st}`,
+    }
+  }
   if (st && SITE_TYPE_TO_GENOME[st]) {
     return { genome: SITE_TYPE_TO_GENOME[st], source: `siteType:${st}` }
   }

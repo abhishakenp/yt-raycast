@@ -10,7 +10,8 @@ import { useEffect } from 'react'
 import { Toaster } from 'sonner'
 
 import { AppProviders } from '@/app/providers/AppProviders'
-import { useReferralCapture } from '@/features/referrals/hooks/useReferralCapture'
+import { MarketingConsentController } from '@/features/partners/components/MarketingConsentController'
+import { useAcquisitionCapture } from '@/features/partners/hooks/useAcquisitionCapture'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
@@ -18,7 +19,7 @@ import appCss from '../styles.css?url'
 const PLAUSIBLE_TRACKED_DOMAIN = 'ship-fast.ai'
 const PLAUSIBLE_SCRIPT_SRC = 'https://plausible.ship-fast.ai/js/script.js'
 function RootDocument({ children }: { children: ReactNode }) {
-  useReferralCapture()
+  useAcquisitionCapture()
 
   useEffect(() => {
     try {
@@ -60,6 +61,7 @@ function RootDocument({ children }: { children: ReactNode }) {
           </div>
         </noscript>
         {children}
+        <MarketingConsentController />
         <Toaster richColors />
         <Scripts />
       </body>

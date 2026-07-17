@@ -238,6 +238,15 @@ describe('LakebedAdminPanel', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy()
   })
 
+  it('keeps table headers in one horizontal row', () => {
+    renderAdminPanel()
+    fireEvent.click(screen.getByRole('button', { name: 'catalog' }))
+
+    const headerRow = screen.getByText('name').parentElement?.parentElement
+    expect(headerRow).toBeDefined()
+    expect(headerRow?.classList.contains('flex')).toBe(true)
+  })
+
   it('ignores section-capsule prop docs and malformed docs without a matching dataKey schema', () => {
     mocks.docs = [
       {

@@ -129,6 +129,73 @@ describe('createCheckoutApiResponse', () => {
     )
   })
 
+  it('adds Dub customer metadata only to enabled Stripe subscriptions', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      Response.json({
+        id: 'cs_dub',
+        url: 'https://stripe.test/checkout',
+      }),
+    )
+
+    await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        body: JSON.stringify({ gateway: 'stripe', mode: 'subscription' }),
+        headers: { authorization: 'Bearer token_123' },
+        method: 'POST',
+      }),
+      { ...env, DUB_PARTNERS_ENABLED: 'true' },
+      client,
+    )
+
+    const enabledBody = new URLSearchParams(
+      String(fetchSpy.mock.calls[0]?.[1]?.body),
+    )
+    expect(enabledBody.get('metadata[dubCustomerExternalId]')).toBe('user_123')
+
+    fetchSpy.mockClear()
+    await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        body: JSON.stringify({ gateway: 'stripe', mode: 'subscription' }),
+        headers: { authorization: 'Bearer token_123' },
+        method: 'POST',
+      }),
+      { ...env, DUB_PARTNERS_ENABLED: 'false' },
+      client,
+    )
+    const disabledBody = new URLSearchParams(
+      String(fetchSpy.mock.calls[0]?.[1]?.body),
+    )
+    expect(disabledBody.get('metadata[dubCustomerExternalId]')).toBeNull()
+  })
+
+  it('never adds Dub customer metadata to Stripe credit packs', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      Response.json({
+        id: 'cs_dub_pack',
+        url: 'https://stripe.test/checkout',
+      }),
+    )
+
+    await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        body: JSON.stringify({
+          gateway: 'stripe',
+          mode: 'credit_pack',
+          packId: '3_credits',
+        }),
+        headers: { authorization: 'Bearer token_123' },
+        method: 'POST',
+      }),
+      { ...env, DUB_PARTNERS_ENABLED: 'true' },
+      client,
+    )
+
+    const stripeBody = new URLSearchParams(
+      String(fetchSpy.mock.calls[0]?.[1]?.body),
+    )
+    expect(stripeBody.get('metadata[dubCustomerExternalId]')).toBeNull()
+  })
+
   it('creates a Razorpay credit-pack order', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(

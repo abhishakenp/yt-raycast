@@ -4,7 +4,7 @@
  * License at source: FSL-1.1-Apache-2.0 future license.
  *
  * This local adapter keeps the Convex dashboard table stack shape:
- * DataSidebar -> DataToolbar/DataFilters -> react-table/react-window DataTable
+ * DataSidebar -> DataToolbar/DataFilters -> TanStack Table DataTable
  * with inline cell editing and a side document editor, while replacing the
  * dashboard deployment UDFs with Lakebed sessionData reads/writes.
  */
@@ -20,14 +20,19 @@ import {
 } from '@radix-ui/react-icons'
 import classNames from 'classnames'
 import { useConvex, useMutation, useQuery } from 'convex/react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type HeaderGroup,
+} from '@tanstack/react-table'
 import {
   Group as PanelGroup,
   Panel,
   Separator as PanelResizeHandle,
 } from 'react-resizable-panels'
-import type { Column, Row } from 'react-table'
-import { useBlockLayout, useResizeColumns, useTable } from 'react-table'
 import { useLakebedSession } from '@ship-fast/lakebed/react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -41,9 +46,11 @@ import type {
   CapsuleSchemaRegistry,
   JsonRecord,
   LakebedAdminRow,
+  LakebedSessionDataDoc,
   LakebedAdminTable,
 } from '@/features/admin/services/lakebed-admin-model'
 import { buildCapsuleSchemaRegistry } from '@/features/admin/services/capsule-schema-registry'
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 type SortState = {
   column: string
@@ -60,17 +67,11 @@ type LakebedDocument = JsonRecord & {
   __rowId: string
 }
 
-type ResizableColumn = Column<LakebedDocument> & {
-  disableResizing?: boolean
-  minWidth?: number
-  width?: number
-}
+type LakebedColumnDef = ColumnDef<LakebedDocument, unknown>
 
-type ResizableHeader = ReturnType<
-  typeof useTable<LakebedDocument>
->['headerGroups'][number]['headers'][number] & {
-  disableResizing?: boolean
-  getResizerProps?: () => React.HTMLAttributes<HTMLDivElement>
+type SaveDataOptions = {
+  surfacePanelError?: boolean
+  surfacePanelSaving?: boolean
 }
 
 const lakebedApi = api.lakebed
@@ -82,11 +83,17 @@ function useClickAway(
   callback: () => void,
 ) {
   useEffect(() => {
-    const handleClick = (event) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+    function handleClick(event: MouseEvent) {
+      const target = event.target
+      if (
+        target instanceof Node &&
+        ref.current &&
+        !ref.current.contains(target)
+      ) {
         callback()
       }
     }
+
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [ref, callback])
@@ -94,6 +101,36 @@ function useClickAway(
 
 function isJsonRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isStorageId(value: unknown): value is Id<'_storage'> {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
+function storageIdFromUploadResult(value: unknown): Id<'_storage'> {
+  if (isJsonRecord(value) && isStorageId(value.storageId)) {
+    return value.storageId
+  }
+  throw new Error('Upload response missing storageId')
+}
+
+function isLakebedSessionDataDoc(
+  value: unknown,
+): value is LakebedSessionDataDoc {
+  return (
+    isJsonRecord(value) &&
+    typeof value.capsule === 'string' &&
+    typeof value.createdAt === 'number' &&
+    typeof value.updatedAt === 'number' &&
+    isJsonRecord(value.data)
+  )
+}
+
+function lakebedSessionDataDocs(
+  value: unknown,
+): LakebedSessionDataDoc[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  return value.filter(isLakebedSessionDataDoc)
 }
 
 function withoutGeneratedFields(value: unknown): unknown {
@@ -266,7 +303,8 @@ export function LakebedAdminPanel({
     }),
     [session],
   )
-  const docs = useQuery(lakebedApi.listSessionData, sessionArgs)
+  const rawDocs = useQuery(lakebedApi.listSessionData, sessionArgs)
+  const docs = useMemo(() => lakebedSessionDataDocs(rawDocs), [rawDocs])
   const replaceSessionData = useMutation(lakebedApi.replaceSessionData)
 
   const effectiveSchemas = capsuleSchemas ?? buildCapsuleSchemaRegistry()
@@ -295,15 +333,18 @@ export function LakebedAdminPanel({
     tables.find((table) => table.id === selectedTableId) ??
     visibleTables[0] ??
     tables[0]
-  const docForCapsule = useCallback(
-    (capsule) => docs?.find((doc) => doc.capsule === capsule),
-    [docs],
-  )
+
+  function docForCapsule(capsule: string) {
+    return docs?.find((doc) => doc.capsule === capsule)
+  }
+
   const addTargetCapsule =
     selectedTable && selectedTable.sourceCapsules.length === 1
       ? selectedTable.sourceCapsules[0]
       : undefined
-  const selectedDoc = docForCapsule(addTargetCapsule)
+  const selectedDoc = addTargetCapsule
+    ? docForCapsule(addTargetCapsule)
+    : undefined
 
   useEffect(() => {
     if (!selectedTable) return
@@ -350,55 +391,58 @@ export function LakebedAdminPanel({
     [filteredRows],
   )
 
-  const saveData = useCallback(
-    async (table, data, capsule = table.capsule, options = {}) => {
-      setError(undefined)
-      if (options.surfacePanelSaving !== false) setIsSaving(true)
-      try {
-        await replaceSessionData({
-          ...(session.anonymousOwnerSecret
-            ? { anonymousOwnerSecret: session.anonymousOwnerSecret }
-            : {}),
-          capsule,
-          data,
-          sessionId: session.sessionId,
-        })
-      } catch (saveError) {
-        const message =
-          saveError instanceof Error ? saveError.message : 'Save failed'
-        if (options.surfacePanelError !== false) setError(message)
-        throw new Error(message)
-      } finally {
-        if (options.surfacePanelSaving !== false) setIsSaving(false)
-      }
-    },
-    [replaceSessionData, session],
-  )
+  async function saveData(
+    table: LakebedAdminTable,
+    data: JsonRecord,
+    capsule = table.capsule,
+    options: SaveDataOptions = {},
+  ) {
+    setError(undefined)
+    if (options.surfacePanelSaving !== false) setIsSaving(true)
+    try {
+      await replaceSessionData({
+        ...(session.anonymousOwnerSecret
+          ? { anonymousOwnerSecret: session.anonymousOwnerSecret }
+          : {}),
+        capsule,
+        data,
+        sessionId: session.sessionId,
+      })
+    } catch (saveError) {
+      const message =
+        saveError instanceof Error ? saveError.message : 'Save failed'
+      if (options.surfacePanelError !== false) setError(message)
+      throw new Error(message)
+    } finally {
+      if (options.surfacePanelSaving !== false) setIsSaving(false)
+    }
+  }
 
-  const saveCell = useCallback(
-    async (row, column, value) => {
-      if (!selectedTable || column.startsWith('_')) return
-      const sourceCapsule = row.sourceCapsule ?? selectedTable.capsule
-      const sourceDoc = docForCapsule(sourceCapsule)
-      if (!sourceDoc) return
+  async function saveCell(
+    row: LakebedAdminRow,
+    column: string,
+    value: unknown,
+  ) {
+    if (!selectedTable || column.startsWith('_')) return
+    const sourceCapsule = row.sourceCapsule ?? selectedTable.capsule
+    const sourceDoc = docForCapsule(sourceCapsule)
+    if (!sourceDoc) return
 
-      const nextValue = nextRowValue(selectedTable, row, column, value)
-      await saveData(
-        selectedTable,
-        nextDataForRowSave({
-          data: sourceDoc.data,
-          row,
-          table: selectedTable,
-          value: nextValue,
-        }),
-        sourceCapsule,
-        { surfacePanelError: false, surfacePanelSaving: false },
-      )
-    },
-    [docForCapsule, saveData, selectedTable],
-  )
+    const nextValue = nextRowValue(selectedTable, row, column, value)
+    await saveData(
+      selectedTable,
+      nextDataForRowSave({
+        data: sourceDoc.data,
+        row,
+        table: selectedTable,
+        value: nextValue,
+      }),
+      sourceCapsule,
+      { surfacePanelError: false, surfacePanelSaving: false },
+    )
+  }
 
-  const addDocument = async (value) => {
+  async function addDocument(value: unknown) {
     if (!selectedTable || !selectedDoc || selectedTable.storage === 'value')
       return
     await saveData(
@@ -413,7 +457,7 @@ export function LakebedAdminPanel({
     setPopup(undefined)
   }
 
-  const saveDocument = async (row, value) => {
+  async function saveDocument(row: LakebedAdminRow, value: unknown) {
     if (!selectedTable) return
     const sourceCapsule = row.sourceCapsule ?? selectedTable.capsule
     const sourceDoc = docForCapsule(sourceCapsule)
@@ -431,7 +475,7 @@ export function LakebedAdminPanel({
     setPopup(undefined)
   }
 
-  const deleteRows = async (rowIds) => {
+  async function deleteRows(rowIds: Set<string>) {
     if (!selectedTable || selectedTable.storage === 'value') return
     const rowsByCapsule = new Map<string, LakebedAdminRow[]>()
     for (const row of selectedTable.rows) {
@@ -922,12 +966,33 @@ function DataTable({
   onSelectRows: (rows: Set<string>) => void
   selectedRows: Set<string>
 }) {
-  const tableColumns = useMemo<ResizableColumn[]>(
+  function createDataColumn(column: string): LakebedColumnDef {
+    return {
+      accessorKey: column,
+      cell: ({ row, getValue }) => (
+        <DataCell
+          column={column}
+          document={row.original}
+          isEditable={!column.startsWith('_')}
+          onEditDocument={() => onEditDocument(row.original.__lakebedRow)}
+          onSave={(nextValue) =>
+            onSaveCell(row.original.__lakebedRow, column, nextValue)
+          }
+          value={getValue()}
+        />
+      ),
+      header: column,
+      id: column,
+      minSize: column === '_id' ? 140 : 170,
+      size: column === '_id' ? 190 : 230,
+    }
+  }
+
+  const tableColumns = useMemo<LakebedColumnDef[]>(
     () => [
       {
-        Header: '*select',
-        accessor: '__rowId',
-        Cell: ({ row }) => (
+        accessorKey: '__rowId',
+        cell: ({ row }) => (
           <TableCheckbox
             checked={selectedRows.has(row.original.__lakebedRow.id)}
             disabled={isSaving}
@@ -943,51 +1008,25 @@ function DataTable({
             }}
           />
         ),
-        disableResizing: true,
+        enableResizing: false,
+        header: '*select',
         id: '*select',
-        width: 48,
+        size: 48,
       },
-      ...columns.map((column) => ({
-        Header: column,
-        accessor: column,
-        Cell: ({ row, value }) => (
-          <DataCell
-            column={column}
-            document={row.original}
-            isEditable={!column.startsWith('_')}
-            onEditDocument={() => onEditDocument(row.original.__lakebedRow)}
-            onSave={(nextValue) =>
-              onSaveCell(row.original.__lakebedRow, column, nextValue)
-            }
-            value={value}
-          />
-        ),
-        id: column,
-        minWidth: column === '_id' ? 140 : 170,
-        width: column === '_id' ? 190 : 230,
-      })),
+      ...columns.map(createDataColumn),
     ],
     [columns, isSaving, onEditDocument, onSaveCell, onSelectRows, selectedRows],
   )
 
-  const tableInstance = useTable(
-    {
-      columns: tableColumns as Column<LakebedDocument>[],
-      data,
-      getRowId: (row) => row.__rowId,
-    },
-    useBlockLayout,
-    useResizeColumns,
-  )
-
-  const {
-    getTableBodyProps,
-    getTableProps,
-    headerGroups,
-    prepareRow,
-    rows,
-    totalColumnsWidth,
-  } = tableInstance
+  const table = useReactTable({
+    columnResizeMode: 'onChange',
+    columns: tableColumns,
+    data,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.__rowId,
+  })
+  const rows = table.getRowModel().rows
+  const totalColumnsWidth = table.getTotalSize()
 
   const toggleAll = () => {
     if (selectedRows.size === rows.length) {
@@ -1002,7 +1041,6 @@ function DataTable({
       <div className="min-h-[160px] flex-1 overflow-auto">
         {rows.length > 0 ? (
           <div
-            {...getTableProps()}
             className="min-w-full font-mono text-xs text-[#f8f8f2]"
             style={{ width: totalColumnsWidth }}
           >
@@ -1010,30 +1048,29 @@ function DataTable({
               allRowsSelected={
                 rows.length > 0 && selectedRows.size === rows.length
               }
-              headerGroups={headerGroups}
+              headerGroups={table.getHeaderGroups()}
               onToggleAll={toggleAll}
               selectedRows={selectedRows}
             />
-            <div {...getTableBodyProps()}>
+            <div>
               {rows.map((row) => {
-                prepareRow(row)
-                const { key: rowKey, ...rowProps } = row.getRowProps()
                 return (
                   <div
-                    key={rowKey}
-                    {...rowProps}
+                    key={row.id}
                     className="group flex"
                     style={{ height: rowHeight }}
                   >
-                    {row.cells.map((cell) => {
-                      const { key: cellKey, ...cellProps } = cell.getCellProps()
+                    {row.getVisibleCells().map((cell) => {
                       return (
                         <div
-                          key={cellKey}
-                          {...cellProps}
+                          key={cell.id}
                           className="h-full border-r border-b border-[#4b4945] transition-colors group-hover:bg-[#312f2b]"
+                          style={{ width: cell.column.getSize() }}
                         >
-                          {cell.render('Cell')}
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
                         </div>
                       )
                     })}
@@ -1059,51 +1096,50 @@ function TableHeader({
   selectedRows,
 }: {
   allRowsSelected: boolean
-  headerGroups: ReturnType<typeof useTable<LakebedDocument>>['headerGroups']
+  headerGroups: HeaderGroup<LakebedDocument>[]
   onToggleAll: () => void
   selectedRows: Set<string>
 }) {
   return (
     <div className="sticky top-0 z-20 bg-[#302e2a]">
       {headerGroups.map((headerGroup) => {
-        const { key: groupKey, ...groupProps } =
-          headerGroup.getHeaderGroupProps()
         return (
           <div
-            key={groupKey}
-            {...groupProps}
-            className="border-x border-x-transparent"
+            key={headerGroup.id}
+            className="flex border-x border-x-transparent"
           >
-            {headerGroup.headers.map((column, columnIndex) => {
-              const { key: columnKey, ...columnProps } = column.getHeaderProps()
+            {headerGroup.headers.map((header, columnIndex) => {
               return (
                 <div
-                  key={columnKey}
-                  {...columnProps}
+                  key={header.id}
                   className={classNames(
                     'group relative flex h-[38px] items-center border-b border-r border-[#57544f] bg-[#302e2a] px-3 text-left font-mono text-xs font-semibold text-[#d4d4d8]',
                     columnIndex === 0 && 'justify-center px-0',
                   )}
+                  style={{ width: header.getSize() }}
                 >
-                  {column.Header === '*select' ? (
+                  {header.column.id === '*select' ? (
                     <TableCheckbox
                       checked={allRowsSelected}
                       indeterminate={!allRowsSelected && selectedRows.size > 0}
                       onToggle={onToggleAll}
                     />
                   ) : (
-                    <span className="truncate">{String(column.Header)}</span>
+                    <span className="truncate">
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </span>
                   )}
-                  {(() => {
-                    const resizableColumn = column as ResizableHeader
-                    return !resizableColumn.disableResizing &&
-                      resizableColumn.getResizerProps ? (
-                      <div
-                        {...resizableColumn.getResizerProps()}
-                        className="absolute right-0 top-0 h-full w-2 cursor-col-resize touch-none"
-                      />
-                    ) : null
-                  })()}
+                  {header.column.getCanResize() ? (
+                    <div
+                      className="absolute right-0 top-0 h-full w-2 cursor-col-resize touch-none"
+                      onDoubleClick={() => header.column.resetSize()}
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                    />
+                  ) : null}
                 </div>
               )
             })}
@@ -1178,7 +1214,7 @@ function DataCell({
     setDraft(previewAdminValue(value))
   }, [value])
 
-  const uploadDocument = async (file) => {
+  async function uploadDocument(file: File) {
     setError(undefined)
     setIsUploading(true)
     try {
@@ -1194,10 +1230,10 @@ function DataCell({
         body: file,
       })
       if (!response.ok) throw new Error(`Upload failed: ${response.status}`)
-      const { storageId } = (await response.json()) as { storageId: string }
+      const storageId = storageIdFromUploadResult(await response.json())
       const served = await convex.query(api.gov_uploads.getStorageUrl, {
         sessionId: session.sessionId,
-        storageId: storageId as never,
+        storageId,
       })
       if (typeof served !== 'string') throw new Error('Could not resolve URL')
       setDraft(served)

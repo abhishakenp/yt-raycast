@@ -20,6 +20,7 @@ vi.mock('../generate.ts', () => ({
 
 import { auditOpenUIProgram } from './openui-program-audit.ts'
 import { getComponentSignature } from './openui-signature.ts'
+import { themePoolFor } from './theme-affinity.ts'
 import {
   FAMILIES,
   classifyFamilies,
@@ -255,6 +256,24 @@ describe('composePage (valid by construction, no fallback)', () => {
 
 describe('runV2ComposedGeneration', () => {
   beforeEach(() => mocks.generateText.mockReset())
+
+  it('uses a prompt-aware theme pool for commerce families', async () => {
+    mocks.generateText.mockImplementation(async (..._a) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+
+    const result = await runV2ComposedGeneration({
+      prompt: 'a luxury watch atelier and fine jewelry boutique',
+      modelId: 'm',
+      sessionSeed: 'retail-theme-affinity',
+      familyOverride: 'JewelryStore',
+      signal,
+    })
+
+    expect(themePoolFor('luxury')).toContain(result.theme)
+  })
 
   it('selects the deterministic whole-page flight simulator capsule', async () => {
     const result = await runV2ComposedGeneration({

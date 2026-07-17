@@ -4,8 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   REFERRAL_DONE_KEY,
+  REFERRAL_PENDING_AT_KEY,
   REFERRAL_PENDING_KEY,
 } from '@/features/referrals/lib/referral-client'
+import {
+  DUB_PENDING_AT_KEY,
+  DUB_PENDING_KEY,
+} from '@/features/partners/lib/acquisition-client'
+import { writeMarketingConsent } from '@/features/partners/lib/marketing-consent'
 import { useReferralCapture } from './useReferralCapture'
 
 const originalFetch = globalThis.fetch
@@ -29,6 +35,7 @@ describe('useReferralCapture', () => {
     window.history.pushState(null, '', '/')
     delete (window as Window & { Clerk?: unknown }).Clerk
     vi.useRealTimers()
+    vi.unstubAllEnvs()
   })
 
   it('captures a referral query code, normalizes it, and cleans the URL', () => {
@@ -122,5 +129,25 @@ describe('useReferralCapture', () => {
     expect(window.localStorage.getItem(REFERRAL_PENDING_KEY)).toBeNull()
     expect(window.localStorage.getItem(REFERRAL_DONE_KEY)).toBe('1')
     expect(window.location.search).toBe('')
+  })
+
+  it('waits when an earlier Dub attribution candidate exists', async () => {
+    vi.stubEnv('VITE_DUB_PARTNERS_ENABLED', 'true')
+    writeMarketingConsent('accepted')
+    window.localStorage.setItem(REFERRAL_PENDING_KEY, 'NATIVE01')
+    window.localStorage.setItem(REFERRAL_PENDING_AT_KEY, '200')
+    window.localStorage.setItem(DUB_PENDING_KEY, 'click_123')
+    window.localStorage.setItem(DUB_PENDING_AT_KEY, '100')
+    const getToken = vi.fn(async () => 'convex-token')
+    setClerk({
+      user: { primaryEmailAddress: { emailAddress: 'new-user@example.com' } },
+      session: { getToken },
+    })
+
+    renderHook(() => useReferralCapture())
+
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(getToken).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalled()
   })
 })

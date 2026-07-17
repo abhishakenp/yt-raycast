@@ -16,6 +16,7 @@ describe('runtime environment release boundary', () => {
       'BILLING_WEBHOOK_MUTATION_SECRET',
       'CLERK_SECRET_KEY',
       'CONVEX_SELF_HOSTED_ADMIN_KEY',
+      'DUB_API_KEY',
       'GEMINI_API_KEY',
       'GROQ_API_KEY',
       'MEDUSA_ADMIN_API_TOKEN',
