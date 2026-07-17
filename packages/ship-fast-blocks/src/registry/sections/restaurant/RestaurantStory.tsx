@@ -5,6 +5,7 @@ import { Flame, Leaf, Soup, Wheat } from 'lucide-react'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 // About "Our Story" feature chips, keyed by intent; falls back to a soup bowl.
 const FEATURE_ICONS = [Flame, Wheat, Leaf]
@@ -108,13 +109,16 @@ export const RestaurantStory = defineCapsule({
           </div>
 
           <div className="order-2">
-            <p className="mb-4 inline-flex items-center gap-2.5 text-xs font-semibold tracking-[0.12em] text-primary uppercase before:h-px before:w-7 before:bg-primary">
-              {eyebrow}
-            </p>
-            <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-balance md:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-5 leading-relaxed text-muted-foreground">{body}</p>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={body}
+              align="left"
+              eyebrowClassName="inline-flex items-center gap-2.5 text-xs font-semibold tracking-[0.12em] text-primary uppercase before:h-px before:w-7 before:bg-primary"
+              titleClassName="font-serif text-3xl font-bold leading-tight tracking-tight text-balance md:text-4xl"
+              subtitleClassName="leading-relaxed"
+              className="gap-5"
+            />
 
             <div className="mt-8 flex flex-col gap-5">
               {features.map((feat, i) => {

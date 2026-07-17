@@ -4,6 +4,8 @@ import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 type DashboardDisplayRow = {
@@ -186,10 +188,14 @@ export const DashboardOrdersTable = defineCapsule({
         )}
       >
         <div className="flex flex-col justify-between gap-3 border-b border-border/60 p-5 sm:flex-row sm:items-center">
-          <div>
-            <h2 className="text-base font-semibold text-foreground">{title}</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
-          </div>
+          <SectionHeading
+            title={title}
+            subtitle={subtitle}
+            align="left"
+            titleClassName="text-base font-semibold"
+            subtitleClassName="text-xs"
+            className="gap-0.5"
+          />
           <div className="flex gap-2">
             {actions.map((action) => (
               <button

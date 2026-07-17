@@ -1,9 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  Topbar,
+  TopbarSection,
+  TopbarDivider,
+  TopbarIconButton,
+} from '#/section-kit/Topbar.tsx'
 
 /**
  * DashboardTopbar — a sticky top app-bar for a SaaS admin dashboard. A bordered
@@ -52,12 +57,7 @@ export const DashboardTopbar = defineCapsule({
       `portrait headshot of ${userName}, friendly professional`
 
     return (
-      <header
-        className={cn(
-          'z-10 flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6',
-          props.className,
-        )}
-      >
+      <Topbar className={props.className}>
         <div className="flex items-center gap-3">
           <div className="relative hidden sm:block">
             <svg
@@ -82,12 +82,10 @@ export const DashboardTopbar = defineCapsule({
             />
           </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <button
-            type="button"
+        <TopbarSection>
+          <TopbarIconButton
             aria-label="Notifications"
             onClick={() => go(notificationsTarget)}
-            className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <svg
               width="20"
@@ -104,12 +102,11 @@ export const DashboardTopbar = defineCapsule({
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-destructive ring-2 ring-card" />
-          </button>
-          <button
-            type="button"
+          </TopbarIconButton>
+          <TopbarIconButton
             aria-label="Messages"
             onClick={() => go(messagesTarget)}
-            className="hidden rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
+            className="hidden sm:block"
           >
             <svg
               width="20"
@@ -125,8 +122,8 @@ export const DashboardTopbar = defineCapsule({
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
               <polyline points="22,6 12,13 2,6" />
             </svg>
-          </button>
-          <div className="hidden h-6 w-px bg-border sm:block" />
+          </TopbarIconButton>
+          <TopbarDivider />
           <button
             type="button"
             onClick={() => go(userTarget)}
@@ -147,8 +144,8 @@ export const DashboardTopbar = defineCapsule({
               </span>
             </span>
           </button>
-        </div>
-      </header>
+        </TopbarSection>
+      </Topbar>
     )
   },
 })

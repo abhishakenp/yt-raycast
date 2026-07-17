@@ -4,6 +4,8 @@ import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
@@ -51,10 +53,15 @@ export const DashboardHeader = defineCapsule({
           props.className,
         )}
       >
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-        </div>
+        <SectionHeading
+          title={title}
+          subtitle={subtitle}
+          align="left"
+          titleAs="h1"
+          titleClassName="text-2xl font-bold"
+          subtitleClassName="text-sm"
+          className="gap-1"
+        />
         <div className="flex gap-2">
           <button
             type="button"

@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+
 /**
  * ContactFooter — minimal bottom footer for a contact page.
  * A single bordered-top row centered with an auto-updating copyright line.
@@ -34,7 +36,7 @@ export const ContactFooter = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-[1160px] px-6">{copyright}</div>
+        <Container className="max-w-[1160px] px-6">{copyright}</Container>
       </footer>
     )
   },

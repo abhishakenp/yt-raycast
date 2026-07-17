@@ -2,6 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+
+import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -89,13 +93,15 @@ export const ConstructionQuote = defineCapsule({
 
     return (
       <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-background sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-background/60">{description}</p>
-          </div>
+        <Container size="sm" className="max-w-4xl">
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            align="center"
+            titleClassName="text-3xl font-bold text-background sm:text-4xl"
+            subtitleClassName="text-lg text-background/60"
+            className="mb-12 gap-6"
+          />
 
           <form
             className="rounded-xl bg-card p-8 shadow-xl lg:p-12"
@@ -251,7 +257,7 @@ export const ConstructionQuote = defineCapsule({
               {disclaimer}
             </p>
           </form>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -16,9 +16,11 @@ export function SectionHeading(props: {
   subtitleClassName?: string
   className?: string
   titleId?: string
+  titleAs?: 'h1' | 'h2' | 'h3'
 }) {
   const align = props.align ?? 'center'
   const centered = align === 'center'
+  const TitleTag = (props.titleAs ?? 'h2') as 'h1' | 'h2' | 'h3'
   return (
     <div
       className={cn(
@@ -37,7 +39,7 @@ export function SectionHeading(props: {
           {props.eyebrow}
         </span>
       ) : null}
-      <h2
+      <TitleTag
         id={props.titleId}
         className={cn(
           'text-3xl font-semibold text-foreground md:text-4xl',
@@ -45,7 +47,7 @@ export function SectionHeading(props: {
         )}
       >
         {props.title}
-      </h2>
+      </TitleTag>
       {props.subtitle ? (
         <p
           className={cn(

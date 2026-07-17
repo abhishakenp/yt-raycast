@@ -4,6 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
  * ChurchGive — generosity / give split section for a church or faith-community site.
@@ -130,15 +132,16 @@ export const ChurchGive = defineCapsule({
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
-              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2 className="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-                {heading}
-              </h2>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-                {description}
-              </p>
+              <SectionHeading
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                align="left"
+                eyebrowClassName="text-muted-foreground tracking-widest"
+                titleClassName="text-3xl font-medium tracking-tight sm:text-4xl"
+                subtitleClassName="text-lg leading-relaxed"
+                className="mb-8 gap-4"
+              />
               <div className="mb-10 space-y-4">
                 {points.map((point, i) => (
                   <div key={point.title} className="flex items-center gap-4">
@@ -175,7 +178,7 @@ export const ChurchGive = defineCapsule({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4">
-                <div className="aspect-[4/5] overflow-hidden rounded-xl bg-muted">
+                <ImageTile treatment="4-5-xl-muted">
                   <Image
                     alt={imageAltOne}
                     w={600}
@@ -183,7 +186,7 @@ export const ChurchGive = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                </div>
+                </ImageTile>
                 <div className="rounded-xl bg-muted p-6">
                   <p className="mb-1 text-3xl font-medium text-foreground">
                     {statOne.value}
@@ -200,7 +203,7 @@ export const ChurchGive = defineCapsule({
                     {statTwo.label}
                   </p>
                 </div>
-                <div className="aspect-[4/5] overflow-hidden rounded-xl bg-muted">
+                <ImageTile treatment="4-5-xl-muted">
                   <Image
                     alt={imageAltTwo}
                     w={600}
@@ -208,7 +211,7 @@ export const ChurchGive = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                </div>
+                </ImageTile>
               </div>
             </div>
           </div>

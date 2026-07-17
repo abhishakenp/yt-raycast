@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * LinkInBioFeatures — the core link hub of a Linktree / Bento style link-in-bio
@@ -211,9 +212,12 @@ export const LinkInBioFeatures = defineCapsule({
         )}
       >
         {eyebrow ? (
-          <p className="mb-6 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
+          <Eyebrow
+            variant="text"
+            className="mb-6 block text-center text-sm font-medium uppercase tracking-widest text-muted-foreground"
+          >
             {eyebrow}
-          </p>
+          </Eyebrow>
         ) : null}
 
         <nav aria-label="Links" className="space-y-4">

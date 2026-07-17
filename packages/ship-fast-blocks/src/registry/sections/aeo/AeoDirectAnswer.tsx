@@ -3,6 +3,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+
 export const AeoDirectAnswer = defineCapsule({
   name: 'AeoDirectAnswer',
   description:
@@ -30,11 +33,14 @@ export const AeoDirectAnswer = defineCapsule({
         )}
         aria-label="Overview"
       >
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           {heading ? (
-            <h2 className="mb-4 text-2xl font-semibold text-foreground sm:text-3xl">
-              {heading}
-            </h2>
+            <SectionHeading
+              title={heading}
+              align="left"
+              titleClassName="text-2xl font-semibold sm:text-3xl"
+              className="mb-4"
+            />
           ) : null}
           <p className="text-base leading-relaxed text-foreground sm:text-lg">
             {answer}
@@ -43,7 +49,7 @@ export const AeoDirectAnswer = defineCapsule({
             <strong className="text-foreground">Who this is for:</strong>{' '}
             {whoFor}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },
