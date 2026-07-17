@@ -12,6 +12,8 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
+import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
 
 /**
  * BarNightclubMenu — two-column drinks menu for a cocktail-bar / nightclub
@@ -197,25 +199,21 @@ export const BarNightclubMenu = defineCapsule({
           <div className="grid gap-12 md:grid-cols-2 lg:gap-16">
             {columns.map((col) => (
               <div key={col.title}>
-                <h3 className="mb-8 border-b border-border pb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
-                  {col.title}
-                </h3>
+                <MenuCategoryHeader
+                  title={col.title}
+                  titleClassName="text-sm uppercase tracking-[0.2em] text-muted-foreground"
+                  showDivider
+                  className="mb-8"
+                />
                 <div className="space-y-6">
                   {(col.items ?? []).map((drink) => (
-                    <div
+                    <MenuItemRow
                       key={drink.name}
-                      className="flex items-start justify-between gap-4"
-                    >
-                      <div>
-                        <h4 className="mb-1 font-medium">{drink.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {drink.description}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        <span className="whitespace-nowrap text-muted-foreground">
-                          {drink.price}
-                        </span>
+                      name={drink.name}
+                      description={drink.description}
+                      price={drink.price}
+                      priceClassName="whitespace-nowrap text-muted-foreground"
+                      action={
                         <CommerceAddItemButton
                           lakebed={lakebed}
                           item={{
@@ -233,8 +231,8 @@ export const BarNightclubMenu = defineCapsule({
                         >
                           {addLabel}
                         </CommerceAddItemButton>
-                      </div>
-                    </div>
+                      }
+                    />
                   ))}
                 </div>
               </div>

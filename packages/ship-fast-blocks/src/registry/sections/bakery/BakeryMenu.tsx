@@ -11,6 +11,8 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
+import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
 
 /**
  * BakeryMenu — full daily menu block for an artisan-bakery page, on a soft
@@ -208,38 +210,25 @@ export const BakeryMenu = defineCapsule({
       ),
     )
 
-    const PriceRow = ({ item, section }) => (
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h4 className="font-semibold text-card-foreground">{item.name}</h4>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {item.description}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <span className="font-semibold text-card-foreground">
-            {item.price}
-          </span>
-          <CommerceAddItemButton
-            lakebed={lakebed}
-            item={{
-              label: item.name,
-              price: item.price,
-            }}
-            aria-label={`${addLabel} ${item.name} to cart`}
-            pendingChildren={
-              <>
-                <CommerceMutationSpinner className="size-3" />
-                Adding
-              </>
-            }
-            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
-          >
-            {addLabel}
-            <span className="sr-only"> {section}</span>
-          </CommerceAddItemButton>
-        </div>
-      </div>
+    const MenuAddButton = ({ item, section }) => (
+      <CommerceAddItemButton
+        lakebed={lakebed}
+        item={{
+          label: item.name,
+          price: item.price,
+        }}
+        aria-label={`${addLabel} ${item.name} to cart`}
+        pendingChildren={
+          <>
+            <CommerceMutationSpinner className="size-3" />
+            Adding
+          </>
+        }
+        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
+      >
+        {addLabel}
+        <span className="sr-only"> {section}</span>
+      </CommerceAddItemButton>
     )
 
     return (
@@ -254,32 +243,48 @@ export const BakeryMenu = defineCapsule({
 
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="rounded-xl bg-card p-8 shadow-sm">
-              <h3 className="mb-6 flex items-center gap-3 text-2xl font-semibold text-card-foreground">
-                <span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg">
-                  {breadsEmoji}
-                </span>
-                {breadsTitle}
-              </h3>
+              <MenuCategoryHeader
+                title={breadsTitle}
+                icon={breadsEmoji}
+                iconClassName="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg"
+                titleClassName="text-2xl font-semibold text-card-foreground"
+                className="mb-6"
+              />
               <div className="space-y-6">
                 {breads.map((item) => (
-                  <PriceRow key={item.name} item={item} section={breadsTitle} />
+                  <MenuItemRow
+                    key={item.name}
+                    name={item.name}
+                    description={item.description}
+                    price={item.price}
+                    nameClassName="font-semibold text-card-foreground"
+                    priceClassName="font-semibold text-card-foreground"
+                    action={<MenuAddButton item={item} section={breadsTitle} />}
+                  />
                 ))}
               </div>
             </div>
 
             <div className="rounded-xl bg-card p-8 shadow-sm">
-              <h3 className="mb-6 flex items-center gap-3 text-2xl font-semibold text-card-foreground">
-                <span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg">
-                  {pastriesEmoji}
-                </span>
-                {pastriesTitle}
-              </h3>
+              <MenuCategoryHeader
+                title={pastriesTitle}
+                icon={pastriesEmoji}
+                iconClassName="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg"
+                titleClassName="text-2xl font-semibold text-card-foreground"
+                className="mb-6"
+              />
               <div className="space-y-6">
                 {pastries.map((item) => (
-                  <PriceRow
+                  <MenuItemRow
                     key={item.name}
-                    item={item}
-                    section={pastriesTitle}
+                    name={item.name}
+                    description={item.description}
+                    price={item.price}
+                    nameClassName="font-semibold text-card-foreground"
+                    priceClassName="font-semibold text-card-foreground"
+                    action={
+                      <MenuAddButton item={item} section={pastriesTitle} />
+                    }
                   />
                 ))}
               </div>
@@ -287,15 +292,24 @@ export const BakeryMenu = defineCapsule({
           </div>
 
           <div className="mt-8 rounded-xl bg-card p-8 shadow-sm">
-            <h3 className="mb-6 flex items-center gap-3 text-2xl font-semibold text-card-foreground">
-              <span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg">
-                {cakesEmoji}
-              </span>
-              {cakesTitle}
-            </h3>
+            <MenuCategoryHeader
+              title={cakesTitle}
+              icon={cakesEmoji}
+              iconClassName="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg"
+              titleClassName="text-2xl font-semibold text-card-foreground"
+              className="mb-6"
+            />
             <div className="grid gap-6 md:grid-cols-3">
               {cakes.map((item) => (
-                <PriceRow key={item.name} item={item} section={cakesTitle} />
+                <MenuItemRow
+                  key={item.name}
+                  name={item.name}
+                  description={item.description}
+                  price={item.price}
+                  nameClassName="font-semibold text-card-foreground"
+                  priceClassName="font-semibold text-card-foreground"
+                  action={<MenuAddButton item={item} section={cakesTitle} />}
+                />
               ))}
             </div>
           </div>
