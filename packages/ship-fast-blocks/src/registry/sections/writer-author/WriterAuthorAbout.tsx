@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  StorySplit,
+  StorySplitGrid,
+  StorySplitContent,
+  StorySplitBody,
+} from '#/section-kit/StorySplit.tsx'
 
 /**
  * WriterAuthorAbout — a two-column "About" band for a literary author site.
@@ -38,13 +44,13 @@ export const WriterAuthorAbout = defineCapsule({
     ]
 
     return (
-      <section
+      <StorySplit
         className={cn(
           'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
           props.className,
         )}
       >
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
+        <StorySplitGrid className="mx-auto max-w-7xl px-6 lg:px-8 lg:gap-12">
           <Image
             alt={props.portraitAlt ?? 'author portrait black and white'}
             w={640}
@@ -52,25 +58,20 @@ export const WriterAuthorAbout = defineCapsule({
             className="w-full rounded-2xl border border-border object-cover"
           />
 
-          <div>
+          <StorySplitContent>
             <SectionHeading
               align="left"
               eyebrow={props.eyebrow ?? 'About'}
               title={props.heading ?? 'On writing and a life of letters'}
             />
-            <div className="mt-6 space-y-4">
+            <StorySplitBody className="mt-6 space-y-4 font-serif text-lg leading-relaxed text-muted-foreground">
               {paragraphs.map((paragraph, i) => (
-                <p
-                  key={i}
-                  className="font-serif text-lg leading-relaxed text-muted-foreground"
-                >
-                  {paragraph}
-                </p>
+                <p key={i}>{paragraph}</p>
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
+            </StorySplitBody>
+          </StorySplitContent>
+        </StorySplitGrid>
+      </StorySplit>
     )
   },
 })

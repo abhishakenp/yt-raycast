@@ -5,6 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  StorySplit,
+  StorySplitGrid,
+  StorySplitContent,
+  StorySplitFooter,
+} from '#/section-kit/StorySplit.tsx'
 
 /**
  * AccountingFirmAbout — split about band for a CPA / accounting-firm site. A
@@ -69,9 +75,12 @@ export const AccountingFirmAbout = defineCapsule({
       'professional headshot of Robert Northridge founder in navy suit with warm smile'
 
     return (
-      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
+      <StorySplit
+        variant="muted"
+        className={cn('py-20 lg:py-28', props.className)}
+      >
         <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          <StorySplitGrid>
             <div className="order-2 lg:order-1">
               <Image
                 alt={imageAlt}
@@ -81,7 +90,7 @@ export const AccountingFirmAbout = defineCapsule({
                 className="aspect-[4/3] w-full rounded-lg object-cover shadow-lg"
               />
             </div>
-            <div className="order-1 lg:order-2">
+            <StorySplitContent className="order-1 lg:order-2 space-y-0">
               <Eyebrow
                 variant="text"
                 className="mb-3 block text-sm tracking-wider text-muted-foreground"
@@ -114,7 +123,7 @@ export const AccountingFirmAbout = defineCapsule({
                 ))}
               </div>
 
-              <div className="flex items-center gap-4">
+              <StorySplitFooter className="gap-4 pt-0">
                 <Image
                   alt={founderAvatarAlt}
                   w={100}
@@ -125,11 +134,11 @@ export const AccountingFirmAbout = defineCapsule({
                   <p className="font-semibold text-foreground">{founderName}</p>
                   <p className="text-sm text-muted-foreground">{founderRole}</p>
                 </div>
-              </div>
-            </div>
-          </div>
+              </StorySplitFooter>
+            </StorySplitContent>
+          </StorySplitGrid>
         </Container>
-      </section>
+      </StorySplit>
     )
   },
 })

@@ -13,6 +13,12 @@ import { Image } from '#/lib/img.tsx'
  * or sustainable apparel labels.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StorySplit,
+  StorySplitGrid,
+  StorySplitContent,
+  StorySplitBody,
+} from '#/section-kit/StorySplit.tsx'
 export const FashionStoreAbout = defineCapsule({
   name: 'FashionStoreAbout',
   description:
@@ -71,13 +77,13 @@ export const FashionStoreAbout = defineCapsule({
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
     return (
-      <section
+      <StorySplit
         aria-label="Our philosophy"
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-            <div>
+          <StorySplitGrid>
+            <StorySplitContent className="space-y-0">
               <p className={cn(eyebrowCls, 'mb-4')}>{aboutEyebrow}</p>
               <h2 className="mb-8 font-serif text-4xl font-normal leading-tight sm:text-5xl lg:text-6xl">
                 {aboutHeadingLines.map((line, i) => (
@@ -87,11 +93,11 @@ export const FashionStoreAbout = defineCapsule({
                   </span>
                 ))}
               </h2>
-              <div className="space-y-6 text-muted-foreground">
+              <StorySplitBody className="space-y-6 text-muted-foreground">
                 {aboutParagraphs.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
-              </div>
+              </StorySplitBody>
               <div className="mt-10 border-t border-border pt-10">
                 <div className="grid grid-cols-3 gap-8">
                   {aboutStats.map((s) => (
@@ -106,7 +112,7 @@ export const FashionStoreAbout = defineCapsule({
                   ))}
                 </div>
               </div>
-            </div>
+            </StorySplitContent>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4">
                 <div className="aspect-[3/4] overflow-hidden">
@@ -152,9 +158,9 @@ export const FashionStoreAbout = defineCapsule({
                 </div>
               </div>
             </div>
-          </div>
+          </StorySplitGrid>
         </Container>
-      </section>
+      </StorySplit>
     )
   },
 })

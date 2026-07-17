@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { StorySplit, StorySplitGrid } from '#/section-kit/StorySplit.tsx'
 
 export const WeddingAbout = defineCapsule({
   name: 'WeddingAbout',
@@ -59,7 +60,7 @@ export const WeddingAbout = defineCapsule({
         ]
 
     return (
-      <section
+      <StorySplit
         className={cn(
           'bg-background py-20 text-foreground lg:py-28',
           props.className,
@@ -73,7 +74,7 @@ export const WeddingAbout = defineCapsule({
             titleClassName="font-serif"
           />
 
-          <div className="mt-16 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <StorySplitGrid className="mt-16 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="relative">
               <div
                 className="absolute -inset-4 rounded-3xl bg-primary/10 blur-2xl"
@@ -117,9 +118,9 @@ export const WeddingAbout = defineCapsule({
                 </li>
               ))}
             </ol>
-          </div>
+          </StorySplitGrid>
         </div>
-      </section>
+      </StorySplit>
     )
   },
 })
