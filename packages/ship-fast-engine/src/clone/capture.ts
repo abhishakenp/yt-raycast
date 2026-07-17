@@ -175,7 +175,7 @@ export async function capturePage(
     // stay under the ~1 MiB per-page storage limit. Cross-origin sheets throw on
     // cssRules and are skipped (browser still loads their fonts via absolute url).
     await page.evaluate(() => {
-      const minify = (css) =>
+      const minify = (css: string) =>
         css
           .replace(/\/\*[\s\S]*?\*\//g, '')
           .replace(/\s+/g, ' ')

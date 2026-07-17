@@ -146,6 +146,12 @@ interface InlineEditToolbarProps {
 // selections so a style copied from one element can be pasted onto another.
 let copiedStyle: string | null = null
 
+// Test-only: reset the module-level clipboard so tests start clean without
+// needing vi.resetModules() (which re-imports the heavy @ship-fast/blocks graph).
+export function __resetCopiedStyleForTests(): void {
+  copiedStyle = null
+}
+
 // Check if a capsule has editable schema (variants, collections, or scalars).
 // Used to hide the "Capsule controls" button when the panel would be empty.
 const capsuleSchemaCache = new Map<string, boolean>()

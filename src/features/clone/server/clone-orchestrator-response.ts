@@ -28,6 +28,18 @@ const CONVEX_HTTP_TIMEOUT_MS = 30_000
 type CloneConvexClient = Pick<ConvexHttpClient, 'mutation'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
+type ClonePageRecord = {
+  pathname: string
+  title?: string
+  html: string
+  isHome: boolean
+  failed: boolean
+  order: number
+  byteLength: number
+  truncated?: boolean
+  storageId?: Id<'_storage'>
+}
+
 interface CloneEngine {
   assertPublicUrl: typeof import('@ship-fast/engine/clone/security.ts').assertPublicUrl
   crawlSite: typeof import('@ship-fast/engine/clone/crawler.ts').crawlSite
@@ -103,7 +115,7 @@ export async function runCloneJob(input: {
   if (bearer) client.setAuth?.(bearer)
 
   const sid = sessionId as Id<'sessions'>
-  const writePage = (args) =>
+  const writePage = (args: Omit<ClonePageRecord, 'sessionId'>) =>
     client.mutation(api.sessions.writeClonePageDoc, {
       sessionId: sid,
       anonymousOwnerSecret,
@@ -117,7 +129,7 @@ export async function runCloneJob(input: {
   const STORAGE_THRESHOLD_BYTES = 900_000
 
   // Persist one self-contained page: inline html when small, else file storage.
-  const persistPage = async (page) => {
+  const persistPage = async (page: ClonePageRecord) => {
     if (page.byteLength > STORAGE_THRESHOLD_BYTES) {
       const uploadUrl = await client.mutation(
         api.sessions.generateCloneUploadUrl,
@@ -167,7 +179,8 @@ export async function runCloneJob(input: {
 
     // The url we hand to capturePage must be a real, absolute url. crawlSite keys by
     // normalized url which IS absolute; for the seed-fallback use the raw seed.
-    const urlFor = (key, isHome) => (isHome && !pages.has(key) ? seedUrl : key)
+    const urlFor = (key: string, isHome: boolean) =>
+      isHome && !pages.has(key) ? seedUrl : key
 
     // 2. Capture HOME FIRST (sequential), self-contain, write, finalize — so the
     //    preview paints the moment home lands, before the rest stream in.

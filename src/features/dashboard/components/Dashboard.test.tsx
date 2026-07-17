@@ -81,7 +81,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 
 vi.mock('convex/react', () => ({
   useAction: () => vi.fn(),
-  useMutation: (mutation) => async (args) => {
+  useMutation: (mutation: unknown) => async (args: unknown) => {
     const state = (
       globalThis as typeof globalThis & {
         __shipFastDashboardConvexState?: DashboardConvexTestState
@@ -89,7 +89,7 @@ vi.mock('convex/react', () => ({
     ).__shipFastDashboardConvexState
     state?.mutationCalls.push({ mutation, args })
   },
-  useQuery: (_query, args) => {
+  useQuery: (_query: unknown, args: unknown) => {
     const state = (
       globalThis as typeof globalThis & {
         __shipFastDashboardConvexState?: DashboardConvexTestState
@@ -103,7 +103,9 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }) => <>{children}</>,
+  LakebedSessionProvider: ({ children }: { children: ReactNode }) => (
+    <>{children}</>
+  ),
 }))
 
 vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
@@ -113,7 +115,17 @@ vi.mock('@/features/billing/components/BillingPanel', () => ({
   BillingPanel: () => null,
 }))
 vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
-  BrandMediaPanel: ({ onSelectBrand }) => (
+  BrandMediaPanel: ({
+    onSelectBrand,
+  }: {
+    onSelectBrand?: (brand: {
+      name: string
+      domain: string
+      brandId: string
+      icon: string
+      logo: string
+    }) => void
+  }) => (
     <button
       type="button"
       onClick={() =>
@@ -131,7 +143,15 @@ vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
   ),
 }))
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
-  CommercePanel: ({ sessionId, visualProductCount, visualProducts }) => (
+  CommercePanel: ({
+    sessionId,
+    visualProductCount,
+    visualProducts,
+  }: {
+    sessionId: string
+    visualProductCount: number
+    visualProducts: unknown[]
+  }) => (
     <div>
       <span>Medusa commerce panel {sessionId}</span>
       <span data-testid="commerce-visual-product-count">
@@ -156,7 +176,7 @@ vi.mock('@/features/exports/components/ExportPanel', () => ({
   ExportPanel: () => null,
 }))
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }) => {
+  GeneratedModulePreview: ({ source }: { source: string }) => {
     const [initialSource] = useState(source)
     return (
       <div data-testid="generated-module-preview">
@@ -175,7 +195,7 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: () => undefined,
 }))
 vi.mock('@/genui/components/ThemePicker', () => ({
-  default: ({ trigger }) => <>{trigger}</>,
+  default: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>,
 }))
 vi.mock('@/genui/theme-apply', () => ({
   resolveThemeStyles: () => undefined,

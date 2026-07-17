@@ -18,16 +18,16 @@ const mocks = ((
 })
 
 vi.mock('../generate.ts', () => ({
-  generateText: (...args) =>
+  generateText: (...args: unknown[]) =>
     (
       (globalThis as typeof globalThis & { __runMocks: typeof mocks })
         .__runMocks.generateText as unknown as (...a: unknown[]) => unknown
     )(...args),
   isHardLlmFailure: () => false,
-  formatLlmFailureMessage: (e) => String(e),
+  formatLlmFailureMessage: (e: unknown) => String(e),
 }))
 vi.mock('../pipeline/detect-language.js', () => ({
-  detectLanguage: (...args) =>
+  detectLanguage: (...args: unknown[]) =>
     (
       (globalThis as typeof globalThis & { __runMocks: typeof mocks })
         .__runMocks.detectLanguage as unknown as (...a: unknown[]) => unknown

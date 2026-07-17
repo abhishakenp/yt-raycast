@@ -19,14 +19,20 @@ const controller = vi.hoisted(() => ({
 // promise-returning function.
 vi.mock('node:child_process', async () => {
   const { promisify } = await import('node:util')
-  const execImpl = (cmd, opts, cb) => {
+  const execImpl = (
+    _cmd: string,
+    opts: unknown,
+    cb?:
+      | ((err: Error | null, stdout: string, stderr: string) => void)
+      | undefined,
+  ) => {
     // Callback-style path (not used by the provisioner, but kept for safety).
     const callback = typeof opts === 'function' ? opts : cb
     callback?.(null, '', '')
   }
 
-  const custom = (cmd) =>
-    new Promise((resolve, reject) => {
+  const custom = (cmd: string) =>
+    new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
       controller.execCommands.push(cmd)
 
       // Shared infra check.
@@ -66,15 +72,15 @@ vi.mock('node:net', () => {
     const handlers = new Map<string, (() => void)[]>()
     const server = {
       unref: () => server,
-      once: (event, cb) => {
+      once: (event: string, cb: () => void) => {
         const list = handlers.get(event) ?? []
         list.push(cb)
         handlers.set(event, list)
       },
-      close: (cb?) => {
+      close: (cb?: () => void) => {
         cb?.()
       },
-      listen: (_opts) => {
+      listen: (_opts: unknown) => {
         process.nextTick(() => {
           const event = controller.portFree ? 'listening' : 'error'
           handlers.get(event)?.forEach((cb) => cb())

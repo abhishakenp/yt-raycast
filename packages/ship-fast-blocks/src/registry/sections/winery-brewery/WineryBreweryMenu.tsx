@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
+import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -171,41 +173,17 @@ export const WineryBreweryMenu = defineCapsule({
           <div className="space-y-16">
             {categories.map((category) => (
               <div key={category.name}>
-                <div className="mb-8 flex items-center gap-4">
-                  <h3 className="font-serif text-2xl font-medium text-foreground">
-                    {category.name}
-                  </h3>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
+                <MenuCategoryHeader title={category.name} showDivider />
                 <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
                   {(category.items ?? []).map((item) => (
-                    <div
+                    <MenuItemRow
                       key={item.name}
-                      className="group flex w-full items-start justify-between gap-4 text-left"
-                    >
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => go(menuTarget)}
-                            className="font-medium text-foreground transition-colors hover:text-primary"
-                          >
-                            {item.name}
-                          </button>
-                          {item.tag ? (
-                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs uppercase tracking-wide text-primary">
-                              {item.tag}
-                            </span>
-                          ) : null}
-                        </div>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {item.notes}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        <span className="font-serif text-lg text-foreground">
-                          {item.price}
-                        </span>
+                      name={item.name}
+                      description={item.notes}
+                      price={item.price}
+                      tag={item.tag}
+                      onNameClick={() => go(menuTarget)}
+                      action={
                         <CommerceAddItemButton
                           lakebed={lakebed}
                           item={{
@@ -223,8 +201,8 @@ export const WineryBreweryMenu = defineCapsule({
                         >
                           {addLabel}
                         </CommerceAddItemButton>
-                      </div>
-                    </div>
+                      }
+                    />
                   ))}
                 </div>
               </div>

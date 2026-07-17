@@ -78,7 +78,7 @@ function normalizePromptForCache(value: string) {
   return normalizePromptDraft(value).toLowerCase()
 }
 
-async function withTimeout(
+async function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
   onTimeout?: () => void,

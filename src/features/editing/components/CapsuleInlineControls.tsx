@@ -236,7 +236,7 @@ function CapsuleInlineControlsInner({
 
   // Find the grid container in the capsule element for a given collection key.
   // The grid is the element with the most same-tag children (e.g. 5 ARTICLEs).
-  const findGridContainer = useCallback((_collectionKey) => {
+  const findGridContainer = useCallback((_collectionKey: string) => {
     if (!capsuleElementRef.current) return null
     // Find the element with the most same-tag direct children
     let best: HTMLElement | null = null
@@ -258,7 +258,7 @@ function CapsuleInlineControlsInner({
 
   // Apply reorder to DOM for live preview
   const applyReorderToDom = useCallback(
-    (collectionKey, order) => {
+    (collectionKey: string, order: number[]) => {
       const grid = findGridContainer(collectionKey)
       if (!grid) return
 
@@ -289,7 +289,7 @@ function CapsuleInlineControlsInner({
     )
   }
 
-  const bufferedValue = (key, backend) =>
+  const bufferedValue = (key: string, backend: unknown) =>
     key in pendingScalars ? pendingScalars[key] : backend
 
   const hasVariants = schemaInfo.variants.length > 0
@@ -482,7 +482,7 @@ function InlineCollectionControls({
   }
 
   const doReorder = useCallback(
-    (fromDisplay, toDisplay) => {
+    (fromDisplay: number, toDisplay: number) => {
       if (toDisplay < 0 || toDisplay >= currentOrder.length) return
       const nextOrder = [...currentOrder]
       const [moved] = nextOrder.splice(fromDisplay, 1)

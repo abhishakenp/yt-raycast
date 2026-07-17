@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Route as cartByIdRoute } from './medusa-store.cart.$id'
 import { Route as cartLineItemsRoute } from './medusa-store.cart.line-items'
 import { Route as cartRoute } from './medusa-store.cart'
-import { callRouteHandler } from './route-handler.test-helper'
+import { callRouteHandler } from './-route-handler.test-helper'
 
 const medusaEnv = vi.hoisted(() => ({
   backendUrl: 'https://backend.medusa.test',

@@ -319,6 +319,13 @@ export default defineSchema({
     hash: v.optional(v.string()),
     generatorRevision: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
+    // Real, event-driven build (and, for lakebed, deploy) progress. Written
+    // as each actual pipeline stage completes — never a simulated/timed
+    // value. progressStartedAt anchors elapsed-time/ETA display on the
+    // client and is set once when the build begins.
+    progressStage: v.optional(v.string()),
+    progressPercent: v.optional(v.number()),
+    progressStartedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -404,6 +411,19 @@ export default defineSchema({
     contentJson: v.string(),
     createdAt: v.number(),
   }).index('by_promptCacheKey', ['promptCacheKey']),
+
+  // Content-addressed cache of Prettier-formatted export file output. Keyed by
+  // hash(parser + format options + raw file content) — formatting is a pure
+  // deterministic transform, so identical raw content (e.g. unchanged
+  // boilerplate/section-kit/theme files when only one thing — theme, logo,
+  // language — changed elsewhere) skips reformatting, shared across builds and
+  // sessions. A prettier option change alters the hash input and naturally
+  // busts stale entries; no manual invalidation needed.
+  exportRenderCache: defineTable({
+    hash: v.string(),
+    content: v.string(),
+    updatedAt: v.number(),
+  }).index('by_hash', ['hash']),
 
   commerceConfigs: defineTable({
     sessionId: v.id('sessions'),

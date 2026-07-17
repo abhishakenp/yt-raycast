@@ -3,8 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { StoryCard } from '#/section-kit/StoryCard.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
 
@@ -161,31 +161,20 @@ export const BlogStoryGrid = defineCapsule({
 
         <ResponsiveGrid cols="1-2-3" gap="md">
           {posts.map((post) => (
-            <button
+            <StoryCard
               key={post.title}
-              type="button"
-              onClick={() => go(postTarget)}
-              className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card text-left shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-all hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]"
-            >
-              <div className="relative h-[12.5rem] overflow-hidden bg-muted">
-                <Image
-                  alt={post.alt}
-                  w={800}
-                  h={500}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                />
+              title={post.title}
+              excerpt={post.excerpt}
+              imageAlt={post.alt}
+              imageW={800}
+              imageH={500}
+              imageClassName="h-[12.5rem]"
+              meta={
                 <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground shadow-sm backdrop-blur">
                   {post.tag}
                 </span>
-              </div>
-              <div className="flex flex-1 flex-col p-5">
-                <h3 className="text-[1.05rem] font-bold leading-snug tracking-tight text-foreground">
-                  {post.title}
-                </h3>
-                <p className="mt-2 line-clamp-3 flex-1 text-[0.92rem] leading-relaxed text-muted-foreground">
-                  {post.excerpt}
-                </p>
+              }
+              footer={
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
                   <span className="inline-flex items-center gap-2.5 text-[0.82rem] font-semibold text-foreground">
                     <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.625rem] font-bold text-primary-foreground">
@@ -197,8 +186,10 @@ export const BlogStoryGrid = defineCapsule({
                     {post.date}
                   </span>
                 </div>
-              </div>
-            </button>
+              }
+              onClick={() => go(postTarget)}
+              variant="bordered"
+            />
           ))}
         </ResponsiveGrid>
       </section>

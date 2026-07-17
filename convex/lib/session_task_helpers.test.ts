@@ -28,14 +28,19 @@ function ctxFor(initialTasks: TaskRecord[] = []) {
   let nextTask = tasks.length + 1
 
   const db = {
-    query: (table) => ({
-      withIndex: (indexName, applyIndex) => {
+    query: (table: string) => ({
+      withIndex: (
+        indexName: string,
+        applyIndex: (index: {
+          eq: (field: string, value: unknown) => typeof index
+        }) => void,
+      ) => {
         expect(table).toBe('tasks')
         expect(indexName).toBe('by_sessionId_taskKey')
 
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field, value) => {
+          eq: (field: string, value: unknown) => {
             filters.set(field, value)
             return index
           },
@@ -53,13 +58,13 @@ function ctxFor(initialTasks: TaskRecord[] = []) {
         }
       },
     }),
-    insert: async (table, value) => {
+    insert: async (table: string, value: Record<string, unknown>) => {
       expect(table).toBe('tasks')
       const id = `task_${nextTask++}` as Id<'tasks'>
       tasks.push({ _id: id, _creationTime: 1, ...value } as TaskRecord)
       return id
     },
-    patch: async (id, value) => {
+    patch: async (id: string, value: Record<string, unknown>) => {
       const taskIndex = tasks.findIndex((task) => task._id === id)
       expect(taskIndex).toBeGreaterThanOrEqual(0)
       tasks[taskIndex] = { ...tasks[taskIndex], ...value } as TaskRecord

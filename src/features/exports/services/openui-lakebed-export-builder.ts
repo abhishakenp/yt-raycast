@@ -323,7 +323,7 @@ async function resolvePexelsImageForLakebed(
   }
 }
 
-async function mapWithConcurrency(
+async function mapWithConcurrency<TItem, TResult>(
   items: TItem[],
   limit: number,
   mapper: (item: TItem) => Promise<TResult>,
@@ -6488,14 +6488,17 @@ async function buildStaticLakebedProjectFiles(
       props: { title: projectName, description: 'Static Lakebed review app' },
     },
   ]
-  const files = await formatExportFiles({
-    'AGENTS.md': renderAgents(),
-    'CLAUDE.md': renderAgents(),
-    'README.md': renderReadme(projectName),
-    'client/index.tsx': renderStaticClientIndex(projectName, html),
-    'server/index.ts': renderStaticServerIndex(projectName),
-    'shared/content.ts': renderSharedContent(projectName, routes),
-  })
+  const files = await formatExportFiles(
+    {
+      'AGENTS.md': renderAgents(),
+      'CLAUDE.md': renderAgents(),
+      'README.md': renderReadme(projectName),
+      'client/index.tsx': renderStaticClientIndex(projectName, html),
+      'server/index.ts': renderStaticServerIndex(projectName),
+      'shared/content.ts': renderSharedContent(projectName, routes),
+    },
+    input.formatCache,
+  )
   assertNoLeakedSourceTerms(files)
 
   return {
@@ -6524,6 +6527,7 @@ export async function buildOpenUILakebedProjectFiles(
   const routes = buildRoutes(parsed)
   const componentNames = collectRouteComponentNames(routes)
   const definitions = collectDefinitions(componentNames)
+  await input.onProgress?.('parsing')
   const files: Record<string, string> = {}
   const seenVendorFiles = new Set<string>()
   const seenBlockFiles = new Set<string>()
@@ -6533,6 +6537,7 @@ export async function buildOpenUILakebedProjectFiles(
     seenVendorFiles,
     seenBlockFiles,
   )
+  await input.onProgress?.('generating')
   const routeClientComponents = routes.map((route) =>
     renderRouteClientComponentDefinition(route, componentNames),
   )
@@ -6551,6 +6556,7 @@ export async function buildOpenUILakebedProjectFiles(
     input.previewHtml,
     input,
   )
+  await input.onProgress?.('resolving-images')
   const targetMap = buildLakebedTargetMap(routes, parsed.targetMap)
   const styleOverrides = extractStyleOverrides(input.previewHtml)
   const adminAccess = readLakebedAdminAccessConfig(input.siteSpecJson)
@@ -6638,7 +6644,8 @@ export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontU
     if (seoBundle.llmsTxt) files['public/llms.txt'] = seoBundle.llmsTxt
   }
   pruneUnreachableLakebedSources(files)
-  const formattedFiles = await formatExportFiles(files)
+  await input.onProgress?.('formatting')
+  const formattedFiles = await formatExportFiles(files, input.formatCache)
   assertNoLeakedSourceTerms(formattedFiles)
   assertNoUnboundClientReferences(formattedFiles)
 

@@ -399,7 +399,7 @@ export async function crawlSite(
   let reservedPages = 0
 
   // Helper to add node to graph
-  const addNode = (url, normalized) => {
+  const addNode = (url: string, normalized: string) => {
     if (!state.graph.nodes.has(normalized)) {
       state.graph.nodes.set(normalized, {
         url,
@@ -411,7 +411,7 @@ export async function crawlSite(
   }
 
   // Helper to add edge to graph
-  const addEdge = (from, to) => {
+  const addEdge = (from: string, to: string) => {
     state.graph.edges.push({ from, to })
     const fromNode = state.graph.nodes.get(from)
     const toNode = state.graph.nodes.get(to)

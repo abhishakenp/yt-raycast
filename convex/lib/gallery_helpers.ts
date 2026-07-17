@@ -7,6 +7,11 @@ const ongoingGalleryStatuses = new Set([
   'streaming',
 ])
 
+// Sessions with these terminal statuses should never appear in the gallery,
+// even though they are no longer "ongoing".  Failed generations have no
+// renderable output and must not clutter the grid.
+const hiddenGalleryStatuses = new Set(['failed'])
+
 export function hasGalleryReadySignal(session: Doc<'sessions'>): boolean {
   return (
     session.genuiStatus === 'done' ||
@@ -20,6 +25,7 @@ export function isGalleryVisibleSession(session: Doc<'sessions'>): boolean {
   const status = session.status
   if (status !== undefined && ongoingGalleryStatuses.has(status))
     return hasGalleryReadySignal(session)
+  if (status !== undefined && hiddenGalleryStatuses.has(status)) return false
   if (status !== undefined) return true
 
   return hasGalleryReadySignal(session)

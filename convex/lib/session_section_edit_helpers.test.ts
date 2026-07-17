@@ -19,13 +19,16 @@ const homeModuleId = 'section_edit_home' as Id<'generatedModules'>
 const previewId = 'section_edit_preview' as Id<'previews'>
 
 const indexHelper = {
-  eq: (_field, _value) => indexHelper,
+  eq: (_field: string, _value: unknown) => indexHelper,
 }
 
 function chainFor(rows: Row[]) {
   return {
-    withIndex: (_indexName, _applyIndex) => chainFor(rows),
-    order: (direction) =>
+    withIndex: (
+      _indexName: string,
+      _applyIndex: (index: typeof indexHelper) => void,
+    ) => chainFor(rows),
+    order: (direction: 'asc' | 'desc') =>
       chainFor(
         [...rows].sort((left, right) => {
           const leftVersion = Number(left.version ?? 0)
@@ -93,12 +96,12 @@ const mutationCtxFor = async () => {
       getUserIdentity: async () => null,
     },
     db: {
-      get: async (id) => (id === sessionId ? session : null),
-      insert: async (table, value) => {
+      get: async (id: string) => (id === sessionId ? session : null),
+      insert: async (table: TableName, value: Row) => {
         rows[table].push(value)
         return `${table}_${rows[table].length}`
       },
-      patch: async (id, value) => {
+      patch: async (id: string, value: Row) => {
         patches.push({ id, value })
         for (const tableRows of Object.values(rows)) {
           const row = tableRows.find((candidate) => candidate._id === id)
@@ -106,7 +109,7 @@ const mutationCtxFor = async () => {
         }
         if (id === sessionId) Object.assign(session, value)
       },
-      query: (table) => chainFor(rows[table]),
+      query: (table: TableName) => chainFor(rows[table]),
     },
   } as unknown as MutationCtx
 

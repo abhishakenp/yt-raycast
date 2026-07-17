@@ -174,6 +174,15 @@ export const exportArtifactBuildArgs = {
   generatorRevision: v.optional(v.string()),
 }
 
+export const exportArtifactProgressArgs = {
+  sessionId: v.id('sessions'),
+  target: exportTarget,
+  previewVersion: v.number(),
+  locale: v.optional(v.string()),
+  stageKey: v.string(),
+  willDeploy: v.boolean(),
+}
+
 export const exportArtifactStalledArgs = {
   sessionId: v.id('sessions'),
   target: exportTarget,

@@ -155,7 +155,7 @@ function makeSeededRng(seed: string): () => number {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
-function pick(rng: () => number, xs: readonly T[]): T {
+function pick<T>(rng: () => number, xs: readonly T[]): T {
   return xs[Math.min(xs.length - 1, Math.floor(rng() * xs.length))]
 }
 
@@ -658,7 +658,7 @@ export async function composeHomeFirstPass(input: {
         `  ${sec.toLowerCase()}: ${getComponentSignature(`${fam.name}${sec}`) ?? `${fam.name}${sec}(...)`}`,
     ),
   }))
-  const ask = async (strict) => {
+  const ask = async (strict: boolean) => {
     const sys = strict
       ? `${superagentSystem(input.locale)} You MUST fill EVERY section listed for the chosen vertical with rich content — never return an empty or partial object.`
       : superagentSystem(input.locale)
@@ -723,8 +723,10 @@ export async function composeHomeFirstPass(input: {
   // Quality strictness: the home must be substantially filled (hero + ≥ half the
   // sections). If not, retry once with a stricter instruction — never ship an
   // empty/placeholder homepage.
-  const enough = (fam, props) => {
-    const have = fam.sections.filter((s) => props[s.toLowerCase()]).length
+  const enough = (fam: Family, props: Record<string, unknown>) => {
+    const have = fam.sections.filter(
+      (s: string) => props[s.toLowerCase()],
+    ).length
     return Boolean(props['hero']) && have >= Math.ceil(fam.sections.length / 2)
   }
   if (!enough(chosen, out.props)) {
@@ -1079,7 +1081,7 @@ function buildRouteTargetMap(input: {
     }
   }
 
-  const semanticTargetFor = (value) => {
+  const semanticTargetFor = (value: string) => {
     const normalized = normalizeAlias(value)
     const exact =
       targetMap[value] ??
@@ -2012,7 +2014,7 @@ export async function runV2ComposedGeneration(input: {
   const locale = input.preferredLanguage || 'en'
   const themeRoll = rng()
   let theme = pick(() => themeRoll, THEME_CATALOG).name
-  const emit = (e) => input.onEvent?.(e)
+  const emit = (e: V2Event) => input.onEvent?.(e)
 
   // A flight simulator is a real-time Three.js runtime, not a composition of
   // generic form/state primitives. Select the registered whole-page capsule by

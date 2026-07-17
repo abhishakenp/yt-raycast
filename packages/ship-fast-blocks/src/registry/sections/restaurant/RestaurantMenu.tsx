@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   RestaurantMutationSpinner,
@@ -214,12 +215,7 @@ export const RestaurantMenu = defineCapsule({
           <div className="space-y-16">
             {categories.map((category) => (
               <div key={category.name}>
-                <div className="mb-8 flex items-center gap-4">
-                  <h3 className="font-serif text-2xl font-medium text-foreground">
-                    {category.name}
-                  </h3>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
+                <MenuCategoryHeader title={category.name} showDivider />
                 <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
                   {(category.items ?? []).map((item) => (
                     <button

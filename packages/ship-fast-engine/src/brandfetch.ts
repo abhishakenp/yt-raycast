@@ -99,7 +99,12 @@ function pickLargestLogo(logos: any[] = []) {
       flat.push({ src, type, width, height })
     }
   }
-  const score = (item) => {
+  const score = (item: {
+    src: string
+    type: string
+    width: number
+    height: number
+  }) => {
     const isSvg = /svg/i.test(item.type) || /\.svg(\?|#|$)/i.test(item.src)
     const area = Math.max(1, item.width || 0) * Math.max(1, item.height || 0)
     return (isSvg ? 10_000_000_000 : 0) + area
@@ -280,7 +285,9 @@ export async function brandfetchBrandByDomain({
 }
 
 function normalizePalette(data: any) {
-  const colors = Array.isArray(data?.colors) ? data.colors : []
+  const colors: Array<Record<string, any>> = Array.isArray(data?.colors)
+    ? data.colors
+    : []
   const primary =
     colors.find((c) => String(c?.type || '').toLowerCase() === 'primary') ||
     colors.find((c) => String(c?.role || '').toLowerCase() === 'primary') ||
@@ -297,7 +304,7 @@ function normalizePalette(data: any) {
     colors[2] ||
     null
 
-  const toHex = (c) => {
+  const toHex = (c: Record<string, any> | null) => {
     const h = toStringValue(c?.hex || c?.value || c?.color || '')
     return /^#[0-9a-f]{6}$/i.test(h) ? h : ''
   }

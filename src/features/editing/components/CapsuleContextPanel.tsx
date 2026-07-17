@@ -224,7 +224,7 @@ function CapsuleContextPanelInner({
     }
   }, [handleRef, commit, discard])
 
-  const bufferedValue = (key, backend) =>
+  const bufferedValue = (key: string, backend: unknown) =>
     key in pendingScalars ? pendingScalars[key] : backend
 
   if (!schemaInfo) return null
@@ -408,7 +408,7 @@ function BentoCollection({
   const cancelDraft = useCallback(() => setDraftItem(null), [])
 
   const handleReorder = useCallback(
-    (fromIndex, toIndex) => {
+    (fromIndex: number, toIndex: number) => {
       // Buffer reorder in parent state — only persist on Apply, discard on close
       const nextOrder = [...sortableItems]
       const [moved] = nextOrder.splice(fromIndex, 1)
@@ -418,7 +418,7 @@ function BentoCollection({
     [sortableItems, onReorderLocal],
   )
 
-  const getItemValue = (i) => String(i)
+  const getItemValue = (i: number) => String(i)
 
   return (
     <div className="col-span-3 flex flex-col gap-1.5 rounded-md border border-white/8 bg-white/[0.03] p-2.5">

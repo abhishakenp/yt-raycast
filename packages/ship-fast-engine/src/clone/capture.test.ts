@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Browser } from 'playwright'
 
 // Mock the SSRF guard so we can simulate private-IP rejection without DNS.
 const securityMocks = vi.hoisted(() => ({
@@ -28,7 +29,7 @@ const pwMocks = vi.hoisted(() => {
     url: vi.fn(() => 'https://example.com/'),
     content: vi.fn(async () => '<html><body><h1>Hi</h1></body></html>'),
     waitForTimeout: vi.fn(async () => undefined),
-    evaluate: vi.fn(async () => undefined),
+    evaluate: vi.fn(async (): Promise<unknown> => undefined),
     $$: vi.fn(async () => []),
     $: vi.fn(async () => null),
     screenshot: vi.fn(async () => Buffer.from('png')),
@@ -49,6 +50,11 @@ const pwMocks = vi.hoisted(() => {
 vi.mock('playwright', () => ({ chromium: pwMocks.chromium }))
 
 import { capturePage, capturePages } from './capture.ts'
+
+// Typed alias for passing the mock browser to capturePage (which expects a
+// real Playwright Browser). The mock object has the same structural shape
+// (newContext/close) but vi.fn() methods don't match Browser's full interface.
+const mockBrowser = pwMocks.browser as unknown as Browser
 
 function resetMocks() {
   securityMocks.assertPublicUrl.mockReset()
@@ -161,14 +167,14 @@ describe('clone capture — capturePage', () => {
     securityMocks.assertPublicUrl.mockRejectedValue(
       new Error('Blocked URL (private/loopback IP)'),
     )
-    const result = await capturePage(pwMocks.browser, 'http://10.0.0.1/')
+    const result = await capturePage(mockBrowser, 'http://10.0.0.1/')
     expect(result).toBeNull()
     // The browser was never asked for a context/page.
     expect(pwMocks.browser.newContext).not.toHaveBeenCalled()
   })
 
   it('returns a CapturedPage with html, styles, bboxes, and asset urls on success', async () => {
-    const result = await capturePage(pwMocks.browser, 'https://example.com/')
+    const result = await capturePage(mockBrowser, 'https://example.com/')
     expect(result).not.toBeNull()
     expect(result?.html).toBe('<html><body><h1>Hi</h1></body></html>')
     expect(result?.computedStyles).toBeInstanceOf(Map)
@@ -179,7 +185,7 @@ describe('clone capture — capturePage', () => {
 
   it('re-asserts the resolved (post-redirect) url for SSRF defense-in-depth', async () => {
     pwMocks.page.url.mockReturnValue('https://redirected.example/')
-    await capturePage(pwMocks.browser, 'https://example.com/')
+    await capturePage(mockBrowser, 'https://example.com/')
     const checked = securityMocks.assertPublicUrl.mock.calls.map(([u]) => u)
     expect(checked).toContain('https://example.com/')
     expect(checked).toContain('https://redirected.example/')
@@ -192,19 +198,19 @@ describe('clone capture — capturePage', () => {
         throw new Error('Blocked URL (private/loopback IP)')
       }
     })
-    const result = await capturePage(pwMocks.browser, 'https://example.com/')
+    const result = await capturePage(mockBrowser, 'https://example.com/')
     expect(result).toBeNull()
   })
 
   it('closes the page and context in finally on success', async () => {
-    await capturePage(pwMocks.browser, 'https://example.com/')
+    await capturePage(mockBrowser, 'https://example.com/')
     expect(pwMocks.page.close).toHaveBeenCalled()
     expect(pwMocks.context.close).toHaveBeenCalled()
   })
 
   it('closes the page and context in finally even on failure', async () => {
     securityMocks.assertPublicUrl.mockRejectedValue(new Error('blocked'))
-    await capturePage(pwMocks.browser, 'https://example.com/')
+    await capturePage(mockBrowser, 'https://example.com/')
     // context was never created, but teardown must not throw; page.close is a
     // no-op when page is null. The key invariant: no listener leak / no throw.
     expect(pwMocks.browser.close).not.toHaveBeenCalled()
@@ -216,7 +222,7 @@ describe('clone capture — capturePage', () => {
       controller.abort()
       throw new Error('aborted')
     })
-    await capturePage(pwMocks.browser, 'https://example.com/', {
+    await capturePage(mockBrowser, 'https://example.com/', {
       signal: controller.signal,
     })
     // Teardown ran (page/context closed) despite the abort.
@@ -225,7 +231,7 @@ describe('clone capture — capturePage', () => {
 
   it('keys the returned page by the final response url, normalized', async () => {
     pwMocks.page.url.mockReturnValue('https://example.com/final')
-    const result = await capturePage(pwMocks.browser, 'https://example.com/')
+    const result = await capturePage(mockBrowser, 'https://example.com/')
     expect(result?.url).toBe('https://example.com/final')
     expect(result?.normalizedUrl).toBe('normalized:https://example.com/final')
   })

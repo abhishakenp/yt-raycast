@@ -292,7 +292,7 @@ describe('user image upload helpers', () => {
         }),
       },
       storage: {
-        getUrl: async (storageId) =>
+        getUrl: async (storageId: string) =>
           storageId === 'storage_ready'
             ? 'https://storage.test/ready.png'
             : null,

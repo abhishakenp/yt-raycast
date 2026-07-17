@@ -116,24 +116,29 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
     aiCapsules: [...(input.aiCapsules ?? [])],
   }
 
-  const rowsFor = (table) => tables[table]
-  const findById = (id) =>
+  const rowsFor = (table: TableName) => tables[table]
+  const findById = (id: string) =>
     Object.values(tables)
       .flat()
       .find((row) => row._id === id) ?? null
 
   const db = {
-    normalizeId: (table, value) =>
+    normalizeId: (table: TableName, value: string) =>
       rowsFor(table).some((row) => row._id === value) ? value : null,
-    get: async (id) => findById(id),
-    query: (table) => {
+    get: async (id: string) => findById(id),
+    query: (table: TableName) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -149,7 +154,7 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
 
           return builder
         },
-        order: (direction) => {
+        order: (direction: 'asc' | 'desc') => {
           rows = [...rows].sort((left, right) => {
             const leftValue =
               'version' in left
@@ -167,7 +172,7 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
           return builder
         },
         first: async () => rows[0] ?? null,
-        take: async (limit) => rows.slice(0, limit),
+        take: async (limit: number) => rows.slice(0, limit),
       }
 
       return builder

@@ -31,10 +31,15 @@ function stripFences(s: string): string {
 
 export function runCodemodeProgram(code: string): CodemodeResult {
   const out: CodemodeResult = { pages: [] }
-  const home = (component, props?) => {
+  const home = (component: string, props?: Record<string, unknown>) => {
     out.home = { component, props: props ?? {} }
   }
-  const page = (id, label, component, props?) => {
+  const page = (
+    id: string,
+    label: string,
+    component: string,
+    props?: Record<string, unknown>,
+  ) => {
     out.pages.push({ id, label, component, props: props ?? {} })
   }
   // Restricted: only `home`/`page` are passed in. (Benchmark-grade isolation.)

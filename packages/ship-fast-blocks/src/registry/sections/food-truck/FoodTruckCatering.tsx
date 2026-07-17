@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { FormField } from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
@@ -155,106 +156,62 @@ export const FoodTruckCatering = defineCapsule({
               </h3>
               <form className="space-y-4" onSubmit={inquiry.submitForm}>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="ft-catering-name"
-                      className="mb-1 block text-sm font-medium"
-                    >
-                      Name
-                    </label>
-                    <input
-                      id="ft-catering-name"
-                      name="name"
-                      type="text"
-                      placeholder="Your name"
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="ft-catering-email"
-                      className="mb-1 block text-sm font-medium"
-                    >
-                      Email
-                    </label>
-                    <input
-                      id="ft-catering-email"
-                      name="email"
-                      type="email"
-                      placeholder="you@email.com"
-                      className={inputCls}
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="ft-catering-date"
-                      className="mb-1 block text-sm font-medium"
-                    >
-                      Event Date
-                    </label>
-                    <input
-                      id="ft-catering-date"
-                      name="date"
-                      type="date"
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="ft-catering-guests"
-                      className="mb-1 block text-sm font-medium"
-                    >
-                      Guest Count
-                    </label>
-                    <select
-                      id="ft-catering-guests"
-                      name="guestCount"
-                      className={cn(inputCls, 'appearance-none')}
-                    >
-                      {guestCounts.map((g) => (
-                        <option key={g} className="bg-background">
-                          {g}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="ft-catering-type"
-                    className="mb-1 block text-sm font-medium"
-                  >
-                    Event Type
-                  </label>
-                  <select
-                    id="ft-catering-type"
-                    name="eventType"
-                    className={cn(inputCls, 'appearance-none')}
-                  >
-                    {eventTypes.map((t) => (
-                      <option key={t} className="bg-background">
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label
-                    htmlFor="ft-catering-message"
-                    className="mb-1 block text-sm font-medium"
-                  >
-                    Message
-                  </label>
-                  <textarea
-                    id="ft-catering-message"
-                    name="message"
-                    rows={3}
-                    placeholder="Tell us about your event..."
-                    className={cn(inputCls, 'resize-none')}
+                  <FormField
+                    id="ft-catering-name"
+                    name="name"
+                    label="Name"
+                    placeholder="Your name"
+                    inputClassName={inputCls}
+                    labelClassName="mb-1"
+                  />
+                  <FormField
+                    id="ft-catering-email"
+                    name="email"
+                    label="Email"
+                    type="email"
+                    placeholder="you@email.com"
+                    inputClassName={inputCls}
+                    labelClassName="mb-1"
                   />
                 </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    id="ft-catering-date"
+                    name="date"
+                    label="Event Date"
+                    type="date"
+                    inputClassName={inputCls}
+                    labelClassName="mb-1"
+                  />
+                  <FormField
+                    id="ft-catering-guests"
+                    name="guestCount"
+                    label="Guest Count"
+                    as="select"
+                    options={guestCounts}
+                    inputClassName={inputCls}
+                    labelClassName="mb-1"
+                  />
+                </div>
+                <FormField
+                  id="ft-catering-type"
+                  name="eventType"
+                  label="Event Type"
+                  as="select"
+                  options={eventTypes}
+                  inputClassName={inputCls}
+                  labelClassName="mb-1"
+                />
+                <FormField
+                  id="ft-catering-message"
+                  name="message"
+                  label="Message"
+                  as="textarea"
+                  rows={3}
+                  placeholder="Tell us about your event..."
+                  inputClassName={inputCls}
+                  labelClassName="mb-1"
+                />
                 <button
                   type="submit"
                   aria-busy={inquiry.isPending}

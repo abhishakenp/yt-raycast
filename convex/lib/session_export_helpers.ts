@@ -18,6 +18,7 @@ import {
   loadCachedTranslationsForSource,
 } from './session_translation_cache_helpers'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
+import { progressForStage } from './export_progress_stages'
 
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 export type ExportArtifactStatus = 'queued' | 'building' | 'ready' | 'failed'
@@ -412,6 +413,9 @@ function toArtifactPayload(artifact: Doc<'exportArtifacts'> | null) {
     errorMessage: stalled
       ? stalledExportArtifactMessage
       : artifact.errorMessage,
+    progressStage: artifact.progressStage,
+    progressPercent: artifact.progressPercent,
+    progressStartedAt: artifact.progressStartedAt,
     createdAt: artifact.createdAt,
     updatedAt: artifact.updatedAt,
   }
@@ -491,6 +495,50 @@ async function loadLocaleScopedExportArtifactRecord(
   return legacy?.locale === undefined ? legacy : null
 }
 
+/**
+ * Record that a real pipeline stage just completed, deriving the display
+ * label + percent from convex/lib/export_progress_stages.ts. Scoped by the
+ * exact (sessionId, target, previewVersion, locale) of the build in flight,
+ * so this can never touch a different build's row — including the
+ * `willDeploy` deploy sub-stages, which fire after this exact row already
+ * flipped from 'building' to 'ready' (recordExportArtifactReady runs before
+ * the lakebed deploy step). A no-op only when the row is gone entirely.
+ */
+export async function updateExportArtifactBuildProgress(
+  ctx: MutationCtx,
+  args: {
+    sessionId: Id<'sessions'>
+    target: ExportTarget
+    previewVersion: number
+    locale?: string
+    stageKey: string
+    willDeploy: boolean
+  },
+) {
+  const locale = await resolveExportArtifactLocale(
+    ctx,
+    args.sessionId,
+    args.locale,
+  )
+  const existing = await loadLocaleScopedExportArtifactRecord(
+    ctx,
+    args.sessionId,
+    args.target,
+    args.previewVersion,
+    locale,
+  )
+  if (existing === null) return
+  if (existing.status !== 'building' && existing.status !== 'ready') return
+
+  const { stage, percent } = progressForStage(args.stageKey, {
+    willDeploy: args.willDeploy,
+  })
+  await ctx.db.patch(existing._id, {
+    progressStage: stage,
+    progressPercent: percent,
+  })
+}
+
 export async function loadSessionExportTargets(
   ctx: QueryCtx,
   sessionId: Id<'sessions'>,
@@ -556,6 +604,9 @@ export async function loadSessionExportTargets(
         artifactStatus:
           artifactPayload?.status ?? (previewReady ? 'queued' : 'not_ready'),
         artifactError: artifactPayload?.errorMessage,
+        artifactProgressStage: artifactPayload?.progressStage,
+        artifactProgressPercent: artifactPayload?.progressPercent,
+        artifactProgressStartedAt: artifactPayload?.progressStartedAt,
       }
     }),
   )
@@ -701,6 +752,7 @@ export async function markExportArtifactBuilding(
   if (existing?.status === 'ready') return toArtifactPayload(existing)
 
   const status = 'building'
+  const startProgress = progressForStage('starting', { willDeploy: false })
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
@@ -711,6 +763,9 @@ export async function markExportArtifactBuilding(
       ? {}
       : { generatorRevision: args.generatorRevision }),
     errorMessage: undefined,
+    progressStage: startProgress.stage,
+    progressPercent: startProgress.percent,
+    progressStartedAt: now,
     updatedAt: now,
   } satisfies Omit<
     Doc<'exportArtifacts'>,

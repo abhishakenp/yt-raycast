@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
+import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -280,8 +282,9 @@ export const CafeMenu = defineCapsule({
               { title: foodTitle, items: food },
             ].map((col) => (
               <div key={col.title} className="space-y-8">
-                <div className="mb-8 flex items-center gap-4">
-                  <div className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+                <MenuCategoryHeader
+                  title={col.title}
+                  icon={
                     <svg
                       className="size-6"
                       fill="none"
@@ -296,38 +299,19 @@ export const CafeMenu = defineCapsule({
                         d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 2.829a4.978 4.978 0 01-1.414-2.83M6 12a6 6 0 0112 0v1H6v-1z"
                       />
                     </svg>
-                  </div>
-                  <h3 className="font-serif text-2xl font-medium text-foreground">
-                    {col.title}
-                  </h3>
-                </div>
+                  }
+                />
                 <div className="space-y-6">
                   {(col.items ?? []).map((item, idx) => (
-                    <div key={item.name}>
-                      <div className="group flex w-full items-start justify-between gap-4 text-left">
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() => go(menuTarget)}
-                            className="font-medium text-foreground transition-colors hover:text-primary"
-                          >
-                            {item.name}
-                          </button>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {item.description}
-                          </p>
-                        </div>
-                        <div className="flex shrink-0 flex-col items-end gap-2">
-                          <span className="font-serif text-lg text-foreground">
-                            {item.price}
-                          </span>
-                          <MenuAddButton item={item} />
-                        </div>
-                      </div>
-                      {idx < col.items.length - 1 ? (
-                        <div className="mt-6 h-px bg-border" />
-                      ) : null}
-                    </div>
+                    <MenuItemRow
+                      key={item.name}
+                      name={item.name}
+                      description={item.description}
+                      price={item.price}
+                      onNameClick={() => go(menuTarget)}
+                      action={<MenuAddButton item={item} />}
+                      showDivider={idx < col.items.length - 1}
+                    />
                   ))}
                 </div>
               </div>

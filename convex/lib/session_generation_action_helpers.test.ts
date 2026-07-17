@@ -82,11 +82,11 @@ function ctxFor(session: SessionRecord | null) {
     []
 
   const ctx = {
-    runQuery: async (ref, args) => {
+    runQuery: async (ref: unknown, args: unknown) => {
       queryCalls.push({ ref, args })
       return session
     },
-    runMutation: async (ref, args) => {
+    runMutation: async (ref: unknown, args: Record<string, unknown>) => {
       mutationCalls.push({ ref, args })
     },
   } as unknown as Pick<ActionCtx, 'runMutation' | 'runQuery'>

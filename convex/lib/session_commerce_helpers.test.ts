@@ -143,7 +143,7 @@ async function ctxFor(
   const deployments = [...(options.deployments ?? [])]
   const tenants = [...(options.tenants ?? [])]
 
-  const queryFirst = async (table, field, value) => {
+  const queryFirst = async (table: string, field: string, value: string) => {
     if (table === 'commerceConfigs') {
       return configs.find((config) => config.sessionId === value) ?? null
     }
@@ -176,7 +176,7 @@ async function ctxFor(
       getUserIdentity: async () => null,
     },
     db: {
-      get: async (id) => {
+      get: async (id: string) => {
         if (id === sessionId) return session
         const deployment = deployments.find((item) => item._id === id)
         if (deployment !== undefined) return deployment
@@ -184,11 +184,19 @@ async function ctxFor(
         if (tenant !== undefined) return tenant
         return configs.find((config) => config._id === id) ?? null
       },
-      query: (table) => {
+      query: (table: string) => {
         return {
-          withIndex: (indexName, applyIndex) => {
+          withIndex: (
+            indexName: string,
+            applyIndex: (index: {
+              eq: (
+                fieldName: string,
+                fieldValue: string,
+              ) => { field: string; value: string }
+            }) => { field: string; value: string },
+          ) => {
             const { field, value } = applyIndex({
-              eq: (fieldName, fieldValue) => ({
+              eq: (fieldName: string, fieldValue: string) => ({
                 field: fieldName,
                 value: fieldValue,
               }),
@@ -200,7 +208,7 @@ async function ctxFor(
           },
         }
       },
-      insert: async (table, value) => {
+      insert: async (table: string, value: Record<string, unknown>) => {
         if (table === 'commerceConfigs') {
           const config = {
             _id: `commerce_config_${configs.length + 1}` as Id<'commerceConfigs'>,
@@ -219,7 +227,7 @@ async function ctxFor(
         tenants.push(tenant)
         return tenant._id
       },
-      patch: async (id, patch) => {
+      patch: async (id: string, patch: Record<string, unknown>) => {
         const index = configs.findIndex((config) => config._id === id)
         if (index >= 0) {
           configs[index] = {

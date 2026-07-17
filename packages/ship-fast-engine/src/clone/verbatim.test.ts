@@ -25,7 +25,7 @@ function makeCaptured(bodyHtml: string, headHtml = ''): CapturedPage {
 function mockFetch(
   table: Record<string, { body: string | Uint8Array; status?: number }>,
 ): typeof fetch {
-  const impl = async (input) => {
+  const impl = async (input: RequestInfo | URL) => {
     const url =
       typeof input === 'string'
         ? input
@@ -234,8 +234,9 @@ describe('selfContainPage', () => {
     const { document, window } = parseHTML(out.html)
     const messages: Array<{ type: string; path?: string; abs?: string }> = []
     window.parent = {
-      postMessage: (msg) => messages.push(msg),
-    }
+      postMessage: (msg: unknown) =>
+        messages.push(msg as { type: string; path?: string; abs?: string }),
+    } as unknown as Window
     const getComputedStyle = () => ({ display: 'block' })
     new Function('window', 'document', 'getComputedStyle', NAV_SHIM_SCRIPT)(
       window,
@@ -293,7 +294,7 @@ describe('selfContainPage', () => {
     })
 
     const { document, window } = parseHTML(out.html)
-    const getComputedStyle = (el) => ({
+    const getComputedStyle = (el: Element) => ({
       display: el.style.display || '',
     })
     new Function('window', 'document', 'getComputedStyle', NAV_SHIM_SCRIPT)(

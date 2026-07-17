@@ -94,24 +94,24 @@ function ctxFor(input: {
   const generationEvents: GenerationEventRecord[] = []
   let nextId = 1
 
-  const rowsFor = (table) => {
+  const rowsFor = (table: string): Record<string, unknown>[] => {
     switch (table) {
       case 'sessions':
-        return sessions
+        return sessions as unknown as Record<string, unknown>[]
       case 'previews':
-        return previews
+        return previews as unknown as Record<string, unknown>[]
       case 'generatedModules':
-        return generatedModules
+        return generatedModules as unknown as Record<string, unknown>[]
       case 'siteSpecs':
-        return siteSpecs
+        return siteSpecs as unknown as Record<string, unknown>[]
       case 'generationEvents':
-        return generationEvents
+        return generationEvents as unknown as Record<string, unknown>[]
       default:
         return []
     }
   }
 
-  const filterRows = (table, filters) =>
+  const filterRows = (table: string, filters: Map<string, unknown>) =>
     rowsFor(table).filter((row) =>
       Array.from(filters.entries()).every(
         ([field, value]) => (row as Record<string, unknown>)[field] === value,
@@ -119,15 +119,20 @@ function ctxFor(input: {
     )
 
   const db = {
-    get: async (id) =>
+    get: async (id: string) =>
       [...sessions, ...previews, ...generatedModules, ...siteSpecs].find(
         (row) => row._id === id,
       ) ?? null,
-    query: (table) => ({
-      withIndex: (_indexName, applyIndex) => {
+    query: (table: string) => ({
+      withIndex: (
+        _indexName: string,
+        applyIndex: (index: {
+          eq: (field: string, value: unknown) => typeof index
+        }) => void,
+      ) => {
         const filters = new Map<string, unknown>()
         const index = {
-          eq: (field, value) => {
+          eq: (field: string, value: unknown) => {
             filters.set(field, value)
             return index
           },
@@ -139,7 +144,7 @@ function ctxFor(input: {
         }
       },
     }),
-    insert: async (table, value) => {
+    insert: async (table: string, value: Record<string, unknown>) => {
       const row = {
         _id: `${table}_${nextId++}`,
         _creationTime: 1,
@@ -148,7 +153,7 @@ function ctxFor(input: {
       rowsFor(table).push(row as never)
       return row._id
     },
-    patch: async (id, value) => {
+    patch: async (id: string, value: Record<string, unknown>) => {
       for (const rows of [sessions, previews, generatedModules, siteSpecs]) {
         const rowIndex = rows.findIndex((row) => row._id === id)
         if (rowIndex >= 0) {
@@ -188,14 +193,19 @@ function queryCtxFor(input: {
   previews?: PreviewRecord[]
 }) {
   const db = {
-    query: (table) => {
+    query: (table: string) => {
       let rows: Array<EditRecord | PreviewRecord> =
         table === 'edits'
           ? [...(input.edits ?? [])]
           : [...(input.previews ?? [])]
 
       const builder = {
-        withIndex: (indexName, applyIndex) => {
+        withIndex: (
+          indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           expect(indexName).toBe(
             table === 'edits'
               ? 'by_sessionId_createdAt'
@@ -203,7 +213,7 @@ function queryCtxFor(input: {
           )
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -216,7 +226,7 @@ function queryCtxFor(input: {
 
           return builder
         },
-        order: (direction) => {
+        order: (direction: 'asc' | 'desc') => {
           rows = [...rows].sort((left, right) =>
             direction === 'desc'
               ? sortValue(table, right) - sortValue(table, left)
@@ -225,7 +235,7 @@ function queryCtxFor(input: {
 
           return builder
         },
-        take: async (limit) => rows.slice(0, limit),
+        take: async (limit: number) => rows.slice(0, limit),
       }
 
       return builder

@@ -12,12 +12,17 @@ function ctxWithTranslations(
 ) {
   return {
     db: {
-      query: (table) => ({
-        withIndex: (_indexName, applyIndex) => {
+      query: (table: string) => ({
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           expect(table).toBe('translationCache')
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },

@@ -210,31 +210,34 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
     onModified?.()
   }
 
-  const applyLiveStyle = (prop, value) => {
+  const applyLiveStyle = (prop: string, value: string) => {
     if (activeElement) {
       activeElement.style.setProperty(prop, value)
       markModified()
     }
   }
 
-  const updateOpacity = (value) => {
+  const updateOpacity = (value: number) => {
     setOpacity(value)
     applyLiveStyle('opacity', String(value / 100))
   }
 
-  const updateFilter = (key, value) => {
+  const updateFilter = (key: keyof FilterState, value: number) => {
     const next = { ...filters, [key]: value }
     setFilters(next)
     applyLiveStyle('filter', filterString(next))
   }
 
-  const updateTransform = (key, value) => {
+  const updateTransform = (key: keyof TransformState, value: number) => {
     const next = { ...transform, [key]: value }
     setTransform(next)
     applyLiveStyle('transform', transformString(next))
   }
 
-  const updateTransition = (key, value) => {
+  const updateTransition = (
+    key: keyof TransitionState,
+    value: string | number,
+  ) => {
     const next = { ...transition, [key]: value }
     setTransition(next)
     applyLiveStyle('transition', transitionString(next))

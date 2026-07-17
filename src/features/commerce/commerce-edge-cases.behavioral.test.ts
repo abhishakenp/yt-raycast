@@ -140,14 +140,25 @@ function ctxFor(options: CtxOptions = {}) {
 
   const ctx = {
     db: {
-      get: async (id) => {
+      get: async (id: Id<'sessions'> | Id<'commerceConfigs'>) => {
         if (id === sessionId) return session
         return configs.find((c) => c._id === id) ?? null
       },
-      query: (table) => {
+      query: (table: string) => {
         expect(table).toBe('commerceConfigs')
         return {
-          withIndex: (indexName, applyIndex) => {
+          withIndex: (
+            indexName: string,
+            applyIndex: (q: {
+              eq: (
+                fieldName: string,
+                fieldValue: string,
+              ) => {
+                field: string
+                value: string
+              }
+            }) => { field: string; value: string },
+          ) => {
             expect(indexName).toBe('by_sessionId')
             const { field, value } = applyIndex({
               eq: (fieldName, fieldValue) => ({
@@ -163,7 +174,7 @@ function ctxFor(options: CtxOptions = {}) {
           },
         }
       },
-      insert: async (table, value) => {
+      insert: async (table: string, value: Record<string, unknown>) => {
         expect(table).toBe('commerceConfigs')
         const doc = {
           _id: `commerce_config_${configs.length + 1}` as Id<'commerceConfigs'>,
@@ -174,7 +185,10 @@ function ctxFor(options: CtxOptions = {}) {
         inserts.push(value)
         return doc._id
       },
-      patch: async (id, patch) => {
+      patch: async (
+        id: Id<'commerceConfigs'>,
+        patch: Record<string, unknown>,
+      ) => {
         const index = configs.findIndex((c) => c._id === id)
         expect(index).toBeGreaterThanOrEqual(0)
         configs[index] = { ...configs[index], ...patch } as CommerceConfigDoc

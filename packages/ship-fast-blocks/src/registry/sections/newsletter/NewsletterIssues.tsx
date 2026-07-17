@@ -3,9 +3,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { StoryCard } from '#/section-kit/StoryCard.tsx'
 
 /**
  * NewsletterIssues — recent-issues archive grid for an editorial newsletter.
@@ -143,41 +143,32 @@ export const NewsletterIssues = defineCapsule({
 
           <ResponsiveGrid cols="1-md-2-3" gap="md" className="lg:gap-8">
             {items.map((issue) => (
-              <article
+              <StoryCard
                 key={issue.number}
-                className="group overflow-hidden rounded-2xl border border-border bg-card text-card-foreground transition-colors hover:border-muted-foreground/40"
-              >
-                <div className="aspect-[16/10] overflow-hidden">
-                  <Image
-                    alt={issue.imageAlt}
-                    w={600}
-                    h={375}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-6">
+                title={issue.title}
+                excerpt={issue.blurb}
+                imageAlt={issue.imageAlt}
+                imageW={600}
+                imageH={375}
+                imageClassName="aspect-[16/10]"
+                meta={
                   <div className="mb-3 flex items-center gap-3 text-sm text-muted-foreground">
                     <span>{issue.number}</span>
                     <span className="size-1 rounded-full bg-muted-foreground/50" />
                     <span>{issue.date}</span>
                   </div>
-                  <h3 className="mb-2 font-serif text-xl font-medium text-foreground transition-colors group-hover:text-foreground/70">
-                    {issue.title}
-                  </h3>
-                  <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                    {issue.blurb}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => go(issue.title)}
-                    className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
-                  >
+                }
+                footer={
+                  <span className="mt-4 inline-flex items-center text-sm font-medium text-foreground transition-colors group-hover:text-muted-foreground">
                     {readLabel}
                     <ArrowRight className="ml-1 size-4" />
-                  </button>
-                </div>
-              </article>
+                  </span>
+                }
+                onClick={() => go(issue.title)}
+                variant="bordered"
+                className="rounded-2xl text-card-foreground transition-colors hover:border-muted-foreground/40 hover:shadow-none hover:translate-y-0"
+                bodyClassName="p-6"
+              />
             ))}
           </ResponsiveGrid>
 

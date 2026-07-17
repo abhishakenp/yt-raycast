@@ -4,8 +4,9 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { FeatureListItem } from '#/section-kit/FeatureListItem.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ChurchGive — generosity / give split section for a church or faith-community site.
@@ -144,19 +145,14 @@ export const ChurchGive = defineCapsule({
               />
               <div className="mb-10 space-y-4">
                 {points.map((point, i) => (
-                  <div key={point.title} className="flex items-center gap-4">
-                    <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-                      {giveIcons[i % giveIcons.length]}
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-foreground">
-                        {point.title}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {point.detail}
-                      </p>
-                    </div>
-                  </div>
+                  <FeatureListItem
+                    key={point.title}
+                    icon={giveIcons[i % giveIcons.length]}
+                    title={point.title}
+                    description={point.detail}
+                    iconShape="circle"
+                    iconSize="md"
+                  />
                 ))}
               </div>
               <div className="flex flex-col gap-4 sm:flex-row">

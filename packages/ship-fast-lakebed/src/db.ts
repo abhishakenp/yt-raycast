@@ -71,7 +71,7 @@ function compareValues(left: unknown, right: unknown) {
   return String(left) > String(right) ? 1 : -1
 }
 
-function cloneRow(row: TRow): TRow {
+function cloneRow<TRow extends Record<string, unknown>>(row: TRow): TRow {
   return { ...row }
 }
 

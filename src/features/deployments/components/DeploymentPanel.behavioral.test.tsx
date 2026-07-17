@@ -10,6 +10,9 @@ type MockDeploymentTarget = {
   artifactReady?: boolean
   artifactStatus?: string
   artifactError?: string
+  artifactProgressStage?: string
+  artifactProgressPercent?: number
+  artifactProgressStartedAt?: number
   deployedUrl?: string | null
 }
 
@@ -59,14 +62,14 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('convex/react', () => ({
-  useMutation: (ref) => {
+  useMutation: (ref: unknown) => {
     if (ref === convexState.refs.publishPreview)
       return convexState.publishPreview
     if (ref === convexState.refs.ensureArtifact)
       return convexState.ensureExportArtifact
     throw new Error(`useMutation: unknown ref ${String(ref)}`)
   },
-  useQuery: (ref) => {
+  useQuery: (ref: unknown) => {
     if (ref === convexState.refs.getExportTargets)
       return convexState.exportTargets
     if (ref === convexState.refs.getDeploymentStatus)
@@ -146,16 +149,24 @@ describe('DeploymentPanel (behavioral)', () => {
       expect(view.queryByText('Open Lakebed')).toBeNull()
     })
 
-    it('building: shows progress percentage for Lakebed while preparing', async () => {
+    it('building: shows the real server-pushed stage + percentage for Lakebed while preparing', async () => {
       setExportTargets([
-        { target: 'lakebed', artifactReady: false, artifactStatus: 'building' },
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Generating components',
+          artifactProgressPercent: 76,
+        },
       ])
       const view = render(<DeploymentPanel sessionId="session_123" />)
 
       const button = view.getByText('Publish Lakebed').closest('button')!
       fireEvent.click(button)
 
-      await waitFor(() => expect(view.getByText('72%')).toBeTruthy())
+      await waitFor(() =>
+        expect(view.getByText('Generating components · 76%')).toBeTruthy(),
+      )
       expect(
         view.container.querySelector(
           '[data-deployment-action="lakebed"] .animate-spin',
@@ -508,15 +519,23 @@ describe('DeploymentPanel (behavioral)', () => {
   })
 
   describe('9. progress percentage during deployment', () => {
-    it('shows 72% while a Lakebed artifact is building and waiting', async () => {
+    it('shows the real server-pushed stage + percent while a Lakebed artifact is building and waiting', async () => {
       setExportTargets([
-        { target: 'lakebed', artifactReady: false, artifactStatus: 'building' },
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Generating components',
+          artifactProgressPercent: 76,
+        },
       ])
       const view = render(<DeploymentPanel sessionId="session_123" />)
 
       fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
 
-      await waitFor(() => expect(view.getByText('72%')).toBeTruthy())
+      await waitFor(() =>
+        expect(view.getByText('Generating components · 76%')).toBeTruthy(),
+      )
       expect(
         view.container.querySelector(
           '[data-deployment-action="lakebed"] .animate-spin',
@@ -526,32 +545,50 @@ describe('DeploymentPanel (behavioral)', () => {
 
     it('shows a progress background gradient while building', async () => {
       setExportTargets([
-        { target: 'lakebed', artifactReady: false, artifactStatus: 'building' },
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Generating components',
+          artifactProgressPercent: 76,
+        },
       ])
       const view = render(<DeploymentPanel sessionId="session_123" />)
       const button = view.getByText('Publish Lakebed').closest('button')!
 
       fireEvent.click(button)
 
-      await waitFor(() => expect(view.getByText('72%')).toBeTruthy())
+      await waitFor(() =>
+        expect(view.getByText('Generating components · 76%')).toBeTruthy(),
+      )
       expect(button.style.backgroundImage).toContain('110deg')
     })
 
     it('clears the percentage once the artifact is ready', async () => {
       setExportTargets([
-        { target: 'lakebed', artifactReady: false, artifactStatus: 'building' },
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Generating components',
+          artifactProgressPercent: 76,
+        },
       ])
       const view = render(<DeploymentPanel sessionId="session_123" />)
       fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
 
-      await waitFor(() => expect(view.getByText('72%')).toBeTruthy())
+      await waitFor(() =>
+        expect(view.getByText('Generating components · 76%')).toBeTruthy(),
+      )
 
       setExportTargets([
         { target: 'lakebed', artifactReady: true, artifactStatus: 'ready' },
       ])
       view.rerender(<DeploymentPanel sessionId="session_123" />)
 
-      await waitFor(() => expect(view.queryByText('72%')).toBeNull())
+      await waitFor(() =>
+        expect(view.queryByText('Generating components · 76%')).toBeNull(),
+      )
     })
   })
 

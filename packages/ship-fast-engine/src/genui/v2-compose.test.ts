@@ -9,13 +9,13 @@ const mocks = ((
 ).__v2mocks ??= { generateText: vi.fn() })
 
 vi.mock('../generate.ts', () => ({
-  generateText: (...args) =>
+  generateText: (...args: unknown[]) =>
     (
       (globalThis as typeof globalThis & { __v2mocks: typeof mocks }).__v2mocks
         .generateText as unknown as (...a: unknown[]) => unknown
     )(...args),
   isHardLlmFailure: () => false,
-  formatLlmFailureMessage: (e) => String(e),
+  formatLlmFailureMessage: (e: unknown) => String(e),
 }))
 
 import { auditOpenUIProgram } from './openui-program-audit.ts'
@@ -96,7 +96,7 @@ describe('v2 family discovery', () => {
     expect(cafe!.sections).toContain('Hero')
     expect(cafe!.sections).toContain('Navbar')
     // Navbar precedes Hero precedes Footer (canonical order)
-    const i = (s) => cafe!.sections.indexOf(s)
+    const i = (s: string) => cafe!.sections.indexOf(s)
     expect(i('Navbar')).toBeLessThan(i('Hero'))
     if (i('Footer') >= 0) expect(i('Hero')).toBeLessThan(i('Footer'))
   })
@@ -120,7 +120,7 @@ describe('v2 family discovery', () => {
 
   it('bespoke roles sit between head content and tail proof/close blocks', () => {
     const fs = FAMILIES.get('FashionStore')!.sections
-    const i = (s) => fs.indexOf(s)
+    const i = (s: string) => fs.indexOf(s)
     expect(i('Hero')).toBeLessThan(i('Products'))
     for (const tail of ['Footer', 'Testimonials', 'Stats']) {
       if (i(tail) >= 0) expect(i('Products')).toBeLessThan(i(tail))
@@ -515,7 +515,7 @@ describe('runV2ComposedGeneration', () => {
       if (/Candidate verticals/.test(user)) return superagentReply(user)
       return richProps(user)
     })
-    const run = (seed) =>
+    const run = (seed: string) =>
       runV2ComposedGeneration({
         prompt: 'a developer security tool',
         modelId: 'm',

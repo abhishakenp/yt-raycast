@@ -20,6 +20,9 @@ type MockGitHubTarget = {
   artifactReady?: boolean
   artifactStatus?: string
   artifactError?: string
+  artifactProgressStage?: string
+  artifactProgressPercent?: number
+  artifactProgressStartedAt?: number
   githubUrl?: string | null
   githubRepoUrl?: string | null
 }
@@ -115,6 +118,8 @@ describe('GitHubPanel', () => {
         fileCount: null,
         artifactReady: false,
         artifactStatus: 'building',
+        artifactProgressStage: 'Generating components',
+        artifactProgressPercent: 76,
       },
     ])
     const fetchMock = vi.fn(async (url, init) => {
@@ -144,7 +149,7 @@ describe('GitHubPanel', () => {
     await waitFor(() => expect(getByText('HTML')).toBeTruthy())
     const button = getByText('HTML').closest('button')
     expect(button).toBeTruthy()
-    expect(view.queryByText('72%')).toBeNull()
+    expect(view.queryByText('Generating components · 76%')).toBeNull()
     if (button) fireEvent.click(button)
 
     await waitFor(() => {
@@ -155,7 +160,7 @@ describe('GitHubPanel', () => {
     expect(
       document.querySelector('.export-target-glyph .animate-spin'),
     ).toBeNull()
-    expect(getByText('72%')).toBeTruthy()
+    expect(getByText('Generating components · 76%')).toBeTruthy()
     expect(button?.style.backgroundImage).toContain('110deg')
 
     await new Promise((resolve) => window.setTimeout(resolve, 650))
@@ -167,7 +172,7 @@ describe('GitHubPanel', () => {
     })
     expect(fetchMock).not.toHaveBeenCalled()
     expect(authState.getToken).not.toHaveBeenCalled()
-    expect(getByText('72%')).toBeTruthy()
+    expect(getByText('Generating components · 76%')).toBeTruthy()
     expect(
       document.querySelector('[data-github-action="html"] .animate-spin'),
     ).toBeTruthy()

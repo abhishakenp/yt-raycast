@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { FormField } from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
@@ -108,135 +109,83 @@ export const ConstructionQuote = defineCapsule({
             onSubmit={inquiry.submitForm}
           >
             <div className="mb-6 grid gap-6 md:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="con-quote-name"
-                  className="mb-2 block text-sm font-medium text-foreground/80"
-                >
-                  Full Name
-                </label>
-                <input
-                  id="con-quote-name"
-                  name="name"
-                  type="text"
-                  required
-                  placeholder="John Smith"
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="con-quote-email"
-                  className="mb-2 block text-sm font-medium text-foreground/80"
-                >
-                  Email Address
-                </label>
-                <input
-                  id="con-quote-email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="john@example.com"
-                  className={inputCls}
-                />
-              </div>
+              <FormField
+                id="con-quote-name"
+                name="name"
+                label="Full Name"
+                required
+                placeholder="John Smith"
+                inputClassName={inputCls}
+                labelClassName="text-foreground/80"
+              />
+              <FormField
+                id="con-quote-email"
+                name="email"
+                label="Email Address"
+                type="email"
+                required
+                placeholder="john@example.com"
+                inputClassName={inputCls}
+                labelClassName="text-foreground/80"
+              />
             </div>
 
             <div className="mb-6 grid gap-6 md:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="con-quote-phone"
-                  className="mb-2 block text-sm font-medium text-foreground/80"
-                >
-                  Phone Number
-                </label>
-                <input
-                  id="con-quote-phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  placeholder="(206) 555-1234"
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="con-quote-type"
-                  className="mb-2 block text-sm font-medium text-foreground/80"
-                >
-                  Project Type
-                </label>
-                <select
-                  id="con-quote-type"
-                  name="projectType"
-                  required
-                  className={cn(inputCls, 'appearance-none')}
-                >
-                  {projectTypes.map((opt) => (
-                    <option key={opt} className="bg-background">
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <FormField
+                id="con-quote-phone"
+                name="phone"
+                label="Phone Number"
+                type="tel"
+                required
+                placeholder="(206) 555-1234"
+                inputClassName={inputCls}
+                labelClassName="text-foreground/80"
+              />
+              <FormField
+                id="con-quote-type"
+                name="projectType"
+                label="Project Type"
+                as="select"
+                required
+                options={projectTypes}
+                inputClassName={inputCls}
+                labelClassName="text-foreground/80"
+              />
             </div>
 
             <div className="mb-6 grid gap-6 md:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="con-quote-budget"
-                  className="mb-2 block text-sm font-medium text-foreground/80"
-                >
-                  Estimated Budget
-                </label>
-                <select
-                  id="con-quote-budget"
-                  name="budget"
-                  required
-                  className={cn(inputCls, 'appearance-none')}
-                >
-                  {budgets.map((opt) => (
-                    <option key={opt} className="bg-background">
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="con-quote-timeline"
-                  className="mb-2 block text-sm font-medium text-foreground/80"
-                >
-                  Desired Timeline
-                </label>
-                <select
-                  id="con-quote-timeline"
-                  name="timeline"
-                  required
-                  className={cn(inputCls, 'appearance-none')}
-                >
-                  {timelines.map((opt) => (
-                    <option key={opt} className="bg-background">
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <FormField
+                id="con-quote-budget"
+                name="budget"
+                label="Estimated Budget"
+                as="select"
+                required
+                options={budgets}
+                inputClassName={inputCls}
+                labelClassName="text-foreground/80"
+              />
+              <FormField
+                id="con-quote-timeline"
+                name="timeline"
+                label="Desired Timeline"
+                as="select"
+                required
+                options={timelines}
+                inputClassName={inputCls}
+                labelClassName="text-foreground/80"
+              />
             </div>
 
             <div className="mb-6">
-              <label
-                htmlFor="con-quote-message"
-                className="mb-2 block text-sm font-medium text-foreground/80"
-              >
-                Project Details
-              </label>
-              <textarea
+              <FormField
                 id="con-quote-message"
                 name="message"
+                label="Project Details"
+                as="textarea"
                 rows={4}
                 placeholder="Tell us about your project, goals, and any specific requirements..."
-                className={cn(inputCls, 'resize-none')}
+                inputClassName={inputCls}
+                labelClassName="text-foreground/80"
               />
             </div>
 

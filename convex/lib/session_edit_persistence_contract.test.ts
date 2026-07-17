@@ -167,7 +167,7 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
     // The hero line specifically must contain the new headline, not the old one.
     const heroLine = reloadedSource
       ?.split('\n')
-      .find((l) => l.includes('_hero ='))
+      .find((l: string) => l.includes('_hero ='))
     expect(heroLine).toContain(newHeadline)
     expect(heroLine).not.toContain(headline)
 
@@ -536,7 +536,7 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
     // The hero line must contain the new headline
     const heroLine = reloadedSource
       ?.split('\n')
-      .find((l) => l.includes('_hero ='))
+      .find((l: string) => l.includes('_hero ='))
     expect(heroLine).toContain(newHeadline)
     expect(heroLine).not.toContain(headline)
 

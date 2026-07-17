@@ -96,11 +96,14 @@ describe('clone crawler — crawlSite', () => {
   })
 
   function htmlResponse(html: string, finalUrl?: string): Response {
-    return new Response(html, {
+    const response = new Response(html, {
       status: 200,
       headers: { 'content-type': 'text/html' },
-      url: finalUrl,
     })
+    if (finalUrl) {
+      Object.defineProperty(response, 'url', { value: finalUrl })
+    }
+    return response
   }
 
   it('returns an empty page map when the seed fetch fails', async () => {

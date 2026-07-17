@@ -18,6 +18,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as MineRouteImport } from './routes/mine'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as HealthRouteImport } from './routes/health'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PreviewSlugRouteImport } from './routes/preview.$slug'
@@ -122,6 +123,11 @@ const MineRoute = MineRouteImport.update({
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
   id: '/llms.txt',
   path: '/llms.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthRoute = HealthRouteImport.update({
+  id: '/health',
+  path: '/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -453,6 +459,7 @@ const ApiSessionsSessionIdHistoryVersionRestoreRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
+  '/health': typeof HealthRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mine': typeof MineRoute
   '/partners': typeof PartnersRoute
@@ -524,6 +531,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
+  '/health': typeof HealthRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mine': typeof MineRoute
   '/partners': typeof PartnersRoute
@@ -596,6 +604,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
+  '/health': typeof HealthRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/mine': typeof MineRoute
   '/partners': typeof PartnersRoute
@@ -669,6 +678,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/gallery'
+    | '/health'
     | '/llms.txt'
     | '/mine'
     | '/partners'
@@ -740,6 +750,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/gallery'
+    | '/health'
     | '/llms.txt'
     | '/mine'
     | '/partners'
@@ -811,6 +822,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/gallery'
+    | '/health'
     | '/llms.txt'
     | '/mine'
     | '/partners'
@@ -883,6 +895,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GalleryRoute: typeof GalleryRoute
+  HealthRoute: typeof HealthRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   MineRoute: typeof MineRoute
   PartnersRoute: typeof PartnersRoute
@@ -993,6 +1006,13 @@ declare module '@tanstack/react-router' {
       path: '/llms.txt'
       fullPath: '/llms.txt'
       preLoaderRoute: typeof LlmsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/health': {
+      id: '/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof HealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -1523,6 +1543,7 @@ const ApiSessionsSessionIdRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GalleryRoute: GalleryRoute,
+  HealthRoute: HealthRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   MineRoute: MineRoute,
   PartnersRoute: PartnersRoute,

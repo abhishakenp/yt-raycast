@@ -9,7 +9,15 @@ const ownedMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, ...props }) => {
+  Link: ({
+    children,
+    ...props
+  }: {
+    children?: React.ReactNode
+    params?: unknown
+    to?: string
+    [key: string]: unknown
+  }) => {
     const anchorProps = { ...props }
     delete anchorProps.params
     delete anchorProps.to
@@ -45,7 +53,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }) => (
+  GeneratedModulePreview: ({ source }: { source: string }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))

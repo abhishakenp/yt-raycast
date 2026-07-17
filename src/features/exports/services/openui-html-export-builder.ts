@@ -1471,8 +1471,11 @@ export async function buildOpenUIHtmlExport(
     input.source,
     input.siteSpecJson,
   )
+  await input.onProgress?.('parsing')
+  const body = await buildStandaloneHtmlDocument(input, parsed)
+  await input.onProgress?.('generating')
   return {
-    body: await buildStandaloneHtmlDocument(input, parsed),
+    body,
     contentType: 'text/html; charset=utf-8',
     filename: 'index.html',
     fileCount: 1,

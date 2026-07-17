@@ -148,11 +148,11 @@ describe('dashboard session lookup', () => {
   it('hydrates and clears ready session preview cache entries by session id', () => {
     const store = new Map<string, string>()
     const storage = {
-      getItem: (key) => store.get(key) ?? null,
-      setItem: (key, value) => {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => {
         store.set(key, value)
       },
-      removeItem: (key) => {
+      removeItem: (key: string) => {
         store.delete(key)
       },
     }
@@ -186,11 +186,11 @@ describe('dashboard session lookup', () => {
   it('rejects expired or malformed ready session preview cache entries', () => {
     const store = new Map<string, string>()
     const storage = {
-      getItem: (key) => store.get(key) ?? null,
-      setItem: (key, value) => {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => {
         store.set(key, value)
       },
-      removeItem: (key) => {
+      removeItem: (key: string) => {
         store.delete(key)
       },
     }

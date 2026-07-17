@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { FeatureListItem } from '#/section-kit/FeatureListItem.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
@@ -155,19 +156,16 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                 {items.map((item, i) => {
                   const Icon = icons[i % icons.length]
                   return (
-                    <div key={item.title} className="flex gap-6">
-                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-card text-primary">
-                        <Icon />
-                      </div>
-                      <div>
-                        <h3 className="mb-2 font-serif text-xl text-foreground">
-                          {item.title}
-                        </h3>
-                        <p className="leading-relaxed text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
+                    <FeatureListItem
+                      key={item.title}
+                      icon={<Icon />}
+                      title={item.title}
+                      description={item.description}
+                      iconShape="circle"
+                      iconSize="md"
+                      iconClassName="bg-card text-primary"
+                      className="gap-6"
+                    />
                   )
                 })}
               </div>

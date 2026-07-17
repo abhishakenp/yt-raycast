@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { FormField } from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useHotelAvailabilitySubmission } from './hotel-resort-interactions.tsx'
@@ -133,73 +134,37 @@ export const HotelResortBooking = defineCapsule({
               <h3 className="mb-6 text-xl font-medium">{formHeading}</h3>
               <form className="space-y-5" onSubmit={inquiry.submitForm}>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="hotel-resort-booking-checkin"
-                      className="mb-2 block text-sm font-medium"
-                    >
-                      Check-in
-                    </label>
-                    <input
-                      id="hotel-resort-booking-checkin"
-                      name="checkIn"
-                      type="date"
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="hotel-resort-booking-checkout"
-                      className="mb-2 block text-sm font-medium"
-                    >
-                      Check-out
-                    </label>
-                    <input
-                      id="hotel-resort-booking-checkout"
-                      name="checkOut"
-                      type="date"
-                      className={inputCls}
-                    />
-                  </div>
+                  <FormField
+                    id="hotel-resort-booking-checkin"
+                    name="checkIn"
+                    label="Check-in"
+                    type="date"
+                    inputClassName={inputCls}
+                  />
+                  <FormField
+                    id="hotel-resort-booking-checkout"
+                    name="checkOut"
+                    label="Check-out"
+                    type="date"
+                    inputClassName={inputCls}
+                  />
                 </div>
-                <div>
-                  <label
-                    htmlFor="hotel-resort-booking-guests"
-                    className="mb-2 block text-sm font-medium"
-                  >
-                    Guests
-                  </label>
-                  <select
-                    id="hotel-resort-booking-guests"
-                    name="guests"
-                    className={inputCls}
-                  >
-                    {guestOptions.map((opt) => (
-                      <option key={opt} className="bg-background">
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label
-                    htmlFor="hotel-resort-booking-roomtype"
-                    className="mb-2 block text-sm font-medium"
-                  >
-                    Room Type
-                  </label>
-                  <select
-                    id="hotel-resort-booking-roomtype"
-                    name="roomType"
-                    className={inputCls}
-                  >
-                    {roomOptions.map((opt) => (
-                      <option key={opt} className="bg-background">
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FormField
+                  id="hotel-resort-booking-guests"
+                  name="guests"
+                  label="Guests"
+                  as="select"
+                  options={guestOptions}
+                  inputClassName={inputCls}
+                />
+                <FormField
+                  id="hotel-resort-booking-roomtype"
+                  name="roomType"
+                  label="Room Type"
+                  as="select"
+                  options={roomOptions}
+                  inputClassName={inputCls}
+                />
                 <button
                   type="submit"
                   aria-busy={inquiry.isPending}

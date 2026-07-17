@@ -7,7 +7,7 @@ vi.mock('./-prompt-suggestions-logic.js', () => ({
 }))
 
 import { Route } from './prompt-suggestions'
-import { callRouteHandler } from './route-handler.test-helper'
+import { callRouteHandler } from './-route-handler.test-helper'
 
 function postPromptSuggestions(body: string) {
   const request = new Request('https://ship-fast.io/api/prompt-suggestions', {

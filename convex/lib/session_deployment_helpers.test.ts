@@ -113,21 +113,26 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
     translationCache: [...(input.translationCache ?? [])],
   }
 
-  const rowsFor = (table) => tables[table]
+  const rowsFor = (table: TableName) => tables[table]
 
   const db = {
-    get: async (id) =>
+    get: async (id: string) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table) => {
+    query: (table: TableName) => {
       let rows = [...rowsFor(table)]
 
       const builder = {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -143,7 +148,7 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
 
           return builder
         },
-        order: (direction) => {
+        order: (direction: 'asc' | 'desc') => {
           rows = [...rows].sort((left, right) => {
             const leftVersion =
               typeof (left as Record<string, unknown>).version === 'number'
@@ -160,7 +165,7 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
           return builder
         },
         first: async () => rows[0] ?? null,
-        take: async (limit) => rows.slice(0, limit),
+        take: async (limit: number) => rows.slice(0, limit),
         collect: async () => rows,
       }
 
@@ -196,18 +201,23 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
     []
 
   const db = {
-    get: async (id) =>
+    get: async (id: string) =>
       Object.values(tables)
         .flat()
         .find((row) => row._id === id) ?? null,
-    query: (table) => {
+    query: (table: TableName) => {
       let rows = [...tables[table]]
 
       const builder = {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => void,
+        ) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -223,7 +233,7 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
 
           return builder
         },
-        order: (direction) => {
+        order: (direction: 'asc' | 'desc') => {
           rows = [...rows].sort((a, b) => {
             const left =
               'version' in a && typeof a.version === 'number'
@@ -244,7 +254,7 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
 
       return builder
     },
-    insert: async (table, value) => {
+    insert: async (table: TableName, value: Record<string, unknown>) => {
       inserted.push({ table, value })
       const id = `${table}_${inserted.length}` as Id<
         'deployments' | 'generationEvents'
@@ -256,7 +266,7 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
       } as Row)
       return id
     },
-    patch: async (id, patch) => {
+    patch: async (id: string, patch: Record<string, unknown>) => {
       patches.push({ id, patch })
       const row = Object.values(tables)
         .flat()

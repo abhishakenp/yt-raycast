@@ -1,3 +1,5 @@
+import type { FormatFileCache } from './format-export-files'
+
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 
 export type BrandLogoSelection = {
@@ -36,6 +38,21 @@ export type OpenUIExportInput = {
    * seed + future admin inline-edits) — the deployed app never calls out.
    */
   syncSecret?: string
+  /**
+   * Optional content-addressed cache for Prettier-formatted file output,
+   * supplied by callers with persistent storage (e.g. the Convex export
+   * build action). Omitted entirely in contexts without one (tests, direct
+   * builder calls) — formatting behaves identically either way.
+   */
+  formatCache?: FormatFileCache
+  /**
+   * Optional real-time progress hook, called once a real pipeline stage
+   * actually completes (parsing, generating, resolving-images, formatting —
+   * see convex/lib/export_progress_stages.ts for the full stage list).
+   * Omitted in contexts without a progress sink (tests, direct builder
+   * calls) — building behaves identically either way.
+   */
+  onProgress?: (stageKey: string) => void | Promise<void>
 }
 
 export type BuiltExport = {

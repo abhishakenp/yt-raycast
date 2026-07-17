@@ -13,7 +13,7 @@ describe('createSessionMedusaProvisionResponse', () => {
   // Mock container provider that bypasses Docker and returns env-configured
   // URLs. This lets tests verify the provision flow without spawning real
   // Medusa containers.
-  const mockContainerProvider = (env) => ({
+  const mockContainerProvider = (env: Record<string, string | undefined>) => ({
     findRunning: vi.fn().mockResolvedValue(undefined),
     provision: vi.fn().mockResolvedValue({
       backendUrl: env.MEDUSA_BACKEND_URL,

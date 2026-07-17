@@ -18,7 +18,7 @@ vi.mock('esbuild', async () => {
   const actual = await vi.importActual<typeof import('esbuild')>('esbuild')
   return {
     ...actual,
-    build: async (options) => {
+    build: async (options: import('esbuild').BuildOptions) => {
       ;(
         globalThis as { __esbuildBuildCalls?: import('esbuild').BuildOptions[] }
       ).__esbuildBuildCalls ??= []
@@ -119,7 +119,7 @@ render(h(App, {}), document.getElementById("app"));
       url: 'https://example.test/',
     })
     const errors: unknown[] = []
-    dom.window.addEventListener('error', (event) => {
+    dom.window.addEventListener('error', (event: ErrorEvent) => {
       errors.push(event.error ?? event.message)
     })
     dom.window.eval(bundled.outputFiles[0]?.text ?? '')
@@ -183,16 +183,19 @@ async function executeAnonymousDeployClientBundle(
   })
   const errors: unknown[] = []
   const originalConsoleError = dom.window.console.error
-  dom.window.console.error = (...args) => {
+  dom.window.console.error = (...args: unknown[]) => {
     errors.push(args.map(String).join(' '))
     originalConsoleError(...args)
   }
-  dom.window.addEventListener('error', (event) => {
+  dom.window.addEventListener('error', (event: ErrorEvent) => {
     errors.push(event.error ?? event.message)
   })
-  dom.window.addEventListener('unhandledrejection', (event) => {
-    errors.push(event.reason ?? event)
-  })
+  dom.window.addEventListener(
+    'unhandledrejection',
+    (event: PromiseRejectionEvent) => {
+      errors.push(event.reason ?? event)
+    },
+  )
   Object.defineProperty(dom.window, 'fetch', {
     configurable: true,
     value: async () =>
@@ -1115,8 +1118,13 @@ function createGithubMockCtx(
     githubConnections: state.githubConnections,
   }
   let idSeq = 0
-  const query = (table) => ({
-    withIndex: (_index, fn) => {
+  const query = (table: string) => ({
+    withIndex: (
+      _index: string,
+      fn: (q: {
+        eq: (field: string, value: unknown) => { field: string; value: unknown }
+      }) => { field: string; value: unknown },
+    ) => {
       const filter = fn({
         eq: (field, value) => ({ field, value }),
       })
@@ -1136,18 +1144,18 @@ function createGithubMockCtx(
     },
     db: {
       query: vi.fn(query),
-      insert: vi.fn(async (table, doc) => {
+      insert: vi.fn(async (table: string, doc: Record<string, unknown>) => {
         const id = `${table}_${++idSeq}`
         tables[table].push({ _id: id, ...doc })
         return id
       }),
-      patch: vi.fn(async (id, patch) => {
+      patch: vi.fn(async (id: string, patch: Record<string, unknown>) => {
         for (const rows of Object.values(tables)) {
           const row = rows.find((r) => r._id === id)
           if (row) Object.assign(row, patch)
         }
       }),
-      delete: vi.fn(async (id) => {
+      delete: vi.fn(async (id: string) => {
         deleted.add(id)
       }),
     },
@@ -1155,8 +1163,10 @@ function createGithubMockCtx(
   }
 }
 
-function handler(fn: unknown): any {
-  return fn._handler ?? fn.handler ?? fn
+type HandlerFn = (ctx: unknown, args: unknown) => unknown
+function handler(fn: unknown): HandlerFn {
+  const obj = fn as { _handler?: HandlerFn; handler?: HandlerFn }
+  return (obj._handler ?? obj.handler ?? (fn as HandlerFn)) as HandlerFn
 }
 
 const ISS = 'https://clerk.test'

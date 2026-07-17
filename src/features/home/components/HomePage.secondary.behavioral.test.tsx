@@ -35,6 +35,13 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('convex/react', () => ({
   useMutation: () => vi.fn(),
+  ConvexReactClient: class {
+    constructor() {}
+  },
+}))
+
+vi.mock('@/features/gallery/components/PublicGallery', () => ({
+  HomeGallerySection: () => null,
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({

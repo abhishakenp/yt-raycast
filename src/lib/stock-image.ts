@@ -27,7 +27,7 @@ function cacheKey(query: string, w: number, h: number) {
   return `${query}|${w}x${h}`
 }
 
-function pickBySeed(items: T[], seed: string): T | undefined {
+function pickBySeed<T>(items: T[], seed: string): T | undefined {
   if (!items.length) return undefined
   return items[seedFromAlt(seed) % items.length]
 }

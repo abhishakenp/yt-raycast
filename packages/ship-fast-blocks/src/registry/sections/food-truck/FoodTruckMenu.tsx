@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -244,35 +245,22 @@ export const FoodTruckMenu = defineCapsule({
                   )}
                 >
                   {(cat.items ?? []).map((item, i) => (
-                    <div
+                    <MenuItemRow
                       key={item.name}
+                      name={item.name}
+                      description={item.description}
+                      price={item.price}
+                      tag={item.tag}
+                      tagClassName="bg-transparent px-0 py-0 text-chart-2 normal-case tracking-normal"
+                      priceClassName="font-serif text-base font-semibold"
                       className={cn(
-                        'flex items-start justify-between gap-4',
                         i < cat.items.length - 1 &&
                           'border-b border-border pb-4',
                       )}
-                    >
-                      <div>
-                        <p className="font-medium">
-                          {item.name}
-                          {item.tag && (
-                            <span className="ml-1.5 text-xs font-medium text-chart-2">
-                              {item.tag}
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        <span className="font-semibold">{item.price}</span>
+                      action={
                         <CommerceAddItemButton
                           lakebed={lakebed}
-                          item={{
-                            label: item.name,
-                            price: item.price,
-                          }}
+                          item={{ label: item.name, price: item.price }}
                           aria-label={`${addLabel} ${item.name} to cart`}
                           pendingChildren={
                             <>
@@ -284,8 +272,8 @@ export const FoodTruckMenu = defineCapsule({
                         >
                           {addLabel}
                         </CommerceAddItemButton>
-                      </div>
-                    </div>
+                      }
+                    />
                   ))}
                 </div>
               </div>

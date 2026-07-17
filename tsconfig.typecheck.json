@@ -42,7 +42,11 @@
       "@ship-fast/blocks/component-names": [
         "./types/typecheck/ship-fast-blocks.d.ts"
       ],
-      "@ship-fast/blocks/portal": ["./types/typecheck/ship-fast-blocks.d.ts"]
+      "@ship-fast/blocks/portal": ["./types/typecheck/ship-fast-blocks.d.ts"],
+      "@ship-fast/blocks/capsules": ["./types/typecheck/ship-fast-blocks.d.ts"],
+      "@ship-fast/blocks/multi-image-src": [
+        "./types/typecheck/ship-fast-blocks.d.ts"
+      ]
     }
   }
 }

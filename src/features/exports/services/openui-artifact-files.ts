@@ -413,6 +413,7 @@ export async function buildOpenUIArtifactFiles(input: OpenUIExportInput) {
       isUsablePreviewHtml,
       neutralizeGeneratedHtmlRuntimeMarkers,
     } = await import('./openui-html-export-builder')
+    await input.onProgress?.('loading-generator')
     const download = await buildOpenUIHtmlExport({
       ...input,
       includeBadge: input.includeBadge ?? false,
@@ -451,6 +452,7 @@ Open \`index.html\` in a browser or serve this directory with any static file se
   if (input.target === 'lakebed') {
     const { buildOpenUILakebedProjectFiles } =
       await import('./openui-lakebed-export-builder')
+    await input.onProgress?.('loading-generator')
     const project = await buildOpenUILakebedProjectFiles(input, {
       useEnvironmentSyncSecret: true,
     })
@@ -458,6 +460,7 @@ Open \`index.html\` in a browser or serve this directory with any static file se
   }
 
   const { buildOpenUIExport } = await import('./openui-export-builder')
+  await input.onProgress?.('loading-generator')
   const download = await buildOpenUIExport(input)
   if (typeof download.body === 'string') {
     throw new Error(`${input.target} export did not produce a ZIP artifact`)

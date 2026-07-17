@@ -323,12 +323,16 @@ const anchorRect = {
   y: 100,
 } as unknown as DOMRect
 
-// Fresh import per test so the module-level `copiedStyle` clipboard resets.
-let InlineEditToolbar: typeof import('./InlineEditToolbar').InlineEditToolbar
+// Static import — avoids vi.resetModules() which re-imports the heavy
+// @ship-fast/blocks graph and exceeds the hook timeout on cold imports.
+import {
+  InlineEditToolbar,
+  __resetCopiedStyleForTests,
+} from './InlineEditToolbar'
 let originalRaf: typeof globalThis.requestAnimationFrame
 
-beforeEach(async () => {
-  vi.resetModules()
+beforeEach(() => {
+  __resetCopiedStyleForTests()
   floatingUpdateSpy.mockClear()
   floatingStyleState.top = '0px'
   floatingStyleState.left = '0px'
@@ -338,7 +342,6 @@ beforeEach(async () => {
   searchStockImagesMock.mockResolvedValue([])
   useQueryMock.mockReset()
   useQueryMock.mockReturnValue(undefined)
-  ;({ InlineEditToolbar } = await import('./InlineEditToolbar'))
   vi.spyOn(window, 'getComputedStyle').mockReturnValue(
     fakeComputedStyle as unknown as CSSStyleDeclaration,
   )

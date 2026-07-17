@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { FormField } from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
@@ -170,125 +171,74 @@ export const EventPlannerContact = defineCapsule({
             >
               <div className="space-y-6">
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="ep-first"
-                      className="mb-2 block text-sm font-medium text-card-foreground"
-                    >
-                      First Name
-                    </label>
-                    <input
-                      id="ep-first"
-                      name="firstName"
-                      type="text"
-                      required
-                      placeholder="Jane"
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="ep-last"
-                      className="mb-2 block text-sm font-medium text-card-foreground"
-                    >
-                      Last Name
-                    </label>
-                    <input
-                      id="ep-last"
-                      name="lastName"
-                      type="text"
-                      required
-                      placeholder="Smith"
-                      className={inputCls}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="ep-email"
-                    className="mb-2 block text-sm font-medium text-card-foreground"
-                  >
-                    Email Address
-                  </label>
-                  <input
-                    id="ep-email"
-                    name="email"
-                    type="email"
+                  <FormField
+                    id="ep-first"
+                    name="firstName"
+                    label="First Name"
                     required
-                    placeholder="jane@example.com"
-                    className={inputCls}
+                    placeholder="Jane"
+                    inputClassName={inputCls}
+                    labelClassName="text-card-foreground"
+                  />
+                  <FormField
+                    id="ep-last"
+                    name="lastName"
+                    label="Last Name"
+                    required
+                    placeholder="Smith"
+                    inputClassName={inputCls}
+                    labelClassName="text-card-foreground"
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="ep-type"
-                    className="mb-2 block text-sm font-medium text-card-foreground"
-                  >
-                    Event Type
-                  </label>
-                  <select
-                    id="ep-type"
-                    name="eventType"
-                    required
-                    className={cn(inputCls, 'appearance-none')}
-                  >
-                    {eventTypes.map((opt) => (
-                      <option key={opt} className="bg-background">
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FormField
+                  id="ep-email"
+                  name="email"
+                  label="Email Address"
+                  type="email"
+                  required
+                  placeholder="jane@example.com"
+                  inputClassName={inputCls}
+                  labelClassName="text-card-foreground"
+                />
+                <FormField
+                  id="ep-type"
+                  name="eventType"
+                  label="Event Type"
+                  as="select"
+                  required
+                  options={eventTypes}
+                  inputClassName={inputCls}
+                  labelClassName="text-card-foreground"
+                />
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="ep-date"
-                      className="mb-2 block text-sm font-medium text-card-foreground"
-                    >
-                      Event Date
-                    </label>
-                    <input
-                      id="ep-date"
-                      name="date"
-                      type="date"
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="ep-guests"
-                      className="mb-2 block text-sm font-medium text-card-foreground"
-                    >
-                      Guest Count
-                    </label>
-                    <select
-                      id="ep-guests"
-                      name="guestCount"
-                      className={cn(inputCls, 'appearance-none')}
-                    >
-                      {guestRanges.map((opt) => (
-                        <option key={opt} className="bg-background">
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="ep-message"
-                    className="mb-2 block text-sm font-medium text-card-foreground"
-                  >
-                    Tell Us About Your Vision
-                  </label>
-                  <textarea
-                    id="ep-message"
-                    name="vision"
-                    rows={4}
-                    placeholder="Share details about your dream event, preferred style, venues you're considering, or any questions you have..."
-                    className={cn(inputCls, 'resize-none')}
+                  <FormField
+                    id="ep-date"
+                    name="date"
+                    label="Event Date"
+                    type="date"
+                    inputClassName={inputCls}
+                    labelClassName="text-card-foreground"
+                  />
+                  <FormField
+                    id="ep-guests"
+                    name="guestCount"
+                    label="Guest Count"
+                    as="select"
+                    options={guestRanges}
+                    inputClassName={inputCls}
+                    labelClassName="text-card-foreground"
                   />
                 </div>
+                <FormField
+                  id="ep-message"
+                  name="vision"
+                  label="Tell Us About Your Vision"
+                  as="textarea"
+                  rows={4}
+                  placeholder="Share details about your dream event, preferred style, venues you're considering, or any questions you have..."
+                  inputClassName={inputCls}
+                  labelClassName="text-card-foreground"
+                />
                 <button
                   type="submit"
                   aria-busy={inquiry.isPending}

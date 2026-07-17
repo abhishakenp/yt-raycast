@@ -3,9 +3,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StoryCard } from '#/section-kit/StoryCard.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -96,34 +96,23 @@ export const BlogPostStoryGrid = defineCapsule({
           />
           <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((post) => (
-              <article key={post.title} className="group">
-                <button
-                  type="button"
-                  onClick={() => go(post.title)}
-                  className="block w-full text-left"
-                >
-                  <figure className="mb-4 overflow-hidden rounded-lg">
-                    <Image
-                      alt={post.imageAlt}
-                      w={600}
-                      h={400}
-                      loading="lazy"
-                      className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </figure>
+              <StoryCard
+                key={post.title}
+                title={post.title}
+                excerpt={post.excerpt}
+                imageAlt={post.imageAlt}
+                imageW={600}
+                imageH={400}
+                meta={
                   <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{post.category}</span>
                     <span aria-hidden="true">•</span>
                     <time>{post.date}</time>
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold text-foreground transition-colors group-hover:text-muted-foreground">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {post.excerpt}
-                  </p>
-                </button>
-              </article>
+                }
+                onClick={() => go(post.title)}
+                variant="simple"
+              />
             ))}
           </ResponsiveGrid>
         </div>

@@ -42,12 +42,15 @@ async function sessionDoc(
 }
 
 const indexHelper = {
-  eq: (_field, _value) => indexHelper,
+  eq: (_field: string, _value: unknown) => indexHelper,
 }
 
 function chainFor(rows: Row[]) {
   return {
-    withIndex: (_indexName, _applyIndex) => chainFor(rows),
+    withIndex: (
+      _indexName: string,
+      _applyIndex: (index: typeof indexHelper) => void,
+    ) => chainFor(rows),
     collect: async () => [...rows],
     first: async () => rows[0] ?? null,
   }
@@ -70,7 +73,7 @@ async function mutationCtxFor(args: {
   const patches: Array<{ id: string; value: Row }> = []
   let insertSeq = 0
 
-  const findRow = (id) =>
+  const findRow = (id: string) =>
     [session, ...Object.values(tables).flat()].find(
       (candidate) => candidate !== null && candidate?._id === id,
     ) as Row | undefined
@@ -86,9 +89,9 @@ async function mutationCtxFor(args: {
       runAfter: vi.fn(async () => undefined),
     },
     db: {
-      get: vi.fn(async (id) => (id === sessionId ? session : null)),
-      query: (table) => chainFor(tables[table]),
-      insert: vi.fn(async (table, value) => {
+      get: vi.fn(async (id: string) => (id === sessionId ? session : null)),
+      query: (table: TableName) => chainFor(tables[table]),
+      insert: vi.fn(async (table: TableName, value: Row) => {
         insertSeq += 1
         const _id = `${table}_${insertSeq}`
         const stored = { _id, _creationTime: insertSeq, ...value }
@@ -96,7 +99,7 @@ async function mutationCtxFor(args: {
         inserted.push({ table, value })
         return _id
       }),
-      patch: vi.fn(async (id, value) => {
+      patch: vi.fn(async (id: string, value: Row) => {
         patches.push({ id, value })
         const row = findRow(id)
         if (row !== undefined) Object.assign(row, value)

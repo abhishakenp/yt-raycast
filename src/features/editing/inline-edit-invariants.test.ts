@@ -10,7 +10,7 @@ import {
   applyPreviewTextEdit,
   applyStyleEdit,
 } from '../../lib/edit-helpers'
-import { Image } from '../../../packages/ship-fast-blocks/src/lib/img'
+import { Image } from '@ship-fast/blocks'
 import schema from '../../../convex/schema'
 
 // ─── helpers ──────────────────────────────────────────────────────────────

@@ -161,13 +161,14 @@ describe('export_artifacts build action', () => {
 
     expect(result).toEqual({ target: TARGET, status: 'ready' })
 
-    // markExportArtifactBuildStarted + recordExportArtifactBuildReady
-    expect(runMutation).toHaveBeenCalledTimes(2)
+    // markExportArtifactBuildStarted + 3 real-progress events (packaging,
+    // saving, ready) + recordExportArtifactBuildReady.
+    expect(runMutation).toHaveBeenCalledTimes(5)
     // prepareExportArtifactBuildInput query was called
     expect(runQuery).toHaveBeenCalledTimes(1)
 
     // The ready mutation should include hash and byteLength derived from the body.
-    const readyCall = runMutation.mock.calls[1]
+    const readyCall = runMutation.mock.calls[4]
     const readyArgs = readyCall[1] as Record<string, unknown>
     expect(readyArgs.storageId).toBeDefined()
     expect(readyArgs.filesStorageId).toBeDefined()
@@ -279,7 +280,7 @@ describe('export_artifacts build action', () => {
 
     await handler(ctx, baseArgs)
 
-    const readyArgs = runMutation.mock.calls[1][1] as Record<string, unknown>
+    const readyArgs = runMutation.mock.calls[4][1] as Record<string, unknown>
     // Verify hashBytes produces the correct SHA-256 of the body string.
     const { createHash } = await import('node:crypto')
     const expectedHash = createHash('sha256')
@@ -308,7 +309,7 @@ describe('export_artifacts build action', () => {
 
     await handler(ctx, baseArgs)
 
-    const readyArgs = runMutation.mock.calls[1][1] as Record<string, unknown>
+    const readyArgs = runMutation.mock.calls[4][1] as Record<string, unknown>
     // bodyBytes passes through Uint8Array unchanged.
     expect(readyArgs.byteLength).toBe(5)
     // hashBytes computes SHA-256 of the raw bytes.

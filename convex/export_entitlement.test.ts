@@ -6,7 +6,7 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
-function requireEventStream(stream: T | null): T {
+function requireEventStream<T>(stream: T | null): T {
   if (stream === null) throw new Error('Expected event stream')
   return stream
 }

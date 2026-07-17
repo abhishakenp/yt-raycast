@@ -11,6 +11,7 @@ import type {
   BuiltExport,
   ExportTarget,
 } from '../src/features/exports/services/openui-export-types'
+import type { FormatFileCache } from '../src/features/exports/services/format-export-files'
 
 type PreparedExportArtifact = {
   sessionId: Id<'sessions'>
@@ -62,7 +63,46 @@ async function storeBytes(
   return await ctx.storage.store(new Blob([arrayBuffer], { type: contentType }))
 }
 
-async function buildGitHubFiles(prepared: PreparedExportArtifact): Promise<{
+// Batches format-cache reads/writes through the Convex `exportRenderCache`
+// table so a rebuild where most generated files are byte-identical to the
+// last build (e.g. only the theme or logo changed) skips reformatting them.
+function createFormatFileCache(ctx: ActionCtx): FormatFileCache {
+  return {
+    get: async (hashes) => {
+      if (hashes.length === 0) return {}
+      return await ctx.runQuery(internal.exportRenderCache.getMany, {
+        hashes,
+      })
+    },
+    set: async (entries) => {
+      if (entries.length === 0) return
+      await ctx.runMutation(internal.exportRenderCache.setMany, { entries })
+    },
+  }
+}
+
+function createProgressReporter(
+  ctx: ActionCtx,
+  prepared: PreparedExportArtifact,
+  willDeploy: boolean,
+) {
+  return async (stageKey: string) => {
+    await ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
+      sessionId: prepared.sessionId,
+      target: prepared.target,
+      previewVersion: prepared.previewVersion,
+      locale: prepared.locale,
+      stageKey,
+      willDeploy,
+    })
+  }
+}
+
+async function buildGitHubFiles(
+  ctx: ActionCtx,
+  prepared: PreparedExportArtifact,
+  willDeploy: boolean,
+): Promise<{
   files: Record<string, string>
   download?: BuiltExport
 }> {
@@ -81,6 +121,8 @@ async function buildGitHubFiles(prepared: PreparedExportArtifact): Promise<{
       isDark: prepared.isDark,
       locale: prepared.locale,
       selectedBrandLogo: prepared.selectedBrandLogo,
+      formatCache: createFormatFileCache(ctx),
+      onProgress: createProgressReporter(ctx, prepared, willDeploy),
     })
   } catch (error) {
     console.error('[export_artifacts:buildGitHubFiles] failed', {
@@ -141,10 +183,13 @@ async function deployLakebedIfRequested(
       internal.sessions.getLakebedDeploymentUpdateTarget,
       { sessionId: prepared.sessionId },
     )) as { claimUrl: string; deployId: string; url: string } | null
+    const reportProgress = createProgressReporter(ctx, prepared, true)
     const deployed = await deployLakebedProjectFiles({
       existingDeployment: existingDeployment ?? undefined,
       files,
+      onProgress: reportProgress,
     })
+    await reportProgress('deployed')
     await ctx.runMutation(internal.sessions.recordLakebedDeploymentSuccess, {
       sessionId: prepared.sessionId,
       previewVersion: prepared.previewVersion,
@@ -193,8 +238,10 @@ export const build = internalAction({
       if (prepared === null) {
         return { target: args.target, status: 'stale' as const }
       }
+      const willDeploy = args.autoDeployPublic === true
+      const reportProgress = createProgressReporter(ctx, prepared, willDeploy)
       stage = 'build-files'
-      const artifact = await buildGitHubFiles(prepared)
+      const artifact = await buildGitHubFiles(ctx, prepared, willDeploy)
       stage = 'validate-files'
       // Never persist renderer-error output as a ready artifact — a failed
       // SSR pass must surface as a build failure, not a poisoned download.
@@ -212,6 +259,7 @@ export const build = internalAction({
       const download = await buildDownload(prepared, artifact)
       stage = 'encode-download'
       const bytes = bodyBytes(download.body)
+      await reportProgress('packaging')
       stage = 'store-artifacts'
       const [storageId, filesStorageId] = await Promise.all([
         storeBytes(ctx, bytes, download.contentType),
@@ -221,8 +269,10 @@ export const build = internalAction({
           'application/json; charset=utf-8',
         ),
       ])
+      await reportProgress('saving')
 
       stage = 'record-ready'
+      await reportProgress('ready')
       await ctx.runMutation(internal.sessions.recordExportArtifactBuildReady, {
         ...args,
         locale: prepared.locale,
@@ -235,7 +285,7 @@ export const build = internalAction({
         hash: hashBytes(bytes),
       })
 
-      if (args.autoDeployPublic === true) {
+      if (willDeploy) {
         stage = 'auto-deploy-lakebed'
         await deployLakebedIfRequested(ctx, prepared, artifact.files)
       }
