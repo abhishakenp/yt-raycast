@@ -7,6 +7,12 @@ import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  NewsletterCta,
+  NewsletterCtaDescription,
+  NewsletterCtaFineprint,
+  NewsletterCtaHeading,
+} from '#/section-kit/NewsletterCta.tsx'
 
 /**
  * BeautyStoreNewsletter — a dark newsletter CTA band for a beauty / skincare /
@@ -55,7 +61,10 @@ export const BeautyStoreNewsletter = defineCapsule({
     const submitTarget = props.submitTarget ?? submit
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <NewsletterCta
+        variant="inverted"
+        className={cn('py-20 lg:py-28', props.className)}
+      >
         <Container>
           <div className="relative overflow-hidden rounded-xl bg-foreground">
             <div aria-hidden="true" className="absolute inset-0 opacity-20">
@@ -71,12 +80,12 @@ export const BeautyStoreNewsletter = defineCapsule({
               <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-primary">
                 {eyebrow}
               </span>
-              <h2 className="mx-auto mb-6 max-w-2xl font-serif text-3xl font-semibold text-background sm:text-4xl lg:text-5xl">
+              <NewsletterCtaHeading className="mx-auto mb-6 max-w-2xl font-serif text-3xl font-semibold text-background sm:text-4xl lg:text-5xl">
                 {heading}
-              </h2>
-              <p className="mx-auto mb-8 max-w-xl text-lg text-background/70">
+              </NewsletterCtaHeading>
+              <NewsletterCtaDescription className="mx-auto mb-8 max-w-xl text-lg text-background/70">
                 {description}
-              </p>
+              </NewsletterCtaDescription>
               <NewsletterSubscribeForm
                 lakebed={lakebed}
                 source={submitTarget}
@@ -88,11 +97,13 @@ export const BeautyStoreNewsletter = defineCapsule({
                 buttonClassName="whitespace-nowrap rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 statusClassName="text-background/60"
               />
-              <p className="mt-4 text-sm text-background/60">{note}</p>
+              <NewsletterCtaFineprint className="mt-4 text-sm text-background/60">
+                {note}
+              </NewsletterCtaFineprint>
             </div>
           </div>
         </Container>
-      </section>
+      </NewsletterCta>
     )
   },
 })

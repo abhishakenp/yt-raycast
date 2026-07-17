@@ -7,6 +7,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  NewsletterCta,
+  NewsletterCtaFineprint,
+} from '#/section-kit/NewsletterCta.tsx'
 
 /**
  * FurnitureStoreNewsletter — a centered newsletter subscribe CTA on a soft muted
@@ -82,8 +86,9 @@ export const FurnitureStoreNewsletter = defineCapsule({
     }
 
     return (
-      <section
-        className={cn('bg-muted py-16 lg:py-24', props.className)}
+      <NewsletterCta
+        variant="muted"
+        className={cn('py-16 lg:py-24', props.className)}
         aria-labelledby="furniture-newsletter-heading"
       >
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
@@ -108,7 +113,9 @@ export const FurnitureStoreNewsletter = defineCapsule({
             buttonClassName="rounded-md bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
           />
 
-          <p className="mt-4 text-sm text-muted-foreground">{note}</p>
+          <NewsletterCtaFineprint className="mt-4 text-sm text-muted-foreground">
+            {note}
+          </NewsletterCtaFineprint>
 
           <div className="mt-8 flex justify-center gap-6">
             {socials.map((social) => (
@@ -126,7 +133,7 @@ export const FurnitureStoreNewsletter = defineCapsule({
             ))}
           </div>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })

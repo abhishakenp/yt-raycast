@@ -5,6 +5,10 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  NewsletterCta,
+  NewsletterCtaFineprint,
+} from '#/section-kit/NewsletterCta.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -60,7 +64,9 @@ export const NonprofitSubscribe = defineCapsule({
       props.footnote ?? 'No spam, ever. Unsubscribe with one click.'
 
     return (
-      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
+      <NewsletterCta
+        className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
+      >
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <Card
             variant="outline"
@@ -85,9 +91,9 @@ export const NonprofitSubscribe = defineCapsule({
               buttonClassName="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
             />
 
-            <p className="mt-4 text-center text-xs text-muted-foreground">
+            <NewsletterCtaFineprint className="mt-4 text-center text-xs text-muted-foreground">
               {footnote}
-            </p>
+            </NewsletterCtaFineprint>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
               <span className="text-sm text-muted-foreground">
@@ -106,7 +112,7 @@ export const NonprofitSubscribe = defineCapsule({
             </div>
           </Card>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })

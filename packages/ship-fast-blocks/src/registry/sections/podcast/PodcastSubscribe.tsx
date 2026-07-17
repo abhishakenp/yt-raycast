@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NewsletterCta } from '#/section-kit/NewsletterCta.tsx'
 
 export const PodcastSubscribe = defineCapsule({
   name: 'PodcastSubscribe',
@@ -40,7 +41,7 @@ export const PodcastSubscribe = defineCapsule({
         ]
 
     return (
-      <section
+      <NewsletterCta
         className={cn(
           'bg-accent/10 py-20 text-foreground lg:py-28',
           props.className,
@@ -65,7 +66,7 @@ export const PodcastSubscribe = defineCapsule({
             ))}
           </div>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })

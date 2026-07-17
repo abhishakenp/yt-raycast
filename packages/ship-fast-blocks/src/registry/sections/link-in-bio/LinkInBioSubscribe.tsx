@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  NewsletterCta,
+  NewsletterCtaDescription,
+  NewsletterCtaFineprint,
+  NewsletterCtaHeading,
+} from '#/section-kit/NewsletterCta.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -52,7 +58,7 @@ export const LinkInBioSubscribe = defineCapsule({
     const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <section
+      <NewsletterCta
         className={cn(
           'mx-auto w-full max-w-md px-6 pt-28 pb-10',
           props.className,
@@ -81,10 +87,12 @@ export const LinkInBioSubscribe = defineCapsule({
           >
             {eyebrow}
           </Eyebrow>
-          <h2 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
+          <NewsletterCtaHeading className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
             {heading}
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">{subheading}</p>
+          </NewsletterCtaHeading>
+          <NewsletterCtaDescription className="mt-2 text-sm text-muted-foreground">
+            {subheading}
+          </NewsletterCtaDescription>
 
           <NewsletterSubscribeForm
             lakebed={lakebed}
@@ -97,9 +105,11 @@ export const LinkInBioSubscribe = defineCapsule({
             buttonClassName="w-full rounded-full bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
           />
 
-          <p className="mt-3 text-xs text-muted-foreground">{note}</p>
+          <NewsletterCtaFineprint className="mt-3 text-xs text-muted-foreground">
+            {note}
+          </NewsletterCtaFineprint>
         </Card>
-      </section>
+      </NewsletterCta>
     )
   },
 })

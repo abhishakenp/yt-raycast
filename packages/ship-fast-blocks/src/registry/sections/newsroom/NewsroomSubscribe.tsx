@@ -11,6 +11,12 @@ import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  NewsletterCta,
+  NewsletterCtaDescription,
+  NewsletterCtaFineprint,
+  NewsletterCtaHeading,
+} from '#/section-kit/NewsletterCta.tsx'
 
 /**
  * NewsroomSubscribe — editorial subscription / membership band for a digital
@@ -129,13 +135,17 @@ export const NewsroomSubscribe = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <NewsletterCta
+        className={cn('bg-background py-20 lg:py-28', props.className)}
+      >
         <Container>
           <div className="mx-auto mb-12 max-w-3xl text-center">
-            <h2 className="mb-4 font-serif text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+            <NewsletterCtaHeading className="mb-4 font-serif text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
               {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{subheading}</p>
+            </NewsletterCtaHeading>
+            <NewsletterCtaDescription className="text-lg text-muted-foreground">
+              {subheading}
+            </NewsletterCtaDescription>
             <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
               {benefits.map((benefit) => (
                 <li
@@ -260,11 +270,11 @@ export const NewsroomSubscribe = defineCapsule({
             ))}
           </div>
 
-          <p className="mt-10 text-center text-sm text-muted-foreground">
+          <NewsletterCtaFineprint className="mt-10 text-center text-sm text-muted-foreground">
             {footnote}
-          </p>
+          </NewsletterCtaFineprint>
         </Container>
-      </section>
+      </NewsletterCta>
     )
   },
 })

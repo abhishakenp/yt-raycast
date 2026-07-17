@@ -4,6 +4,10 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  NewsletterCta,
+  NewsletterCtaFineprint,
+} from '#/section-kit/NewsletterCta.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -48,7 +52,7 @@ export const WriterAuthorSubscribe = defineCapsule({
     const privacy = props.privacy ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <section
+      <NewsletterCta
         className={cn(
           'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
           props.className,
@@ -76,10 +80,12 @@ export const WriterAuthorSubscribe = defineCapsule({
               inputClassName="w-full flex-1 rounded-full border border-border bg-background px-5 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               buttonClassName="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
             />
-            <p className="mt-4 text-sm text-muted-foreground">{privacy}</p>
+            <NewsletterCtaFineprint className="mt-4 text-sm text-muted-foreground">
+              {privacy}
+            </NewsletterCtaFineprint>
           </Card>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })
