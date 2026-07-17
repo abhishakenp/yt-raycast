@@ -2,6 +2,15 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  PullQuote,
+  PullQuoteAttribution,
+  PullQuoteAvatar,
+  PullQuoteIcon,
+  PullQuoteName,
+  PullQuoteRole,
+  PullQuoteText,
+} from '#/section-kit/PullQuote.tsx'
 
 /**
  * MarketingTestimonial — a single large, centered testimonial card for a SaaS /
@@ -30,15 +39,10 @@ export const MarketingTestimonial = defineCapsule({
     const role = props.role ?? 'VP of Engineering, Acme Corp'
 
     return (
-      <section
-        className={cn(
-          'bg-gradient-to-b from-muted/50 to-background py-20',
-          props.className,
-        )}
-      >
+      <PullQuote variant="gradient" className={cn('py-20', props.className)}>
         <div className="mx-auto max-w-6xl px-6">
           <figure className="relative mx-auto max-w-3xl rounded-2xl border border-border bg-card px-8 py-12 text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] sm:px-10">
-            <span className="mx-auto mb-5 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+            <PullQuoteIcon>
               <svg
                 width="20"
                 height="20"
@@ -49,28 +53,26 @@ export const MarketingTestimonial = defineCapsule({
               >
                 <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
               </svg>
-            </span>
-            <blockquote className="text-balance text-xl font-medium leading-snug text-foreground sm:text-2xl">
-              &ldquo;{quote}&rdquo;
-            </blockquote>
-            <figcaption className="mt-7 flex items-center justify-center gap-3.5">
-              <span className="grid size-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-base font-bold text-primary-foreground">
-                {name
-                  .split(' ')
-                  .map((w) => w.charAt(0))
-                  .join('')
-                  .slice(0, 2)}
-              </span>
-              <div className="text-left">
-                <div className="text-[0.95rem] font-bold text-foreground">
-                  {name}
+            </PullQuoteIcon>
+            <PullQuoteText>&ldquo;{quote}&rdquo;</PullQuoteText>
+            <figcaption>
+              <PullQuoteAttribution>
+                <PullQuoteAvatar>
+                  {name
+                    .split(' ')
+                    .map((w) => w.charAt(0))
+                    .join('')
+                    .slice(0, 2)}
+                </PullQuoteAvatar>
+                <div className="text-left">
+                  <PullQuoteName>{name}</PullQuoteName>
+                  <PullQuoteRole>{role}</PullQuoteRole>
                 </div>
-                <div className="text-sm text-muted-foreground">{role}</div>
-              </div>
+              </PullQuoteAttribution>
             </figcaption>
           </figure>
         </div>
-      </section>
+      </PullQuote>
     )
   },
 })

@@ -3,6 +3,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventPlannerServices — airy services grid for an event-planning agency. A
@@ -100,19 +103,20 @@ export const EventPlannerServices = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {servicesEyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl">
-              {servicesHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{servicesDesc}</p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+          <SectionHeading
+            eyebrow={servicesEyebrow}
+            title={servicesHeading}
+            subtitle={servicesDesc}
+            align="center"
+            eyebrowClassName="text-muted-foreground tracking-widest"
+            titleClassName="text-3xl font-light sm:text-4xl lg:text-5xl"
+            subtitleClassName="text-lg"
+            className="mb-16 max-w-3xl gap-6 lg:mb-24"
+          />
+          <ResponsiveGrid cols="1-md-2-3" gap="lg" className="lg:gap-12">
             {serviceItems.map((item) => (
-              <article key={item.title} className="group">
-                <div className="mb-6 aspect-[4/3] overflow-hidden rounded-xl">
+              <article key={item.title}>
+                <ImageTile treatment="4-3-xl" className="mb-6">
                   <Image
                     alt={item.imageAlt}
                     w={600}
@@ -120,7 +124,7 @@ export const EventPlannerServices = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
+                </ImageTile>
                 <h3 className="mb-3 text-xl font-medium text-foreground">
                   {item.title}
                 </h3>
@@ -130,7 +134,7 @@ export const EventPlannerServices = defineCapsule({
                 <p className="text-sm text-muted-foreground">{item.price}</p>
               </article>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

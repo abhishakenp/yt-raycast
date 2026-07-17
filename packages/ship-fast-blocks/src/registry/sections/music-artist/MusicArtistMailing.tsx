@@ -2,6 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  NewsletterCta,
+  NewsletterCtaDescription,
+  NewsletterCtaFineprint,
+  NewsletterCtaHeading,
+} from '#/section-kit/NewsletterCta.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -43,17 +49,17 @@ export const MusicArtistMailing = defineCapsule({
     const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <section
-        className={cn(
-          'bg-foreground px-6 py-20 text-background lg:px-8 lg:py-28',
-          props.className,
-        )}
+      <NewsletterCta
+        variant="inverted"
+        className={cn('px-6 py-20 lg:px-8 lg:py-28', props.className)}
       >
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-light lg:text-5xl">{heading}</h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-background/70">
+          <NewsletterCtaHeading className="mb-6 text-3xl font-light lg:text-5xl">
+            {heading}
+          </NewsletterCtaHeading>
+          <NewsletterCtaDescription className="mb-10 max-w-2xl text-lg text-background/70">
             {description}
-          </p>
+          </NewsletterCtaDescription>
           <NewsletterSubscribeForm
             lakebed={lakebed}
             source={submit}
@@ -65,9 +71,11 @@ export const MusicArtistMailing = defineCapsule({
             buttonClassName="rounded-full bg-background px-8 py-3 font-medium text-foreground transition-colors hover:bg-background/80 disabled:pointer-events-none disabled:opacity-70"
             statusClassName="text-background/50"
           />
-          <p className="mt-4 text-xs text-background/50">{note}</p>
+          <NewsletterCtaFineprint className="text-background/50">
+            {note}
+          </NewsletterCtaFineprint>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })

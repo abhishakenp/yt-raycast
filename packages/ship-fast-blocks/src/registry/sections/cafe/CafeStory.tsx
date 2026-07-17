@@ -3,6 +3,17 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import {
+  StorySplit,
+  StorySplitBody,
+  StorySplitContent,
+  StorySplitEyebrow,
+  StorySplitFooter,
+  StorySplitGrid,
+  StorySplitHeading,
+  StorySplitImageTile,
+  StorySplitImages,
+} from '#/section-kit/StorySplit.tsx'
 
 /**
  * CafeStory — split founder / origin story section for a cozy cafe / coffee
@@ -58,12 +69,14 @@ export const CafeStory = defineCapsule({
       'Coffee shop interior during golden hour, showing warm lighting, potted plants, and communal seating'
 
     return (
-      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
+      <StorySplit
+        className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          <StorySplitGrid>
             <div className="order-2 lg:order-1">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="mt-8 aspect-[3/4] overflow-hidden rounded-xl">
+              <StorySplitImages>
+                <StorySplitImageTile offset>
                   <Image
                     alt={imageAlt1}
                     w={500}
@@ -71,8 +84,8 @@ export const CafeStory = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                </div>
-                <div className="aspect-[3/4] overflow-hidden rounded-xl">
+                </StorySplitImageTile>
+                <StorySplitImageTile>
                   <Image
                     alt={imageAlt2}
                     w={500}
@@ -80,23 +93,19 @@ export const CafeStory = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                </div>
-              </div>
+                </StorySplitImageTile>
+              </StorySplitImages>
             </div>
 
-            <div className="order-1 space-y-6 lg:order-2">
-              <p className="text-sm font-medium uppercase tracking-wider text-primary">
-                {cap}
-              </p>
-              <h2 className="font-serif text-3xl font-medium leading-tight text-foreground sm:text-4xl lg:text-5xl">
-                {heading}
-              </h2>
-              <div className="space-y-4 leading-relaxed text-muted-foreground">
+            <StorySplitContent className="order-1 lg:order-2">
+              <StorySplitEyebrow>{cap}</StorySplitEyebrow>
+              <StorySplitHeading>{heading}</StorySplitHeading>
+              <StorySplitBody>
                 {paragraphs.map((p, i) => (
                   <p key={i}>{p}</p>
                 ))}
-              </div>
-              <div className="flex items-center gap-6 pt-4">
+              </StorySplitBody>
+              <StorySplitFooter>
                 <Image
                   alt={founderAvatarAlt}
                   w={100}
@@ -107,11 +116,11 @@ export const CafeStory = defineCapsule({
                   <p className="font-medium text-foreground">{founderName}</p>
                   <p className="text-sm text-muted-foreground">{founderRole}</p>
                 </div>
-              </div>
-            </div>
-          </div>
+              </StorySplitFooter>
+            </StorySplitContent>
+          </StorySplitGrid>
         </div>
-      </section>
+      </StorySplit>
     )
   },
 })

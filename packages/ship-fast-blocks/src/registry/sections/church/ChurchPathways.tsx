@@ -4,6 +4,9 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ChurchPathways — a 3-up "next step" pathways grid for a church or faith-community
@@ -91,18 +94,18 @@ export const ChurchPathways = defineCapsule({
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mb-20 max-w-3xl">
-            <h2 className="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            align="left"
+            titleClassName="text-3xl font-medium tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg leading-relaxed"
+            className="mb-20 max-w-3xl gap-6"
+          />
+          <ResponsiveGrid cols="1-md-2-3" gap="lg" className="lg:gap-12">
             {items.map((item) => (
-              <article key={item.title} className="group">
-                <div className="mb-6 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+              <article key={item.title}>
+                <ImageTile treatment="4-3-xl-muted" className="mb-6">
                   <Image
                     alt={item.imageAlt}
                     w={800}
@@ -110,7 +113,7 @@ export const ChurchPathways = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
+                </ImageTile>
                 <h3 className="mb-3 text-xl font-medium text-foreground">
                   {item.title}
                 </h3>
@@ -127,7 +130,7 @@ export const ChurchPathways = defineCapsule({
                 </button>
               </article>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

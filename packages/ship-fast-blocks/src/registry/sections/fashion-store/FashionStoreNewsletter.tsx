@@ -2,6 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  NewsletterCta,
+  NewsletterCtaDescription,
+  NewsletterCtaFineprint,
+  NewsletterCtaHeading,
+} from '#/section-kit/NewsletterCta.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -44,18 +50,19 @@ export const FashionStoreNewsletter = defineCapsule({
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
 
     return (
-      <section
+      <NewsletterCta
+        variant="default"
         aria-label="Newsletter signup"
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <p className={cn(eyebrowCls, 'mb-4')}>{nlEyebrow}</p>
-          <h2 className="mb-6 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
+          <NewsletterCtaHeading className="mb-6 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
             {nlHeading}
-          </h2>
-          <p className="mx-auto mb-10 max-w-lg text-muted-foreground">
+          </NewsletterCtaHeading>
+          <NewsletterCtaDescription className="mx-auto mb-10 max-w-lg text-muted-foreground">
             {nlDesc}
-          </p>
+          </NewsletterCtaDescription>
           <NewsletterSubscribeForm
             lakebed={lakebed}
             source={nlSubmit}
@@ -66,9 +73,11 @@ export const FashionStoreNewsletter = defineCapsule({
             inputClassName="flex-1 border border-input bg-background px-4 py-4 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none"
             buttonClassName="bg-primary px-8 py-4 text-sm font-medium tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
           />
-          <p className="mt-4 text-xs text-muted-foreground">{nlDisclaimer}</p>
+          <NewsletterCtaFineprint className="mt-4 text-xs text-muted-foreground">
+            {nlDisclaimer}
+          </NewsletterCtaFineprint>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })

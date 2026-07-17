@@ -4,6 +4,9 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * JewelryStoreCollections — curated collections grid for a luxury jewelry
@@ -93,18 +96,16 @@ export const JewelryStoreCollections = defineCapsule({
         )}
       >
         <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="mx-auto mb-20 max-w-2xl text-center">
-            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 font-serif text-4xl text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            align="center"
+            eyebrowClassName="text-primary tracking-[0.3em]"
+            titleClassName="font-serif text-4xl lg:text-5xl"
+            className="mb-20 gap-6"
+          />
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((c) => (
               <button
                 key={c.title}
@@ -112,7 +113,7 @@ export const JewelryStoreCollections = defineCapsule({
                 onClick={() => go(c.title)}
                 className="group block w-full cursor-pointer text-left"
               >
-                <div className="mb-6 aspect-[4/5] overflow-hidden bg-muted">
+                <ImageTile treatment="4-5-xl-muted" className="mb-6">
                   <Image
                     alt={c.imageAlt}
                     w={800}
@@ -120,7 +121,7 @@ export const JewelryStoreCollections = defineCapsule({
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                </div>
+                </ImageTile>
                 <p className="mb-2 text-xs uppercase tracking-[0.3em] text-primary">
                   {c.tag}
                 </p>
@@ -130,7 +131,7 @@ export const JewelryStoreCollections = defineCapsule({
                 <p className="text-sm text-muted-foreground">{c.meta}</p>
               </button>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

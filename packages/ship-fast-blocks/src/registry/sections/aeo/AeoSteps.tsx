@@ -2,6 +2,15 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  StepBadge,
+  StepConnector,
+  StepItem,
+  StepTimeline,
+  StepTimelineGrid,
+  StepTimelineHeader,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * AeoSteps — bespoke three-step "how it works" band for an Answer-Engine-
@@ -57,43 +66,44 @@ export const AeoSteps = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <StepTimeline
+        className={cn('bg-background py-20 lg:py-28', props.className)}
+      >
         <div className="mx-auto max-w-6xl px-6 lg:px-8">
-          <div className="mx-auto mb-14 max-w-2xl text-center">
-            <span className="text-sm font-medium uppercase tracking-wide text-accent">
-              {eyebrow}
-            </span>
+          <StepTimelineHeader className="mb-14">
+            <Eyebrow className="text-accent">{eyebrow}</Eyebrow>
             <h2 className="mt-3 text-3xl font-semibold text-foreground md:text-4xl">
               {heading}
             </h2>
             <p className="mt-4 text-base text-muted-foreground md:text-lg">
               {intro}
             </p>
-          </div>
-          <ol className="relative grid gap-10 md:grid-cols-3 md:gap-8">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute left-0 right-0 top-8 hidden h-px bg-gradient-to-r from-transparent via-accent to-transparent md:block"
-            />
-            {steps.map((step, i) => (
-              <li
-                key={step.title}
-                className="relative flex flex-col items-center text-center md:items-start md:text-left"
-              >
-                <span className="mb-5 grid size-16 place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-2xl font-extrabold text-primary-foreground shadow-lg ring-4 ring-background">
-                  {i + 1}
-                </span>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {step.description}
-                </p>
-              </li>
-            ))}
-          </ol>
+          </StepTimelineHeader>
+          <StepTimelineGrid columns={3} className="gap-10 md:gap-8" asChild>
+            <ol className="relative">
+              <StepConnector variant="gradient" />
+              {steps.map((step, i) => (
+                <StepItem
+                  key={step.title}
+                  className="relative flex flex-col items-center text-center md:items-start md:text-left"
+                >
+                  <StepBadge
+                    index={i}
+                    variant="gradient-square"
+                    className="mb-5"
+                  />
+                  <h3 className="mb-2 text-lg font-semibold text-foreground">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {step.description}
+                  </p>
+                </StepItem>
+              ))}
+            </ol>
+          </StepTimelineGrid>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

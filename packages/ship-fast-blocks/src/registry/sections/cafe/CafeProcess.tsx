@@ -2,6 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  StepBadge,
+  StepItem,
+  StepTimeline,
+  StepTimelineGrid,
+  StepTimelineHeader,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * CafeProcess — dark "farm to cup" numbered process band for a cozy cafe /
@@ -61,14 +68,12 @@ export const CafeProcess = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'bg-foreground pt-28 pb-20 text-background',
-          props.className,
-        )}
+      <StepTimeline
+        variant="inverted"
+        className={cn('pt-28 pb-20', props.className)}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+          <StepTimelineHeader>
             <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
               {cap}
             </p>
@@ -76,23 +81,23 @@ export const CafeProcess = defineCapsule({
               {heading}
             </h2>
             <p className="text-background/60">{description}</p>
-          </div>
-
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          </StepTimelineHeader>
+          <StepTimelineGrid columns={4}>
             {steps.map((step, i) => (
-              <div key={step.title} className="space-y-4 text-center">
-                <div className="mx-auto grid size-16 place-items-center rounded-full border border-background/20 bg-background/10">
-                  <span className="font-serif text-2xl text-primary">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                </div>
+              <StepItem key={step.title} className="space-y-4 text-center">
+                <StepBadge
+                  index={i}
+                  variant="outlined-circle"
+                  pad
+                  className="mx-auto grid place-items-center font-serif text-2xl text-primary"
+                />
                 <h3 className="font-serif text-lg font-medium">{step.title}</h3>
                 <p className="text-sm text-background/60">{step.description}</p>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

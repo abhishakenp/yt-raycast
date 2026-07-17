@@ -3,6 +3,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * HotelResortAmenities — editorial amenities grid for a luxury hotel / resort &
@@ -93,21 +96,20 @@ export const HotelResortAmenities = defineCapsule({
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mb-16 max-w-2xl">
-            <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-3xl font-light text-foreground lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            align="left"
+            eyebrowClassName="text-muted-foreground"
+            titleClassName="text-3xl font-light lg:text-4xl"
+            subtitleClassName="leading-relaxed"
+            className="mb-16 max-w-2xl gap-4"
+          />
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((item) => (
-              <div key={item.title} className="group">
-                <div className="mb-5 aspect-[4/3] overflow-hidden rounded-lg">
+              <div key={item.title}>
+                <ImageTile treatment="4-3-lg" className="mb-5">
                   <Image
                     alt={item.imageAlt}
                     w={800}
@@ -115,14 +117,14 @@ export const HotelResortAmenities = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
+                </ImageTile>
                 <h3 className="mb-2 text-lg font-medium">{item.title}</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

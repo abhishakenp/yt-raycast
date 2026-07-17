@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * MusicArtistStreaming — slim "stream on" platform strip for a music artist /
@@ -39,28 +40,20 @@ export const MusicArtistStreaming = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn('border-y border-border pt-28 pb-12', props.className)}
-      >
+      <div className={cn('border-y border-border', props.className)}>
         <div className="mx-auto max-w-6xl px-6 lg:px-8">
-          <p className="mb-8 text-center text-xs uppercase tracking-widest text-muted-foreground">
-            {label}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
-            {platforms.map((platform) => (
-              <button
-                key={platform}
-                type="button"
-                aria-label={platform}
-                onClick={() => go(platform)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {platform}
-              </button>
-            ))}
-          </div>
+          <LogoStrip
+            lead={label}
+            logos={platforms}
+            layout="flex"
+            logoStyle="text-bold"
+            onClickLogo={(platform) => go(platform)}
+            leadClassName="text-xs uppercase tracking-widest"
+            logoClassName="text-sm font-medium"
+            className="pt-28 pb-12"
+          />
         </div>
-      </section>
+      </div>
     )
   },
 })

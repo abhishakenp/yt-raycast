@@ -3,6 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import {
+  PullQuote,
+  PullQuoteAttribution,
+  PullQuoteIcon,
+  PullQuoteName,
+  PullQuoteRole,
+  PullQuoteText,
+} from '#/section-kit/PullQuote.tsx'
 
 /**
  * AgencyTestimonial — oversized pull-quote testimonial band for a creative
@@ -52,14 +60,12 @@ export const AgencyTestimonial = defineCapsule({
     }
 
     return (
-      <section
-        className={cn(
-          'border-y border-border bg-muted/30 py-24 lg:py-28',
-          props.className,
-        )}
+      <PullQuote
+        variant="muted"
+        className={cn('py-24 lg:py-28', props.className)}
       >
         <div className="mx-auto max-w-5xl px-6 text-center">
-          <div className="mx-auto mb-8 grid size-16 place-items-center rounded-full bg-primary/10">
+          <PullQuoteIcon size="lg">
             <svg
               width="32"
               height="32"
@@ -70,11 +76,11 @@ export const AgencyTestimonial = defineCapsule({
             >
               <path d="M9.5 6C6.5 6 4 8.5 4 11.5V18h6.5v-6.5H7.5C7.5 9.6 8.4 8.5 9.5 8.5V6zm9 0c-3 0-5.5 2.5-5.5 5.5V18H19.5v-6.5h-3C16.5 9.6 17.4 8.5 18.5 8.5V6z" />
             </svg>
-          </div>
-          <blockquote className="mb-10 text-3xl font-medium leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+          </PullQuoteIcon>
+          <PullQuoteText className="mb-10 text-3xl font-medium leading-tight tracking-tight sm:text-4xl lg:text-5xl">
             {renderQuote()}
-          </blockquote>
-          <div className="flex items-center justify-center gap-4">
+          </PullQuoteText>
+          <PullQuoteAttribution className="gap-4">
             <Image
               alt={avatarAlt}
               w={120}
@@ -82,12 +88,12 @@ export const AgencyTestimonial = defineCapsule({
               className="size-14 rounded-full border-2 border-border object-cover"
             />
             <div className="text-left">
-              <div className="font-semibold text-foreground">{name}</div>
-              <div className="text-sm text-muted-foreground">{role}</div>
+              <PullQuoteName className="font-semibold">{name}</PullQuoteName>
+              <PullQuoteRole>{role}</PullQuoteRole>
             </div>
-          </div>
+          </PullQuoteAttribution>
         </div>
-      </section>
+      </PullQuote>
     )
   },
 })

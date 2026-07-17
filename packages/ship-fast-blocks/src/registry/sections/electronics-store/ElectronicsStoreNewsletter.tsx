@@ -2,6 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  NewsletterCta,
+  NewsletterCtaDescription,
+  NewsletterCtaFineprint,
+  NewsletterCtaHeading,
+} from '#/section-kit/NewsletterCta.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -44,19 +50,17 @@ export const ElectronicsStoreNewsletter = defineCapsule({
       'By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.'
 
     return (
-      <section
-        className={cn(
-          'bg-foreground py-16 text-background lg:py-24',
-          props.className,
-        )}
+      <NewsletterCta
+        variant="inverted"
+        className={cn('py-16 lg:py-24', props.className)}
       >
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-4 text-3xl font-semibold text-background lg:text-4xl">
+          <NewsletterCtaHeading className="text-background lg:text-4xl">
             {heading}
-          </h2>
-          <p className="mx-auto mb-8 max-w-xl text-background/60">
+          </NewsletterCtaHeading>
+          <NewsletterCtaDescription className="text-background/60">
             {description}
-          </p>
+          </NewsletterCtaDescription>
           <NewsletterSubscribeForm
             lakebed={lakebed}
             source={submit}
@@ -69,9 +73,11 @@ export const ElectronicsStoreNewsletter = defineCapsule({
             emailLabel={placeholder}
             statusClassName="text-background/50"
           />
-          <p className="mt-4 text-sm text-background/50">{disclaimer}</p>
+          <NewsletterCtaFineprint className="text-sm text-background/50">
+            {disclaimer}
+          </NewsletterCtaFineprint>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })

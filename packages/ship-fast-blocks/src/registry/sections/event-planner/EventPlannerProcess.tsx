@@ -2,6 +2,14 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  StepBadge,
+  StepConnector,
+  StepItem,
+  StepTimeline,
+  StepTimelineGrid,
+  StepTimelineHeader,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * EventPlannerProcess — numbered "how we work" process row on a muted band. A
@@ -57,14 +65,12 @@ export const EventPlannerProcess = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'bg-muted px-4 py-20 sm:px-6 lg:px-8 lg:py-28',
-          props.className,
-        )}
+      <StepTimeline
+        variant="muted"
+        className={cn('px-4 py-20 sm:px-6 lg:px-8 lg:py-28', props.className)}
       >
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
+          <StepTimelineHeader className="max-w-3xl">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {processEyebrow}
             </p>
@@ -72,13 +78,16 @@ export const EventPlannerProcess = defineCapsule({
               {processHeading}
             </h2>
             <p className="text-lg text-muted-foreground">{processDesc}</p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          </StepTimelineHeader>
+          <StepTimelineGrid columns={4} className="lg:gap-6">
             {processSteps.map((step, i) => (
-              <div key={step.title} className="relative">
-                <div className="mb-6 flex size-16 items-center justify-center rounded-full bg-primary text-2xl font-light text-primary-foreground">
-                  {String(i + 1).padStart(2, '0')}
-                </div>
+              <StepItem key={step.title} className="relative">
+                <StepBadge
+                  index={i}
+                  variant="filled-circle"
+                  pad
+                  className="mb-6"
+                />
                 <h3 className="mb-3 text-xl font-medium text-foreground">
                   {step.title}
                 </h3>
@@ -86,16 +95,13 @@ export const EventPlannerProcess = defineCapsule({
                   {step.description}
                 </p>
                 {i < processSteps.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-full top-8 hidden h-px w-full -translate-y-1/2 bg-border lg:block"
-                  />
+                  <StepConnector className="left-full top-8 hidden w-full -translate-y-1/2 lg:block" />
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

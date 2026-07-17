@@ -2,6 +2,14 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  StepBadge,
+  StepConnector,
+  StepItem,
+  StepTimeline,
+  StepTimelineGrid,
+  StepTimelineHeader,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * CommunityForumSteps — numbered step timeline for a community-platform / discussion-forum
@@ -52,20 +60,18 @@ export const CommunityForumSteps = defineCapsule({
         ]
 
     return (
-      <section className={cn('py-24 lg:py-28', props.className)}>
+      <StepTimeline className={cn('py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+          <StepTimelineHeader>
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          </StepTimelineHeader>
+          <StepTimelineGrid columns={3} className="lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
-                <div className="mb-6 flex size-12 items-center justify-center rounded-xl bg-primary font-bold text-primary-foreground">
-                  {i + 1}
-                </div>
+              <StepItem key={step.title}>
+                <StepBadge index={i} variant="filled-square" className="mb-6" />
                 <h3 className="mb-3 text-xl font-semibold text-foreground">
                   {step.title}
                 </h3>
@@ -73,16 +79,13 @@ export const CommunityForumSteps = defineCapsule({
                   {step.description}
                 </p>
                 {i < items.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-full top-6 hidden h-px w-full -translate-x-6 bg-border md:block"
-                  />
+                  <StepConnector className="left-full top-6 w-full -translate-x-6" />
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

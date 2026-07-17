@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
+import {
+  NewsletterCta,
+  NewsletterCtaDescription,
+  NewsletterCtaFineprint,
+  NewsletterCtaHeading,
+} from '#/section-kit/NewsletterCta.tsx'
 
 /**
  * CafeNewsletter — newsletter sign-up CTA for a cozy cafe / coffee shop page,
@@ -46,14 +52,15 @@ export const CafeNewsletter = defineCapsule({
     const submitTarget = props.submitTarget ?? submit
 
     return (
-      <section className={cn('bg-primary/10 pt-28 pb-20', props.className)}>
+      <NewsletterCta
+        variant="primary-tint"
+        className={cn('pt-28 pb-20', props.className)}
+      >
         <div className="mx-auto max-w-4xl px-6 text-center lg:px-8">
-          <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">
+          <NewsletterCtaHeading className="font-serif text-3xl font-medium sm:text-4xl">
             {heading}
-          </h2>
-          <p className="mx-auto mb-8 max-w-xl text-muted-foreground">
-            {description}
-          </p>
+          </NewsletterCtaHeading>
+          <NewsletterCtaDescription>{description}</NewsletterCtaDescription>
           <NewsletterSubscribeForm
             lakebed={lakebed}
             source={submitTarget}
@@ -65,9 +72,9 @@ export const CafeNewsletter = defineCapsule({
             buttonClassName="whitespace-nowrap rounded-full bg-foreground px-8 py-3.5 font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
             emailLabel="Email address for newsletter"
           />
-          <p className="mt-4 text-xs text-muted-foreground">{fineprint}</p>
+          <NewsletterCtaFineprint>{fineprint}</NewsletterCtaFineprint>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })

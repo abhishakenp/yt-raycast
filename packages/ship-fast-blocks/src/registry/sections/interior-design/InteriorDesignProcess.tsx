@@ -2,6 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  StepBadge,
+  StepItem,
+  StepTimeline,
+  StepTimelineGrid,
+  StepTimelineHeader,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * InteriorDesignProcess — numbered process band on a muted surface for an
@@ -58,14 +65,12 @@ export const InteriorDesignProcess = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'bg-muted px-4 py-20 sm:px-6 md:py-28 lg:px-8',
-          props.className,
-        )}
+      <StepTimeline
+        variant="muted"
+        className={cn('px-4 py-20 sm:px-6 md:py-28 lg:px-8', props.className)}
       >
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto mb-16 max-w-2xl text-center md:mb-24">
+          <StepTimelineHeader>
             <p className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {eyebrow}
             </p>
@@ -75,13 +80,11 @@ export const InteriorDesignProcess = defineCapsule({
             <p className="leading-relaxed text-muted-foreground">
               {description}
             </p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-4 md:gap-6 lg:gap-12">
+          </StepTimelineHeader>
+          <StepTimelineGrid columns={4} className="md:gap-6 lg:gap-12">
             {steps.map((step, i) => (
-              <div key={step.title} className="relative">
-                <span className="absolute -left-2 -top-4 text-5xl font-extralight text-muted-foreground/40">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
+              <StepItem key={step.title} className="relative">
+                <StepBadge index={i} variant="faded-ordinal" pad />
                 <div className="pt-12">
                   <h3 className="mb-3 text-lg font-medium text-foreground">
                     {step.title}
@@ -90,11 +93,11 @@ export const InteriorDesignProcess = defineCapsule({
                     {step.description}
                   </p>
                 </div>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

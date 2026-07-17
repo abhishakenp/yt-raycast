@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { PublicationSubscribeForm } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
+import {
+  NewsletterCta,
+  NewsletterCtaDescription,
+  NewsletterCtaFineprint,
+  NewsletterCtaHeading,
+} from '#/section-kit/NewsletterCta.tsx'
 
 /**
  * BlogPostSubscribe — newsletter signup band for an editorial blog/article
@@ -42,13 +48,15 @@ export const BlogPostSubscribe = defineCapsule({
     const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <section className={cn('py-16 lg:py-24', props.className)}>
+      <NewsletterCta className={cn('py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-2xl px-6 lg:px-8">
           <div className="rounded-2xl bg-muted px-6 py-12 text-center sm:px-12">
-            <h2 className="mb-3 text-2xl font-semibold tracking-tight text-foreground">
+            <NewsletterCtaHeading className="mb-3 text-2xl font-semibold tracking-tight">
               {heading}
-            </h2>
-            <p className="mb-8 text-muted-foreground">{subheading}</p>
+            </NewsletterCtaHeading>
+            <NewsletterCtaDescription className="mb-8 mx-0 max-w-none">
+              {subheading}
+            </NewsletterCtaDescription>
             <PublicationSubscribeForm
               lakebed={lakebed}
               source="Blog post subscribe"
@@ -60,10 +68,10 @@ export const BlogPostSubscribe = defineCapsule({
               buttonClassName="rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               statusClassName="text-xs"
             />
-            <p className="mt-4 text-xs text-muted-foreground">{note}</p>
+            <NewsletterCtaFineprint>{note}</NewsletterCtaFineprint>
           </div>
         </div>
-      </section>
+      </NewsletterCta>
     )
   },
 })
