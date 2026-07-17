@@ -8,6 +8,12 @@ import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  FeaturedArticle,
+  FeaturedArticleMedia,
+  FeaturedArticleContent,
+  FeaturedArticleMeta,
+} from '#/section-kit/FeaturedArticle.tsx'
 
 /**
  * NewsroomFeaturedStory — editorial "Editor's Pick" featured long-read band for
@@ -82,13 +88,14 @@ export const NewsroomFeaturedStory = defineCapsule({
     ])
 
     return (
-      <section
+      <FeaturedArticle
         aria-labelledby="newsroom-featured-story-heading"
+        size="none"
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container>
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            <div className="order-2 lg:order-1">
+            <FeaturedArticleMedia className="order-2 lg:order-1">
               <Image
                 alt={imageAlt}
                 w={1200}
@@ -96,8 +103,8 @@ export const NewsroomFeaturedStory = defineCapsule({
                 loading="lazy"
                 className="aspect-[4/3] w-full rounded-lg object-cover"
               />
-            </div>
-            <div className="order-1 lg:order-2">
+            </FeaturedArticleMedia>
+            <FeaturedArticleContent className="order-1 lg:order-2">
               <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-accent">
                 {eyebrow}
               </p>
@@ -127,11 +134,11 @@ export const NewsroomFeaturedStory = defineCapsule({
               <blockquote className="mb-8 border-l-2 border-border pl-5 font-serif text-xl italic leading-relaxed text-foreground">
                 “{quote}”
               </blockquote>
-              <div className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
+              <FeaturedArticleMeta className="mb-8">
                 <span className="font-medium text-foreground">{author}</span>
                 <span aria-hidden="true">•</span>
                 <span>{date}</span>
-              </div>
+              </FeaturedArticleMeta>
               <button
                 type="button"
                 onClick={() => go(cta)}
@@ -139,10 +146,10 @@ export const NewsroomFeaturedStory = defineCapsule({
               >
                 {cta}
               </button>
-            </div>
+            </FeaturedArticleContent>
           </div>
         </Container>
-      </section>
+      </FeaturedArticle>
     )
   },
 })

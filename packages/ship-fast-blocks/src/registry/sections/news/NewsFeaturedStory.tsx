@@ -7,6 +7,12 @@ import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  FeaturedArticle,
+  FeaturedArticleMedia,
+  FeaturedArticleContent,
+  FeaturedArticleMeta,
+} from '#/section-kit/FeaturedArticle.tsx'
 
 /**
  * NewsFeaturedStory — featured big lead story band for a news / editorial
@@ -131,7 +137,8 @@ export const NewsFeaturedStory = defineCapsule({
     }
 
     return (
-      <section
+      <FeaturedArticle
+        size="none"
         className={cn('bg-card pt-28 pb-8 lg:pt-32 lg:pb-12', props.className)}
       >
         <Container>
@@ -161,7 +168,7 @@ export const NewsFeaturedStory = defineCapsule({
                 onClick={() => go(title)}
                 className="block w-full text-left"
               >
-                <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-muted lg:aspect-[21/9]">
+                <FeaturedArticleMedia className="relative aspect-[16/9] overflow-hidden rounded-lg bg-muted lg:aspect-[21/9]">
                   <Image
                     alt={imageAlt}
                     w={1200}
@@ -171,15 +178,15 @@ export const NewsFeaturedStory = defineCapsule({
                   <span className="absolute left-4 top-4 rounded bg-foreground px-3 py-1 text-xs font-semibold uppercase tracking-wider text-background">
                     {tag}
                   </span>
-                </div>
-                <div className="mt-5">
+                </FeaturedArticleMedia>
+                <FeaturedArticleContent className="mt-5">
                   <h1 className="text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-muted-foreground lg:text-4xl">
                     {title}
                   </h1>
                   <p className="mt-3 text-base leading-relaxed text-muted-foreground lg:text-lg">
                     {excerpt}
                   </p>
-                  <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <FeaturedArticleMeta className="mt-4 gap-4">
                     <span className="font-medium text-foreground">
                       {author}
                     </span>
@@ -187,8 +194,8 @@ export const NewsFeaturedStory = defineCapsule({
                     <span>{date}</span>
                     <span aria-hidden="true">•</span>
                     <span>{readTime}</span>
-                  </div>
-                </div>
+                  </FeaturedArticleMeta>
+                </FeaturedArticleContent>
               </button>
             </article>
 
@@ -241,7 +248,7 @@ export const NewsFeaturedStory = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </FeaturedArticle>
     )
   },
 })

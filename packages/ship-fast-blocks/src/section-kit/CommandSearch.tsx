@@ -25,7 +25,7 @@ type CommandSearchContextValue = {
   setOpen: (open: boolean) => void
 }
 
-function assignRef(ref: React.ForwardedRef<T>, value: T | null) {
+function assignRef<T>(ref: React.ForwardedRef<T>, value: T | null) {
   if (typeof ref === 'function') {
     ref(value)
   } else if (ref) {

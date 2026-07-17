@@ -5,7 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import {
+  FeaturedArticle,
+  FeaturedArticleMedia,
+  FeaturedArticleContent,
+  FeaturedArticleMeta,
+} from '#/section-kit/FeaturedArticle.tsx'
 
 const PodcastFeaturedStoryProps = z.object({
   eyebrow: z.string().optional().describe('Section eyebrow above the heading'),
@@ -48,7 +53,8 @@ export const PodcastFeaturedStory = defineCapsule({
       'podcast recording studio with warm lighting, microphone and headphones on a wooden desk'
 
     return (
-      <section
+      <FeaturedArticle
+        size="none"
         className={cn(
           'bg-background py-20 text-foreground lg:py-28',
           props.className,
@@ -57,13 +63,8 @@ export const PodcastFeaturedStory = defineCapsule({
         <div className="mx-auto max-w-6xl px-6 lg:px-8">
           <SectionHeading eyebrow={eyebrow} title={heading} align="center" />
 
-          <Card
-            variant="default"
-            rounded="2xl"
-            padding="none"
-            className="mt-12 grid overflow-hidden md:grid-cols-2"
-          >
-            <div className="relative min-h-64 md:min-h-full">
+          <div className="mt-12 grid overflow-hidden rounded-2xl border border-border bg-card text-card-foreground md:grid-cols-2">
+            <FeaturedArticleMedia className="relative min-h-64 md:min-h-full">
               <Image
                 alt={imageAlt}
                 w={960}
@@ -71,9 +72,9 @@ export const PodcastFeaturedStory = defineCapsule({
                 loading="lazy"
                 className="h-full w-full object-cover"
               />
-            </div>
+            </FeaturedArticleMedia>
 
-            <div className="flex flex-col gap-5 p-8 lg:p-12">
+            <FeaturedArticleContent className="gap-5 p-8 lg:p-12">
               <span className="text-sm font-semibold uppercase tracking-wide text-accent">
                 {episodeLabel}
               </span>
@@ -82,14 +83,14 @@ export const PodcastFeaturedStory = defineCapsule({
                 {title}
               </h3>
 
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <FeaturedArticleMeta className="gap-3">
                 <span>{duration}</span>
                 <span
                   aria-hidden="true"
                   className="inline-block h-1 w-1 rounded-full bg-muted-foreground/60"
                 />
                 <span>{date}</span>
-              </div>
+              </FeaturedArticleMeta>
 
               <p className="text-base text-muted-foreground">{showNotes}</p>
 
@@ -110,10 +111,10 @@ export const PodcastFeaturedStory = defineCapsule({
                   {ctaLabel}
                 </button>
               </div>
-            </div>
-          </Card>
+            </FeaturedArticleContent>
+          </div>
         </div>
-      </section>
+      </FeaturedArticle>
     )
   },
 })
