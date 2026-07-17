@@ -92,6 +92,7 @@ function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
 }
 
 import { Container } from '#/section-kit/Container.tsx'
+import { TenderTable } from '#/section-kit/TenderTable.tsx'
 
 /**
  * GovPortalTenderBoard — a tabbed government e-tender board (Tenders /
@@ -186,7 +187,10 @@ export const GovPortalTenderBoard = defineCapsule({
     })
 
     return (
-      <section className={cn('bg-background py-16', props.className)}>
+      <TenderTable
+        variant="default"
+        className={cn('bg-background py-16 border-0', props.className)}
+      >
         <Container>
           <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
@@ -262,7 +266,7 @@ export const GovPortalTenderBoard = defineCapsule({
           </p>
           <NoticeRows rows={filtered} lang={lang} />
         </Container>
-      </section>
+      </TenderTable>
     )
   },
 })

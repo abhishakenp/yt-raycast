@@ -14,6 +14,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { RatesTable } from '#/section-kit/RatesTable.tsx'
 export const LendingRates = defineCapsule({
   name: 'LendingRates',
   description:
@@ -185,39 +186,44 @@ export const LendingRates = defineCapsule({
               {tableTitle}
             </h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    {tableHead.map((th) => (
-                      <th
-                        key={th}
-                        className="px-4 py-3 text-left font-medium text-muted-foreground"
-                      >
-                        {th}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="text-foreground">
-                  {tableRows.map((row, ri) => (
-                    <tr
-                      key={row[0]}
-                      className={cn(
-                        ri < tableRows.length - 1 && 'border-b border-border',
-                      )}
-                    >
-                      {row.map((cell, ci) => (
-                        <td
-                          key={ci}
-                          className={cn('px-4 py-3', ci === 0 && 'font-medium')}
+              <RatesTable className="w-full overflow-hidden text-sm">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      {tableHead.map((th) => (
+                        <th
+                          key={th}
+                          className="px-4 py-3 text-left font-medium text-muted-foreground"
                         >
-                          {cell}
-                        </td>
+                          {th}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="text-foreground">
+                    {tableRows.map((row, ri) => (
+                      <tr
+                        key={row[0]}
+                        className={cn(
+                          ri < tableRows.length - 1 && 'border-b border-border',
+                        )}
+                      >
+                        {row.map((cell, ci) => (
+                          <td
+                            key={ci}
+                            className={cn(
+                              'px-4 py-3',
+                              ci === 0 && 'font-medium',
+                            )}
+                          >
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </RatesTable>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">{tableNote}</p>
           </Card>

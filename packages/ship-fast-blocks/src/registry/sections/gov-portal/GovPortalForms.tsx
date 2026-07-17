@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 
 import { Card } from '#/section-kit/Card.tsx'
+import { GovFormTable } from '#/section-kit/GovFormTable.tsx'
 import { cn } from '#/lib/utils.ts'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
@@ -64,7 +65,10 @@ export const GovPortalGrievance = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-muted/30 py-16', props.className)}>
+      <GovFormTable
+        variant="muted"
+        className={cn('bg-muted/30 py-16 border-0', props.className)}
+      >
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             {heading}
@@ -161,7 +165,7 @@ export const GovPortalGrievance = defineCapsule({
             </div>
           </form>
         </div>
-      </section>
+      </GovFormTable>
     )
   },
 })

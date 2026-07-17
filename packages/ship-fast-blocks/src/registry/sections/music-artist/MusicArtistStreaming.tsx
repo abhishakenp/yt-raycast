@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import { StreamingLinks } from '#/section-kit/StreamingLinks.tsx'
 
 /**
  * MusicArtistStreaming — slim "stream on" platform strip for a music artist /
@@ -41,7 +42,7 @@ export const MusicArtistStreaming = defineCapsule({
 
     return (
       <div className={cn('border-y border-border', props.className)}>
-        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <StreamingLinks className="mx-auto max-w-6xl px-6 lg:px-8">
           <LogoStrip
             lead={label}
             logos={platforms}
@@ -52,7 +53,7 @@ export const MusicArtistStreaming = defineCapsule({
             logoClassName="text-sm font-medium"
             className="pt-28 pb-12"
           />
-        </div>
+        </StreamingLinks>
       </div>
     )
   },

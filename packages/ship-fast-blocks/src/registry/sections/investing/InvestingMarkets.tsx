@@ -16,6 +16,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { MarketTable } from '#/section-kit/MarketTable.tsx'
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
@@ -154,7 +155,10 @@ export const InvestingMarkets = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <MarketTable
+            variant="default"
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 border-0"
+          >
             {quotes.map((q, i) => (
               <Card
                 key={q.symbol}
@@ -213,7 +217,7 @@ export const InvestingMarkets = defineCapsule({
                 </button>
               </Card>
             ))}
-          </div>
+          </MarketTable>
 
           <div className="mt-8 overflow-hidden rounded-2xl bg-foreground p-6 text-background sm:p-8">
             <div className="grid items-center gap-8 lg:grid-cols-2">

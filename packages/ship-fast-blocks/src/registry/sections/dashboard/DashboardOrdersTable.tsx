@@ -7,6 +7,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { DataTable } from '#/section-kit/DataTable.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 type DashboardDisplayRow = {
@@ -233,125 +234,130 @@ export const DashboardOrdersTable = defineCapsule({
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
-                {columns.map((col, i) => (
-                  <th
-                    key={i}
-                    className={cn(
-                      'px-5 py-3 font-semibold',
-                      col === '' && 'text-right',
-                    )}
-                  >
-                    {col}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60">
-              {rows.map((row, index) => {
-                const id = row.id ?? `R-${index + 1}`
-                const customer =
-                  row.customer ??
-                  row.robot ??
-                  row.location ??
-                  row.destination ??
-                  'Record'
-                const product =
-                  row.product ??
-                  row.task ??
-                  row.destination ??
-                  row.priority ??
-                  'Task'
-                const date = row.date ?? row.eta ?? ''
-                const amount = row.amount ?? row.priority ?? ''
-                const status = row.status ?? 'Active'
-                const tone =
-                  statusTones[row.statusTone ?? 'sky'] ?? statusTones.sky
-                const initial = customer.charAt(0).toUpperCase()
-                const rowActionKey = `complete:${row.dbId || id}`
-                const rowPending = setOrderStatus.isPending(rowActionKey)
-                return (
-                  <tr key={id} className="transition-colors hover:bg-muted/60">
-                    <td className="px-5 py-3.5 font-medium text-foreground">
-                      {id}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2.5">
-                        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground">
-                          {initial}
-                        </span>
-                        <span className="text-foreground/80">{customer}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5 text-muted-foreground">
-                      {product}
-                    </td>
-                    <td className="px-5 py-3.5 text-muted-foreground">
-                      {date}
-                    </td>
-                    <td className="px-5 py-3.5 font-medium text-foreground">
-                      {amount}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={cn(
-                          'inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium',
-                          tone.pill,
-                        )}
-                      >
+          <DataTable className="w-full overflow-hidden text-left text-sm">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+                  {columns.map((col, i) => (
+                    <th
+                      key={i}
+                      className={cn(
+                        'px-5 py-3 font-semibold',
+                        col === '' && 'text-right',
+                      )}
+                    >
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {rows.map((row, index) => {
+                  const id = row.id ?? `R-${index + 1}`
+                  const customer =
+                    row.customer ??
+                    row.robot ??
+                    row.location ??
+                    row.destination ??
+                    'Record'
+                  const product =
+                    row.product ??
+                    row.task ??
+                    row.destination ??
+                    row.priority ??
+                    'Task'
+                  const date = row.date ?? row.eta ?? ''
+                  const amount = row.amount ?? row.priority ?? ''
+                  const status = row.status ?? 'Active'
+                  const tone =
+                    statusTones[row.statusTone ?? 'sky'] ?? statusTones.sky
+                  const initial = customer.charAt(0).toUpperCase()
+                  const rowActionKey = `complete:${row.dbId || id}`
+                  const rowPending = setOrderStatus.isPending(rowActionKey)
+                  return (
+                    <tr
+                      key={id}
+                      className="transition-colors hover:bg-muted/60"
+                    >
+                      <td className="px-5 py-3.5 font-medium text-foreground">
+                        {id}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2.5">
+                          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground">
+                            {initial}
+                          </span>
+                          <span className="text-foreground/80">{customer}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-muted-foreground">
+                        {product}
+                      </td>
+                      <td className="px-5 py-3.5 text-muted-foreground">
+                        {date}
+                      </td>
+                      <td className="px-5 py-3.5 font-medium text-foreground">
+                        {amount}
+                      </td>
+                      <td className="px-5 py-3.5">
                         <span
                           className={cn(
-                            'inline-block size-2 rounded-full',
-                            tone.dot,
+                            'inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium',
+                            tone.pill,
                           )}
-                        />
-                        {status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <button
-                        type="button"
-                        aria-label={`Actions for ${id}`}
-                        aria-busy={rowPending}
-                        disabled={rowPending}
-                        onClick={() => {
-                          if (!row.dbId) {
-                            go(rowTarget)
-                            return
-                          }
-
-                          void setOrderStatus.run(rowActionKey, {
-                            id: row.dbId,
-                            status: 'Completed',
-                            statusTone: 'emerald',
-                          })
-                        }}
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
                         >
-                          <circle cx="12" cy="12" r="1" />
-                          <circle cx="19" cy="12" r="1" />
-                          <circle cx="5" cy="12" r="1" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                          <span
+                            className={cn(
+                              'inline-block size-2 rounded-full',
+                              tone.dot,
+                            )}
+                          />
+                          {status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <button
+                          type="button"
+                          aria-label={`Actions for ${id}`}
+                          aria-busy={rowPending}
+                          disabled={rowPending}
+                          onClick={() => {
+                            if (!row.dbId) {
+                              go(rowTarget)
+                              return
+                            }
+
+                            void setOrderStatus.run(rowActionKey, {
+                              id: row.dbId,
+                              status: 'Completed',
+                              statusTone: 'emerald',
+                            })
+                          }}
+                          className="text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="19" cy="12" r="1" />
+                            <circle cx="5" cy="12" r="1" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </DataTable>
         </div>
         <div className="flex items-center justify-between border-t border-border/60 px-5 py-3">
           <p className="text-xs text-muted-foreground">{summary}</p>

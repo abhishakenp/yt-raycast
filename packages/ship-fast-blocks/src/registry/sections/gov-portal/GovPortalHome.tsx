@@ -30,6 +30,7 @@ import {
 
 const HI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९']
 import { Container } from '#/section-kit/Container.tsx'
+import { GovPortalHome } from '#/section-kit/GovPortalHome.tsx'
 
 /** Render ASCII digits in Devanagari so numeric values localise in Hindi. */
 export function toHiNum(s: string) {
@@ -106,79 +107,85 @@ export const GovPortalHero = defineCapsule({
     )
 
     return (
-      <section
-        className={cn(
-          'relative isolate overflow-hidden bg-primary text-primary-foreground',
-          props.className,
-        )}
-      >
-        {/* video carousel background */}
-        <div className="absolute inset-0 -z-10">
-          <Carousel setApi={setApi} opts={{ loop: true }} className="size-full">
-            <CarouselContent className="ml-0 size-full">
-              {videos.map((src, i) => (
-                <CarouselItem key={src} className="basis-full pl-0">
-                  <video
-                    src={src}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload={i === 0 ? 'auto' : 'metadata'}
-                    className="h-full min-h-[32rem] w-full object-cover"
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
-        {/* gradient wash */}
-        <div
-          className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/30"
-          aria-hidden
-        />
-
-        {/* carousel control — right-only, overlaid above the background + wash so clicks land */}
-        <button
-          type="button"
-          aria-label={pickLang(lang, 'Next slide', 'अगली स्लाइड')}
-          onClick={() => api?.scrollNext()}
-          className="absolute right-3 top-1/2 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-primary-foreground/40 bg-background/25 text-primary-foreground backdrop-blur transition-colors hover:bg-background/45 sm:right-5"
+      <GovPortalHome asChild>
+        <section
+          className={cn(
+            'relative isolate overflow-hidden bg-primary text-primary-foreground',
+            props.className,
+          )}
         >
-          <ChevronRightIcon className="size-5" aria-hidden />
-        </button>
+          {/* video carousel background */}
+          <div className="absolute inset-0 -z-10">
+            <Carousel
+              setApi={setApi}
+              opts={{ loop: true }}
+              className="size-full"
+            >
+              <CarouselContent className="ml-0 size-full">
+                {videos.map((src, i) => (
+                  <CarouselItem key={src} className="basis-full pl-0">
+                    <video
+                      src={src}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload={i === 0 ? 'auto' : 'metadata'}
+                      className="h-full min-h-[32rem] w-full object-cover"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
+          {/* gradient wash */}
+          <div
+            className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/30"
+            aria-hidden
+          />
 
-        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
-          <div className="max-w-2xl">
-            <Eyebrow variant="solid" className="mb-4">
-              {eyebrow}
-            </Eyebrow>
-            <h1 className="text-3xl font-bold leading-tight tracking-tight drop-shadow-sm sm:text-4xl lg:text-5xl">
-              {title}
-            </h1>
-            <p className="mt-4 max-w-xl text-base text-primary-foreground/85 sm:text-lg">
-              {subtitle}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => go('Tenders')}
-                className="inline-flex items-center gap-2 rounded-lg bg-background px-5 py-3 text-sm font-semibold text-foreground shadow-lg transition-colors hover:bg-background/90"
-              >
-                {primaryCta}
-                <ArrowRightIcon className="size-4" aria-hidden />
-              </button>
-              <button
-                type="button"
-                onClick={() => go('The Company')}
-                className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/40 bg-primary-foreground/10 px-5 py-3 text-sm font-semibold text-primary-foreground backdrop-blur transition-colors hover:bg-primary-foreground/20"
-              >
-                {secondaryCta}
-              </button>
+          {/* carousel control — right-only, overlaid above the background + wash so clicks land */}
+          <button
+            type="button"
+            aria-label={pickLang(lang, 'Next slide', 'अगली स्लाइड')}
+            onClick={() => api?.scrollNext()}
+            className="absolute right-3 top-1/2 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-primary-foreground/40 bg-background/25 text-primary-foreground backdrop-blur transition-colors hover:bg-background/45 sm:right-5"
+          >
+            <ChevronRightIcon className="size-5" aria-hidden />
+          </button>
+
+          <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+            <div className="max-w-2xl">
+              <Eyebrow variant="solid" className="mb-4">
+                {eyebrow}
+              </Eyebrow>
+              <h1 className="text-3xl font-bold leading-tight tracking-tight drop-shadow-sm sm:text-4xl lg:text-5xl">
+                {title}
+              </h1>
+              <p className="mt-4 max-w-xl text-base text-primary-foreground/85 sm:text-lg">
+                {subtitle}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => go('Tenders')}
+                  className="inline-flex items-center gap-2 rounded-lg bg-background px-5 py-3 text-sm font-semibold text-foreground shadow-lg transition-colors hover:bg-background/90"
+                >
+                  {primaryCta}
+                  <ArrowRightIcon className="size-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go('The Company')}
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/40 bg-primary-foreground/10 px-5 py-3 text-sm font-semibold text-primary-foreground backdrop-blur transition-colors hover:bg-primary-foreground/20"
+                >
+                  {secondaryCta}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </GovPortalHome>
     )
   },
 })

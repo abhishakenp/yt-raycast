@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { LocationBlock } from '#/section-kit/LocationBlock.tsx'
+import { LocationList } from '#/section-kit/LocationList.tsx'
 
 /**
  * FoodTruckLocations — a weekly LOCATIONS schedule section for a food-truck site. On a
@@ -124,8 +126,10 @@ export const FoodTruckLocations = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-muted px-6 pt-28 pb-20', props.className)}>
-        <div className="mx-auto max-w-6xl">
+      <LocationBlock
+        className={cn('bg-muted px-6 pt-28 pb-20 border-0', props.className)}
+      >
+        <LocationList className="mx-auto max-w-6xl">
           <SectionHeading
             eyebrow={locEyebrow}
             title={locHeading}
@@ -202,8 +206,8 @@ export const FoodTruckLocations = defineCapsule({
               {locBannerCta}
             </button>
           </div>
-        </div>
-      </section>
+        </LocationList>
+      </LocationBlock>
     )
   },
 })

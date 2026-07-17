@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { LocationBlock } from '#/section-kit/LocationBlock.tsx'
 
 /**
  * CafeLocation — visit / location block for a cozy cafe / coffee shop page,
@@ -192,7 +193,7 @@ export const CafeLocation = defineCapsule({
             className="mx-auto mb-16 max-w-2xl gap-6"
           />
 
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          <LocationBlock className="grid gap-12 lg:grid-cols-2 lg:gap-16 border-0 bg-transparent">
             <div className="space-y-8">
               <div className="grid gap-8 sm:grid-cols-2">
                 {locationInfo.map((info) => (
@@ -270,7 +271,7 @@ export const CafeLocation = defineCapsule({
                 </button>
               </div>
             </div>
-          </div>
+          </LocationBlock>
         </div>
       </section>
     )

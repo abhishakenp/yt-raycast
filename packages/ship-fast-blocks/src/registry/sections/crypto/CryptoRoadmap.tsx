@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { RoadmapTimeline } from '#/section-kit/RoadmapTimeline.tsx'
 
 /**
  * CryptoRoadmap — vertical phased timeline for a crypto / DeFi development
@@ -135,7 +136,7 @@ export const CryptoRoadmap = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto max-w-4xl space-y-8">
+          <RoadmapTimeline className="mx-auto max-w-4xl space-y-8">
             {items.map((item, i) => {
               const s = statusStyle(item.status)
               const isLast = i === items.length - 1
@@ -182,7 +183,7 @@ export const CryptoRoadmap = defineCapsule({
                 </div>
               )
             })}
-          </div>
+          </RoadmapTimeline>
         </Container>
       </section>
     )

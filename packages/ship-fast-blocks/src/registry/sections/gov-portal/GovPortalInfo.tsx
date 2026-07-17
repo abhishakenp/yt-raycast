@@ -20,6 +20,7 @@ function str(row: GovRow, key: string) {
 }
 
 import { Container } from '#/section-kit/Container.tsx'
+import { InfoPanel } from '#/section-kit/InfoPanel.tsx'
 
 /**
  * GovPortalDirectory — a telephone / staff directory table. Theme-token based;
@@ -61,7 +62,9 @@ export const GovPortalDirectory = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-background py-16', props.className)}>
+      <InfoPanel
+        className={cn('bg-background py-16 border-0', props.className)}
+      >
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
@@ -108,7 +111,7 @@ export const GovPortalDirectory = defineCapsule({
             </table>
           </div>
         </div>
-      </section>
+      </InfoPanel>
     )
   },
 })
