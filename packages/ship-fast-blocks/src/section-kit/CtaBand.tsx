@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -16,9 +17,14 @@ export function CtaBand(props: {
   title: string
   subtitle?: string
   actions?: KitAction[]
+  children?: React.ReactNode
   tone?: 'primary' | 'muted' | 'card'
   align?: 'center' | 'left'
   className?: string
+  innerClassName?: string
+  titleClassName?: string
+  eyebrowClassName?: string
+  subtitleClassName?: string
 }) {
   const go = useNavigate()
   const tone = props.tone ?? 'primary'
@@ -39,20 +45,40 @@ export function CtaBand(props: {
         className={cn(
           'mx-auto flex max-w-4xl flex-col gap-5 px-6 py-16 lg:px-8',
           isCenter ? 'items-center text-center' : 'items-start text-left',
+          props.innerClassName,
         )}
       >
         {props.eyebrow ? (
-          <span className="text-sm font-medium uppercase tracking-wide opacity-80">
+          <span
+            className={cn(
+              'text-sm font-medium uppercase tracking-wide opacity-80',
+              props.eyebrowClassName,
+            )}
+          >
             {props.eyebrow}
           </span>
         ) : null}
-        <h2 className="text-3xl font-semibold md:text-4xl">{props.title}</h2>
+        <h2
+          className={cn(
+            'text-3xl font-semibold md:text-4xl',
+            props.titleClassName,
+          )}
+        >
+          {props.title}
+        </h2>
         {props.subtitle ? (
-          <p className="max-w-2xl text-base opacity-90 md:text-lg">
+          <p
+            className={cn(
+              'max-w-2xl text-base opacity-90 md:text-lg',
+              props.subtitleClassName,
+            )}
+          >
             {props.subtitle}
           </p>
         ) : null}
-        {props.actions && props.actions.length > 0 ? (
+        {props.children ? (
+          props.children
+        ) : props.actions && props.actions.length > 0 ? (
           <div
             className={cn(
               'flex flex-wrap gap-3',

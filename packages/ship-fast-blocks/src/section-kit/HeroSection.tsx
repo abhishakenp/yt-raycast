@@ -1,0 +1,386 @@
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+
+/* ---------- HeroSection ---------- */
+
+const heroSectionVariants = cva('', {
+  variants: {
+    variant: {
+      default: '',
+      'full-bleed': 'relative isolate overflow-hidden',
+      gradient:
+        'relative flex min-h-screen items-center justify-center overflow-hidden',
+      split: '',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+})
+
+const HeroSection = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'section'> &
+    VariantProps<typeof heroSectionVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'section'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-section"
+      className={cn(heroSectionVariants({ variant }), className)}
+      {...props}
+    />
+  )
+})
+HeroSection.displayName = 'HeroSection'
+
+/* ---------- HeroBackgroundImage ---------- */
+
+interface HeroBackgroundImageProps extends React.ComponentProps<'div'> {
+  alt: string
+  w?: number
+  h?: number
+  overlayClassName?: string
+  gradientClassName?: string
+}
+
+function HeroBackgroundImage({
+  alt,
+  w = 1920,
+  h = 1080,
+  overlayClassName,
+  gradientClassName,
+}: HeroBackgroundImageProps) {
+  return (
+    <>
+      <Image
+        alt={alt}
+        w={w}
+        h={h}
+        loading="lazy"
+        className="absolute inset-0 -z-10 size-full object-cover"
+      />
+      <div
+        aria-hidden="true"
+        className={cn(
+          'absolute inset-0 -z-10 bg-foreground/50',
+          overlayClassName,
+        )}
+      />
+      <div
+        aria-hidden="true"
+        className={cn(
+          'absolute inset-0 -z-10 bg-gradient-to-t from-foreground/60 via-foreground/20 to-foreground/40',
+          gradientClassName,
+        )}
+      />
+    </>
+  )
+}
+HeroBackgroundImage.displayName = 'HeroBackgroundImage'
+
+/* ---------- HeroContent ---------- */
+
+const HeroContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="hero-content"
+    className={cn('relative z-10', className)}
+    {...props}
+  />
+))
+HeroContent.displayName = 'HeroContent'
+
+/* ---------- HeroBadge ---------- */
+
+const heroBadgeVariants = cva('', {
+  variants: {
+    variant: {
+      default:
+        'inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm',
+      pill: 'inline-flex items-center rounded-full border border-background/30 bg-background/10 px-4 py-1.5 text-xs font-medium tracking-[0.2em] text-background uppercase backdrop-blur-sm',
+      'pulsing-dot':
+        'inline-flex items-center gap-2 rounded-full border border-border bg-accent/50 px-4 py-2 text-sm text-muted-foreground',
+      solid:
+        'inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+})
+
+const HeroBadge = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> &
+    VariantProps<typeof heroBadgeVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-badge"
+      className={cn(heroBadgeVariants({ variant }), className)}
+      {...props}
+    />
+  )
+})
+HeroBadge.displayName = 'HeroBadge'
+
+/* ---------- HeroHeading ---------- */
+
+const heroHeadingVariants = cva('', {
+  variants: {
+    variant: {
+      default:
+        'text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl',
+      serif:
+        'mt-8 max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight text-background sm:text-5xl lg:text-6xl',
+      'extra-bold':
+        'text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl',
+      black:
+        'mb-8 text-5xl font-black leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+})
+
+const HeroHeading = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h1'> &
+    VariantProps<typeof heroHeadingVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h1'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-heading"
+      className={cn(heroHeadingVariants({ variant }), className)}
+      {...props}
+    />
+  )
+})
+HeroHeading.displayName = 'HeroHeading'
+
+/* ---------- HeroHighlight ---------- */
+
+const HeroHighlight = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & {
+    variant?: 'primary' | 'gradient'
+  }
+>(({ className, variant = 'primary', ...props }, ref) => (
+  <span
+    ref={ref}
+    data-slot="hero-highlight"
+    className={cn(
+      variant === 'primary' && 'text-primary',
+      variant === 'gradient' &&
+        'bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent',
+      className,
+    )}
+    {...props}
+  />
+))
+HeroHighlight.displayName = 'HeroHighlight'
+
+/* ---------- HeroSubheading ---------- */
+
+const heroSubheadingVariants = cva('', {
+  variants: {
+    variant: {
+      default: 'mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground',
+      light:
+        'mt-6 max-w-2xl text-base leading-relaxed text-background/80 sm:text-lg',
+      large:
+        'mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+})
+
+const HeroSubheading = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & VariantProps<typeof heroSubheadingVariants>
+>(({ className, variant, ...props }, ref) => (
+  <p
+    ref={ref}
+    data-slot="hero-subheading"
+    className={cn(heroSubheadingVariants({ variant }), className)}
+    {...props}
+  />
+))
+HeroSubheading.displayName = 'HeroSubheading'
+
+/* ---------- HeroCtas ---------- */
+
+const HeroCtas = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      data-slot="hero-ctas"
+      className={cn('mt-8 flex flex-wrap gap-3.5', className)}
+      {...props}
+    />
+  ),
+)
+HeroCtas.displayName = 'HeroCtas'
+
+/* ---------- HeroImage ---------- */
+
+interface HeroImageProps extends React.ComponentProps<'div'> {
+  alt: string
+  w?: number
+  h?: number
+  rounded?: 'xl' | '2xl' | '3xl'
+}
+
+const HeroImage = React.forwardRef<HTMLDivElement, HeroImageProps>(
+  ({ className, alt, w = 1200, h = 1200, rounded = '2xl', ...props }, ref) => (
+    <div
+      ref={ref}
+      data-slot="hero-image"
+      className={cn(
+        'overflow-hidden',
+        rounded === 'xl' && 'rounded-xl',
+        rounded === '2xl' && 'rounded-2xl',
+        rounded === '3xl' && 'rounded-3xl',
+        className,
+      )}
+      {...props}
+    >
+      <Image alt={alt} w={w} h={h} className="size-full object-cover" />
+    </div>
+  ),
+)
+HeroImage.displayName = 'HeroImage'
+
+/* ---------- HeroTrustRow ---------- */
+
+const HeroTrustRow = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentProps<'ul'>
+>(({ className, ...props }, ref) => (
+  <ul
+    ref={ref}
+    data-slot="hero-trust-row"
+    className={cn(
+      'mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground',
+      className,
+    )}
+    {...props}
+  />
+))
+HeroTrustRow.displayName = 'HeroTrustRow'
+
+/* ---------- HeroTrustItem ---------- */
+
+const HeroTrustItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<'li'>
+>(({ className, ...props }, ref) => (
+  <li
+    ref={ref}
+    data-slot="hero-trust-item"
+    className={cn('flex items-center gap-2', className)}
+    {...props}
+  />
+))
+HeroTrustItem.displayName = 'HeroTrustItem'
+
+/* ---------- HeroStats ---------- */
+
+const HeroStats = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      data-slot="hero-stats"
+      className={cn(
+        'mt-24 grid grid-cols-2 gap-8 border-t border-border pt-10 md:grid-cols-4',
+        className,
+      )}
+      {...props}
+    />
+  ),
+)
+HeroStats.displayName = 'HeroStats'
+
+/* ---------- HeroStat ---------- */
+
+const HeroStat = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      data-slot="hero-stat"
+      className={cn('flex flex-col', className)}
+      {...props}
+    />
+  ),
+)
+HeroStat.displayName = 'HeroStat'
+
+/* ---------- HeroStatValue ---------- */
+
+const HeroStatValue = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="hero-stat-value"
+    className={cn('text-3xl font-bold text-foreground', className)}
+    {...props}
+  />
+))
+HeroStatValue.displayName = 'HeroStatValue'
+
+/* ---------- HeroStatLabel ---------- */
+
+const HeroStatLabel = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="hero-stat-label"
+    className={cn('mt-1 text-sm text-muted-foreground', className)}
+    {...props}
+  />
+))
+HeroStatLabel.displayName = 'HeroStatLabel'
+
+/* ---------- Exports ---------- */
+
+export {
+  HeroSection,
+  HeroBackgroundImage,
+  HeroContent,
+  HeroBadge,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroCtas,
+  HeroImage,
+  HeroTrustRow,
+  HeroTrustItem,
+  HeroStats,
+  HeroStat,
+  HeroStatValue,
+  HeroStatLabel,
+  heroSectionVariants,
+  heroBadgeVariants,
+  heroHeadingVariants,
+  heroSubheadingVariants,
+}
