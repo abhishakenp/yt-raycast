@@ -12,6 +12,12 @@ import { cn } from '#/lib/utils.ts'
  * education programs.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimelineGrid,
+  StepItem,
+  StepBadge,
+  StepConnector,
+} from '#/section-kit/StepTimeline.tsx'
 export const BootcampSteps = defineCapsule({
   name: 'BootcampSteps',
   description:
@@ -76,25 +82,29 @@ export const BootcampSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{stepsDesc}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {stepItems.map((step, i) => (
-              <div key={step.title} className="relative">
-                <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary font-bold text-primary-foreground">
-                  {i + 1}
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {step.description}
-                </p>
-                {i < stepItems.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-full top-6 hidden h-px w-full bg-border lg:block"
+          <StepTimelineGrid asChild columns={4}>
+            <ul className="md:grid-cols-2 lg:grid-cols-4">
+              {stepItems.map((step, i) => (
+                <StepItem key={step.title}>
+                  <StepBadge
+                    index={i}
+                    variant="filled-square"
+                    className="mb-6 rounded-full"
                   />
-                )}
-              </div>
-            ))}
-          </div>
+                  <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {step.description}
+                  </p>
+                  {i < stepItems.length - 1 ? (
+                    <StepConnector
+                      variant="solid"
+                      className="left-full top-6 w-full md:hidden lg:block"
+                    />
+                  ) : null}
+                </StepItem>
+              ))}
+            </ul>
+          </StepTimelineGrid>
         </Container>
       </section>
     )

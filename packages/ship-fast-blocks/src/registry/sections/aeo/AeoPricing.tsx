@@ -10,6 +10,18 @@ import {
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PricingCard,
+  PricingCardBadge,
+  PricingCardName,
+  PricingCardPrice,
+  PricingCardPriceValue,
+  PricingCardPriceUnit,
+  PricingCardFeatures,
+  PricingCardFeature,
+  PricingCardCheckIcon,
+  PricingCardCta,
+} from '#/section-kit/PricingCard.tsx'
 
 /**
  * AeoPricing — three-tier pricing for an Answer-Engine-Optimization (AEO) SaaS.
@@ -120,81 +132,56 @@ export const AeoPricing = defineCapsule({
 
           <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
             {tiers.map((tier) => (
-              <div
+              <PricingCard
                 key={tier.name}
-                className={cn(
-                  'relative flex flex-col rounded-xl border bg-card p-8 text-card-foreground',
-                  tier.highlighted
-                    ? 'border-2 border-primary shadow-lg'
-                    : 'border-border',
-                )}
+                variant="outlined"
+                highlight={tier.highlighted ? 'primary' : 'none'}
+                className={tier.highlighted ? undefined : 'border-border'}
               >
                 {tier.highlighted ? (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                    Most popular
-                  </span>
+                  <PricingCardBadge>Most popular</PricingCardBadge>
                 ) : null}
-                <h3 className="text-lg font-semibold text-foreground">
-                  {tier.name}
-                </h3>
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-semibold tracking-tight text-foreground">
-                    {tier.price}
-                  </span>
+                <PricingCardName>{tier.name}</PricingCardName>
+                <PricingCardPrice>
+                  <PricingCardPriceValue>{tier.price}</PricingCardPriceValue>
                   {tier.period ? (
-                    <span className="text-sm text-muted-foreground">
-                      {tier.period}
-                    </span>
+                    <PricingCardPriceUnit>{tier.period}</PricingCardPriceUnit>
                   ) : null}
-                </div>
+                </PricingCardPrice>
                 {tier.features?.length ? (
-                  <ul className="mt-7 flex flex-col gap-3">
+                  <PricingCardFeatures>
                     {tier.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <svg
-                          className="mt-0.5 size-4 shrink-0 text-primary"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m5 13 4 4L19 7"
-                          />
-                        </svg>
+                      <PricingCardFeature key={feature}>
+                        <PricingCardCheckIcon />
                         <span>{feature}</span>
-                      </li>
+                      </PricingCardFeature>
                     ))}
-                  </ul>
+                  </PricingCardFeatures>
                 ) : null}
-                <SaasPlanActionButton
-                  lakebed={lakebed}
-                  intentLabel={tier.ctaTarget ?? tier.cta ?? 'Start Free'}
-                  plan={tier.name}
-                  source="pricing"
-                  aria-label={`${tier.cta ?? 'Start Free'} for ${tier.name}`}
-                  pendingChildren={
-                    <>
-                      <SaasMutationSpinner className="size-4" />
-                      Selecting
-                    </>
-                  }
-                  className={cn(
-                    'mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    tier.highlighted
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'border border-border bg-background text-foreground hover:bg-muted',
-                  )}
-                >
-                  {tier.cta ?? 'Start Free'}
-                </SaasPlanActionButton>
-              </div>
+                <PricingCardCta asChild>
+                  <SaasPlanActionButton
+                    lakebed={lakebed}
+                    intentLabel={tier.ctaTarget ?? tier.cta ?? 'Start Free'}
+                    plan={tier.name}
+                    source="pricing"
+                    aria-label={`${tier.cta ?? 'Start Free'} for ${tier.name}`}
+                    pendingChildren={
+                      <>
+                        <SaasMutationSpinner className="size-4" />
+                        Selecting
+                      </>
+                    }
+                    className={cn(
+                      'inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                      tier.highlighted
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'border border-border bg-background text-foreground hover:bg-muted',
+                    )}
+                  >
+                    {tier.cta ?? 'Start Free'}
+                  </SaasPlanActionButton>
+                </PricingCardCta>
+              </PricingCard>
             ))}
           </div>
         </div>

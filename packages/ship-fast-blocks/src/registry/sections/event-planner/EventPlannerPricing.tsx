@@ -8,6 +8,18 @@ import {
   InquiryMutationSpinner,
 } from '../contact/inquiry-interactions.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PricingCard,
+  PricingCardBadge,
+  PricingCardName,
+  PricingCardTagline,
+  PricingCardPrice,
+  PricingCardPriceValue,
+  PricingCardFeatures,
+  PricingCardFeature,
+  PricingCardCheckIcon,
+  PricingCardCta,
+} from '#/section-kit/PricingCard.tsx'
 
 /**
  * EventPlannerPricing — three-tier planning-packages block on a muted band. A
@@ -95,23 +107,6 @@ export const EventPlannerPricing = defineCapsule({
           },
         ]
 
-    const Check = ({ className }) => (
-      <svg
-        className={className}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M5 13l4 4L19 7"
-        />
-      </svg>
-    )
-
     return (
       <section
         className={cn(
@@ -132,19 +127,21 @@ export const EventPlannerPricing = defineCapsule({
           />
           <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
             {pricingTiers.map((tier) => (
-              <article
+              <PricingCard
                 key={tier.name}
+                variant="filled"
+                highlight={tier.popular ? 'filled-primary' : 'none'}
                 className={cn(
-                  'relative rounded-2xl p-8 lg:p-10',
+                  'lg:p-10',
                   tier.popular ? 'bg-primary shadow-xl' : 'bg-card shadow-sm',
                 )}
               >
-                {tier.popular && (
-                  <div className="absolute right-0 top-0 rounded-bl-lg rounded-tr-2xl bg-muted px-3 py-1 text-xs font-medium text-foreground">
+                {tier.popular ? (
+                  <PricingCardBadge className="right-0 top-0 left-auto -translate-x-0 rounded-bl-lg rounded-tr-2xl bg-muted px-3 py-1 text-xs font-medium text-foreground">
                     {pricingPopular}
-                  </div>
-                )}
-                <h3
+                  </PricingCardBadge>
+                ) : null}
+                <PricingCardName
                   className={cn(
                     'mb-2 text-xl font-medium',
                     tier.popular
@@ -153,8 +150,8 @@ export const EventPlannerPricing = defineCapsule({
                   )}
                 >
                   {tier.name}
-                </h3>
-                <p
+                </PricingCardName>
+                <PricingCardTagline
                   className={cn(
                     'mb-6',
                     tier.popular
@@ -163,23 +160,25 @@ export const EventPlannerPricing = defineCapsule({
                   )}
                 >
                   {tier.tagline}
-                </p>
-                <p
-                  className={cn(
-                    'mb-8 text-4xl font-light',
-                    tier.popular
-                      ? 'text-primary-foreground'
-                      : 'text-card-foreground',
-                  )}
-                >
-                  {tier.price}
-                </p>
-                <ul className="mb-8 space-y-4">
+                </PricingCardTagline>
+                <PricingCardPrice className="mb-8">
+                  <PricingCardPriceValue
+                    className={cn(
+                      'text-4xl font-light tracking-normal',
+                      tier.popular
+                        ? 'text-primary-foreground'
+                        : 'text-card-foreground',
+                    )}
+                  >
+                    {tier.price}
+                  </PricingCardPriceValue>
+                </PricingCardPrice>
+                <PricingCardFeatures className="mb-8 space-y-4">
                   {tier.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <Check
+                    <PricingCardFeature key={feat} className="gap-3">
+                      <PricingCardCheckIcon
                         className={cn(
-                          'mt-0.5 size-5 shrink-0',
+                          'mt-0.5 size-5',
                           tier.popular
                             ? 'text-primary-foreground/70'
                             : 'text-muted-foreground',
@@ -194,31 +193,33 @@ export const EventPlannerPricing = defineCapsule({
                       >
                         {feat}
                       </span>
-                    </li>
+                    </PricingCardFeature>
                   ))}
-                </ul>
-                <InquiryActionButton
-                  lakebed={lakebed}
-                  label={`${pricingCta} ${tier.name}`}
-                  source="Event planner pricing"
-                  target={tier.name}
-                  kind="pricing"
-                  pendingChildren={
-                    <>
-                      <InquiryMutationSpinner />
-                      Recording
-                    </>
-                  }
-                  className={cn(
-                    'inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    tier.popular
-                      ? 'bg-background text-foreground hover:bg-muted'
-                      : 'border border-border text-foreground hover:bg-muted',
-                  )}
-                >
-                  {pricingCta}
-                </InquiryActionButton>
-              </article>
+                </PricingCardFeatures>
+                <PricingCardCta asChild>
+                  <InquiryActionButton
+                    lakebed={lakebed}
+                    label={`${pricingCta} ${tier.name}`}
+                    source="Event planner pricing"
+                    target={tier.name}
+                    kind="pricing"
+                    pendingChildren={
+                      <>
+                        <InquiryMutationSpinner />
+                        Recording
+                      </>
+                    }
+                    className={cn(
+                      'inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                      tier.popular
+                        ? 'bg-background text-foreground hover:bg-muted'
+                        : 'border border-border text-foreground hover:bg-muted',
+                    )}
+                  >
+                    {pricingCta}
+                  </InquiryActionButton>
+                </PricingCardCta>
+              </PricingCard>
             ))}
           </div>
         </div>

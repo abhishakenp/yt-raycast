@@ -10,6 +10,19 @@ import {
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PricingCard,
+  PricingCardBadge,
+  PricingCardName,
+  PricingCardTagline,
+  PricingCardPrice,
+  PricingCardPriceValue,
+  PricingCardPriceUnit,
+  PricingCardFeatures,
+  PricingCardFeature,
+  PricingCardCheckIcon,
+  PricingCardCta,
+} from '#/section-kit/PricingCard.tsx'
 
 /**
  * MentalHealthPricing — a transparent 3-tier pricing block for a therapy
@@ -113,22 +126,6 @@ export const MentalHealthPricing = defineCapsule({
     const note =
       props.note ??
       'Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability.'
-    const Check = ({ className }) => (
-      <svg
-        className={className}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M5 13l4 4L19 7"
-        />
-      </svg>
-    )
 
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
@@ -145,63 +142,62 @@ export const MentalHealthPricing = defineCapsule({
 
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
             {tiers.map((tier) => (
-              <div
+              <PricingCard
                 key={tier.name}
-                className={cn(
-                  'relative rounded-2xl p-8',
-                  tier.popular
-                    ? 'border-2 border-primary bg-card shadow-xl'
-                    : 'border border-border bg-muted/50',
-                )}
+                variant={tier.popular ? 'outlined-2xl' : 'muted-2xl'}
+                highlight={tier.popular ? 'primary' : 'none'}
+                className={tier.popular ? 'bg-card shadow-xl' : undefined}
               >
                 {tier.popular ? (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-sm font-medium text-primary-foreground">
+                  <PricingCardBadge className="-top-4 px-4 py-1 text-sm">
                     Most Popular
-                  </div>
+                  </PricingCardBadge>
                 ) : null}
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {tier.name}
-                </h3>
-                <p className="mb-6 text-sm text-muted-foreground">
+                <PricingCardName className="mb-2">{tier.name}</PricingCardName>
+                <PricingCardTagline className="mb-6">
                   {tier.cadence}
-                </p>
-                <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-semibold text-foreground">
+                </PricingCardTagline>
+                <PricingCardPrice className="mt-0 mb-6">
+                  <PricingCardPriceValue className="tracking-normal">
                     {tier.price}
-                  </span>
-                  <span className="text-muted-foreground">{tier.unit}</span>
-                </div>
-                <ul className="mb-8 space-y-3 text-sm text-muted-foreground">
+                  </PricingCardPriceValue>
+                  <PricingCardPriceUnit className="text-base">
+                    {tier.unit}
+                  </PricingCardPriceUnit>
+                </PricingCardPrice>
+                <PricingCardFeatures className="mt-0 block mb-8 space-y-3 text-sm text-muted-foreground">
                   {tier.features.map((f) => (
-                    <li key={f} className="flex items-start gap-3">
-                      <Check className="mt-0.5 size-5 shrink-0 text-primary" />
+                    <PricingCardFeature key={f} className="gap-3">
+                      <PricingCardCheckIcon className="size-5" />
                       <span>{f}</span>
-                    </li>
+                    </PricingCardFeature>
                   ))}
-                </ul>
-                <LocalServiceBookingButton
-                  lakebed={lakebed}
-                  intentLabel={tier.cta}
-                  service={tier.name}
-                  source="pricing"
-                  pendingChildren={
-                    <LocalServiceMutationSpinner
-                      className={
-                        tier.popular ? 'text-primary-foreground' : undefined
-                      }
-                    />
-                  }
-                  className={cn(
-                    'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
-                    tier.popular
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-                    'disabled:pointer-events-none disabled:opacity-70',
-                  )}
-                >
-                  {tier.cta}
-                </LocalServiceBookingButton>
-              </div>
+                </PricingCardFeatures>
+                <PricingCardCta asChild className="mt-0">
+                  <LocalServiceBookingButton
+                    lakebed={lakebed}
+                    intentLabel={tier.cta}
+                    service={tier.name}
+                    source="pricing"
+                    pendingChildren={
+                      <LocalServiceMutationSpinner
+                        className={
+                          tier.popular ? 'text-primary-foreground' : undefined
+                        }
+                      />
+                    }
+                    className={cn(
+                      'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
+                      tier.popular
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+                      'disabled:pointer-events-none disabled:opacity-70',
+                    )}
+                  >
+                    {tier.cta}
+                  </LocalServiceBookingButton>
+                </PricingCardCta>
+              </PricingCard>
             ))}
           </div>
 

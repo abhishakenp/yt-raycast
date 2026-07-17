@@ -9,6 +9,19 @@ import {
   useSyncEventTickets,
 } from './event-interactions.tsx'
 import { eventLakebed } from './event-lakebed.ts'
+import {
+  PricingCard,
+  PricingCardBadge,
+  PricingCardCta,
+  PricingCardCheckIcon,
+  PricingCardFeature,
+  PricingCardFeatures,
+  PricingCardName,
+  PricingCardPrice,
+  PricingCardPriceUnit,
+  PricingCardPriceValue,
+  PricingCardTagline,
+} from '#/section-kit/PricingCard.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
@@ -125,23 +138,6 @@ export const EventTickets = defineCapsule({
       ),
     )
 
-    const CheckIcon = () => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="shrink-0 text-primary"
-        aria-hidden="true"
-      >
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    )
-
     const CrossIcon = () => (
       <svg
         width="20"
@@ -173,79 +169,80 @@ export const EventTickets = defineCapsule({
           />
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
             {tiers.map((tier) => (
-              <div
+              <PricingCard
                 key={tier.name}
-                className={cn(
-                  'relative rounded-2xl bg-card p-8',
-                  tier.featured
-                    ? 'border-2 border-foreground'
-                    : 'border border-border',
-                )}
+                variant="plain"
+                highlight={tier.featured ? 'foreground' : 'none'}
+                className={cn(tier.featured ? '' : 'border border-border')}
               >
                 {tier.badge ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
+                  <PricingCardBadge className="bg-foreground text-background">
                     {tier.badge}
-                  </div>
+                  </PricingCardBadge>
                 ) : null}
-                <h3 className="mb-2 font-semibold text-card-foreground">
+                <PricingCardName className="mb-2 text-card-foreground">
                   {tier.name}
-                </h3>
-                <p className="mb-6 text-sm text-muted-foreground">
+                </PricingCardName>
+                <PricingCardTagline className="mb-6">
                   {tier.availability}
-                </p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-card-foreground">
+                </PricingCardTagline>
+                <PricingCardPrice className="mb-6">
+                  <PricingCardPriceValue className="text-4xl font-bold text-card-foreground tracking-normal">
                     {tier.price}
-                  </span>
-                  <span className="text-muted-foreground">{tier.unit}</span>
-                </div>
-                <ul className="mb-8 space-y-3 text-sm text-muted-foreground">
+                  </PricingCardPriceValue>
+                  <PricingCardPriceUnit className="">
+                    {tier.unit}
+                  </PricingCardPriceUnit>
+                </PricingCardPrice>
+                <PricingCardFeatures className="mb-8 space-y-3 text-sm text-muted-foreground">
                   {tier.features.map((f) => (
-                    <li key={f} className="flex items-start gap-3">
-                      <CheckIcon />
+                    <PricingCardFeature key={f} className="gap-3">
+                      <PricingCardCheckIcon className="mt-0 size-5" />
                       {f}
-                    </li>
+                    </PricingCardFeature>
                   ))}
                   {(tier.excluded ?? []).map((f) => (
-                    <li key={f} className="flex items-start gap-3">
+                    <PricingCardFeature key={f} className="gap-3">
                       <CrossIcon />
                       {f}
-                    </li>
+                    </PricingCardFeature>
                   ))}
-                </ul>
-                {tier.soldOut ? (
-                  <button
-                    type="button"
-                    disabled
-                    className="w-full cursor-not-allowed rounded-lg bg-muted px-4 py-3 font-medium text-muted-foreground"
-                  >
-                    {tier.cta}
-                  </button>
-                ) : (
-                  <EventActionButton
-                    lakebed={lakebed}
-                    action="ticket"
-                    label={tier.cta}
-                    intentKey={`ticket:${tier.name}`}
-                    source="tickets"
-                    tier={tier.name}
-                    pendingChildren={
-                      <>
-                        <EventMutationSpinner />
-                        Reserving
-                      </>
-                    }
-                    className={cn(
-                      'block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                      tier.featured
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-foreground text-background hover:bg-foreground/90',
-                    )}
-                  >
-                    {tier.cta}
-                  </EventActionButton>
-                )}
-              </div>
+                </PricingCardFeatures>
+                <PricingCardCta asChild>
+                  {tier.soldOut ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="w-full cursor-not-allowed rounded-lg bg-muted px-4 py-3 font-medium text-muted-foreground"
+                    >
+                      {tier.cta}
+                    </button>
+                  ) : (
+                    <EventActionButton
+                      lakebed={lakebed}
+                      action="ticket"
+                      label={tier.cta}
+                      intentKey={`ticket:${tier.name}`}
+                      source="tickets"
+                      tier={tier.name}
+                      pendingChildren={
+                        <>
+                          <EventMutationSpinner />
+                          Reserving
+                        </>
+                      }
+                      className={cn(
+                        'block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                        tier.featured
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-foreground text-background hover:bg-foreground/90',
+                      )}
+                    >
+                      {tier.cta}
+                    </EventActionButton>
+                  )}
+                </PricingCardCta>
+              </PricingCard>
             ))}
           </div>
           <div className="mt-12 text-center">

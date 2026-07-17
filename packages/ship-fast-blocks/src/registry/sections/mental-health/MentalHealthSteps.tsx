@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  StepTimelineGrid,
+  StepItem,
+  StepBadge,
+  StepConnector,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * MentalHealthSteps — a "how it works" / approach flow for a therapy practice.
@@ -107,29 +113,30 @@ export const MentalHealthSteps = defineCapsule({
             className="mx-auto mb-16 max-w-2xl"
           />
 
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
-            {items.map((step, i) => (
-              <div key={step.title} className="relative">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-6 grid size-16 place-items-center rounded-full bg-primary text-2xl font-semibold text-primary-foreground">
-                    {i + 1}
+          <StepTimelineGrid asChild columns={3}>
+            <ul className="lg:gap-12">
+              {items.map((step, i) => (
+                <StepItem key={step.title}>
+                  <div className="flex flex-col items-center text-center">
+                    <StepBadge
+                      index={i}
+                      variant="filled-circle-bold"
+                      className="mb-6"
+                    />
+                    <h3 className="mb-3 text-xl font-semibold text-foreground">
+                      {step.title}
+                    </h3>
+                    <p className="leading-relaxed text-muted-foreground">
+                      {step.description}
+                    </p>
                   </div>
-                  <h3 className="mb-3 text-xl font-semibold text-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="leading-relaxed text-muted-foreground">
-                    {step.description}
-                  </p>
-                </div>
-                {i < items.length - 1 ? (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-full top-8 hidden w-full -translate-x-1/2 border-t-2 border-dashed border-primary/30 md:block"
-                  />
-                ) : null}
-              </div>
-            ))}
-          </div>
+                  {i < items.length - 1 ? (
+                    <StepConnector variant="dashed" />
+                  ) : null}
+                </StepItem>
+              ))}
+            </ul>
+          </StepTimelineGrid>
 
           <div className="mt-16 rounded-2xl bg-primary/10 p-8 lg:p-12">
             <div className="grid items-center gap-8 lg:grid-cols-2">
