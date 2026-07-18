@@ -6,6 +6,7 @@ import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { SplitStory, SplitStoryGrid } from '#/section-kit/SplitStory.tsx'
+import { StepItem, StepContent } from '#/section-kit/StepTimeline.tsx'
 
 export const WeddingAbout = defineCapsule({
   name: 'WeddingAbout',
@@ -98,7 +99,7 @@ export const WeddingAbout = defineCapsule({
 
             <ol className="relative ml-2 border-l border-border pl-8">
               {timeline.map((item, i) => (
-                <li
+                <StepItem
                   key={`${item.title}-${i}`}
                   className="relative pb-10 last:pb-0"
                 >
@@ -106,16 +107,18 @@ export const WeddingAbout = defineCapsule({
                     className="absolute -left-[2.1rem] top-1 size-3 rounded-full border-2 border-background bg-primary"
                     aria-hidden="true"
                   />
-                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-accent">
-                    {item.date}
-                  </p>
-                  <h3 className="mt-1 font-serif text-xl font-medium text-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 text-base leading-7 text-muted-foreground">
-                    {item.description}
-                  </p>
-                </li>
+                  <StepContent className="mt-0 gap-0">
+                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-accent">
+                      {item.date}
+                    </p>
+                    <h3 className="mt-1 font-serif text-xl font-medium text-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-base leading-7 text-muted-foreground">
+                      {item.description}
+                    </p>
+                  </StepContent>
+                </StepItem>
               ))}
             </ol>
           </SplitStoryGrid>
