@@ -20,6 +20,8 @@ const bentoGridVariants = cva('grid', {
       '1-2-4': 'sm:grid-cols-2 lg:grid-cols-4',
       '1-md-2-3': 'md:grid-cols-2 lg:grid-cols-3',
       '1-md-2-4': 'md:grid-cols-2 lg:grid-cols-4',
+      '1-sm-2-md-6': 'grid-cols-1 sm:grid-cols-2 md:grid-cols-6',
+      '1-md-3': 'grid-cols-1 md:grid-cols-3',
     },
     gap: {
       none: 'gap-0',

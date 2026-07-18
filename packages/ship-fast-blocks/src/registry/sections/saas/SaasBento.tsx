@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * SaasBento — an asymmetric bento grid of product capabilities for a B2B SaaS /
@@ -92,18 +93,22 @@ export const SaasBento = defineCapsule({
             className="mx-auto max-w-2xl"
           />
 
-          <div className="mt-14 grid auto-rows-[200px] grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-6 lg:gap-6">
+          <BentoGrid
+            cols="1-sm-2-md-6"
+            gap="sm"
+            className="mt-14 auto-rows-[200px] gap-5 lg:gap-6"
+          >
             {tiles.map((tile, i) => {
               const isFeature = i === 0
               return (
-                <div
+                <BentoTile
                   key={tile.title}
+                  span={spanClass(tile.span)}
                   className={cn(
                     'group relative flex flex-col overflow-hidden rounded-2xl border border-border p-7 shadow-sm transition-all hover:shadow-lg',
                     isFeature
                       ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground'
                       : 'bg-card text-card-foreground',
-                    spanClass(tile.span),
                   )}
                 >
                   <h3
@@ -142,10 +147,10 @@ export const SaasBento = defineCapsule({
                       <span className="inline-block size-2 rounded-full bg-muted-foreground/40" />
                     </div>
                   )}
-                </div>
+                </BentoTile>
               )
             })}
-          </div>
+          </BentoGrid>
         </div>
       </section>
     )

@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * AnalyticsBento — bespoke asymmetric capability bento for an analytics product.
@@ -77,8 +78,15 @@ export const AnalyticsBento = defineCapsule({
             subtitle={subheading}
             className="mb-14"
           />
-          <div className="grid auto-rows-[minmax(0,1fr)] grid-cols-1 gap-5 md:grid-cols-3 md:grid-rows-2">
-            <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card md:col-span-2 md:row-span-2">
+          <BentoGrid
+            cols="1-md-3"
+            gap="sm"
+            className="auto-rows-[minmax(0,1fr)] gap-5 md:grid-rows-2"
+          >
+            <BentoTile
+              span="md:col-span-2 md:row-span-2"
+              className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
+            >
               <div className="flex flex-col gap-2 p-7">
                 <h3 className="text-xl font-semibold text-foreground">
                   {heroTitle}
@@ -93,23 +101,24 @@ export const AnalyticsBento = defineCapsule({
                 h={680}
                 className="mt-auto block w-full flex-1 border-t border-border object-cover"
               />
-            </div>
+            </BentoTile>
             {tiles.map((tile) => (
-              <Card
-                key={tile.title}
-                rounded="2xl"
-                padding="none"
-                className="flex flex-col gap-2 p-7"
-              >
-                <h3 className="text-base font-semibold text-foreground">
-                  {tile.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {tile.description}
-                </p>
-              </Card>
+              <BentoTile key={tile.title}>
+                <Card
+                  rounded="2xl"
+                  padding="none"
+                  className="flex flex-col gap-2 p-7"
+                >
+                  <h3 className="text-base font-semibold text-foreground">
+                    {tile.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {tile.description}
+                  </p>
+                </Card>
+              </BentoTile>
             ))}
-          </div>
+          </BentoGrid>
         </div>
       </section>
     )
