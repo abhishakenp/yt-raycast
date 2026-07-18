@@ -5,6 +5,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
+import {
+  StatValue,
+  StatLabel,
+  StatDelta,
+  StatIcon,
+} from '#/section-kit/StatGrid.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
@@ -148,21 +154,14 @@ export const DashboardKpis = defineCapsule({
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">
+                      <StatLabel className="text-sm font-medium">
                         {kpi.label}
-                      </p>
-                      <p className="mt-1 text-2xl font-bold text-foreground">
+                      </StatLabel>
+                      <StatValue className="mt-1 text-2xl">
                         {kpi.value}
-                      </p>
+                      </StatValue>
                       <div className="mt-2 flex items-center gap-1">
-                        <span
-                          className={cn(
-                            'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold',
-                            up
-                              ? 'bg-chart-1/10 text-chart-1'
-                              : 'bg-destructive/10 text-destructive',
-                          )}
-                        >
+                        <StatDelta trend={up ? 'up' : 'down'}>
                           <svg
                             width="12"
                             height="12"
@@ -188,7 +187,7 @@ export const DashboardKpis = defineCapsule({
                             )}
                           </svg>
                           {kpi.delta}
-                        </span>
+                        </StatDelta>
                         {kpi.deltaNote ? (
                           <span className="text-xs text-muted-foreground">
                             {kpi.deltaNote}
@@ -196,12 +195,7 @@ export const DashboardKpis = defineCapsule({
                         ) : null}
                       </div>
                     </div>
-                    <span
-                      className={cn(
-                        'grid size-10 place-items-center rounded-lg',
-                        kpiTones[tone],
-                      )}
-                    >
+                    <StatIcon className={cn(kpiTones[tone])}>
                       <svg
                         width="20"
                         height="20"
@@ -215,7 +209,7 @@ export const DashboardKpis = defineCapsule({
                       >
                         {kpiIcons[tone]}
                       </svg>
-                    </span>
+                    </StatIcon>
                   </div>
                 </Card>
               )

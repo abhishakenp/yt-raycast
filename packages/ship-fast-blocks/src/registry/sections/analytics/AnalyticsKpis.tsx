@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid, Card } from '#/section-kit/index.ts'
+import {
+  StatValue,
+  StatLabel,
+  StatDelta,
+  StatIcon,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * AnalyticsKpis — a 4-up KPI metric-card grid for a SaaS analytics dashboard. A
@@ -122,12 +128,16 @@ export const AnalyticsKpis = defineCapsule({
               <Card key={kpi.label}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <StatLabel className="text-sm font-medium">
                       {kpi.label}
-                    </p>
-                    <p className="mt-2 text-2xl font-semibold text-card-foreground">
+                    </StatLabel>
+                    <StatValue
+                      weight="semibold"
+                      color="default"
+                      className="mt-2 text-2xl text-card-foreground"
+                    >
                       {kpi.value}
-                    </p>
+                    </StatValue>
                     <div
                       className={cn(
                         'mt-2 flex items-center gap-1',
@@ -137,12 +147,18 @@ export const AnalyticsKpis = defineCapsule({
                       )}
                     >
                       {kpi.trend === 'up' ? <TrendUp /> : <TrendDown />}
-                      <span className="text-sm font-medium">{kpi.delta}</span>
+                      <StatDelta
+                        trend={kpi.trend === 'up' ? 'up' : 'down'}
+                        bare
+                        className="text-sm font-medium"
+                      >
+                        {kpi.delta}
+                      </StatDelta>
                     </div>
                   </div>
-                  <div className="rounded-lg bg-muted p-2 text-muted-foreground">
+                  <StatIcon className="rounded-lg bg-muted p-2 text-muted-foreground">
                     {kpiIcons[i % kpiIcons.length]}
-                  </div>
+                  </StatIcon>
                 </div>
                 <p className="mt-4 text-xs text-muted-foreground">
                   {kpi.caption}
