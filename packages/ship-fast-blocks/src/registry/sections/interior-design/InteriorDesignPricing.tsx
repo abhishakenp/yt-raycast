@@ -2,6 +2,14 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  PricingGrid,
+  PricingTier,
+  PricingTierName,
+  PricingTierPrice,
+  PricingTierTagline,
+} from '#/section-kit/PricingGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -76,12 +84,12 @@ export const InteriorDesignPricing = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground px-4 py-20 text-background sm:px-6 md:py-28 lg:px-8',
+          'bg-foreground py-20 text-background md:py-28',
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-16 lg:grid-cols-2 lg:gap-24">
+        <Container size="xl">
+          <PricingGrid className="grid-cols-1 items-start gap-16 sm:gap-6 md:grid-cols-1 lg:grid-cols-2 lg:gap-24 xl:grid-cols-2">
             <div>
               <SectionHeading
                 eyebrow={eyebrow}
@@ -104,27 +112,29 @@ export const InteriorDesignPricing = defineCapsule({
 
             <div className="space-y-8">
               {items.map((item, i) => (
-                <div
+                <PricingTier
                   key={item.title}
                   className={cn(
-                    'pb-8',
+                    'gap-0 rounded-none border-0 bg-transparent p-0 pb-8 shadow-none',
                     i < items.length - 1 && 'border-b border-background/20',
                   )}
                 >
                   <div className="mb-4 flex items-start justify-between gap-4">
-                    <h3 className="text-xl font-medium">{item.title}</h3>
-                    <span className="whitespace-nowrap text-sm text-background/60">
+                    <PricingTierName className="text-xl font-medium text-background">
+                      {item.title}
+                    </PricingTierName>
+                    <PricingTierPrice className="whitespace-nowrap text-sm font-normal text-background/60">
                       {item.price}
-                    </span>
+                    </PricingTierPrice>
                   </div>
-                  <p className="text-sm leading-relaxed text-background/70">
+                  <PricingTierTagline className="text-sm leading-relaxed text-background/70">
                     {item.description}
-                  </p>
-                </div>
+                  </PricingTierTagline>
+                </PricingTier>
               ))}
             </div>
-          </div>
-        </div>
+          </PricingGrid>
+        </Container>
       </section>
     )
   },
