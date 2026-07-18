@@ -18,7 +18,11 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
-import { OutcomesGrid, OutcomesCard } from '#/section-kit/OutcomesGrid.tsx'
+import {
+  OutcomesGrid,
+  OutcomesCard,
+  OutcomeStat,
+} from '#/section-kit/OutcomesGrid.tsx'
 export const BootcampOutcomes = defineCapsule({
   name: 'BootcampOutcomes',
   description:
@@ -133,10 +137,12 @@ export const BootcampOutcomes = defineCapsule({
             {outcomeBars.map((bar) => (
               <OutcomesCard asChild key={bar.label}>
                 <div className="rounded-xl bg-muted/60 p-6">
-                  <p className="mb-1 text-3xl font-bold">{bar.value}</p>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    {bar.label}
-                  </p>
+                  <OutcomeStat className="gap-0">
+                    <p className="mb-1 text-3xl font-bold">{bar.value}</p>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      {bar.label}
+                    </p>
+                  </OutcomeStat>
                   <div className="h-2 overflow-hidden rounded-full bg-border">
                     <div
                       className="h-full rounded-full bg-primary"
