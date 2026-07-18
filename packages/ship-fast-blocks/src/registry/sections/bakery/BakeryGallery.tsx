@@ -3,8 +3,11 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
+import {
+  GalleryMasonry,
+  GalleryMasonryColumn,
+} from '#/section-kit/GalleryGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -58,9 +61,9 @@ export const BakeryGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <ResponsiveGrid cols="2-md-4" gap="sm">
+          <GalleryMasonry columns="2-4">
             {[0, 1, 2, 3].map((col) => (
-              <div key={col} className="space-y-4">
+              <GalleryMasonryColumn key={col}>
                 <MasonryTile treatment={col % 2 === 0 ? 'h-64-xl' : 'h-48-xl'}>
                   <Image
                     alt={items[(col * 2) % items.length]}
@@ -79,9 +82,9 @@ export const BakeryGallery = defineCapsule({
                     className="size-full object-cover"
                   />
                 </MasonryTile>
-              </div>
+              </GalleryMasonryColumn>
             ))}
-          </ResponsiveGrid>
+          </GalleryMasonry>
         </Container>
       </section>
     )

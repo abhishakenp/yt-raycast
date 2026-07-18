@@ -3,8 +3,11 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
+import {
+  GalleryMasonry,
+  GalleryMasonryColumn,
+} from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * CafeGallery — masonry photo gallery for a cozy cafe / coffee shop page,
@@ -40,8 +43,8 @@ export const CafeGallery = defineCapsule({
     return (
       <section className={cn('bg-card pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <ResponsiveGrid cols="2-md-3" gap="sm">
-            <div className="space-y-4">
+          <GalleryMasonry columns="2-3">
+            <GalleryMasonryColumn>
               <MasonryTile treatment="3-4-xl">
                 <Image
                   alt={images[0]}
@@ -60,8 +63,8 @@ export const CafeGallery = defineCapsule({
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
               </MasonryTile>
-            </div>
-            <div className="space-y-4">
+            </GalleryMasonryColumn>
+            <GalleryMasonryColumn>
               <MasonryTile treatment="square-xl">
                 <Image
                   alt={images[2]}
@@ -80,8 +83,8 @@ export const CafeGallery = defineCapsule({
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
               </MasonryTile>
-            </div>
-            <div className="hidden space-y-4 md:block">
+            </GalleryMasonryColumn>
+            <GalleryMasonryColumn className="hidden md:block">
               <MasonryTile treatment="3-4-xl">
                 <Image
                   alt={images[4]}
@@ -100,8 +103,8 @@ export const CafeGallery = defineCapsule({
                   className="size-full object-cover transition-transform duration-500 hover:scale-105"
                 />
               </MasonryTile>
-            </div>
-          </ResponsiveGrid>
+            </GalleryMasonryColumn>
+          </GalleryMasonry>
         </div>
       </section>
     )

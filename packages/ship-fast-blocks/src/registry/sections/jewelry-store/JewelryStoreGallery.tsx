@@ -4,6 +4,10 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
+import {
+  GalleryMasonry,
+  GalleryMasonryColumn,
+} from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * JewelryStoreGallery — lifestyle masonry gallery for a luxury jewelry brand
@@ -58,8 +62,8 @@ export const JewelryStoreGallery = defineCapsule({
               {heading}
             </h2>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-4">
+          <GalleryMasonry columns="1-3">
+            <GalleryMasonryColumn>
               <MasonryTile treatment="3-4-card">
                 <Image
                   alt={alts[0]}
@@ -78,8 +82,8 @@ export const JewelryStoreGallery = defineCapsule({
                   className={imgCls}
                 />
               </MasonryTile>
-            </div>
-            <div className="space-y-4 md:mt-12">
+            </GalleryMasonryColumn>
+            <GalleryMasonryColumn className="md:mt-12">
               <MasonryTile treatment="square-card">
                 <Image
                   alt={alts[2]}
@@ -107,8 +111,8 @@ export const JewelryStoreGallery = defineCapsule({
                   className={imgCls}
                 />
               </MasonryTile>
-            </div>
-            <div className="space-y-4">
+            </GalleryMasonryColumn>
+            <GalleryMasonryColumn>
               <MasonryTile treatment="3-4-card">
                 <Image
                   alt={alts[5]}
@@ -127,8 +131,8 @@ export const JewelryStoreGallery = defineCapsule({
                   className={imgCls}
                 />
               </MasonryTile>
-            </div>
-          </div>
+            </GalleryMasonryColumn>
+          </GalleryMasonry>
         </div>
       </section>
     )

@@ -104,6 +104,8 @@ export {
   GalleryTile,
   GalleryTileImage,
   GalleryTileCaption,
+  GalleryMasonry,
+  GalleryMasonryColumn,
 } from './GalleryGrid.tsx'
 export {
   CommandSearch,

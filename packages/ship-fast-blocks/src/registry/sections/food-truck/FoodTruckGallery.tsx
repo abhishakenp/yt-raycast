@@ -4,6 +4,10 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
+import {
+  GalleryMasonry,
+  GalleryMasonryColumn,
+} from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * FoodTruckGallery — a masonry-style food GALLERY section. A centered eyebrow +
@@ -46,9 +50,9 @@ export const FoodTruckGallery = defineCapsule({
             </span>
             <h2 className="text-3xl font-bold md:text-4xl">{galleryHeading}</h2>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <GalleryMasonry columns="1-3">
             {[0, 1, 2].map((col) => (
-              <div key={col} className="space-y-4">
+              <GalleryMasonryColumn key={col}>
                 <MasonryTile treatment={col === 1 ? 'h-48-xl' : 'h-64-xl'}>
                   <Image
                     alt={galleryAlts[col * 2] ?? galleryHeading}
@@ -67,9 +71,9 @@ export const FoodTruckGallery = defineCapsule({
                     className="size-full object-cover"
                   />
                 </MasonryTile>
-              </div>
+              </GalleryMasonryColumn>
             ))}
-          </div>
+          </GalleryMasonry>
         </div>
       </section>
     )

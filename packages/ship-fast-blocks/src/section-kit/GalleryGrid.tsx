@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
@@ -117,10 +118,60 @@ const GalleryTileCaption = React.forwardRef<
 })
 GalleryTileCaption.displayName = 'GalleryTileCaption'
 
+const galleryMasonryVariants = cva('grid gap-4', {
+  variants: {
+    columns: {
+      '2': 'grid-cols-2',
+      '2-3': 'grid-cols-2 md:grid-cols-3',
+      '2-4': 'grid-cols-2 md:grid-cols-4',
+      '1-3': 'md:grid-cols-3',
+    },
+  },
+  defaultVariants: {
+    columns: '2-3',
+  },
+})
+
+const GalleryMasonry = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> &
+    VariantProps<typeof galleryMasonryVariants> & { asChild?: boolean }
+>(({ className, columns, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="gallery-masonry"
+      className={cn(galleryMasonryVariants({ columns }), className)}
+      {...props}
+    />
+  )
+})
+GalleryMasonry.displayName = 'GalleryMasonry'
+
+const GalleryMasonryColumn = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="gallery-masonry-column"
+      className={cn('space-y-4', className)}
+      {...props}
+    />
+  )
+})
+GalleryMasonryColumn.displayName = 'GalleryMasonryColumn'
+
 export {
   GalleryGrid,
   GalleryGridItems,
   GalleryTile,
   GalleryTileImage,
   GalleryTileCaption,
+  GalleryMasonry,
+  GalleryMasonryColumn,
+  galleryMasonryVariants,
 }
