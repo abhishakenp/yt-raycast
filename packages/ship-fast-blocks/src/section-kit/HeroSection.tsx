@@ -464,6 +464,94 @@ const HeroInfoStripItem = React.forwardRef<
 ))
 HeroInfoStripItem.displayName = 'HeroInfoStripItem'
 
+/* ---------- HeroStatBadge (floating stat badge on hero media) ---------- */
+
+const HeroStatBadge = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-stat-badge"
+      className={cn(
+        'rounded-lg border bg-card p-4 text-card-foreground shadow-lg',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+HeroStatBadge.displayName = 'HeroStatBadge'
+
+const HeroStatBadgeIcon = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-stat-badge-icon"
+      className={cn(
+        'grid size-10 shrink-0 place-items-center rounded-lg bg-muted text-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+HeroStatBadgeIcon.displayName = 'HeroStatBadgeIcon'
+
+const HeroStatBadgeContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-stat-badge-content"
+      className={cn('min-w-0', className)}
+      {...props}
+    />
+  )
+})
+HeroStatBadgeContent.displayName = 'HeroStatBadgeContent'
+
+const HeroStatBadgeTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-stat-badge-title"
+      className={cn('text-sm font-medium text-card-foreground', className)}
+      {...props}
+    />
+  )
+})
+HeroStatBadgeTitle.displayName = 'HeroStatBadgeTitle'
+
+const HeroStatBadgeSubtitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-stat-badge-subtitle"
+      className={cn('text-xs text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+HeroStatBadgeSubtitle.displayName = 'HeroStatBadgeSubtitle'
+
 /* ---------- Exports ---------- */
 
 export {
@@ -492,4 +580,9 @@ export {
   HeroCodeWindowBody,
   HeroInfoStrip,
   HeroInfoStripItem,
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
 }
