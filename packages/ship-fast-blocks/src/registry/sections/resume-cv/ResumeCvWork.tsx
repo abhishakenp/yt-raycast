@@ -3,6 +3,10 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  StepItem,
+  StepContent,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * ResumeCvWork — vertical experience timeline for a personal resume / CV /
@@ -83,28 +87,30 @@ export const ResumeCvWork = defineCapsule({
 
           <ol className="mt-12 space-y-10 border-l border-border pl-8">
             {jobs.map((job, i) => (
-              <li key={i} className="relative">
+              <StepItem key={i}>
                 <span
                   aria-hidden="true"
                   className="absolute -left-[2.3rem] top-1.5 size-3 rounded-full border-2 border-background bg-primary"
                 />
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {job.role}
-                  </h3>
-                  <span className="text-sm text-muted-foreground">
-                    {job.dateRange}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm font-medium text-primary">
-                  {job.company}
-                </p>
-                <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
-                  {job.bullets.map((bullet, j) => (
-                    <li key={j}>{bullet}</li>
-                  ))}
-                </ul>
-              </li>
+                <StepContent className="mt-0 gap-0">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {job.role}
+                    </h3>
+                    <span className="text-sm text-muted-foreground">
+                      {job.dateRange}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm font-medium text-primary">
+                    {job.company}
+                  </p>
+                  <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
+                    {job.bullets.map((bullet, j) => (
+                      <li key={j}>{bullet}</li>
+                    ))}
+                  </ul>
+                </StepContent>
+              </StepItem>
             ))}
           </ol>
         </div>
