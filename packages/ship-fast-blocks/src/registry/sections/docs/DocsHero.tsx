@@ -7,6 +7,13 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed, type DocsArticleRecord } from './docs-lakebed.ts'
 import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  SearchForm,
+  SearchField,
+  SearchFieldIcon,
+  SearchFieldInput,
+  SearchFieldHint,
+} from '#/section-kit/SearchForm.tsx'
 
 /**
  * DocsHero — search-forward hero band for a developer DOCUMENTATION / API-reference
@@ -229,41 +236,44 @@ export const DocsHero = defineCapsule({
           {subheading}
         </p>
 
-        <form
+        <SearchForm
           key={queryValue}
           onSubmit={docsSearch.submitSearch}
           className="mx-auto mt-9 max-w-2xl"
           role="search"
           aria-label="Documentation search"
         >
-          <div className="relative">
-            <svg
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
+          <SearchField>
+            <SearchFieldIcon className="left-4 top-1/2 -translate-y-1/2">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </SearchFieldIcon>
+            <SearchFieldInput
               type="search"
               name="query"
               aria-label="Search the documentation"
               placeholder={searchPlaceholder}
               defaultValue={queryValue}
-              className="w-full rounded-xl border border-input bg-background py-3.5 pl-11 pr-4 text-foreground placeholder-muted-foreground outline-none transition focus:border-ring focus:ring-2 focus:ring-ring"
+              className="py-3.5 pl-11 outline-none transition focus:border-ring focus:ring-2 focus:ring-ring"
             />
-            <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex">
-              ⌘K
-            </span>
-          </div>
-        </form>
+            <SearchFieldHint className="right-3 top-1/2 -translate-y-1/2">
+              <kbd className="hidden select-none items-center gap-1 rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex">
+                ⌘K
+              </kbd>
+            </SearchFieldHint>
+          </SearchField>
+        </SearchForm>
 
         {showingResults ? (
           <Card

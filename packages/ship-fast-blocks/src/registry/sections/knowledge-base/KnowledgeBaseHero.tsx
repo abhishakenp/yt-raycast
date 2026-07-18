@@ -11,6 +11,13 @@ import {
   useSyncKbCatalog,
 } from './knowledge-base-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  SearchForm,
+  SearchField,
+  SearchFieldIcon,
+  SearchFieldInput,
+  SearchFieldHint,
+} from '#/section-kit/SearchForm.tsx'
 
 /**
  * KnowledgeBaseHero — centered help-center hero on a raised card surface. A
@@ -127,30 +134,32 @@ export const KnowledgeBaseHero = defineCapsule({
           <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
             {subheading}
           </p>
-          <form
+          <SearchForm
             key={queryValue}
-            className="relative mx-auto max-w-2xl"
+            className="mx-auto max-w-2xl"
             role="search"
             aria-label="Knowledge base search"
             onSubmit={kbSearch.submitSearch}
           >
-            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
-              <SearchIcon className="size-5" />
-            </span>
-            <input
-              name="query"
-              type="search"
-              defaultValue={queryValue}
-              placeholder={searchPlaceholder}
-              aria-label="Search help articles"
-              className="w-full rounded-xl border border-input bg-background py-4 pl-12 pr-16 text-base text-foreground placeholder-muted-foreground shadow-sm transition-shadow focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <span className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <kbd className="hidden rounded border border-border bg-muted px-2 py-1 text-xs text-muted-foreground sm:inline-block">
-                ⌘K
-              </kbd>
-            </span>
-          </form>
+            <SearchField>
+              <SearchFieldIcon>
+                <SearchIcon className="size-5" />
+              </SearchFieldIcon>
+              <SearchFieldInput
+                name="query"
+                type="search"
+                defaultValue={queryValue}
+                placeholder={searchPlaceholder}
+                aria-label="Search help articles"
+                className="pr-16 transition-shadow focus:border-ring focus:ring-ring"
+              />
+              <SearchFieldHint>
+                <kbd className="hidden rounded border border-border bg-muted px-2 py-1 text-xs text-muted-foreground sm:inline-block">
+                  ⌘K
+                </kbd>
+              </SearchFieldHint>
+            </SearchField>
+          </SearchForm>
           <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm">
             <span className="text-muted-foreground">{popularLabel}</span>
             {popular.map((topic) => (

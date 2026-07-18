@@ -5,6 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  SearchForm,
+  SearchField,
+  SearchFieldIcon,
+  SearchFieldInput,
+  SearchFieldHint,
+} from '#/section-kit/SearchForm.tsx'
 
 /**
  * FaqHero — calm centered search hero for a help-center / FAQ / knowledge-base page.
@@ -66,42 +73,43 @@ export const FaqHero = defineCapsule({
               {subheading}
             </p>
 
-            <form
-              className="relative mx-auto max-w-2xl"
+            <SearchForm
+              className="mx-auto max-w-2xl"
               onSubmit={(e) => {
                 e.preventDefault()
                 go(searchTarget)
               }}
             >
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  className="text-muted-foreground"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </div>
-              <input
-                type="search"
-                placeholder={searchPlaceholder}
-                aria-label="Search help articles"
-                className="w-full rounded-xl border border-input bg-background py-4 pl-12 pr-16 text-base text-foreground shadow-sm placeholder:text-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                <kbd className="hidden items-center rounded border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex">
-                  ⌘K
-                </kbd>
-              </div>
-            </form>
+              <SearchField>
+                <SearchFieldIcon>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </SearchFieldIcon>
+                <SearchFieldInput
+                  type="search"
+                  placeholder={searchPlaceholder}
+                  aria-label="Search help articles"
+                  className="pr-16 focus:border-transparent focus:ring-ring"
+                />
+                <SearchFieldHint>
+                  <kbd className="hidden items-center rounded border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex">
+                    ⌘K
+                  </kbd>
+                </SearchFieldHint>
+              </SearchField>
+            </SearchForm>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
               <span className="text-sm text-muted-foreground">
