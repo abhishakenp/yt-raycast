@@ -28,6 +28,13 @@ function str(row: GovRow, key: string) {
 
 import { Container } from '#/section-kit/Container.tsx'
 import { InfoPanel } from '#/section-kit/InfoPanel.tsx'
+import {
+  DataTable,
+  DataHeader,
+  DataBody,
+  DataRow,
+  DataTableCell,
+} from '#/section-kit/DataTable.tsx'
 
 /**
  * GovPortalDirectory — a telephone / staff directory table. Theme-token based;
@@ -77,45 +84,53 @@ export const GovPortalDirectory = defineCapsule({
             {heading}
           </h2>
           <div className="overflow-x-auto rounded-xl border border-border">
-            <table className="w-full min-w-[36rem] text-left text-sm">
-              <thead className="bg-primary text-primary-foreground">
-                <tr>
-                  {cols.map((c) => (
-                    <th key={c} className="px-4 py-3 font-semibold">
-                      {c}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {rows.map((row, i) => (
-                  <tr key={`${str(row, 'name')}-${i}`} className="bg-card">
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {str(row, 'slNo') || i + 1}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-card-foreground">
-                      {str(row, 'name')}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {str(row, 'designation')}
-                    </td>
-                    <td className="px-4 py-3">
-                      {str(row, 'email') ? (
-                        <a
-                          href={`mailto:${str(row, 'email')}`}
-                          className="inline-flex items-center gap-1.5 text-primary hover:underline"
-                        >
-                          <MailIcon className="size-3.5" aria-hidden />
-                          {str(row, 'email')}
-                        </a>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable className="w-full min-w-[36rem] text-left text-sm">
+              <table className="w-full text-left text-sm">
+                <DataHeader asChild>
+                  <thead className="bg-primary text-primary-foreground">
+                    <tr>
+                      {cols.map((c) => (
+                        <th key={c} className="px-4 py-3 font-semibold">
+                          {c}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                </DataHeader>
+                <DataBody asChild>
+                  <tbody>
+                    {rows.map((row, i) => (
+                      <DataRow asChild key={`${str(row, 'name')}-${i}`}>
+                        <tr className="bg-card">
+                          <DataTableCell className="px-4 py-3 text-muted-foreground">
+                            {str(row, 'slNo') || i + 1}
+                          </DataTableCell>
+                          <DataTableCell className="px-4 py-3 font-medium text-card-foreground">
+                            {str(row, 'name')}
+                          </DataTableCell>
+                          <DataTableCell className="px-4 py-3 text-muted-foreground">
+                            {str(row, 'designation')}
+                          </DataTableCell>
+                          <DataTableCell className="px-4 py-3">
+                            {str(row, 'email') ? (
+                              <a
+                                href={`mailto:${str(row, 'email')}`}
+                                className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                              >
+                                <MailIcon className="size-3.5" aria-hidden />
+                                {str(row, 'email')}
+                              </a>
+                            ) : (
+                              '—'
+                            )}
+                          </DataTableCell>
+                        </tr>
+                      </DataRow>
+                    ))}
+                  </tbody>
+                </DataBody>
+              </table>
+            </DataTable>
           </div>
         </div>
       </InfoPanel>
