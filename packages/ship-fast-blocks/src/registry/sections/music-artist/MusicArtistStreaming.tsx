@@ -10,6 +10,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { StreamingLinks } from '#/section-kit/StreamingLinks.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MusicArtistStreaming — slim "stream on" platform strip for a music artist /
@@ -47,27 +48,29 @@ export const MusicArtistStreaming = defineCapsule({
 
     return (
       <div className={cn('border-y border-border', props.className)}>
-        <StreamingLinks className="mx-auto max-w-6xl px-6 lg:px-8">
-          <LogoStrip className="pt-28 pb-12">
-            <LogoStripLabel className="text-xs uppercase tracking-widest">
-              {label}
-            </LogoStripLabel>
-            <LogoStripItems layout="flex" className="mt-8">
-              {platforms.filter(Boolean).map((logo) => (
-                <LogoStripItem
-                  key={logo}
-                  variant="text-bold"
-                  className="text-sm font-medium"
-                  asChild
-                >
-                  <button onClick={() => ((platform) => go(platform))(logo)}>
-                    {logo}
-                  </button>
-                </LogoStripItem>
-              ))}
-            </LogoStripItems>
-          </LogoStrip>
-        </StreamingLinks>
+        <Container asChild size="lg" className="px-6 lg:px-6">
+          <StreamingLinks>
+            <LogoStrip className="pt-28 pb-12">
+              <LogoStripLabel className="text-xs uppercase tracking-widest">
+                {label}
+              </LogoStripLabel>
+              <LogoStripItems layout="flex" className="mt-8">
+                {platforms.filter(Boolean).map((logo) => (
+                  <LogoStripItem
+                    key={logo}
+                    variant="text-bold"
+                    className="text-sm font-medium"
+                    asChild
+                  >
+                    <button onClick={() => ((platform) => go(platform))(logo)}>
+                      {logo}
+                    </button>
+                  </LogoStripItem>
+                ))}
+              </LogoStripItems>
+            </LogoStrip>
+          </StreamingLinks>
+        </Container>
       </div>
     )
   },

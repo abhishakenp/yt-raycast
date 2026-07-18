@@ -10,6 +10,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const iconClass = 'size-5'
 const baseIconProps = {
@@ -114,7 +115,7 @@ export const WebinarFeatures = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <Container size="lg" className="px-6 lg:px-6">
           <FeatureGrid heading={heading} subheading={subheading} columns={3}>
             {features.map((f) => {
               const __iv__ = f as {
@@ -135,7 +136,7 @@ export const WebinarFeatures = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

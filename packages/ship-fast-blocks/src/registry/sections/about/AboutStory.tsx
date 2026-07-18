@@ -12,6 +12,7 @@ import {
   SplitStoryBody,
 } from '#/section-kit/SplitStory.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AboutStory — "our story" split band for a modern company / ABOUT page. A
@@ -82,7 +83,7 @@ export const AboutStory = defineCapsule({
 
     return (
       <SplitStory className={cn('py-16 sm:py-20 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
+        <Container size="lg" className="px-6 sm:px-8 lg:px-12">
           <div className="mb-10 max-w-2xl">
             <Eyebrow
               variant="primary"
@@ -145,7 +146,7 @@ export const AboutStory = defineCapsule({
               </PullQuoteText>
             </SplitStoryContent>
           </SplitStoryGrid>
-        </div>
+        </Container>
       </SplitStory>
     )
   },

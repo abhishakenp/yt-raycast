@@ -15,6 +15,7 @@ import {
   HeroStatValue,
   HeroStatLabel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AgencyHero — bold full-bleed hero band for a creative digital-agency landing
@@ -101,45 +102,47 @@ export const AgencyHero = defineCapsule({
           <div className="absolute left-1/4 top-1/4 size-96 animate-pulse rounded-full bg-primary/30 blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 size-80 animate-pulse rounded-full bg-accent/20 blur-3xl [animation-delay:2s]" />
         </div>
-        <HeroContent className="mx-auto max-w-6xl px-6 text-center">
-          <HeroBadge variant="pulsing-dot" className="mb-8">
-            <span className="size-2 animate-pulse rounded-full bg-primary" />
-            {badge}
-          </HeroBadge>
-          <HeroHeading variant="black">
-            {headingTop}
-            <br />
-            <HeroHighlight variant="gradient">{highlight}</HeroHighlight>{' '}
-            {headingBottom}
-          </HeroHeading>
-          <HeroSubheading variant="large">{subheading}</HeroSubheading>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-bold text-primary-foreground transition-all hover:bg-primary/90"
-            >
-              {primaryCta}
-              <ArrowRight />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="rounded-full border border-border bg-accent/50 px-8 py-4 font-medium text-foreground transition-all hover:bg-accent"
-            >
-              {secondaryCta}
-            </button>
-          </div>
+        <Container asChild size="lg" className="px-6 text-center lg:px-6">
+          <HeroContent>
+            <HeroBadge variant="pulsing-dot" className="mb-8">
+              <span className="size-2 animate-pulse rounded-full bg-primary" />
+              {badge}
+            </HeroBadge>
+            <HeroHeading variant="black">
+              {headingTop}
+              <br />
+              <HeroHighlight variant="gradient">{highlight}</HeroHighlight>{' '}
+              {headingBottom}
+            </HeroHeading>
+            <HeroSubheading variant="large">{subheading}</HeroSubheading>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => go(primaryCta)}
+                className="flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-bold text-primary-foreground transition-all hover:bg-primary/90"
+              >
+                {primaryCta}
+                <ArrowRight />
+              </button>
+              <button
+                type="button"
+                onClick={() => go(secondaryCta)}
+                className="rounded-full border border-border bg-accent/50 px-8 py-4 font-medium text-foreground transition-all hover:bg-accent"
+              >
+                {secondaryCta}
+              </button>
+            </div>
 
-          <HeroStats>
-            {stats.map((s) => (
-              <HeroStat key={s.label}>
-                <HeroStatValue>{s.value}</HeroStatValue>
-                <HeroStatLabel>{s.label}</HeroStatLabel>
-              </HeroStat>
-            ))}
-          </HeroStats>
-        </HeroContent>
+            <HeroStats>
+              {stats.map((s) => (
+                <HeroStat key={s.label}>
+                  <HeroStatValue>{s.value}</HeroStatValue>
+                  <HeroStatLabel>{s.label}</HeroStatLabel>
+                </HeroStat>
+              ))}
+            </HeroStats>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

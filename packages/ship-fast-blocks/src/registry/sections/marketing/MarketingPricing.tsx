@@ -16,6 +16,7 @@ import {
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MarketingPricing — a centered-header 3-tier pricing table for a SaaS /
@@ -103,7 +104,7 @@ export const MarketingPricing = defineCapsule({
 
     return (
       <section className={cn('py-20', props.className)}>
-        <div className="mx-auto max-w-6xl px-6">
+        <Container size="lg" className="px-6 lg:px-6">
           <PricingGrid>
             <SectionHeading title={heading} subtitle={description} />
             {plans
@@ -208,7 +209,7 @@ export const MarketingPricing = defineCapsule({
                 )
               })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { SplitStory } from '#/section-kit/SplitStory.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AboutHero — mission hero band for a modern company / ABOUT page. A spacious
@@ -78,7 +79,7 @@ export const AboutHero = defineCapsule({
           <div className="absolute -top-32 -right-32 size-[520px] rounded-full bg-primary/25 blur-3xl" />
           <div className="absolute -bottom-28 -left-24 size-[380px] rounded-full bg-accent/40 blur-3xl" />
         </div>
-        <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
+        <Container size="lg" className="relative px-6 sm:px-8 lg:px-12">
           <Eyebrow variant="primary" icon={<SparkleIcon />}>
             {eyebrow}
           </Eyebrow>
@@ -125,7 +126,7 @@ export const AboutHero = defineCapsule({
               </button>
             </Card>
           </div>
-        </div>
+        </Container>
       </SplitStory>
     )
   },

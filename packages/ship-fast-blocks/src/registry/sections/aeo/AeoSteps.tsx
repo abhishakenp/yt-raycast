@@ -11,6 +11,7 @@ import {
   StepTimelineGrid,
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AeoSteps — bespoke three-step "how it works" band for an Answer-Engine-
@@ -69,7 +70,7 @@ export const AeoSteps = defineCapsule({
       <StepTimeline
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
-        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <Container size="lg" className="px-6 lg:px-6">
           <StepTimelineHeader className="mb-14">
             <Eyebrow className="text-accent">{eyebrow}</Eyebrow>
             <h2 className="mt-3 text-3xl font-semibold text-foreground md:text-4xl">
@@ -102,7 +103,7 @@ export const AeoSteps = defineCapsule({
               ))}
             </ol>
           </StepTimelineGrid>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

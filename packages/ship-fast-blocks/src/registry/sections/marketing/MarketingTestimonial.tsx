@@ -12,6 +12,7 @@ import {
   PullQuoteText,
 } from '#/section-kit/PullQuote.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MarketingTestimonial — a single large, centered testimonial card for a SaaS /
@@ -41,7 +42,7 @@ export const MarketingTestimonial = defineCapsule({
 
     return (
       <PullQuote variant="gradient" className={cn('py-20', props.className)}>
-        <div className="mx-auto max-w-6xl px-6">
+        <Container size="lg" className="px-6 lg:px-6">
           <Card
             asChild
             variant="default"
@@ -80,7 +81,7 @@ export const MarketingTestimonial = defineCapsule({
               </figcaption>
             </figure>
           </Card>
-        </div>
+        </Container>
       </PullQuote>
     )
   },

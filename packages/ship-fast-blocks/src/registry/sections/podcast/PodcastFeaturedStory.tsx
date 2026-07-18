@@ -11,6 +11,7 @@ import {
   FeaturedArticleContent,
   FeaturedArticleMeta,
 } from '#/section-kit/FeaturedArticle.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const PodcastFeaturedStoryProps = z.object({
   eyebrow: z.string().optional().describe('Section eyebrow above the heading'),
@@ -60,7 +61,7 @@ export const PodcastFeaturedStory = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <Container size="lg" className="px-6 lg:px-6">
           <SectionHeading eyebrow={eyebrow} title={heading} align="center" />
 
           <div className="mt-12 grid overflow-hidden rounded-2xl border border-border bg-card text-card-foreground md:grid-cols-2">
@@ -113,7 +114,7 @@ export const PodcastFeaturedStory = defineCapsule({
               </div>
             </FeaturedArticleContent>
           </div>
-        </div>
+        </Container>
       </FeaturedArticle>
     )
   },

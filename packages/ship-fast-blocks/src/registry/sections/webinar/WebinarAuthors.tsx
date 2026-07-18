@@ -10,6 +10,7 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const WebinarAuthors = defineCapsule({
   name: 'WebinarAuthors',
@@ -74,7 +75,7 @@ export const WebinarAuthors = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <Container size="lg" className="px-6 lg:px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -111,7 +112,7 @@ export const WebinarAuthors = defineCapsule({
               </PersonCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },
