@@ -12,7 +12,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * platforms, tutoring services, and family learning apps. Renders fully with no
  * props via baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const KidsEducationLogos = defineCapsule({
   name: 'KidsEducationLogos',
   description:
@@ -40,15 +45,20 @@ export const KidsEducationLogos = defineCapsule({
         ]
     return (
       <LogoStrip
-        lead={eyebrow}
-        logos={names}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn(
           'border-y border-border bg-background py-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{eyebrow}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {names.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

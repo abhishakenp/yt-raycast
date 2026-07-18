@@ -9,7 +9,12 @@ import { cn } from '#/lib/utils.ts'
  * bottomed band. Use right under the hero to establish credibility with press
  * mentions or partner brands. Renders fully with no props via baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const InsuranceLogos = defineCapsule({
   name: 'InsuranceLogos',
   description:
@@ -28,11 +33,17 @@ export const InsuranceLogos = defineCapsule({
       : ['Forbes', 'Bloomberg', 'TechCrunch', 'WSJ', 'Inc. 5000', 'NerdWallet']
     return (
       <LogoStrip
-        lead={label}
-        logos={items}
-        logoStyle="opacity-hover"
         className={cn('border-b border-border py-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{label}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

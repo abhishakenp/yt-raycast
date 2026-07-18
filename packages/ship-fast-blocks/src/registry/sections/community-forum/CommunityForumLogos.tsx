@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * CommunityForumLogos — logo trust strip for a community-platform / discussion-forum
@@ -32,17 +37,27 @@ export const CommunityForumLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={heading}
-        logos={items}
-        logoStyle="text-bold"
-        onClickLogo={(logo) => go(logo)}
-        leadClassName="normal-case tracking-normal"
-        logoClassName="text-foreground/80"
         className={cn(
           'border-y border-border bg-muted/50 py-12 opacity-60',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="normal-case tracking-normal">
+          {heading}
+        </LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem
+              key={logo}
+              variant="text-bold"
+              className="text-foreground/80"
+              asChild
+            >
+              <button onClick={() => ((logo) => go(logo))(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

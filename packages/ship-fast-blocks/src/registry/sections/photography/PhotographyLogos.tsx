@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * PhotographyLogos — a "Featured In" publication logo strip for a fine-art /
@@ -41,15 +46,20 @@ export const PhotographyLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={label}
-        logos={items}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn(
           'border-b border-border bg-card py-16 lg:py-20',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{label}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

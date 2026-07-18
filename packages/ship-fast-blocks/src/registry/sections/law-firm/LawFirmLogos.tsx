@@ -13,7 +13,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * credibility with recognizable client names. Renders fully with no props via
  * baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const LawFirmLogos = defineCapsule({
   name: 'LawFirmLogos',
   description:
@@ -31,12 +36,17 @@ export const LawFirmLogos = defineCapsule({
       : ['MORGAN', 'CITADEL', 'VENTURE', 'APEX', 'MERIDIAN', 'CONSOL']
     return (
       <LogoStrip
-        lead={heading}
-        logos={items}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn('border-y border-border bg-card py-16', props.className)}
-      />
+      >
+        <LogoStripLabel>{heading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

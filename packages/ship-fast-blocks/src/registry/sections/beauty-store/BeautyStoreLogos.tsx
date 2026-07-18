@@ -4,7 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * BeautyStoreLogos — trusted-by beauty-brand logo strip for a cosmetics / skincare
@@ -41,12 +46,17 @@ export const BeautyStoreLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={heading}
-        logos={brands}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn('border-b border-border py-16', props.className)}
-      />
+      >
+        <LogoStripLabel>{heading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {brands.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

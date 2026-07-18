@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * FintechLogos — trusted-by logo strip for a fintech / neobank landing page. A
@@ -34,17 +39,26 @@ export const FintechLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={label}
-        logos={items}
-        layout="grid"
-        leadClassName="normal-case tracking-normal"
-        logoClassName="text-lg font-bold tracking-tight text-foreground opacity-60 transition-opacity hover:opacity-100"
-        onClickLogo={(logo) => go(logo)}
         className={cn(
           'border-y border-border bg-muted px-4 pt-28 pb-12 sm:px-6 lg:px-8',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="normal-case tracking-normal">
+          {label}
+        </LogoStripLabel>
+        <LogoStripItems layout="grid" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem
+              key={logo}
+              className="text-lg font-bold tracking-tight text-foreground opacity-60 transition-opacity hover:opacity-100"
+              asChild
+            >
+              <button onClick={() => ((logo) => go(logo))(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

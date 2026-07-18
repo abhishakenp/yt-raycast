@@ -12,7 +12,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * a logistics, freight-forwarding, shipping, courier or cargo/transport site to
  * establish credibility. Renders fully with no props.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const LogisticsLogos = defineCapsule({
   name: 'LogisticsLogos',
   description:
@@ -30,12 +35,17 @@ export const LogisticsLogos = defineCapsule({
       : ['TechFlow', 'Globex', 'Acme Corp', 'Stark Ind', 'Wayne Ent', 'Oscorp']
     return (
       <LogoStrip
-        lead={heading}
-        logos={items}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn('border-b border-border py-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{heading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

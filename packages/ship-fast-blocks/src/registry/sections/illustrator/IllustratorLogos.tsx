@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * IllustratorLogos — a low-key "trusted by" publications / brands strip on a
@@ -40,15 +45,20 @@ export const IllustratorLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={heading}
-        logos={names}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn(
           'border-y border-border/60 bg-muted/50 py-12 sm:py-16',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{heading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {names.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

@@ -10,7 +10,12 @@ import { cn } from '#/lib/utils.ts'
  * social-proof / client-roster band beneath the hero for filmmakers, directors,
  * cinematographers, DPs, or production houses.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const FilmDirectorLogos = defineCapsule({
   name: 'FilmDirectorLogos',
   description:
@@ -27,14 +32,20 @@ export const FilmDirectorLogos = defineCapsule({
       : ['NIKE', 'APPLE', 'SONY', 'NETFLIX', 'SPOTIFY', 'ADOBE']
     return (
       <LogoStrip
-        lead={logosLabel}
-        logos={logoBrands}
-        logoStyle="opacity-hover"
         className={cn(
           'border-y border-border pt-28 pb-16 md:pt-32 md:pb-24',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{logosLabel}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {logoBrands.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

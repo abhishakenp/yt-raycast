@@ -10,7 +10,12 @@ import { cn } from '#/lib/utils.ts'
  * contractors, builders, or any service business showcasing trusted
  * partnerships. Renders fully with no props via baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const ConstructionLogos = defineCapsule({
   name: 'ConstructionLogos',
   description:
@@ -29,11 +34,17 @@ export const ConstructionLogos = defineCapsule({
       : ['Microsoft', 'Amazon', 'Starbucks', 'Boeing', 'Nordstrom', 'Costco']
     return (
       <LogoStrip
-        lead={heading}
-        logos={items}
-        logoStyle="opacity-hover"
         className={cn('border-b border-border bg-card py-10', props.className)}
-      />
+      >
+        <LogoStripLabel>{heading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

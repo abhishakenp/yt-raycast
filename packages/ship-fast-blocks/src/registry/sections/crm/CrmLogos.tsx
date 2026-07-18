@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * CrmLogos — slim trusted-by logo strip for a CRM / SaaS landing page. A
@@ -32,17 +37,20 @@ export const CrmLogos = defineCapsule({
       : ['Stripe', 'Notion', 'Vercel', 'Slack', 'Figma', 'Mastercard']
     return (
       <LogoStrip
-        lead={heading}
-        logos={items}
-        layout="grid"
-        logoStyle="opacity-hover"
-        onClickLogo={(logo) => go(logo)}
-        leadClassName="tracking-wider"
         className={cn(
           'border-b border-border bg-background px-4 py-12 sm:px-6 lg:px-8',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="tracking-wider">{heading}</LogoStripLabel>
+        <LogoStripItems layout="grid" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => ((logo) => go(logo))(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

@@ -12,7 +12,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * hero of a dentist, dental office, or clinic site to signal accepted insurance
  * and build trust.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const DentalLogos = defineCapsule({
   name: 'DentalLogos',
   description:
@@ -30,15 +35,20 @@ export const DentalLogos = defineCapsule({
       : ['Delta Dental', 'Cigna', 'Aetna', 'MetLife', 'Guardian', 'Humana']
     return (
       <LogoStrip
-        lead={logosLabel}
-        logos={logoItems}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn(
           'border-b border-border bg-background py-16',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{logosLabel}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {logoItems.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

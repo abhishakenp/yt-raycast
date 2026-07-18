@@ -10,7 +10,12 @@ import { cn } from '#/lib/utils.ts'
  * directly under the hero of a mobile-app, SaaS or consumer-product landing
  * page. Renders fully with no props via baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const MobileAppLogos = defineCapsule({
   name: 'MobileAppLogos',
   description:
@@ -27,11 +32,17 @@ export const MobileAppLogos = defineCapsule({
       : ['TechCrunch', 'Product Hunt', 'Wired', 'The Verge', 'Fast Company']
     return (
       <LogoStrip
-        lead={label}
-        logos={items}
-        logoStyle="opacity-hover"
         className={cn('border-b border-border pt-28 pb-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{label}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

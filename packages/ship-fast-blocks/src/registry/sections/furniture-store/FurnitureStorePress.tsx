@@ -4,7 +4,12 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 import { PressList } from '#/section-kit/PressList.tsx'
 
 /**
@@ -39,15 +44,25 @@ export const FurnitureStorePress = defineCapsule({
           aria-label="Featured in"
         >
           <Container>
-            <LogoStrip
-              lead={label}
-              logos={logos}
-              layout="flex"
-              logoStyle="text-bold"
-              onClickLogo={(logo) => go(logo)}
-              leadClassName="text-center text-sm text-muted-foreground normal-case font-normal tracking-normal"
-              logoClassName="font-serif text-lg text-muted-foreground/60"
-            />
+            <LogoStrip>
+              <LogoStripLabel className="text-center text-sm text-muted-foreground normal-case font-normal tracking-normal">
+                {label}
+              </LogoStripLabel>
+              <LogoStripItems layout="flex" className="mt-8">
+                {logos.filter(Boolean).map((logo) => (
+                  <LogoStripItem
+                    key={logo}
+                    variant="text-bold"
+                    className="font-serif text-lg text-muted-foreground/60"
+                    asChild
+                  >
+                    <button onClick={() => ((logo) => go(logo))(logo)}>
+                      {logo}
+                    </button>
+                  </LogoStripItem>
+                ))}
+              </LogoStripItems>
+            </LogoStrip>
           </Container>
         </section>
       </PressList>

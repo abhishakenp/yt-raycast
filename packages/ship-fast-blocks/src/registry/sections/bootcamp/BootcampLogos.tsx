@@ -11,7 +11,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * the hero to build credibility for bootcamps, dev academies, or vocational
  * programs by showing where graduates are placed.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const BootcampLogos = defineCapsule({
   name: 'BootcampLogos',
   description:
@@ -32,15 +37,20 @@ export const BootcampLogos = defineCapsule({
       : ['GitHub', 'Google', 'Stripe', 'Airbnb', 'Shopify', 'Spotify']
     return (
       <LogoStrip
-        lead={logosLabel}
-        logos={logoItems}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn(
           'border-b border-border bg-background py-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{logosLabel}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {logoItems.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

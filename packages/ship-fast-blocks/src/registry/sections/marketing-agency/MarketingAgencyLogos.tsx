@@ -10,7 +10,12 @@ import { cn } from '#/lib/utils.ts'
  * social proof for marketing / growth agencies, SaaS, or any B2B landing page.
  * Renders fully with no props via baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const MarketingAgencyLogos = defineCapsule({
   name: 'MarketingAgencyLogos',
   description:
@@ -27,11 +32,17 @@ export const MarketingAgencyLogos = defineCapsule({
       : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Webflow']
     return (
       <LogoStrip
-        lead={heading}
-        logos={items}
-        logoStyle="opacity-hover"
         className={cn('border-y border-border bg-muted py-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{heading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

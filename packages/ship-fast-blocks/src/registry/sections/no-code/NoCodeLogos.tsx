@@ -9,7 +9,12 @@ import { cn } from '#/lib/utils.ts'
  * meant to sit just below a hero. Use as the logo / "trusted by" strip on any
  * SaaS, no-code builder, or product landing page. Renders fully with no props.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const NoCodeLogos = defineCapsule({
   name: 'NoCodeLogos',
   description:
@@ -28,11 +33,17 @@ export const NoCodeLogos = defineCapsule({
       : ['stripe', 'notion', 'linear', 'vercel', 'shopify', 'slack']
     return (
       <LogoStrip
-        lead={label}
-        logos={names}
-        logoStyle="opacity-hover"
         className={cn('border-y border-border bg-card py-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{label}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {names.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

@@ -9,7 +9,12 @@ import { cn } from '#/lib/utils.ts'
  * muted tone. Use directly under the hero to convey press credibility for
  * clothing brands, boutiques, or any premium retail storefront.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const FashionStoreLogos = defineCapsule({
   name: 'FashionStoreLogos',
   description:
@@ -26,11 +31,17 @@ export const FashionStoreLogos = defineCapsule({
       : ['VOGUE', "Harper's Bazaar", 'Elle', 'GQ', 'W Magazine', 'The Cut']
     return (
       <LogoStrip
-        lead={pressEyebrow}
-        logos={pressLogos}
-        logoStyle="text"
         className={cn('border-b border-border pt-28 pb-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{pressEyebrow}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {pressLogos.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="text">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

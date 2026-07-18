@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * MentalHealthLogos — a subtle insurance / trust logo strip for a therapy
@@ -29,14 +34,20 @@ export const MentalHealthLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={title}
-        logos={items}
-        logoStyle="opacity-hover"
         className={cn(
           'border-y border-border bg-background py-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{title}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

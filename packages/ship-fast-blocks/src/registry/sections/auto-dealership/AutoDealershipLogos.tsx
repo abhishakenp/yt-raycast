@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * AutoDealershipLogos — trusted-brands wordmark strip for an auto dealership
@@ -34,17 +39,20 @@ export const AutoDealershipLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={heading}
-        logos={brands}
-        layout="grid"
-        logoStyle="opacity-hover"
-        onClickLogo={(b) => go(b)}
-        leadClassName="tracking-wider"
         className={cn(
           'border-b border-border bg-card px-4 py-12 sm:px-6 lg:px-8',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="tracking-wider">{heading}</LogoStripLabel>
+        <LogoStripItems layout="grid" className="mt-8">
+          {brands.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => ((b) => go(b))(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

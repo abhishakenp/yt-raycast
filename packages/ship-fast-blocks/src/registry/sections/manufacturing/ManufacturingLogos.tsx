@@ -13,7 +13,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * or industrial-engineering landing pages. Renders fully with no props via
  * baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const ManufacturingLogos = defineCapsule({
   name: 'ManufacturingLogos',
   description:
@@ -38,12 +43,17 @@ export const ManufacturingLogos = defineCapsule({
         ]
     return (
       <LogoStrip
-        lead={heading}
-        logos={items}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn('border-y border-border bg-muted py-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{heading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

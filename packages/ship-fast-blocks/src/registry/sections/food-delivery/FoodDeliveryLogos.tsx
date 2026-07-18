@@ -11,7 +11,12 @@ import { cn } from '#/lib/utils.ts'
  * social proof for food-delivery apps, restaurant aggregators, or online-ordering
  * platforms. Renders fully with no props via baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const FoodDeliveryLogos = defineCapsule({
   name: 'FoodDeliveryLogos',
   description:
@@ -38,14 +43,20 @@ export const FoodDeliveryLogos = defineCapsule({
         ]
     return (
       <LogoStrip
-        lead={logosHeading}
-        logos={logoItems}
-        logoStyle="opacity-hover"
         className={cn(
           'border-y border-border bg-card pt-28 pb-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{logosHeading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {logoItems.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

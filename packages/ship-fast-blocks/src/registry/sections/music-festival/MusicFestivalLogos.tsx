@@ -11,7 +11,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * music festivals, arts festivals, concert series, or any sponsored multi-day
  * event to lend credibility.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const MusicFestivalLogos = defineCapsule({
   name: 'MusicFestivalLogos',
   description:
@@ -31,12 +36,17 @@ export const MusicFestivalLogos = defineCapsule({
       : ['PITCHFORK', 'SPOTIFY', 'SONOS', 'RED BULL', 'BEATS', 'VANS']
     return (
       <LogoStrip
-        lead={label}
-        logos={items}
-        logoStyle="text-bold"
-        onClickLogo={go}
         className={cn('border-y border-border pt-28 pb-16', props.className)}
-      />
+      >
+        <LogoStripLabel>{label}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="text-bold" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

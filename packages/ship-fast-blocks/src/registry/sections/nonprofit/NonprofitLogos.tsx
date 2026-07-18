@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * NonprofitLogos — trusted-by partner / funder logo strip for a nonprofit /
@@ -40,14 +45,20 @@ export const NonprofitLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={label}
-        logos={logos}
-        logoStyle="opacity-hover"
         className={cn(
           'border-y border-border bg-card pt-28 pb-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{label}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {logos.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

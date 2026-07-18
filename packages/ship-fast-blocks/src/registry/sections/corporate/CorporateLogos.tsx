@@ -11,7 +11,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * through useNavigate. Use beneath the hero to establish credibility for SaaS
  * platforms, consultancies, or any B2B offering.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const CorporateLogos = defineCapsule({
   name: 'CorporateLogos',
   description:
@@ -31,15 +36,20 @@ export const CorporateLogos = defineCapsule({
       : ['AcmeCorp', 'Globex', 'Initech', 'Hooli', 'Massive', 'Soylent']
     return (
       <LogoStrip
-        lead={heading}
-        logos={items}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn(
           'border-b border-border bg-background py-16',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{heading}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

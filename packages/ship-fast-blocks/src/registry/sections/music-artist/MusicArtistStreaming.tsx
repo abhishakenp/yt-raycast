@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 import { StreamingLinks } from '#/section-kit/StreamingLinks.tsx'
 
 /**
@@ -43,16 +48,25 @@ export const MusicArtistStreaming = defineCapsule({
     return (
       <div className={cn('border-y border-border', props.className)}>
         <StreamingLinks className="mx-auto max-w-6xl px-6 lg:px-8">
-          <LogoStrip
-            lead={label}
-            logos={platforms}
-            layout="flex"
-            logoStyle="text-bold"
-            onClickLogo={(platform) => go(platform)}
-            leadClassName="text-xs uppercase tracking-widest"
-            logoClassName="text-sm font-medium"
-            className="pt-28 pb-12"
-          />
+          <LogoStrip className="pt-28 pb-12">
+            <LogoStripLabel className="text-xs uppercase tracking-widest">
+              {label}
+            </LogoStripLabel>
+            <LogoStripItems layout="flex" className="mt-8">
+              {platforms.filter(Boolean).map((logo) => (
+                <LogoStripItem
+                  key={logo}
+                  variant="text-bold"
+                  className="text-sm font-medium"
+                  asChild
+                >
+                  <button onClick={() => ((platform) => go(platform))(logo)}>
+                    {logo}
+                  </button>
+                </LogoStripItem>
+              ))}
+            </LogoStripItems>
+          </LogoStrip>
         </StreamingLinks>
       </div>
     )

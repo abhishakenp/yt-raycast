@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * EcommerceLogos — trust/brand strip for a general online store. A slim band
@@ -41,11 +46,20 @@ export const EcommerceLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={stripEyebrow}
-        logos={trustItems.map((t) => t.label)}
-        logoStyle="text"
         className={cn('border-y border-border py-10 sm:py-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{stripEyebrow}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {trustItems
+            .map((t) => t.label)
+            .filter(Boolean)
+            .map((logo) => (
+              <LogoStripItem key={logo} variant="text">
+                {logo}
+              </LogoStripItem>
+            ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

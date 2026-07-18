@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * AnalyticsLogos — bespoke "trusted by" social-proof strip for an analytics
@@ -32,14 +37,20 @@ export const AnalyticsLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={lead}
-        logos={companies}
-        logoStyle="text-bold"
         className={cn(
           'border-y border-border bg-muted/30 px-6 py-12 lg:px-8',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{lead}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {companies.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="text-bold">
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

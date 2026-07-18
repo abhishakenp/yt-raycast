@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * SaasLogos — grayscale "trusted by" logo / social-proof strip for a SaaS
@@ -41,15 +46,25 @@ export const SaasLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={label}
-        logos={names}
-        leadClassName="font-semibold tracking-[0.08em]"
-        logoClassName="whitespace-nowrap text-xl font-extrabold"
         className={cn(
           'border-b border-border/60 px-6 py-12 sm:px-8 lg:px-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="font-semibold tracking-[0.08em]">
+          {label}
+        </LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {names.filter(Boolean).map((logo) => (
+            <LogoStripItem
+              key={logo}
+              className="whitespace-nowrap text-xl font-extrabold"
+            >
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

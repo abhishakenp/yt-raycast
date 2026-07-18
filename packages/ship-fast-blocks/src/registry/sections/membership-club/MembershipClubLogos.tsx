@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * MembershipClubLogos — quiet "members come from" wordmark strip for a private
@@ -32,19 +37,29 @@ export const MembershipClubLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={label}
-        logos={companies}
-        layout="grid"
-        logoStyle="opacity-hover"
-        onClickLogo={(company) => go(company)}
-        leadClassName="text-sm font-medium uppercase tracking-wider"
-        logoClassName="text-muted-foreground/70"
-        aria-label="Member companies"
         className={cn(
           'w-full border-y border-border bg-card py-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="text-sm font-medium uppercase tracking-wider">
+          {label}
+        </LogoStripLabel>
+        <LogoStripItems layout="grid" className="mt-8">
+          {companies.filter(Boolean).map((logo) => (
+            <LogoStripItem
+              key={logo}
+              variant="opacity-hover"
+              className="text-muted-foreground/70"
+              asChild
+            >
+              <button onClick={() => ((company) => go(company))(logo)}>
+                {logo}
+              </button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

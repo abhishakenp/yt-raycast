@@ -5,7 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 import { PressList } from '#/section-kit/PressList.tsx'
 
 /**
@@ -42,15 +47,25 @@ export const CrowdfundingPress = defineCapsule({
           )}
         >
           <Container>
-            <LogoStrip
-              lead={pressHeading}
-              logos={pressLogos}
-              layout="flex"
-              logoStyle="text-bold"
-              onClickLogo={(logo) => go(logo)}
-              leadClassName="tracking-wider"
-              logoClassName="text-xl opacity-60 tracking-normal"
-            />
+            <LogoStrip>
+              <LogoStripLabel className="tracking-wider">
+                {pressHeading}
+              </LogoStripLabel>
+              <LogoStripItems layout="flex" className="mt-8">
+                {pressLogos.filter(Boolean).map((logo) => (
+                  <LogoStripItem
+                    key={logo}
+                    variant="text-bold"
+                    className="text-xl opacity-60 tracking-normal"
+                    asChild
+                  >
+                    <button onClick={() => ((logo) => go(logo))(logo)}>
+                      {logo}
+                    </button>
+                  </LogoStripItem>
+                ))}
+              </LogoStripItems>
+            </LogoStrip>
           </Container>
         </section>
       </PressList>

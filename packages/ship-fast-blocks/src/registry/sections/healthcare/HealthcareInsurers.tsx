@@ -12,7 +12,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * practice, telehealth or urgent-care clinic to show accepted insurance plans.
  * Renders fully with no props via baked-in major-insurer defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const HealthcareInsurers = defineCapsule({
   name: 'HealthcareInsurers',
   description:
@@ -32,16 +37,20 @@ export const HealthcareInsurers = defineCapsule({
       : ['Blue Shield', 'Aetna', 'Cigna', 'UnitedHealth', 'Kaiser', 'Medicare']
     return (
       <LogoStrip
-        lead={label}
-        logos={items}
-        layout="grid"
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn(
           'border-y border-border bg-background py-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{label}</LogoStripLabel>
+        <LogoStripItems layout="grid" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

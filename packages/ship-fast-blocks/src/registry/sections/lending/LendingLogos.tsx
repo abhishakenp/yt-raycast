@@ -12,7 +12,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * mentions, partner brands, or trust-signal logos on loan, fintech, SaaS, or any
  * conversion landing page. Renders fully with no props via baked-in defaults.
  */
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 export const LendingLogos = defineCapsule({
   name: 'LendingLogos',
   description:
@@ -31,12 +36,17 @@ export const LendingLogos = defineCapsule({
       : ['TechCrunch', 'Forbes', 'Bloomberg', 'CNBC', 'NerdWallet', 'Bankrate']
     return (
       <LogoStrip
-        lead={logosCaption}
-        logos={logoNames}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn('border-y border-border bg-card py-12', props.className)}
-      />
+      >
+        <LogoStripLabel>{logosCaption}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {logoNames.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

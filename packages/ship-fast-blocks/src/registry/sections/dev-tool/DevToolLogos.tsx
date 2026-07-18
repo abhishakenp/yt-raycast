@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * DevToolLogos — a slim "trusted by" social-proof logo strip for a developer
@@ -31,19 +36,27 @@ export const DevToolLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={label}
-        logos={companies}
-        layout="grid"
-        logoStyle="opacity-hover"
-        onClickLogo={(company) => go(company)}
-        leadClassName="tracking-wider"
-        logoClassName="text-muted-foreground/70"
-        aria-label="Trusted companies"
         className={cn(
           'border-b border-border px-4 py-12 sm:px-6 lg:px-8',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="tracking-wider">{label}</LogoStripLabel>
+        <LogoStripItems layout="grid" className="mt-8">
+          {companies.filter(Boolean).map((logo) => (
+            <LogoStripItem
+              key={logo}
+              variant="opacity-hover"
+              className="text-muted-foreground/70"
+              asChild
+            >
+              <button onClick={() => ((company) => go(company))(logo)}>
+                {logo}
+              </button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * ComingSoonLogos — "trusted by" logo strip for a "launching soon" / waitlist
@@ -34,18 +39,26 @@ export const ComingSoonLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={heading}
-        logos={names}
-        layout="flex"
-        onClickLogo={(name) => go(name)}
-        leadClassName="text-xs font-medium uppercase tracking-widest"
-        logoClassName="text-lg font-semibold tracking-tight sm:text-xl"
-        aria-label="Trusted by innovative teams"
         className={cn(
           'w-full border-t border-border px-4 py-16 opacity-60 sm:px-6 lg:px-8 xl:px-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="text-xs font-medium uppercase tracking-widest">
+          {heading}
+        </LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {names.filter(Boolean).map((logo) => (
+            <LogoStripItem
+              key={logo}
+              className="text-lg font-semibold tracking-tight sm:text-xl"
+              asChild
+            >
+              <button onClick={() => ((name) => go(name))(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

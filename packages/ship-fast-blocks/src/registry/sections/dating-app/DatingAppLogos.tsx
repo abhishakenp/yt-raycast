@@ -4,7 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * DatingAppLogos — a low-contrast "Featured in" press-logo strip for a dating /
@@ -42,15 +47,20 @@ export const DatingAppLogos = defineCapsule({
 
     return (
       <LogoStrip
-        lead={logosLabel}
-        logos={logoNames}
-        logoStyle="opacity-hover"
-        onClickLogo={go}
         className={cn(
           'border-y border-border bg-muted/50 py-12',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel>{logosLabel}</LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {logoNames.filter(Boolean).map((logo) => (
+            <LogoStripItem key={logo} variant="opacity-hover" asChild>
+              <button onClick={() => go(logo)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

@@ -230,7 +230,14 @@ export {
   HeroInfoStrip,
   HeroInfoStripItem,
 } from './HeroSection.tsx'
-export { LogoStrip } from './LogoStrip.tsx'
+export {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+  logoStripVariants,
+  logoItemVariants,
+} from './LogoStrip.tsx'
 export {
   PortfolioGrid,
   PortfolioItem,

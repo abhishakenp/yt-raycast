@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripLabel,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * ChurchPartners — muted logo-band section for a church or faith-community site
@@ -38,17 +43,26 @@ export const ChurchPartners = defineCapsule({
 
     return (
       <LogoStrip
-        lead={label}
-        logos={items}
-        layout="flex"
-        logoStyle="text"
-        leadClassName="text-sm normal-case tracking-normal"
-        logoClassName="text-xl font-medium"
         className={cn(
           'border-y border-border bg-muted/50 py-16 opacity-60',
           props.className,
         )}
-      />
+      >
+        <LogoStripLabel className="text-sm normal-case tracking-normal">
+          {label}
+        </LogoStripLabel>
+        <LogoStripItems layout="flex" className="mt-8">
+          {items.filter(Boolean).map((logo) => (
+            <LogoStripItem
+              key={logo}
+              variant="text"
+              className="text-xl font-medium"
+            >
+              {logo}
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })

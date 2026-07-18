@@ -3,7 +3,11 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import {
+  LogoStrip,
+  LogoStripItems,
+  LogoStripItem,
+} from '#/section-kit/LogoStrip.tsx'
 
 /**
  * PortfolioLogos — client / brand wordmark strip for a dark creative portfolio.
@@ -43,17 +47,24 @@ export const PortfolioLogos = defineCapsule({
 
     return (
       <LogoStrip
-        logos={clients}
-        layout="flex"
-        logoStyle="text-bold"
-        onClickLogo={() => go(homeTarget)}
-        logoClassName="whitespace-nowrap text-[1.05rem] tracking-[-0.01em] md:text-[1.15rem]"
-        aria-label="Trusted by leading brands"
         className={cn(
           'border-y border-border bg-card pt-28 pb-12 opacity-60',
           props.className,
         )}
-      />
+      >
+        <LogoStripItems layout="flex">
+          {clients.filter(Boolean).map((logo) => (
+            <LogoStripItem
+              key={logo}
+              variant="text-bold"
+              className="whitespace-nowrap text-[1.05rem] tracking-[-0.01em] md:text-[1.15rem]"
+              asChild
+            >
+              <button onClick={() => go(homeTarget)}>{logo}</button>
+            </LogoStripItem>
+          ))}
+        </LogoStripItems>
+      </LogoStrip>
     )
   },
 })
