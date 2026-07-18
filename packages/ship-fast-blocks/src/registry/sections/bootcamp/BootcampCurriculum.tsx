@@ -13,7 +13,13 @@ import { cn } from '#/lib/utils.ts'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 import {
   CurriculumList,
   CurriculumItem,
@@ -225,20 +231,21 @@ export const BootcampCurriculum = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{curriculumDesc}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <FeatureGrid className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {curriculumItems.map((mod, i) => (
-              <Card
+              <FeatureCard
                 key={mod.title}
-                variant="muted"
-                rounded="2xl"
-                padding="md"
-                className="group bg-muted/40 transition-colors hover:border-primary/30 lg:p-8"
+                className="gap-0 rounded-2xl bg-muted/40 p-6 transition-colors hover:border-primary/30 lg:p-8"
               >
-                <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
+                <FeatureIcon className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
                   {moduleIcons[i % moduleIcons.length]}
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">{mod.title}</h3>
-                <p className="mb-4 text-muted-foreground">{mod.description}</p>
+                </FeatureIcon>
+                <FeatureTitle className="mb-3 text-xl font-semibold">
+                  {mod.title}
+                </FeatureTitle>
+                <FeatureDescription className="mb-4">
+                  {mod.description}
+                </FeatureDescription>
                 <CurriculumList className="space-y-2 text-sm text-muted-foreground">
                   {mod.points.map((p) => (
                     <CurriculumItem key={p} className="flex items-center gap-2">
@@ -247,9 +254,9 @@ export const BootcampCurriculum = defineCapsule({
                     </CurriculumItem>
                   ))}
                 </CurriculumList>
-              </Card>
+              </FeatureCard>
             ))}
-          </div>
+          </FeatureGrid>
         </Container>
       </section>
     )
