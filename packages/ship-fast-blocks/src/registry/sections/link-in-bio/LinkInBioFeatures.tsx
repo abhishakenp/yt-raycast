@@ -4,8 +4,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  FeatureListItem,
+  FeatureListItemIcon,
+  FeatureListItemTitle,
+  FeatureListItemDescription,
+  FeatureListItemBody,
+} from '#/section-kit/FeatureListItem.tsx'
 
 /**
  * LinkInBioFeatures — the core link hub of a Linktree / Bento style link-in-bio
@@ -223,29 +229,35 @@ export const LinkInBioFeatures = defineCapsule({
 
         <nav aria-label="Links" className="space-y-4">
           {links.map((link, i) => (
-            <Card
+            <FeatureListItem
               key={link.title}
               asChild
-              variant="elevated"
-              rounded="2xl"
-              padding="none"
-              className="group flex w-full cursor-pointer items-center gap-4 px-5 py-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
+              className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border bg-card px-5 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
               <button
                 type="button"
                 onClick={() => go(linkTargets[i] ?? link.title)}
               >
-                <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
+                <FeatureListItemIcon
+                  shape="square"
+                  className="size-11 bg-primary/10 text-primary"
+                >
                   {linkIcons[link.icon]}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold text-foreground">
-                    {link.title}
-                  </span>
-                  <span className="block truncate text-sm text-muted-foreground">
-                    {link.subtitle}
-                  </span>
-                </span>
+                </FeatureListItemIcon>
+                <FeatureListItemBody className="min-w-0 flex-1">
+                  <FeatureListItemTitle
+                    asChild
+                    className="block truncate font-semibold text-foreground"
+                  >
+                    <span>{link.title}</span>
+                  </FeatureListItemTitle>
+                  <FeatureListItemDescription
+                    asChild
+                    className="block truncate text-sm text-muted-foreground"
+                  >
+                    <span>{link.subtitle}</span>
+                  </FeatureListItemDescription>
+                </FeatureListItemBody>
                 {link.badge ? (
                   <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
                     {link.badge}
@@ -256,7 +268,7 @@ export const LinkInBioFeatures = defineCapsule({
                   </span>
                 )}
               </button>
-            </Card>
+            </FeatureListItem>
           ))}
         </nav>
       </section>
