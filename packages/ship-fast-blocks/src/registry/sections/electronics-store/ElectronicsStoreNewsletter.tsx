@@ -8,6 +8,7 @@ import {
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
@@ -56,7 +57,7 @@ export const ElectronicsStoreNewsletter = defineCapsule({
         className={cn('py-16 lg:py-24', props.className)}
       >
         <NewsletterCta asChild>
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+          <Container size="4xl" className="text-center">
             <NewsletterCtaHeading className="text-background lg:text-4xl">
               {heading}
             </NewsletterCtaHeading>
@@ -78,7 +79,7 @@ export const ElectronicsStoreNewsletter = defineCapsule({
             <NewsletterCtaFineprint className="text-sm text-background/50">
               {disclaimer}
             </NewsletterCtaFineprint>
-          </div>
+          </Container>
         </NewsletterCta>
       </SubscribeBand>
     )
