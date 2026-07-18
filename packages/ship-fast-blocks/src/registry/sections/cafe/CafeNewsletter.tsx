@@ -9,6 +9,7 @@ import {
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 
 /**
@@ -56,7 +57,7 @@ export const CafeNewsletter = defineCapsule({
         variant="primary-tint"
         className={cn('pt-28 pb-20', props.className)}
       >
-        <div className="mx-auto max-w-4xl px-6 text-center lg:px-8">
+        <Container size="4xl" className="px-6 text-center">
           <NewsletterCtaHeading className="font-serif text-3xl font-medium sm:text-4xl">
             {heading}
           </NewsletterCtaHeading>
@@ -73,7 +74,7 @@ export const CafeNewsletter = defineCapsule({
             emailLabel="Email address for newsletter"
           />
           <NewsletterCtaFineprint>{fineprint}</NewsletterCtaFineprint>
-        </div>
+        </Container>
       </SubscribeBand>
     )
   },

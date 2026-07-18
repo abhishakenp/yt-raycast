@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { FilterChip } from '#/section-kit/index.ts'
 import { knowledgeBaseLakebed } from './knowledge-base-lakebed.ts'
 import {
@@ -119,7 +120,7 @@ export const KnowledgeBaseHero = defineCapsule({
         variant="default"
         className={cn('border-b border-border bg-card', props.className)}
       >
-        <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-24 lg:px-8">
+        <Container size="4xl" className="py-16 text-center sm:py-24">
           <h1 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
             {heading}
           </h1>
@@ -204,7 +205,7 @@ export const KnowledgeBaseHero = defineCapsule({
               </ul>
             </div>
           ) : null}
-        </div>
+        </Container>
       </HeroSection>
     )
   },

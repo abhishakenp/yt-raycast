@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SubscribeBand,
   SubscribeForm,
@@ -51,7 +52,7 @@ export const PodcastSubscribe = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-4xl px-6 text-center lg:px-8">
+        <Container size="4xl" className="px-6 text-center">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -78,7 +79,7 @@ export const PodcastSubscribe = defineCapsule({
               Subscribe
             </button>
           </SubscribeForm>
-        </div>
+        </Container>
       </SubscribeBand>
     )
   },
