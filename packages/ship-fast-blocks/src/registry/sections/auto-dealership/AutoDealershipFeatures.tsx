@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -139,9 +140,9 @@ export const AutoDealershipFeatures = defineCapsule({
                 className="aspect-[16/10] w-full rounded-lg object-cover shadow-lg"
               />
               <Card rounded="lg">
-                <blockquote className="italic text-muted-foreground">
+                <PullQuoteText className="italic text-muted-foreground">
                   &ldquo;{quote}&rdquo;
-                </blockquote>
+                </PullQuoteText>
                 <div className="mt-4 flex items-center gap-3">
                   <Image
                     alt={quoteAvatarAlt}

@@ -11,6 +11,7 @@ import {
   SplitStoryContent,
   SplitStoryBody,
 } from '#/section-kit/SplitStory.tsx'
+import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 
 /**
  * AboutStory — "our story" split band for a modern company / ABOUT page. A
@@ -139,9 +140,9 @@ export const AboutStory = defineCapsule({
                   </p>
                 ))}
               </SplitStoryBody>
-              <blockquote className="mt-5 rounded-r-xl border-l-[3px] border-primary bg-primary/[0.06] px-4 py-4 font-semibold text-foreground">
+              <PullQuoteText className="mt-5 block rounded-r-xl border-l-[3px] border-primary bg-primary/[0.06] px-4 py-4 font-semibold text-foreground">
                 &ldquo;{quote}&rdquo;
-              </blockquote>
+              </PullQuoteText>
             </SplitStoryContent>
           </SplitStoryGrid>
         </div>
