@@ -82,7 +82,7 @@ function selectContents(element: HTMLElement) {
 afterEach(cleanup)
 
 describe('useTextEdit clipboard and drop release regressions', () => {
-  it.each(['paste', 'drop'])(
+  it.each(['paste', 'drop'] as const)(
     'inserts %s content as plain text only',
     (kind) => {
       const onTextChange = vi.fn()

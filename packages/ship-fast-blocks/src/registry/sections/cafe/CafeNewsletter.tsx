@@ -5,11 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 import {
-  NewsletterCta,
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 
 /**
  * CafeNewsletter — newsletter sign-up CTA for a cozy cafe / coffee shop page,
@@ -52,7 +52,7 @@ export const CafeNewsletter = defineCapsule({
     const submitTarget = props.submitTarget ?? submit
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         variant="primary-tint"
         className={cn('pt-28 pb-20', props.className)}
       >
@@ -74,7 +74,7 @@ export const CafeNewsletter = defineCapsule({
           />
           <NewsletterCtaFineprint>{fineprint}</NewsletterCtaFineprint>
         </div>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

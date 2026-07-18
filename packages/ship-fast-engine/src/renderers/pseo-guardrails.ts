@@ -45,7 +45,7 @@ export interface SiteSpec {
 
 function collectLinkedRoutes(siteSpec: SiteSpec): Set<string> {
   const set = new Set<string>()
-  const addHref = (href) => {
+  const addHref = (href: string | undefined) => {
     const h = String(href || '').trim()
     if (!h.startsWith('/')) return
     const pathOnly = h.split('?')[0].split('#')[0]

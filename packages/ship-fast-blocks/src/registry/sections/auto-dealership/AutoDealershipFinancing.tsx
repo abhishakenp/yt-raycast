@@ -11,6 +11,7 @@ import {
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { FinancingCalculator, FinancingDisplay } from '#/section-kit/FinancingCalculator.tsx'
 
 /**
  * AutoDealershipFinancing — financing / pre-approval section for an auto
@@ -82,8 +83,9 @@ export const AutoDealershipFinancing = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
-        <Container>
+      <FinancingCalculator asChild>
+        <section className={cn('bg-card py-16 lg:py-24', props.className)}>
+          <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="order-2 lg:order-1">
               <Image
@@ -124,7 +126,7 @@ export const AutoDealershipFinancing = defineCapsule({
                   </Card>
                 ))}
               </div>
-              <div className="rounded-lg bg-muted p-6">
+              <FinancingDisplay className="rounded-lg bg-muted p-6">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   {stats.map((s) => (
                     <div key={s.label}>
@@ -135,7 +137,7 @@ export const AutoDealershipFinancing = defineCapsule({
                     </div>
                   ))}
                 </div>
-              </div>
+              </FinancingDisplay>
               <AutoLeadActionButton
                 lakebed={lakebed}
                 action="financing"
@@ -155,7 +157,8 @@ export const AutoDealershipFinancing = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+        </section>
+      </FinancingCalculator>
     )
   },
 })

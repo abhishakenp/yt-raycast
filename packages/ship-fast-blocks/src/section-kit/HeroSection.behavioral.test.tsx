@@ -15,10 +15,10 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
   HeroStats,
   HeroStat,
   HeroStatValue,
@@ -265,12 +265,12 @@ describe('HeroSubheading', () => {
   })
 })
 
-describe('HeroCtas', () => {
+describe('HeroActions', () => {
   it('renders as div with flex flex-wrap gap-3.5', () => {
     render(
-      <HeroCtas data-testid="ctas">
+      <HeroActions data-testid="ctas">
         <button>Click</button>
-      </HeroCtas>,
+      </HeroActions>,
     )
     const el = screen.getByTestId('ctas')
     expect(el.tagName).toBe('DIV')
@@ -281,9 +281,9 @@ describe('HeroCtas', () => {
   })
 })
 
-describe('HeroImage', () => {
+describe('HeroMediaPanel', () => {
   it('renders with image inside rounded container', () => {
-    const { container } = render(<HeroImage alt="Product" data-testid="img" />)
+    const { container } = render(<HeroMediaPanel alt="Product" data-testid="img" />)
     const el = screen.getByTestId('img')
     expect(el.tagName).toBe('DIV')
     expect(el.className).toContain('overflow-hidden')
@@ -295,17 +295,17 @@ describe('HeroImage', () => {
   })
 
   it('rounded=3xl uses rounded-3xl', () => {
-    render(<HeroImage alt="Product" rounded="3xl" data-testid="img" />)
+    render(<HeroMediaPanel alt="Product" rounded="3xl" data-testid="img" />)
     expect(screen.getByTestId('img').className).toContain('rounded-3xl')
   })
 })
 
-describe('HeroTrustRow', () => {
+describe('HeroSocialProof', () => {
   it('renders as ul with flex flex-wrap gap-x-6', () => {
     render(
-      <HeroTrustRow data-testid="trust">
-        <HeroTrustItem>Free shipping</HeroTrustItem>
-      </HeroTrustRow>,
+      <HeroSocialProof data-testid="trust">
+        <HeroSocialProofItem>Free shipping</HeroSocialProofItem>
+      </HeroSocialProof>,
     )
     const el = screen.getByTestId('trust')
     expect(el.tagName).toBe('UL')
@@ -315,9 +315,9 @@ describe('HeroTrustRow', () => {
   })
 })
 
-describe('HeroTrustItem', () => {
+describe('HeroSocialProofItem', () => {
   it('renders as li with flex items-center gap-2', () => {
-    render(<HeroTrustItem data-testid="item">Free shipping</HeroTrustItem>)
+    render(<HeroSocialProofItem data-testid="item">Free shipping</HeroSocialProofItem>)
     const el = screen.getByTestId('item')
     expect(el.tagName).toBe('LI')
     expect(el.className).toContain('flex')
@@ -386,10 +386,10 @@ describe('HeroSection compound composition', () => {
           <HeroBadge variant="pill">Eyebrow</HeroBadge>
           <HeroHeading variant="serif">Heading text</HeroHeading>
           <HeroSubheading variant="light">Subheading text</HeroSubheading>
-          <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
+          <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
             <button>Primary</button>
             <button>Secondary</button>
-          </HeroCtas>
+          </HeroActions>
         </HeroContent>
       </HeroSection>,
     )
@@ -409,16 +409,16 @@ describe('HeroSection compound composition', () => {
               Everything you love <HeroHighlight>now for less</HeroHighlight>
             </HeroHeading>
             <HeroSubheading>Supporting copy</HeroSubheading>
-            <HeroCtas>
+            <HeroActions>
               <button>Shop now</button>
               <button>Explore</button>
-            </HeroCtas>
-            <HeroTrustRow>
-              <HeroTrustItem>Free shipping</HeroTrustItem>
-              <HeroTrustItem>Easy returns</HeroTrustItem>
-            </HeroTrustRow>
+            </HeroActions>
+            <HeroSocialProof>
+              <HeroSocialProofItem>Free shipping</HeroSocialProofItem>
+              <HeroSocialProofItem>Easy returns</HeroSocialProofItem>
+            </HeroSocialProof>
           </div>
-          <HeroImage alt="Product photo" />
+          <HeroMediaPanel alt="Product photo" />
         </div>
       </HeroSection>,
     )
@@ -438,10 +438,10 @@ describe('HeroSection compound composition', () => {
             <HeroHighlight variant="gradient">experiences</HeroHighlight>
           </HeroHeading>
           <HeroSubheading variant="large">Supporting copy</HeroSubheading>
-          <HeroCtas className="flex-col items-center gap-4 sm:flex-row">
+          <HeroActions className="flex-col items-center gap-4 sm:flex-row">
             <button>View work</button>
             <button>Start project</button>
-          </HeroCtas>
+          </HeroActions>
           <HeroStats>
             <HeroStat>
               <HeroStatValue>120+</HeroStatValue>

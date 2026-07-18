@@ -14,6 +14,7 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
+  StepTimeline,
   StepTimelineGrid,
   StepItem,
   StepBadge,
@@ -72,7 +73,9 @@ export const BootcampSteps = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
+      <StepTimeline
+        className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
+      >
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <Eyebrow
@@ -110,7 +113,7 @@ export const BootcampSteps = defineCapsule({
             </ul>
           </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

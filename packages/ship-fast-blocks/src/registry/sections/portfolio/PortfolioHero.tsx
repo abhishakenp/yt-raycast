@@ -7,7 +7,7 @@ import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
   HeroHighlight,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -89,7 +89,7 @@ export const PortfolioHero = defineCapsule({
               <p className="mb-8 max-w-[520px] text-lg leading-[1.7] text-muted-foreground">
                 {description}
               </p>
-              <HeroCtas>
+              <HeroActions>
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -104,7 +104,7 @@ export const PortfolioHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
+              </HeroActions>
             </div>
 
             <Card

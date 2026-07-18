@@ -72,7 +72,7 @@ export const logisticsLakebed = {
     }),
   },
   mutations: {
-    setTrackingSearch: logistics.mutation((_ctx, input) => {
+    setTrackingSearch: logistics.mutation((_ctx, input: LogisticsTrackingInput) => {
       const trackingId = clean(input.trackingId)
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
 
@@ -86,7 +86,7 @@ export const logisticsLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncShipments: logistics.mutation((_ctx, input) => {
+    syncShipments: logistics.mutation((_ctx, input: { items: LogisticsShipmentInput[] }) => {
       const existing = _ctx.db.shipments.orderBy('createdAt').all()
       const existingByTrackingId = new Map(
         existing.map((shipment) => [

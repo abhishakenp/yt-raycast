@@ -131,7 +131,7 @@ export const FurnitureStoreProducts = defineCapsule({
         product.badge,
       ],
     )
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
         height="16"

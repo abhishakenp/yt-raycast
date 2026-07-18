@@ -12,6 +12,11 @@ import { cn } from '#/lib/utils.ts'
  * clinic. Renders fully with no props via baked-in 3-step booking defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const HealthcareSteps = defineCapsule({
   name: 'HealthcareSteps',
   description:
@@ -60,7 +65,7 @@ export const HealthcareSteps = defineCapsule({
           },
         ]
     return (
-      <section
+      <StepTimeline
         id="booking"
         className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="booking-heading"
@@ -79,9 +84,9 @@ export const HealthcareSteps = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground md:mx-0">
                   {i + 1}
                 </div>
@@ -97,11 +102,11 @@ export const HealthcareSteps = defineCapsule({
                 <p className="text-center leading-relaxed text-muted-foreground md:text-left">
                   {step.description}
                 </p>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

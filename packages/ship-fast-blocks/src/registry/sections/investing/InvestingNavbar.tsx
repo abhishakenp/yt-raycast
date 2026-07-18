@@ -46,7 +46,7 @@ export const InvestingNavbar = defineCapsule({
       : ['Features', 'Pricing', 'Markets', 'Reviews', 'FAQ']
     const signIn = props.signIn ?? 'Sign in'
     const getStarted = props.getStarted ?? 'Get started'
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

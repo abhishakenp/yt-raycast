@@ -128,7 +128,7 @@ const CommandSearchInput = React.forwardRef<
   React.ComponentProps<typeof CommandInput>
 >(({ className, 'aria-label': ariaLabel = 'Search', ...props }, ref) => {
   const setInputRef = React.useCallback(
-    (node) => {
+    (node: HTMLInputElement | null) => {
       node?.setAttribute('role', 'textbox')
       node?.removeAttribute('aria-labelledby')
       assignRef(ref, node)

@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import {
   applyGeneratedSitePseoGuardrails,
-  type PageSpec,
-  type NavLink,
 } from './pseo-guardrails'
 
 function page(

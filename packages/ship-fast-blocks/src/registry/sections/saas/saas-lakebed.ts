@@ -94,7 +94,7 @@ export const saasLakebed = {
 
       return []
     }),
-    recordAuthSession: saas.mutation((_ctx, input) => {
+    recordAuthSession: saas.mutation((_ctx, input: SaasAuthSessionInput) => {
       const email = normalizeEmail(input.email)
       if (!email)
         return _ctx.db.authSessions.orderBy('signedInAt', 'desc').all()
@@ -122,7 +122,7 @@ export const saasLakebed = {
 
       return _ctx.db.authSessions.orderBy('signedInAt', 'desc').all()
     }),
-    requestDemo: saas.mutation((_ctx, input) => {
+    requestDemo: saas.mutation((_ctx, input: SaasIntentInput) => {
       const label = normalizeLabel(input.label)
       _ctx.db.intents.insert({
         label,
@@ -133,7 +133,7 @@ export const saasLakebed = {
 
       return _ctx.db.intents.orderBy('createdAt').all()
     }),
-    selectPlan: saas.mutation((_ctx, input) => {
+    selectPlan: saas.mutation((_ctx, input: SaasIntentInput) => {
       const label = normalizeLabel(input.label)
       _ctx.db.intents.insert({
         label,
@@ -144,7 +144,7 @@ export const saasLakebed = {
 
       return _ctx.db.intents.orderBy('createdAt').all()
     }),
-    syncPlans: saas.mutation((_ctx, input) => {
+    syncPlans: saas.mutation((_ctx, input: { plans: SaasPlanInput[] }) => {
       for (const plan of input.plans) {
         const name = plan.name.trim()
         if (!name) continue

@@ -48,7 +48,7 @@ export const LendingNavbar = defineCapsule({
     const signIn = props.signIn ?? 'Sign In'
     const cta = props.cta ?? 'Apply Now'
     const ctaTarget = props.ctaTarget ?? 'Check Your Rate'
-    const Logo = ({ className }) => (
+    const Logo = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

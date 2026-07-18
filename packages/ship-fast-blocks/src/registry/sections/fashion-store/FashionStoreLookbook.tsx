@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { LookbookGrid, LookbookCard } from '#/section-kit/LookbookGrid.tsx'
 
 /**
  * FashionStoreLookbook — editorial Lookbook masonry gallery for a minimalist
@@ -97,7 +97,7 @@ export const FashionStoreLookbook = defineCapsule({
         ]
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
-    const lookbookSpan = (size?) => {
+    const lookbookSpan = (size?: string) => {
       if (size === 'feature') return 'col-span-2 row-span-2 aspect-[4/5]'
       if (size === 'wide') return 'col-span-2 aspect-[16/9]'
       return 'aspect-[3/4]'
@@ -125,8 +125,9 @@ export const FashionStoreLookbook = defineCapsule({
             </div>
           </div>
 
-          <ResponsiveGrid cols="2-lg-3" gap="sm" className="lg:gap-6">
+          <LookbookGrid cols="1-2-3" className="grid items-start gap-4 lg:gap-6">
             {lookbookItems.map((item) => (
+              <LookbookCard asChild key={item.look}>
               <button
                 key={item.look}
                 type="button"
@@ -159,8 +160,9 @@ export const FashionStoreLookbook = defineCapsule({
                   ) : null}
                 </div>
               </button>
+              </LookbookCard>
             ))}
-          </ResponsiveGrid>
+          </LookbookGrid>
 
           <div className="mt-12 text-center">
             <button

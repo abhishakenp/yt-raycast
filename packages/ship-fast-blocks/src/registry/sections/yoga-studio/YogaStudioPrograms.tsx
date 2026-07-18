@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ProgramGrid, ProgramCard } from '#/section-kit/ProgramGrid.tsx'
+import { ProgramGrid, ProgramCard, ProgramIcon } from '#/section-kit/ProgramGrid.tsx'
 
 /**
  * YogaStudioPrograms — class-types grid for a yoga-studio page. A warm
@@ -106,6 +106,9 @@ export const YogaStudioPrograms = defineCapsule({
                 rounded="2xl"
                 className="flex flex-col p-6 text-card-foreground shadow-sm transition-shadow hover:shadow-md lg:p-8"
               >
+                <ProgramIcon size="lg" shape="circle" className="mb-4 bg-primary/10 text-primary">
+                  <span className="text-lg font-semibold">{program.name.charAt(0)}</span>
+                </ProgramIcon>
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-xl font-semibold text-foreground">
                     {program.name}

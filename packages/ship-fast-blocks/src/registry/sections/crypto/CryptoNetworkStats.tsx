@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * CryptoNetworkStats — inverted dark data-band for a crypto / DeFi
@@ -85,16 +86,14 @@ export const CryptoNetworkStats = defineCapsule({
             </h2>
             <p className="text-lg text-background/60">{description}</p>
           </div>
-          <div className="mb-12 grid grid-cols-2 gap-8 lg:grid-cols-4">
-            {kpis.map((kpi) => (
-              <div key={kpi.label} className="text-center">
-                <p className="mb-2 text-4xl font-semibold lg:text-5xl">
-                  {kpi.value}
-                </p>
-                <p className="text-sm text-background/60">{kpi.label}</p>
-              </div>
-            ))}
-          </div>
+          <StatGrid
+            stats={kpis.map((kpi) => ({
+              value: kpi.value,
+              label: kpi.label,
+            }))}
+            columns={4}
+            className="mb-12"
+          />
           <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-background/20 bg-background/10 p-6">
               <div className="mb-4 flex items-center justify-between">

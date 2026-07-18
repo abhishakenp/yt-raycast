@@ -8,8 +8,8 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -92,7 +92,7 @@ export const MembershipClubHero = defineCapsule({
                 {headingAfter}
               </HeroHeading>
               <HeroSubheading>{subheading}</HeroSubheading>
-              <HeroCtas className="flex-col gap-4 pt-4 sm:flex-row">
+              <HeroActions className="flex-col gap-4 pt-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -107,7 +107,7 @@ export const MembershipClubHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex items-center gap-6 pt-6 text-sm text-muted-foreground">
                 {proof.map((p) => (
                   <div key={p.label} className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export const MembershipClubHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

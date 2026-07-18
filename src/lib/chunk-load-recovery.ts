@@ -52,7 +52,7 @@ export function recoverFromDynamicImportLoadError({
 }
 
 export function installDynamicImportRecovery(window: Window): () => void {
-  const recover = (reason) =>
+  const recover = (reason: unknown) =>
     recoverFromDynamicImportLoadError({
       href: window.location.href,
       reason,
@@ -60,13 +60,13 @@ export function installDynamicImportRecovery(window: Window): () => void {
       storage: window.sessionStorage,
     })
 
-  const handleRejection = (event) => {
+  const handleRejection = (event: PromiseRejectionEvent) => {
     if (recover(event.reason)) {
       event.preventDefault()
     }
   }
 
-  const handleError = (event) => {
+  const handleError = (event: ErrorEvent) => {
     recover(event.error ?? event.message)
   }
 

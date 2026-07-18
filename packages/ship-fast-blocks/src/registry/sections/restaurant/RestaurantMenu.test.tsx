@@ -8,13 +8,7 @@ import {
   createLakebedQueryStub,
 } from '@ship-fast/lakebed/test-helpers'
 import type { RestaurantLakebed } from './restaurant-interactions.tsx'
-import {
-  restaurantLakebed,
-  type RestaurantCatalogInput,
-  type RestaurantMenuItemInput,
-  type RestaurantOrderItemTarget,
-  type RestaurantReservationInput,
-} from './restaurant-lakebed.ts'
+import { restaurantLakebed } from './restaurant-lakebed.ts'
 
 type RestaurantOrder = ReturnType<
   typeof restaurantLakebed.queries.restaurantOrder
@@ -36,11 +30,6 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
   useNavigate: () => navigate,
 }))
 
-type RestaurantMutationName = Extract<
-  keyof typeof restaurantLakebed.mutations,
-  string
->
-
 type GenericMutation = ((input?: unknown) => Promise<unknown>) & {
   isPending: boolean
   lastError: unknown | null
@@ -53,11 +42,11 @@ vi.mock('@ship-fast/lakebed/react', () => ({
     if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
     return lakebedRef.current
   }),
-  useKeyedLakebedMutation: (lakebed, name) => {
-    const mutation = lakebed.useMutation(name) as GenericMutation
+  useKeyedLakebedMutation: (lakebed: unknown, name: string) => {
+    const mutation = (lakebed as RestaurantLakebed).useMutation(name) as GenericMutation
     const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
     const run = useCallback(
-      async (key, input) => {
+      async (key: string, input: Record<string, unknown>) => {
         if (pendingKeys.includes(key)) return undefined
 
         setPendingKeys((current) =>
@@ -72,7 +61,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
       [mutation, pendingKeys],
     )
     const isPending = useCallback(
-      (key) => pendingKeys.includes(key),
+      (key: string) => pendingKeys.includes(key),
       [pendingKeys],
     )
 
@@ -92,16 +81,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -209,7 +198,7 @@ function createRestaurantLakebedStub({
     version += 1
     for (const listener of listeners) listener()
   }
-  const row = <TRow extends Record<string, unknown>>(prefix, value, index) => ({
+  const row = (prefix: string, value: Record<string, unknown>, index: number) => ({
     ...value,
     createdAt: now,
     id: `${prefix}-${index}`,
@@ -279,7 +268,7 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -299,11 +288,11 @@ function createRestaurantLakebedStub({
                 'order',
                 {
                   category: input.category,
-                  description: input.description ?? '',
+                  description: String(input.description ?? ''),
                   name: input.name,
-                  price: input.price ?? '',
+                  price: String(input.price ?? ''),
                   quantity: 1,
-                  tag: input.tag ?? '',
+                  tag: String(input.tag ?? ''),
                 },
                 orderItems.length + 1,
               ),
@@ -316,7 +305,7 @@ function createRestaurantLakebedStub({
               {
                 category: input.category,
                 name: input.name,
-                price: input.price ?? '',
+                price: String(input.price ?? ''),
                 source: 'order',
               },
               selections.length + 1,
@@ -335,7 +324,7 @@ function createRestaurantLakebedStub({
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -391,7 +380,7 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -407,7 +396,7 @@ function createRestaurantLakebedStub({
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -427,7 +416,7 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -436,8 +425,8 @@ function createRestaurantLakebedStub({
             row(
               'reservation',
               {
-                label: input.label ?? '',
-                source: input.source,
+                label: String(input.label ?? ''),
+                source: String(input.source ?? '')
               },
               reservations.length + 1,
             ),
@@ -454,7 +443,7 @@ function createRestaurantLakebedStub({
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -474,22 +463,22 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
           await selectDelay?.()
-          selectedCategory = input.category
-          selectedMenuItem = input.name
-          selectedPrice = input.price ?? ''
+          selectedCategory = input.category as string
+          selectedMenuItem = input.name as string
+          selectedPrice = (input.price as string) ?? ''
           selections = [
             row(
               'selection',
               {
                 category: input.category,
                 name: input.name,
-                price: input.price ?? '',
-                source: input.source ?? 'search',
+                price: String(input.price ?? ''),
+                source: String(input.source ?? 'search'),
               },
               selections.length + 1,
             ),
@@ -506,7 +495,7 @@ function createRestaurantLakebedStub({
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -526,11 +515,11 @@ function createRestaurantLakebedStub({
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
-          for (const item of input.items) {
+          for (const item of (input.items as Array<Record<string, unknown>>)) {
             const existingIndex = catalog.findIndex(
               (current) => current.name === item.name,
             )
@@ -564,7 +553,7 @@ function createRestaurantLakebedStub({
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

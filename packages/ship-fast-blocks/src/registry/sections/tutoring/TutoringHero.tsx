@@ -7,10 +7,10 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -74,7 +74,7 @@ export const TutoringHero = defineCapsule({
             <HeroSubheading className="max-w-xl leading-8">
               {subheading}
             </HeroSubheading>
-            <HeroCtas className="flex-col gap-3 sm:flex-row">
+            <HeroActions className="flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryTarget)}
@@ -89,10 +89,10 @@ export const TutoringHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </HeroCtas>
-            <HeroTrustRow className="mt-10 gap-y-3 border-t border-border pt-8">
+            </HeroActions>
+            <HeroSocialProof className="mt-10 gap-y-3 border-t border-border pt-8">
               {trust.map((item) => (
-                <HeroTrustItem key={item}>
+                <HeroSocialProofItem key={item}>
                   <svg
                     className="size-4 shrink-0 text-primary"
                     viewBox="0 0 24 24"
@@ -108,9 +108,9 @@ export const TutoringHero = defineCapsule({
                     />
                   </svg>
                   <span className="font-medium text-foreground">{item}</span>
-                </HeroTrustItem>
+                </HeroSocialProofItem>
               ))}
-            </HeroTrustRow>
+            </HeroSocialProof>
           </div>
           <div className="relative">
             <div
@@ -123,7 +123,7 @@ export const TutoringHero = defineCapsule({
               padding="none"
               className="relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.12)]"
             >
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={900}
                 h={760}

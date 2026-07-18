@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * clothing brands, boutiques, or apparel and accessories shops.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { CollectionGrid } from '#/section-kit/CollectionGrid.tsx'
 export const FashionStoreCollections = defineCapsule({
   name: 'FashionStoreCollections',
   description:
@@ -77,7 +78,7 @@ export const FashionStoreCollections = defineCapsule({
             </h2>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <CollectionGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {collectionItems.map((c) => (
               <button
                 key={c.name}
@@ -101,7 +102,7 @@ export const FashionStoreCollections = defineCapsule({
                 </div>
               </button>
             ))}
-          </div>
+          </CollectionGrid>
         </Container>
       </section>
     )

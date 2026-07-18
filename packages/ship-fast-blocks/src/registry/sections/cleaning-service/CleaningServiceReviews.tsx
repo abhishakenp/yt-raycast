@@ -8,6 +8,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { ReviewList, ReviewItem } from '#/section-kit/ReviewList.tsx'
 export const CleaningServiceReviews = defineCapsule({
   name: 'CleaningServiceReviews',
   description:
@@ -108,15 +109,15 @@ export const CleaningServiceReviews = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ReviewList className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((review) => (
-              <Card
-                key={review.name}
-                variant="muted"
-                rounded="2xl"
-                padding="lg"
-                className="bg-muted/40"
-              >
+              <ReviewItem asChild key={review.name}>
+                <Card
+                  variant="muted"
+                  rounded="2xl"
+                  padding="lg"
+                  className="bg-muted/40"
+                >
                 <div className="mb-4 flex items-center gap-1">
                   {[0, 1, 2, 3, 4].map((n) => (
                     <Star key={n} />
@@ -141,9 +142,10 @@ export const CleaningServiceReviews = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </Card>
+                </Card>
+              </ReviewItem>
             ))}
-          </div>
+          </ReviewList>
         </Container>
       </section>
     )

@@ -96,7 +96,7 @@ export const DatingAppPricing = defineCapsule({
           },
         ]
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -111,7 +111,7 @@ export const DatingAppPricing = defineCapsule({
       </svg>
     )
 
-    const Cross = ({ className }) => (
+    const Cross = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

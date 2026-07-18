@@ -533,7 +533,7 @@ function phraseFromPrompt(prompt: string, maxWords = 5) {
 function extractSalientPhrases(prompt: string, max = 4) {
   const raw = normalizeText(prompt)
   const out: string[] = []
-  const stripTail = (s) =>
+  const stripTail = (s: string) =>
     s
       .replace(/\s+with\s+[\s\S]+$/i, '')
       .replace(/\s+including\s+[\s\S]+$/i, '')
@@ -2366,7 +2366,7 @@ function hydrateGradientCardMedia(
       usage.set(url, (usage.get(url) || 0) + 1)
       const alt = escapeHtmlAttribute(label.slice(0, 80) || 'Destination')
       const relAttrs = /\bclass\s*=/.test(attrs)
-        ? attrs.replace(/\bclass\s*=\s*(["'])([^"']*)\1/, (_, q, cls) => {
+        ? attrs.replace(/\bclass\s*=\s*(["'])([^"']*)\1/, (_: unknown, q: string, cls: string) => {
             const nextCls = cls.includes('relative')
               ? cls
               : `relative overflow-hidden ${cls}`

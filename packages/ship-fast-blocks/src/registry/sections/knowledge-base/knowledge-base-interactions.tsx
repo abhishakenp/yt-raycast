@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 
@@ -53,7 +52,7 @@ export function useKbSearch(lakebed: KnowledgeBaseLakebed) {
   const setKbSearch = lakebed.useMutation('setKbSearch')
 
   const submitSearch = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (setKbSearch.isPending) return
 
@@ -69,7 +68,7 @@ export function useKbSearch(lakebed: KnowledgeBaseLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input) => {
+    (input: KnowledgeBaseSearchInput) => {
       if (setKbSearch.isPending) return
       void setKbSearch(input)
     },

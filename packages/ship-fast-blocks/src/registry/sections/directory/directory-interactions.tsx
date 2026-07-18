@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
@@ -139,7 +139,7 @@ export function useDirectorySearch(lakebed: DirectoryLakebed) {
   const setDirectorySearch = lakebed.useMutation('setDirectorySearch')
 
   const submitSearch = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (setDirectorySearch.isPending) return
 
@@ -153,7 +153,7 @@ export function useDirectorySearch(lakebed: DirectoryLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input) => {
+    (input: DirectorySearchInput) => {
       if (setDirectorySearch.isPending) return
       void setDirectorySearch(input)
     },
@@ -173,7 +173,7 @@ export function useDirectoryListings(lakebed: DirectoryLakebed) {
   const selectListing = lakebed.useMutation('selectListing')
 
   const select = useCallback(
-    async (input) => {
+    async (input: DirectorySelectInput) => {
       if (selectListing.isPending) return
       await selectListing(input)
     },
@@ -284,7 +284,7 @@ export function DirectoryMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?) => {
+  const navigate = (target?: string) => {
     setOpen(false)
     go(target)
   }

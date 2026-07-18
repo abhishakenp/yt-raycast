@@ -98,7 +98,7 @@ export const NewsletterPricing = defineCapsule({
     const footnoteLink = props.footnoteLink ?? 'Contact us'
     const footnoteSuffix = props.footnoteSuffix ?? ' for enterprise pricing.'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

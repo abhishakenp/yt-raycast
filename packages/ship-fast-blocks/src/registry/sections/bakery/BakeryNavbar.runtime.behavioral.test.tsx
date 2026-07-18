@@ -21,7 +21,7 @@ const runtime = vi.hoisted(() => {
     },
     url: 'https://auth.example.test/start',
   }))
-  const runMutation = vi.fn(async () => [])
+  const runMutation = vi.fn(async (..._args: unknown[]) => [])
   const mutation = Object.assign(runMutation, {
     isPending: false,
     lastError: null,

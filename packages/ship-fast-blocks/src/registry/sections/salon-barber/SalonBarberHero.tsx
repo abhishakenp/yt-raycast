@@ -9,7 +9,7 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 
 export const SalonBarberHero = defineCapsule({
@@ -63,7 +63,7 @@ export const SalonBarberHero = defineCapsule({
             {subheading}
           </HeroSubheading>
 
-          <HeroCtas className="mt-10 flex-col gap-3 sm:flex-row">
+          <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryTarget)}
@@ -78,7 +78,7 @@ export const SalonBarberHero = defineCapsule({
             >
               {secondaryCta}
             </button>
-          </HeroCtas>
+          </HeroActions>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-background/80">
             {hours.flatMap((slot, i) =>

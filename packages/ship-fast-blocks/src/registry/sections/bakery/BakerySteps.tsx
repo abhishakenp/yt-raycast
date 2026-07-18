@@ -5,6 +5,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * BakerySteps — "how to order" 3-step guide for an artisan-bakery page, on a
@@ -112,7 +117,7 @@ export const BakerySteps = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
+      <StepTimeline className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground lg:text-4xl">
@@ -120,9 +125,9 @@ export const BakerySteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
+          <StepTimelineGrid columns={3} className="gap-8">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="absolute -left-2 -top-4 text-6xl font-bold text-muted">
                   {String(i + 1).padStart(2, '0')}
                 </div>
@@ -140,11 +145,11 @@ export const BakerySteps = defineCapsule({
                     {step.note}
                   </p>
                 </div>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

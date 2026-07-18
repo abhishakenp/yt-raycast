@@ -8,14 +8,7 @@ import {
   createLakebedQueryStub,
 } from '@ship-fast/lakebed/test-helpers'
 import type { PropertyListingLakebed } from './property-listing-interactions.tsx'
-import {
-  propertyListingLakebed,
-  type PropertyListingCatalogInput,
-  type PropertyListingInquiryInput,
-  type PropertyListingSaveInput,
-  type PropertyListingSearchInput,
-  type PropertyListingSelectInput,
-} from './property-listing-lakebed.ts'
+import { propertyListingLakebed } from './property-listing-lakebed.ts'
 
 type PropertyListingState = ReturnType<
   typeof propertyListingLakebed.queries.propertyListingState
@@ -36,13 +29,6 @@ type PropertyStateRow = {
   updatedAt: string
 }
 type PropertyMutationDelayName = 'selectListing' | 'setPropertySearch'
-type PropertyMutationInput =
-  | Parameters<typeof propertyListingLakebed.mutations.recordPropertyInquiry>[1]
-  | Parameters<typeof propertyListingLakebed.mutations.saveListing>[1]
-  | Parameters<typeof propertyListingLakebed.mutations.selectListing>[1]
-  | Parameters<typeof propertyListingLakebed.mutations.setPropertySearch>[1]
-  | Parameters<typeof propertyListingLakebed.mutations.syncPropertyListings>[1]
-
 const navigate = vi.fn()
 const lakebedRef: { current: PropertyListingLakebed | null } = { current: null }
 
@@ -51,24 +37,20 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }: { alt?: string; className?: string }) => <img alt={alt} className={className} />,
 }))
 
-type TestMutation = ((input?: PropertyMutationInput) => Promise<unknown>) & {
-  lastError: unknown | null
-  reset: () => void
-}
 
 vi.mock('@ship-fast/lakebed/react', () => ({
   createLakebedClient: vi.fn(() => {
     if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
     return lakebedRef.current
   }),
-  useKeyedLakebedMutation: (lakebed, name) => {
-    const mutation = lakebed.useMutation(name)
+  useKeyedLakebedMutation: (lakebed: Record<string, unknown>, name: string) => {
+    const mutation = (lakebed.useMutation as (name: string) => (input: Record<string, unknown>) => Promise<unknown>)(name)
     const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
     const run = useCallback(
-      async (key, input) => {
+      async (key: string, input: Record<string, unknown>) => {
         if (pendingKeys.includes(key)) return undefined
 
         setPendingKeys((current) =>
@@ -107,16 +89,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
   class TestResizeObserver {
     disconnect() {}
     observe() {}
@@ -213,14 +195,14 @@ function createPropertyListingLakebedStub(
     version += 1
     for (const listener of listeners) listener()
   }
-  const mutationDelayFor = (name) => {
+  const mutationDelayFor = (name: string) => {
     if (name === 'selectListing') return mutationDelays.selectListing ?? 0
     if (name === 'setPropertySearch') {
       return mutationDelays.setPropertySearch ?? 0
     }
     return 0
   }
-  const waitForMutation = (name) => {
+  const waitForMutation = (name: string) => {
     const delayMs = mutationDelayFor(name)
     if (delayMs <= 0) return Promise.resolve()
 
@@ -228,7 +210,7 @@ function createPropertyListingLakebedStub(
       setTimeout(resolve, delayMs)
     })
   }
-  const row = <TRow extends Record<string, unknown>>(prefix, value, index) => ({
+  const row = (prefix: string, value: unknown, index: number) => ({
     ...value,
     createdAt: now,
     id: `${prefix}-${index}`,
@@ -281,19 +263,19 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
-          const intent = input.intent.trim()
+          const intent = String(input.intent).trim()
           if (intent) {
             inquiries = [
               row(
                 'inquiry',
                 {
-                  address: input.address?.trim() ?? '',
+                  address: String(input.address)?.trim() ?? '',
                   intent,
-                  source: input.source?.trim() ?? '',
+                  source: String(input.source)?.trim() ?? '',
                 },
                 inquiries.length + 1,
               ),
@@ -311,7 +293,7 @@ function createPropertyListingLakebedStub(
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -331,11 +313,11 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
-          const address = input.address.trim()
+          const address = String(input.address).trim()
           const existing = saved.find((item) => item.address === address)
           saved = existing
             ? saved.filter((item) => item.address !== address)
@@ -344,7 +326,7 @@ function createPropertyListingLakebedStub(
                   'saved',
                   {
                     address,
-                    price: input.price?.trim() ?? '',
+                    price: String(input.price)?.trim() ?? '',
                   },
                   saved.length + 1,
                 ),
@@ -361,7 +343,7 @@ function createPropertyListingLakebedStub(
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -381,12 +363,12 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
           await waitForMutation('selectListing')
-          const selectedAddress = input.address.trim()
+          const selectedAddress = String(input.address).trim()
           state = row(
             'state',
             {
@@ -408,7 +390,7 @@ function createPropertyListingLakebedStub(
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -428,7 +410,7 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -436,9 +418,9 @@ function createPropertyListingLakebedStub(
           state = row(
             'state',
             {
-              filter: input.filter?.trim() ?? '',
-              location: input.location?.trim() ?? '',
-              query: input.query?.trim() ?? '',
+              filter: String(input.filter)?.trim() ?? '',
+              location: String(input.location)?.trim() ?? '',
+              query: String(input.query)?.trim() ?? '',
               selectedAddress: '',
             },
             1,
@@ -466,7 +448,7 @@ function createPropertyListingLakebedStub(
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -486,28 +468,28 @@ function createPropertyListingLakebedStub(
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
           const existingByAddress = new Map(
             listings.map((listing) => [listing.address.toLowerCase(), listing]),
           )
-          listings = input.listings
-            .filter((listing) => listing.address.trim())
-            .map((listing, index) => {
-              const address = listing.address.trim()
+          listings = (input.listings as Record<string, unknown>[])
+            .filter((listing) => String(listing.address).trim())
+            .map((listing: Record<string, unknown>, index) => {
+              const address = String(listing.address).trim()
               const existing = existingByAddress.get(address.toLowerCase())
 
               return row(
                 'listing',
                 {
                   address,
-                  baths: listing.baths.trim(),
-                  beds: listing.beds.trim(),
-                  price: listing.price.trim(),
-                  sqft: listing.sqft.trim(),
-                  tag: listing.tag?.trim() ?? '',
+                  baths: String(listing.baths).trim(),
+                  beds: String(listing.beds).trim(),
+                  price: String(listing.price).trim(),
+                  sqft: String(listing.sqft).trim(),
+                  tag: String(listing.tag)?.trim() ?? '',
                 },
                 existing ? Number(existing.id.split('-').at(-1)) : index + 1,
               )
@@ -523,7 +505,7 @@ function createPropertyListingLakebedStub(
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

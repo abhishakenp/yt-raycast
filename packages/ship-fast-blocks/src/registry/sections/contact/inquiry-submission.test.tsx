@@ -11,9 +11,6 @@ import {
 import type { InquiryLakebed } from './inquiry-interactions.tsx'
 import type { inquiryLakebed } from './inquiry-lakebed.ts'
 
-type InquiryActionInput = Parameters<
-  typeof inquiryLakebed.mutations.recordContactAction
->[1]
 type InquiryActionRecord = {
   createdAt: string
   id: string
@@ -21,19 +18,6 @@ type InquiryActionRecord = {
   label: string
   source: string
   target: string
-  updatedAt: string
-}
-type InquiryInput = Parameters<typeof inquiryLakebed.mutations.submitInquiry>[1]
-type InquiryRecord = {
-  createdAt: string
-  email: string
-  fieldsJson: string
-  id: string
-  message: string
-  name: string
-  phone: string
-  source: string
-  subject: string
   updatedAt: string
 }
 type InquiryComponent = ComponentType<{
@@ -59,16 +43,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -149,11 +133,11 @@ function createInquiryLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const normalize = (value) => String(value ?? '').trim()
-  const normalizeEmail = (value) => normalize(value).toLowerCase()
-  const pickField = (fields, keys) => {
+  const normalize = (value: unknown) => String(value ?? '').trim()
+  const normalizeEmail = (value: unknown) => normalize(value).toLowerCase()
+  const pickField = (fields: Record<string, unknown>, keys: string[]) => {
     for (const key of keys) {
-      const value = fields[key]?.trim()
+      const value = String(fields[key] ?? '').trim()
       if (value) return value
     }
 
@@ -204,7 +188,7 @@ function createInquiryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
 
@@ -235,7 +219,7 @@ function createInquiryLakebedStub() {
       const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input) => runMutation(input), {
+          Object.assign((input: Record<string, unknown>) => runMutation(input), {
             isPending: false,
             lastError: initialLastError,
             pendingCount: 0,
@@ -255,7 +239,7 @@ function createInquiryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
 
@@ -314,7 +298,7 @@ function createInquiryLakebedStub() {
       const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input) => runMutation(input), {
+          Object.assign((input: Record<string, unknown>) => runMutation(input), {
             isPending: false,
             lastError: initialLastError,
             pendingCount: 0,

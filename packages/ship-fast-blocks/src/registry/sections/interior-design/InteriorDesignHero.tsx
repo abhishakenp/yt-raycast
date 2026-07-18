@@ -7,10 +7,10 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -92,7 +92,7 @@ export const InteriorDesignHero = defineCapsule({
               <HeroSubheading className="mt-0 max-w-lg">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -107,10 +107,10 @@ export const InteriorDesignHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
-              <HeroTrustRow className="mt-0 gap-8 pt-4">
+              </HeroActions>
+              <HeroSocialProof className="mt-0 gap-8 pt-4">
                 {badges.map((badge, i) => (
-                  <HeroTrustItem key={badge}>
+                  <HeroSocialProofItem key={badge}>
                     {i === 0 ? (
                       <svg
                         width="16"
@@ -137,12 +137,12 @@ export const InteriorDesignHero = defineCapsule({
                       </svg>
                     )}
                     <span>{badge}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={1200}
                 h={800}

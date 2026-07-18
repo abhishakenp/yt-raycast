@@ -13,6 +13,7 @@ const SolutionGridVariants = cva('grid', {
       '1-3': 'gap-6 md:grid-cols-3',
       '1-4': 'gap-6 lg:grid-cols-4',
       '1-md-2-3': 'gap-6 md:grid-cols-2 lg:grid-cols-3',
+      '1-md-2-lg-3': 'gap-6 md:grid-cols-2 lg:grid-cols-3',
     },
   },
   defaultVariants: {

@@ -100,7 +100,7 @@ export const BootcampPricing = defineCapsule({
       props.footnote ??
       'Scholarships available for underrepresented groups in tech.'
     const pricingFootnoteCta = props.footnoteCta ?? 'Learn more →'
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="currentColor"

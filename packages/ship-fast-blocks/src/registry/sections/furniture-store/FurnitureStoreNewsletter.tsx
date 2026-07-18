@@ -8,9 +8,9 @@ import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  NewsletterCta,
   NewsletterCtaFineprint,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 
 /**
  * FurnitureStoreNewsletter — a centered newsletter subscribe CTA on a soft muted
@@ -86,7 +86,7 @@ export const FurnitureStoreNewsletter = defineCapsule({
     }
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         variant="muted"
         className={cn('py-16 lg:py-24', props.className)}
         aria-labelledby="furniture-newsletter-heading"
@@ -133,7 +133,7 @@ export const FurnitureStoreNewsletter = defineCapsule({
             ))}
           </div>
         </div>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

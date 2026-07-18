@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
+  StepTimeline,
   StepTimelineGrid,
   StepItem,
   StepBadge,
@@ -83,7 +84,7 @@ export const MentalHealthSteps = defineCapsule({
         ]
     const bookLabel = props.bookLabel ?? 'Book Session'
 
-    const Phone = ({ className }) => (
+    const Phone = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -101,7 +102,9 @@ export const MentalHealthSteps = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <StepTimeline
+        className={cn('bg-background py-20 lg:py-28', props.className)}
+      >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow={eyebrow}
@@ -186,7 +189,7 @@ export const MentalHealthSteps = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

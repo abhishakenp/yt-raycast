@@ -8,13 +8,7 @@ import {
   createLakebedQueryStub,
 } from '@ship-fast/lakebed/test-helpers'
 import type { JobBoardLakebed } from './job-board-interactions.tsx'
-import {
-  jobBoardLakebed,
-  type JobBoardActionInput,
-  type JobBoardApplicationInput,
-  type JobBoardCatalogInput,
-  type JobBoardSearchInput,
-} from './job-board-lakebed.ts'
+import { jobBoardLakebed } from './job-board-lakebed.ts'
 
 type JobBoardState = ReturnType<typeof jobBoardLakebed.queries.jobBoardState>
 type JobBoardAction = JobBoardState['actions'][number]
@@ -41,7 +35,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }: { alt?: string; className?: string }) => <img alt={alt} className={className} />,
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -62,16 +56,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -169,10 +163,10 @@ function createJobBoardLakebedStub() {
     searches,
     visibleCount: state?.visibleCount ?? 3,
   })
-  const nextRow = <TRow extends Record<string, unknown>>(
-    prefix,
-    value,
-    index,
+  const nextRow = (
+    prefix: string,
+    value: unknown,
+    index: number,
   ) => ({
     ...value,
     createdAt: now,
@@ -214,11 +208,11 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
-          const role = input.role.trim()
+          const role = String(input.role).trim()
           if (
             role &&
             !applications.some((application) => application.role === role)
@@ -228,7 +222,7 @@ function createJobBoardLakebedStub() {
               nextRow(
                 'application',
                 {
-                  company: input.company?.trim() ?? '',
+                  company: String(input.company)?.trim() ?? '',
                   role,
                 },
                 applications.length + 1,
@@ -246,7 +240,7 @@ function createJobBoardLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -314,7 +308,7 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -322,8 +316,8 @@ function createJobBoardLakebedStub() {
             nextRow(
               'action',
               {
-                action: input.action.trim(),
-                source: input.source?.trim() ?? '',
+                action: String(input.action).trim(),
+                source: String(input.source)?.trim() ?? '',
               },
               actions.length + 1,
             ),
@@ -340,7 +334,7 @@ function createJobBoardLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -360,16 +354,16 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
           state = nextRow(
             'state',
             {
-              filter: input.filter?.trim() || 'All Jobs',
-              location: input.location?.trim() ?? '',
-              query: input.query?.trim() ?? '',
+              filter: String(input.filter)?.trim() || 'All Jobs',
+              location: String(input.location)?.trim() ?? '',
+              query: String(input.query)?.trim() ?? '',
               visibleCount: 3,
             },
             1,
@@ -397,7 +391,7 @@ function createJobBoardLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -417,7 +411,7 @@ function createJobBoardLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -425,19 +419,19 @@ function createJobBoardLakebedStub() {
             items.map((item) => [item.role.toLowerCase(), item]),
           )
 
-          for (const job of input.items) {
-            const role = job.role.trim()
+          for (const job of input.items as Record<string, unknown>[]) {
+            const role = String(job.role).trim()
             if (!role) continue
 
             const current = existingByRole.get(role.toLowerCase())
             const next = {
-              badge: job.badge?.trim() ?? '',
-              company: job.company?.trim() ?? '',
-              description: job.description?.trim() ?? '',
-              logoAlt: job.logoAlt?.trim() ?? '',
-              posted: job.posted?.trim() ?? '',
+              badge: String(job.badge ?? '').trim() ?? '',
+              company: String(job.company ?? '').trim() ?? '',
+              description: String(job.description ?? '').trim() ?? '',
+              logoAlt: String(job.logoAlt ?? '').trim() ?? '',
+              posted: String(job.posted ?? '').trim() ?? '',
               role,
-              tags: job.tags?.trim() ?? '',
+              tags: String(job.tags ?? '').trim() ?? '',
             }
 
             if (current) {
@@ -461,7 +455,7 @@ function createJobBoardLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

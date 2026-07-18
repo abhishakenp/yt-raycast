@@ -9,8 +9,8 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -103,7 +103,7 @@ export const BeautyStoreHero = defineCapsule({
       }),
     ])
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -135,7 +135,7 @@ export const BeautyStoreHero = defineCapsule({
               <HeroSubheading className="mt-0 max-w-lg">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -150,7 +150,7 @@ export const BeautyStoreHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex -space-x-3">
                   {customerAlts.map((alt) => (
@@ -178,7 +178,7 @@ export const BeautyStoreHero = defineCapsule({
             </div>
 
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={1000}

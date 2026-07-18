@@ -36,7 +36,7 @@ describe('home gallery Convex boundary', () => {
     cleanup()
   })
 
-  const withConvex = (children) => (
+  const withConvex = (children: ReactNode) => (
     <ConvexProvider
       client={
         new ConvexReactClient('https://convex.example.test', {

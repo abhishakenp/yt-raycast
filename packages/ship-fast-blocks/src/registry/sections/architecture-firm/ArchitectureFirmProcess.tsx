@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * ArchitectureFirmProcess — numbered process / how-we-work section for an
@@ -55,7 +60,7 @@ export const ArchitectureFirmProcess = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         aria-labelledby="architecture-firm-process-heading"
         className={cn('py-24 lg:py-28', props.className)}
       >
@@ -72,9 +77,9 @@ export const ArchitectureFirmProcess = defineCapsule({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="grid-cols-1 gap-8 lg:gap-12">
             {steps.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <span className="absolute -left-2 -top-4 select-none text-7xl font-light text-muted-foreground/30">
                   {String(i + 1).padStart(2, '0')}
                 </span>
@@ -86,11 +91,11 @@ export const ArchitectureFirmProcess = defineCapsule({
                     {step.description}
                   </p>
                 </div>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

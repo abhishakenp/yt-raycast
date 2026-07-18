@@ -8,6 +8,11 @@ import { Card } from '#/section-kit/Card.tsx'
  * CleaningServiceSteps — a "how it works" + "what's included" combo section for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of numbered step cards (with connector lines on desktop), followed by a split-row card: left side shows a "what's included" checklist with checkmark icons, right side shows a 2x2 lazy-loaded photo grid. Use for process-explanation / expectations-setting blocks for residential cleaning companies, maid services, or home-service platforms. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const CleaningServiceSteps = defineCapsule({
   name: 'CleaningServiceSteps',
   description:
@@ -80,7 +85,7 @@ export const CleaningServiceSteps = defineCapsule({
           'tidied bedroom with made bed and natural light',
           'organized living room with clean surfaces and vacuumed carpet',
         ]
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         width="20"
         height="20"
@@ -97,7 +102,9 @@ export const CleaningServiceSteps = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
+      <StepTimeline
+        className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
+      >
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
@@ -105,9 +112,9 @@ export const CleaningServiceSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <Card rounded="2xl" padding="lg" shadow="sm" className="h-full">
                   <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
                     {i + 1}
@@ -125,9 +132,9 @@ export const CleaningServiceSteps = defineCapsule({
                     className="absolute left-full top-12 hidden h-0.5 w-12 -translate-x-4 bg-primary/40 md:block"
                   />
                 ) : null}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
           <Card
             rounded="2xl"
             padding="lg"
@@ -163,7 +170,7 @@ export const CleaningServiceSteps = defineCapsule({
             </div>
           </Card>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

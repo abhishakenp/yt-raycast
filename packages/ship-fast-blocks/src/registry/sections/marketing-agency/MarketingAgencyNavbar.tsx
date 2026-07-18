@@ -41,7 +41,7 @@ export const MarketingAgencyNavbar = defineCapsule({
       ? props.nav
       : ['Services', 'Case Studies', 'Pricing', 'FAQ', 'Get Started']
     const navCta = nav[nav.length - 1]
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

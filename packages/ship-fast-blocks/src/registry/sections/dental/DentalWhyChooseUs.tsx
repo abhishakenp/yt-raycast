@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { WhyChooseUsGrid, WhyChooseUsCard } from '#/section-kit/WhyChooseUsGrid.tsx'
 export const DentalWhyChooseUs = defineCapsule({
   name: 'DentalWhyChooseUs',
   description:
@@ -69,7 +70,7 @@ export const DentalWhyChooseUs = defineCapsule({
     return (
       <section className={cn('bg-muted py-24', props.className)}>
         <Container>
-          <div className="grid items-center gap-16 lg:grid-cols-2">
+          <WhyChooseUsGrid className="grid items-center gap-16 lg:grid-cols-2">
             <div className="order-2 lg:order-1">
               <div className="aspect-[4/5] overflow-hidden rounded-3xl shadow-xl">
                 <Image
@@ -94,25 +95,20 @@ export const DentalWhyChooseUs = defineCapsule({
               <p className="mb-10 text-lg leading-relaxed text-muted-foreground">
                 {whyDesc}
               </p>
-              <div className="space-y-8">
-                {whyItems.map((item, i) => (
-                  <div key={item.title} className="flex gap-4">
-                    <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary font-bold text-primary-foreground">
-                      {String(i + 1).padStart(2, '0')}
-                    </div>
-                    <div>
-                      <h3 className="mb-2 text-lg font-bold text-foreground">
-                        {item.title}
-                      </h3>
-                      <p className="text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
+              <div className="grid gap-8 sm:grid-cols-2">
+                {whyItems.map((item) => (
+                  <WhyChooseUsCard key={item.title} className="rounded-xl">
+                    <h3 className="mb-2 font-semibold text-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {item.description}
+                    </p>
+                  </WhyChooseUsCard>
                 ))}
               </div>
             </div>
-          </div>
+          </WhyChooseUsGrid>
         </Container>
       </section>
     )

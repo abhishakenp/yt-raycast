@@ -51,7 +51,6 @@ import {
 } from 'lucide-react'
 import { nanoid } from 'nanoid'
 import type {
-  ChangeEvent,
   ChangeEventHandler,
   ClipboardEventHandler,
   ComponentProps,
@@ -260,7 +259,7 @@ export function PromptInputProvider({
   // oxlint-disable-next-line eslint(no-empty-function)
   const openRef = useRef<() => void>(() => {})
 
-  const add = useCallback((files) => {
+  const add = useCallback((files: File[] | FileList) => {
     const incoming = [...files]
     if (incoming.length === 0) {
       return
@@ -278,7 +277,7 @@ export function PromptInputProvider({
     ])
   }, [])
 
-  const remove = useCallback((id) => {
+  const remove = useCallback((id: string) => {
     setAttachmentFiles((prev) => {
       const found = prev.find((f) => f.id === id)
       if (found?.url) {
@@ -334,7 +333,7 @@ export function PromptInputProvider({
     [attachmentFiles, add, remove, clear, openFileDialog],
   )
 
-  const __registerFileInput = useCallback((ref, open) => {
+  const __registerFileInput = useCallback((ref: React.RefObject<HTMLInputElement | null>, open: () => void) => {
     fileInputRef.current = ref.current
     openRef.current = open
   }, [])
@@ -417,7 +416,7 @@ export function PromptInputActionAddAttachments({
   const attachments = usePromptInputAttachments()
 
   const handleSelect = useCallback(
-    (e) => {
+    (e: Event) => {
       e.preventDefault()
       attachments.openFileDialog()
     },
@@ -445,7 +444,7 @@ export function PromptInputActionAddScreenshot({
   const attachments = usePromptInputAttachments()
 
   const handleSelect = useCallback(
-    async (event) => {
+    async (event: Event) => {
       onSelect?.(event)
       if (event.defaultPrevented) {
         return
@@ -549,7 +548,7 @@ export function PromptInput({
   }, [])
 
   const matchesAccept = useCallback(
-    (f) => {
+    (f: File) => {
       if (!accept || accept.trim() === '') {
         return true
       }
@@ -572,7 +571,7 @@ export function PromptInput({
   )
 
   const addLocal = useCallback(
-    (fileList) => {
+    (fileList: FileList | File[]) => {
       const incoming = [...fileList]
       const accepted = incoming.filter((f) => matchesAccept(f))
       if (incoming.length && accepted.length === 0) {
@@ -582,7 +581,7 @@ export function PromptInput({
         })
         return
       }
-      const withinSize = (f) => (maxFileSize ? f.size <= maxFileSize : true)
+      const withinSize = (f: File) => (maxFileSize ? f.size <= maxFileSize : true)
       const sized = accepted.filter(withinSize)
       if (accepted.length > 0 && sized.length === 0) {
         onError?.({
@@ -622,7 +621,7 @@ export function PromptInput({
   )
 
   const removeLocal = useCallback(
-    (id) =>
+    (id: string) =>
       setItems((prev) => {
         const found = prev.find((file) => file.id === id)
         if (found?.url) {
@@ -635,7 +634,7 @@ export function PromptInput({
 
   // Wrapper that validates files before calling provider's add
   const addWithProviderValidation = useCallback(
-    (fileList) => {
+    (fileList: FileList | File[]) => {
       const incoming = [...fileList]
       const accepted = incoming.filter((f) => matchesAccept(f))
       if (incoming.length && accepted.length === 0) {
@@ -645,7 +644,7 @@ export function PromptInput({
         })
         return
       }
-      const withinSize = (f) => (maxFileSize ? f.size <= maxFileSize : true)
+      const withinSize = (f: File) => (maxFileSize ? f.size <= maxFileSize : true)
       const sized = accepted.filter(withinSize)
       if (accepted.length > 0 && sized.length === 0) {
         onError?.({
@@ -731,12 +730,12 @@ export function PromptInput({
       return
     }
 
-    const onDragOver = (e) => {
+    const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
       if (e.dataTransfer?.types?.includes('Files')) {
         e.preventDefault()
       }
     }
-    const onDrop = (e) => {
+    const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
       if (e.dataTransfer?.types?.includes('Files')) {
         e.preventDefault()
       }
@@ -757,12 +756,12 @@ export function PromptInput({
       return
     }
 
-    const onDragOver = (e) => {
+    const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
       if (e.dataTransfer?.types?.includes('Files')) {
         e.preventDefault()
       }
     }
-    const onDrop = (e) => {
+    const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
       if (e.dataTransfer?.types?.includes('Files')) {
         e.preventDefault()
       }
@@ -951,7 +950,7 @@ export function PromptInputTextarea({
   const [isComposing, setIsComposing] = useState(false)
 
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = useCallback(
-    (e) => {
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       // Call the external onKeyDown handler first
       onKeyDown?.(e)
 
@@ -1029,7 +1028,7 @@ export function PromptInputTextarea({
 
   const controlledProps = controller
     ? {
-        onChange: (e) => {
+        onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           controller.textInput.setInput(e.currentTarget.value)
           onChange?.(e)
         },
@@ -1231,7 +1230,7 @@ export function PromptInputSubmit({
   }
 
   const handleClick = useCallback(
-    (e) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       if (isGenerating && onStop) {
         e.preventDefault()
         onStop()

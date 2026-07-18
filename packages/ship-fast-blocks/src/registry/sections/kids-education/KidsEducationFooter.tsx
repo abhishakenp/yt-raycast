@@ -73,7 +73,7 @@ export const KidsEducationFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'Facebook', 'Instagram']
-    const BookMark = ({ className }) => (
+    const BookMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground',

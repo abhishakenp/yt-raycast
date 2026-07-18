@@ -39,7 +39,7 @@ export const CleaningServiceContactCta = defineCapsule({
     const note =
       props.note ?? 'Free cancellation up to 24 hours before your appointment'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="20"
         height="20"
@@ -56,7 +56,7 @@ export const CleaningServiceContactCta = defineCapsule({
       </svg>
     )
 
-    const PhoneIcon = ({ className }) => (
+    const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         width="18"
         height="18"

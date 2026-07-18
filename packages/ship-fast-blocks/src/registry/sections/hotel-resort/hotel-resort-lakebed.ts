@@ -66,7 +66,7 @@ export const hotelResortLakebed = {
     ),
   },
   mutations: {
-    requestBooking: hotel.mutation((_ctx, input) => {
+    requestBooking: hotel.mutation((_ctx, input: HotelBookingInput) => {
       _ctx.db.bookingIntents.insert({
         action: clean(input.action) || 'booking',
         fieldsJson: JSON.stringify(input.fields ?? {}),
@@ -77,7 +77,7 @@ export const hotelResortLakebed = {
 
       return _ctx.db.bookingIntents.orderBy('createdAt').all()
     }),
-    syncRooms: hotel.mutation((_ctx, input) => {
+    syncRooms: hotel.mutation((_ctx, input: { rooms: HotelRoomInput[] }) => {
       for (const room of input.rooms) {
         const name = clean(room.name)
         if (!name) continue

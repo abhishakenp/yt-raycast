@@ -546,8 +546,8 @@ export function SignInWithGoogle({
     {
       ...props,
       disabled,
-      onClick: (event) => {
-        onClick?.(event)
+      onClick: (event: MouseEvent<HTMLElement>) => {
+        onClick?.(event as MouseEvent<HTMLButtonElement>)
         if (event.defaultPrevented || disabled) return
 
         void signInWithGoogle({

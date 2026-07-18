@@ -121,7 +121,7 @@ describe('SignIn capsule and renderer parity', () => {
     '%s matches the canonical shiny button surface',
     async (path) => {
       const canonicalView = renderCanonicalSignIn()
-      const canonical = canonicalView.getByRole('button', { name: 'Login' })
+      const canonical = canonicalView.getByRole('button', { name: 'Login' }) as HTMLButtonElement
       const expected = {
         classes: classTokens(canonical),
         shinyLayer: shinyLayerContract(canonical),
@@ -129,7 +129,7 @@ describe('SignIn capsule and renderer parity', () => {
       canonicalView.unmount()
 
       const view = await renderSignIn(path)
-      const button = await view.findByRole('button', { name: 'Login' })
+      const button = (await view.findByRole('button', { name: 'Login' })) as HTMLButtonElement
 
       expect({
         classes: classTokens(button),
@@ -142,7 +142,7 @@ describe('SignIn capsule and renderer parity', () => {
     '%s preserves canonical hover and focus-visible states',
     async (path) => {
       const canonicalView = renderCanonicalSignIn()
-      const canonical = canonicalView.getByRole('button', { name: 'Login' })
+      const canonical = canonicalView.getByRole('button', { name: 'Login' }) as HTMLButtonElement
       const expectedTokens = interactionTokens(canonical).filter(
         (token) =>
           token.startsWith('hover:') || token.startsWith('focus-visible:'),
@@ -150,7 +150,7 @@ describe('SignIn capsule and renderer parity', () => {
       canonicalView.unmount()
 
       const view = await renderSignIn(path)
-      const button = await view.findByRole('button', { name: 'Login' })
+      const button = (await view.findByRole('button', { name: 'Login' })) as HTMLButtonElement
       button.focus()
 
       expect(document.activeElement).toBe(button)
@@ -168,14 +168,14 @@ describe('SignIn capsule and renderer parity', () => {
     async (path) => {
       authRuntime.state.isLoading = true
       const canonicalView = renderCanonicalSignIn()
-      const canonical = canonicalView.getByRole('button', { name: 'Login' })
+      const canonical = canonicalView.getByRole('button', { name: 'Login' }) as HTMLButtonElement
       const expectedTokens = interactionTokens(canonical).filter((token) =>
         token.startsWith('disabled:'),
       )
       canonicalView.unmount()
 
       const view = await renderSignIn(path)
-      const button = await view.findByRole('button', { name: 'Login' })
+      const button = (await view.findByRole('button', { name: 'Login' })) as HTMLButtonElement
       fireEvent.click(button)
 
       expect(button.disabled).toBe(true)
@@ -192,9 +192,9 @@ describe('SignIn capsule and renderer parity', () => {
     '%s exposes the exact visible label as its accessible button name',
     async (path) => {
       const view = await renderSignIn(path, 'Login to continue')
-      const button = await view.findByRole('button', {
+      const button = (await view.findByRole('button', {
         name: 'Login to continue',
-      })
+      })) as HTMLButtonElement
 
       expect(button.type).toBe('button')
       expect(button.textContent?.trim()).toBe('Login to continue')
@@ -208,7 +208,7 @@ describe('SignIn capsule and renderer parity', () => {
     '%s starts OAuth once and returns to the current route',
     async (path) => {
       const view = await renderSignIn(path)
-      const button = await view.findByRole('button', { name: 'Login' })
+      const button = (await view.findByRole('button', { name: 'Login' })) as HTMLButtonElement
       fireEvent.click(button)
 
       expect(authRuntime.signInWithGoogle).toHaveBeenCalledTimes(1)

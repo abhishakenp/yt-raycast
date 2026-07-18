@@ -7,7 +7,7 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
@@ -137,7 +137,7 @@ export const SaasHero = defineCapsule({
               {heading} <HeroHighlight>{highlight}</HeroHighlight>
             </HeroHeading>
             <HeroSubheading>{subheading}</HeroSubheading>
-            <HeroCtas>
+            <HeroActions>
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryCta}
@@ -182,7 +182,7 @@ export const SaasHero = defineCapsule({
                 </svg>
                 {secondaryCta}
               </SaasPlanActionButton>
-            </HeroCtas>
+            </HeroActions>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <div className="flex" aria-hidden="true">
                 {['a', 'b', 'c', 'd'].map((id, i) => (

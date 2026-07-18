@@ -5,11 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { PublicationSubscribeForm } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 import {
-  NewsletterCta,
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 
 /**
  * BlogPostSubscribe — newsletter signup band for an editorial blog/article
@@ -48,7 +48,7 @@ export const BlogPostSubscribe = defineCapsule({
     const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <NewsletterCta className={cn('py-16 lg:py-24', props.className)}>
+      <SubscribeBand className={cn('py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-2xl px-6 lg:px-8">
           <div className="rounded-2xl bg-muted px-6 py-12 text-center sm:px-12">
             <NewsletterCtaHeading className="mb-3 text-2xl font-semibold tracking-tight">
@@ -71,7 +71,7 @@ export const BlogPostSubscribe = defineCapsule({
             <NewsletterCtaFineprint>{note}</NewsletterCtaFineprint>
           </div>
         </div>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

@@ -19,14 +19,6 @@ type TestProduct = {
   subtitle?: string
 }
 
-type TestMutationInput = {
-  id?: string
-  label?: string
-  price?: string
-  products?: TestProduct[]
-  query?: string
-  selectedLabel?: string
-}
 
 type TestLakebed = ReturnType<
   typeof createSubscriptionBoxLakebedStub
@@ -57,16 +49,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -150,7 +142,7 @@ function createSubscriptionBoxLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const findItem = (input) =>
+  const findItem = (input: Record<string, unknown>) =>
     state.items.find(
       (item) =>
         (input.id && item.id === input.id) ||
@@ -182,7 +174,7 @@ function createSubscriptionBoxLakebedStub() {
       items: state.items,
       products: state.products,
     }),
-    useQuery: (name) => {
+    useQuery: (name: string) => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -201,12 +193,12 @@ function createSubscriptionBoxLakebedStub() {
       }
       return null
     },
-    useMutation: (name) => {
+    useMutation: (name: string) => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
       const runMutation = useCallback(
-        async (input) => {
+        async (input: Record<string, unknown>) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
           try {
@@ -219,8 +211,8 @@ function createSubscriptionBoxLakebedStub() {
                   ...state.items,
                   {
                     id: `item-${state.items.length + 1}`,
-                    label: input?.label ?? 'Item',
-                    price: input?.price,
+                    label: (input?.label as string) || 'Item',
+                    price: input?.price as string | undefined,
                     quantity: 1,
                   },
                 ]
@@ -246,7 +238,7 @@ function createSubscriptionBoxLakebedStub() {
             }
 
             if (name === 'syncCatalog') {
-              for (const product of input?.products ?? []) {
+              for (const product of (input?.products as TestProduct[] | undefined) ?? []) {
                 const existingIndex = state.products.findIndex(
                   (item) => item.label === product.label,
                 )
@@ -262,8 +254,8 @@ function createSubscriptionBoxLakebedStub() {
 
             if (name === 'setCommerceSearch') {
               state.searchState = {
-                query: input?.query?.trim() ?? '',
-                selectedLabel: input?.selectedLabel?.trim() ?? '',
+                query: (input?.query as string)?.trim() ?? '',
+                selectedLabel: (input?.selectedLabel as string)?.trim() ?? '',
               }
             }
 
@@ -280,7 +272,7 @@ function createSubscriptionBoxLakebedStub() {
       )
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

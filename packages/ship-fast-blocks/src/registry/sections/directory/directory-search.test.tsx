@@ -8,13 +8,7 @@ import {
   createLakebedQueryStub,
 } from '@ship-fast/lakebed/test-helpers'
 import type { DirectoryLakebed } from './directory-interactions.tsx'
-import {
-  directoryLakebed,
-  type DirectoryLeadInput,
-  type DirectoryListingInput,
-  type DirectorySearchInput,
-  type DirectorySelectInput,
-} from './directory-lakebed.ts'
+import { directoryLakebed } from './directory-lakebed.ts'
 
 type DirectoryState = ReturnType<typeof directoryLakebed.queries.directoryState>
 type DirectoryCatalogItem = ReturnType<
@@ -40,7 +34,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }: { alt?: string; className?: string }) => <img alt={alt} className={className} />,
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -61,16 +55,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -173,7 +167,7 @@ function createDirectoryLakebedStub() {
     selections,
     selectionCount: selections.length,
   })
-  const row = <TRow extends Record<string, unknown>>(prefix, value, index) => ({
+  const row = (prefix: string, value: unknown, index: number) => ({
     ...value,
     createdAt: now,
     id: `${prefix}-${index}`,
@@ -214,7 +208,7 @@ function createDirectoryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -222,8 +216,8 @@ function createDirectoryLakebedStub() {
             row(
               'lead',
               {
-                action: input.action.trim(),
-                source: input.source?.trim() ?? '',
+                action: String(input.action).trim(),
+                source: String(input.source)?.trim() ?? '',
               },
               leads.length + 1,
             ),
@@ -240,7 +234,7 @@ function createDirectoryLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -260,11 +254,11 @@ function createDirectoryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
-          const nameValue = input.name.trim()
+          const nameValue = String(input.name).trim()
           state = row(
             'state',
             {
@@ -278,7 +272,7 @@ function createDirectoryLakebedStub() {
             row(
               'selection',
               {
-                category: input.category?.trim() ?? '',
+                category: String(input.category)?.trim() ?? '',
                 name: nameValue,
               },
               selections.length + 1,
@@ -296,7 +290,7 @@ function createDirectoryLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -316,15 +310,15 @@ function createDirectoryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
           state = row(
             'state',
             {
-              category: input.category?.trim() ?? '',
-              query: input.query?.trim() ?? '',
+              category: String(input.category)?.trim() ?? '',
+              query: String(input.query)?.trim() ?? '',
               selectedName: '',
             },
             1,
@@ -348,7 +342,7 @@ function createDirectoryLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -368,7 +362,7 @@ function createDirectoryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -376,19 +370,19 @@ function createDirectoryLakebedStub() {
             items.map((item) => [item.name.toLowerCase(), item]),
           )
 
-          for (const item of input.items) {
-            const nameValue = item.name.trim()
+          for (const item of input.items as Record<string, unknown>[]) {
+            const nameValue = String(item.name).trim()
             if (!nameValue) continue
 
             const current = existingByName.get(nameValue.toLowerCase())
             const next = {
-              address: item.address?.trim() ?? '',
-              category: item.category?.trim() ?? '',
-              hours: item.hours?.trim() ?? '',
-              imageAlt: item.imageAlt?.trim() ?? '',
+              address: String(item.address ?? '').trim() ?? '',
+              category: String(item.category ?? '').trim() ?? '',
+              hours: String(item.hours ?? '').trim() ?? '',
+              imageAlt: String(item.imageAlt ?? '').trim() ?? '',
               name: nameValue,
-              rating: item.rating?.trim() ?? '',
-              reviews: item.reviews?.trim() ?? '',
+              rating: String(item.rating ?? '').trim() ?? '',
+              reviews: String(item.reviews ?? '').trim() ?? '',
             }
 
             if (current) {
@@ -412,7 +406,7 @@ function createDirectoryLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

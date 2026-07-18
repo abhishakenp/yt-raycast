@@ -186,7 +186,7 @@ const sanitizeStreamPreview = (raw: string): string =>
 
 function summarizeSiteSpec(siteSpec?: Record<string, unknown>): string {
   if (!siteSpec) return 'No site spec was generated.'
-  const pick = (key) => {
+  const pick = (key: string) => {
     const value = siteSpec[key]
     return typeof value === 'string' && value.trim() ? value.trim() : undefined
   }

@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ElectronicsStoreCategories — a "Shop by Category" image-tile grid for an
@@ -14,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { CategoryGrid, CategoryCard } from '#/section-kit/CategoryGrid.tsx'
 export const ElectronicsStoreCategories = defineCapsule({
   name: 'ElectronicsStoreCategories',
   description:
@@ -92,14 +92,14 @@ export const ElectronicsStoreCategories = defineCapsule({
           <h2 className="mb-8 text-2xl font-semibold text-foreground">
             {heading}
           </h2>
-          <ResponsiveGrid cols="2-lg-4" gap="sm">
+          <CategoryGrid cols="2-lg-4" gap="sm">
             {items.map((c) => (
-              <button
-                key={c.name}
-                type="button"
-                onClick={() => go(c.name)}
-                className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
-              >
+              <CategoryCard asChild key={c.name}>
+                <button
+                  type="button"
+                  onClick={() => go(c.name)}
+                  className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
+                >
                 <Image
                   alt={c.imageAlt}
                   w={400}
@@ -115,9 +115,10 @@ export const ElectronicsStoreCategories = defineCapsule({
                   <h3 className="font-semibold">{c.name}</h3>
                   <p className="text-sm text-background/80">{c.count}</p>
                 </div>
-              </button>
+                </button>
+              </CategoryCard>
             ))}
-          </ResponsiveGrid>
+          </CategoryGrid>
         </Container>
       </section>
     )

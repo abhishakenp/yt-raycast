@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useCallback, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { Loader2Icon, MenuIcon } from 'lucide-react'
@@ -62,7 +62,7 @@ export function useInquirySubmission({
   const count = summary?.count ?? 0
 
   const submitForm = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (submitInquiry.isPending) return
 
@@ -281,7 +281,7 @@ export function InquiryMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?) => {
+    (target?: string) => {
       setOpen(false)
       go(target)
     },

@@ -130,7 +130,7 @@ export const NewsFeaturedStory = defineCapsule({
       'text-chart-4',
       'text-chart-5',
     ]
-    const toneFor = (key) => {
+    const toneFor = (key: string) => {
       let h = 0
       for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0
       return catTones[Math.abs(h) % catTones.length]

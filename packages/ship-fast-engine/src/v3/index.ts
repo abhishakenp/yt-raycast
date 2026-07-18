@@ -29,14 +29,14 @@ import {
 import { StreamingParser } from './streaming.ts'
 
 function log(sessionCtx: any) {
-  return (msg) => {
+  return (msg: string) => {
     console.log(msg)
     sessionCtx?.broadcast?.({ type: 'log', message: msg })
   }
 }
 
 function status(sessionCtx: any) {
-  return (message, phase) => {
+  return (message: string, phase: string) => {
     console.log(`  [${phase}] ${message}`)
     sessionCtx?.broadcast?.({ type: 'status', message, phase })
   }
@@ -112,7 +112,7 @@ export async function runAllV3({
   preferredLanguage,
 }: {
   prompt?: string
-  workspace: string
+  workspace?: string
   sessionCtx?: any
   integrations?: any
   preferredLanguage?: string
@@ -121,11 +121,12 @@ export async function runAllV3({
   const _status = status(sessionCtx)
   const t0 = Date.now()
   const normalizedPrompt = requirePromptText(prompt)
+  const ws = workspace || process.cwd()
 
   const languageMode = await resolvePipelineLanguage({
     prompt: normalizedPrompt,
     preferredLanguage,
-    workspace,
+    workspace: ws,
   })
 
   const timings: Record<string, number> = { t0 }
@@ -142,7 +143,7 @@ export async function runAllV3({
 
   const persistTasks = () => {
     writeFileSync(
-      join(workspace, 'tasks.json'),
+      join(ws, 'tasks.json'),
       JSON.stringify({ tasks }, null, 2),
     )
   }
@@ -166,7 +167,7 @@ export async function runAllV3({
     timings.kind_end = Date.now()
 
     // ── Theme (seeded RNG) ──────────────────────────────────────────────────
-    const seed = sessionCtx?.id || workspace
+    const seed = sessionCtx?.id || ws
     const rng = makeSeededRng(seed)
     const theme = pickRandomTheme(rng)
     sessionCtx?.broadcast?.({ type: 'theme', name: theme })
@@ -302,12 +303,12 @@ export async function runAllV3({
 
     // ── Persist artifacts ───────────────────────────────────────────────────
     const siteSpec: V3SiteSpec = result.siteSpec
-    saveSiteSpec(workspace, siteSpec as unknown as SiteSpecProject)
+    saveSiteSpec(ws, siteSpec as unknown as SiteSpecProject)
 
-    writeFileSync(join(workspace, 'home.openui'), result.source)
+    writeFileSync(join(ws, 'home.openui'), result.source)
 
     // openui-manifest.json (simplified upsertManifest pattern).
-    const manifestPath = join(workspace, 'openui-manifest.json')
+    const manifestPath = join(ws, 'openui-manifest.json')
     let manifest: {
       version: number
       generatedAt: string
@@ -358,7 +359,7 @@ export async function runAllV3({
     try {
       await renderPreviewToWorkspace(
         siteSpec as unknown as SiteSpecProject,
-        workspace,
+        ws,
       )
     } catch (ssrErr) {
       _log(
@@ -366,7 +367,7 @@ export async function runAllV3({
       )
       // Fallback: write a minimal shell so the adapter doesn't throw
       writeFileSync(
-        join(workspace, 'index.html'),
+        join(ws, 'index.html'),
         `<!DOCTYPE html><html><head><script src="/scripts/tailwind-browser.js"></script></head>` +
           `<body class="min-h-screen bg-background text-foreground"><div id="openui-root"></div>` +
           `<script src="/scripts/openui-preview-client.js"></script></body></html>`,
@@ -377,7 +378,7 @@ export async function runAllV3({
     // ── Integrations hook ───────────────────────────────────────────────────
     if (integrations?.afterSiteSpecSaved) {
       await integrations.afterSiteSpecSaved({
-        workspace,
+        workspace: ws,
         siteSpec,
         log: _log,
         status: _status,

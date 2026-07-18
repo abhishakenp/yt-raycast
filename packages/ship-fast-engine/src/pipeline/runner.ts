@@ -19,14 +19,14 @@ interface SessionCtx {
 }
 
 function log(sessionCtx: SessionCtx | null | undefined) {
-  return (msg) => {
+  return (msg: string) => {
     console.log(msg)
     sessionCtx?.broadcast?.({ type: 'log', message: msg })
   }
 }
 
 function status(sessionCtx: SessionCtx | null | undefined) {
-  return (message, phase) => {
+  return (message: string, phase: unknown) => {
     console.log(`  [${phase}] ${message}`)
     sessionCtx?.broadcast?.({ type: 'status', message, phase })
   }

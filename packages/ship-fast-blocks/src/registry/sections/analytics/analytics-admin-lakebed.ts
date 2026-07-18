@@ -70,7 +70,7 @@ export const analyticsAdminLakebed = {
 
       return []
     }),
-    markNotificationRead: analyticsAdmin.mutation((_ctx, input) => {
+    markNotificationRead: analyticsAdmin.mutation((_ctx, input: AnalyticsNotificationTarget) => {
       const notification = _ctx.db.notifications.get(input.id)
       if (notification) {
         _ctx.db.notifications.update(notification.id, { read: 'true' })
@@ -78,7 +78,7 @@ export const analyticsAdminLakebed = {
 
       return _ctx.db.notifications.orderBy('createdAt').all()
     }),
-    recordAction: analyticsAdmin.mutation((_ctx, input) => {
+    recordAction: analyticsAdmin.mutation((_ctx, input: AnalyticsActionInput) => {
       _ctx.db.actions.insert({
         label: input.label,
         query: input.query ?? '',
@@ -87,7 +87,7 @@ export const analyticsAdminLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt').all()
     }),
-    syncNotifications: analyticsAdmin.mutation((_ctx, input) => {
+    syncNotifications: analyticsAdmin.mutation((_ctx, input: { notifications: AnalyticsNotificationInput[] }) => {
       for (const notification of input.notifications) {
         const message = notification.message.trim()
         if (!message) continue
@@ -113,3 +113,11 @@ export const analyticsAdminLakebed = {
     }),
   },
 } as const
+
+export type AnalyticsNotificationRecord = {
+  createdAt: string
+  id: string
+  message: string
+  read: string
+  type: string
+}

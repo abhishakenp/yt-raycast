@@ -104,7 +104,7 @@ export const foodDeliveryLakebed = {
     }),
   },
   mutations: {
-    recordFoodAction: foodDelivery.mutation((_ctx, input) => {
+    recordFoodAction: foodDelivery.mutation((_ctx, input: FoodDeliveryActionInput) => {
       const action = clean(input.action)
       if (!action) return _ctx.db.actions.orderBy('createdAt').all()
 
@@ -115,7 +115,7 @@ export const foodDeliveryLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt', 'desc').all()
     }),
-    selectRestaurant: foodDelivery.mutation((_ctx, input) => {
+    selectRestaurant: foodDelivery.mutation((_ctx, input: FoodDeliveryRestaurantInput) => {
       const name = clean(input.name)
       if (!name) return _ctx.db.selections.orderBy('createdAt').all()
 
@@ -141,7 +141,7 @@ export const foodDeliveryLakebed = {
 
       return _ctx.db.selections.orderBy('createdAt', 'desc').all()
     }),
-    setFoodSearch: foodDelivery.mutation((_ctx, input) => {
+    setFoodSearch: foodDelivery.mutation((_ctx, input: FoodDeliverySearchInput) => {
       const address = clean(input.address)
       const query = clean(input.query) || address
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
@@ -162,7 +162,7 @@ export const foodDeliveryLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncRestaurants: foodDelivery.mutation((_ctx, input) => {
+    syncRestaurants: foodDelivery.mutation((_ctx, input: { items: FoodDeliveryCatalogInput[] }) => {
       const existing = _ctx.db.items.orderBy('createdAt').all()
       const existingByName = new Map(
         existing.map((item) => [item.name.toLowerCase(), item]),

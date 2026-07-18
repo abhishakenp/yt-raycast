@@ -14,8 +14,8 @@ function buildGoodHomepage(
   } = {},
 ): string {
   const {
-    siteType = 'saas',
-    prompt = '',
+    siteType: _siteType = 'saas',
+    prompt: _prompt = '',
     extraBody = '',
     withNovaVisual = false,
   } = opts

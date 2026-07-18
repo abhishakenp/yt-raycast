@@ -2,7 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import { PressList, PressItem, PressQuote, PressAttribution } from '#/section-kit/PressList.tsx'
 
 /**
  * MusicArtistPress — press / review testimonial grid for a music artist / band
@@ -72,23 +73,35 @@ export const MusicArtistPress = defineCapsule({
         ]
 
     return (
-      <TestimonialGrid
-        eyebrow={eyebrow}
-        heading={heading}
-        items={reviews.map((r) => ({
-          quote: r.quote,
-          name: r.name,
-          role: r.outlet,
-          rating: r.stars,
-          avatarAlt: r.avatarAlt,
-        }))}
-        columns={3}
-        cardClassName="rounded-sm p-8"
-        className={cn(
-          'bg-muted px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-28',
-          props.className,
-        )}
-      />
+      <PressList asChild>
+        <section
+          className={cn(
+            'bg-muted px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-28',
+            props.className,
+          )}
+        >
+          <Container>
+            <p className="mb-12 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
+              {eyebrow}
+            </p>
+            <h2 className="mb-16 text-center font-serif text-4xl font-normal sm:text-5xl">
+              {heading}
+            </h2>
+            <div className="grid gap-8 md:grid-cols-3">
+              {reviews.map((r) => (
+                <PressItem key={r.name} className="rounded-sm bg-card p-8 shadow-sm">
+                  <PressQuote className="mb-4 text-lg leading-relaxed text-foreground">
+                    &ldquo;{r.quote}&rdquo;
+                  </PressQuote>
+                  <PressAttribution className="text-sm text-muted-foreground">
+                    {r.name} — {r.outlet}
+                  </PressAttribution>
+                </PressItem>
+              ))}
+            </div>
+          </Container>
+        </section>
+      </PressList>
     )
   },
 })

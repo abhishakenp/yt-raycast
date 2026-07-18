@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * CryptoSteps — 3-step numbered process flow for a crypto / DeFi onboarding
@@ -54,7 +59,7 @@ export const CryptoSteps = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn(
           'border-y border-border bg-card py-20 lg:py-28',
           props.className,
@@ -67,9 +72,9 @@ export const CryptoSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mb-4 flex items-center gap-4">
                   <div className="grid size-12 place-items-center rounded-xl bg-foreground text-lg font-semibold text-background">
                     {i + 1}
@@ -82,11 +87,11 @@ export const CryptoSteps = defineCapsule({
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

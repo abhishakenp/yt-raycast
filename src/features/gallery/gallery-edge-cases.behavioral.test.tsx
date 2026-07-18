@@ -7,6 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ReactNode, PointerEvent as ReactPointerEvent } from 'react'
 
 import type { GalleryPayload, GallerySession } from './components/PublicGallery'
 
@@ -31,6 +32,14 @@ vi.mock('@tanstack/react-router', () => ({
     to,
     params,
     ...props
+  }: {
+    children?: ReactNode
+    onPointerEnter?: (e: ReactPointerEvent) => void
+    onPointerLeave?: (e: ReactPointerEvent) => void
+    preload?: boolean
+    to?: string
+    params?: Record<string, string>
+    [key: string]: unknown
   }) => {
     let href = typeof to === 'string' ? to : '#'
     if (params && typeof params === 'object') {
@@ -69,7 +78,7 @@ vi.mock('convex/react', () => ({
       }
     }
   },
-  ConvexProvider: ({ children }) => children,
+  ConvexProvider: ({ children }: { children?: ReactNode }) => children,
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
@@ -83,7 +92,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }) => (
+  GeneratedModulePreview: ({ source }: { source?: string }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))

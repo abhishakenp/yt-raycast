@@ -14,7 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '#/components/ui/sheet.tsx'
-import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
+import { analyticsAdminLakebed, type AnalyticsNotificationRecord } from './analytics-admin-lakebed.ts'
 
 /**
  * AnalyticsHeader — sticky top header bar for a SaaS analytics dashboard. A
@@ -89,8 +89,8 @@ export const AnalyticsHeader = defineCapsule({
           'Notifications',
           'Settings',
         ]
-    const notifications = lakebed.useQuery('notifications') ?? []
-    const unreadCount = lakebed.useQuery('unreadNotificationCount') ?? 0
+    const notifications = (lakebed.useQuery('notifications') ?? []) as AnalyticsNotificationRecord[]
+    const unreadCount = (lakebed.useQuery('unreadNotificationCount') ?? 0) as number
     const defaultNotifications = useMemo(
       () =>
         props.notifications?.length

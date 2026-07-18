@@ -8,8 +8,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -65,7 +65,7 @@ export const NutritionHero = defineCapsule({
     const badgeTitle = props.badgeTitle ?? 'Meal logged'
     const badgeSubtitle = props.badgeSubtitle ?? 'Mediterranean bowl • 485 cal'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -101,7 +101,7 @@ export const NutritionHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 max-w-xl">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mb-10 flex-col gap-4 sm:flex-row">
+              <HeroActions className="mb-10 flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -116,7 +116,7 @@ export const NutritionHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">
                   {avatars.map((alt) => (
@@ -133,7 +133,7 @@ export const NutritionHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

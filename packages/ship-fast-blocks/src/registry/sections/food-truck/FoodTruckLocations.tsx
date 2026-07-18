@@ -6,7 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { LocationBlock } from '#/section-kit/LocationBlock.tsx'
-import { LocationList } from '#/section-kit/LocationList.tsx'
+import { LocationList, LocationItem } from '#/section-kit/LocationList.tsx'
 
 /**
  * FoodTruckLocations — a weekly LOCATIONS schedule section for a food-truck site. On a
@@ -143,10 +143,10 @@ export const FoodTruckLocations = defineCapsule({
 
           <ResponsiveGrid gap="md" className="md:grid-cols-3">
             {locDays.map((d, i) => (
-              <div
-                key={d.day}
-                className="rounded-xl bg-card p-6 text-card-foreground shadow-sm"
-              >
+              <LocationItem asChild key={d.day}>
+                <div
+                  className="rounded-xl bg-card p-6 text-card-foreground shadow-sm"
+                >
                 <div className="mb-4 flex items-center gap-3">
                   <div
                     className={cn(
@@ -171,7 +171,8 @@ export const FoodTruckLocations = defineCapsule({
                     </div>
                   ))}
                 </div>
-              </div>
+                </div>
+              </LocationItem>
             ))}
           </ResponsiveGrid>
 

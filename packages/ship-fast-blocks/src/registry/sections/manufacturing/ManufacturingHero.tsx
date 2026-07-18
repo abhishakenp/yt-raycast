@@ -7,8 +7,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -78,7 +78,7 @@ export const ManufacturingHero = defineCapsule({
               </div>
               <HeroHeading className="font-semibold">{heading}</HeroHeading>
               <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
-              <HeroCtas className="gap-4">
+              <HeroActions className="gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -93,7 +93,7 @@ export const ManufacturingHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex items-center gap-6 border-t border-border pt-4">
                 {stats.map((s, i) => (
                   <div key={s.label} className="flex items-center gap-6">
@@ -109,7 +109,7 @@ export const ManufacturingHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={500}

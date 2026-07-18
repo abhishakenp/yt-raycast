@@ -9,7 +9,7 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -83,7 +83,7 @@ export const SpaWellnessHero = defineCapsule({
 
           <HeroSubheading variant="light">{subheading}</HeroSubheading>
 
-          <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
+          <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryTarget)}
@@ -98,7 +98,7 @@ export const SpaWellnessHero = defineCapsule({
             >
               {secondaryCta}
             </button>
-          </HeroCtas>
+          </HeroActions>
 
           <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
             {infoItems.map((item, i) => (

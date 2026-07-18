@@ -45,7 +45,7 @@ export const InsuranceCta = defineCapsule({
       props.footnote ??
       'No credit check required • Cancel anytime • Instant coverage'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -62,7 +62,7 @@ export const InsuranceCta = defineCapsule({
       </svg>
     )
 
-    const Phone = ({ className }) => (
+    const Phone = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

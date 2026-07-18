@@ -286,7 +286,7 @@ export async function searchStockImages({
   // (e.g. malformed HTML instead of JSON), fall back to picsum with
   // deterministic seeds per page. The seed uses the full slugified query
   // (no truncation) so each query/page/index combination is unique.
-  const fullSlug = (text) =>
+  const fullSlug = (text: string) =>
     text
       .trim()
       .toLowerCase()

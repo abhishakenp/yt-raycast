@@ -69,7 +69,7 @@ export const BeautyStoreTestimonials = defineCapsule({
           },
         ]
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

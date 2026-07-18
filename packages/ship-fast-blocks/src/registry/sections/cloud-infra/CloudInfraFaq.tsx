@@ -65,7 +65,7 @@ export const CloudInfraFaq = defineCapsule({
           },
         ]
 
-    const Chevron = ({ className }) => (
+    const Chevron = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

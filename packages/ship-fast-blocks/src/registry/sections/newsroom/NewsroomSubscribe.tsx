@@ -12,11 +12,11 @@ import { publicationLakebed } from '../blog/publication-lakebed.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
-  NewsletterCta,
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 
 /**
  * NewsroomSubscribe — editorial subscription / membership band for a digital
@@ -119,7 +119,7 @@ export const NewsroomSubscribe = defineCapsule({
         ]
     const footnote = props.footnote ?? 'Cancel anytime. No questions asked.'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -135,7 +135,7 @@ export const NewsroomSubscribe = defineCapsule({
     )
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container>
@@ -274,7 +274,7 @@ export const NewsroomSubscribe = defineCapsule({
             {footnote}
           </NewsletterCtaFineprint>
         </Container>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

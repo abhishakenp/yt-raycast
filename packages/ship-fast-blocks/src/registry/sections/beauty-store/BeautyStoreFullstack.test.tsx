@@ -32,11 +32,6 @@ type TestProduct = {
   updatedAt: string
 }
 
-type TestCartInput = {
-  id?: string
-  label?: string
-  price?: string
-}
 
 type TestProductInput = {
   imageAlt?: string
@@ -144,7 +139,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: [string, Record<string, unknown>]) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -183,12 +178,12 @@ function createCommerceLakebedStub() {
     count: state.items.reduce((total, item) => total + item.quantity, 0),
     items: state.items,
   })
-  const findItem = (input) =>
+  const findItem = (input: Record<string, unknown>) =>
     (input.id ? state.items.find((item) => item.id === input.id) : undefined) ??
     (input.label
       ? state.items.find((item) => item.label === input.label)
       : undefined)
-  const replaceItem = (target, updater) => {
+  const replaceItem = (target: Record<string, unknown>, updater: (item: TestCartItem) => TestCartItem) => {
     state = {
       ...state,
       items: state.items.map((item) =>
@@ -196,15 +191,15 @@ function createCommerceLakebedStub() {
       ),
     }
   }
-  const addItem = (input) => {
-    const label = input.label?.trim() || 'Item'
+  const addItem = (input: Record<string, unknown>) => {
+    const label = String(input.label)?.trim() || 'Item'
     const existing = state.items.find((item) => item.label === label)
 
     if (existing) {
-      replaceItem(existing, (item) => ({
+      replaceItem(existing, (item: TestCartItem) => ({
         ...item,
-        price: item.price || input.price || '',
-        quantity: item.quantity + 1,
+        price: item.price || String(input.price || ''),
+        quantity: Number(String(item.quantity)) + 1,
         updatedAt: timestamp,
       }))
       return
@@ -219,18 +214,18 @@ function createCommerceLakebedStub() {
           id: `item-${state.items.length + 1}`,
           itemKey: '',
           label,
-          price: input.price ?? '',
+          price: String(String(input.price ?? '')),
           quantity: 1,
           updatedAt: timestamp,
         },
       ],
     }
   }
-  const syncCatalog = (products) => {
+  const syncCatalog = (products: Record<string, unknown>[]) => {
     const nextProducts = [...state.products]
 
     products.forEach((product) => {
-      const label = product.label.trim()
+      const label = String(product.label).trim()
       if (!label) return
 
       const existingIndex = nextProducts.findIndex(
@@ -346,9 +341,9 @@ function createCommerceLakebedStub() {
           try {
             const item = findItem(input)
             if (item) {
-              replaceItem(item, (current) => ({
+              replaceItem(item, (current: TestCartItem) => ({
                 ...current,
-                quantity: current.quantity + 1,
+                quantity: Number(String(current.quantity)) + 1,
                 updatedAt: timestamp,
               }))
             }
@@ -379,9 +374,9 @@ function createCommerceLakebedStub() {
           try {
             const item = findItem(input)
             if (item && item.quantity > 1) {
-              replaceItem(item, (current) => ({
+              replaceItem(item, (current: TestCartItem) => ({
                 ...current,
-                quantity: current.quantity - 1,
+                quantity: Number(String(current.quantity)) - 1,
                 updatedAt: timestamp,
               }))
             }
@@ -410,9 +405,9 @@ function createCommerceLakebedStub() {
           try {
             const item = findItem(input)
             if (item && item.quantity > 1) {
-              replaceItem(item, (current) => ({
+              replaceItem(item, (current: TestCartItem) => ({
                 ...current,
-                quantity: current.quantity - 1,
+                quantity: Number(String(current.quantity)) - 1,
                 updatedAt: timestamp,
               }))
             }

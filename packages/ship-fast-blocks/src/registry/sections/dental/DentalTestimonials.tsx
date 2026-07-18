@@ -92,7 +92,7 @@ export const DentalTestimonials = defineCapsule({
               'Portrait of Michael Brooks, professional male patient with grateful expression',
           },
         ]
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

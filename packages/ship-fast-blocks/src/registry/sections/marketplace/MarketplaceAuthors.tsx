@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { PersonCard } from '#/section-kit/PersonCard.tsx'
 
 /**
  * MarketplaceAuthors — a "Featured Sellers" section (the Authors role for a
@@ -99,7 +100,7 @@ export const MarketplaceAuthors = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className ?? 'size-4'}
         viewBox="0 0 24 24"
@@ -114,7 +115,7 @@ export const MarketplaceAuthors = defineCapsule({
       </svg>
     )
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 20 20"
@@ -125,7 +126,7 @@ export const MarketplaceAuthors = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -140,7 +141,7 @@ export const MarketplaceAuthors = defineCapsule({
       </svg>
     )
 
-    const BoxIcon = ({ className }) => (
+    const BoxIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -155,7 +156,7 @@ export const MarketplaceAuthors = defineCapsule({
       </svg>
     )
 
-    const UsersIcon = ({ className }) => (
+    const UsersIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -198,12 +199,12 @@ export const MarketplaceAuthors = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {sellerItems.map((seller) => (
-              <button
-                key={seller.name}
-                type="button"
-                onClick={() => go(seller.name)}
-                className="group block w-full text-left"
-              >
+              <PersonCard asChild variant="plain" rounded="xl" key={seller.name}>
+                <button
+                  type="button"
+                  onClick={() => go(seller.name)}
+                  className="group block w-full text-left"
+                >
                 <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
                   <Image
                     alt={seller.coverAlt}
@@ -251,7 +252,8 @@ export const MarketplaceAuthors = defineCapsule({
                     </div>
                   </div>
                 </div>
-              </button>
+                </button>
+              </PersonCard>
             ))}
           </div>
         </Container>

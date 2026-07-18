@@ -6,10 +6,10 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import {
   SaasMutationSpinner,
@@ -75,7 +75,7 @@ export const CybersecurityHero = defineCapsule({
     const alertSubtitle = props.alertSubtitle ?? 'Ransomware attempt'
     const alertMeta = props.alertMeta ?? 'Just now • Acme Corp infrastructure'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -110,7 +110,7 @@ export const CybersecurityHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 sm:text-xl">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
                 <SaasPlanActionButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -140,22 +140,22 @@ export const CybersecurityHero = defineCapsule({
                 >
                   {secondaryCta}
                 </SaasPlanActionButton>
-              </HeroCtas>
-              <HeroTrustRow className="gap-6">
+              </HeroActions>
+              <HeroSocialProof className="gap-6">
                 {proofs.map((proof) => (
-                  <HeroTrustItem key={proof}>
+                  <HeroSocialProofItem key={proof}>
                     <Check className="size-5 text-primary" />
                     {proof}
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
             <div className="relative">
               <div
                 aria-hidden="true"
                 className="absolute inset-0 rotate-3 rounded-3xl bg-gradient-to-br from-muted to-accent"
               />
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

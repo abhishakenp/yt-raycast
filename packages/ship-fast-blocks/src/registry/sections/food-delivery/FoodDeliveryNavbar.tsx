@@ -57,7 +57,7 @@ export const FoodDeliveryNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? 'Home'
     const signIn = props.signIn ?? 'Sign In'
     const getStarted = props.getStarted ?? 'Get Started'
-    const PinMark = ({ className }) => (
+    const PinMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="currentColor"

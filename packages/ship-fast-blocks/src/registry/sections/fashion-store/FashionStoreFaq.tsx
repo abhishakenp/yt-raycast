@@ -44,7 +44,7 @@ export const FashionStoreFaq = defineCapsule({
     // (singular string) instead of the schema's `q`/`a` (array of strings).
     // The lakebed export strips defineCapsule (and thus sanitizeProps), so
     // the raw component must defend itself against malformed prop shapes.
-    const normalizeFaqItems = (raw) => {
+    const normalizeFaqItems = (raw: unknown) => {
       if (!Array.isArray(raw)) return []
       return raw
         .map((item) => {

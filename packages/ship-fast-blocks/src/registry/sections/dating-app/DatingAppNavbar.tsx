@@ -51,7 +51,7 @@ export const DatingAppNavbar = defineCapsule({
     const cta = props.cta ?? 'Get the App'
     const ctaTarget = props.ctaTarget ?? 'Download Free'
 
-    const HeartGlyph = ({ className }) => (
+    const HeartGlyph = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

@@ -37,7 +37,7 @@ export const newsletterLakebed = {
     }),
   },
   mutations: {
-    subscribe: newsletter.mutation((_ctx, input) => {
+    subscribe: newsletter.mutation((_ctx, input: NewsletterSubscriberInput) => {
       const email = normalizeEmail(input.email)
       if (!email) return _ctx.db.subscribers.orderBy('createdAt').all()
 

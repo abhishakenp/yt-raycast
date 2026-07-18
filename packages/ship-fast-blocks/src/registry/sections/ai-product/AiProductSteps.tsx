@@ -9,6 +9,11 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * AiProductSteps — a numbered onboarding / how-it-works timeline for a clean,
@@ -65,7 +70,9 @@ export const AiProductSteps = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
+      <StepTimeline
+        className={cn('bg-muted/50 py-20 lg:py-28', props.className)}
+      >
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -73,9 +80,9 @@ export const AiProductSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 {i < items.length - 1 && (
                   <div
                     aria-hidden="true"
@@ -97,9 +104,9 @@ export const AiProductSteps = defineCapsule({
                     </p>
                   </div>
                 </div>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
           <div className="mt-16 text-center">
             <SaasPlanActionButton
               lakebed={lakebed}
@@ -118,7 +125,7 @@ export const AiProductSteps = defineCapsule({
             </SaasPlanActionButton>
           </div>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

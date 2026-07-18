@@ -9,7 +9,7 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -113,7 +113,7 @@ export const WineryBreweryHero = defineCapsule({
 
           <HeroSubheading variant="light">{heroSub}</HeroSubheading>
 
-          <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
+          <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
             <button
               type="button"
               onClick={() => go(heroPrimaryTarget)}
@@ -140,7 +140,7 @@ export const WineryBreweryHero = defineCapsule({
             >
               {addLabel}
             </CommerceAddItemButton>
-          </HeroCtas>
+          </HeroActions>
 
           <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
             {infoItems.map((item, i) => (

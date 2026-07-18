@@ -65,7 +65,7 @@ export const NonprofitHero = defineCapsule({
       props.quote ?? 'Every child deserves the chance to learn and dream.'
     const quoteAuthor = props.quoteAuthor ?? '— Maria Santos, Program Director'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -80,7 +80,7 @@ export const NonprofitHero = defineCapsule({
       </svg>
     )
 
-    const CheckCircle = ({ className }) => (
+    const CheckCircle = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="currentColor"

@@ -49,7 +49,7 @@ export const CorporateNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Request Demo'
     const ctaTarget = props.ctaTarget ?? 'Schedule a Demo'
     const secondaryCta = props.secondaryCta ?? 'Explore Solutions'
-    const LogoMark = ({ className, inverse }) => (
+    const LogoMark = ({ className, inverse }: { className?: string, inverse?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg font-bold',

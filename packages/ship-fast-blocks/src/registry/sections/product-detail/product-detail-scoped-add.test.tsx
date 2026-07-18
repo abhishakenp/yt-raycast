@@ -115,7 +115,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -146,7 +146,7 @@ function createCommerceLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const subscribe = (listener) => {
+  const subscribe = (listener: () => void) => {
     listeners.add(listener)
     return () => {
       listeners.delete(listener)
@@ -157,10 +157,10 @@ function createCommerceLakebedStub() {
     count: state.items.reduce((total, item) => total + item.quantity, 0),
     items: state.items,
   })
-  const syncCatalogProducts = (products) => {
+  const syncCatalogProducts = (products: readonly unknown[]) => {
     state = {
       ...state,
-      products: products.map((product, index) => ({
+      products: products.map((product: Record<string, unknown>, index: number) => ({
         createdAt: timestamp,
         id: `product-${index + 1}`,
         imageAlt: product.imageAlt ?? '',
@@ -172,11 +172,11 @@ function createCommerceLakebedStub() {
       })),
     }
   }
-  const addItem = async (input) => {
+  const addItem = async (input: Record<string, unknown>) => {
     await deferred.promise
-    const label = input.label.trim() || 'Item'
-    const price = input.price ?? ''
-    const itemKey = input.itemKey?.trim() || `${label}\u0000${price}`
+    const label = String(input.label).trim() || 'Item'
+    const price = String(input.price ?? '')
+    const itemKey = String(input.itemKey)?.trim() || `${label}\u0000${price}`
     const existing = state.items.find((item) => item.itemKey === itemKey)
 
     state = {
@@ -370,12 +370,12 @@ function createCommerceLakebedStub() {
     createdAt: _ca,
     updatedAt: _ua,
     ...item
-  }): PublicCartItem => item
+  }: TestCartItem): PublicCartItem => item
   const publicProduct = ({
     createdAt: _ca,
     updatedAt: _ua,
     ...product
-  }): PublicProduct => product
+  }: TestProduct): PublicProduct => product
 
   return {
     completeAddItem: deferred.complete,

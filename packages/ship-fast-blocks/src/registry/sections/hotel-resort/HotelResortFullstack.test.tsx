@@ -48,22 +48,7 @@ type TestIntent = {
   updatedAt: string
 }
 
-type TestBookingInput = {
-  action?: string
-  fields?: Record<string, string>
-  label: string
-  room?: string
-  source?: string
-}
 
-type TestRoomInput = {
-  rooms: {
-    description?: string
-    meta?: string
-    name: string
-    price?: string
-  }[]
-}
 
 type MutationArgs<TMutation> = TMutation extends (
   ctx: unknown,
@@ -106,16 +91,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: string) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -158,7 +143,7 @@ if (typeof document === 'undefined') {
 }
 
 if (typeof window !== 'undefined') {
-  const defineWindowGlobal = (name, value) => {
+  const defineWindowGlobal = (name: string, value: string) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
@@ -212,7 +197,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -271,10 +256,10 @@ function createHotelLakebedStub({
       intents: state.intents,
     }
   }
-  const syncRooms = (input) => {
+  const syncRooms = (input: Record<string, unknown>) => {
     state = {
       ...state,
-      rooms: input.rooms.map((room, index) => ({
+      rooms: (input.rooms as Record<string, unknown>[]).map((room: Record<string, unknown>, index: number) => ({
         createdAt: timestamp,
         description: room.description ?? '',
         id: `room-${index + 1}`,
@@ -285,19 +270,19 @@ function createHotelLakebedStub({
       })),
     }
   }
-  const recordBooking = (input) => {
+  const recordBooking = (input: Record<string, unknown>) => {
     state = {
       ...state,
       intents: [
         ...state.intents,
         {
-          action: input.action ?? 'booking',
+          action: String(input.action ?? 'booking'),
           createdAt: timestamp,
           fieldsJson: JSON.stringify(input.fields ?? {}),
           id: `intent-${state.intents.length + 1}`,
-          label: input.label,
-          room: input.room ?? '',
-          source: input.source ?? '',
+          label: String(input.label ?? ''),
+          room: String(input.room ?? ''),
+          source: String(input.source ?? ''),
           updatedAt: timestamp,
         },
       ],

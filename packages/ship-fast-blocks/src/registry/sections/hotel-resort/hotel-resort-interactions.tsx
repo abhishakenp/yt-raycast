@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
@@ -112,7 +112,7 @@ export function useHotelAvailabilitySubmission({
   const count = summary?.count ?? 0
 
   const submitForm = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (requestBooking.isPending) return
 
@@ -331,7 +331,7 @@ export function HotelMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?) => {
+    (target?: string) => {
       setOpen(false)
       go(target)
     },

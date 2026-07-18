@@ -8,7 +8,7 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -104,7 +104,7 @@ export const MarketingHero = defineCapsule({
             <HeroSubheading className="mx-auto mt-5 max-w-[48ch] lg:mx-0">
               {subheading}
             </HeroSubheading>
-            <HeroCtas className="justify-center gap-3 lg:justify-start">
+            <HeroActions className="justify-center gap-3 lg:justify-start">
               <button
                 type="button"
                 onClick={() => go(primaryCta)}
@@ -146,7 +146,7 @@ export const MarketingHero = defineCapsule({
                 </svg>
                 {secondaryCta}
               </button>
-            </HeroCtas>
+            </HeroActions>
             <p className="mt-4 text-sm text-muted-foreground">{note}</p>
           </div>
 

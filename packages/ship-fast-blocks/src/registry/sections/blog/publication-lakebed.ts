@@ -103,7 +103,7 @@ export const publicationLakebed = {
     }),
   },
   mutations: {
-    recordPublicationAction: publication.mutation((_ctx, input) => {
+    recordPublicationAction: publication.mutation((_ctx, input: PublicationActionInput) => {
       const action = clean(input.action)
       if (!action) return _ctx.db.actions.orderBy('createdAt').all()
 
@@ -114,7 +114,7 @@ export const publicationLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt', 'desc').all()
     }),
-    recordSearch: publication.mutation((_ctx, input) => {
+    recordSearch: publication.mutation((_ctx, input: PublicationSearchInput) => {
       const query = clean(input.query)
       const articleTitle = clean(input.articleTitle)
       if (!query && !articleTitle) {
@@ -129,7 +129,7 @@ export const publicationLakebed = {
 
       return _ctx.db.searches.orderBy('createdAt', 'desc').all()
     }),
-    subscribe: publication.mutation((_ctx, input) => {
+    subscribe: publication.mutation((_ctx, input: PublicationSubscriberInput) => {
       const email = normalizeEmail(input.email)
       if (!email) return _ctx.db.subscribers.orderBy('createdAt').all()
 
@@ -150,7 +150,7 @@ export const publicationLakebed = {
 
       return _ctx.db.subscribers.orderBy('createdAt').all()
     }),
-    syncArticles: publication.mutation((_ctx, input) => {
+    syncArticles: publication.mutation((_ctx, input: { articles: PublicationArticleInput[] }) => {
       const existing = _ctx.db.articles.orderBy('createdAt').all()
       const existingByTitle = new Map(
         existing.map((article) => [article.title.toLowerCase(), article]),

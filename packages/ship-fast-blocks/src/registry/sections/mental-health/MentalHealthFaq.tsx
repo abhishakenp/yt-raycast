@@ -85,7 +85,7 @@ export const MentalHealthFaq = defineCapsule({
     const footerCta = props.footerCta ?? 'Call us at (503) 555-0147'
     const bookLabel = props.bookLabel ?? 'Book Session'
 
-    const Phone = ({ className }) => (
+    const Phone = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"

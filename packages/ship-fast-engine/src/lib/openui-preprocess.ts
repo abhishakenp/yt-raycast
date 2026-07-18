@@ -127,7 +127,7 @@ function repairMalformedQuotedObjectKeys(code: string): string {
   // a string VALUE like "https://x" or "time:3pm" gets its opening quote stripped
   // because `https:` / `time:` look like a quoted key.
   let prevSig = ''
-  const emit = (ch): void => {
+  const emit = (ch: string): void => {
     result += ch
     if (!/\s/.test(ch)) prevSig = ch
   }
@@ -321,7 +321,7 @@ function transformOutsideQuotedStrings(
   transform: (segment: string) => string,
 ): string {
   const quotedSegments: string[] = []
-  const tokenFor = (index) => `\uE000${index}\uE001`
+  const tokenFor = (index: number) => `\uE000${index}\uE001`
   let masked = ''
   let index = 0
 
@@ -658,10 +658,10 @@ function forceGaplessSectionBandStack(code: string): string {
     (match, prefix, inner, tail) => {
       const children = inner
         .split(',')
-        .map((c) => c.trim())
+        .map((c: string) => c.trim())
         .filter(Boolean)
       if (children.length === 0) return match
-      if (!children.every((c) => anchors.has(c))) return match
+      if (!children.every((c: string) => anchors.has(c))) return match
       return `${prefix}Stack([${children.join(', ')}], "col", "none")${tail}`
     },
   )

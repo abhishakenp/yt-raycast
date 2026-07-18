@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
 /**
@@ -16,6 +15,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * Renders fully with no props; built-in line icons rotate across the items.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { CategoryGrid, CategoryCard, CategoryIcon } from '#/section-kit/CategoryGrid.tsx'
 export const JobBoardCategories = defineCapsule({
   name: 'JobBoardCategories',
   description:
@@ -209,28 +209,29 @@ export const JobBoardCategories = defineCapsule({
               {description}
             </p>
           </div>
-          <ResponsiveGrid cols="2-3-4" gap="sm">
+          <CategoryGrid cols="2-3-4" gap="sm">
             {items.map((cat, i) => (
-              <Card
-                key={cat.title}
-                asChild
-                variant="muted"
-                rounded="xl"
-                padding="md"
-                className="group bg-muted/40 text-left transition-all hover:border-foreground/30 hover:shadow-md"
-              >
-                <button type="button" onClick={() => go(cat.title)}>
-                  <div className="mb-4 grid size-12 place-items-center rounded-lg bg-card text-foreground shadow-sm transition-transform group-hover:scale-105">
-                    {categoryIcons[i % categoryIcons.length]}
-                  </div>
-                  <h3 className="mb-1 font-semibold text-foreground">
-                    {cat.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{cat.count}</p>
-                </button>
-              </Card>
+              <CategoryCard asChild key={cat.title}>
+                <Card
+                  asChild
+                  variant="muted"
+                  rounded="xl"
+                  padding="md"
+                  className="group bg-muted/40 text-left transition-all hover:border-foreground/30 hover:shadow-md"
+                >
+                  <button type="button" onClick={() => go(cat.title)}>
+                    <CategoryIcon className="bg-card text-foreground shadow-sm">
+                      {categoryIcons[i % categoryIcons.length]}
+                    </CategoryIcon>
+                    <h3 className="mb-1 font-semibold text-foreground">
+                      {cat.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{cat.count}</p>
+                  </button>
+                </Card>
+              </CategoryCard>
             ))}
-          </ResponsiveGrid>
+          </CategoryGrid>
         </Container>
       </section>
     )

@@ -83,7 +83,7 @@ await ds.storage.set(\`user:\${user.id}\`, {
     const proofTitle = props.proofTitle ?? '50,000+ developers'
     const proofSubtitle = props.proofSubtitle ?? 'trust DevStack'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"

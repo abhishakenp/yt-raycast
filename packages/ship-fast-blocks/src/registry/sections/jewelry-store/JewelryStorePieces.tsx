@@ -12,6 +12,7 @@ import {
   ProductCardSubtitle,
   ProductCardPrice,
 } from '#/section-kit/ProductCard.tsx'
+import { PiecesGrid, PiecesCard } from '#/section-kit/PiecesGrid.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -167,13 +168,13 @@ export const JewelryStorePieces = defineCapsule({
               {viewAll}
             </button>
           </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <PiecesGrid className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((p) => (
-              <ProductCard
-                key={p.title}
-                variant="none"
-                className="w-full text-left"
-              >
+              <PiecesCard asChild key={p.title}>
+                <ProductCard
+                  variant="none"
+                  className="w-full text-left"
+                >
                 <button
                   type="button"
                   onClick={() => go(p.title)}
@@ -223,9 +224,10 @@ export const JewelryStorePieces = defineCapsule({
                 >
                   {addToCartLabel}
                 </CommerceAddItemButton>
-              </ProductCard>
+                </ProductCard>
+              </PiecesCard>
             ))}
-          </div>
+          </PiecesGrid>
         </div>
       </section>
     )

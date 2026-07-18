@@ -103,7 +103,7 @@ export const KidsEducationPricing = defineCapsule({
             cta: 'Contact Sales',
           },
         ]
-    const CheckMark = ({ className }) => (
+    const CheckMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

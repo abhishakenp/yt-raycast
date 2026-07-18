@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { PageHeader, PageHeaderActions } from '#/section-kit/PageHeader.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
@@ -47,12 +48,13 @@ export const DashboardHeader = defineCapsule({
     const newOrderPending = addOrder.isPending(newOrderKey)
 
     return (
-      <div
-        className={cn(
-          'flex flex-col justify-between gap-4 sm:flex-row sm:items-end',
-          props.className,
-        )}
-      >
+      <PageHeader asChild>
+        <div
+          className={cn(
+            'flex flex-col justify-between gap-4 sm:flex-row sm:items-end',
+            props.className,
+          )}
+        >
         <SectionHeading
           title={title}
           subtitle={subtitle}
@@ -62,7 +64,7 @@ export const DashboardHeader = defineCapsule({
           subtitleClassName="text-sm"
           className="gap-1"
         />
-        <div className="flex gap-2">
+        <PageHeaderActions className="flex gap-2">
           <button
             type="button"
             onClick={() => go(secondaryAction)}
@@ -94,8 +96,9 @@ export const DashboardHeader = defineCapsule({
           >
             {newOrderPending ? 'Adding' : `+ ${primaryAction}`}
           </button>
+        </PageHeaderActions>
         </div>
-      </div>
+      </PageHeader>
     )
   },
 })

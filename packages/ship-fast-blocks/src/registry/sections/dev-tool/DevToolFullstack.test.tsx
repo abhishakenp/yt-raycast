@@ -80,16 +80,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: string) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -209,7 +209,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -269,7 +269,7 @@ function createDevToolLakebedStub({
       total: state.intents.length,
     }
   }
-  const recordIntent = ({ input, type }) => {
+  const recordIntent = ({ input, type }: { input: { label: string; plan?: string; source?: string; [key: string]: unknown }; type: string }) => {
     state = {
       ...state,
       intents: [
@@ -279,7 +279,7 @@ function createDevToolLakebedStub({
           id: `intent-${state.intents.length + 1}`,
           label: input.label,
           plan: input.plan ?? input.label,
-          source: input.source ?? '',
+          source: String(input.source ?? ''),
           type,
           updatedAt: timestamp,
         },

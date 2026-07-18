@@ -19,19 +19,23 @@ const downloadBandVariants = cva('', {
 
 const DownloadBand = React.forwardRef<
   HTMLElement,
-  React.ComponentProps<'section'> & VariantProps<typeof downloadBandVariants>
->(({ className, variant, ...props }, ref) => (
-  <section
-    data-slot="download-band"
-    className={cn(
-      'flex flex-col items-center gap-8',
-      downloadBandVariants({ variant }),
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'section'> &
+    VariantProps<typeof downloadBandVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'section'
+  return (
+    <Comp
+      data-slot="download-band"
+      className={cn(
+        'flex flex-col items-center gap-8',
+        downloadBandVariants({ variant }),
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 DownloadBand.displayName = 'DownloadBand'
 
 const DownloadButton = React.forwardRef<

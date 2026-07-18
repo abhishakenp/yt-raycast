@@ -51,7 +51,7 @@ export const ConsultingNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'View Case Studies'
     const homeTarget = props.homeTarget ?? nav[0]
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-sm bg-primary font-bold text-primary-foreground',

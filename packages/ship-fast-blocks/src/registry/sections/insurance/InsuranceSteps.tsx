@@ -12,6 +12,11 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const InsuranceSteps = defineCapsule({
   name: 'InsuranceSteps',
   description:
@@ -59,7 +64,7 @@ export const InsuranceSteps = defineCapsule({
               'Purchase instantly and download your policy documents immediately. Coverage begins the moment you need it.',
           },
         ]
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -76,7 +81,7 @@ export const InsuranceSteps = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
+      <StepTimeline className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary">
@@ -87,9 +92,9 @@ export const InsuranceSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="h-full rounded-2xl border border-border bg-background p-8 shadow-sm">
                   <div className="mb-6 grid size-14 place-items-center rounded-xl bg-primary text-2xl font-bold text-primary-foreground">
                     {i + 1}
@@ -106,11 +111,11 @@ export const InsuranceSteps = defineCapsule({
                     <ArrowRight className="size-6 text-border lg:size-8" />
                   </div>
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

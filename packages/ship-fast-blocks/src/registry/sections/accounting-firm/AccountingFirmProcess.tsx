@@ -5,6 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * AccountingFirmProcess — "how we work" steps band for a CPA / accounting-firm
@@ -69,7 +74,9 @@ export const AccountingFirmProcess = defineCapsule({
     const ctaButton = props.ctaButton ?? 'Book Your Consultation'
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <StepTimeline
+        className={cn('bg-background py-20 lg:py-28', props.className)}
+      >
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -78,9 +85,9 @@ export const AccountingFirmProcess = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {steps.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground">
                   {i + 1}
                 </div>
@@ -96,9 +103,9 @@ export const AccountingFirmProcess = defineCapsule({
                     className="absolute left-[calc(100%+1.5rem)] top-6 hidden h-px w-[calc(100%-3rem)] -translate-y-1/2 bg-border md:block"
                   />
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
 
           <Card variant="muted" rounded="lg" padding="lg" className="mt-16">
             <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
@@ -118,7 +125,7 @@ export const AccountingFirmProcess = defineCapsule({
             </div>
           </Card>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

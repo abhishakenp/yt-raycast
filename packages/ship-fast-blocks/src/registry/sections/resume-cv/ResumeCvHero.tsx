@@ -7,8 +7,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -83,7 +83,7 @@ export const ResumeCvHero = defineCapsule({
               {pitch}
             </HeroSubheading>
 
-            <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
+            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryTarget)}
@@ -98,11 +98,11 @@ export const ResumeCvHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </HeroCtas>
+            </HeroActions>
           </div>
 
           <div className="relative">
-            <HeroImage
+            <HeroMediaPanel
               alt={imageAlt}
               w={720}
               h={840}

@@ -112,7 +112,7 @@ export const CorporateFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
-    const LogoMark = ({ className, inverse }) => (
+    const LogoMark = ({ className, inverse }: { className?: string, inverse?: boolean }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg font-bold',

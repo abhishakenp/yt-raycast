@@ -11,7 +11,7 @@ const mocks = ((
 ).__v2exportContractMocks ??= { generateText: vi.fn() })
 
 vi.mock('@ship-fast/engine/generate.ts', () => ({
-  generateText: (...args) =>
+  generateText: (...args: unknown[]) =>
     (
       (
         globalThis as typeof globalThis & {
@@ -22,7 +22,7 @@ vi.mock('@ship-fast/engine/generate.ts', () => ({
       ) => unknown
     )(...args),
   isHardLlmFailure: () => false,
-  formatLlmFailureMessage: (e) => String(e),
+  formatLlmFailureMessage: (e: React.MouseEvent<HTMLElement>) => String(e),
 }))
 
 import { runV2ComposedGeneration } from '@ship-fast/engine/genui/v2-compose.ts'

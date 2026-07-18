@@ -14,6 +14,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
 import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
+import { MenuList } from '#/section-kit/MenuList.tsx'
 
 /**
  * BarNightclubMenu — two-column drinks menu for a cocktail-bar / nightclub
@@ -184,6 +185,7 @@ export const BarNightclubMenu = defineCapsule({
         )}
       >
         <Container>
+      <MenuList>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
               {eyebrow}
@@ -249,6 +251,7 @@ export const BarNightclubMenu = defineCapsule({
               {footnoteCta}
             </button>
           </div>
+      </MenuList>
         </Container>
       </section>
     )

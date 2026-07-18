@@ -94,7 +94,7 @@ export const LandscapingPricing = defineCapsule({
           },
         ]
 
-    const CheckIcon = ({ className }) => (
+    const CheckIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

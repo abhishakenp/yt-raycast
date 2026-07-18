@@ -61,7 +61,7 @@ export const CorporateHero = defineCapsule({
     const heroStatLabel = props.statLabel ?? 'Average ROI'
     const heroStatValue = props.statValue ?? '340%'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         width="20"
         height="20"

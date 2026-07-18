@@ -5,11 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
-  NewsletterCta,
-  NewsletterCtaDescription,
-  NewsletterCtaFineprint,
-  NewsletterCtaHeading,
-} from '#/section-kit/NewsletterCta.tsx'
+  SubscribeBand,
+  SubscribeHeading,
+  SubscribeDescription,
+  SubscribeFineprint,
+} from '#/section-kit/SubscribeBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -58,7 +58,7 @@ export const LinkInBioSubscribe = defineCapsule({
     const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         className={cn(
           'mx-auto w-full max-w-md px-6 pt-28 pb-10',
           props.className,
@@ -87,12 +87,12 @@ export const LinkInBioSubscribe = defineCapsule({
           >
             {eyebrow}
           </Eyebrow>
-          <NewsletterCtaHeading className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
+          <SubscribeHeading className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
             {heading}
-          </NewsletterCtaHeading>
-          <NewsletterCtaDescription className="mt-2 text-sm text-muted-foreground">
+          </SubscribeHeading>
+          <SubscribeDescription className="mt-2 text-sm text-muted-foreground">
             {subheading}
-          </NewsletterCtaDescription>
+          </SubscribeDescription>
 
           <NewsletterSubscribeForm
             lakebed={lakebed}
@@ -105,11 +105,11 @@ export const LinkInBioSubscribe = defineCapsule({
             buttonClassName="w-full rounded-full bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
           />
 
-          <NewsletterCtaFineprint className="mt-3 text-xs text-muted-foreground">
+          <SubscribeFineprint className="mt-3 text-xs text-muted-foreground">
             {note}
-          </NewsletterCtaFineprint>
+          </SubscribeFineprint>
         </Card>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

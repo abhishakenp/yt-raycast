@@ -8,8 +8,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -64,7 +64,7 @@ export const LandscapingHero = defineCapsule({
           'Headshot of a smiling older male customer with glasses',
         ]
 
-    const StarIcon = ({ className }) => (
+    const StarIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -82,7 +82,7 @@ export const LandscapingHero = defineCapsule({
             <div className="space-y-8">
               <HeroHeading className="font-semibold">{heading}</HeroHeading>
               <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
-              <HeroCtas className="gap-4">
+              <HeroActions className="gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -97,7 +97,7 @@ export const LandscapingHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex -space-x-2">
                   {avatars.map((alt) => (
@@ -121,7 +121,7 @@ export const LandscapingHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

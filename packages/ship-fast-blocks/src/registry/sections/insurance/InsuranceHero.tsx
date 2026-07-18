@@ -9,9 +9,9 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -86,7 +86,7 @@ export const InsuranceHero = defineCapsule({
     const proofLabel = props.proofLabel ?? 'Happy customers'
     const proofRating = props.proofRating ?? '4.9/5'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -103,7 +103,7 @@ export const InsuranceHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -120,7 +120,7 @@ export const InsuranceHero = defineCapsule({
       </svg>
     )
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -151,7 +151,7 @@ export const InsuranceHero = defineCapsule({
               <HeroSubheading className="mt-0 max-w-xl">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -182,15 +182,15 @@ export const InsuranceHero = defineCapsule({
                   </svg>
                   {secondaryCta}
                 </button>
-              </HeroCtas>
-              <HeroTrustRow className="mt-0 gap-6">
+              </HeroActions>
+              <HeroSocialProof className="mt-0 gap-6">
                 {trustItems.map((item) => (
-                  <HeroTrustItem key={item}>
+                  <HeroSocialProofItem key={item}>
                     <Check className="size-5 text-primary" />
                     <span>{item}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
             <div className="relative">
               <div

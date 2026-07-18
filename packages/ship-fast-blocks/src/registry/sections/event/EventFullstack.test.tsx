@@ -13,7 +13,7 @@ import { EventNavbar } from './EventNavbar.tsx'
 import { EventTickets } from './EventTickets.tsx'
 import type { EventLakebed } from './event-interactions.tsx'
 import { eventLakebed } from './event-lakebed.ts'
-import type { EventActionInput, EventTicketInput } from './event-lakebed.ts'
+import type { EventTicketInput } from './event-lakebed.ts'
 
 type TestAction = {
   action: string
@@ -101,7 +101,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -132,7 +132,7 @@ function createEventLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const syncTickets = (tickets) => {
+  const syncTickets = (tickets: readonly EventTicketInput[]) => {
     const nextTickets = [...state.tickets]
 
     for (const ticket of tickets) {
@@ -163,18 +163,18 @@ function createEventLakebedStub() {
 
     state = { ...state, tickets: nextTickets }
   }
-  const recordEventAction = (input) => {
+  const recordEventAction = (input: Record<string, unknown>) => {
     state = {
       ...state,
       actions: [
         ...state.actions,
         {
-          action: input.action ?? 'register',
+          action: String(input.action ?? 'register'),
           createdAt: timestamp,
           id: `action-${state.actions.length + 1}`,
-          label: input.label,
-          source: input.source ?? '',
-          tier: input.tier ?? '',
+          label: String(input.label ?? ''),
+          source: String(input.source ?? ''),
+          tier: String(input.tier ?? ''),
           updatedAt: timestamp,
         },
       ],

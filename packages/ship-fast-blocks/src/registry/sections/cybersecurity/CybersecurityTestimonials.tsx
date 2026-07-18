@@ -96,7 +96,7 @@ export const CybersecurityTestimonials = defineCapsule({
           },
         ]
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 20 20"

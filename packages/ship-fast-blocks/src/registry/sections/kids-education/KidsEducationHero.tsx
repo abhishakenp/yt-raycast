@@ -8,9 +8,9 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -76,7 +76,7 @@ export const KidsEducationHero = defineCapsule({
       ? props.trustPoints
       : ['No credit card required', 'Cancel anytime']
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -110,7 +110,7 @@ export const KidsEducationHero = defineCapsule({
       </svg>
     )
 
-    const CheckCircle = ({ className }) => (
+    const CheckCircle = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -170,7 +170,7 @@ export const KidsEducationHero = defineCapsule({
               <HeroSubheading className="mx-auto mb-8 mt-0 max-w-xl sm:text-xl lg:mx-0">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+              <HeroActions className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -187,15 +187,15 @@ export const KidsEducationHero = defineCapsule({
                   <PlayIcon />
                   {secondaryCta}
                 </button>
-              </HeroCtas>
-              <HeroTrustRow className="mt-8 justify-center gap-6 lg:justify-start">
+              </HeroActions>
+              <HeroSocialProof className="mt-8 justify-center gap-6 lg:justify-start">
                 {trustPoints.map((point) => (
-                  <HeroTrustItem key={point}>
+                  <HeroSocialProofItem key={point}>
                     <CheckCircle className="size-5 text-secondary" />
                     <span>{point}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
 
             <div className="relative">

@@ -13,6 +13,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
 import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
+import { MenuList } from '#/section-kit/MenuList.tsx'
 
 /**
  * BakeryMenu — full daily menu block for an artisan-bakery page, on a soft
@@ -210,7 +211,13 @@ export const BakeryMenu = defineCapsule({
       ),
     )
 
-    const MenuAddButton = ({ item, section }) => (
+    const MenuAddButton = ({
+      item,
+      section,
+    }: {
+      item: { name: string; description: string; price: string }
+      section: string
+    }) => (
       <CommerceAddItemButton
         lakebed={lakebed}
         item={{
@@ -234,6 +241,7 @@ export const BakeryMenu = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
+      <MenuList>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground lg:text-4xl">
               {heading}
@@ -313,6 +321,7 @@ export const BakeryMenu = defineCapsule({
               ))}
             </div>
           </div>
+      </MenuList>
         </Container>
       </section>
     )

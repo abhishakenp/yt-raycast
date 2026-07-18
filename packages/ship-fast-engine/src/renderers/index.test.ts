@@ -276,13 +276,13 @@ globalThis.__paymentResult = await createPaymentSessions("cart_123", "stripe");
       g.__medusaClient = {
         store: {
           cart: {
-            retrieve: async (cartId) => {
+            retrieve: async (cartId: unknown) => {
               g.__retrievedCartId = cartId
               return { cart: retrievedCart }
             },
           },
           payment: {
-            initiatePaymentSession: async (cart, options) => {
+            initiatePaymentSession: async (cart: unknown, options: Record<string, unknown>) => {
               g.__initiatedPaymentCart = cart
               g.__initiatedPaymentOptions = options
               return {

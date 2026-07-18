@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * ConsultingProcess — dark 4-step "How We Work" process band for a
@@ -61,7 +66,7 @@ export const ConsultingProcess = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn(
           'bg-primary py-24 text-primary-foreground',
           props.className,
@@ -74,9 +79,9 @@ export const ConsultingProcess = defineCapsule({
             </h2>
             <p className="text-lg text-primary-foreground/70">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <StepTimelineGrid columns={2} className="gap-8 lg:grid-cols-4">
             {steps.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mb-4 text-6xl font-bold text-primary-foreground/20">
                   {String(i + 1).padStart(2, '0')}
                 </div>
@@ -90,11 +95,11 @@ export const ConsultingProcess = defineCapsule({
                     className="absolute left-full top-8 hidden h-px w-full -translate-x-8 bg-primary-foreground/20 lg:block"
                   />
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

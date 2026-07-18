@@ -97,7 +97,7 @@ describe('InlineEditToolbar — behavioral', () => {
     // after the initial computed-style read effect, enabling the live-preview
     // effect when the user later modifies a control.
     originalRequestAnimationFrame = globalThis.requestAnimationFrame
-    vi.stubGlobal('requestAnimationFrame', (cb) => {
+    vi.stubGlobal('requestAnimationFrame', (cb: (time: number) => void) => {
       cb(0)
       return 0
     })
@@ -225,7 +225,7 @@ describe('InlineEditToolbar — font size control', () => {
     )
 
     originalRequestAnimationFrame = globalThis.requestAnimationFrame
-    vi.stubGlobal('requestAnimationFrame', (cb) => {
+    vi.stubGlobal('requestAnimationFrame', (cb: (time: number) => void) => {
       cb(0)
       return 0
     })
@@ -506,7 +506,7 @@ describe('InlineEditToolbar — copy/paste style', () => {
     )
 
     originalRequestAnimationFrame = globalThis.requestAnimationFrame
-    vi.stubGlobal('requestAnimationFrame', (cb) => {
+    vi.stubGlobal('requestAnimationFrame', (cb: (time: number) => void) => {
       cb(0)
       return 0
     })

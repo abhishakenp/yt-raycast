@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
@@ -147,7 +147,7 @@ export function useFoodDeliverySearch(lakebed: FoodDeliveryLakebed) {
   const setFoodSearch = lakebed.useMutation('setFoodSearch')
 
   const submitSearch = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (setFoodSearch.isPending) return
 
@@ -162,7 +162,7 @@ export function useFoodDeliverySearch(lakebed: FoodDeliveryLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input) => {
+    (input: FoodDeliverySearchInput) => {
       if (setFoodSearch.isPending) return
       void setFoodSearch(input)
     },
@@ -182,7 +182,7 @@ export function useFoodDeliveryRestaurants(lakebed: FoodDeliveryLakebed) {
   const selectRestaurant = lakebed.useMutation('selectRestaurant')
 
   const select = useCallback(
-    async (input) => {
+    async (input: FoodDeliveryRestaurantInput) => {
       if (selectRestaurant.isPending) return
       await selectRestaurant(input)
     },
@@ -300,7 +300,7 @@ export function FoodDeliveryMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?) => {
+  const navigate = (target?: string) => {
     setOpen(false)
     go(target)
   }

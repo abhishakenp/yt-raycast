@@ -89,7 +89,7 @@ export const DevToolFooter = defineCapsule({
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
 
-    const BoltMark = ({ className }) => (
+    const BoltMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

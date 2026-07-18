@@ -3,6 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+  StepBadge,
+  StepContent,
+} from '#/section-kit/StepTimeline.tsx'
 
 export const TelehealthSteps = defineCapsule({
   name: 'TelehealthSteps',
@@ -42,7 +49,7 @@ export const TelehealthSteps = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn(
           'bg-muted/30 pt-28 pb-20 sm:pt-32 sm:pb-24',
           props.className,
@@ -50,26 +57,30 @@ export const TelehealthSteps = defineCapsule({
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <SectionHeading title={heading} subtitle={subheading} />
-          <ol className="mt-14 grid gap-10 md:grid-cols-3">
+          <StepTimelineGrid columns={3} className="mt-14 gap-10">
             {steps.map((step, i) => (
-              <li
+              <StepItem
                 key={`${step.title}-${i}`}
                 className="flex flex-col items-start gap-4"
               >
-                <span className="inline-flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                  {i + 1}
-                </span>
-                <h3 className="text-lg font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  {step.description}
-                </p>
-              </li>
+                <StepBadge
+                  index={i}
+                  variant="filled-circle-bold"
+                  className="text-lg"
+                />
+                <StepContent>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    {step.description}
+                  </p>
+                </StepContent>
+              </StepItem>
             ))}
-          </ol>
+          </StepTimelineGrid>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

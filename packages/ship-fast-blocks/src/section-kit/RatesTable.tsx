@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { Slot } from '@radix-ui/react-slot'
 import { cn } from '#/lib/utils.ts'
 
 const RatesTableVariants = cva('w-full overflow-hidden', {
@@ -30,41 +31,50 @@ RatesTable.displayName = 'RatesTable'
 
 const RatesHeader = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'thead'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="rates-table-header"
-    className={cn('border-b border-border bg-muted/50', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'thead'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="rates-table-header"
+      className={cn('border-b border-border bg-muted/50', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 RatesHeader.displayName = 'RatesHeader'
 
 const RatesBody = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'tbody'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="rates-table-body"
-    className={cn('divide-y divide-border', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'tbody'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="rates-table-body"
+      className={cn('divide-y divide-border', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 RatesBody.displayName = 'RatesBody'
 
 const RatesRow = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'tr'> & { asChild?: boolean }
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="rates-table-row"
-    className={cn('transition-colors hover:bg-muted/40', className)}
-    ref={ref}
-    {...props}
-  />
-))
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="rates-table-row"
+      className={cn('transition-colors hover:bg-muted/40', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 RatesRow.displayName = 'RatesRow'
 
 export { RatesTable, RatesHeader, RatesBody, RatesRow, RatesTableVariants }

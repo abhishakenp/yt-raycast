@@ -162,7 +162,7 @@ export const MarketingAgencyPricing = defineCapsule({
             ],
           },
         ]
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -176,7 +176,7 @@ export const MarketingAgencyPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-    const Cross = ({ className }) => (
+    const Cross = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

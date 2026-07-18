@@ -96,7 +96,7 @@ export const GovPortalFooter = defineCapsule({
           },
         ]
 
-    const OfficeCard = ({ title, office }) => {
+    const OfficeCard = ({ title, office }: { title?: string, office?: z.infer<typeof officeSchema> }) => {
       if (!office) return null
       return (
         <div>

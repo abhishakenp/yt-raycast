@@ -192,7 +192,7 @@ const REGION_CODES = [
 
 function buildLanguageNameIndex(): Map<string, string[]> {
   const index = new Map<string, string[]>()
-  const add = (label, code) => {
+  const add = (label: string, code: string) => {
     const key = normalizeLabel(label)
     if (!key) return
     const existing = index.get(key)

@@ -14,6 +14,7 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { CurriculumList, CurriculumItem } from '#/section-kit/CurriculumList.tsx'
 export const BootcampCurriculum = defineCapsule({
   name: 'BootcampCurriculum',
   description:
@@ -235,14 +236,14 @@ export const BootcampCurriculum = defineCapsule({
                 </div>
                 <h3 className="mb-3 text-xl font-semibold">{mod.title}</h3>
                 <p className="mb-4 text-muted-foreground">{mod.description}</p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
+                <CurriculumList className="space-y-2 text-sm text-muted-foreground">
                   {mod.points.map((p) => (
-                    <li key={p} className="flex items-center gap-2">
+                    <CurriculumItem key={p} className="flex items-center gap-2">
                       <span className="size-1.5 rounded-full bg-primary" />
                       {p}
-                    </li>
+                    </CurriculumItem>
                   ))}
-                </ul>
+                </CurriculumList>
               </Card>
             ))}
           </div>

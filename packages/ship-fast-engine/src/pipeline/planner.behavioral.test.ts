@@ -544,7 +544,12 @@ describe('planner: theme sanitize', () => {
 })
 
 describe('planner: ralph homepage score', () => {
-  const buildScoredHtml = (opts) => {
+  const buildScoredHtml = (opts: {
+    length?: number
+    sections?: number
+    tailwind?: boolean
+    hooks?: boolean
+  }) => {
     const len = opts.length ?? 12000
     const sections = opts.sections ?? 7
     const tailwind = opts.tailwind ?? true

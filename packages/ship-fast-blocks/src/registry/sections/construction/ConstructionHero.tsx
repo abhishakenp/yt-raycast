@@ -59,7 +59,7 @@ export const ConstructionHero = defineCapsule({
       ? props.trust
       : ['Licensed & Insured', '38 Years Experience', 'A+ BBB Rating']
 
-    const CheckCircle = ({ className }) => (
+    const CheckCircle = ({ className }: { className?: string }) => (
       <svg
         width="20"
         height="20"

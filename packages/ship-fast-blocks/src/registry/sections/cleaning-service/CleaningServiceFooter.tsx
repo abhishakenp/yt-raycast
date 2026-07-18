@@ -84,7 +84,7 @@ export const CleaningServiceFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Facebook', 'Twitter', 'Instagram']
-    const SparkleMark = ({ className }) => (
+    const SparkleMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

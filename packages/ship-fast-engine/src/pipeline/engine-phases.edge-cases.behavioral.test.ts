@@ -394,7 +394,7 @@ describe('Image hints', () => {
    * Mock fetch that captures Pexels photo search queries and returns
    * controlled photo results.
    */
-  const mockPexelsFetch = (capturedQueries) =>
+  const mockPexelsFetch = (capturedQueries: string[]) =>
     vi.fn(async (input) => {
       const url = new URL(String(input))
       if (url.hostname === 'api.pexels.com' && url.pathname === '/v1/search') {
@@ -644,7 +644,7 @@ describe('Navfix', () => {
         'fetch',
         vi.fn(async (_url, init?) => {
           const body = JSON.parse(String(init?.body ?? '{}'))
-          const userMsg = body.messages?.find((m) => m.role === 'user')
+          const userMsg = body.messages?.find((m: { role?: string; content?: string }) => m.role === 'user')
           calls.push(userMsg?.content ?? '')
           return {
             ok: true,

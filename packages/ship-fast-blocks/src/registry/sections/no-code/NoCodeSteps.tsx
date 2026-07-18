@@ -14,6 +14,11 @@ import { Card } from '#/section-kit/Card.tsx'
  * no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const NoCodeSteps = defineCapsule({
   name: 'NoCodeSteps',
   description:
@@ -68,7 +73,7 @@ export const NoCodeSteps = defineCapsule({
           },
         ]
     return (
-      <section
+      <StepTimeline
         className={cn('bg-muted/40 py-24', props.className)}
         aria-labelledby="nc-steps"
       >
@@ -85,9 +90,9 @@ export const NoCodeSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mx-auto mb-6 grid size-16 place-items-center rounded-2xl bg-foreground text-2xl font-bold text-background">
                   {i + 1}
                 </div>
@@ -116,11 +121,11 @@ export const NoCodeSteps = defineCapsule({
                     <div className="absolute -top-1.5 right-0 size-3 rounded-full bg-border" />
                   </div>
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

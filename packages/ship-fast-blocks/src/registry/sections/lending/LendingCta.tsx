@@ -38,7 +38,7 @@ export const LendingCta = defineCapsule({
       ? props.badges
       : ['256-bit SSL encryption', 'Bank-level security', 'No spam, ever']
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -53,7 +53,7 @@ export const LendingCta = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

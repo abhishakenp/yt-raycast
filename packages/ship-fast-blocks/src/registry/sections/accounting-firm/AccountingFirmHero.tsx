@@ -67,7 +67,7 @@ export const AccountingFirmHero = defineCapsule({
       ? props.badges
       : ['CPA Certified', 'A+ BBB Rating', '37 Years Experience']
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

@@ -58,7 +58,7 @@ export const ContactNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get Started'
     const ctaTarget = props.ctaTarget ?? 'Contact'
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.4)]',

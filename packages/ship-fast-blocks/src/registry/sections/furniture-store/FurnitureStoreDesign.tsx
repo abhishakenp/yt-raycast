@@ -72,7 +72,7 @@ export const FurnitureStoreDesign = defineCapsule({
     const statLabel = props.statLabel ?? 'Designer consultations'
     const statValue = props.statValue ?? '12,000+'
     const statCaption = props.statCaption ?? 'Completed this year'
-    const ArrowLong = ({ className }) => (
+    const ArrowLong = ({ className }: { className?: string }) => (
       <svg
         width="16"
         height="16"

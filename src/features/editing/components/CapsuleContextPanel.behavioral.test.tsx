@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, act, cleanup } from '@testing-library/react'
-import { createElement } from 'react'
+import { createElement, type ReactNode } from 'react'
 
 // Mock useSectionCapsuleActions directly — simpler and more reliable than
 // mocking the underlying lakebed hooks.
@@ -21,7 +21,7 @@ vi.mock('../hooks/useSectionCapsuleActions', () => ({
 
 // Mock LakebedSessionProvider as a pass-through.
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }) =>
+  LakebedSessionProvider: ({ children }: { children?: ReactNode }) =>
     createElement('div', { 'data-testid': 'provider' }, children),
 }))
 
@@ -43,7 +43,7 @@ vi.mock('#/components/ui/sortable', () => {
     contentRef: React.MutableRefObject<HTMLElement | null>
   } | null>(null)
 
-  const Sortable = ({ value, onMove, children }) => {
+  const Sortable = ({ value, onMove, children }: { value: unknown[]; onMove: (event: { activeIndex: number; overIndex: number }) => void; children?: ReactNode }) => {
     const startIndex = React.useRef<number | null>(null)
     const contentRef = React.useRef<HTMLElement | null>(null)
     return (
@@ -54,14 +54,14 @@ vi.mock('#/components/ui/sortable', () => {
       </SortableContext.Provider>
     )
   }
-  const SortableContent = ({ children, ...props }) => {
+  const SortableContent = ({ children, ...props }: { children?: ReactNode; [key: string]: unknown }) => {
     return (
       <div data-sortable-content {...props}>
         {children}
       </div>
     )
   }
-  const SortableItem = ({ value, children, asChild }) => {
+  const SortableItem = ({ value, children, asChild: _asChild }: { value: unknown; children?: ReactNode; asChild?: boolean }) => {
     const ctx = React.useContext(SortableContext)
     // Store the item's index in a data attribute so the handle can read it
     // value may be string or number; compare loosely
@@ -70,12 +70,12 @@ vi.mock('#/components/ui/sortable', () => {
       : -1
     return <div data-sortable-idx={idx}>{children}</div>
   }
-  const SortableItemHandle = ({ children, ...props }) => {
+  const SortableItemHandle = ({ children, ...props }: { children?: ReactNode; 'aria-label'?: string; [key: string]: unknown }) => {
     const ctx = React.useContext(SortableContext)
-    const refCallback = (el) => {
+    const refCallback = (el: HTMLElement | null) => {
       if (!el) return
       if (!ctx) return
-      const onDown = (e) => {
+      const onDown = (_e: PointerEvent) => {
         const item = el.closest('[data-sortable-idx]')
         if (item && ctx) {
           ctx.startIndex.current = parseInt(
@@ -84,7 +84,7 @@ vi.mock('#/components/ui/sortable', () => {
           )
         }
       }
-      const onUp = (e) => {
+      const onUp = (e: PointerEvent) => {
         if (!ctx || ctx.startIndex.current === null) return
         const content = el.closest('[data-sortable-content]')
         if (!content) return
@@ -112,7 +112,7 @@ vi.mock('#/components/ui/sortable', () => {
       el.addEventListener('pointerup', onUp)
     }
     return (
-      <div ref={refCallback} aria-label={props['aria-label']} {...props}>
+      <div ref={refCallback} aria-label={props['aria-label']}>
         {children}
       </div>
     )

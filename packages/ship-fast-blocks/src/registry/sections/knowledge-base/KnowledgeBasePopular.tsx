@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { PopularList, PopularItem } from '#/section-kit/PopularList.tsx'
 
 /**
  * KnowledgeBasePopular — popular-articles list beside a sticky-style support
@@ -127,7 +128,7 @@ export const KnowledgeBasePopular = defineCapsule({
       </svg>
     )
 
-    const ChevronRight = ({ className }) => (
+    const ChevronRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -144,7 +145,7 @@ export const KnowledgeBasePopular = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"
@@ -162,7 +163,7 @@ export const KnowledgeBasePopular = defineCapsule({
       </svg>
     )
 
-    const ChatIcon = ({ className }) => (
+    const ChatIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -199,12 +200,12 @@ export const KnowledgeBasePopular = defineCapsule({
               <p className="mb-8 text-muted-foreground">{description}</p>
               <div className="space-y-4">
                 {items.map((art) => (
-                  <button
-                    key={art.title}
-                    type="button"
-                    onClick={() => go(art.title)}
-                    className="group flex w-full items-start gap-4 rounded-lg p-4 text-left transition-colors hover:bg-muted"
-                  >
+                  <PopularItem asChild key={art.title}>
+                    <button
+                      type="button"
+                      onClick={() => go(art.title)}
+                      className="group flex w-full items-start gap-4 rounded-lg p-4 text-left transition-colors hover:bg-muted"
+                    >
                     <span className="grid size-10 flex-shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent">
                       <EyeIcon />
                     </span>
@@ -224,7 +225,8 @@ export const KnowledgeBasePopular = defineCapsule({
                       </span>
                     </span>
                     <ChevronRight className="size-5 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
-                  </button>
+                    </button>
+                  </PopularItem>
                 ))}
               </div>
               <div className="mt-8">
@@ -270,7 +272,7 @@ export const KnowledgeBasePopular = defineCapsule({
                 <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground">
                   {helpHeading}
                 </h3>
-                <ul className="space-y-3">
+                <PopularList className="space-y-3">
                   {helpLinks.map((link) => (
                     <li key={link}>
                       <button
@@ -283,7 +285,7 @@ export const KnowledgeBasePopular = defineCapsule({
                       </button>
                     </li>
                   ))}
-                </ul>
+                </PopularList>
               </Card>
             </aside>
           </div>

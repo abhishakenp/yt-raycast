@@ -9,8 +9,8 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -57,7 +57,7 @@ export const CommunityForumHero = defineCapsule({
       ? props.trust
       : ['Free 14-day trial', 'No credit card required', 'Cancel anytime']
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -110,14 +110,14 @@ export const CommunityForumHero = defineCapsule({
                 {secondaryCta}
               </button>
             </div>
-            <HeroTrustRow className="mt-12 justify-center gap-x-8 gap-y-4">
+            <HeroSocialProof className="mt-12 justify-center gap-x-8 gap-y-4">
               {trust.map((t) => (
-                <HeroTrustItem key={t}>
+                <HeroSocialProofItem key={t}>
                   <Check className="size-5 text-primary" />
                   {t}
-                </HeroTrustItem>
+                </HeroSocialProofItem>
               ))}
-            </HeroTrustRow>
+            </HeroSocialProof>
           </HeroContent>
         </div>
       </HeroSection>

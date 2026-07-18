@@ -121,7 +121,7 @@ describe('SignInGate', () => {
 })
 
 describe('useSignInGate', () => {
-  const Probe = ({ onValue }) => {
+  const Probe = ({ onValue }: { onValue: (v: ReturnType<typeof useSignInGate>) => void }) => {
     onValue(useSignInGate())
     return null
   }

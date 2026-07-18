@@ -73,7 +73,7 @@ export const DashboardSidebar = defineCapsule({
     const supportNav = nav.slice(primaryCount)
     const supportLabel = props.supportLabel ?? 'Support'
     const badgeLabel = props.badgeLabel ?? 'Orders'
-    const orderSummary = lakebed.useQuery('orderSummary')
+    const orderSummary = lakebed.useQuery('orderSummary') as { count: number; currentOrderId: string } | undefined
     const badgeCount =
       props.badgeCount ??
       (badgeLabel.toLowerCase() === 'orders'
@@ -187,7 +187,7 @@ export const DashboardSidebar = defineCapsule({
       ),
     }
 
-    const navIcon = (label) => icons[label] ?? icons.Settings
+    const navIcon = (label: string) => icons[label] ?? icons.Settings
 
     const NavButton = ({ label }: { label: string }) => {
       const active = activeNav === label

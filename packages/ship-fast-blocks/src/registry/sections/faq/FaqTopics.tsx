@@ -4,10 +4,10 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { TopicGrid, TopicIcon } from '#/section-kit/TopicGrid.tsx'
 
 /**
  * FaqTopics — a "Browse by Topic" category grid for a help-center / knowledge-base
@@ -82,7 +82,7 @@ export const FaqTopics = defineCapsule({
           },
         ]
 
-    const CaretRight = ({ className }) => (
+    const CaretRight = ({ className }: { className?: string }) => (
       <svg
         width="14"
         height="14"
@@ -210,7 +210,7 @@ export const FaqTopics = defineCapsule({
             {heading}
           </h2>
 
-          <ResponsiveGrid cols="1-2-3" gap="sm">
+          <TopicGrid cols="1-2-3" gap="sm">
             {items.map((topic, i) => (
               <Card
                 key={topic.title}
@@ -221,14 +221,13 @@ export const FaqTopics = defineCapsule({
                 className="group text-left transition-all hover:border-border/60 hover:shadow-sm"
               >
                 <button type="button" onClick={() => go(topic.title)}>
-                  <div
+                  <TopicIcon
                     className={cn(
-                      'mb-4 grid size-12 place-items-center rounded-lg transition-transform group-hover:scale-105',
                       topicTints[i % topicTints.length],
                     )}
                   >
                     {topicIcons[i % topicIcons.length]}
-                  </div>
+                  </TopicIcon>
                   <h3 className="mb-1 font-semibold text-card-foreground">
                     {topic.title}
                   </h3>
@@ -242,7 +241,7 @@ export const FaqTopics = defineCapsule({
                 </button>
               </Card>
             ))}
-          </ResponsiveGrid>
+          </TopicGrid>
         </Container>
       </section>
     )

@@ -72,7 +72,7 @@ export function useKeypress({
   )
 
   const onKeyDown = useCallback(
-    (ev) => {
+    (ev: KeyboardEvent) => {
       const e = ev as KeyboardEvent
       const el = e.target as HTMLElement | undefined
       if (IGNORE_FOCUS.has(el?.tagName ?? '') || el?.isContentEditable) {
@@ -94,7 +94,7 @@ export function useKeypress({
 
   useEffect(() => {
     const el = target ?? window
-    el.addEventListener('keydown', onKeyDown)
-    return () => el.removeEventListener('keydown', onKeyDown)
+    el.addEventListener('keydown', onKeyDown as EventListener)
+    return () => el.removeEventListener('keydown', onKeyDown as EventListener)
   }, [onKeyDown, target])
 }

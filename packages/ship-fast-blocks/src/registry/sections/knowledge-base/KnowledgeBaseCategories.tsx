@@ -4,10 +4,10 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { CategoryGrid, CategoryCard, CategoryIcon } from '#/section-kit/CategoryGrid.tsx'
 
 /**
  * KnowledgeBaseCategories — "browse by category" grid for a help center. A
@@ -229,37 +229,38 @@ export const KnowledgeBaseCategories = defineCapsule({
               {description}
             </p>
           </div>
-          <ResponsiveGrid cols="1-2-4" gap="md">
+          <CategoryGrid cols="1-2-4" gap="md">
             {items.map((cat, i) => (
-              <Card
-                key={cat.title}
-                asChild
-                variant="default"
-                rounded="xl"
-                padding="md"
-                className="group cursor-pointer text-left transition-all hover:border-primary/30 hover:shadow-md"
-              >
-                <button
-                  type="button"
-                  onClick={() => go(cat.title)}
-                  aria-label={`${cat.title} category, ${cat.count}`}
+              <CategoryCard asChild key={cat.title}>
+                <Card
+                  asChild
+                  variant="default"
+                  rounded="xl"
+                  padding="md"
+                  className="group cursor-pointer text-left transition-all hover:border-primary/30 hover:shadow-md"
                 >
-                  <div className="mb-4 grid size-12 place-items-center rounded-lg bg-muted text-primary transition-colors group-hover:bg-accent">
-                    {categoryIcons[i % categoryIcons.length]}
-                  </div>
-                  <h3 className="mb-1 text-lg font-semibold text-card-foreground">
-                    {cat.title}
-                  </h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    {cat.description}
-                  </p>
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {cat.count}
-                  </span>
-                </button>
-              </Card>
+                  <button
+                    type="button"
+                    onClick={() => go(cat.title)}
+                    aria-label={`${cat.title} category, ${cat.count}`}
+                  >
+                    <CategoryIcon className="bg-muted text-primary transition-colors group-hover:bg-accent">
+                      {categoryIcons[i % categoryIcons.length]}
+                    </CategoryIcon>
+                    <h3 className="mb-1 text-lg font-semibold text-card-foreground">
+                      {cat.title}
+                    </h3>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      {cat.description}
+                    </p>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {cat.count}
+                    </span>
+                  </button>
+                </Card>
+              </CategoryCard>
             ))}
-          </ResponsiveGrid>
+          </CategoryGrid>
         </Container>
       </section>
     )

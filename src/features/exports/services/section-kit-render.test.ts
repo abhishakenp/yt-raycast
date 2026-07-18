@@ -44,7 +44,7 @@ describe('section-kit renders through the OpenUI runtime', () => {
       url: 'http://localhost/',
     })
     if (!script) throw new Error('Expected exported HTML to include runtime')
-    dom.window.requestAnimationFrame = (callback) => {
+    dom.window.requestAnimationFrame = (callback: (time: number) => void) => {
       dom.window.setTimeout(() => callback(Date.now()), 0)
       return 1
     }
@@ -87,7 +87,7 @@ lookbookText = Text("Lookbook page")
       url: 'http://localhost/',
     })
     if (!script) throw new Error('Expected exported HTML to include runtime')
-    dom.window.requestAnimationFrame = (callback) => {
+    dom.window.requestAnimationFrame = (callback: (time: number) => void) => {
       dom.window.setTimeout(() => callback(Date.now()), 0)
       return 1
     }

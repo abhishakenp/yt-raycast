@@ -27,6 +27,7 @@ function str(row: GovRow, key: string) {
 }
 
 import { Container } from '#/section-kit/Container.tsx'
+import { CompanyInfo } from '#/section-kit/CompanyInfo.tsx'
 
 /**
  * GovPortalLeadership — a featured MD/Chairman message + board-of-directors
@@ -61,6 +62,7 @@ export const GovPortalLeadership = defineCapsule({
     const board = catalog.boardMembers
 
     return (
+      <CompanyInfo asChild>
       <section className={cn('bg-background py-16', props.className)}>
         <Container>
           <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
@@ -131,6 +133,7 @@ export const GovPortalLeadership = defineCapsule({
           ) : null}
         </Container>
       </section>
+      </CompanyInfo>
     )
   },
 })

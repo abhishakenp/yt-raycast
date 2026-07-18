@@ -5,8 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { MusicList, MusicItem } from '#/section-kit/MusicList.tsx'
 
 /**
  * MusicArtistMusic — latest-release track grid for a music artist / band page.
@@ -93,7 +93,7 @@ export const MusicArtistMusic = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"
@@ -141,15 +141,15 @@ export const MusicArtistMusic = defineCapsule({
             className="mb-16 gap-6 lg:mb-24"
           />
 
-          <ResponsiveGrid cols="1-md-2-3" gap="lg" className="mb-16">
+          <MusicList gap="lg" className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {tracks.map((track) => (
-              <Card
-                key={track.title}
-                variant="default"
-                rounded="none"
-                padding="md"
-                className="group rounded-sm transition-colors hover:border-muted-foreground/40"
-              >
+              <MusicItem asChild key={track.title}>
+                <Card
+                  variant="default"
+                  rounded="none"
+                  padding="md"
+                  className="group rounded-sm transition-colors hover:border-muted-foreground/40"
+                >
                 <div className="flex items-start gap-4">
                   <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">
                     <Image
@@ -178,9 +178,10 @@ export const MusicArtistMusic = defineCapsule({
                     </button>
                   </div>
                 </div>
-              </Card>
+                </Card>
+              </MusicItem>
             ))}
-          </ResponsiveGrid>
+          </MusicList>
 
           <div className="text-center">
             <button

@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { useState } from 'react'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { HeroSection, HeroImage } from '#/section-kit/HeroSection.tsx'
+import { HeroSection, HeroMediaPanel } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -77,7 +77,7 @@ export const ProductDetailHero = defineCapsule({
       >
         <div className="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-2 lg:items-start lg:px-8">
           <div>
-            <HeroImage
+            <HeroMediaPanel
               alt={imageAlt}
               w={800}
               h={800}

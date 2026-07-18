@@ -59,7 +59,7 @@ export const autoDealershipLakebed = {
     ),
   },
   mutations: {
-    recordLead: dealership.mutation((_ctx, input) => {
+    recordLead: dealership.mutation((_ctx, input: AutoLeadInput) => {
       _ctx.db.leads.insert({
         action: input.action ?? 'lead',
         label: input.label,
@@ -69,7 +69,7 @@ export const autoDealershipLakebed = {
 
       return _ctx.db.leads.orderBy('createdAt').all()
     }),
-    syncVehicles: dealership.mutation((_ctx, input) => {
+    syncVehicles: dealership.mutation((_ctx, input: { vehicles: AutoVehicleInput[] }) => {
       for (const vehicle of input.vehicles) {
         const name = vehicle.name.trim()
         if (!name) continue

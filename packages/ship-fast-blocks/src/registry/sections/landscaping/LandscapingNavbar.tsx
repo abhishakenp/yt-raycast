@@ -53,7 +53,7 @@ export const LandscapingNavbar = defineCapsule({
       props.contactTarget ?? nav[nav.length - 1] ?? 'Get a Quote'
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

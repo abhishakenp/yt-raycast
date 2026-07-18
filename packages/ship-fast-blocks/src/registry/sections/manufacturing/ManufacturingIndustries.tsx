@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ManufacturingIndustries — an 8-up industries-served grid for a precision-
@@ -16,6 +15,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { IndustryGrid, IndustryCard } from '#/section-kit/IndustryGrid.tsx'
 export const ManufacturingIndustries = defineCapsule({
   name: 'ManufacturingIndustries',
   description:
@@ -208,16 +208,6 @@ export const ManufacturingIndustries = defineCapsule({
         <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
       </svg>,
     ]
-    const indTints = [
-      'bg-chart-1/10 text-chart-1',
-      'bg-chart-2/10 text-chart-2',
-      'bg-chart-4/10 text-chart-4',
-      'bg-chart-5/10 text-chart-5',
-      'bg-destructive/10 text-destructive',
-      'bg-chart-3/10 text-chart-3',
-      'bg-primary/10 text-primary',
-      'bg-chart-2/10 text-chart-2',
-    ]
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
@@ -230,29 +220,19 @@ export const ManufacturingIndustries = defineCapsule({
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <IndustryGrid cols="1-2-4">
             {items.map((item, i) => (
-              <Card key={item.title} rounded="lg" shadow="sm">
-                <div
-                  className={cn(
-                    'mb-4 grid size-10 place-items-center rounded-lg',
-                    indTints[i % indTints.length],
-                  )}
-                >
-                  {indIcons[i % indIcons.length]}
+              <IndustryCard key={item.title}>
+                <div className="flex flex-col gap-3 p-6">
+                  <div className="inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    {indIcons[i % indIcons.length]}
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
                 </div>
-                <h3 className="mb-2 font-semibold text-card-foreground">
-                  {item.title}
-                </h3>
-                <p className="mb-4 text-sm text-muted-foreground">
-                  {item.description}
-                </p>
-                <span className="text-xs font-medium text-primary">
-                  {item.tag}
-                </span>
-              </Card>
+              </IndustryCard>
             ))}
-          </div>
+          </IndustryGrid>
         </Container>
       </section>
     )

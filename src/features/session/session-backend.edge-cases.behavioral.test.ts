@@ -29,20 +29,20 @@ import {
 const createMockStore = () => {
   const values = new Map<string, string>()
   return {
-    getItem: (key) => values.get(key) ?? null,
-    setItem: (key, value) => {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => {
       values.set(key, value)
     },
-    removeItem: (key) => {
+    removeItem: (key: string) => {
       values.delete(key)
     },
-    _has: (key) => values.has(key),
+    _has: (key: string) => values.has(key),
   }
 }
 
 /** Deterministic random-bytes filler for owner secret generation tests. */
 function fillWith(byte: number) {
-  return (bytes) => {
+  return (bytes: Uint8Array) => {
     bytes.fill(byte)
     return bytes
   }
@@ -93,24 +93,24 @@ function createMockEventStreamCtx(
             },
     },
     db: {
-      normalizeId: (table, value) =>
+      normalizeId: (table: string, value: string) =>
         table === 'sessions' && sessions.some((s) => s._id === value)
           ? value
           : null,
-      get: async (id) => sessions.find((s) => s._id === id) ?? null,
-      query: (table) => {
+      get: async (id: string) => sessions.find((s) => s._id === id) ?? null,
+      query: (table: string) => {
         let rows: MockEvent[] = table === 'generationEvents' ? [...events] : []
 
         const builder = {
-          withIndex: (_name, applyIndex) => {
+          withIndex: (_name: string, applyIndex: (index: { eq: (field: string, value: unknown) => typeof index; gt: (field: string, value: number) => typeof index }) => void) => {
             const eqFilters = new Map<string, unknown>()
             const gtFilters = new Map<string, number>()
             const index = {
-              eq: (field, value) => {
+              eq: (field: string, value: unknown) => {
                 eqFilters.set(field, value)
                 return index
               },
-              gt: (field, value) => {
+              gt: (field: string, value: number) => {
                 gtFilters.set(field, value)
                 return index
               },
@@ -127,7 +127,7 @@ function createMockEventStreamCtx(
             })
             return builder
           },
-          order: (direction) => {
+          order: (direction: 'asc' | 'desc') => {
             rows = [...rows].sort((a, b) =>
               direction === 'desc'
                 ? b.createdAt - a.createdAt
@@ -135,7 +135,7 @@ function createMockEventStreamCtx(
             )
             return builder
           },
-          take: async (limit) => rows.slice(0, limit),
+          take: async (limit: number) => rows.slice(0, limit),
         }
         return builder
       },

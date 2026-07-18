@@ -83,7 +83,7 @@ export const CommunityForumFooter = defineCapsule({
       ? props.socials
       : ['Twitter', 'GitHub', 'Instagram']
 
-    const BrandMark = ({ className }) => (
+    const BrandMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 32 32"
         fill="currentColor"
@@ -96,7 +96,7 @@ export const CommunityForumFooter = defineCapsule({
       </svg>
     )
 
-    const SocialIcon = ({ name }) => {
+    const SocialIcon = ({ name }: { name?: string }) => {
       if (name === 'Twitter') {
         return (
           <svg

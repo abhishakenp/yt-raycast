@@ -5,15 +5,15 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
-  StorySplit,
-  StorySplitBody,
-  StorySplitContent,
-  StorySplitEyebrow,
-  StorySplitGrid,
-  StorySplitHeading,
-  StorySplitImageTile,
-  StorySplitImages,
-} from '#/section-kit/StorySplit.tsx'
+  SplitStory,
+  SplitStoryBody,
+  SplitStoryContent,
+  SplitStoryEyebrow,
+  SplitStoryGrid,
+  SplitStoryHeading,
+  SplitStoryImageTile,
+  SplitStoryMedia,
+} from '#/section-kit/SplitStory.tsx'
 
 /**
  * MusicArtistAbout — split about-the-band section for a music artist / band
@@ -66,26 +66,26 @@ export const MusicArtistAbout = defineCapsule({
       "James O'Brien and Sam Torres, band members playing bass and drums during rehearsal"
 
     return (
-      <StorySplit
+      <SplitStory
         className={cn(
           'px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
         <div className="mx-auto max-w-6xl">
-          <StorySplitGrid>
-            <StorySplitContent>
-              <StorySplitEyebrow className="mb-4 text-muted-foreground">
+          <SplitStoryGrid>
+            <SplitStoryContent>
+              <SplitStoryEyebrow className="mb-4 text-muted-foreground">
                 {eyebrow}
-              </StorySplitEyebrow>
-              <StorySplitHeading className="mb-6 font-sans text-3xl font-light lg:text-5xl">
+              </SplitStoryEyebrow>
+              <SplitStoryHeading className="mb-6 font-sans text-3xl font-light lg:text-5xl">
                 {heading}
-              </StorySplitHeading>
-              <StorySplitBody>
+              </SplitStoryHeading>
+              <SplitStoryBody>
                 {paragraphs.map((paragraph, i) => (
                   <p key={i}>{paragraph}</p>
                 ))}
-              </StorySplitBody>
+              </SplitStoryBody>
               <div className="mt-8 flex gap-6">
                 {socials.map((social) => (
                   <button
@@ -99,10 +99,10 @@ export const MusicArtistAbout = defineCapsule({
                   </button>
                 ))}
               </div>
-            </StorySplitContent>
+            </SplitStoryContent>
             <div>
-              <StorySplitImages>
-                <StorySplitImageTile className="rounded-sm bg-muted">
+              <SplitStoryMedia>
+                <SplitStoryImageTile className="rounded-sm bg-muted">
                   <Image
                     alt={imageAlt1}
                     w={400}
@@ -110,8 +110,8 @@ export const MusicArtistAbout = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                </StorySplitImageTile>
-                <StorySplitImageTile offset className="rounded-sm bg-muted">
+                </SplitStoryImageTile>
+                <SplitStoryImageTile offset className="rounded-sm bg-muted">
                   <Image
                     alt={imageAlt2}
                     w={400}
@@ -119,12 +119,12 @@ export const MusicArtistAbout = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover"
                   />
-                </StorySplitImageTile>
-              </StorySplitImages>
+                </SplitStoryImageTile>
+              </SplitStoryMedia>
             </div>
-          </StorySplitGrid>
+          </SplitStoryGrid>
         </div>
-      </StorySplit>
+      </SplitStory>
     )
   },
 })

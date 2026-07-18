@@ -93,16 +93,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
   class TestResizeObserver {
     disconnect() {}
     observe() {}
@@ -191,16 +191,16 @@ function createPublicationLakebedStub() {
     for (const listener of listeners) listener()
   }
 
-  const runMutation = async (name, input) => {
+  const runMutation = async (name: string, input: Record<string, unknown>) => {
     if (name === 'subscribe' && 'email' in input) {
-      const email = input.email.trim().toLowerCase()
+      const email = String(input.email).trim().toLowerCase()
       const existing = subscribers.find(
         (subscriber) => subscriber.email === email,
       )
       subscribers = existing
         ? subscribers.map((subscriber) =>
             subscriber.email === email
-              ? { ...subscriber, source: input.source ?? subscriber.source }
+              ? { ...subscriber, source: String(input.source ?? subscriber.source) }
               : subscriber,
           )
         : [
@@ -208,30 +208,39 @@ function createPublicationLakebedStub() {
             {
               email,
               id: `subscriber-${subscribers.length + 1}`,
-              source: input.source,
+              source: String(input.source ?? ''),
             },
           ]
     }
 
     if (name === 'syncArticles' && 'articles' in input) {
-      for (const article of input.articles) {
+      const articlesInput = input.articles as Record<string, unknown>[]
+      for (const article of articlesInput) {
         const existing = articles.find((item) => item.title === article.title)
         articles = existing
           ? articles.map((item) =>
               item.title === article.title
                 ? {
                     ...item,
-                    ...article,
-                    target: article.target ?? article.title,
+                    author: String(article.author ?? item.author ?? ''),
+                    category: String(article.category ?? item.category ?? ''),
+                    date: String(article.date ?? item.date ?? ''),
+                    excerpt: String(article.excerpt ?? item.excerpt ?? ''),
+                    target: String(article.target ?? article.title),
+                    title: String(article.title ?? item.title),
                   }
                 : item,
             )
           : [
               ...articles,
               {
-                ...article,
+                author: String(article.author ?? ''),
+                category: String(article.category ?? ''),
+                date: String(article.date ?? ''),
+                excerpt: String(article.excerpt ?? ''),
                 id: `article-${articles.length + 1}`,
-                target: article.target ?? article.title,
+                target: String(article.target ?? article.title),
+                title: String(article.title ?? ''),
               },
             ]
       }
@@ -240,9 +249,9 @@ function createPublicationLakebedStub() {
     if (name === 'recordSearch' && 'query' in input) {
       searches = [
         {
-          articleTitle: input.articleTitle,
-          query: input.query,
-          source: input.source,
+          articleTitle: String(input.articleTitle ?? ''),
+          query: String(input.query ?? ''),
+          source: String(input.source ?? ''),
         },
         ...searches,
       ]
@@ -251,8 +260,8 @@ function createPublicationLakebedStub() {
     if (name === 'recordPublicationAction' && 'action' in input) {
       actions = [
         {
-          action: input.action,
-          source: input.source,
+          action: String(input.action ?? ''),
+          source: String(input.source ?? ''),
         },
         ...actions,
       ]
@@ -320,7 +329,7 @@ function createPublicationLakebedStub() {
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
       const run = useCallback(
-        async (input) => {
+        async (input: Record<string, unknown>) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
 
@@ -338,7 +347,7 @@ function createPublicationLakebedStub() {
       const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input) => run(input), {
+          Object.assign((input: Record<string, unknown>) => run(input), {
             isPending: false,
             lastError: initialLastError,
             pendingCount: 0,

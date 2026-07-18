@@ -15,7 +15,7 @@ export function buildOpenUIVariationBlock(
     h = Math.imul(h, 16777619)
   }
   const u = h >>> 0
-  const pick = (values, shift): string => values[(u >>> shift) % values.length]
+  const pick = (values: readonly string[], shift: number): string => values[(u >>> shift) % values.length]
   const personas = ['balanced', 'airy', 'dense', 'bold']
   const persona = pick(personas, 0)
   const heroPick = (u >>> 3) % 2 === 0 ? 'EditorialHero' : 'SplitHero'

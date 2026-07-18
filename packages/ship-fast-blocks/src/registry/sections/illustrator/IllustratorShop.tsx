@@ -10,6 +10,7 @@ import {
   ProductCardContent,
   ProductCardTitle,
 } from '#/section-kit/ProductCard.tsx'
+import { ShopGrid, ShopCard } from '#/section-kit/ShopGrid.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -107,7 +108,7 @@ export const IllustratorShop = defineCapsule({
       item.price,
     ])
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"
@@ -141,13 +142,13 @@ export const IllustratorShop = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ShopGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((item) => (
-              <ProductCard
-                key={item.title}
-                variant="outlined"
-                className="border-border/60 transition-shadow hover:shadow-lg"
-              >
+              <ShopCard asChild key={item.title}>
+                <ProductCard
+                  variant="outlined"
+                  className="border-border/60 transition-shadow hover:shadow-lg"
+                >
                 <ProductCardImage>
                   <Image
                     alt={item.title}
@@ -187,9 +188,10 @@ export const IllustratorShop = defineCapsule({
                     </CommerceAddItemButton>
                   </div>
                 </ProductCardContent>
-              </ProductCard>
+                </ProductCard>
+              </ShopCard>
             ))}
-          </div>
+          </ShopGrid>
           <div className="mt-12 text-center">
             <button
               type="button"

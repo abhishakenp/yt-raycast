@@ -112,7 +112,7 @@ export const NewsletterIssues = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"

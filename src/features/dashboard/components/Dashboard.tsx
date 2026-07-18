@@ -1459,7 +1459,7 @@ export function Dashboard({
     // Optimistic: show the new image immediately (reverted below on failure).
     // A multi-image payload previews its first URL — the carousel renders once
     // the persisted edit re-applies through imageOverrides.
-    change.element.src = firstImageSrc(change.newSrc)
+    change.element.src = firstImageSrc(change.newSrc) ?? change.element.src
     // Anchor the swap on the image's `alt` (stable across renders), not its src:
     // the stored preview HTML and the live DOM resolve different /api/pexels
     // queries from the same alt, so src never matches. occurrenceIndex picks the
@@ -1624,8 +1624,9 @@ export function Dashboard({
           setIsForkingSession(false)
         }
       } else if (result !== true) {
-        console.error('[Inline Edit] Failed to save link:', result.error)
-        toast.error(result.error)
+        const errorMsg = typeof result === 'object' && result ? result.error : 'Failed to save link'
+        console.error('[Inline Edit] Failed to save link:', errorMsg)
+        toast.error(errorMsg)
       }
     } catch (error) {
       const errorMessage =
@@ -1759,8 +1760,9 @@ export function Dashboard({
           activeElement.setAttribute('style', originalStyleAttribute)
         }
       }
-      console.error('[Inline Edit] Failed to save style:', result.error)
-      toast.error(result.error)
+      const styleErrorMsg = typeof result === 'object' && result ? result.error : 'Failed to save style'
+      console.error('[Inline Edit] Failed to save style:', styleErrorMsg)
+      toast.error(styleErrorMsg)
     }
   }
 

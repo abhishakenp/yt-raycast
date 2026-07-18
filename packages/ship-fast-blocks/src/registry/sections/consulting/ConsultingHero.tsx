@@ -7,10 +7,10 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -73,7 +73,7 @@ export const ConsultingHero = defineCapsule({
     const statTitle = props.statTitle ?? 'Client Retention Rate'
     const statSubtitle = props.statSubtitle ?? 'Average 8-year partnership'
 
-    const CheckIcon = ({ className }) => (
+    const CheckIcon = ({ className }: { className?: string }) => (
       <svg
         width="20"
         height="20"
@@ -120,7 +120,7 @@ export const ConsultingHero = defineCapsule({
               <HeroSubheading className="mt-0 max-w-2xl sm:text-xl">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -135,22 +135,22 @@ export const ConsultingHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
-              <HeroTrustRow className="mt-0 gap-8 pt-4">
+              </HeroActions>
+              <HeroSocialProof className="mt-0 gap-8 pt-4">
                 {trust.map((t) => (
-                  <HeroTrustItem key={t}>
+                  <HeroSocialProofItem key={t}>
                     <CheckIcon className="size-5 text-muted-foreground" />
                     <span>{t}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
             <div className="relative">
               <div
                 aria-hidden="true"
                 className="absolute -inset-4 rounded-2xl bg-secondary/60"
               />
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

@@ -95,7 +95,7 @@ export const InsuranceTestimonials = defineCapsule({
               'Professional headshot of Robert Thompson, a financial analyst from Miami',
           },
         ]
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

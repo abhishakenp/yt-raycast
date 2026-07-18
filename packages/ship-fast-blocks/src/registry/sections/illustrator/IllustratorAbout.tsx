@@ -5,11 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StorySplit,
-  StorySplitGrid,
-  StorySplitContent,
-  StorySplitBody,
-} from '#/section-kit/StorySplit.tsx'
+  SplitStory,
+  SplitStoryGrid,
+  SplitStoryContent,
+  SplitStoryBody,
+} from '#/section-kit/SplitStory.tsx'
 
 /**
  * IllustratorAbout — a split about / bio band for an illustrator / visual-artist
@@ -70,14 +70,14 @@ export const IllustratorAbout = defineCapsule({
         ]
 
     return (
-      <StorySplit
+      <SplitStory
         className={cn(
           'bg-muted/50 px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
           props.className,
         )}
       >
         <div className="mx-auto max-w-7xl">
-          <StorySplitGrid>
+          <SplitStoryGrid>
             <div className="relative">
               <div className="aspect-[3/4] overflow-hidden rounded-xl">
                 <Image
@@ -95,7 +95,7 @@ export const IllustratorAbout = defineCapsule({
                 <p className="text-sm text-muted-foreground">{badgeLabel}</p>
               </div>
             </div>
-            <StorySplitContent className="space-y-0">
+            <SplitStoryContent className="space-y-0">
               <SectionHeading
                 eyebrow={eyebrow}
                 title={heading}
@@ -104,11 +104,11 @@ export const IllustratorAbout = defineCapsule({
                 titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
                 className="mb-6 gap-4"
               />
-              <StorySplitBody className="space-y-4 leading-relaxed text-muted-foreground">
+              <SplitStoryBody className="space-y-4 leading-relaxed text-muted-foreground">
                 {paragraphs.map((para) => (
                   <p key={para.slice(0, 24)}>{para}</p>
                 ))}
-              </StorySplitBody>
+              </SplitStoryBody>
               <div className="mt-8 border-t border-border/60 pt-8">
                 <h3 className="mb-4 font-serif text-lg">
                   {recognitionHeading}
@@ -122,10 +122,10 @@ export const IllustratorAbout = defineCapsule({
                   ))}
                 </ul>
               </div>
-            </StorySplitContent>
-          </StorySplitGrid>
+            </SplitStoryContent>
+          </SplitStoryGrid>
         </div>
-      </StorySplit>
+      </SplitStory>
     )
   },
 })

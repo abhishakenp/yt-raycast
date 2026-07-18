@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
+import { DashboardChart } from '#/section-kit/DashboardChart.tsx'
 
 /**
  * DashboardChartActivity — a two-column analytics band for a SaaS admin
@@ -220,6 +221,7 @@ export const DashboardChartActivity = defineCapsule({
         <Container>
           <ResponsiveGrid cols="1-lg-3" gap="md">
             {/* Revenue chart */}
+            <DashboardChart className="lg:col-span-2">
             <Card padding="sm" className="p-5 lg:col-span-2">
               <div className="mb-5 flex items-center justify-between">
                 <div>
@@ -322,6 +324,7 @@ export const DashboardChartActivity = defineCapsule({
                 </div>
               </div>
             </Card>
+            </DashboardChart>
 
             {/* Recent activity */}
             <Card padding="sm" className="p-5">

@@ -109,7 +109,7 @@ export const propertyListingLakebed = {
     }),
   },
   mutations: {
-    recordPropertyInquiry: propertyListing.mutation((_ctx, input) => {
+    recordPropertyInquiry: propertyListing.mutation((_ctx, input: PropertyListingInquiryInput) => {
       const intent = clean(input.intent)
       if (!intent) return _ctx.db.inquiries.orderBy('createdAt').all()
 
@@ -121,7 +121,7 @@ export const propertyListingLakebed = {
 
       return _ctx.db.inquiries.orderBy('createdAt', 'desc').all()
     }),
-    saveListing: propertyListing.mutation((_ctx, input) => {
+    saveListing: propertyListing.mutation((_ctx, input: PropertyListingSaveInput) => {
       const address = clean(input.address)
       if (!address) return _ctx.db.saved.orderBy('createdAt').all()
 
@@ -137,7 +137,7 @@ export const propertyListingLakebed = {
 
       return _ctx.db.saved.orderBy('createdAt', 'desc').all()
     }),
-    selectListing: propertyListing.mutation((_ctx, input) => {
+    selectListing: propertyListing.mutation((_ctx, input: PropertyListingSelectInput) => {
       const selectedAddress = clean(input.address)
       if (!selectedAddress) return _ctx.db.state.orderBy('createdAt').all()
 
@@ -157,7 +157,7 @@ export const propertyListingLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    setPropertySearch: propertyListing.mutation((_ctx, input) => {
+    setPropertySearch: propertyListing.mutation((_ctx, input: PropertyListingSearchInput) => {
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
       const next = {
         filter: clean(input.filter),
@@ -180,13 +180,13 @@ export const propertyListingLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncPropertyListings: propertyListing.mutation((_ctx, input) => {
+    syncPropertyListings: propertyListing.mutation((_ctx, input: { listings: PropertyListingCatalogInput[] }) => {
       const existing = _ctx.db.listings.orderBy('createdAt').all()
       const existingByAddress = new Map(
         existing.map((listing) => [listing.address.toLowerCase(), listing]),
       )
 
-      for (const listing of input.listings) {
+      for (const listing of input.listings as Array<Record<string, unknown>>) {
         const address = clean(listing.address)
         if (!address) continue
 
@@ -210,4 +210,16 @@ export const propertyListingLakebed = {
       return _ctx.db.listings.orderBy('updatedAt', 'desc').all()
     }),
   },
+}
+
+export type PropertyListingRecord = {
+  address: string
+  baths: string
+  beds: string
+  createdAt: string
+  id: string
+  price: string
+  sqft: string
+  tag: string
+  updatedAt: string
 }

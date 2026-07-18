@@ -87,7 +87,7 @@ describe('JSON-LD extraction from real DB data', () => {
     const data = parseJsonLd(seoBundle!.homeSeo!.structuredDataJson)
 
     // Reviews should be attached to a product (inside ItemList or on single Product)
-    const findProductWithReviews = (entries) => {
+    const findProductWithReviews = (entries: Record<string, unknown>[]) => {
       for (const e of entries) {
         if (e['@type'] === 'Product' && e.review) return e
         if (e['@type'] === 'ItemList') {
@@ -123,7 +123,7 @@ describe('JSON-LD extraction from real DB data', () => {
     const data = parseJsonLd(seoBundle!.homeSeo!.structuredDataJson)
 
     // Find any Review with a rating
-    const findReview = (entries) => {
+    const findReview = (entries: Record<string, unknown>[]) => {
       for (const e of entries) {
         if (e['@type'] === 'Review') return e
         if (e['@type'] === 'ItemList') {

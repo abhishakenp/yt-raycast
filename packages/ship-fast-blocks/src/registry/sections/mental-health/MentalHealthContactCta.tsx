@@ -44,7 +44,7 @@ export const MentalHealthContactCta = defineCapsule({
       : ['HIPAA Compliant', 'Secure & Confidential', 'Next Day Appointments']
     const bookLabel = props.bookLabel ?? 'Book Session'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -61,7 +61,7 @@ export const MentalHealthContactCta = defineCapsule({
       </svg>
     )
 
-    const Phone = ({ className }) => (
+    const Phone = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"

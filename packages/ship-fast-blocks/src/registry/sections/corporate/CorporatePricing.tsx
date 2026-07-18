@@ -95,7 +95,7 @@ export const CorporatePricing = defineCapsule({
             featured: false,
           },
         ]
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         width="20"
         height="20"

@@ -77,7 +77,7 @@ export function resolveRouteTarget(
   const exact = routes.find((r) => normalizeTarget(r) === normalized)
   if (exact) return { type: 'page', page: exact }
 
-  const find = (routePattern, sectionPattern?) => {
+  const find = (routePattern: RegExp, sectionPattern?: RegExp) => {
     const route = routes.find((r) => routePattern.test(normalizeTarget(r)))
     if (route) return { type: 'page' as const, page: route }
     if (sectionPattern) {
@@ -154,7 +154,7 @@ export function useNavigate() {
   const routing = useContext(RoutesContext)
   const page = useStateField<string>('page')
   const urlBridge = useContext(PreviewUrlBridgeContext)
-  return (target?) => {
+  return (target?: string) => {
     const rawTarget = (target ?? '').trim()
     const t = rawTarget.toLowerCase()
     // Real auth takes precedence over page routing.

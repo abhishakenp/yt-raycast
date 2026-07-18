@@ -7,7 +7,7 @@ import {
   createLakebedQueryStub,
 } from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
+import { autoDealershipLakebed, type AutoVehicleInput } from './auto-dealership-lakebed.ts'
 import type { AutoDealershipLakebed } from './auto-dealership-interactions.tsx'
 
 type TestVehicle = {
@@ -31,20 +31,7 @@ type TestLead = {
   vehicle: string
 }
 
-type TestVehicleInput = {
-  badge?: string
-  imageAlt?: string
-  name: string
-  price?: string
-  specs?: string
-}
 
-type TestLeadInput = {
-  action?: string
-  label: string
-  source?: string
-  vehicle?: string
-}
 
 type MutationArgs<TMutation> = TMutation extends (
   ctx: infer _TCtx,
@@ -130,7 +117,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -177,7 +164,7 @@ function createAutoDealershipLakebedStub() {
       leads: state.leads,
     }
   }
-  const syncVehicles = (vehicles) => {
+  const syncVehicles = (vehicles: readonly AutoVehicleInput[]) => {
     const nextVehicles = [...state.vehicles]
 
     for (const vehicle of vehicles) {
@@ -208,19 +195,19 @@ function createAutoDealershipLakebedStub() {
 
     state = { ...state, vehicles: nextVehicles }
   }
-  const recordLead = (input) => {
+  const recordLead = (input: Record<string, unknown>) => {
     state = {
       ...state,
       leads: [
         ...state.leads,
         {
-          action: input.action ?? 'lead',
+          action: String(input.action ?? 'lead'),
           createdAt: timestamp,
           id: `lead-${state.leads.length + 1}`,
-          label: input.label,
-          source: input.source ?? '',
+          label: String(input.label ?? ''),
+          source: String(input.source ?? ''),
           updatedAt: timestamp,
-          vehicle: input.vehicle ?? '',
+          vehicle: String(input.vehicle ?? ''),
         },
       ],
     }

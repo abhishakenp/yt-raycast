@@ -159,6 +159,21 @@ const StepItem = React.forwardRef<HTMLLIElement, React.ComponentProps<'li'>>(
 )
 StepItem.displayName = 'StepItem'
 
+/* ---------- StepContent ---------- */
+
+const StepContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    data-slot="step-content"
+    className={cn('mt-4 flex flex-col gap-3', className)}
+    ref={ref}
+    {...props}
+  />
+))
+StepContent.displayName = 'StepContent'
+
 export {
   StepTimeline,
   StepTimelineHeader,
@@ -166,6 +181,7 @@ export {
   StepBadge,
   StepConnector,
   StepItem,
+  StepContent,
   stepTimelineVariants,
   stepBadgeVariants,
 }

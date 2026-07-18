@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { ReviewList, ReviewItem } from '#/section-kit/ReviewList.tsx'
 
 /**
  * CafeReviews — 3-up customer-review wall for a cozy cafe / coffee shop page.
@@ -99,9 +100,10 @@ export const CafeReviews = defineCapsule({
             </h2>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ReviewList className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((r) => (
-              <Card key={r.name} padding="lg" shadow="sm">
+              <ReviewItem asChild key={r.name}>
+                <Card padding="lg" shadow="sm">
                 <div className="mb-4 flex gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} />
@@ -122,9 +124,10 @@ export const CafeReviews = defineCapsule({
                     <p className="text-sm text-muted-foreground">{r.role}</p>
                   </div>
                 </div>
-              </Card>
+                </Card>
+              </ReviewItem>
             ))}
-          </div>
+          </ReviewList>
 
           <div className="mt-12 text-center">
             <button

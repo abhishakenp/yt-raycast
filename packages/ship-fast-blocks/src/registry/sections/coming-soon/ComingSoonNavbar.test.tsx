@@ -45,16 +45,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -103,13 +103,16 @@ function createNewsletterLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const row = (input, index) => ({
-    createdAt: now,
-    email: input.email.trim().toLowerCase(),
-    id: `subscriber-${index}`,
-    source: input.source ?? '',
-    updatedAt: now,
-  })
+  const row = (input: unknown, index: number) => {
+    const data = input as Record<string, unknown>
+    return {
+      createdAt: now,
+      email: (data.email as string).trim().toLowerCase(),
+      id: `subscriber-${index}`,
+      source: (data.source as string) ?? '',
+      updatedAt: now,
+    }
+  }
 
   const useQuery = createLakebedQueryStub<typeof newsletterLakebed>({
     subscriberSummary: () => {
@@ -132,12 +135,13 @@ function createNewsletterLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: SubscribeInput) => {
+        const data = input as Record<string, unknown>
         setPendingCount((count) => count + 1)
         setLastError(null)
 
         try {
-          const email = input.email.trim().toLowerCase()
+          const email = (data.email as string).trim().toLowerCase()
           if (email) {
             const existing = subscribers.find(
               (subscriber) => subscriber.email === email,
@@ -147,7 +151,7 @@ function createNewsletterLakebedStub() {
                   subscriber.email === email
                     ? {
                         ...subscriber,
-                        source: input.source ?? subscriber.source,
+                        source: (data.source as string) ?? subscriber.source,
                         updatedAt: now,
                       }
                     : subscriber,
@@ -166,7 +170,7 @@ function createNewsletterLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: SubscribeInput) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

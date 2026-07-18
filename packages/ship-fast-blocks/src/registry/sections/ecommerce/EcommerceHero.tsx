@@ -8,10 +8,10 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -99,7 +99,7 @@ export const EcommerceHero = defineCapsule({
             <HeroSubheading className="mx-auto mt-6 max-w-xl lg:mx-0">
               {heroSub}
             </HeroSubheading>
-            <HeroCtas className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
+            <HeroActions className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
               <button
                 type="button"
                 onClick={() => go(heroPrimary)}
@@ -126,22 +126,22 @@ export const EcommerceHero = defineCapsule({
               >
                 {addLabel}
               </CommerceAddItemButton>
-            </HeroCtas>
-            <HeroTrustRow className="justify-center lg:justify-start">
+            </HeroActions>
+            <HeroSocialProof className="justify-center lg:justify-start">
               {heroTrust.filter(Boolean).map((item) => (
-                <HeroTrustItem key={item}>
+                <HeroSocialProofItem key={item}>
                   <span
                     aria-hidden="true"
                     className="size-1.5 rounded-full bg-accent"
                   />
                   {item}
-                </HeroTrustItem>
+                </HeroSocialProofItem>
               ))}
-            </HeroTrustRow>
+            </HeroSocialProof>
           </div>
 
           <div className="relative">
-            <HeroImage
+            <HeroMediaPanel
               alt={heroImageAlt}
               w={1200}
               h={1200}

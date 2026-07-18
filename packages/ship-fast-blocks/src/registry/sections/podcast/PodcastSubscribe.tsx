@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { NewsletterCta } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand, SubscribeForm, SubscribeInput } from '#/section-kit/SubscribeBand.tsx'
 
 export const PodcastSubscribe = defineCapsule({
   name: 'PodcastSubscribe',
@@ -41,7 +41,7 @@ export const PodcastSubscribe = defineCapsule({
         ]
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         className={cn(
           'bg-accent/10 py-20 text-foreground lg:py-28',
           props.className,
@@ -65,8 +65,17 @@ export const PodcastSubscribe = defineCapsule({
               </button>
             ))}
           </div>
+          <SubscribeForm className="mx-auto mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:flex-row">
+            <SubscribeInput placeholder="you@example.com" />
+            <button
+              type="submit"
+              className="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Subscribe
+            </button>
+          </SubscribeForm>
         </div>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

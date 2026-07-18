@@ -83,7 +83,7 @@ export const ChurchServices = defineCapsule({
           'Accessible parking and seating',
         ]
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

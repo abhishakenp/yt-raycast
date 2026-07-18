@@ -21,16 +21,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -86,7 +86,7 @@ if (typeof ResizeObserver === 'undefined') {
 if (typeof requestAnimationFrame === 'undefined') {
   Object.defineProperty(globalThis, 'requestAnimationFrame', {
     configurable: true,
-    value: (callback) => setTimeout(() => callback(Date.now()), 0),
+    value: (callback: (time: number) => void) => setTimeout(() => callback(Date.now()), 0),
     writable: true,
   })
 }
@@ -94,7 +94,7 @@ if (typeof requestAnimationFrame === 'undefined') {
 if (typeof cancelAnimationFrame === 'undefined') {
   Object.defineProperty(globalThis, 'cancelAnimationFrame', {
     configurable: true,
-    value: (id) => clearTimeout(id),
+    value: (id: ReturnType<typeof setTimeout>) => clearTimeout(id),
     writable: true,
   })
 }
@@ -185,15 +185,6 @@ type MutationResult<TMutation> = TMutation extends (
   ? Awaited<TResult>
   : never
 
-type TestMutationInput = {
-  id?: string
-  itemKey?: string
-  label?: string
-  price?: string
-  products?: TestProductInput[]
-  query?: string
-  selectedLabel?: string
-}
 
 const timestamp = '2026-06-26T00:00:00.000Z'
 
@@ -282,7 +273,7 @@ function useTestLakebedMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -344,14 +335,14 @@ function createCommerceLakebedStub({
     version += 1
     for (const listener of listeners) listener()
   }
-  const subscribe = (listener) => {
+  const subscribe = (listener: () => void) => {
     listeners.add(listener)
     return () => {
       listeners.delete(listener)
     }
   }
   const getSnapshot = () => version
-  const findItem = (input) =>
+  const findItem = (input: Record<string, unknown>) =>
     state.items.find((item) => {
       if (input.id && item.id === input.id) return true
       if (input.itemKey && item.itemKey === input.itemKey) return true
@@ -402,12 +393,12 @@ function createCommerceLakebedStub({
         pendingCount,
         reset,
         runMutation: useCallback(
-          async (input) => {
+          async (input: Record<string, unknown>) => {
             setPendingCount((count) => count + 1)
             setLastError(null)
             try {
               await mutationDelay?.syncCatalog?.()
-              state.products = input.products.map((product, index) =>
+              state.products = (input.products as Record<string, unknown>[]).map((product: Record<string, unknown>, index: number) =>
                 testProduct({
                   id: `product-${index + 1}`,
                   ...product,
@@ -468,14 +459,14 @@ function createCommerceLakebedStub({
         pendingCount,
         reset,
         runMutation: useCallback(
-          async (input) => {
+          async (input: Record<string, unknown>) => {
             setPendingCount((count) => count + 1)
             setLastError(null)
             try {
               await mutationDelay?.setCommerceSearch?.()
               const next = {
-                query: String(input.query ?? '').trim(),
-                selectedLabel: String(input.selectedLabel ?? '').trim(),
+                query: String(String(input.query ?? '')).trim(),
+                selectedLabel: String(String(input.selectedLabel ?? '')).trim(),
               }
               state.searchState = next
               state.searches = [
@@ -511,17 +502,17 @@ function createCommerceLakebedStub({
         pendingCount,
         reset,
         runMutation: useCallback(
-          async (input) => {
+          async (input: Record<string, unknown>) => {
             setPendingCount((count) => count + 1)
             setLastError(null)
             try {
               await mutationDelay?.addItem?.()
               const existing = findItem(input)
-              const label = input.label?.trim() || 'Item'
+              const label = String(input.label)?.trim() || 'Item'
               const itemKey = commerceCartItemKey({
-                itemKey: input.itemKey,
+                itemKey: String(input.itemKey ?? ''),
                 label,
-                price: input.price,
+                price: String(input.price ?? ''),
               })
               if (existing) {
                 existing.itemKey = existing.itemKey || itemKey
@@ -534,7 +525,7 @@ function createCommerceLakebedStub({
                     id: `item-${state.items.length + 1}`,
                     itemKey,
                     label,
-                    price: input.price,
+                    price: String(input.price ?? ''),
                     quantity: 1,
                   }),
                 ]
@@ -565,7 +556,7 @@ function createCommerceLakebedStub({
         pendingCount,
         reset,
         runMutation: useCallback(
-          async (input) => {
+          async (input: Record<string, unknown>) => {
             setPendingCount((count) => count + 1)
             setLastError(null)
             try {
@@ -601,7 +592,7 @@ function createCommerceLakebedStub({
         pendingCount,
         reset,
         runMutation: useCallback(
-          async (input) => {
+          async (input: Record<string, unknown>) => {
             setPendingCount((count) => count + 1)
             setLastError(null)
             try {
@@ -637,7 +628,7 @@ function createCommerceLakebedStub({
         pendingCount,
         reset,
         runMutation: useCallback(
-          async (input) => {
+          async (input: Record<string, unknown>) => {
             setPendingCount((count) => count + 1)
             setLastError(null)
             try {
@@ -673,7 +664,7 @@ function createCommerceLakebedStub({
         pendingCount,
         reset,
         runMutation: useCallback(
-          async (input) => {
+          async (input: Record<string, unknown>) => {
             setPendingCount((count) => count + 1)
             setLastError(null)
             try {
@@ -739,7 +730,7 @@ function createSharedPendingCommerceLakebedStub({
     version += 1
     for (const listener of listeners) listener()
   }
-  const subscribe = (listener) => {
+  const subscribe = (listener: () => void) => {
     listeners.add(listener)
     return () => {
       listeners.delete(listener)
@@ -811,16 +802,16 @@ function createSharedPendingCommerceLakebedStub({
         lastError,
         pendingCount: pendingByName.addItem ?? 0,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           pendingByName.addItem = (pendingByName.addItem ?? 0) + 1
           notify()
           try {
             await mutationDelay?.addItem?.()
-            const label = input.label?.trim() || 'Item'
+            const label = String(input.label)?.trim() || 'Item'
             const itemKey = commerceCartItemKey({
-              itemKey: input.itemKey,
+              itemKey: String(input.itemKey ?? ''),
               label,
-              price: input.price,
+              price: String(input.price ?? ''),
             })
             const existing = state.items.find(
               (item) => item.itemKey === itemKey,
@@ -842,7 +833,7 @@ function createSharedPendingCommerceLakebedStub({
                     id: `item-${state.items.length + 1}`,
                     itemKey,
                     label,
-                    price: input.price,
+                    price: String(input.price ?? ''),
                     quantity: 1,
                   }),
                 ]
@@ -877,7 +868,7 @@ function createSharedPendingCommerceLakebedStub({
         lastError,
         pendingCount: pendingByName.incrementItem ?? 0,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           pendingByName.incrementItem = (pendingByName.incrementItem ?? 0) + 1
           notify()
           try {
@@ -921,7 +912,7 @@ function createSharedPendingCommerceLakebedStub({
         lastError,
         pendingCount: pendingByName.decrementItem ?? 0,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           pendingByName.decrementItem = (pendingByName.decrementItem ?? 0) + 1
           notify()
           try {
@@ -965,7 +956,7 @@ function createSharedPendingCommerceLakebedStub({
         lastError,
         pendingCount: pendingByName.removeItem ?? 0,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           pendingByName.removeItem = (pendingByName.removeItem ?? 0) + 1
           notify()
           try {
@@ -1009,7 +1000,7 @@ function createSharedPendingCommerceLakebedStub({
         lastError,
         pendingCount: pendingByName.deleteItem ?? 0,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           pendingByName.deleteItem = (pendingByName.deleteItem ?? 0) + 1
           notify()
           try {
@@ -1045,14 +1036,14 @@ function createSharedPendingCommerceLakebedStub({
         lastError,
         pendingCount: pendingByName.syncCatalog ?? 0,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           pendingByName.syncCatalog = (pendingByName.syncCatalog ?? 0) + 1
           notify()
           try {
             await mutationDelay?.syncCatalog?.()
             state = {
               ...state,
-              products: input.products.map((product, index) =>
+              products: (input.products as Record<string, unknown>[]).map((product: Record<string, unknown>, index: number) =>
                 testProduct({
                   id: `product-${index + 1}`,
                   ...product,
@@ -1242,7 +1233,7 @@ describe('commerce interaction surfaces', () => {
     )
     const lakebed = {
       useMutation: () => noopMutation,
-      useQuery: (name) => (name === 'cartSummary' ? { count: 3 } : null),
+      useQuery: (name: string) => (name === 'cartSummary' ? { count: 3 } : null),
     } as unknown as CommerceLakebed
 
     render(<CommerceCartButton lakebed={lakebed} />)

@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * find-a-service platforms, or review-and-discovery sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 export const DirectorySteps = defineCapsule({
   name: 'DirectorySteps',
   description:
@@ -56,7 +57,7 @@ export const DirectorySteps = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
+      <StepTimeline className={cn('bg-card py-16 lg:py-24', props.className)}>
         <Container>
           <div className="mb-12 text-center lg:mb-16">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
@@ -67,7 +68,7 @@ export const DirectorySteps = defineCapsule({
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
               <div key={step.title} className="text-center">
                 <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-muted">
@@ -81,9 +82,9 @@ export const DirectorySteps = defineCapsule({
                 <p className="text-muted-foreground">{step.description}</p>
               </div>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

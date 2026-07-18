@@ -131,7 +131,7 @@ export function createShipFastEngineAdapter({
   onEvent,
 }: ShipFastEngineAdapterOptions) {
   return {
-    generate: async ({ sessionId, prompt, preferredLanguage, signal }) => {
+    generate: async ({ sessionId, prompt, preferredLanguage, signal }: ShipFastEngineAdapterInput) => {
       const startedAt = now()
       const events: ShipFastEngineSessionEvent[] = []
       const deferredEvents: ShipFastEngineSessionEvent[] = []
@@ -147,7 +147,7 @@ export function createShipFastEngineAdapter({
             .catch(() => undefined),
         )
       }
-      const emit = (event) => {
+      const emit = (event: ShipFastEngineSessionEvent) => {
         const key = eventKey(event)
         if (key && seenEvents.has(key)) return
         if (key) seenEvents.add(key)

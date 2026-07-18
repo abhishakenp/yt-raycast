@@ -102,16 +102,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -245,7 +245,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -336,11 +336,11 @@ function createAuthLakebedStub({
       sessions,
     }
   }
-  const recordAuthSession = (input) => {
-    const email = input.email.trim().toLowerCase()
+  const recordAuthSession = (input: Record<string, unknown>) => {
+    const email = (input.email as string).trim().toLowerCase()
     if (!email) return
 
-    const provider = input.provider?.trim() || 'Shoo'
+    const provider = (input.provider as string | undefined)?.trim() || 'Shoo'
     const existingIndex = state.authSessions.findIndex(
       (session) => session.email === email && session.provider === provider,
     )
@@ -349,7 +349,7 @@ function createAuthLakebedStub({
         existingIndex >= 0
           ? state.authSessions[existingIndex]!.createdAt
           : timestamp,
-      displayName: input.displayName?.trim() ?? '',
+      displayName: (input.displayName as string | undefined)?.trim() ?? '',
       email,
       id:
         existingIndex >= 0
@@ -370,7 +370,7 @@ function createAuthLakebedStub({
           : [...state.authSessions, next],
     }
   }
-  const recordIntent = ({ input, type }) => {
+  const recordIntent = ({ input, type }: { input: Record<string, unknown>; type: string }) => {
     state = {
       ...state,
       intents: [
@@ -378,9 +378,9 @@ function createAuthLakebedStub({
         {
           createdAt: timestamp,
           id: `intent-${state.intents.length + 1}`,
-          label: input.label,
-          plan: input.plan ?? input.label,
-          source: input.source ?? '',
+          label: input.label as string,
+          plan: (input.plan as string | undefined) ?? (input.label as string),
+          source: (input.source as string | undefined) ?? '',
           type,
           updatedAt: timestamp,
         },
@@ -447,7 +447,7 @@ function createAuthLakebedStub({
               await mutationDelay?.syncPlans?.()
               state = {
                 ...state,
-                plans: input.plans.map(testPlan),
+                plans: ((input as Record<string, unknown>).plans as Array<TestPlanInput>).map(testPlan),
               }
               notify()
               return state.plans
@@ -476,7 +476,7 @@ function createAuthLakebedStub({
             setLastError(null)
             try {
               await mutationDelay?.requestDemo?.()
-              recordIntent({ input, type: 'demo' })
+              recordIntent({ input: input as Record<string, unknown>, type: 'demo' })
               notify()
               return state.intents
             } catch (error) {
@@ -504,7 +504,7 @@ function createAuthLakebedStub({
             setLastError(null)
             try {
               await mutationDelay?.recordAuthSession?.()
-              recordAuthSession(input)
+              recordAuthSession(input as Record<string, unknown>)
               notify()
               return state.authSessions
             } catch (error) {
@@ -557,7 +557,7 @@ function createAuthLakebedStub({
             setLastError(null)
             try {
               await mutationDelay?.selectPlan?.()
-              recordIntent({ input, type: 'trial' })
+              recordIntent({ input: input as Record<string, unknown>, type: 'trial' })
               notify()
               return state.intents
             } catch (error) {

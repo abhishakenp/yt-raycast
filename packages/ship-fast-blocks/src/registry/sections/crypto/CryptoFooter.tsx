@@ -81,7 +81,7 @@ export const CryptoFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
 
-    const BoltIcon = ({ className }) => (
+    const BoltIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"

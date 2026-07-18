@@ -2,10 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * HotelResortAmenities — editorial amenities grid for a luxury hotel / resort &
@@ -106,25 +104,13 @@ export const HotelResortAmenities = defineCapsule({
             subtitleClassName="leading-relaxed"
             className="mb-16 max-w-2xl gap-4"
           />
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
-            {items.map((item) => (
-              <div key={item.title}>
-                <ImageTile treatment="4-3-lg" className="mb-5">
-                  <Image
-                    alt={item.imageAlt}
-                    w={800}
-                    h={600}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </ImageTile>
-                <h3 className="mb-2 text-lg font-medium">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <FeatureGrid
+            features={items.map((item) => ({
+              title: item.title,
+              description: item.description,
+            }))}
+            columns={3}
+          />
         </div>
       </section>
     )

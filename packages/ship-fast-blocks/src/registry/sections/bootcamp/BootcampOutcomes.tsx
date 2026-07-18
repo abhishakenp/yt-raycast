@@ -12,6 +12,8 @@ import { cn } from '#/lib/utils.ts'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import { OutcomesGrid, OutcomesCard } from '#/section-kit/OutcomesGrid.tsx'
 export const BootcampOutcomes = defineCapsule({
   name: 'BootcampOutcomes',
   description:
@@ -104,34 +106,34 @@ export const BootcampOutcomes = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{outcomesDesc}</p>
           </div>
-          <div className="mb-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {outcomeStats.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="mb-2 text-5xl font-bold text-primary">
-                  {s.value}
-                </p>
-                <p className="text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <StatGrid
+            stats={outcomeStats.map((s) => ({ value: s.value, label: s.label }))}
+            columns={4}
+            gap="wide"
+            valueColor="primary"
+            size="xl"
+            className="mb-16"
+          />
+          <OutcomesGrid className="grid gap-6 md:grid-cols-3">
             {outcomeBars.map((bar) => (
-              <div key={bar.label} className="rounded-xl bg-muted/60 p-6">
-                <p className="mb-1 text-3xl font-bold">{bar.value}</p>
-                <p className="mb-3 text-sm text-muted-foreground">
-                  {bar.label}
-                </p>
-                <div className="h-2 overflow-hidden rounded-full bg-border">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{
-                      width: `${bar.pct}%`,
-                    }}
-                  />
+              <OutcomesCard asChild key={bar.label}>
+                <div className="rounded-xl bg-muted/60 p-6">
+                  <p className="mb-1 text-3xl font-bold">{bar.value}</p>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    {bar.label}
+                  </p>
+                  <div className="h-2 overflow-hidden rounded-full bg-border">
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{
+                        width: `${bar.pct}%`,
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
+              </OutcomesCard>
             ))}
-          </div>
+          </OutcomesGrid>
         </Container>
       </section>
     )

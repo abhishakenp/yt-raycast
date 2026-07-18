@@ -8,7 +8,7 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -88,7 +88,7 @@ export const IllustratorHero = defineCapsule({
       }),
     ])
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"
@@ -127,7 +127,7 @@ export const IllustratorHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 max-w-xl sm:text-xl">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -155,7 +155,7 @@ export const IllustratorHero = defineCapsule({
                 >
                   {addLabel}
                 </CommerceAddItemButton>
-              </HeroCtas>
+              </HeroActions>
             </div>
             <div className="relative order-1 lg:order-2">
               <div className="aspect-[4/5] overflow-hidden rounded-xl bg-muted">

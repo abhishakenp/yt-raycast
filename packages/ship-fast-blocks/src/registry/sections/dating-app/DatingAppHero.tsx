@@ -9,8 +9,8 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -79,7 +79,7 @@ export const DatingAppHero = defineCapsule({
       'profile photo of Sarah a 28 year old marketing manager'
     const matchBadge = props.matchBadge ?? "It's a Match!"
 
-    const HeartGlyph = ({ className }) => (
+    const HeartGlyph = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -94,7 +94,7 @@ export const DatingAppHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -109,7 +109,7 @@ export const DatingAppHero = defineCapsule({
       </svg>
     )
 
-    const ChevronDown = ({ className }) => (
+    const ChevronDown = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -143,7 +143,7 @@ export const DatingAppHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 sm:text-xl">
                 {heroSub}
               </HeroSubheading>
-              <HeroCtas className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -167,7 +167,7 @@ export const DatingAppHero = defineCapsule({
                   {heroSecondary}
                   <ChevronDown className="size-5" />
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">
                   {avatars.map((a) => (
@@ -185,7 +185,7 @@ export const DatingAppHero = defineCapsule({
             </div>
             <div className="relative lg:pl-8">
               <div className="relative">
-                <HeroImage
+                <HeroMediaPanel
                   alt={heroImageAlt}
                   w={800}
                   h={1000}

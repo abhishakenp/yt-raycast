@@ -84,7 +84,7 @@ export const InvestingFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'LinkedIn', 'Instagram']
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

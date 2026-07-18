@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import { ValuesGrid, ValuesCard } from '#/section-kit/ValuesGrid.tsx'
 
 /**
  * CafeValues — 4-up values / highlights grid for a cozy cafe / coffee shop
@@ -112,14 +112,19 @@ export const CafeValues = defineCapsule({
     ]
 
     return (
-      <FeatureGrid
-        features={items.map((v, i) => ({
-          ...v,
-          icon: valueIcons[i % valueIcons.length],
-        }))}
-        columns={4}
-        className={cn('bg-card pt-28 pb-20', props.className)}
-      />
+      <ValuesGrid cols="1-2-4" className={cn('bg-card pt-28 pb-20', props.className)}>
+        {items.map((v, i) => (
+          <ValuesCard key={v.title}>
+            <div className="flex flex-col items-center gap-3 p-6 text-center">
+              <div className="inline-flex size-12 items-center justify-center rounded-full bg-muted text-foreground">
+                {valueIcons[i % valueIcons.length]}
+              </div>
+              <h3 className="text-lg font-serif text-foreground">{v.title}</h3>
+              <p className="text-sm text-muted-foreground">{v.description}</p>
+            </div>
+          </ValuesCard>
+        ))}
+      </ValuesGrid>
     )
   },
 })

@@ -95,7 +95,7 @@ export const FurnitureStoreFooter = defineCapsule({
           'Accessibility',
           'Do Not Sell My Info',
         ]
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="currentColor"

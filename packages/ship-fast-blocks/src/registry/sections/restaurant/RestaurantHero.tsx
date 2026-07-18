@@ -9,7 +9,10 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
+  HeroCta,
+  HeroInfoStrip,
+  HeroInfoStripItem,
 } from '#/section-kit/HeroSection.tsx'
 import {
   RestaurantMutationSpinner,
@@ -94,7 +97,7 @@ export const RestaurantHero = defineCapsule({
 
           <HeroSubheading variant="light">{heroSub}</HeroSubheading>
 
-          <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
+          <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
             <RestaurantReservationButton
               lakebed={lakebed}
               input={{ label: heroPrimary, source: heroPrimaryTarget }}
@@ -103,18 +106,21 @@ export const RestaurantHero = defineCapsule({
             >
               {heroPrimary}
             </RestaurantReservationButton>
+            <HeroCta asChild
+              className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
+            >
             <button
               type="button"
               onClick={() => go(heroSecondaryTarget)}
-              className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
             >
               {heroSecondary}
             </button>
-          </HeroCtas>
+            </HeroCta>
+          </HeroActions>
 
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
+          <HeroInfoStrip>
             {infoItems.map((item, i) => (
-              <div key={item} className="flex items-center gap-x-4">
+              <HeroInfoStripItem key={item}>
                 {i > 0 && (
                   <span
                     aria-hidden="true"
@@ -122,9 +128,9 @@ export const RestaurantHero = defineCapsule({
                   />
                 )}
                 <span>{item}</span>
-              </div>
+              </HeroInfoStripItem>
             ))}
-          </div>
+          </HeroInfoStrip>
         </HeroContent>
       </HeroSection>
     )

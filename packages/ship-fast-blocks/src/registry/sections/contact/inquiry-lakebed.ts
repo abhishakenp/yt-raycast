@@ -85,7 +85,7 @@ export const inquiryLakebed = {
     }),
   },
   mutations: {
-    recordContactAction: inquiry.mutation((_ctx, input) => {
+    recordContactAction: inquiry.mutation((_ctx, input: InquiryActionInput) => {
       const label = clean(input.label) || 'Contact'
 
       _ctx.db.actions.insert({
@@ -97,7 +97,7 @@ export const inquiryLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt').all()
     }),
-    submitInquiry: inquiry.mutation((_ctx, input) => {
+    submitInquiry: inquiry.mutation((_ctx, input: InquirySubmissionInput) => {
       const fields = input.fields ?? {}
       const email = normalizeEmail(
         input.email || pickField(fields, ['email', 'emailAddress']),

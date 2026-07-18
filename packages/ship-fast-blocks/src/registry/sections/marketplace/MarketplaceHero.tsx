@@ -94,7 +94,7 @@ export const MarketplaceHero = defineCapsule({
       }),
     ])
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className ?? 'size-4'}
         viewBox="0 0 24 24"
@@ -109,7 +109,7 @@ export const MarketplaceHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

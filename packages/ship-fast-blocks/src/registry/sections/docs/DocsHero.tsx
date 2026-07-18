@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { docsLakebed } from './docs-lakebed.ts'
+import { docsLakebed, type DocsArticleRecord } from './docs-lakebed.ts'
 import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
 
 /**
@@ -184,7 +184,7 @@ export const DocsHero = defineCapsule({
 
     useSyncDocsCatalog(lakebed, articles)
 
-    const catalog = lakebed.useQuery('docsCatalog') ?? []
+    const catalog: DocsArticleRecord[] = lakebed.useQuery('docsCatalog') ?? []
     const articleCatalog: ReadonlyArray<{
       title: string
       slug: string
@@ -193,7 +193,7 @@ export const DocsHero = defineCapsule({
     }> = catalog.length ? catalog : articles
     const queryValue = docsSearch.state?.query ?? ''
     const activeQuery = queryValue.toLowerCase()
-    const matchesQuery = (article) => {
+    const matchesQuery = (article: Record<string, unknown>) => {
       const haystack = [
         article.title,
         article.slug,

@@ -61,7 +61,7 @@ export const CybersecurityNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get Demo'
     const ctaTarget = props.ctaTarget ?? 'Schedule Live Demo'
 
-    const ShieldMark = ({ className }) => (
+    const ShieldMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

@@ -4,8 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { TopicGrid, TopicIcon } from '#/section-kit/TopicGrid.tsx'
 
 /**
  * CommunityForumTopics — colorful topic / category directory grid for a
@@ -105,7 +105,7 @@ export const CommunityForumTopics = defineCapsule({
             subtitleClassName="text-lg"
             className="mx-auto mb-16 max-w-2xl gap-6"
           />
-          <ResponsiveGrid cols="1-2-4" gap="sm">
+          <TopicGrid cols="1-2-4" gap="sm">
             {items.map((topic, i) => (
               <Card
                 asChild
@@ -116,14 +116,14 @@ export const CommunityForumTopics = defineCapsule({
                 className="group text-left transition-all hover:border-foreground/20 hover:shadow-sm"
               >
                 <button type="button" onClick={() => go(topic.title)}>
-                  <div
+                  <TopicIcon
                     className={cn(
-                      'mb-4 flex size-10 items-center justify-center rounded-lg text-xl',
+                      'flex size-10 items-center justify-center text-xl',
                       topicTints[i % topicTints.length],
                     )}
                   >
                     <span aria-hidden="true">{topic.emoji}</span>
-                  </div>
+                  </TopicIcon>
                   <h4 className="mb-1 font-semibold text-card-foreground">
                     {topic.title}
                   </h4>
@@ -131,7 +131,7 @@ export const CommunityForumTopics = defineCapsule({
                 </button>
               </Card>
             ))}
-          </ResponsiveGrid>
+          </TopicGrid>
         </div>
       </section>
     )

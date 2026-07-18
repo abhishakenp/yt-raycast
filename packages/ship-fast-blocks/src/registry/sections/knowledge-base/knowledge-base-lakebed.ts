@@ -73,7 +73,7 @@ export const knowledgeBaseLakebed = {
     }),
   },
   mutations: {
-    setKbSearch: knowledgeBase.mutation((_ctx, input) => {
+    setKbSearch: knowledgeBase.mutation((_ctx, input: KnowledgeBaseSearchInput) => {
       const query = clean(input.query)
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
 
@@ -87,7 +87,7 @@ export const knowledgeBaseLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncKbArticles: knowledgeBase.mutation((_ctx, input) => {
+    syncKbArticles: knowledgeBase.mutation((_ctx, input: { items: KnowledgeBaseArticleInput[] }) => {
       const existing = _ctx.db.articles.orderBy('createdAt').all()
       const existingBySlug = new Map(
         existing.map((article) => [article.slug.toLowerCase(), article]),

@@ -85,7 +85,7 @@ export const LendingFooter = defineCapsule({
     const footerDisclosure =
       props.disclosure ??
       'ClearLoan Inc. NMLS ID #1234567. Loans are made by ClearLoan Inc. or lending partners. All loans are subject to credit approval. Your actual rate depends on credit score, loan amount, loan term, credit usage and history. Example: A $15,000 loan with an APR of 10.99% and 48 month term would have monthly payments of $384. The total amount paid would be $18,432. Annual percentage rates (APRs) through ClearLoan range from 6.99% to 24.99%.'
-    const Logo = ({ className }) => (
+    const Logo = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

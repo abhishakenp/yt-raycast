@@ -14,6 +14,11 @@ import { Card } from '#/section-kit/Card.tsx'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const LendingSteps = defineCapsule({
   name: 'LendingSteps',
   description:
@@ -59,7 +64,7 @@ export const LendingSteps = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
+      <StepTimeline className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -67,9 +72,9 @@ export const LendingSteps = defineCapsule({
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">{stepsDesc}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {stepItems.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <Card rounded="2xl" padding="lg" className="h-full">
                   <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
                     {i + 1}
@@ -112,11 +117,11 @@ export const LendingSteps = defineCapsule({
                     </svg>
                   </div>
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

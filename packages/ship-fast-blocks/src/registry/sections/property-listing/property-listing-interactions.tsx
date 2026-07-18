@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
@@ -102,7 +102,7 @@ export function usePropertyListingSearch(lakebed: PropertyListingLakebed) {
   const setPropertySearch = lakebed.useMutation('setPropertySearch')
 
   const submitSearch = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (setPropertySearch.isPending) return
 
@@ -117,7 +117,7 @@ export function usePropertyListingSearch(lakebed: PropertyListingLakebed) {
   )
 
   const chooseSearch = useCallback(
-    async (input) => {
+    async (input: PropertyListingSearchInput) => {
       if (setPropertySearch.isPending) return undefined
       return setPropertySearch(input)
     },
@@ -138,7 +138,7 @@ export function usePropertyListingActions(lakebed: PropertyListingLakebed) {
   const selectListing = lakebed.useMutation('selectListing')
 
   const save = useCallback(
-    async (input) => {
+    async (input: PropertyListingSaveInput) => {
       const key = input.address.trim()
       if (!key) return
       await saveListing.run(key, input)
@@ -147,7 +147,7 @@ export function usePropertyListingActions(lakebed: PropertyListingLakebed) {
   )
 
   const select = useCallback(
-    async (input) => {
+    async (input: PropertyListingSelectInput) => {
       if (selectListing.isPending) return
       await selectListing(input)
     },
@@ -388,7 +388,7 @@ export function PropertyListingMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?) => {
+    (target?: string) => {
       setOpen(false)
       go(target)
     },

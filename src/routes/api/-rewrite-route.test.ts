@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const generateTextMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path) => (options) => ({ options, path }),
+  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({ options, path }),
 }))
 
 vi.mock('@ship-fast/engine', () => ({

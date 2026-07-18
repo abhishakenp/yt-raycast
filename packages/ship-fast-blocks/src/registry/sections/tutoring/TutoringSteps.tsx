@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
 
 const DEFAULT_STEPS: { title: string; description: string }[] = [
   {
@@ -50,7 +51,7 @@ export const TutoringSteps = defineCapsule({
     const steps = props.steps?.length ? props.steps : DEFAULT_STEPS
 
     return (
-      <section
+      <StepTimeline
         className={cn(
           'bg-muted/30 pt-28 pb-20 sm:pt-32 sm:pb-24',
           props.className,
@@ -64,7 +65,10 @@ export const TutoringSteps = defineCapsule({
           />
           <ol className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, i) => (
-              <li key={step.title} className="relative flex flex-col gap-4">
+              <StepItem
+                key={step.title}
+                className="relative flex flex-col gap-4"
+              >
                 {i < steps.length - 1 ? (
                   <span
                     className="absolute left-6 top-6 hidden h-px w-full bg-border lg:block"
@@ -82,11 +86,11 @@ export const TutoringSteps = defineCapsule({
                     {step.description}
                   </p>
                 </Card>
-              </li>
+              </StepItem>
             ))}
           </ol>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

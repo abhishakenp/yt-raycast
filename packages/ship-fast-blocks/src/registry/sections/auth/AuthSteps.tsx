@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 
 /**
  * AuthSteps — bespoke three-step drop-in integration guide for Authly, a developer
@@ -65,7 +66,7 @@ export const AuthSteps = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background', props.className)}>
+      <StepTimeline className={cn('bg-background', props.className)}>
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
           <SectionHeading
             title={heading}
@@ -73,7 +74,7 @@ export const AuthSteps = defineCapsule({
             align="center"
           />
 
-          <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
+          <StepTimelineGrid columns={3} className="mt-14 grid-cols-1 gap-8">
             {steps.filter(Boolean).map((step, i) => (
               <Card
                 key={step.title}
@@ -96,9 +97,9 @@ export const AuthSteps = defineCapsule({
                 )}
               </Card>
             ))}
-          </div>
+          </StepTimelineGrid>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

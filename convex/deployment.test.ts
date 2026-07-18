@@ -297,7 +297,7 @@ test('public preview by deployment slug auto-refreshes after an edited preview r
 test.each([
   [
     'theme',
-    async (t, sessionId) =>
+    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
       await t.mutation(api.sessions.setThemeOverride, {
         sessionId,
         anonymousOwnerSecret: 'owner-secret',
@@ -307,7 +307,7 @@ test.each([
   ],
   [
     'language',
-    async (t, sessionId) =>
+    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
       await t.mutation(api.sessions.setPreferredLanguage, {
         sessionId,
         anonymousOwnerSecret: 'owner-secret',
@@ -316,7 +316,7 @@ test.each([
   ],
   [
     'brand',
-    async (t, sessionId) =>
+    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
       await t.mutation(api.sessions.setBrandLogo, {
         sessionId,
         anonymousOwnerSecret: 'owner-secret',

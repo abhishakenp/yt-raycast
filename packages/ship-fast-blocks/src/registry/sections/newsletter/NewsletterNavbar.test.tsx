@@ -14,9 +14,6 @@ type SubscriberSummary = ReturnType<
   typeof newsletterLakebed.queries.subscriberSummary
 >
 type Subscriber = SubscriberSummary['subscribers'][number]
-type SubscribeInput = Parameters<
-  typeof newsletterLakebed.mutations.subscribe
->[1]
 
 const navigate = vi.fn()
 const lakebedRef: { current: NewsletterLakebed | null } = { current: null }
@@ -45,16 +42,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -102,11 +99,11 @@ function createNewsletterLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const row = (input, index) => ({
+  const row = (input: Record<string, unknown>, index: number) => ({
     createdAt: now,
-    email: input.email.trim().toLowerCase(),
+    email: String(input.email).trim().toLowerCase(),
     id: `subscriber-${index}`,
-    source: input.source ?? '',
+    source: String(input.source ?? ''),
     updatedAt: now,
   })
 
@@ -131,12 +128,12 @@ function createNewsletterLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
 
         try {
-          const email = input.email.trim().toLowerCase()
+          const email = String(input.email).trim().toLowerCase()
           if (email) {
             const existing = subscribers.find(
               (subscriber) => subscriber.email === email,
@@ -165,7 +162,7 @@ function createNewsletterLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

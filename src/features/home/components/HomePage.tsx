@@ -266,7 +266,7 @@ export const HomePage = () => {
   useEffect(() => {
     if (!privateModalOpen) return
 
-    const onKeyDown = (event) => {
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setPrivateModalOpen(false)
     }
 
@@ -432,11 +432,11 @@ export const HomePage = () => {
     }
   }, [errorMessage, refreshShareBonusStatus, shareBonusClaimed])
 
-  const onShareClick = (platform) => {
+  const onShareClick = (platform: string) => {
     void handleShareClick(platform, claimShareBonus)
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const form = event.currentTarget
@@ -456,12 +456,12 @@ export const HomePage = () => {
     })
   }
 
-  const handleExamplePrompt = (value) => {
+  const handleExamplePrompt = (value: string) => {
     selectExamplePrompt(value)
     void submitPrompt({ prompt: value, engineVersion })
   }
 
-  const handlePreferredLanguageChange = (value) => {
+  const handlePreferredLanguageChange = (value: string) => {
     const normalized = normalizeLanguageCode(value) || 'en'
     setLanguageOptions(buildFocusedLanguageOptions(normalized))
     setPreferredLanguage(normalized)
@@ -478,14 +478,14 @@ export const HomePage = () => {
     setPromptSuggestActive(0)
   }
 
-  const applyPromptSuggestion = (value) => {
+  const applyPromptSuggestion = (value: string) => {
     if (!value) return
     closePromptSuggestions()
     suppressSuggestionsRef.current = true
     setPrompt(value)
   }
 
-  const handlePromptKeyDown = (event) => {
+  const handlePromptKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
     if (promptSuggestionsOpen) {
       if (event.key === 'ArrowDown') {
         event.preventDefault()
@@ -525,7 +525,7 @@ export const HomePage = () => {
     }
   }
 
-  const handleHeroCardPointerMove = (event) => {
+  const handleHeroCardPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const card = event.currentTarget
     const rect = card.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
@@ -540,7 +540,7 @@ export const HomePage = () => {
     )
   }
 
-  const handleHeroCardPointerLeave = (event) => {
+  const handleHeroCardPointerLeave = (event: PointerEvent<HTMLDivElement>) => {
     event.currentTarget.style.setProperty('--hero-glow-x', '30%')
     event.currentTarget.style.setProperty('--hero-glow-y', '20%')
   }

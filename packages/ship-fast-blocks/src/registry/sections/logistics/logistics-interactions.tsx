@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 
@@ -53,7 +52,7 @@ export function useShipmentTracking(lakebed: LogisticsLakebed) {
   const setTrackingSearch = lakebed.useMutation('setTrackingSearch')
 
   const submitTracking = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (setTrackingSearch.isPending) return
 
@@ -69,7 +68,7 @@ export function useShipmentTracking(lakebed: LogisticsLakebed) {
   )
 
   const chooseTracking = useCallback(
-    (input) => {
+    (input: LogisticsTrackingInput) => {
       if (setTrackingSearch.isPending) return
       void setTrackingSearch(input)
     },

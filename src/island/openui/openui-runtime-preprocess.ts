@@ -3,7 +3,7 @@ function transformOutsideQuotedStrings(
   transform: (segment: string) => string,
 ): string {
   const quotedSegments: string[] = []
-  const tokenFor = (index) => `\uE000${index}\uE001`
+  const tokenFor = (index: number) => `\uE000${index}\uE001`
   let masked = ''
 
   let index = 0
@@ -371,10 +371,10 @@ function forceGaplessSectionBandStack(code: string): string {
     (match, prefix, inner, tail) => {
       const children = inner
         .split(',')
-        .map((c) => c.trim())
+        .map((c: string) => c.trim())
         .filter(Boolean)
       if (children.length === 0) return match
-      if (!children.every((c) => anchors.has(c))) return match
+      if (!children.every((c: string) => anchors.has(c))) return match
       return `${prefix}Stack([${children.join(', ')}], "col", "none")${tail}`
     },
   )

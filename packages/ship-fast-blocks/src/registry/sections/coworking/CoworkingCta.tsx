@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import { CtaBand, CtaAction } from '#/section-kit/CtaBand.tsx'
 
 /**
  * CoworkingCta — luminous closing band for a coworking or shared-workspace
@@ -96,13 +96,13 @@ export const CoworkingCta = defineCapsule({
             />
             <span className="relative">{primaryCta}</span>
           </button>
-          <button
-            type="button"
+          <CtaAction
+            variant="secondary"
             onClick={() => go(props.secondaryTarget ?? secondaryCta)}
             className="inline-flex items-center justify-center rounded-2xl border border-primary-foreground/30 px-8 py-4 text-base font-medium text-primary-foreground transition-colors duration-300 hover:bg-primary-foreground/10"
           >
             {secondaryCta}
-          </button>
+          </CtaAction>
         </div>
       </CtaBand>
     )

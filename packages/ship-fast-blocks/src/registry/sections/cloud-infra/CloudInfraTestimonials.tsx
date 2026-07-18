@@ -66,7 +66,7 @@ export const CloudInfraTestimonials = defineCapsule({
               'Professional headshot of Dr. Marcus Johnson, founder of healthcare startup',
           },
         ]
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 20 20"

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, waitFor } from '@testing-library/react'
-import { createElement } from 'react'
+import { createElement, type ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const translationMocks = vi.hoisted(() => ({
@@ -14,7 +14,7 @@ const translationMocks = vi.hoisted(() => ({
 vi.mock('@ship-fast/blocks/runtime', () => ({
   useQuery: vi.fn(),
   QueryClient: class {},
-  QueryClientProvider: ({ children }) => children,
+  QueryClientProvider: ({ children }: { children?: ReactNode }) => children,
 }))
 vi.mock('./chrome-translator', () => ({
   translateOnDevice: translationMocks.translateOnDevice,
@@ -191,7 +191,7 @@ describe('translation shimmer removal', () => {
       } as Response
     }) as unknown as typeof fetch
 
-    const renderPreview = (locale) =>
+    const renderPreview = (locale: string) =>
       createElement(
         I18nProvider,
         { locale },
@@ -406,7 +406,7 @@ describe('translation shimmer removal', () => {
 
   it('uses the browser translation batch for small native-locale previews', async () => {
     translationMocks.translateOnDeviceBatch.mockImplementation(async (texts) =>
-      texts.map((text) => `स्थानीय ${text}`),
+      texts.map((text: string) => `स्थानीय ${text}`),
     )
     const bodies: unknown[] = []
     globalThis.fetch = vi.fn(async (_input, init) => {
@@ -462,7 +462,7 @@ describe('translation shimmer removal', () => {
       return {
         ok: true,
         json: async () => ({
-          translations: (body.texts ?? []).map((text) => `मॉडल ${text}`),
+          translations: (body.texts ?? []).map((text: string) => `मॉडल ${text}`),
         }),
       } as Response
     }) as unknown as typeof fetch
@@ -500,7 +500,7 @@ describe('translation shimmer removal', () => {
 
   it('persists browser translations without a model-backed texts request', async () => {
     translationMocks.translateOnDeviceBatch.mockImplementation(async (texts) =>
-      texts.map((text) => `स्थानीय ${text}`),
+      texts.map((text: string) => `स्थानीय ${text}`),
     )
     const bodies: unknown[] = []
     globalThis.fetch = vi.fn(async (_input, init) => {

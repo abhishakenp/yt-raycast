@@ -73,7 +73,7 @@ export const LendingStats = defineCapsule({
     const statsReviewAvatarAlt =
       props.reviewAvatarAlt ??
       'professional headshot of a smiling woman with brown hair in business attire'
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

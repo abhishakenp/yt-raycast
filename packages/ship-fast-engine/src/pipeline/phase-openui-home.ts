@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import { writeFileSync, existsSync, readFileSync } from 'node:fs'
 import { runHomepageOrchestrator } from '../genui/run.ts'
+import type { GenUIEvent } from '../genui/events.ts'
 import { renderPreviewToWorkspace } from '../renderers/index.ts'
 import { saveSiteSpec } from '../spec/index.ts'
 // @ts-ignore - JS module without type definitions
@@ -39,7 +40,7 @@ function upsertManifest(
     }
   }
   if (!manifest.pages) manifest.pages = []
-  manifest.pages = manifest.pages.filter((p) => p.route !== route)
+  manifest.pages = manifest.pages.filter((p: unknown) => (p as Record<string, unknown>).route !== route)
   manifest.pages.push({
     route,
     title,
@@ -127,7 +128,7 @@ export async function generateAndWriteOpenUIHome(p: {
   let localeName = forcedLocale || 'en'
   const brandSoFar = projectTitle(p.siteSpec, p.prompt)
 
-  const onEvent = (event) => {
+  const onEvent = (event: GenUIEvent) => {
     if (event.type === 'theme') {
       log(`  genui: theme → ${event.name}`)
     } else if (event.type === 'locale') {
@@ -143,7 +144,7 @@ export async function generateAndWriteOpenUIHome(p: {
   // Do not expose that partial source as the preview: it renders with interim
   // skeleton/theme state and can be captured by thumbnails before final colors
   // are applied. The completed source is persisted and broadcast below.
-  const onSource = (accumulated) => {
+  const onSource = (accumulated: string) => {
     if (!accumulated.trim()) return
   }
 

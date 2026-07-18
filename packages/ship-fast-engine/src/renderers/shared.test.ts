@@ -149,7 +149,7 @@ async function compileExactCloneComponent(
     module,
     // eslint-disable-next-line import/no-commonjs
     module.exports,
-    (specifier) => {
+    (specifier: unknown) => {
       if (specifier === 'react') return React
       if (specifier === 'react/jsx-runtime') return ReactJsxRuntime
       throw new Error(`Unexpected import: ${specifier}`)
@@ -203,7 +203,7 @@ async function renderExactCloneAndClickLinks(
     for (const id of ['hash', 'mail', 'external']) {
       dom.window.document
         .getElementById(id)
-        ?.addEventListener('click', (event) => event.preventDefault())
+        ?.addEventListener('click', (event: React.MouseEvent<HTMLElement>) => event.preventDefault())
     }
 
     fireEvent.click(dom.window.document.getElementById('internal')!)

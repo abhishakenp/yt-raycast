@@ -155,7 +155,7 @@ export {
   OverviewStat,
   OverviewStatValue,
   OverviewStatLabel,
-  OverviewImagePanel,
+  OverviewMediaPanel,
 } from './OverviewSection.tsx'
 export {
   HeroSection,
@@ -165,10 +165,11 @@ export {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroCta,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
   HeroStats,
   HeroStat,
   HeroStatValue,
@@ -177,6 +178,11 @@ export {
   heroBadgeVariants,
   heroHeadingVariants,
   heroSubheadingVariants,
+  HeroCodeWindow,
+  HeroCodeWindowHeader,
+  HeroCodeWindowBody,
+  HeroInfoStrip,
+  HeroInfoStripItem,
 } from './HeroSection.tsx'
 export { LogoStrip } from './LogoStrip.tsx'
 export {
@@ -205,6 +211,47 @@ export {
   ScheduleDetail,
   scheduleListVariants,
 } from './ScheduleList.tsx'
+
+export {
+  SubscribeBand,
+  SubscribeForm,
+  SubscribeInput,
+  SubscribeHeading,
+  SubscribeDescription,
+  SubscribeFineprint,
+  subscribeBandVariants,
+} from './SubscribeBand.tsx'
+
+export {
+  TopicGrid,
+  TopicCard,
+  TopicIcon,
+  topicGridVariants,
+} from './TopicGrid.tsx'
+
+export {
+  MenuList,
+  MenuCategory,
+  MenuItem,
+  MenuItemPrice,
+  MenuItemDescription,
+  menuListVariants,
+} from './MenuList.tsx'
+
+export {
+  CategoryGrid,
+  CategoryCard,
+  CategoryIcon,
+  categoryGridVariants,
+} from './CategoryGrid.tsx'
+
+export {
+  PressList,
+  PressItem,
+  PressQuote,
+  PressAttribution,
+  pressListVariants,
+} from './PressList.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

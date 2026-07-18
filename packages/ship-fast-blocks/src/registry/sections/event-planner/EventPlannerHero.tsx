@@ -8,8 +8,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
   HeroStats,
   HeroStat,
   HeroStatValue,
@@ -101,7 +101,7 @@ export const EventPlannerHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 max-w-lg">
                 {heroSub}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-4">
                 <InquiryActionButton
                   lakebed={lakebed}
                   label={heroPrimary}
@@ -125,7 +125,7 @@ export const EventPlannerHero = defineCapsule({
                 >
                   {heroSecondary}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <HeroStats className="mt-12 flex items-center gap-8 pt-8">
                 {heroStats.map((s) => (
                   <HeroStat key={s.label}>
@@ -139,7 +139,7 @@ export const EventPlannerHero = defineCapsule({
             </div>
             <div className="order-1 lg:order-2">
               <div className="relative">
-                <HeroImage
+                <HeroMediaPanel
                   alt={heroImageAlt}
                   w={800}
                   h={1000}

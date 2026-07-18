@@ -93,7 +93,7 @@ export const CybersecurityFooter = defineCapsule({
       : ['Twitter', 'LinkedIn', 'GitHub']
     const homeTarget = props.homeTarget ?? 'Platform'
 
-    const ShieldMark = ({ className }) => (
+    const ShieldMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"

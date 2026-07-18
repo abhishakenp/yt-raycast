@@ -320,7 +320,7 @@ export const govPortalLakebed = {
       }
       return { lang: next }
     }),
-    submitGrievance: govPortal.mutation((ctx, input) => {
+    submitGrievance: govPortal.mutation((ctx, input: GrievanceInput) => {
       const subject = clean(input.subject)
       const name = clean(input.name)
       if (!name || !subject) return ctx.db.grievances.orderBy('createdAt').all()
@@ -337,7 +337,7 @@ export const govPortalLakebed = {
 
       return ctx.db.grievances.orderBy('createdAt', 'desc').all()
     }),
-    registerVendor: govPortal.mutation((ctx, input) => {
+    registerVendor: govPortal.mutation((ctx, input: VendorInput) => {
       const company = clean(input.company)
       if (!company) return ctx.db.vendors.orderBy('createdAt').all()
 
@@ -365,7 +365,7 @@ export const govPortalLakebed = {
 
       return ctx.db.vendors.orderBy('createdAt', 'desc').all()
     }),
-    submitBid: govPortal.mutation((ctx, input) => {
+    submitBid: govPortal.mutation((ctx, input: BidInput) => {
       const tenderNit = clean(input.tenderNit)
       if (!tenderNit) return ctx.db.bids.orderBy('createdAt').all()
 
@@ -379,7 +379,7 @@ export const govPortalLakebed = {
 
       return ctx.db.bids.orderBy('createdAt', 'desc').all()
     }),
-    createRfxPayment: govPortal.mutation((ctx, input) => {
+    createRfxPayment: govPortal.mutation((ctx, input: RfxPaymentInput) => {
       const rfxNo = clean(input.rfxNo)
       if (!rfxNo) return ctx.db.rfxPayments.orderBy('createdAt').all()
 

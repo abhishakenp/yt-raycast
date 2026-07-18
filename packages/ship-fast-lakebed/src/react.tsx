@@ -351,7 +351,7 @@ function useOptionalConvexQuery(query: unknown, args: unknown): unknown {
       return
     }
     const watch = (
-      convex as {
+      convex as unknown as {
         watchQuery: (
           q: unknown,
           a: unknown,
@@ -532,6 +532,7 @@ export function useKeyedLakebedMutation<
   LakebedMutationsOf<NonNullable<TDefinition>>[TName]
 > {
   const mutation = lakebed.useMutation(name)
+  type RawMutation = LakebedMutationsOf<NonNullable<TDefinition>>[TName]
   const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
   const pendingKeySetRef = useRef(new Set<string>())
   const queuedKeySetRef = useRef(new Set<string>())
@@ -541,7 +542,7 @@ export function useKeyedLakebedMutation<
   }, [])
 
   const run = useCallback(
-    async (key, ...args) => {
+    async (key: string, ...args: MutationArgs<RawMutation>) => {
       if (queuedKeySetRef.current.has(key)) return undefined
 
       queuedKeySetRef.current.add(key)
@@ -575,7 +576,7 @@ export function useKeyedLakebedMutation<
   )
 
   const isPending = useCallback(
-    (key) => pendingKeys.includes(key),
+    (key: string) => pendingKeys.includes(key),
     [pendingKeys],
   )
 
@@ -718,7 +719,7 @@ export function createLakebedClient<
       >[typeof name]
 
       const runMutationWithLifecycle = useCallback(
-        async (lifecycle, ...args) => {
+        async (lifecycle: LakebedMutationLifecycle | undefined, ...args: MutationArgs<ActiveMutation>) => {
           setLastError(null)
 
           if (!handler) {
@@ -737,13 +738,13 @@ export function createLakebedClient<
                 const baseData = (coordinator.data ??
                   data ??
                   {}) as LakebedDataOf<NonNullable<TDefinition>>
-                const rememberMergedData = async (patch) => {
-                  const nextData = await setData(patch)
+                const rememberMergedData = async (patch: Record<string, unknown>) => {
+                  const nextData = await setData(patch as Partial<LakebedDataOf<NonNullable<TDefinition>>>)
                   coordinator.data = nextData as JsonRecord
                   return nextData
                 }
-                const rememberReplacedData = async (nextData) => {
-                  const replacedData = await replaceData(nextData)
+                const rememberReplacedData = async (nextData: unknown) => {
+                  const replacedData = await replaceData(nextData as LakebedDataOf<NonNullable<TDefinition>>)
                   coordinator.data = replacedData as JsonRecord
                   return replacedData
                 }
@@ -805,7 +806,7 @@ export function createLakebedClient<
         setLastError(null)
       }, [])
       const mutation = useMemo(() => {
-        const run = (...args) => runMutationWithLifecycle(undefined, ...args)
+        const run = (...args: MutationArgs<ActiveMutation>) => runMutationWithLifecycle(undefined, ...args)
         const mutationState: Pick<
           LakebedMutationFunction<ActiveMutation>,
           | 'isPending'
@@ -818,7 +819,7 @@ export function createLakebedClient<
           lastError: null,
           pendingCount: 0,
           reset,
-          runWithLifecycle: (lifecycle, ...args) =>
+          runWithLifecycle: (lifecycle: LakebedMutationLifecycle, ...args: MutationArgs<ActiveMutation>) =>
             runMutationWithLifecycle(lifecycle, ...args),
         }
         return Object.assign(run, mutationState)

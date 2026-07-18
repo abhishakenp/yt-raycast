@@ -9,8 +9,8 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -89,7 +89,7 @@ export const PetVeterinaryHero = defineCapsule({
           { title: 'Open 7 days', subtitle: '8AM - 8PM daily' },
         ]
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -107,7 +107,7 @@ export const PetVeterinaryHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -124,7 +124,7 @@ export const PetVeterinaryHero = defineCapsule({
       </svg>
     )
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -164,7 +164,7 @@ export const PetVeterinaryHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 lg:text-xl">
                 {heroSub}
               </HeroSubheading>
-              <HeroCtas className="mb-12 flex-col gap-4 sm:flex-row">
+              <HeroActions className="mb-12 flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -180,7 +180,7 @@ export const PetVeterinaryHero = defineCapsule({
                 >
                   {heroSecondary}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex flex-wrap items-center gap-8 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
@@ -211,7 +211,7 @@ export const PetVeterinaryHero = defineCapsule({
 
             <div className="relative">
               <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-                <HeroImage alt={heroImageAlt} w={800} h={600} />
+                <HeroMediaPanel alt={heroImageAlt} w={800} h={600} />
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent"

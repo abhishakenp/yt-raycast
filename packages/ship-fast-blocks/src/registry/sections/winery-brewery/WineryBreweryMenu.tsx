@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
 import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MenuList } from '#/section-kit/MenuList.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -162,6 +163,7 @@ export const WineryBreweryMenu = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <MenuList>
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -208,6 +210,7 @@ export const WineryBreweryMenu = defineCapsule({
               </div>
             ))}
           </div>
+        </MenuList>
         </div>
       </section>
     )

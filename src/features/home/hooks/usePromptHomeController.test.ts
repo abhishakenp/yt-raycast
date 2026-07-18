@@ -49,7 +49,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 
 vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => ({
-    mutation: async (ref, payload) => {
+    mutation: async (ref: unknown, payload: unknown) => {
       const state = (
         globalThis as typeof globalThis & {
           __shipFastPromptHomeControllerState?: PromptHomeControllerTestState

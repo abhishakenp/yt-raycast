@@ -7,8 +7,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
   HeroStats,
   HeroStat,
   HeroStatValue,
@@ -123,7 +123,7 @@ export const FurnitureStoreHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 max-w-md">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -139,7 +139,7 @@ export const FurnitureStoreHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <HeroStats className="mt-12 flex gap-8 pt-8">
                 {stats.map((s: { value: string; label: string }) => (
                   <HeroStat key={s.label}>
@@ -152,7 +152,7 @@ export const FurnitureStoreHero = defineCapsule({
               </HeroStats>
             </div>
             <div className="relative order-1 h-[50vh] lg:order-2 lg:h-auto">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={1200}
                 h={800}

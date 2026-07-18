@@ -302,13 +302,13 @@ describe('inline edit export artifact invalidation release regressions', () => {
   it.each([
     {
       name: 'style',
-      editType: 'style',
+      editType: 'style' as const,
       beforeText: 'hero-card',
       afterText: 'color: red;',
     },
     {
       name: 'image',
-      editType: 'image',
+      editType: 'image' as const,
       beforeText: 'Hero image',
       afterText: 'https://new.example/hero.jpg',
     },

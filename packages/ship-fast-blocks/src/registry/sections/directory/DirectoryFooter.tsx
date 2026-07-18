@@ -78,7 +78,7 @@ export const DirectoryFooter = defineCapsule({
     const copyright =
       props.copyright ?? '© 2024 LocalFindr. All rights reserved.'
     const homeTarget = props.homeTarget ?? 'Home'
-    const PinLogo = ({ className }) => (
+    const PinLogo = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"

@@ -5,6 +5,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import { PressList } from '#/section-kit/PressList.tsx'
 
 /**
  * FurnitureStorePress — a slim "featured in" press / publication-logo strip. A
@@ -32,22 +33,24 @@ export const FurnitureStorePress = defineCapsule({
       ? props.logos
       : ['ArchDigest', 'DWELL', 'House Beautiful', 'Elle Decor', 'DOMINO']
     return (
-      <section
-        className={cn('border-b border-border py-12', props.className)}
-        aria-label="Featured in"
-      >
-        <Container>
-          <LogoStrip
-            lead={label}
-            logos={logos}
-            layout="flex"
-            logoStyle="text-bold"
-            onClickLogo={(logo) => go(logo)}
-            leadClassName="text-center text-sm text-muted-foreground normal-case font-normal tracking-normal"
-            logoClassName="font-serif text-lg text-muted-foreground/60"
-          />
-        </Container>
-      </section>
+      <PressList asChild>
+        <section
+          className={cn('border-b border-border py-12', props.className)}
+          aria-label="Featured in"
+        >
+          <Container>
+            <LogoStrip
+              lead={label}
+              logos={logos}
+              layout="flex"
+              logoStyle="text-bold"
+              onClickLogo={(logo) => go(logo)}
+              leadClassName="text-center text-sm text-muted-foreground normal-case font-normal tracking-normal"
+              logoClassName="font-serif text-lg text-muted-foreground/60"
+            />
+          </Container>
+        </section>
+      </PressList>
     )
   },
 })

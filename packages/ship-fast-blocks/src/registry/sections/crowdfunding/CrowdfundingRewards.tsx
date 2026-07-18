@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { RewardList, RewardItem } from '#/section-kit/RewardList.tsx'
 
 /**
  * CrowdfundingRewards — a 4-tier REWARDS / pledge grid with a stretch-goals
@@ -148,7 +149,7 @@ export const CrowdfundingRewards = defineCapsule({
           },
         ]
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"
@@ -211,14 +212,14 @@ export const CrowdfundingRewards = defineCapsule({
                 <p className="mb-6 text-sm text-muted-foreground">
                   {tier.description}
                 </p>
-                <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
+                <RewardList className="mb-6 space-y-2 text-sm text-muted-foreground">
                   {tier.perks.map((perk) => (
-                    <li key={perk} className="flex items-center gap-2">
+                    <RewardItem key={perk} className="flex items-center gap-2">
                       <Check className="size-4 shrink-0 text-primary" />
                       {perk}
-                    </li>
+                    </RewardItem>
                   ))}
-                </ul>
+                </RewardList>
                 <button
                   type="button"
                   onClick={() => go(tier.name)}

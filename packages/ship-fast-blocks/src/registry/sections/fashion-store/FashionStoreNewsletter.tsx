@@ -3,11 +3,11 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  NewsletterCta,
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -50,7 +50,7 @@ export const FashionStoreNewsletter = defineCapsule({
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         variant="default"
         aria-label="Newsletter signup"
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
@@ -77,7 +77,7 @@ export const FashionStoreNewsletter = defineCapsule({
             {nlDisclaimer}
           </NewsletterCtaFineprint>
         </div>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

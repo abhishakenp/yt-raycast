@@ -60,7 +60,7 @@ export function useEditController(sessionId: string) {
    *  FORBIDDEN retry, translation caching, in-flight refcount, and error
    *  handling all live here so the UI handlers and the AI stay behaviourally
    *  identical. `applyEdit` is a thin wrapper that builds the command first. */
-  const applyCommand = async (command) => {
+  const applyCommand = async (command: CreateInlineEditCommand) => {
     const {
       editType,
       targetLabel,
@@ -153,13 +153,13 @@ export function useEditController(sessionId: string) {
   }
 
   const applyEdit = async (
-    editType,
-    targetLabel,
-    beforeText,
-    afterText,
-    instruction,
-    afterHtml?,
-    occurrenceIndex?,
+    editType: 'text' | 'ai_rewrite' | 'style' | 'image',
+    targetLabel?: string,
+    beforeText?: string,
+    afterText?: string,
+    instruction?: string,
+    afterHtml?: string,
+    occurrenceIndex?: number,
   ) =>
     applyCommand(
       buildCreateEditCommand(
@@ -219,7 +219,7 @@ export function useEditController(sessionId: string) {
     }
   }
 
-  const restoreVersion = async (version) => {
+  const restoreVersion = async (version: number) => {
     setEditError(undefined)
     setIsEditing(true)
 

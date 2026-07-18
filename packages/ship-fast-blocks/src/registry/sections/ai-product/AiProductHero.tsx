@@ -6,9 +6,9 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
@@ -82,7 +82,7 @@ export const AiProductHero = defineCapsule({
       ? props.previewActions
       : ['Use this', 'Try again', 'Make shorter']
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -99,7 +99,7 @@ export const AiProductHero = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -135,7 +135,7 @@ export const AiProductHero = defineCapsule({
               <HeroSubheading className="mb-8 max-w-xl sm:text-xl">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
                 <SaasPlanActionButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -179,15 +179,15 @@ export const AiProductHero = defineCapsule({
                   </svg>
                   {secondaryCta}
                 </SaasPlanActionButton>
-              </HeroCtas>
-              <HeroTrustRow className="mt-0 gap-6">
+              </HeroActions>
+              <HeroSocialProof className="mt-0 gap-6">
                 {trust.map((t) => (
-                  <HeroTrustItem key={t}>
+                  <HeroSocialProofItem key={t}>
                     <Check className="size-5 text-primary" />
                     <span>{t}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
 
             {/* Preview card */}

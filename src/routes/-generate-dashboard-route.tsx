@@ -53,7 +53,7 @@ export const GenerateRoute = () => {
   }, [sessionId])
 
   const navigateToPage = useCallback(
-    (pageSlug) => {
+    (pageSlug: string | null) => {
       const baseUrl = `/generate/${sessionId}`
       const targetUrl = pageSlug ? `${baseUrl}/${pageSlug}` : baseUrl
       // pushState does NOT fire popstate — TanStack Router won't intervene,

@@ -45,7 +45,7 @@ export const HealthcareCta = defineCapsule({
     const note =
       props.note ?? 'No-commitment consultation. Most insurance plans accepted.'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

@@ -5,11 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StorySplit,
-  StorySplitGrid,
-  StorySplitContent,
-  StorySplitBody,
-} from '#/section-kit/StorySplit.tsx'
+  SplitStory,
+  SplitStoryGrid,
+  SplitStoryContent,
+  SplitStoryBody,
+} from '#/section-kit/SplitStory.tsx'
 
 /**
  * WriterAuthorAbout — a two-column "About" band for a literary author site.
@@ -44,13 +44,13 @@ export const WriterAuthorAbout = defineCapsule({
     ]
 
     return (
-      <StorySplit
+      <SplitStory
         className={cn(
           'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
           props.className,
         )}
       >
-        <StorySplitGrid className="mx-auto max-w-7xl px-6 lg:px-8 lg:gap-12">
+        <SplitStoryGrid className="mx-auto max-w-7xl px-6 lg:px-8 lg:gap-12">
           <Image
             alt={props.portraitAlt ?? 'author portrait black and white'}
             w={640}
@@ -58,20 +58,20 @@ export const WriterAuthorAbout = defineCapsule({
             className="w-full rounded-2xl border border-border object-cover"
           />
 
-          <StorySplitContent>
+          <SplitStoryContent>
             <SectionHeading
               align="left"
               eyebrow={props.eyebrow ?? 'About'}
               title={props.heading ?? 'On writing and a life of letters'}
             />
-            <StorySplitBody className="mt-6 space-y-4 font-serif text-lg leading-relaxed text-muted-foreground">
+            <SplitStoryBody className="mt-6 space-y-4 font-serif text-lg leading-relaxed text-muted-foreground">
               {paragraphs.map((paragraph, i) => (
                 <p key={i}>{paragraph}</p>
               ))}
-            </StorySplitBody>
-          </StorySplitContent>
-        </StorySplitGrid>
-      </StorySplit>
+            </SplitStoryBody>
+          </SplitStoryContent>
+        </SplitStoryGrid>
+      </SplitStory>
     )
   },
 })

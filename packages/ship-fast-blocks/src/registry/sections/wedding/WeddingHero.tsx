@@ -9,7 +9,7 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 
 export const WeddingHero = defineCapsule({
@@ -72,7 +72,7 @@ export const WeddingHero = defineCapsule({
             {subheading}
           </HeroSubheading>
 
-          <HeroCtas className="mt-10 flex-col gap-3 sm:flex-row">
+          <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryTarget)}
@@ -87,7 +87,7 @@ export const WeddingHero = defineCapsule({
             >
               {secondaryCta}
             </button>
-          </HeroCtas>
+          </HeroActions>
         </HeroContent>
       </HeroSection>
     )

@@ -263,7 +263,7 @@ export function LocalServiceMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?) => {
+    (target: string) => {
       setOpen(false)
       go(target)
     },

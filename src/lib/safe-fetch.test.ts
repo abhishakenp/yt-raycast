@@ -15,8 +15,10 @@ function mockResponse(init: MockResponseInit): Response {
   }
   const textImpl =
     typeof init.text === 'function' ? init.text : async () => init.text ?? ''
-  const jsonImpl =
-    typeof init.json === 'function' ? init.json : async () => init.json
+  const jsonImpl: () => Promise<unknown> =
+    typeof init.json === 'function'
+      ? (init.json as () => Promise<unknown>)
+      : async () => init.json
 
   return {
     headers: {

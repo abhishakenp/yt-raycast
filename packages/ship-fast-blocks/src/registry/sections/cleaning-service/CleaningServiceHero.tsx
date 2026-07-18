@@ -10,10 +10,10 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import {
   LocalServiceBookingButton,
@@ -87,7 +87,7 @@ export const CleaningServiceHero = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="20"
         height="20"
@@ -134,7 +134,7 @@ export const CleaningServiceHero = defineCapsule({
               <HeroSubheading className="mt-0 max-w-lg">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
                 <LocalServiceBookingButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -155,20 +155,20 @@ export const CleaningServiceHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
-              <HeroTrustRow className="mt-0 gap-6">
+              </HeroActions>
+              <HeroSocialProof className="mt-0 gap-6">
                 {trustBadges.map((item) => (
-                  <HeroTrustItem key={item}>
+                  <HeroSocialProofItem key={item}>
                     <span className="text-primary">
                       <CheckCircle />
                     </span>
                     <span>{item}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

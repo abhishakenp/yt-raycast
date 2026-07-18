@@ -19,14 +19,6 @@ type TestProduct = {
   subtitle?: string
 }
 
-type TestMutationInput = {
-  id?: string
-  label?: string
-  price?: string
-  products?: TestProduct[]
-  query?: string
-  selectedLabel?: string
-}
 
 type TestLakebed = ReturnType<typeof createCommerceLakebedStub>['lakebed']
 
@@ -55,16 +47,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -142,7 +134,7 @@ function createCommerceLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const findItem = (input) =>
+  const findItem = (input: Record<string, unknown>) =>
     state.items.find(
       (item) =>
         (input.id && item.id === input.id) ||
@@ -167,7 +159,7 @@ function createCommerceLakebedStub() {
         userId: 'guest:local',
       },
     }),
-    useQuery: (name) => {
+    useQuery: (name: string) => {
       useSyncExternalStore(
         (listener) => {
           listeners.add(listener)
@@ -190,14 +182,14 @@ function createCommerceLakebedStub() {
       }
       return null
     },
-    useMutation: (name) => {
+    useMutation: (name: string) => {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => {
         setLastError(null)
       }, [])
       const runMutation = useCallback(
-        async (input) => {
+        async (input: Record<string, unknown>) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
 
@@ -290,7 +282,7 @@ function createCommerceLakebedStub() {
       )
       const initialLastError: unknown | null = null
       const mutation = useMemo(() => {
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

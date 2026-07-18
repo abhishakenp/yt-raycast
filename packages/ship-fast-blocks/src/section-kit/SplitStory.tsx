@@ -16,7 +16,7 @@ const storySplitVariants = cva('', {
   },
 })
 
-const StorySplit = React.forwardRef<
+const SplitStory = React.forwardRef<
   HTMLElement,
   React.ComponentProps<'section'> &
     VariantProps<typeof storySplitVariants> & { asChild?: boolean }
@@ -31,9 +31,9 @@ const StorySplit = React.forwardRef<
     />
   )
 })
-StorySplit.displayName = 'StorySplit'
+SplitStory.displayName = 'SplitStory'
 
-const StorySplitGrid = React.forwardRef<
+const SplitStoryGrid = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'>
 >(({ className, ...props }, ref) => (
@@ -47,9 +47,9 @@ const StorySplitGrid = React.forwardRef<
     {...props}
   />
 ))
-StorySplitGrid.displayName = 'StorySplitGrid'
+SplitStoryGrid.displayName = 'SplitStoryGrid'
 
-const StorySplitImages = React.forwardRef<
+const SplitStoryMedia = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'>
 >(({ className, ...props }, ref) => (
@@ -60,9 +60,9 @@ const StorySplitImages = React.forwardRef<
     {...props}
   />
 ))
-StorySplitImages.displayName = 'StorySplitImages'
+SplitStoryMedia.displayName = 'SplitStoryMedia'
 
-const StorySplitImageTile = React.forwardRef<
+const SplitStoryImageTile = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & { offset?: boolean }
 >(({ className, offset = false, ...props }, ref) => (
@@ -77,9 +77,9 @@ const StorySplitImageTile = React.forwardRef<
     {...props}
   />
 ))
-StorySplitImageTile.displayName = 'StorySplitImageTile'
+SplitStoryImageTile.displayName = 'SplitStoryImageTile'
 
-const StorySplitContent = React.forwardRef<
+const SplitStoryContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'>
 >(({ className, ...props }, ref) => (
@@ -90,9 +90,9 @@ const StorySplitContent = React.forwardRef<
     {...props}
   />
 ))
-StorySplitContent.displayName = 'StorySplitContent'
+SplitStoryContent.displayName = 'SplitStoryContent'
 
-const StorySplitEyebrow = React.forwardRef<
+const SplitStoryEyebrow = React.forwardRef<
   HTMLParagraphElement,
   React.ComponentProps<'p'>
 >(({ className, ...props }, ref) => (
@@ -106,9 +106,9 @@ const StorySplitEyebrow = React.forwardRef<
     {...props}
   />
 ))
-StorySplitEyebrow.displayName = 'StorySplitEyebrow'
+SplitStoryEyebrow.displayName = 'SplitStoryEyebrow'
 
-const StorySplitHeading = React.forwardRef<
+const SplitStoryHeading = React.forwardRef<
   HTMLHeadingElement,
   React.ComponentProps<'h2'>
 >(({ className, ...props }, ref) => (
@@ -122,9 +122,9 @@ const StorySplitHeading = React.forwardRef<
     {...props}
   />
 ))
-StorySplitHeading.displayName = 'StorySplitHeading'
+SplitStoryHeading.displayName = 'SplitStoryHeading'
 
-const StorySplitBody = React.forwardRef<
+const SplitStoryBody = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'>
 >(({ className, ...props }, ref) => (
@@ -135,9 +135,9 @@ const StorySplitBody = React.forwardRef<
     {...props}
   />
 ))
-StorySplitBody.displayName = 'StorySplitBody'
+SplitStoryBody.displayName = 'SplitStoryBody'
 
-const StorySplitFooter = React.forwardRef<
+const SplitStoryFooter = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'>
 >(({ className, ...props }, ref) => (
@@ -148,17 +148,33 @@ const StorySplitFooter = React.forwardRef<
     {...props}
   />
 ))
-StorySplitFooter.displayName = 'StorySplitFooter'
+SplitStoryFooter.displayName = 'SplitStoryFooter'
+
+/* ---------- SplitStoryFeatures ---------- */
+
+const SplitStoryFeatures = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentProps<'ul'>
+>(({ className, ...props }, ref) => (
+  <ul
+    data-slot="story-split-features"
+    className={cn('mt-6 space-y-3', className)}
+    ref={ref}
+    {...props}
+  />
+))
+SplitStoryFeatures.displayName = 'SplitStoryFeatures'
 
 export {
-  StorySplit,
-  StorySplitGrid,
-  StorySplitImages,
-  StorySplitImageTile,
-  StorySplitContent,
-  StorySplitEyebrow,
-  StorySplitHeading,
-  StorySplitBody,
-  StorySplitFooter,
+  SplitStory,
+  SplitStoryGrid,
+  SplitStoryMedia,
+  SplitStoryImageTile,
+  SplitStoryContent,
+  SplitStoryEyebrow,
+  SplitStoryHeading,
+  SplitStoryBody,
+  SplitStoryFooter,
+  SplitStoryFeatures,
   storySplitVariants,
 }

@@ -14,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { EventList, EventCard, EventDate, EventDetails } from '#/section-kit/EventList.tsx'
 export const MusicFestivalSchedule = defineCapsule({
   name: 'MusicFestivalSchedule',
   description:
@@ -169,38 +170,38 @@ export const MusicFestivalSchedule = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
+          <EventList className="grid gap-8 md:grid-cols-3">
             {days.map((day) => (
-              <Card
-                key={day.name}
-                variant="default"
-                rounded="xl"
-                padding="none"
-                className="overflow-hidden"
-              >
-                <div className="bg-primary p-6 text-primary-foreground">
-                  <p className="mb-1 text-sm opacity-70">{day.label}</p>
-                  <h3 className="text-2xl font-bold">{day.name}</h3>
-                  <p className="mt-1 text-sm opacity-70">{day.date}</p>
-                </div>
-                <div className="space-y-4 p-6">
-                  {(day.items ?? []).map((item) => (
-                    <div
-                      key={item.title}
-                      className="flex items-start justify-between"
-                    >
-                      <div>
-                        <p className="font-semibold">{item.title}</p>
-                        <p className="text-sm text-card-foreground/60">
-                          {item.detail}
-                        </p>
+              <EventCard asChild key={day.name}>
+                <Card
+                  variant="default"
+                  rounded="xl"
+                  padding="none"
+                  className="overflow-hidden"
+                >
+                  <div className="bg-primary p-6 text-primary-foreground">
+                    <p className="mb-1 text-sm opacity-70">{day.label}</p>
+                    <h3 className="text-2xl font-bold">{day.name}</h3>
+                    <p className="mt-1 text-sm opacity-70">{day.date}</p>
+                  </div>
+                  <div className="space-y-4 p-6">
+                    {(day.items ?? []).map((item) => (
+                      <div
+                        key={item.title}
+                        className="flex items-start justify-between"
+                      >
+                        <EventDetails>
+                          <p className="font-semibold">{item.title}</p>
+                          <p className="text-sm text-card-foreground/60">
+                            {item.detail}
+                          </p>
+                        </EventDetails>
+                        <EventDate className="text-sm font-medium text-primary">
+                          {item.time}
+                        </EventDate>
                       </div>
-                      <span className="text-sm font-medium text-primary">
-                        {item.time}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
                 <div className="px-6 pb-6">
                   <button
                     type="button"
@@ -210,9 +211,10 @@ export const MusicFestivalSchedule = defineCapsule({
                     {day.cta}
                   </button>
                 </div>
-              </Card>
+                </Card>
+              </EventCard>
             ))}
-          </div>
+          </EventList>
         </Container>
       </section>
     )

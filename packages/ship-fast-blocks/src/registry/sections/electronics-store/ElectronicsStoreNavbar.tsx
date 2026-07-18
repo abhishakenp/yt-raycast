@@ -58,7 +58,7 @@ export const ElectronicsStoreNavbar = defineCapsule({
     const utilityButtonClass =
       'p-2 text-muted-foreground transition-colors hover:text-foreground'
 
-    const BoltMark = ({ className }) => (
+    const BoltMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-foreground text-background',

@@ -7,8 +7,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -54,7 +54,7 @@ export const MusicArtistHero = defineCapsule({
       props.imageAlt ??
       'Minimalist album cover showing a misty mountain landscape at dawn with soft neutral tones'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"
@@ -91,7 +91,7 @@ export const MusicArtistHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 lg:text-xl">
                 {description}
               </HeroSubheading>
-              <HeroCtas className="gap-4">
+              <HeroActions className="gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -107,10 +107,10 @@ export const MusicArtistHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
+              </HeroActions>
             </div>
             <div className="order-1 lg:order-2">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={800}

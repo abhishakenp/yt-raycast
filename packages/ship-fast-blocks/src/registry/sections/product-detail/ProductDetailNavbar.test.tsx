@@ -52,16 +52,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -113,7 +113,7 @@ function createCommerceLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const findItem = (input) =>
+  const findItem = (input: Record<string, unknown>) =>
     state.items.find(
       (item) =>
         (input.id && item.id === input.id) ||
@@ -158,13 +158,13 @@ function createCommerceLakebedStub() {
         setLastError(null)
       }, [])
       const runMutation = useCallback(
-        async (input) => {
+        async (input: Record<string, unknown>) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
 
           try {
             if (name === 'addItem') {
-              const label = input?.label ?? 'Item'
+              const label = (input?.label as string) || 'Item'
               const existing = findItem({ label })
               state = {
                 ...state,
@@ -179,7 +179,7 @@ function createCommerceLakebedStub() {
                       {
                         id: `item-${state.items.length + 1}`,
                         label,
-                        price: input?.price,
+                        price: input?.price as string | undefined,
                         quantity: 1,
                       },
                     ],
@@ -219,7 +219,7 @@ function createCommerceLakebedStub() {
         [name],
       )
       const mutation = useMemo(() => {
-        const callable = ((input) => runMutation(input)) as ReturnType<
+        const callable = ((input: Record<string, unknown>) => runMutation(input)) as ReturnType<
           TestLakebed['useMutation']
         >
         callable.isPending = false

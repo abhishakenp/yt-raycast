@@ -45,7 +45,7 @@ export const AnalyticsSidebar = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const auth = lakebed.useAuth()
-    const unreadCount = lakebed.useQuery('unreadNotificationCount') ?? 0
+    const unreadCount = (lakebed.useQuery('unreadNotificationCount') ?? 0) as number
     const brand = props.brand ?? 'DataFlow'
     const nav = props.nav?.length
       ? props.nav

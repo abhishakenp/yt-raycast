@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 
 import { Card } from '#/section-kit/Card.tsx'
-import { GovFormTable } from '#/section-kit/GovFormTable.tsx'
+import { GovFormTable, GovFormRow, GovFormHeader, GovFormBody } from '#/section-kit/GovFormTable.tsx'
 import { cn } from '#/lib/utils.ts'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
@@ -457,15 +457,21 @@ function StatusList({
       padding="sm"
       className="bg-muted/30 p-5"
     >
-      <h3 className="mb-3 text-sm font-semibold text-foreground">{title}</h3>
+      <GovFormHeader asChild>
+        <h3 className="mb-3 text-sm font-semibold text-foreground">{title}</h3>
+      </GovFormHeader>
       {rows.length ? (
+        <GovFormBody asChild>
         <ul className="space-y-2 text-xs text-muted-foreground">
           {rows.slice(0, 8).map((row, i) => (
-            <li key={i} className="truncate">
-              {render(row)}
-            </li>
+            <GovFormRow asChild key={i}>
+              <li className="truncate">
+                {render(row)}
+              </li>
+            </GovFormRow>
           ))}
         </ul>
+        </GovFormBody>
       ) : (
         <p className="text-xs text-muted-foreground">
           {pickLang(lang, 'No records yet.', 'अभी कोई रिकॉर्ड नहीं।')}

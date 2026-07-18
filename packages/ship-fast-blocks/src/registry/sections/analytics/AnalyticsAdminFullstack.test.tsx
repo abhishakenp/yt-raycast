@@ -13,10 +13,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AnalyticsHeader } from './AnalyticsHeader.tsx'
 import { AnalyticsSidebar } from './AnalyticsSidebar.tsx'
 import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
-import type {
-  AnalyticsActionInput,
-  AnalyticsNotificationInput,
-} from './analytics-admin-lakebed.ts'
 
 type AnalyticsAdminLakebed = LakebedClientRuntime<typeof analyticsAdminLakebed>
 
@@ -105,7 +101,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -141,11 +137,12 @@ function createAnalyticsAdminLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const syncNotifications = (notifications) => {
+  const syncNotifications = (notifications: readonly unknown[]) => {
     const nextNotifications = [...state.notifications]
 
     for (const notification of notifications) {
-      const message = notification.message.trim()
+      const notif = notification as Record<string, unknown>
+      const message = (notif.message as string).trim()
       if (!message) continue
 
       const existingIndex = nextNotifications.findIndex(
@@ -158,8 +155,8 @@ function createAnalyticsAdminLakebedStub() {
             ? nextNotifications[existingIndex].id
             : `notification-${nextNotifications.length + 1}`,
         message,
-        read: notification.read ?? 'false',
-        type: notification.type ?? 'info',
+        read: (notif.read as string) ?? 'false',
+        type: (notif.type as string) ?? 'info',
         updatedAt: timestamp,
       }
 
@@ -172,7 +169,7 @@ function createAnalyticsAdminLakebedStub() {
 
     state = { ...state, notifications: nextNotifications }
   }
-  const recordAction = (input) => {
+  const recordAction = (input: Record<string, unknown>) => {
     state = {
       ...state,
       actions: [
@@ -180,15 +177,15 @@ function createAnalyticsAdminLakebedStub() {
         {
           createdAt: timestamp,
           id: `action-${state.actions.length + 1}`,
-          label: input.label,
-          query: input.query ?? '',
-          source: input.source ?? '',
+          label: input.label as string,
+          query: (input.query as string) ?? "",
+          source: (input.source as string) ?? "",
           updatedAt: timestamp,
         },
       ],
     }
   }
-  const markNotificationRead = (id) => {
+  const markNotificationRead = (id: string) => {
     state = {
       ...state,
       notifications: state.notifications.map((notification) =>
@@ -269,11 +266,11 @@ function createAnalyticsAdminLakebedStub() {
         lastError,
         pendingCount,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
           try {
-            markNotificationRead(input.id)
+            markNotificationRead(input.id as string)
             notify()
             return state.notifications
           } catch (error) {
@@ -321,11 +318,11 @@ function createAnalyticsAdminLakebedStub() {
         lastError,
         pendingCount,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
           try {
-            syncNotifications(input.notifications)
+            syncNotifications(input.notifications as readonly unknown[])
             notify()
             return state.notifications
           } catch (error) {
@@ -347,7 +344,7 @@ function createAnalyticsAdminLakebedStub() {
         lastError,
         pendingCount,
         reset,
-        runMutation: useCallback(async (input) => {
+        runMutation: useCallback(async (input: Record<string, unknown>) => {
           setPendingCount((count) => count + 1)
           setLastError(null)
           try {

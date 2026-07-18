@@ -12,6 +12,11 @@ import { cn } from '#/lib/utils.ts'
  * with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const JobBoardSteps = defineCapsule({
   name: 'JobBoardSteps',
   description:
@@ -56,7 +61,7 @@ export const JobBoardSteps = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted/40 py-20', props.className)}>
+      <StepTimeline className={cn('bg-muted/40 py-20', props.className)}>
         <Container>
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground">
@@ -66,13 +71,13 @@ export const JobBoardSteps = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="relative grid gap-8 md:grid-cols-3">
+          <StepTimelineGrid columns={3} className="relative gap-8">
             <div
               aria-hidden="true"
               className="absolute left-1/6 right-1/6 top-16 hidden h-0.5 bg-border md:block"
             />
             {items.map((step, i) => (
-              <div key={step.title} className="relative text-center">
+              <StepItem key={step.title} className="relative text-center">
                 <div className="relative z-10 mx-auto mb-6 grid size-12 place-items-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
                   {i + 1}
                 </div>
@@ -82,11 +87,11 @@ export const JobBoardSteps = defineCapsule({
                 <p className="leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

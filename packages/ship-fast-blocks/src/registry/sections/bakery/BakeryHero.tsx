@@ -7,8 +7,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -163,7 +163,7 @@ export const BakeryHero = defineCapsule({
                   {subheading}
                 </HeroSubheading>
               </div>
-              <HeroCtas className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryTarget)}
@@ -193,7 +193,7 @@ export const BakeryHero = defineCapsule({
                 >
                   {addLabel}
                 </CommerceAddItemButton>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <span className="text-primary">
@@ -210,7 +210,7 @@ export const BakeryHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

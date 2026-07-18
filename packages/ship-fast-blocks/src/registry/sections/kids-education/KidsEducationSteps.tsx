@@ -15,6 +15,11 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const KidsEducationSteps = defineCapsule({
   name: 'KidsEducationSteps',
   description:
@@ -74,7 +79,7 @@ export const KidsEducationSteps = defineCapsule({
       'bg-secondary/15 text-secondary-foreground',
       'bg-accent/15 text-accent-foreground',
     ]
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -91,7 +96,7 @@ export const KidsEducationSteps = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-muted/40 py-24', props.className)}>
+      <StepTimeline className={cn('bg-muted/40 py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <Eyebrow
@@ -106,9 +111,9 @@ export const KidsEducationSteps = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="rounded-3xl bg-card p-8 shadow-sm transition-shadow hover:shadow-lg">
                   <div
                     className={cn(
@@ -139,11 +144,11 @@ export const KidsEducationSteps = defineCapsule({
                     <ArrowRight className="size-12 text-border" />
                   </div>
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { FormField } from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { BookingForm } from '#/section-kit/BookingForm.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useHotelAvailabilitySubmission } from './hotel-resort-interactions.tsx'
 import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
@@ -97,12 +98,13 @@ export const HotelResortBooking = defineCapsule({
       'w-full rounded-md border border-input bg-background px-4 py-3 text-sm text-foreground transition-colors focus:border-ring focus:outline-none'
 
     return (
-      <section
-        className={cn(
-          'bg-foreground py-24 text-background lg:py-28',
-          props.className,
-        )}
-      >
+      <BookingForm asChild>
+        <section
+          className={cn(
+            'bg-foreground py-24 text-background lg:py-28',
+            props.className,
+          )}
+        >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <SectionHeading
             eyebrow={eyebrow}
@@ -186,7 +188,8 @@ export const HotelResortBooking = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      </BookingForm>
     )
   },
 })

@@ -4,7 +4,6 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { directoryLakebed } from './directory-lakebed.ts'
 import { useDirectorySearch } from './directory-interactions.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * DirectoryCategories — browse-by-category tile grid for a local-business
@@ -18,6 +17,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * marketplaces, or city guides.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { CategoryGrid, CategoryCard, CategoryIcon } from '#/section-kit/CategoryGrid.tsx'
 export const DirectoryCategories = defineCapsule({
   name: 'DirectoryCategories',
   description:
@@ -84,7 +84,7 @@ export const DirectoryCategories = defineCapsule({
             count: '2,100 listings',
           },
         ]
-    const ChevronRight = ({ className }) => (
+    const ChevronRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -218,37 +218,37 @@ export const DirectoryCategories = defineCapsule({
             </p>
           </div>
 
-          <ResponsiveGrid cols="2-3-4" gap="sm" className="sm:gap-6">
+          <CategoryGrid cols="2-3-4" gap="sm" className="sm:gap-6">
             {items.map((cat, i) => (
-              <button
-                key={cat.title}
-                type="button"
-                aria-pressed={directorySearch.state?.category === cat.title}
-                onClick={() =>
-                  directorySearch.chooseSearch({
-                    category: cat.title,
-                    query: '',
-                  })
-                }
-                className="group rounded-xl border border-border bg-background p-6 text-left transition-all hover:border-muted-foreground/40 hover:shadow-sm"
-              >
-                <div
-                  className={cn(
-                    'mb-4 flex size-12 items-center justify-center rounded-lg transition-transform group-hover:scale-110',
-                    categoryTints[i % categoryTints.length],
-                  )}
+              <CategoryCard asChild key={cat.title}>
+                <button
+                  type="button"
+                  aria-pressed={directorySearch.state?.category === cat.title}
+                  onClick={() =>
+                    directorySearch.chooseSearch({
+                      category: cat.title,
+                      query: '',
+                    })
+                  }
+                  className="group rounded-xl border border-border bg-background p-6 text-left transition-all hover:border-muted-foreground/40 hover:shadow-sm"
                 >
-                  <span className="size-6 [&>svg]:size-6">
-                    {categoryIcons[i % categoryIcons.length]}
-                  </span>
-                </div>
-                <h3 className="mb-1 font-semibold text-foreground">
-                  {cat.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{cat.count}</p>
-              </button>
+                  <CategoryIcon
+                    className={cn(
+                      categoryTints[i % categoryTints.length],
+                    )}
+                  >
+                    <span className="size-6 [&>svg]:size-6">
+                      {categoryIcons[i % categoryIcons.length]}
+                    </span>
+                  </CategoryIcon>
+                  <h3 className="mb-1 font-semibold text-foreground">
+                    {cat.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{cat.count}</p>
+                </button>
+              </CategoryCard>
             ))}
-          </ResponsiveGrid>
+          </CategoryGrid>
 
           <div className="mt-10 text-center">
             <button

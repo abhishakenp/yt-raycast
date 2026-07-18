@@ -307,7 +307,7 @@ const themeVarKeys = [
 
 function buildThemeStyle(styles: ThemeStyles | null, isDark: boolean): string {
   if (!styles) return ''
-  const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
+  const merged: Record<string, string> = { ...styles.light, ...(isDark ? styles.dark : {}) }
   return themeVarKeys
     .map((key) => {
       const value = merged[key]
@@ -319,7 +319,7 @@ function buildThemeStyle(styles: ThemeStyles | null, isDark: boolean): string {
 
 function buildTailwindThemeStyle(styles: ThemeStyles | null): string {
   if (!styles) return ''
-  const merged = { ...styles.light, ...styles.dark }
+  const merged: Record<string, string> = { ...styles.light, ...styles.dark }
   const declarations = themeVarKeys
     .flatMap((key) => {
       if (merged[key] == null) return []
@@ -475,7 +475,7 @@ function resolveRouteTarget(
   )
   if (exact) return exact.path
 
-  const find = (pattern) =>
+  const find = (pattern: RegExp) =>
     routes.find((route) => pattern.test(normalizeRouteTarget(route.label)))
   const byKeyword =
     (/shop|store|product|buy|cart|order|browse|collection/.test(normalized) &&
@@ -702,7 +702,7 @@ function topLevelDeclarationNames(statement: ts.Statement): string[] {
 
 function collectIdentifierTexts(node: ts.Node): Set<string> {
   const identifiers = new Set<string>()
-  const visit = (current) => {
+  const visit = (current: ts.Node) => {
     if (ts.isIdentifier(current)) identifiers.add(current.text)
     ts.forEachChild(current, visit)
   }
@@ -1337,7 +1337,7 @@ function readSourceEndpointDefinitions(
   )
   const endpoints: LakebedEndpointDefinition[] = []
 
-  const visit = (node) => {
+  const visit = (node: ts.Node) => {
     if (
       ts.isCallExpression(node) &&
       node.expression.getText(sourceFile) === 'endpoint'
@@ -4126,7 +4126,7 @@ function stripGeneratedOwnedTypes(files: Record<string, string>): void {
     }
 
     function transformSourceFile(sourceFile: ts.SourceFile): ts.SourceFile {
-      return ts.visitNode(sourceFile, visit) ?? sourceFile
+      return (ts.visitNode(sourceFile, visit) as ts.SourceFile) ?? sourceFile
     }
 
     return transformSourceFile

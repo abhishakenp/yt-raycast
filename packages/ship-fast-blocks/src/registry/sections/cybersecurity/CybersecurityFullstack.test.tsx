@@ -161,7 +161,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -221,7 +221,7 @@ function createCybersecurityLakebedStub({
       total: state.intents.length,
     }
   }
-  const recordIntent = ({ input, type }) => {
+  const recordIntent = ({ input, type }: { input: { label: string; plan?: string; source?: string; [key: string]: unknown }; type: string }) => {
     state = {
       ...state,
       intents: [
@@ -231,7 +231,7 @@ function createCybersecurityLakebedStub({
           id: `intent-${state.intents.length + 1}`,
           label: input.label,
           plan: input.plan ?? input.label,
-          source: input.source ?? '',
+          source: String(input.source ?? ''),
           type,
           updatedAt: timestamp,
         },

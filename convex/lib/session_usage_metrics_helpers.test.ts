@@ -33,7 +33,7 @@ type UserUsageMetricsArgs = {
 
 type UsageMetricRecord = Doc<'usageMetrics'>
 type ReadLog = {
-  table: 'usageMetrics'
+  table: string
   indexName?: string
   direction?: 'asc' | 'desc'
   limit: number

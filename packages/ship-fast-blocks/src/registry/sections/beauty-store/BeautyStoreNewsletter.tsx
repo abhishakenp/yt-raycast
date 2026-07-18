@@ -8,11 +8,11 @@ import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.t
 
 import { Container } from '#/section-kit/Container.tsx'
 import {
-  NewsletterCta,
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 
 /**
  * BeautyStoreNewsletter — a dark newsletter CTA band for a beauty / skincare /
@@ -61,7 +61,7 @@ export const BeautyStoreNewsletter = defineCapsule({
     const submitTarget = props.submitTarget ?? submit
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         variant="inverted"
         className={cn('py-20 lg:py-28', props.className)}
       >
@@ -103,7 +103,7 @@ export const BeautyStoreNewsletter = defineCapsule({
             </div>
           </div>
         </Container>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

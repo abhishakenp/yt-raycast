@@ -163,7 +163,7 @@ export const MobileAppPricing = defineCapsule({
         }),
       ),
     )
-    const CheckIcon = ({ className }) => (
+    const CheckIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -177,7 +177,7 @@ export const MobileAppPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
-    const CrossIcon = ({ className }) => (
+    const CrossIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

@@ -166,7 +166,7 @@ export function EventMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
   const navigate = useCallback(
-    (target?) => {
+    (target: string) => {
       setOpen(false)
       go(target)
     },

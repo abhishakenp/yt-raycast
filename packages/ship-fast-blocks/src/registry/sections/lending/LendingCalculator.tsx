@@ -16,6 +16,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * loan, debt-consolidation, or financing pages. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { LoanCalculator, LoanDisplay } from '#/section-kit/LoanCalculator.tsx'
 export const LendingCalculator = defineCapsule({
   name: 'LendingCalculator',
   description:
@@ -137,8 +138,9 @@ export const LendingCalculator = defineCapsule({
     const inputCls =
       'w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring'
     return (
-      <section className={cn('py-24 lg:py-28', props.className)}>
-        <Container>
+      <LoanCalculator asChild>
+        <section className={cn('py-24 lg:py-28', props.className)}>
+          <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {calcHeading}
@@ -240,7 +242,7 @@ export const LendingCalculator = defineCapsule({
                     </div>
                   </div>
                 </div>
-                <div className="border-t border-border bg-muted p-8 lg:border-l lg:border-t-0 lg:p-10">
+                <LoanDisplay className="border-t border-border bg-muted p-8 lg:border-l lg:border-t-0 lg:p-10">
                   <h3 className="mb-6 text-lg font-semibold text-foreground">
                     {calcOfferTitle}
                   </h3>
@@ -295,12 +297,13 @@ export const LendingCalculator = defineCapsule({
                       </p>
                     </div>
                   </div>
-                </div>
+                </LoanDisplay>
               </div>
             </div>
           </div>
         </Container>
-      </section>
+        </section>
+      </LoanCalculator>
     )
   },
 })

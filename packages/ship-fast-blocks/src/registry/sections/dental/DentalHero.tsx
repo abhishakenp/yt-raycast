@@ -9,10 +9,10 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import {
   LocalServiceBookingButton,
@@ -81,7 +81,7 @@ export const DentalHero = defineCapsule({
           'Professional headshot of Dr. Emily Watson, female dentist with warm approachable smile',
         ]
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -92,7 +92,7 @@ export const DentalHero = defineCapsule({
       </svg>
     )
 
-    const PhoneIcon = ({ className }) => (
+    const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -131,7 +131,7 @@ export const DentalHero = defineCapsule({
               <HeroSubheading className="mx-auto mb-8 mt-0 max-w-xl lg:mx-0">
                 {heroSub}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+              <HeroActions className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                 <LocalServiceBookingButton
                   lakebed={lakebed}
                   intentLabel={heroPrimary}
@@ -164,10 +164,10 @@ export const DentalHero = defineCapsule({
                   <PhoneIcon className="size-5" />
                   {heroPhone}
                 </button>
-              </HeroCtas>
-              <HeroTrustRow className="mt-10 justify-center gap-6 lg:justify-start">
+              </HeroActions>
+              <HeroSocialProof className="mt-10 justify-center gap-6 lg:justify-start">
                 {heroBadges.map((b) => (
-                  <HeroTrustItem key={b}>
+                  <HeroSocialProofItem key={b}>
                     <svg
                       viewBox="0 0 20 20"
                       fill="currentColor"
@@ -181,12 +181,12 @@ export const DentalHero = defineCapsule({
                       />
                     </svg>
                     <span>{b}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={heroImageAlt}
                 w={1200}
                 h={900}

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card, FilterChip } from '#/section-kit/index.ts'
+import { JobList, JobItem } from '#/section-kit/JobList.tsx'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import {
   jobBoardCatalogItem,
@@ -146,7 +147,7 @@ export const JobBoardJobs = defineCapsule({
     const appliedRoles = new Set(
       jobActions.applications.map((application) => application.role),
     )
-    const matchesSearch = (job) => {
+    const matchesSearch = (job: (typeof items)[number]) => {
       const haystack = [job.role, job.company, job.description, ...job.tags]
         .join(' ')
         .toLowerCase()
@@ -160,7 +161,7 @@ export const JobBoardJobs = defineCapsule({
     }
     const matchingItems = items.filter(matchesSearch)
     const visibleItems = matchingItems.slice(0, visibleCount)
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"
@@ -234,11 +235,12 @@ export const JobBoardJobs = defineCapsule({
               : ''}
           </p>
 
-          <div className="space-y-4">
+          <JobList className="space-y-4">
             {visibleItems.map((job) => {
               const applied = appliedRoles.has(job.role)
               const pending = pendingRole === job.role
               return (
+                <JobItem asChild key={job.role}>
                 <Card
                   key={job.role}
                   className="group transition-all hover:border-foreground/30 hover:shadow-lg"
@@ -317,6 +319,7 @@ export const JobBoardJobs = defineCapsule({
                     </div>
                   </div>
                 </Card>
+                </JobItem>
               )
             })}
             {!visibleItems.length ? (
@@ -324,7 +327,7 @@ export const JobBoardJobs = defineCapsule({
                 No jobs match the current search.
               </div>
             ) : null}
-          </div>
+          </JobList>
 
           <div className="mt-10 text-center">
             <button

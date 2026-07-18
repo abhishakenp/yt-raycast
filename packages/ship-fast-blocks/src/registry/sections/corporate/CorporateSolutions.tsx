@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { Card } from '#/section-kit/Card.tsx'
+import { SolutionGrid, SolutionCard } from '#/section-kit/SolutionGrid.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -177,7 +178,7 @@ export const CorporateSolutions = defineCapsule({
         <path d="M9 12l2 2 4-4" />
       </svg>,
     ]
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
         height="16"
@@ -193,7 +194,7 @@ export const CorporateSolutions = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-    const sectionHead = (title, desc) => (
+    const sectionHead = (title: string, desc: string) => (
       <div className="mx-auto mb-16 max-w-3xl text-center">
         <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
           {title}
@@ -205,8 +206,9 @@ export const CorporateSolutions = defineCapsule({
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
           {sectionHead(heading, description)}
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <SolutionGrid cols="1-md-2-3" className="grid gap-8">
             {items.map((item, i) => (
+              <SolutionCard asChild key={item.title}>
               <Card
                 key={item.title}
                 variant="muted"
@@ -231,8 +233,9 @@ export const CorporateSolutions = defineCapsule({
                   <ArrowRight className="ml-1 size-4" />
                 </button>
               </Card>
+              </SolutionCard>
             ))}
-          </div>
+          </SolutionGrid>
         </Container>
       </section>
     )

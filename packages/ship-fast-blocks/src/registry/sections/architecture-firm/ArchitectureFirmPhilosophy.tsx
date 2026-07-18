@@ -7,10 +7,10 @@ import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import {
-  StorySplit,
-  StorySplitGrid,
-  StorySplitContent,
-} from '#/section-kit/StorySplit.tsx'
+  SplitStory,
+  SplitStoryGrid,
+  SplitStoryContent,
+} from '#/section-kit/SplitStory.tsx'
 
 /**
  * ArchitectureFirmPhilosophy — split approach / philosophy section for an
@@ -129,13 +129,13 @@ export const ArchitectureFirmPhilosophy = defineCapsule({
     ]
 
     return (
-      <StorySplit
+      <SplitStory
         aria-labelledby="architecture-firm-philosophy-heading"
         className={cn('bg-card py-24 lg:py-28', props.className)}
       >
         <Container>
-          <StorySplitGrid className="gap-16 lg:gap-24">
-            <StorySplitContent className="space-y-0">
+          <SplitStoryGrid className="gap-16 lg:gap-24">
+            <SplitStoryContent className="space-y-0">
               <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
                 {eyebrow}
               </p>
@@ -163,7 +163,7 @@ export const ArchitectureFirmPhilosophy = defineCapsule({
                   </div>
                 ))}
               </div>
-            </StorySplitContent>
+            </SplitStoryContent>
 
             <div className="relative">
               <Image
@@ -182,9 +182,9 @@ export const ArchitectureFirmPhilosophy = defineCapsule({
                 </p>
               </div>
             </div>
-          </StorySplitGrid>
+          </SplitStoryGrid>
         </Container>
-      </StorySplit>
+      </SplitStory>
     )
   },
 })

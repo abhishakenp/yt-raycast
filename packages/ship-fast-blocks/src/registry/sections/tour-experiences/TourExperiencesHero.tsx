@@ -10,7 +10,7 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -101,7 +101,7 @@ export const TourExperiencesHero = defineCapsule({
             >
               {subheading}
             </HeroSubheading>
-            <HeroCtas className="mt-10 flex-col gap-3 sm:flex-row">
+            <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryTarget)}
@@ -116,7 +116,7 @@ export const TourExperiencesHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </HeroCtas>
+            </HeroActions>
           </div>
 
           <div className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-background/20 pt-8">

@@ -49,7 +49,7 @@ export const FitnessHero = defineCapsule({
       'athletic woman performing barbell back squat in modern gym with natural lighting'
     const heroQuote = props.quote ?? "Best fitness decision I've made"
     const heroQuoteAuthor = props.quoteAuthor ?? 'Sarah Chen, member since 2022'
-    const CheckIcon = ({ className }) => (
+    const CheckIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"

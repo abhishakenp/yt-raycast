@@ -7,8 +7,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 const PodcastHeroProps = z.object({
@@ -77,7 +77,7 @@ export const PodcastHero = defineCapsule({
               {subheading}
             </HeroSubheading>
 
-            <HeroCtas className="flex-col gap-4 sm:flex-row">
+            <HeroActions className="flex-col gap-4 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryTarget)}
@@ -92,7 +92,7 @@ export const PodcastHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </HeroCtas>
+            </HeroActions>
 
             <div className="flex flex-wrap gap-2 pt-2">
               {platforms.filter(Boolean).map((platform: string) => (
@@ -112,7 +112,7 @@ export const PodcastHero = defineCapsule({
               className="absolute -inset-6 rounded-3xl bg-primary/10 blur-2xl"
             />
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={coverAlt}
                 w={640}
                 h={640}

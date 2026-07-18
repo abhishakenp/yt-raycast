@@ -22,6 +22,7 @@ import {
  * or online-ordering platforms.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { RestaurantList, RestaurantItem } from '#/section-kit/RestaurantList.tsx'
 export const FoodDeliveryRestaurants = defineCapsule({
   name: 'FoodDeliveryRestaurants',
   description:
@@ -160,7 +161,7 @@ export const FoodDeliveryRestaurants = defineCapsule({
         .toLowerCase()
       return haystack.includes(activeQuery)
     })
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -212,25 +213,25 @@ export const FoodDeliveryRestaurants = defineCapsule({
               : ''}
           </p>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <RestaurantList className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {matchingRestaurants.map((r) => (
-              <button
-                key={r.name}
-                type="button"
-                aria-pressed={selectedRestaurant === r.name}
-                onClick={() => {
-                  void restaurantActions.select({
-                    cuisine: r.cuisine,
-                    name: r.name,
-                  })
-                }}
-                className={cn(
-                  'group block w-full overflow-hidden rounded-xl border bg-background text-left transition-shadow hover:shadow-lg',
-                  selectedRestaurant === r.name
-                    ? 'border-primary shadow-lg'
-                    : 'border-border',
-                )}
-              >
+              <RestaurantItem asChild key={r.name}>
+                <button
+                  type="button"
+                  aria-pressed={selectedRestaurant === r.name}
+                  onClick={() => {
+                    void restaurantActions.select({
+                      cuisine: r.cuisine,
+                      name: r.name,
+                    })
+                  }}
+                  className={cn(
+                    'group block w-full overflow-hidden rounded-xl border bg-background text-left transition-shadow hover:shadow-lg',
+                    selectedRestaurant === r.name
+                      ? 'border-primary shadow-lg'
+                      : 'border-border',
+                  )}
+                >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
                     alt={r.imageAlt}
@@ -260,14 +261,15 @@ export const FoodDeliveryRestaurants = defineCapsule({
                     </span>
                   </div>
                 </div>
-              </button>
+                </button>
+              </RestaurantItem>
             ))}
             {!matchingRestaurants.length ? (
               <div className="rounded-xl border border-dashed border-border bg-background p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-4">
                 No restaurants match the current search.
               </div>
             ) : null}
-          </div>
+          </RestaurantList>
         </Container>
       </section>
     )

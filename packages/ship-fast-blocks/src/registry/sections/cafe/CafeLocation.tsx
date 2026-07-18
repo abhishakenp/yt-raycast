@@ -86,7 +86,7 @@ export const CafeLocation = defineCapsule({
     const mapCta = props.mapCta ?? 'Open in Google Maps'
     const mapTarget = props.mapTarget ?? 'Location'
 
-    const MapPin = ({ className }) => (
+    const MapPin = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -109,7 +109,7 @@ export const CafeLocation = defineCapsule({
       </svg>
     )
 
-    const ClockIcon = ({ className }) => (
+    const ClockIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -126,7 +126,7 @@ export const CafeLocation = defineCapsule({
       </svg>
     )
 
-    const PhoneIcon = ({ className }) => (
+    const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -143,7 +143,7 @@ export const CafeLocation = defineCapsule({
       </svg>
     )
 
-    const ChatIcon = ({ className }) => (
+    const ChatIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"

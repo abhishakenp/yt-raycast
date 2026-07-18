@@ -215,7 +215,7 @@ describe('runAllV3', () => {
     const signalOpenuiReady = vi.fn()
     const sessionCtx = {
       id: 'test-session-v3',
-      broadcast: (payload) => broadcasts.push(payload),
+      broadcast: (payload: unknown) => broadcasts.push(payload),
       setPrompt: vi.fn(),
       setTasks: vi.fn(),
       updateTask: vi.fn(),
@@ -278,7 +278,7 @@ describe('runAllV3', () => {
     const tasks = JSON.parse(
       readFileSync(join(workspace, 'tasks.json'), 'utf8'),
     )
-    expect(tasks.tasks.map((t) => t.status)).toEqual(['DONE'])
+    expect(tasks.tasks.map((t: { status: string }) => t.status)).toEqual(['DONE'])
 
     // generateText was called (high-confidence restaurant prompt).
     expect(generateTextMock).toHaveBeenCalled()

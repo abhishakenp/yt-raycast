@@ -58,7 +58,7 @@ export const docsLakebed = {
     }),
   },
   mutations: {
-    setDocsSearch: docs.mutation((_ctx, input) => {
+    setDocsSearch: docs.mutation((_ctx, input: DocsSearchInput) => {
       const query = clean(input.query)
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
       const next = { query }
@@ -73,7 +73,7 @@ export const docsLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncDocsArticles: docs.mutation((_ctx, input) => {
+    syncDocsArticles: docs.mutation((_ctx, input: { articles: DocsCatalogInput[] }) => {
       const existing = _ctx.db.articles.orderBy('createdAt').all()
       const existingBySlug = new Map(
         existing.map((article) => [article.slug.toLowerCase(), article]),
@@ -102,3 +102,12 @@ export const docsLakebed = {
     }),
   },
 } as const
+
+export type DocsArticleRecord = {
+  category: string
+  content: string
+  createdAt: string
+  id: string
+  slug: string
+  title: string
+}

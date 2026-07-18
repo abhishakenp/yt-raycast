@@ -219,8 +219,8 @@ function emptyUsageMetrics() {
     totalCost: 0,
     totalElapsedMs: 0,
     count: 0,
-    byProvider: {},
-    byEventType: {},
+    byProvider: {} as Record<string, number>,
+    byEventType: {} as Record<string, number>,
   }
 }
 

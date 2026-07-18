@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
@@ -139,7 +139,7 @@ export function useJobBoardSearch(lakebed: JobBoardLakebed) {
   const setJobSearch = lakebed.useMutation('setJobSearch')
 
   const submitSearch = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (setJobSearch.isPending) return
 
@@ -157,7 +157,7 @@ export function useJobBoardSearch(lakebed: JobBoardLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input) => {
+    (input: JobBoardSearchInput) => {
       if (setJobSearch.isPending) return
       void setJobSearch(input)
     },
@@ -178,7 +178,7 @@ export function useJobBoardActions(lakebed: JobBoardLakebed) {
   const loadMoreJobs = lakebed.useMutation('loadMoreJobs')
 
   const apply = useCallback(
-    async (input) => {
+    async (input: JobBoardApplicationInput) => {
       if (applyToJob.isPending) return
       await applyToJob(input)
     },
@@ -299,7 +299,7 @@ export function JobBoardMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?) => {
+  const navigate = (target?: string) => {
     setOpen(false)
     go(target)
   }

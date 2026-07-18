@@ -158,7 +158,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -218,7 +218,7 @@ function createDentalLakebedStub({
       total: state.bookings.length,
     }
   }
-  const recordBooking = (input) => {
+  const recordBooking = (input: Record<string, unknown>) => {
     state = {
       ...state,
       bookings: [
@@ -226,19 +226,19 @@ function createDentalLakebedStub({
         {
           createdAt: timestamp,
           id: `booking-${state.bookings.length + 1}`,
-          label: input.label,
-          service: input.service ?? input.label,
-          source: input.source ?? '',
+          label: String(input.label ?? ''),
+          service: String(input.service ?? input.label ?? ''),
+          source: String(input.source ?? ''),
           type: 'booking',
           updatedAt: timestamp,
         },
       ],
     }
   }
-  const syncServices = (services) => {
+  const syncServices = (services: readonly Record<string, unknown>[]) => {
     const nextServices = [...state.services]
 
-    services.forEach((service) => {
+    services.forEach((service: Record<string, unknown>) => {
       const existingIndex = nextServices.findIndex(
         (item) => item.name === service.name,
       )

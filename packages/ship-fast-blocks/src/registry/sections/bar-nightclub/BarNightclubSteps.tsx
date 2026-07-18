@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
 
 /**
  * BarNightclubSteps — numbered "how to book" flow for a cocktail-bar /
@@ -59,7 +60,7 @@ export const BarNightclubSteps = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn(
           'border-t border-border pt-28 pb-24 lg:pt-32 lg:pb-28',
           props.className,
@@ -92,7 +93,7 @@ export const BarNightclubSteps = defineCapsule({
             ))}
           </div>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

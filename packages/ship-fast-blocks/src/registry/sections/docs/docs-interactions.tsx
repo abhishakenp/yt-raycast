@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 
@@ -55,7 +54,7 @@ export function useDocsSearch(lakebed: DocsLakebed) {
   const setDocsSearch = lakebed.useMutation('setDocsSearch')
 
   const submitSearch = useCallback(
-    (event) => {
+    (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
       if (setDocsSearch.isPending) return
 
@@ -70,7 +69,7 @@ export function useDocsSearch(lakebed: DocsLakebed) {
   )
 
   const chooseSearch = useCallback(
-    (input) => {
+    (input: DocsSearchInput) => {
       if (setDocsSearch.isPending) return
       void setDocsSearch(input)
     },

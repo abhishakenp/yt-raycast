@@ -36,7 +36,7 @@ export const AgencyFooter = defineCapsule({
     const links = props.links?.length ? props.links : ['Privacy', 'Terms']
     const homeTarget = props.homeTarget ?? 'Services'
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground',

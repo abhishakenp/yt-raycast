@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, type DragEvent as ReactDragEvent } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import {
   Search,
@@ -294,7 +294,7 @@ export function ImageSwapPanel({
 
   // ── Drag-and-drop ────────────────────────────────────────────────────
 
-  const handleDragEnter = useCallback((e: DragEvent) => {
+  const handleDragEnter = useCallback((e: ReactDragEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
     dragCounterRef.current++
@@ -303,7 +303,7 @@ export function ImageSwapPanel({
     }
   }, [])
 
-  const handleDragLeave = useCallback((e: DragEvent) => {
+  const handleDragLeave = useCallback((e: ReactDragEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
     dragCounterRef.current--
@@ -312,13 +312,13 @@ export function ImageSwapPanel({
     }
   }, [])
 
-  const handleDragOver = useCallback((e: DragEvent) => {
+  const handleDragOver = useCallback((e: ReactDragEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
   }, [])
 
   const handleDrop = useCallback(
-    (e: DragEvent) => {
+    (e: ReactDragEvent<HTMLDivElement>) => {
       e.preventDefault()
       e.stopPropagation()
       dragCounterRef.current = 0
@@ -354,7 +354,7 @@ export function ImageSwapPanel({
   const uploadedImages: DisplayImage[] =
     userImages
       ?.filter((img): img is typeof img & { url: string } => img.url !== null)
-      .map((img: { url: string; filename: string | null }) => ({
+      .map((img) => ({
         imageUrl: img.url,
         kind: 'upload' as const,
         alt: img.filename ?? 'Uploaded image',

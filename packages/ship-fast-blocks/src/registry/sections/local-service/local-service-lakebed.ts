@@ -58,7 +58,7 @@ export const localServiceLakebed = {
     ),
   },
   mutations: {
-    requestBooking: localService.mutation((_ctx, input) => {
+    requestBooking: localService.mutation((_ctx, input: LocalServiceBookingInput) => {
       const label = normalizeLabel(input.label)
 
       _ctx.db.bookings.insert({
@@ -70,7 +70,7 @@ export const localServiceLakebed = {
 
       return _ctx.db.bookings.orderBy('createdAt').all()
     }),
-    syncServices: localService.mutation((_ctx, input) => {
+    syncServices: localService.mutation((_ctx, input: { services: LocalServiceItemInput[] }) => {
       for (const service of input.services) {
         const name = service.name.trim()
         if (!name) continue

@@ -14,6 +14,11 @@ import { Image } from '#/lib/img.tsx'
  * or B2B SaaS products. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const CrmSteps = defineCapsule({
   name: 'CrmSteps',
   description:
@@ -66,7 +71,9 @@ export const CrmSteps = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
+      <StepTimeline
+        className={cn('bg-muted/50 py-20 lg:py-28', props.className)}
+      >
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
@@ -74,9 +81,9 @@ export const CrmSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
                   {i + 1}
                 </div>
@@ -98,11 +105,11 @@ export const CrmSteps = defineCapsule({
                 {i < items.length - 1 ? (
                   <div className="absolute left-full top-8 hidden h-0.5 w-12 -translate-x-6 bg-border md:block" />
                 ) : null}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

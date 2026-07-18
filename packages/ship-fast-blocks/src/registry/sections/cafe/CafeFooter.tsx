@@ -61,7 +61,7 @@ export const CafeFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service', 'Accessibility']
     const note = props.note ?? 'All rights reserved.'
 
-    const OwlMark = ({ className }) => (
+    const OwlMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="currentColor"

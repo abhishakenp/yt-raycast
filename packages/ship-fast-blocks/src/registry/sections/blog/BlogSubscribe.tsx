@@ -4,11 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import {
-  NewsletterCta,
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand, SubscribeForm } from '#/section-kit/SubscribeBand.tsx'
 import { PublicationSubscribeForm } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
 
@@ -57,7 +57,7 @@ export const BlogSubscribe = defineCapsule({
     const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         aria-label="Newsletter signup"
         className={cn('mx-auto w-full max-w-4xl px-6 py-16', props.className)}
       >
@@ -75,6 +75,7 @@ export const BlogSubscribe = defineCapsule({
           <NewsletterCtaDescription className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
             {subheading}
           </NewsletterCtaDescription>
+          <SubscribeForm asChild>
           <PublicationSubscribeForm
             lakebed={lakebed}
             source={ctaTarget}
@@ -85,11 +86,12 @@ export const BlogSubscribe = defineCapsule({
             inputClassName="w-full flex-1 rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
             buttonClassName="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
           />
+          </SubscribeForm>
           <NewsletterCtaFineprint className="mt-4 text-[0.8rem] text-muted-foreground">
             {note}
           </NewsletterCtaFineprint>
         </Card>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

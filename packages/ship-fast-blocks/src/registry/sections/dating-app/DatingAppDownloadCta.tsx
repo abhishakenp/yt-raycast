@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import { DownloadBand } from '#/section-kit/DownloadBand.tsx'
 
 /**
  * DatingAppDownloadCta — a bold app-download CTA band for a dating / matchmaking
@@ -84,6 +85,7 @@ export const DatingAppDownloadCta = defineCapsule({
     )
 
     return (
+      <DownloadBand asChild>
       <CtaBand
         tone="muted"
         title={downloadHeading}
@@ -194,6 +196,7 @@ export const DatingAppDownloadCta = defineCapsule({
           </div>
         </div>
       </CtaBand>
+      </DownloadBand>
     )
   },
 })

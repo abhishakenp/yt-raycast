@@ -82,7 +82,7 @@ export const ConstructionFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service', 'Licenses']
     const note = props.note ?? 'All rights reserved.'
     const homeTarget = props.homeTarget ?? 'Services'
-    const LogoMark = ({ className, tone = 'primary' }) => (
+    const LogoMark = ({ className, tone = 'primary' }: { className?: string, tone?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-md',

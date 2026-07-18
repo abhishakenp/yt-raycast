@@ -10,7 +10,7 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 
 export const UniversityHero = defineCapsule({
@@ -76,7 +76,7 @@ export const UniversityHero = defineCapsule({
           >
             {subheading}
           </HeroSubheading>
-          <HeroCtas className="mt-10 flex-col justify-center gap-3 sm:flex-row">
+          <HeroActions className="mt-10 flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryTarget)}
@@ -91,7 +91,7 @@ export const UniversityHero = defineCapsule({
             >
               {secondaryCta}
             </button>
-          </HeroCtas>
+          </HeroActions>
           <div className="mx-auto mt-12 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-background/20 pt-8 text-sm font-medium text-background/80">
             {quickStats.map((stat, i) => (
               <span key={stat} className="flex items-center gap-3">

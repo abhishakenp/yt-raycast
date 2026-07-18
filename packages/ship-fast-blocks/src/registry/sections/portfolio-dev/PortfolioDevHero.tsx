@@ -8,7 +8,10 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
+  HeroCodeWindow,
+  HeroCodeWindowHeader,
+  HeroCodeWindowBody,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -63,7 +66,7 @@ export const PortfolioDevHero = defineCapsule({
             <HeroSubheading className="max-w-xl leading-8">
               {intro}
             </HeroSubheading>
-            <HeroCtas className="flex-col gap-3 sm:flex-row">
+            <HeroActions className="flex-col gap-3 sm:flex-row">
               <button
                 onClick={() => go(primaryTarget)}
                 className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
@@ -76,7 +79,7 @@ export const PortfolioDevHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </HeroCtas>
+            </HeroActions>
             <div className="mt-8 flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <span
@@ -88,6 +91,7 @@ export const PortfolioDevHero = defineCapsule({
               ))}
             </div>
           </div>
+          <HeroCodeWindow asChild>
           <Card
             variant="default"
             rounded="xl"
@@ -95,15 +99,15 @@ export const PortfolioDevHero = defineCapsule({
             shadow="sm"
             className="overflow-hidden"
           >
-            <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
+            <HeroCodeWindowHeader>
               <span className="size-3 rounded-full bg-muted-foreground/40" />
               <span className="size-3 rounded-full bg-muted-foreground/30" />
               <span className="size-3 rounded-full bg-muted-foreground/20" />
               <span className="ml-2 font-mono text-xs text-muted-foreground">
                 ~/alex/intro.ts
               </span>
-            </div>
-            <div className="space-y-2 p-5 font-mono text-sm">
+            </HeroCodeWindowHeader>
+            <HeroCodeWindowBody>
               <p className="text-muted-foreground">
                 <span className="text-primary">const</span> dev = {'{'}
               </p>
@@ -122,8 +126,9 @@ export const PortfolioDevHero = defineCapsule({
                 <span className="text-primary">$</span> npm run build{' '}
                 <span className="text-accent">✓</span>
               </p>
-            </div>
+            </HeroCodeWindowBody>
           </Card>
+          </HeroCodeWindow>
         </div>
       </HeroSection>
     )

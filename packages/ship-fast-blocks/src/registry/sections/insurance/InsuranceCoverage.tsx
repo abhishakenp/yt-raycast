@@ -14,6 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 export const InsuranceCoverage = defineCapsule({
   name: 'InsuranceCoverage',
   description:
@@ -87,22 +88,6 @@ export const InsuranceCoverage = defineCapsule({
             ],
           },
         ]
-    const Check = ({ className }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
     const coverageIcons: ReactNode[] = [
       <svg
         key="home"
@@ -174,32 +159,14 @@ export const InsuranceCoverage = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-            {items.map((item, i) => (
-              <div
-                key={item.title}
-                className="group rounded-2xl border border-transparent bg-muted p-6 transition-all hover:border-border hover:bg-card hover:shadow-xl lg:p-8"
-              >
-                <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
-                  {coverageIcons[i % coverageIcons.length]}
-                </div>
-                <h3 className="mb-3 text-xl font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mb-4 leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  {item.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2">
-                      <Check className="size-4 shrink-0 text-primary" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <FeatureGrid
+            features={items.map((item, i) => ({
+              title: item.title,
+              description: item.description,
+              icon: coverageIcons[i % coverageIcons.length],
+            }))}
+            columns={4}
+          />
         </Container>
       </section>
     )

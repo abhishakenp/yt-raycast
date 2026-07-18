@@ -62,7 +62,7 @@ export const CloudInfraHero = defineCapsule({
     const statLabel = props.statLabel ?? 'Avg. deployment time'
     const statValue = props.statValue ?? '12 seconds'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -77,7 +77,7 @@ export const CloudInfraHero = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

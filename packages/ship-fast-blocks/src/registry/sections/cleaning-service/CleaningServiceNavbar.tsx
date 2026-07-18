@@ -53,7 +53,7 @@ export const CleaningServiceNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Book Cleaning'
     const ctaTarget = props.ctaTarget ?? 'Book Your Cleaning'
     const phone = props.phone ?? '(555) 123-4567'
-    const SparkleMark = ({ className }) => (
+    const SparkleMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',
@@ -75,7 +75,7 @@ export const CleaningServiceNavbar = defineCapsule({
         </svg>
       </span>
     )
-    const PhoneIcon = ({ className }) => (
+    const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         width="18"
         height="18"

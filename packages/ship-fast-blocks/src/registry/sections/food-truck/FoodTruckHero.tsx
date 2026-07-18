@@ -83,7 +83,7 @@ export const FoodTruckHero = defineCapsule({
       }),
     ])
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"

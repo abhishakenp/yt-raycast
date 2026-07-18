@@ -51,7 +51,7 @@ export const FaqNavbar = defineCapsule({
     const signIn = props.signIn ?? 'Sign In'
     const homeTarget = props.homeTarget ?? 'Documentation'
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

@@ -13,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * platforms, consultancies, or any B2B offering.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { LogoStripLabel, LogoStripItem } from '#/section-kit/LogoStrip.tsx'
 export const CorporateLogos = defineCapsule({
   name: 'CorporateLogos',
   description:
@@ -38,9 +39,9 @@ export const CorporateLogos = defineCapsule({
         )}
       >
         <Container>
-          <p className="mb-10 text-center text-sm font-medium text-muted-foreground">
+          <LogoStripLabel className="mb-10">
             {heading}
-          </p>
+          </LogoStripLabel>
           <ResponsiveGrid
             cols="2-4-6"
             gap="lg"
@@ -53,9 +54,9 @@ export const CorporateLogos = defineCapsule({
                 onClick={() => go(logo)}
                 className="flex h-12 items-center justify-center"
               >
-                <span className="text-xl font-bold text-muted-foreground">
+                <LogoStripItem className="text-xl font-bold">
                   {logo}
-                </span>
+                </LogoStripItem>
               </button>
             ))}
           </ResponsiveGrid>

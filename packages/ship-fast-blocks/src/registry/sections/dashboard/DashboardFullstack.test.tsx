@@ -15,7 +15,6 @@ import { DashboardKpis } from './DashboardKpis.tsx'
 import { DashboardOrdersTable } from './DashboardOrdersTable.tsx'
 import { DashboardSidebar } from './DashboardSidebar.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
-import type { DashboardOrderInput } from './dashboard-lakebed.ts'
 
 type DashboardLakebed = LakebedClientRuntime<typeof dashboardLakebed>
 
@@ -97,7 +96,7 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args) => runMutation(...args), {
+      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
         isPending: false,
         lastError: emptyLastError,
         pendingCount: 0,
@@ -127,40 +126,40 @@ function createDashboardLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const addOrder = (input) => {
+  const addOrder = (input: Record<string, unknown>) => {
     state = {
       orders: [
         ...state.orders,
         {
-          amount: input.amount ?? '$0.00',
+          amount: String(input.amount ?? '$0.00'),
           createdAt: timestamp,
-          customer: input.customer ?? 'New Customer',
-          date: input.date ?? '',
+          customer: String(input.customer ?? 'New Customer'),
+          date: String(input.date ?? ''),
           id: `order-${state.orders.length + 1}`,
-          orderId: input.orderId ?? `#${state.orders.length + 1}`,
-          product: input.product ?? 'Manual order',
-          status: input.status ?? 'Processing',
-          statusTone: input.statusTone ?? 'sky',
+          orderId: String(input.orderId ?? `#${state.orders.length + 1}`),
+          product: String(input.product ?? 'Manual order'),
+          status: String(input.status ?? 'Processing'),
+          statusTone: String(input.statusTone ?? 'sky'),
           updatedAt: timestamp,
         },
       ],
     }
   }
-  const setOrderStatus = (input) => {
+  const setOrderStatus = (input: Record<string, unknown>) => {
     state = {
       orders: state.orders.map((order) =>
         order.id === input.id
           ? {
               ...order,
-              status: input.status,
-              statusTone: input.statusTone,
+              status: String(input.status ?? ''),
+              statusTone: String(input.statusTone ?? ''),
               updatedAt: timestamp,
             }
           : order,
       ),
     }
   }
-  const removeOrder = (input) => {
+  const removeOrder = (input: Record<string, unknown>) => {
     state = {
       orders: state.orders.filter((order) => order.id !== input.id),
     }

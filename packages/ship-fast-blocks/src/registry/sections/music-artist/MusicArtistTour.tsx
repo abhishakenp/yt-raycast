@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { TourList, TourItem } from '#/section-kit/TourList.tsx'
 
 /**
  * MusicArtistTour — long tour-date list for a music artist / band page. A
@@ -114,7 +115,7 @@ export const MusicArtistTour = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"
@@ -151,15 +152,15 @@ export const MusicArtistTour = defineCapsule({
             className="mb-16 gap-6 lg:mb-24"
           />
 
-          <div className="mx-auto max-w-3xl">
+          <TourList className="mx-auto max-w-3xl">
             {dates.map((date, i) => (
-              <div
-                key={`${date.venue}-${date.day}`}
-                className={cn(
-                  'group flex flex-col gap-4 py-6 transition-all hover:bg-card hover:px-6 sm:flex-row sm:items-center sm:gap-8',
-                  i < dates.length - 1 && 'border-b border-border',
-                )}
-              >
+              <TourItem asChild key={`${date.venue}-${date.day}`}>
+                <div
+                  className={cn(
+                    'group flex flex-col gap-4 py-6 transition-all hover:bg-card hover:px-6 sm:flex-row sm:items-center sm:gap-8',
+                    i < dates.length - 1 && 'border-b border-border',
+                  )}
+                >
                 <div className="w-20 shrink-0 text-center">
                   <p className="text-sm uppercase text-muted-foreground">
                     {date.month}
@@ -201,9 +202,10 @@ export const MusicArtistTour = defineCapsule({
                     </button>
                   )}
                 </div>
-              </div>
+                </div>
+              </TourItem>
             ))}
-          </div>
+          </TourList>
 
           <div className="mt-12 text-center">
             <button

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 
 /**
  * MembershipClubSteps — 3-step "How it works" application flow for a private
@@ -53,7 +54,7 @@ export const MembershipClubSteps = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn('w-full bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="steps-heading"
       >
@@ -70,7 +71,10 @@ export const MembershipClubSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3 lg:gap-16">
+          <StepTimelineGrid
+            columns={3}
+            className="mx-auto max-w-5xl gap-8 lg:gap-16"
+          >
             {items.map((step, i) => (
               <div key={step.title} className="text-center md:text-left">
                 <div className="mx-auto mb-6 grid size-12 place-items-center rounded-full bg-primary text-lg font-medium text-primary-foreground md:mx-0">
@@ -84,9 +88,9 @@ export const MembershipClubSteps = defineCapsule({
                 </p>
               </div>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

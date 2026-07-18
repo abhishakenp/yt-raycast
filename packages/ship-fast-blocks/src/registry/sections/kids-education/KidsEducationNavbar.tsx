@@ -54,7 +54,7 @@ export const KidsEducationNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Start Free Trial'
     const ctaTarget = props.ctaTarget ?? 'Start Free 14-Day Trial'
 
-    const BookMark = ({ className }) => (
+    const BookMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground',

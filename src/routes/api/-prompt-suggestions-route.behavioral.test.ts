@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path) => (options) => ({ options, path }),
+  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({ options, path }),
 }))
 
 type RouteWithHandlers = {
@@ -68,7 +68,7 @@ describe('prompt suggestions API route', () => {
     expect(response.status).toBe(200)
     expect(body.suggestions).toHaveLength(4)
     expect(
-      body.suggestions.every((suggestion) =>
+      body.suggestions.every((suggestion: string) =>
         suggestion.startsWith(realConvexPromptPartial),
       ),
     ).toBe(true)

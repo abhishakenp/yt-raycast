@@ -8,11 +8,7 @@ import {
   createLakebedQueryStub,
 } from '@ship-fast/lakebed/test-helpers'
 import type { LogisticsLakebed } from './logistics-interactions.tsx'
-import {
-  logisticsLakebed,
-  type LogisticsShipmentInput,
-  type LogisticsTrackingInput,
-} from './logistics-lakebed.ts'
+import { logisticsLakebed } from './logistics-lakebed.ts'
 
 type TrackShipmentState = ReturnType<
   typeof logisticsLakebed.queries.trackShipment
@@ -34,7 +30,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }: { alt?: string; className?: string }) => <img alt={alt} className={className} />,
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -55,16 +51,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -146,10 +142,10 @@ function createLogisticsLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const nextRow = <TRow extends Record<string, unknown>>(
-    prefix,
-    value,
-    index,
+  const nextRow = (
+    prefix: string,
+    value: unknown,
+    index: number,
   ) => ({
     ...value,
     createdAt: now,
@@ -200,11 +196,11 @@ function createLogisticsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
-          const trackingId = input.trackingId?.trim() ?? ''
+          const trackingId = String(input.trackingId)?.trim() ?? ''
           state = nextRow('state', { trackingId }, 1)
           searches = [
             nextRow('search', { trackingId }, searches.length + 1),
@@ -221,7 +217,7 @@ function createLogisticsLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -241,7 +237,7 @@ function createLogisticsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -252,15 +248,15 @@ function createLogisticsLakebedStub() {
             ]),
           )
 
-          for (const item of input.items) {
-            const trackingId = item.trackingId.trim()
+          for (const item of input.items as Record<string, unknown>[]) {
+            const trackingId = String(item.trackingId).trim()
             if (!trackingId) continue
 
             const next = {
-              destination: item.destination?.trim() ?? '',
-              estimatedDelivery: item.estimatedDelivery?.trim() ?? '',
-              origin: item.origin?.trim() ?? '',
-              status: item.status?.trim() ?? '',
+              destination: String(item.destination ?? '').trim() ?? '',
+              estimatedDelivery: String(item.estimatedDelivery ?? '').trim() ?? '',
+              origin: String(item.origin ?? '').trim() ?? '',
+              status: String(item.status ?? '').trim() ?? '',
               trackingId,
             }
             const current = existingByTrackingId.get(trackingId.toLowerCase())
@@ -289,7 +285,7 @@ function createLogisticsLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

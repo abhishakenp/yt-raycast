@@ -15,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
 export const LawFirmProcess = defineCapsule({
   name: 'LawFirmProcess',
   description:
@@ -63,7 +64,7 @@ export const LawFirmProcess = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-card py-24 lg:py-28', props.className)}>
+      <StepTimeline className={cn('bg-card py-24 lg:py-28', props.className)}>
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
@@ -105,7 +106,7 @@ export const LawFirmProcess = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

@@ -9,7 +9,7 @@ import {
   HeroContent,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -88,7 +88,7 @@ export const ChurchHero = defineCapsule({
           <HeroSubheading variant="large" className="sm:text-lg">
             {subheading}
           </HeroSubheading>
-          <HeroCtas className="mt-0 flex-col items-center justify-center gap-4 sm:flex-row">
+          <HeroActions className="mt-0 flex-col items-center justify-center gap-4 sm:flex-row">
             <button
               type="button"
               onClick={() => go(primaryCta)}
@@ -111,7 +111,7 @@ export const ChurchHero = defineCapsule({
               </svg>
               {secondaryCta}
             </button>
-          </HeroCtas>
+          </HeroActions>
           <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <svg

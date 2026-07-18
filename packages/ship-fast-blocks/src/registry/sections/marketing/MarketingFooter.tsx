@@ -39,7 +39,7 @@ export const MarketingFooter = defineCapsule({
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
 
     // Brand logo mark — indigo tile + brand initial (decorative brand asset).
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground',

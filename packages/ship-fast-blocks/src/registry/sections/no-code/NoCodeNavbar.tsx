@@ -59,7 +59,7 @@ export const NoCodeNavbar = defineCapsule({
     const cta = props.cta ?? 'Start building free'
     const homeTarget = props.homeTarget ?? nav[0]
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-foreground text-background',

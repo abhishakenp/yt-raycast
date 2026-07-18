@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import { DownloadBand, DownloadButton } from '#/section-kit/DownloadBand.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -79,6 +80,7 @@ export const MobileAppDownloadCta = defineCapsule({
     )
 
     return (
+      <DownloadBand asChild>
       <CtaBand
         tone="muted"
         title={heading}
@@ -102,6 +104,7 @@ export const MobileAppDownloadCta = defineCapsule({
             <AppleIcon />
             {primaryCta}
           </SaasPlanActionButton>
+          <DownloadButton asChild>
           <SaasPlanActionButton
             lakebed={lakebed}
             intentLabel={secondaryCta}
@@ -118,6 +121,7 @@ export const MobileAppDownloadCta = defineCapsule({
             <PlayIcon />
             {secondaryCta}
           </SaasPlanActionButton>
+          </DownloadButton>
         </div>
         <div className="flex flex-col items-center justify-center gap-4 text-sm text-muted-foreground sm:flex-row sm:gap-6">
           {badges.map((badge) => (
@@ -128,6 +132,7 @@ export const MobileAppDownloadCta = defineCapsule({
           ))}
         </div>
       </CtaBand>
+      </DownloadBand>
     )
   },
 })

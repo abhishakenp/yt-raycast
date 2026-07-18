@@ -8,10 +8,10 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import {
   LocalServiceBookingButton,
@@ -68,7 +68,7 @@ export const MentalHealthHero = defineCapsule({
       : ['Licensed Clinicians', 'In-Person & Virtual']
     const bookLabel = props.bookLabel ?? 'Book Session'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
@@ -107,7 +107,7 @@ export const MentalHealthHero = defineCapsule({
               <HeroSubheading className="mx-auto max-w-xl lg:mx-0">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+              <HeroActions className="flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                 <LocalServiceBookingButton
                   lakebed={lakebed}
                   intentLabel={bookLabel}
@@ -127,18 +127,18 @@ export const MentalHealthHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
-              <HeroTrustRow className="mt-8 justify-center gap-6 lg:justify-start">
+              </HeroActions>
+              <HeroSocialProof className="mt-8 justify-center gap-6 lg:justify-start">
                 {trust.map((t) => (
-                  <HeroTrustItem key={t}>
+                  <HeroSocialProofItem key={t}>
                     <Check className="size-5 text-primary" />
                     <span>{t}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

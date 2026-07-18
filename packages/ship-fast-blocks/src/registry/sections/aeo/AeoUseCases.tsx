@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 export const AeoUseCases = defineCapsule({
   name: 'AeoUseCases',
@@ -58,18 +58,13 @@ export const AeoUseCases = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{intro}</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {items.map((item) => (
-              <Card key={item.title} shadow="sm">
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </Card>
-            ))}
-          </div>
+          <FeatureGrid
+            features={items.map((item) => ({
+              title: item.title,
+              description: item.description,
+            }))}
+            columns={3}
+          />
         </div>
       </section>
     )

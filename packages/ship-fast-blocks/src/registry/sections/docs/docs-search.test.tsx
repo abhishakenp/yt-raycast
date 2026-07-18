@@ -8,11 +8,7 @@ import {
   createLakebedQueryStub,
 } from '@ship-fast/lakebed/test-helpers'
 import type { DocsLakebed } from './docs-interactions.tsx'
-import {
-  docsLakebed,
-  type DocsCatalogInput,
-  type DocsSearchInput,
-} from './docs-lakebed.ts'
+import { docsLakebed } from './docs-lakebed.ts'
 
 type DocsState = ReturnType<typeof docsLakebed.queries.docsState>
 type DocsSearch = DocsState['searches'][number]
@@ -34,7 +30,7 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }: { alt?: string; className?: string }) => <img alt={alt} className={className} />,
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -55,16 +51,16 @@ if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
   })
-  const defineGlobal = (name, value) => {
+  const defineGlobal = (name: string, value: unknown) => {
     Object.defineProperty(globalThis, name, {
       configurable: true,
       value,
       writable: true,
     })
   }
-  const requestAnimationFrame = (callback) =>
+  const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -151,10 +147,10 @@ function createDocsLakebedStub() {
     query: state?.query ?? '',
     searches,
   })
-  const nextRow = <TRow extends Record<string, unknown>>(
-    prefix,
-    value,
-    index,
+  const nextRow = (
+    prefix: string,
+    value: unknown,
+    index: number,
   ) => ({
     ...value,
     createdAt: now,
@@ -196,14 +192,14 @@ function createDocsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
           state = nextRow(
             'state',
             {
-              query: input.query?.trim() ?? '',
+              query: String(input.query)?.trim() ?? '',
             },
             1,
           )
@@ -228,7 +224,7 @@ function createDocsLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,
@@ -248,7 +244,7 @@ function createDocsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input) => {
+      const runMutation = useCallback(async (input: Record<string, unknown>) => {
         setPendingCount((count) => count + 1)
         setLastError(null)
         try {
@@ -256,15 +252,15 @@ function createDocsLakebedStub() {
             articles.map((article) => [article.slug.toLowerCase(), article]),
           )
 
-          for (const article of input.articles) {
-            const slug = article.slug.trim()
+          for (const article of input.articles as Record<string, unknown>[]) {
+            const slug = String(article.slug).trim()
             if (!slug) continue
 
             const next = {
-              category: article.category?.trim() ?? '',
-              content: article.content?.trim() ?? '',
+              category: String(article.category ?? '').trim() ?? '',
+              content: String(article.content ?? '').trim() ?? '',
               slug,
-              title: article.title?.trim() ?? '',
+              title: String(article.title ?? '').trim() ?? '',
             }
             const current = existingBySlug.get(slug.toLowerCase())
 
@@ -292,7 +288,7 @@ function createDocsLakebedStub() {
       }, [])
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input) => runMutation(input), {
+        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
           isPending: false,
           lastError: initialLastError,
           pendingCount: 0,

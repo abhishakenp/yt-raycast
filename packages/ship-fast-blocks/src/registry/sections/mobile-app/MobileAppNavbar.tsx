@@ -55,7 +55,7 @@ export const MobileAppNavbar = defineCapsule({
       : ['Features', 'How It Works', 'Pricing', 'Reviews']
     const ctaLabel = props.ctaLabel ?? 'Download App'
     const homeTarget = props.homeTarget ?? 'Features'
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 32 32"
         fill="none"

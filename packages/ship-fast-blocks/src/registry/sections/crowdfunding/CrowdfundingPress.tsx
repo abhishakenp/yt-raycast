@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
+import { PressList } from '#/section-kit/PressList.tsx'
 
 /**
  * CrowdfundingPress — a compact "Featured in" press-logo strip for a
@@ -33,21 +34,23 @@ export const CrowdfundingPress = defineCapsule({
       : ['Fast Company', 'Wired', 'Dezeen', 'Core77', 'Design Milk']
 
     return (
-      <section
-        className={cn('border-y border-border bg-card py-12', props.className)}
-      >
-        <Container>
-          <LogoStrip
-            lead={pressHeading}
-            logos={pressLogos}
-            layout="flex"
-            logoStyle="text-bold"
-            onClickLogo={(logo) => go(logo)}
-            leadClassName="tracking-wider"
-            logoClassName="text-xl opacity-60 tracking-normal"
-          />
-        </Container>
-      </section>
+      <PressList asChild>
+        <section
+          className={cn('border-y border-border bg-card py-12', props.className)}
+        >
+          <Container>
+            <LogoStrip
+              lead={pressHeading}
+              logos={pressLogos}
+              layout="flex"
+              logoStyle="text-bold"
+              onClickLogo={(logo) => go(logo)}
+              leadClassName="tracking-wider"
+              logoClassName="text-xl opacity-60 tracking-normal"
+            />
+          </Container>
+        </section>
+      </PressList>
     )
   },
 })

@@ -57,7 +57,7 @@ export const IllustratorWork = defineCapsule({
           { title: 'Garden Adventures', meta: 'Picture book · 2023' },
         ]
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="16"

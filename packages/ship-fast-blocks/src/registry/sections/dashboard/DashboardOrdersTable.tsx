@@ -7,8 +7,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
-import { DataTable } from '#/section-kit/DataTable.tsx'
-import { dashboardLakebed } from './dashboard-lakebed.ts'
+import { DataTable, DataHeader, DataBody, DataRow } from '#/section-kit/DataTable.tsx'
+import { dashboardLakebed, type DashboardOrderRecord } from './dashboard-lakebed.ts'
 
 type DashboardDisplayRow = {
   amount?: string
@@ -83,7 +83,7 @@ export const DashboardOrdersTable = defineCapsule({
   lakebed: dashboardLakebed,
   component: ({ props, lakebed }) => {
     const go = useNavigate()
-    const storedOrders = lakebed.useQuery('orders') ?? []
+    const storedOrders: DashboardOrderRecord[] = lakebed.useQuery('orders') ?? []
     const setOrderStatus = useKeyedLakebedMutation(lakebed, 'setOrderStatus')
     const title = props.title ?? 'Recent Orders'
     const subtitle = props.subtitle ?? 'Latest transactions from your store'
@@ -236,7 +236,8 @@ export const DashboardOrdersTable = defineCapsule({
         <div className="overflow-x-auto">
           <DataTable className="w-full overflow-hidden text-left text-sm">
             <table className="w-full text-left text-sm">
-              <thead>
+              <DataHeader asChild>
+                <thead>
                 <tr className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
                   {columns.map((col, i) => (
                     <th
@@ -250,8 +251,10 @@ export const DashboardOrdersTable = defineCapsule({
                     </th>
                   ))}
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+                </thead>
+              </DataHeader>
+              <DataBody asChild>
+                <tbody className="divide-y divide-border/60">
                 {rows.map((row, index) => {
                   const id = row.id ?? `R-${index + 1}`
                   const customer =
@@ -275,6 +278,7 @@ export const DashboardOrdersTable = defineCapsule({
                   const rowActionKey = `complete:${row.dbId || id}`
                   const rowPending = setOrderStatus.isPending(rowActionKey)
                   return (
+                    <DataRow asChild>
                     <tr
                       key={id}
                       className="transition-colors hover:bg-muted/60"
@@ -353,9 +357,11 @@ export const DashboardOrdersTable = defineCapsule({
                         </button>
                       </td>
                     </tr>
+                    </DataRow>
                   )
                 })}
-              </tbody>
+                </tbody>
+              </DataBody>
             </table>
           </DataTable>
         </div>

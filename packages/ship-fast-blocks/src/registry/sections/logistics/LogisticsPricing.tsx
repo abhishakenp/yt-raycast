@@ -96,7 +96,7 @@ export const LogisticsPricing = defineCapsule({
             cta: 'Contact sales',
           },
         ]
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={cn('size-5 shrink-0', className)}
         viewBox="0 0 24 24"

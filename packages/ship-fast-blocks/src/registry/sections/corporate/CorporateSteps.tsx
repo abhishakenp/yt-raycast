@@ -11,6 +11,11 @@ import { cn } from '#/lib/utils.ts'
  * roadmap for enterprise software vendors, consultancies, or managed services.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const CorporateSteps = defineCapsule({
   name: 'CorporateSteps',
   description:
@@ -61,7 +66,9 @@ export const CorporateSteps = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
+      <StepTimeline
+        className={cn('bg-muted/50 py-20 lg:py-28', props.className)}
+      >
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -69,9 +76,9 @@ export const CorporateSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <StepTimelineGrid columns={2} className="gap-8 lg:grid-cols-4">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mb-6 grid size-12 place-items-center rounded-full bg-foreground">
                   <span className="font-semibold text-background">{i + 1}</span>
                 </div>
@@ -87,11 +94,11 @@ export const CorporateSteps = defineCapsule({
                     className="absolute left-full top-6 hidden h-px w-full -translate-x-6 bg-border lg:block"
                   />
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

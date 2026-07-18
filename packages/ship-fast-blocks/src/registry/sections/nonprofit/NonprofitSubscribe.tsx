@@ -6,9 +6,9 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
-  NewsletterCta,
   NewsletterCtaFineprint,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -64,7 +64,7 @@ export const NonprofitSubscribe = defineCapsule({
       props.footnote ?? 'No spam, ever. Unsubscribe with one click.'
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -112,7 +112,7 @@ export const NonprofitSubscribe = defineCapsule({
             </div>
           </Card>
         </div>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

@@ -17,7 +17,7 @@ import {
   OverviewStat,
   OverviewStatValue,
   OverviewStatLabel,
-  OverviewImagePanel,
+  OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
 
 export const VacationRentalOverview = defineCapsule({
@@ -112,7 +112,7 @@ export const VacationRentalOverview = defineCapsule({
               ))}
             </OverviewStats>
           </OverviewContent>
-          <OverviewImagePanel
+          <OverviewMediaPanel
             alt={imageAlt}
             brand={brand}
             caption="Section-level building block for generated multi-page experiences."

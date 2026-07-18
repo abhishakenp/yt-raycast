@@ -10,7 +10,7 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
@@ -94,7 +94,7 @@ export const AnalyticsHero = defineCapsule({
               <HeroHighlight variant="primary">{highlight}</HeroHighlight>
             </HeroHeading>
             <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
-            <HeroCtas>
+            <HeroActions>
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryCta}
@@ -139,7 +139,7 @@ export const AnalyticsHero = defineCapsule({
                 </svg>
                 {secondaryCta}
               </SaasPlanActionButton>
-            </HeroCtas>
+            </HeroActions>
             <dl className="mt-10 flex flex-wrap gap-8 border-t border-border pt-8">
               {stats.map((s) => (
                 <div key={s.label} className="flex flex-col gap-1">

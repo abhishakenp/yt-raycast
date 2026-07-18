@@ -16,6 +16,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { LineupGrid, LineupCard } from '#/section-kit/LineupGrid.tsx'
 export const MusicFestivalLineup = defineCapsule({
   name: 'MusicFestivalLineup',
   description:
@@ -161,14 +162,14 @@ export const MusicFestivalLineup = defineCapsule({
             <h3 className="mb-8 text-center text-sm font-medium uppercase tracking-widest text-foreground/50">
               {headlinersLabel}
             </h3>
-            <div className="grid gap-6 md:grid-cols-3">
+            <LineupGrid className="grid gap-6 md:grid-cols-3">
               {headliners.map((h) => (
-                <button
-                  key={h.name}
-                  type="button"
-                  onClick={() => go(h.name)}
-                  className="group relative block overflow-hidden rounded-xl text-left"
-                >
+                <LineupCard asChild key={h.name}>
+                  <button
+                    type="button"
+                    onClick={() => go(h.name)}
+                    className="group relative block overflow-hidden rounded-xl text-left"
+                  >
                   <Image
                     alt={h.imageAlt}
                     w={800}
@@ -184,9 +185,10 @@ export const MusicFestivalLineup = defineCapsule({
                     </h4>
                     <p className="text-sm text-background/70">{h.genre}</p>
                   </div>
-                </button>
+                  </button>
+                </LineupCard>
               ))}
-            </div>
+            </LineupGrid>
           </div>
 
           <div className="mb-16">

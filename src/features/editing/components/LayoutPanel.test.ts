@@ -209,7 +209,7 @@ describe('LayoutPanel', () => {
     expect(activeElement.style.flexWrap).toBe('wrap')
   })
 
-  const selectPosition = (getByRole, name) => {
+  const selectPosition = (getByRole: (role: string, options?: Record<string, unknown>) => HTMLElement, name: string) => {
     const trigger = getByRole('combobox', { name: 'Position' })
     fireEvent.pointerDown(trigger, {
       button: 0,

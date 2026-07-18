@@ -72,14 +72,14 @@ describe('storefront cart UI injection', () => {
 
     const dom = new JSDOM(html, {
       beforeParse(window: any) {
-        window.requestAnimationFrame = (callback) => {
+        window.requestAnimationFrame = (callback: (time: number) => void) => {
           callback(0)
           return 0
         }
-        window.addEventListener('error', (event) => {
+        window.addEventListener('error', (event: ErrorEvent) => {
           runtimeErrors.push(event.error || event.message)
         })
-        window.fetch = async (input, init?) => {
+        window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
           const url = String(input)
           if (url.endsWith('/config')) {
             return new Response(JSON.stringify({ enabled: true }))

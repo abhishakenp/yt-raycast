@@ -16,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
-import { MarketTable } from '#/section-kit/MarketTable.tsx'
+import { MarketTable, MarketRow, MarketHeader, MarketBody } from '#/section-kit/MarketTable.tsx'
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
@@ -149,25 +149,29 @@ export const InvestingMarkets = defineCapsule({
         className={cn('bg-background py-24', props.className)}
       >
         <Container>
+          <MarketHeader asChild>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               {heading}
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
+          </MarketHeader>
           <MarketTable
             variant="default"
             className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 border-0"
           >
+            <MarketBody asChild>
+            <div className="contents">
             {quotes.map((q, i) => (
-              <Card
-                key={q.symbol}
-                asChild
-                variant="outline"
-                rounded="xl"
-                padding="md"
-                className="bg-muted/50 text-left transition-shadow hover:shadow-lg"
-              >
+              <MarketRow asChild key={q.symbol}>
+                <Card
+                  asChild
+                  variant="outline"
+                  rounded="xl"
+                  padding="md"
+                  className="bg-muted/50 text-left transition-shadow hover:shadow-lg"
+                >
                 <button type="button" onClick={() => go(q.symbol)}>
                   <div className="mb-4 flex items-center gap-3">
                     <div
@@ -215,8 +219,11 @@ export const InvestingMarkets = defineCapsule({
                     </svg>
                   </div>
                 </button>
-              </Card>
+                </Card>
+              </MarketRow>
             ))}
+            </div>
+            </MarketBody>
           </MarketTable>
 
           <div className="mt-8 overflow-hidden rounded-2xl bg-foreground p-6 text-background sm:p-8">

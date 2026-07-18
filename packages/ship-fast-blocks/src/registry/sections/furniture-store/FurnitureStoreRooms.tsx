@@ -82,7 +82,7 @@ export const FurnitureStoreRooms = defineCapsule({
       Outdoor:
         'Outdoor patio with teak furniture, neutral cushions, and string lights at dusk',
     }
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
         height="16"

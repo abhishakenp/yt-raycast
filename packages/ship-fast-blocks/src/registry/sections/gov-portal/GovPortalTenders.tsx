@@ -41,6 +41,7 @@ function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
     )
   }
   return (
+    <TenderBody asChild>
     <Card
       asChild
       variant="default"
@@ -55,10 +56,10 @@ function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
           const date = str(row, 'date')
           const docUrl = str(row, 'docUrl')
           return (
-            <li
-              key={`${nit}-${i}`}
-              className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-start sm:justify-between"
-            >
+            <TenderRow asChild key={`${nit}-${i}`}>
+              <li
+                className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-start sm:justify-between"
+              >
               <div className="min-w-0">
                 {nit ? (
                   <span className="text-sm font-semibold text-destructive">
@@ -83,16 +84,18 @@ function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
                   {pickLang(lang, 'View PDF', 'पीडीएफ देखें')}
                 </a>
               ) : null}
-            </li>
+              </li>
+            </TenderRow>
           )
         })}
       </ul>
     </Card>
+    </TenderBody>
   )
 }
 
 import { Container } from '#/section-kit/Container.tsx'
-import { TenderTable } from '#/section-kit/TenderTable.tsx'
+import { TenderTable, TenderRow, TenderHeader, TenderBody } from '#/section-kit/TenderTable.tsx'
 
 /**
  * GovPortalTenderBoard — a tabbed government e-tender board (Tenders /
@@ -192,9 +195,11 @@ export const GovPortalTenderBoard = defineCapsule({
         className={cn('bg-background py-16 border-0', props.className)}
       >
         <Container>
+          <TenderHeader asChild>
           <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
+          </TenderHeader>
 
           <div className="mb-5 flex flex-wrap gap-2">
             {tabs.map((tab) => (

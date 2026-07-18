@@ -16,7 +16,7 @@ import {
   OverviewStat,
   OverviewStatValue,
   OverviewStatLabel,
-  OverviewImagePanel,
+  OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
@@ -130,7 +130,7 @@ export const PropertyListingOverview = defineCapsule({
               ))}
             </OverviewStats>
           </OverviewContent>
-          <OverviewImagePanel
+          <OverviewMediaPanel
             alt={imageAlt}
             brand={brand}
             caption="Section-level building block for generated multi-page experiences."

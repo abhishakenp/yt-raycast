@@ -46,7 +46,7 @@ export const NoCodeCta = defineCapsule({
       props.note ??
       'Free forever plan available • 14-day Pro trial • Cancel anytime'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
         height="16"

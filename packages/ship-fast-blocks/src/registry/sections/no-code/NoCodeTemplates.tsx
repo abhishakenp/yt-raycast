@@ -15,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * marketplace. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { TemplateGrid, TemplateCard } from '#/section-kit/TemplateGrid.tsx'
 export const NoCodeTemplates = defineCapsule({
   name: 'NoCodeTemplates',
   description:
@@ -109,7 +110,7 @@ export const NoCodeTemplates = defineCapsule({
       'bg-primary text-primary-foreground',
       'bg-chart-5 text-background',
     ]
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
         height="16"
@@ -161,14 +162,14 @@ export const NoCodeTemplates = defineCapsule({
               ))}
             </div>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <TemplateGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((tpl, i) => (
-              <button
-                key={tpl.title}
-                type="button"
-                onClick={() => go(tpl.title)}
-                className="group relative block w-full overflow-hidden rounded-2xl border border-border text-left transition-all hover:shadow-xl"
-              >
+              <TemplateCard asChild key={tpl.title}>
+                <button
+                  type="button"
+                  onClick={() => go(tpl.title)}
+                  className="group relative block w-full overflow-hidden rounded-2xl border border-border text-left transition-all hover:shadow-xl"
+                >
                 <div className="aspect-[4/3] bg-muted">
                   <Image
                     alt={tpl.imageAlt}
@@ -193,9 +194,10 @@ export const NoCodeTemplates = defineCapsule({
                     {tpl.description}
                   </p>
                 </div>
-              </button>
+                </button>
+              </TemplateCard>
             ))}
-          </div>
+          </TemplateGrid>
           <div className="mt-12 text-center">
             <button
               type="button"

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 
 /**
  * SubscriptionBoxSteps — bespoke "how it works" band for a subscription-box
@@ -117,7 +118,7 @@ export const SubscriptionBoxSteps = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn(
           'bg-background py-20 text-foreground sm:py-24',
           props.className,
@@ -129,7 +130,7 @@ export const SubscriptionBoxSteps = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <StepTimelineGrid columns={3} className="mt-14 grid-cols-1 gap-6">
             {steps.map((step, i) => {
               const Icon = STEP_ICONS[i % STEP_ICONS.length]
               return (
@@ -154,9 +155,9 @@ export const SubscriptionBoxSteps = defineCapsule({
                 </Card>
               )
             })}
-          </div>
+          </StepTimelineGrid>
         </div>
-      </section>
+      </StepTimeline>
     )
   },
 })

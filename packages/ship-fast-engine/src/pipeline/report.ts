@@ -4,7 +4,7 @@ interface TokenStats {
   cost?: number
 }
 
-interface RunAllStats {
+export interface RunAllStats {
   elapsed: number
   done: number
   total: number
@@ -53,11 +53,11 @@ export function formatRunAllReport(
     indiaMode?.code && indiaMode.code !== 'en'
       ? `Groq (${indiaMode.name})   `
       : 'Groq              '
-  const ms = (a, b) =>
-    timings[b] && timings[a]
-      ? ((timings[b] - timings[a]) / 1000).toFixed(1)
+  const ms = (a: string, b: unknown) =>
+    timings[b as string] && timings[a]
+      ? ((timings[b as string] - timings[a]) / 1000).toFixed(1)
       : '\u2014'
-  const tokFmt = (t) => (t > 0 ? t.toLocaleString() : '\u2014')
+  const tokFmt = (t: unknown) => ((t as number) > 0 ? (t as number).toLocaleString() : '\u2014')
 
   const totalInput =
     (designStats?.inputTokens ?? 0) +

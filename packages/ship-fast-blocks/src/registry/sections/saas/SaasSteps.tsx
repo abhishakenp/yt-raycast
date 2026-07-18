@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
 
 /**
  * SaasSteps — a "How it works" band for a B2B SaaS landing page. A centered
@@ -63,7 +64,7 @@ export const SaasSteps = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="saas-steps-heading"
       >
@@ -89,7 +90,7 @@ export const SaasSteps = defineCapsule({
               className="pointer-events-none absolute left-0 right-0 top-8 hidden h-px bg-gradient-to-r from-transparent via-accent to-transparent md:block"
             />
             {steps.map((step, i) => (
-              <li
+              <StepItem
                 key={i}
                 className="relative flex flex-col items-center text-center md:items-start md:text-left"
               >
@@ -102,11 +103,11 @@ export const SaasSteps = defineCapsule({
                 <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
-              </li>
+              </StepItem>
             ))}
           </ol>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

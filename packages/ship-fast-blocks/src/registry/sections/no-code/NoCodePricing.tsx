@@ -126,7 +126,7 @@ export const NoCodePricing = defineCapsule({
         }),
       ),
     )
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         width="20"
         height="20"

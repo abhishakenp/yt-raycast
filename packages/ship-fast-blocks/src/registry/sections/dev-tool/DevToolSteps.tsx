@@ -3,6 +3,11 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * DevToolSteps — a 3-step "get started in minutes" timeline for a developer
@@ -50,7 +55,7 @@ export const DevToolSteps = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
         aria-labelledby="steps-heading"
       >
@@ -64,9 +69,9 @@ export const DevToolSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
+          <StepTimelineGrid columns={3} className="gap-8">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 {i < items.length - 1 ? (
                   <div
                     aria-hidden="true"
@@ -82,11 +87,11 @@ export const DevToolSteps = defineCapsule({
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

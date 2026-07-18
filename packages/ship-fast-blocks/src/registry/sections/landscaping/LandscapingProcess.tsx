@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * LandscapingProcess — a centered-header "how we work" process band for a
@@ -58,7 +63,7 @@ export const LandscapingProcess = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-accent py-20 lg:py-28', props.className)}>
+      <StepTimeline className={cn('bg-accent py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
@@ -66,9 +71,9 @@ export const LandscapingProcess = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-4">
+          <StepTimelineGrid columns={4} className="gap-8">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground">
                   {i + 1}
                 </div>
@@ -84,11 +89,11 @@ export const LandscapingProcess = defineCapsule({
                     className="absolute left-12 top-6 hidden h-0.5 w-full bg-primary/20 md:block"
                   />
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

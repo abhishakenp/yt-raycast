@@ -114,7 +114,7 @@ const PartnersRoute = PartnersRouteImport.update({
   id: '/partners',
   path: '/partners',
   getParentRoute: () => rootRouteImport,
-})
+} as any)
 const MineRoute = MineRouteImport.update({
   id: '/mine',
   path: '/mine',
@@ -275,12 +275,12 @@ const ApiPartnersEmbedTokenRoute = ApiPartnersEmbedTokenRouteImport.update({
   id: '/api/partners/embed-token',
   path: '/api/partners/embed-token',
   getParentRoute: () => rootRouteImport,
-})
+} as any)
 const ApiPartnersAttributionRoute = ApiPartnersAttributionRouteImport.update({
   id: '/api/partners/attribution',
   path: '/api/partners/attribution',
   getParentRoute: () => rootRouteImport,
-})
+} as any)
 const ApiMedusaStoreConfigRoute = ApiMedusaStoreConfigRouteImport.update({
   id: '/api/medusa-store/config',
   path: '/api/medusa-store/config',

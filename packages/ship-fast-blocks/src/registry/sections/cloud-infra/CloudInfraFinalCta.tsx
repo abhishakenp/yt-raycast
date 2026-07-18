@@ -44,7 +44,7 @@ export const CloudInfraFinalCta = defineCapsule({
       ? props.trust
       : ['$500 free credits', 'No credit card required', 'Cancel anytime']
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -59,7 +59,7 @@ export const CloudInfraFinalCta = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

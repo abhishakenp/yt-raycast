@@ -11,7 +11,7 @@ import {
   ListingCardSpecRow,
 } from '#/section-kit/ListingCard.tsx'
 import type { PropertyListingCatalogInput } from './property-listing-lakebed.ts'
-import { propertyListingLakebed } from './property-listing-lakebed.ts'
+import { propertyListingLakebed, type PropertyListingRecord } from './property-listing-lakebed.ts'
 import {
   PropertyListingInquiryButton,
   PropertyListingMutationSpinner,
@@ -114,14 +114,14 @@ export const PropertyListingGallery = defineCapsule({
           },
         ]
     useSyncPropertyListings(lakebed, listings)
-    const catalog = lakebed.useQuery('propertyCatalog') ?? []
+    const catalog: PropertyListingRecord[] = lakebed.useQuery('propertyCatalog') ?? []
     const listingCatalog = catalog.length ? catalog : listings
     const activeFilter = propertySearch.state?.filter ?? filters[0] ?? ''
     const activeLocation = propertySearch.state?.location.toLowerCase() ?? ''
     const activeQuery = propertySearch.state?.query.toLowerCase() ?? ''
     const savedAddresses = new Set(propertyActions.state?.savedAddresses ?? [])
     const selectedAddress = propertyActions.state?.selectedAddress ?? ''
-    const matchesFilter = (listing) => {
+    const matchesFilter = (listing: PropertyListingCatalogInput) => {
       const listingStatus = listing.price.includes('/mo')
         ? 'For Rent'
         : 'For Sale'

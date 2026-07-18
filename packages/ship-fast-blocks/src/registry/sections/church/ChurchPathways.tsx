@@ -2,11 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { PathwayGrid, PathwayCard } from '#/section-kit/PathwayGrid.tsx'
 
 /**
  * ChurchPathways — a 3-up "next step" pathways grid for a church or faith-community
@@ -40,7 +37,6 @@ export const ChurchPathways = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Everyone has a next step'
     const description =
       props.description ??
@@ -74,22 +70,6 @@ export const ChurchPathways = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }) => (
-      <svg
-        className={className}
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-      </svg>
-    )
 
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
@@ -102,35 +82,16 @@ export const ChurchPathways = defineCapsule({
             subtitleClassName="text-lg leading-relaxed"
             className="mb-20 max-w-3xl gap-6"
           />
-          <ResponsiveGrid cols="1-md-2-3" gap="lg" className="lg:gap-12">
+          <PathwayGrid cols="1-2-3">
             {items.map((item) => (
-              <article key={item.title}>
-                <ImageTile treatment="4-3-xl-muted" className="mb-6">
-                  <Image
-                    alt={item.imageAlt}
-                    w={800}
-                    h={600}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </ImageTile>
-                <h3 className="mb-3 text-xl font-medium text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mb-4 leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => go(item.cta)}
-                  className="inline-flex items-center text-sm font-medium text-foreground hover:text-muted-foreground"
-                >
-                  {item.cta}
-                  <ArrowRight className="ml-1 size-4" />
-                </button>
-              </article>
+              <PathwayCard key={item.title}>
+                <div className="flex flex-col gap-3 p-6">
+                  <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                </div>
+              </PathwayCard>
             ))}
-          </ResponsiveGrid>
+          </PathwayGrid>
         </div>
       </section>
     )

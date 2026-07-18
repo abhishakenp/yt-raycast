@@ -11,6 +11,11 @@ import { cn } from '#/lib/utils.ts'
  * agencies, consultancies, or service firms. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 export const MarketingAgencyProcess = defineCapsule({
   name: 'MarketingAgencyProcess',
   description:
@@ -60,7 +65,7 @@ export const MarketingAgencyProcess = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <StepTimeline className={cn('bg-background py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-3 text-sm font-medium text-muted-foreground">
@@ -71,9 +76,9 @@ export const MarketingAgencyProcess = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-4">
+          <StepTimelineGrid columns={4} className="gap-8">
             {steps.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
                   {i + 1}
                 </div>
@@ -89,11 +94,11 @@ export const MarketingAgencyProcess = defineCapsule({
                     className="absolute left-full top-6 hidden h-px w-full -translate-x-6 bg-border md:block"
                   />
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

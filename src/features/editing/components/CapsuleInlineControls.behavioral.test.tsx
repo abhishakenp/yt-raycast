@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup, act } from '@testing-library/react'
-import { createElement, type MutableRefObject } from 'react'
+import { createElement, type MutableRefObject, type ReactNode } from 'react'
 
 // Mock useSectionCapsuleActions directly.
 const mockActions = vi.hoisted(() => ({
@@ -21,7 +21,7 @@ vi.mock('../hooks/useSectionCapsuleActions', () => ({
 
 // Mock LakebedSessionProvider as a pass-through.
 vi.mock('@ship-fast/lakebed/react', () => ({
-  LakebedSessionProvider: ({ children }) =>
+  LakebedSessionProvider: ({ children }: { children?: ReactNode }) =>
     createElement('div', { 'data-testid': 'provider' }, children),
 }))
 

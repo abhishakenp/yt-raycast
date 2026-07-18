@@ -10,7 +10,6 @@ import {
   sendSlackOperationalMessage,
   sendTelegramOperationalMessage,
   shouldNotifyOperationalEvent,
-  type OperationalNotificationPayload,
 } from './session_operational_notifications'
 
 type ActionHandler<Args> = (ctx: ActionCtx, args: Args) => Promise<unknown>
@@ -45,7 +44,7 @@ type InsertedRecord = {
 
 type ScheduledRecord = {
   delay: number
-  args: OperationalNotificationPayload
+  args: Record<string, unknown>
 }
 
 const sessionId = 'session_operational' as Id<'sessions'>

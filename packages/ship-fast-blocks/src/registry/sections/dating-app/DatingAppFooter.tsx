@@ -73,7 +73,7 @@ export const DatingAppFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
     const homeTarget = props.homeTarget ?? 'How It Works'
 
-    const HeartGlyph = ({ className }) => (
+    const HeartGlyph = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

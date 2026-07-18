@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest'
-import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs'
+import { mkdirSync, rmSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { slug, parseJson, readFile, writeFile } from './workspace'
@@ -172,7 +172,6 @@ describe('writeFile', () => {
   it('writes to nested path', () => {
     const subdir = join(TMP_DIR, 'subdir')
     if (!existsSync(subdir)) mkdirSync(subdir, { recursive: true })
-    const filename = join('subdir', 'nested.txt')
     // writeFile joins workspace + file, so we need to pass the subdir as workspace
     writeFile(subdir, 'nested.txt', 'nested content')
     expect(readFile(subdir, 'nested.txt')).toBe('nested content')

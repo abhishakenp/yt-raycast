@@ -108,7 +108,7 @@ export const AccountingFirmServices = defineCapsule({
           },
         ]
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"

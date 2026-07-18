@@ -63,7 +63,7 @@ export const BootcampHero = defineCapsule({
     const heroStatValue = props.statValue ?? '2,400+'
     const heroStatLabel = props.statLabel ?? 'graduates placed'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="currentColor"

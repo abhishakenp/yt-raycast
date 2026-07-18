@@ -65,7 +65,7 @@ export const OnlineCourseHero = defineCapsule({
     const rating = props.rating ?? '4.9/5'
     const ratingNote = props.ratingNote ?? 'From 12,847 reviews'
 
-    const Star = ({ className }) => (
+    const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

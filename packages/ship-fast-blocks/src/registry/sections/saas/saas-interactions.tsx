@@ -496,7 +496,7 @@ export function SaasMobileMenu({
   })
 
   const navigate = useCallback(
-    (target?) => {
+    (target: string) => {
       setOpen(false)
       go(target)
     },

@@ -61,10 +61,10 @@ function parseHtmlDocument(html: string) {
 function collectWindowRuntimeErrors(dom: JSDOM) {
   const errors: unknown[] = []
 
-  dom.window.addEventListener('error', (event) => {
+  dom.window.addEventListener('error', (event: ErrorEvent) => {
     errors.push(event.error ?? event.message)
   })
-  dom.window.addEventListener('unhandledrejection', (event) => {
+  dom.window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
     errors.push(event.reason ?? event)
   })
 
@@ -97,7 +97,7 @@ async function loadBundledCommonJsModule(
     write: false,
   })
   const module = { exports: {} as Record<string, unknown> }
-  const requireStub = (specifier) => {
+  const requireStub = (specifier: string) => {
     throw new Error(`Unexpected external dependency: ${specifier}`)
   }
   const output = result.outputFiles[0]
@@ -433,7 +433,7 @@ describe('openui-export-builder', () => {
       url: 'https://export.test/',
     })
     const scrolledSections: string[] = []
-    runtime.window.requestAnimationFrame = (callback) => {
+    runtime.window.requestAnimationFrame = (callback: (time: number) => void) => {
       callback(0)
       return 1
     }
@@ -760,7 +760,7 @@ export function useParams() { return {}; }
     expect(files['app/layout.tsx']).toContain('Export Demo')
   })
 
-  const assertAllFormattableFilesArePrettierFormatted = async (files) => {
+  const assertAllFormattableFilesArePrettierFormatted = async (files: Record<string, string>) => {
     const reformatted = await formatExportFiles(files)
     for (const [path, original] of Object.entries(files)) {
       if (!/\.(ts|tsx|mjs|js|json|css|md)$/.test(path)) continue

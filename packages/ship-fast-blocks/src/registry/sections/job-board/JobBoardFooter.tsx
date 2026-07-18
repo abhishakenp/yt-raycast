@@ -86,7 +86,7 @@ export const JobBoardFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     const homeTarget = props.homeTarget ?? columns[0]?.links[0] ?? brand
 
-    const BriefcaseMark = ({ className }) => (
+    const BriefcaseMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary text-primary-foreground',

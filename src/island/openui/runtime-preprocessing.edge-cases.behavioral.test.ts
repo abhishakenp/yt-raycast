@@ -560,7 +560,7 @@ describe('chrome on-device translator', () => {
     beforeEach(() => {
       ;(globalThis as Record<string, unknown>).Translator = {
         availability: async () => 'available',
-        create: async () => ({ translate: async (t) => t }),
+        create: async () => ({ translate: async (t: number) => t }),
       }
     })
 
@@ -582,7 +582,7 @@ describe('chrome on-device translator', () => {
 
   it('canonicalizes regional locale tags before creating a translator', async () => {
     const create = vi.fn(async () => ({
-      translate: async (t) => `MX:${t}`,
+      translate: async (t: number) => `MX:${t}`,
     }))
     const availability = vi.fn(async () => 'available')
     ;(globalThis as Record<string, unknown>).Translator = {
@@ -605,7 +605,7 @@ describe('chrome on-device translator', () => {
 
   it('24. instance caching: the same locale reuses one translator instance', async () => {
     const create = vi.fn(async () => ({
-      translate: async (t) => `T:${t}`,
+      translate: async (t: number) => `T:${t}`,
     }))
     ;(globalThis as Record<string, unknown>).Translator = {
       availability: async () => 'available',
@@ -623,7 +623,7 @@ describe('chrome on-device translator', () => {
   describe('model download states', () => {
     it('25. "downloadable" returns null so preview rendering falls back instead of blocking on model setup', async () => {
       const create = vi.fn(async () => ({
-        translate: async (t) => `D:${t}`,
+        translate: async (t: number) => `D:${t}`,
       }))
       ;(globalThis as Record<string, unknown>).Translator = {
         availability: async () => 'downloadable',

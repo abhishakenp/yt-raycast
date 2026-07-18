@@ -4,6 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * DatingAppSteps — a 4-step "How it works" numbered timeline for a dating /
@@ -57,7 +62,7 @@ export const DatingAppSteps = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-muted py-24', props.className)}>
+      <StepTimeline className={cn('bg-muted py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
@@ -65,9 +70,9 @@ export const DatingAppSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{stepsDesc}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <StepTimelineGrid columns={2} className="gap-8 lg:grid-cols-4">
             {stepItems.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="mb-6 grid size-16 place-items-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground shadow-lg shadow-primary/20">
                   {i + 1}
                 </div>
@@ -83,11 +88,11 @@ export const DatingAppSteps = defineCapsule({
                     className="absolute left-full top-8 -z-10 hidden h-0.5 w-full bg-gradient-to-r from-primary/30 to-transparent lg:block"
                   />
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

@@ -49,7 +49,7 @@ export const BootcampNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaTarget = props.ctaTarget ?? 'Start Your Application'
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',

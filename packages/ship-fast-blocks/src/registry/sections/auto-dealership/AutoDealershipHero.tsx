@@ -7,8 +7,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import {
   AutoLeadActionButton,
@@ -87,7 +87,7 @@ export const AutoDealershipHero = defineCapsule({
                   {subheading}
                 </HeroSubheading>
               </div>
-              <HeroCtas className="mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -111,7 +111,7 @@ export const AutoDealershipHero = defineCapsule({
                 >
                   {secondaryCta}
                 </AutoLeadActionButton>
-              </HeroCtas>
+              </HeroActions>
               <div className="flex items-center gap-8 pt-4">
                 {stats.map((s, i) => (
                   <div key={s.label} className="flex items-center gap-8">
@@ -125,7 +125,7 @@ export const AutoDealershipHero = defineCapsule({
               </div>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

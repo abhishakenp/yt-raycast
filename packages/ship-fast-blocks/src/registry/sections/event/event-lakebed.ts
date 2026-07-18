@@ -59,7 +59,7 @@ export const eventLakebed = {
     ),
   },
   mutations: {
-    recordEventAction: event.mutation((_ctx, input) => {
+    recordEventAction: event.mutation((_ctx, input: EventActionInput) => {
       _ctx.db.actions.insert({
         action: input.action ?? 'register',
         label: input.label,
@@ -69,7 +69,7 @@ export const eventLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt').all()
     }),
-    syncTickets: event.mutation((_ctx, input) => {
+    syncTickets: event.mutation((_ctx, input: { tickets: EventTicketInput[] }) => {
       for (const ticket of input.tickets) {
         const name = ticket.name.trim()
         if (!name) continue

@@ -107,7 +107,7 @@ export const jobBoardLakebed = {
     }),
   },
   mutations: {
-    recordJobBoardAction: jobBoard.mutation((_ctx, input) => {
+    recordJobBoardAction: jobBoard.mutation((_ctx, input: JobBoardActionInput) => {
       const action = clean(input.action)
       if (!action) return _ctx.db.actions.orderBy('createdAt').all()
 
@@ -118,7 +118,7 @@ export const jobBoardLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt', 'desc').all()
     }),
-    applyToJob: jobBoard.mutation((_ctx, input) => {
+    applyToJob: jobBoard.mutation((_ctx, input: JobBoardApplicationInput) => {
       const role = clean(input.role)
       if (!role) return _ctx.db.applications.orderBy('createdAt').all()
 
@@ -132,7 +132,7 @@ export const jobBoardLakebed = {
 
       return _ctx.db.applications.orderBy('createdAt').all()
     }),
-    loadMoreJobs: jobBoard.mutation((_ctx, increment = 3) => {
+    loadMoreJobs: jobBoard.mutation((_ctx, increment: number = 3) => {
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
       const visibleCount =
         Math.max(1, Math.floor(current?.visibleCount ?? 3)) +
@@ -151,7 +151,7 @@ export const jobBoardLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    setJobSearch: jobBoard.mutation((_ctx, input) => {
+    setJobSearch: jobBoard.mutation((_ctx, input: JobBoardSearchInput) => {
       const filter = clean(input.filter) || 'All Jobs'
       const location = clean(input.location)
       const query = clean(input.query)
@@ -173,7 +173,7 @@ export const jobBoardLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncJobs: jobBoard.mutation((_ctx, input) => {
+    syncJobs: jobBoard.mutation((_ctx, input: { items: JobBoardCatalogInput[] }) => {
       const existing = _ctx.db.items.orderBy('createdAt').all()
       const existingByRole = new Map(
         existing.map((item) => [item.role.toLowerCase(), item]),

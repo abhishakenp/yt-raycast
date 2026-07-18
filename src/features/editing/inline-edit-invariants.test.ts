@@ -70,7 +70,7 @@ describe('useTextEdit — behavioral', () => {
   beforeEach(() => {
     // Run rAF callbacks synchronously so deferred blur handlers fire
     // immediately — this exercises the re-entrant finishEdit path.
-    vi.stubGlobal('requestAnimationFrame', (cb) => {
+    vi.stubGlobal('requestAnimationFrame', (cb: (time: number) => void) => {
       cb(0)
       return 0
     })
@@ -172,7 +172,7 @@ describe('useTextEdit — behavioral', () => {
 
 describe('useTextEdit — cancel reverts text changes', () => {
   beforeEach(() => {
-    vi.stubGlobal('requestAnimationFrame', (cb) => {
+    vi.stubGlobal('requestAnimationFrame', (cb: (time: number) => void) => {
       cb(0)
       return 0
     })

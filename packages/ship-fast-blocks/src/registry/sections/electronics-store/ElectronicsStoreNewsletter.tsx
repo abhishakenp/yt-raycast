@@ -8,6 +8,7 @@ import {
   NewsletterCtaFineprint,
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -50,10 +51,11 @@ export const ElectronicsStoreNewsletter = defineCapsule({
       'By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.'
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         variant="inverted"
         className={cn('py-16 lg:py-24', props.className)}
       >
+        <NewsletterCta asChild>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <NewsletterCtaHeading className="text-background lg:text-4xl">
             {heading}
@@ -77,7 +79,8 @@ export const ElectronicsStoreNewsletter = defineCapsule({
             {disclaimer}
           </NewsletterCtaFineprint>
         </div>
-      </NewsletterCta>
+        </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

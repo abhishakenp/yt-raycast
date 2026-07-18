@@ -14,6 +14,7 @@ import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { InventoryGrid, InventoryCard } from '#/section-kit/InventoryGrid.tsx'
 
 /**
  * AutoDealershipInventory — featured-inventory card grid for an auto dealership
@@ -143,17 +144,17 @@ export const AutoDealershipInventory = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          <InventoryGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             {items.map((v) => (
-              <Card
-                asChild
-                key={v.name}
-                variant="muted"
-                rounded="lg"
-                padding="none"
-                className="group overflow-hidden transition-colors hover:border-foreground/30"
-              >
-                <article>
+              <InventoryCard asChild key={v.name}>
+                <Card
+                  asChild
+                  variant="muted"
+                  rounded="lg"
+                  padding="none"
+                  className="group overflow-hidden transition-colors hover:border-foreground/30"
+                >
+                  <article>
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
                       alt={v.imageAlt}
@@ -209,10 +210,11 @@ export const AutoDealershipInventory = defineCapsule({
                       </AutoLeadActionButton>
                     </div>
                   </div>
-                </article>
-              </Card>
+                  </article>
+                </Card>
+              </InventoryCard>
             ))}
-          </div>
+          </InventoryGrid>
 
           <div className="mt-12 text-center">
             <button

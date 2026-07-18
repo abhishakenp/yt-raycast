@@ -8,7 +8,7 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
+  HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
@@ -100,7 +100,7 @@ export const AuthHero = defineCapsule({
               {subheading}
             </HeroSubheading>
 
-            <HeroCtas className="mt-9 flex flex-col gap-4 sm:flex-row">
+            <HeroActions className="mt-9 flex flex-col gap-4 sm:flex-row">
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryTarget}
@@ -123,7 +123,7 @@ export const AuthHero = defineCapsule({
               >
                 {secondaryCta}
               </button>
-            </HeroCtas>
+            </HeroActions>
 
             <p className="mt-6 text-sm text-muted-foreground">{trustLine}</p>
           </div>

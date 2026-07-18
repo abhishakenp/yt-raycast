@@ -45,7 +45,7 @@ export const AgencyNavbar = defineCapsule({
       : ['Services', 'Work', 'About', 'Contact']
     const cta = props.cta ?? 'Start a project'
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground',

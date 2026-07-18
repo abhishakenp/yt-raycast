@@ -3,6 +3,11 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * PlumbingHvacSteps — a "How it works" band for a plumbing & HVAC trade site. A
@@ -59,7 +64,7 @@ export const PlumbingHvacSteps = defineCapsule({
         ]
 
     return (
-      <section
+      <StepTimeline
         className={cn(
           'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
@@ -76,14 +81,14 @@ export const PlumbingHvacSteps = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{subheading}</p>
           </div>
-          <ol className="relative grid gap-10 md:gap-8 md:grid-cols-3">
+          <StepTimelineGrid columns={3} className="relative gap-10 md:gap-8">
             {/* Connecting accent line behind the badges on desktop */}
             <span
               aria-hidden="true"
               className="pointer-events-none absolute left-0 right-0 top-8 hidden h-px bg-gradient-to-r from-transparent via-accent to-transparent md:block"
             />
             {steps.map((step, i) => (
-              <li
+              <StepItem
                 key={i}
                 className="relative flex flex-col items-center text-center md:items-start md:text-left"
               >
@@ -96,11 +101,11 @@ export const PlumbingHvacSteps = defineCapsule({
                 <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
-              </li>
+              </StepItem>
             ))}
-          </ol>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

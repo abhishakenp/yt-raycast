@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { DirectAnswer } from '#/section-kit/DirectAnswer.tsx'
 
 export const AeoDirectAnswer = defineCapsule({
   name: 'AeoDirectAnswer',
@@ -42,6 +43,7 @@ export const AeoDirectAnswer = defineCapsule({
               className="mb-4"
             />
           ) : null}
+          <DirectAnswer className="mb-6">
           <p className="text-base leading-relaxed text-foreground sm:text-lg">
             {answer}
           </p>
@@ -49,6 +51,7 @@ export const AeoDirectAnswer = defineCapsule({
             <strong className="text-foreground">Who this is for:</strong>{' '}
             {whoFor}
           </p>
+          </DirectAnswer>
         </Container>
       </section>
     )

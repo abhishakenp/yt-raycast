@@ -4,9 +4,9 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
 
 /**
  * NewsTopics — browse-by-topic / section nav grid for a news outlet. On a card
@@ -103,7 +103,7 @@ export const NewsTopics = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -137,14 +137,14 @@ export const NewsTopics = defineCapsule({
             </button>
           </div>
 
-          <ResponsiveGrid cols="2-3-4" gap="sm">
+          <TopicGrid cols="2-3-4" gap="sm">
             {items.map((topic) => (
-              <button
-                key={topic.name}
-                type="button"
-                onClick={() => go(topic.name)}
-                className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
-              >
+              <TopicCard asChild key={topic.name}>
+                <button
+                  type="button"
+                  onClick={() => go(topic.name)}
+                  className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
+                >
                 <Image
                   alt={topic.imageAlt}
                   w={300}
@@ -169,9 +169,10 @@ export const NewsTopics = defineCapsule({
                     {topic.count}
                   </p>
                 </div>
-              </button>
+                </button>
+              </TopicCard>
             ))}
-          </ResponsiveGrid>
+          </TopicGrid>
         </Container>
       </section>
     )

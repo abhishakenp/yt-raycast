@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { Loader2Icon, MenuIcon } from 'lucide-react'
@@ -120,7 +120,7 @@ export function PublicationSubscribeForm({
   const subscribe = lakebed.useMutation('subscribe')
   const count = summary?.count ?? 0
 
-  const submit = (event) => {
+  const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const nextEmail = email.trim()
     if (!nextEmail || subscribe.isPending) return
@@ -369,7 +369,7 @@ export function PublicationMobileMenu({
   const go = useNavigate()
 
   const navigate = useCallback(
-    (target?) => {
+    (target?: string) => {
       setOpen(false)
       go(target)
     },

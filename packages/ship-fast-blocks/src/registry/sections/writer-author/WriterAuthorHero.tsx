@@ -8,8 +8,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -79,7 +79,7 @@ export const WriterAuthorHero = defineCapsule({
 
             <HeroSubheading className="max-w-xl">{heroIntro}</HeroSubheading>
 
-            <HeroCtas className="mt-10 flex-col gap-4 sm:flex-row">
+            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(heroPrimaryTarget)}
@@ -94,11 +94,11 @@ export const WriterAuthorHero = defineCapsule({
               >
                 {heroSecondary}
               </button>
-            </HeroCtas>
+            </HeroActions>
           </div>
 
           <div className="relative mx-auto w-full max-w-md lg:mx-0">
-            <HeroImage
+            <HeroMediaPanel
               alt={heroPortraitAlt}
               w={640}
               h={800}

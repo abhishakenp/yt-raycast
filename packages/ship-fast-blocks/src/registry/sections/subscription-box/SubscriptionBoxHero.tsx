@@ -8,8 +8,8 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -102,7 +102,7 @@ export const SubscriptionBoxHero = defineCapsule({
             <HeroSubheading className="max-w-xl leading-8">
               {subheading}
             </HeroSubheading>
-            <HeroCtas className="flex-col gap-3 sm:flex-row">
+            <HeroActions className="flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={() => go(primaryCta)}
@@ -129,7 +129,7 @@ export const SubscriptionBoxHero = defineCapsule({
               >
                 {addLabel}
               </CommerceAddItemButton>
-            </HeroCtas>
+            </HeroActions>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               {badges.map((badge) => (
                 <span
@@ -167,7 +167,7 @@ export const SubscriptionBoxHero = defineCapsule({
               padding="none"
               className="relative overflow-hidden rounded-[2rem] shadow-[0_24px_80px_rgba(0,0,0,0.14)]"
             >
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={900}
                 h={760}

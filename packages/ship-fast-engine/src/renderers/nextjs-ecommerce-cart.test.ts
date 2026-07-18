@@ -34,7 +34,7 @@ vi.mock('framer-motion', async () => {
     transition?: unknown
     whileHover?: unknown
   }
-  const element = (tag) =>
+  const element = (tag: string) =>
     React.forwardRef<HTMLElement, MotionMockProps>(
       (
         {

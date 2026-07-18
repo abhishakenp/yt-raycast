@@ -112,7 +112,7 @@ export function injectLLMHomepageSwiper(
   if (runtimeOk) return html
 
   let out = html
-  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
   if (!out.includes(SWIPER_CDN_CSS)) {
     out = /<\/head>/i.test(out)

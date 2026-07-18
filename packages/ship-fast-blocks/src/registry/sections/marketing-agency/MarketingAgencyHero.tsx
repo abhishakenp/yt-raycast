@@ -8,10 +8,10 @@ import {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -63,7 +63,7 @@ export const MarketingAgencyHero = defineCapsule({
     const statValue = props.statValue ?? '340%'
     const statLabel = props.statLabel ?? 'Avg. ROI Increase'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -78,7 +78,7 @@ export const MarketingAgencyHero = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -115,7 +115,7 @@ export const MarketingAgencyHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0">
                 {subheading}
               </HeroSubheading>
-              <HeroCtas className="gap-4">
+              <HeroActions className="gap-4">
                 <button
                   type="button"
                   onClick={() => go(primaryCta)}
@@ -131,18 +131,18 @@ export const MarketingAgencyHero = defineCapsule({
                 >
                   {secondaryCta}
                 </button>
-              </HeroCtas>
-              <HeroTrustRow className="mt-10 gap-6">
+              </HeroActions>
+              <HeroSocialProof className="mt-10 gap-6">
                 {trust.map((t) => (
-                  <HeroTrustItem key={t}>
+                  <HeroSocialProofItem key={t}>
                     <Check className="size-5 text-primary" />
                     <span>{t}</span>
-                  </HeroTrustItem>
+                  </HeroSocialProofItem>
                 ))}
-              </HeroTrustRow>
+              </HeroSocialProof>
             </div>
             <div className="relative">
-              <HeroImage
+              <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}

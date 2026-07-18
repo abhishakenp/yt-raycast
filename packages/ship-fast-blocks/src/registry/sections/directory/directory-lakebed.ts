@@ -102,7 +102,7 @@ export const directoryLakebed = {
     }),
   },
   mutations: {
-    requestListing: directory.mutation((_ctx, input) => {
+    requestListing: directory.mutation((_ctx, input: DirectoryLeadInput) => {
       const action = clean(input.action)
       if (!action) return _ctx.db.leads.orderBy('createdAt').all()
 
@@ -113,7 +113,7 @@ export const directoryLakebed = {
 
       return _ctx.db.leads.orderBy('createdAt').all()
     }),
-    selectListing: directory.mutation((_ctx, input) => {
+    selectListing: directory.mutation((_ctx, input: DirectorySelectInput) => {
       const name = clean(input.name)
       if (!name) return _ctx.db.selections.orderBy('createdAt').all()
 
@@ -135,7 +135,7 @@ export const directoryLakebed = {
 
       return _ctx.db.selections.orderBy('createdAt').all()
     }),
-    setDirectorySearch: directory.mutation((_ctx, input) => {
+    setDirectorySearch: directory.mutation((_ctx, input: DirectorySearchInput) => {
       const category = clean(input.category)
       const query = clean(input.query)
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
@@ -155,7 +155,7 @@ export const directoryLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncListings: directory.mutation((_ctx, input) => {
+    syncListings: directory.mutation((_ctx, input: { items: DirectoryListingInput[] }) => {
       const existing = _ctx.db.items.orderBy('createdAt').all()
       const existingByName = new Map(
         existing.map((item) => [item.name.toLowerCase(), item]),

@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * trade — on a brokerage or trading-app page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
 export const InvestingSteps = defineCapsule({
   name: 'InvestingSteps',
   description:
@@ -79,7 +80,7 @@ export const InvestingSteps = defineCapsule({
     const transferImageAlt =
       props.transferImageAlt ??
       'laptop showing financial dashboard with charts and account balances'
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -94,7 +95,7 @@ export const InvestingSteps = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <StepTimeline className={cn('bg-background py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -104,7 +105,7 @@ export const InvestingSteps = defineCapsule({
           </div>
           <div className="grid gap-8 lg:grid-cols-3 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 <div className="flex items-start gap-6 lg:flex-col lg:items-center">
                   <div className="grid size-16 flex-shrink-0 place-items-center rounded-2xl bg-primary text-2xl font-semibold text-primary-foreground">
                     {i + 1}
@@ -124,7 +125,7 @@ export const InvestingSteps = defineCapsule({
                     <div className="absolute -top-1.5 right-0 size-3 rounded-full bg-muted-foreground/40" />
                   </div>
                 )}
-              </div>
+              </StepItem>
             ))}
           </div>
 
@@ -158,7 +159,7 @@ export const InvestingSteps = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

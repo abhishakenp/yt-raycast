@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LawFirmPracticeAreas — a centered-intro practice-areas grid for a law firm. A
@@ -17,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PracticeAreaGrid, PracticeAreaCard } from '#/section-kit/PracticeAreaGrid.tsx'
 export const LawFirmPracticeAreas = defineCapsule({
   name: 'LawFirmPracticeAreas',
   description:
@@ -38,13 +37,11 @@ export const LawFirmPracticeAreas = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Practice Areas'
     const heading = props.heading ?? 'Comprehensive Legal Expertise'
     const description =
       props.description ??
       'Our attorneys provide strategic counsel across the full spectrum of business and personal legal needs, from complex M&A transactions to high-stakes litigation.'
-    const linkLabel = props.linkLabel ?? 'Learn more'
     const items = props.items?.length
       ? props.items
       : [
@@ -179,34 +176,19 @@ export const LawFirmPracticeAreas = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <PracticeAreaGrid cols="1-2-3">
             {items.map((item, i) => (
-              <Card
-                key={item.title}
-                variant="default"
-                rounded="none"
-                padding="lg"
-                className="group transition-colors hover:border-foreground/40"
-              >
-                <div className="mb-6 grid size-12 place-items-center bg-muted text-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  {practiceIcons[i % practiceIcons.length]}
+              <PracticeAreaCard key={item.title}>
+                <div className="flex flex-col gap-3 p-6">
+                  <div className="inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    {practiceIcons[i % practiceIcons.length]}
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
                 </div>
-                <h3 className="mb-3 font-serif text-xl text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mb-4 leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => go(item.title)}
-                  className="text-sm font-medium text-foreground hover:underline"
-                >
-                  {linkLabel} &rarr;
-                </button>
-              </Card>
+              </PracticeAreaCard>
             ))}
-          </div>
+          </PracticeAreaGrid>
         </Container>
       </section>
     )

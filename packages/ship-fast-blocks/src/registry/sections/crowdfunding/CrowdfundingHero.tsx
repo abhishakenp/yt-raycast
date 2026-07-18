@@ -9,7 +9,7 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
-  HeroImage,
+  HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -101,7 +101,7 @@ export const CrowdfundingHero = defineCapsule({
           <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
             {/* Campaign image gallery */}
             <div className="order-2 lg:order-1">
-              <HeroImage
+              <HeroMediaPanel
                 alt={heroMainImageAlt}
                 w={1200}
                 h={900}

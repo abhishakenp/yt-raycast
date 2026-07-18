@@ -10,6 +10,7 @@ export type RestaurantMenuItemInput = {
   description?: string
   name: string
   price?: string
+  source?: string
   tag?: string
 }
 
@@ -120,7 +121,7 @@ export const restaurantLakebed = {
     }),
   },
   mutations: {
-    addMenuItem: restaurant.mutation((_ctx, input) => {
+    addMenuItem: restaurant.mutation((_ctx, input: RestaurantMenuItemInput) => {
       const name = clean(input.name)
       if (!name) return _ctx.db.orderItems.orderBy('createdAt').all()
 
@@ -162,7 +163,7 @@ export const restaurantLakebed = {
 
       return []
     }),
-    removeMenuItem: restaurant.mutation((_ctx, input) => {
+    removeMenuItem: restaurant.mutation((_ctx, input: RestaurantMenuItemInput) => {
       const name = clean(input.name)
       const existing = name
         ? _ctx.db.orderItems.where('name', name).all().at(0)
@@ -172,7 +173,7 @@ export const restaurantLakebed = {
 
       return _ctx.db.orderItems.orderBy('createdAt').all()
     }),
-    reserveTable: restaurant.mutation((_ctx, input) => {
+    reserveTable: restaurant.mutation((_ctx, input: RestaurantReservationInput) => {
       const source = clean(input.source)
       if (!source) return _ctx.db.reservations.orderBy('createdAt').all()
 
@@ -183,7 +184,7 @@ export const restaurantLakebed = {
 
       return _ctx.db.reservations.orderBy('createdAt', 'desc').all()
     }),
-    selectMenuItem: restaurant.mutation((_ctx, input) => {
+    selectMenuItem: restaurant.mutation((_ctx, input: RestaurantMenuItemInput) => {
       const name = clean(input.name)
       if (!name) return _ctx.db.selections.orderBy('createdAt').all()
 
@@ -211,13 +212,13 @@ export const restaurantLakebed = {
 
       return _ctx.db.selections.orderBy('createdAt', 'desc').all()
     }),
-    syncMenuCatalog: restaurant.mutation((_ctx, input) => {
+    syncMenuCatalog: restaurant.mutation((_ctx, input: RestaurantCatalogInput) => {
       const existing = _ctx.db.catalog.orderBy('createdAt').all()
       const existingByName = new Map(
         existing.map((item) => [item.name.toLowerCase(), item]),
       )
 
-      for (const item of input.items) {
+      for (const item of input.items as Array<Record<string, unknown>>) {
         const name = clean(item.name)
         if (!name) continue
 

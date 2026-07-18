@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import { SupportBand } from '#/section-kit/SupportBand.tsx'
 
 /**
  * KnowledgeBaseSupportCta — contrasting "still need help?" support CTA band on
@@ -37,6 +38,7 @@ export const KnowledgeBaseSupportCta = defineCapsule({
       'Average response time: Under 2 hours for email, Instant for live chat'
 
     return (
+      <SupportBand asChild>
       <CtaBand
         tone="primary"
         eyebrow={note}
@@ -48,6 +50,7 @@ export const KnowledgeBaseSupportCta = defineCapsule({
         ]}
         className={props.className}
       />
+      </SupportBand>
     )
   },
 })

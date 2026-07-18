@@ -61,7 +61,7 @@ export const NewsletterFooter = defineCapsule({
     const copyright = props.copyright ?? 'All rights reserved.'
     const legal = props.legal?.length ? props.legal : ['Privacy', 'Terms']
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-muted-foreground/30 font-serif font-medium text-background',

@@ -5,8 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { CollectionGrid, CollectionCard } from '#/section-kit/CollectionGrid.tsx'
 
 /**
  * JewelryStoreCollections — curated collections grid for a luxury jewelry
@@ -105,14 +105,14 @@ export const JewelryStoreCollections = defineCapsule({
             titleClassName="font-serif text-4xl lg:text-5xl"
             className="mb-20 gap-6"
           />
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
+          <CollectionGrid cols="1-md-2-3">
             {items.map((c) => (
-              <button
-                key={c.title}
-                type="button"
-                onClick={() => go(c.title)}
-                className="group block w-full cursor-pointer text-left"
-              >
+              <CollectionCard asChild key={c.title}>
+                <button
+                  type="button"
+                  onClick={() => go(c.title)}
+                  className="group block w-full cursor-pointer text-left"
+                >
                 <ImageTile treatment="4-5-xl-muted" className="mb-6">
                   <Image
                     alt={c.imageAlt}
@@ -129,9 +129,10 @@ export const JewelryStoreCollections = defineCapsule({
                   {c.title}
                 </h3>
                 <p className="text-sm text-muted-foreground">{c.meta}</p>
-              </button>
+                </button>
+              </CollectionCard>
             ))}
-          </ResponsiveGrid>
+          </CollectionGrid>
         </div>
       </section>
     )

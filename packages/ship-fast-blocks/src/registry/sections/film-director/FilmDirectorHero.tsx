@@ -7,8 +7,8 @@ import {
   HeroSection,
   HeroHeading,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
+  HeroActions,
+  HeroMediaPanel,
   HeroStats,
   HeroStat,
   HeroStatValue,
@@ -65,7 +65,7 @@ export const FilmDirectorHero = defineCapsule({
           { value: '14', label: 'Industry Awards' },
         ]
 
-    const PlayIcon = ({ className }) => (
+    const PlayIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -108,7 +108,7 @@ export const FilmDirectorHero = defineCapsule({
               <HeroSubheading className="mb-8 mt-0 max-w-xl">
                 {heroSub}
               </HeroSubheading>
-              <HeroCtas className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-4">
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -124,7 +124,7 @@ export const FilmDirectorHero = defineCapsule({
                 >
                   {heroSecondary}
                 </button>
-              </HeroCtas>
+              </HeroActions>
               <HeroStats className="mt-12 grid-cols-3 pt-8 md:grid-cols-3">
                 {heroStats.map((s) => (
                   <HeroStat key={s.label}>
@@ -138,7 +138,7 @@ export const FilmDirectorHero = defineCapsule({
             </div>
             <div className="order-1 lg:order-2">
               <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-muted">
-                <HeroImage
+                <HeroMediaPanel
                   alt={heroImageAlt}
                   w={800}
                   h={1000}

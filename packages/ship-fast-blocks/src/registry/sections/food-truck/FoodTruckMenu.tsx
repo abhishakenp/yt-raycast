@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MenuList, MenuCategory, MenuItem } from '#/section-kit/MenuList.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -207,6 +208,7 @@ export const FoodTruckMenu = defineCapsule({
     return (
       <section className={cn('px-6 pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-6xl">
+        <MenuList>
           <SectionHeading
             eyebrow={menuEyebrow}
             title={menuHeading}
@@ -220,6 +222,7 @@ export const FoodTruckMenu = defineCapsule({
 
           <div className="grid gap-8 md:grid-cols-2">
             {menuCategories.map((cat) => (
+              <MenuCategory asChild key={cat.title}>
               <div key={cat.title} className={cn(cat.wide && 'md:col-span-2')}>
                 <Image
                   alt={cat.imageAlt}
@@ -245,6 +248,7 @@ export const FoodTruckMenu = defineCapsule({
                   )}
                 >
                   {(cat.items ?? []).map((item, i) => (
+                    <MenuItem asChild key={item.name}>
                     <MenuItemRow
                       key={item.name}
                       name={item.name}
@@ -274,9 +278,11 @@ export const FoodTruckMenu = defineCapsule({
                         </CommerceAddItemButton>
                       }
                     />
+                    </MenuItem>
                   ))}
                 </div>
               </div>
+              </MenuCategory>
             ))}
           </div>
 
@@ -287,6 +293,7 @@ export const FoodTruckMenu = defineCapsule({
               </span>
             ))}
           </div>
+        </MenuList>
         </div>
       </section>
     )

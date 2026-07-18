@@ -75,7 +75,7 @@ export const HealthcareHero = defineCapsule({
     const hoursValue = props.hoursValue ?? '7:00 AM - 7:00 PM'
     const patientCount = props.patientCount ?? '4,900+ patients'
 
-    const ArrowRight = ({ className }) => (
+    const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
@@ -92,7 +92,7 @@ export const HealthcareHero = defineCapsule({
       </svg>
     )
 
-    const CheckCircle = ({ className }) => (
+    const CheckCircle = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"

@@ -22,7 +22,7 @@ import {
   OverviewStat,
   OverviewStatValue,
   OverviewStatLabel,
-  OverviewImagePanel,
+  OverviewMediaPanel,
 } from './index.ts'
 
 describe('OverviewSection', () => {
@@ -239,10 +239,10 @@ describe('OverviewStatLabel', () => {
   })
 })
 
-describe('OverviewImagePanel', () => {
+describe('OverviewMediaPanel', () => {
   it('renders with blur glow and image card', () => {
     const { container } = render(
-      <OverviewImagePanel
+      <OverviewMediaPanel
         alt="Test image"
         brand="TestBrand"
         caption="A caption"
@@ -266,7 +266,7 @@ describe('OverviewImagePanel', () => {
   })
 
   it('hides caption footer when brand is omitted', () => {
-    render(<OverviewImagePanel alt="No brand" data-testid="panel" />)
+    render(<OverviewMediaPanel alt="No brand" data-testid="panel" />)
     expect(screen.queryByText('TestBrand')).toBeNull()
   })
 })
@@ -300,7 +300,7 @@ describe('OverviewSection compound composition', () => {
               </OverviewStat>
             </OverviewStats>
           </OverviewContent>
-          <OverviewImagePanel
+          <OverviewMediaPanel
             alt="Hero image"
             brand="Brand"
             caption="Caption text"

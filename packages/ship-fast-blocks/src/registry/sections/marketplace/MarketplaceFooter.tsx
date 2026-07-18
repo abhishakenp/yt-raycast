@@ -73,7 +73,7 @@ export const MarketplaceFooter = defineCapsule({
       ? props.legal
       : ['Privacy', 'Terms', 'Cookies']
 
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',

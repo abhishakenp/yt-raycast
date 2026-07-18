@@ -68,7 +68,7 @@ export const MarketingAgencyFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
-    const LogoMark = ({ className }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"

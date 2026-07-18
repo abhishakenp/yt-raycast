@@ -5,9 +5,9 @@ import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  NewsletterCta,
   NewsletterCtaFineprint,
 } from '#/section-kit/NewsletterCta.tsx'
+import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -52,7 +52,7 @@ export const WriterAuthorSubscribe = defineCapsule({
     const privacy = props.privacy ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <NewsletterCta
+      <SubscribeBand
         className={cn(
           'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
           props.className,
@@ -85,7 +85,7 @@ export const WriterAuthorSubscribe = defineCapsule({
             </NewsletterCtaFineprint>
           </Card>
         </div>
-      </NewsletterCta>
+      </SubscribeBand>
     )
   },
 })

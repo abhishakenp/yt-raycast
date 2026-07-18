@@ -5,6 +5,11 @@ import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
  * CybersecuritySteps — deploy-in-minutes timeline. A muted-band section with a
@@ -67,7 +72,7 @@ export const CybersecuritySteps = defineCapsule({
       : ['Asset inventory', 'Risk scoring', 'Baseline profiles']
     const liveLabel = props.liveLabel ?? 'Live protection active'
 
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -83,15 +88,15 @@ export const CybersecuritySteps = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-muted/50 py-24', props.className)}>
+      <StepTimeline className={cn('bg-muted/50 py-24', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
-              <div key={step.title} className="relative">
+              <StepItem key={step.title} className="relative">
                 {i < items.length - 1 && (
                   <div
                     aria-hidden="true"
@@ -115,10 +120,10 @@ export const CybersecuritySteps = defineCapsule({
                 {i === 1 && (
                   <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                     {checklist.map((c) => (
-                      <li key={c} className="flex items-center gap-2">
+                      <StepItem key={c} className="flex items-center gap-2">
                         <Check className="size-4 text-primary" />
                         {c}
-                      </li>
+                      </StepItem>
                     ))}
                   </ul>
                 )}
@@ -128,11 +133,11 @@ export const CybersecuritySteps = defineCapsule({
                     {liveLabel}
                   </div>
                 )}
-              </div>
+              </StepItem>
             ))}
-          </div>
+          </StepTimelineGrid>
         </Container>
-      </section>
+      </StepTimeline>
     )
   },
 })

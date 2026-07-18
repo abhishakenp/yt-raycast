@@ -119,7 +119,7 @@ export const HealthcarePricing = defineCapsule({
     const note =
       props.note ?? 'Insurance typically covers 80-100% of visit costs.'
     const noteCta = props.noteCta ?? 'Verify your coverage'
-    const Check = ({ className }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         width="20"
