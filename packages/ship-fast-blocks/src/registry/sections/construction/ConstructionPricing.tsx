@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ConstructionPricing — three-tier pricing table for a construction / general
@@ -14,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const ConstructionPricing = defineCapsule({
   name: 'ConstructionPricing',
   description:
@@ -45,7 +45,6 @@ export const ConstructionPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Pricing'
     const heading = props.heading ?? 'Transparent pricing for every project'
     const description =
@@ -110,6 +109,9 @@ export const ConstructionPricing = defineCapsule({
         />
       </svg>
     )
+    void Check
+    void cta
+    void popularLabel
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
@@ -126,91 +128,15 @@ export const ConstructionPricing = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {tiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={cn(
-                  'relative rounded-xl p-8',
-                  tier.featured
-                    ? 'bg-foreground shadow-lg'
-                    : 'bg-card shadow-sm',
-                )}
-              >
-                {tier.featured ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-foreground">
-                      {popularLabel}
-                    </span>
-                  </div>
-                ) : null}
-                <h3
-                  className={cn(
-                    'mb-2 text-lg font-semibold',
-                    tier.featured ? 'text-background' : 'text-foreground',
-                  )}
-                >
-                  {tier.name}
-                </h3>
-                <div
-                  className={cn(
-                    'mb-1 text-4xl font-bold',
-                    tier.featured ? 'text-background' : 'text-foreground',
-                  )}
-                >
-                  {tier.price}
-                  <span
-                    className={cn(
-                      'text-lg font-normal',
-                      tier.featured
-                        ? 'text-background/60'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.priceSuffix}
-                  </span>
-                </div>
-                <p
-                  className={cn(
-                    'mb-6 text-sm',
-                    tier.featured
-                      ? 'text-background/60'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.note}
-                </p>
-                <ul className="mb-8 space-y-3">
-                  {tier.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className={cn(
-                        'flex items-start gap-3 text-sm',
-                        tier.featured
-                          ? 'text-background/80'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      <Check className="shrink-0 text-primary" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(`${cta} — ${tier.name}`)}
-                  className={cn(
-                    'block w-full rounded-lg py-3 text-center font-semibold transition-colors',
-                    tier.featured
-                      ? 'bg-background text-foreground hover:bg-background/90'
-                      : 'bg-muted text-foreground hover:bg-accent',
-                  )}
-                >
-                  {cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={tiers}
+            heading="Transparent pricing for every project"
+            subheading="Every project is unique. Here are typical starting points for our most common project types. Final pricing depends on scope, materials, and timeline."
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

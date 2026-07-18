@@ -2,10 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * MembershipClubPricing — 3-tier membership pricing block for a private membership
@@ -45,7 +44,6 @@ export const MembershipClubPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Membership Tiers'
     const heading = props.heading ?? 'Choose your level of access'
     const description =
@@ -125,6 +123,7 @@ export const MembershipClubPricing = defineCapsule({
       </svg>
     )
 
+    void Check
     return (
       <section
         className={cn('w-full bg-background py-20 lg:py-28', props.className)}
@@ -143,121 +142,15 @@ export const MembershipClubPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3 lg:gap-12">
-            {tiers.map((tier) => (
-              <Card
-                key={tier.name}
-                variant={tier.featured ? 'outline' : 'default'}
-                rounded="xl"
-                padding="lg"
-                className={cn(
-                  'relative flex flex-col lg:p-10',
-                  tier.featured
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : '',
-                )}
-              >
-                {tier.badge ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-                      {tier.badge}
-                    </span>
-                  </div>
-                ) : null}
-                <div className="mb-6">
-                  <h3
-                    className={cn(
-                      'mb-2 text-lg font-medium',
-                      tier.featured
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
-                    )}
-                  >
-                    {tier.name}
-                  </h3>
-                  <p
-                    className={cn(
-                      'mb-4 text-sm',
-                      tier.featured
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.blurb}
-                  </p>
-                  <div className="flex items-baseline gap-1">
-                    <span
-                      className={cn(
-                        'text-4xl font-light',
-                        tier.featured
-                          ? 'text-primary-foreground'
-                          : 'text-foreground',
-                      )}
-                    >
-                      {tier.price}
-                    </span>
-                    <span
-                      className={cn(
-                        tier.featured
-                          ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {tier.period}
-                    </span>
-                  </div>
-                  <p
-                    className={cn(
-                      'mt-1 text-sm',
-                      tier.featured
-                        ? 'text-primary-foreground/60'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.annual}
-                  </p>
-                </div>
-                <ul className="mb-8 flex-grow space-y-4">
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <span
-                        className={cn(
-                          tier.featured
-                            ? 'text-primary-foreground/70'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        <Check />
-                      </span>
-                      <span
-                        className={cn(
-                          'text-sm',
-                          tier.featured
-                            ? 'text-primary-foreground/90'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(`${tier.name} ${tier.cta}`)}
-                  aria-label={`Apply for ${tier.name} membership`}
-                  className={cn(
-                    'w-full rounded-full px-6 py-3 text-sm font-medium transition-colors',
-                    tier.featured
-                      ? 'bg-background text-foreground hover:bg-muted'
-                      : 'border border-border bg-card text-foreground hover:bg-muted',
-                  )}
-                >
-                  {tier.cta}
-                </button>
-              </Card>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={tiers}
+            heading="Choose your level of access"
+            subheading="All memberships include our core benefits. Annual billing saves 20%."
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3 lg:gap-12',
+              props.className,
+            )}
+          />
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {footnote}
           </p>

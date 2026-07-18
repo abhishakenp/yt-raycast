@@ -2,10 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { directoryLakebed } from './directory-lakebed.ts'
-import {
-  DirectoryLeadButton,
-  DirectoryMutationSpinner,
-} from './directory-interactions.tsx'
 
 /**
  * DirectoryPricing — 3-tier business-listing pricing table for a local-business
@@ -19,6 +15,7 @@ import {
  * marketplaces, or find-a-service platforms.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const DirectoryPricing = defineCapsule({
   name: 'DirectoryPricing',
   description:
@@ -133,6 +130,9 @@ export const DirectoryPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
+    void Check
+    void Cross
+    void lakebed
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
         <Container>
@@ -145,112 +145,15 @@ export const DirectoryPricing = defineCapsule({
             </p>
           </div>
 
-          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3 lg:gap-8">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  'relative rounded-xl border p-6 lg:p-8',
-                  plan.featured
-                    ? 'border-border bg-foreground text-background'
-                    : 'border-border bg-background',
-                )}
-              >
-                {plan.featured && plan.badge ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground">
-                      {plan.badge}
-                    </span>
-                  </div>
-                ) : null}
-                <div
-                  className={cn(
-                    'mb-2 text-sm font-medium uppercase tracking-wide',
-                    plan.featured
-                      ? 'text-background/60'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {plan.name}
-                </div>
-                <div className="mb-4 flex items-baseline gap-1">
-                  <span
-                    className={cn(
-                      'text-4xl font-bold',
-                      plan.featured ? 'text-background' : 'text-foreground',
-                    )}
-                  >
-                    {plan.price}
-                  </span>
-                  {plan.period ? (
-                    <span
-                      className={
-                        plan.featured
-                          ? 'text-background/60'
-                          : 'text-muted-foreground'
-                      }
-                    >
-                      {plan.period}
-                    </span>
-                  ) : null}
-                </div>
-                <p
-                  className={cn(
-                    'mb-6',
-                    plan.featured
-                      ? 'text-background/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {plan.tagline}
-                </p>
-                <ul className="mb-8 space-y-3">
-                  {plan.features.map((feat) => (
-                    <li
-                      key={feat}
-                      className={cn(
-                        'flex items-center gap-3',
-                        plan.featured
-                          ? 'text-background/80'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      <Check className="size-5 shrink-0 text-primary" />
-                      {feat}
-                    </li>
-                  ))}
-                  {plan.excluded.map((feat) => (
-                    <li
-                      key={feat}
-                      className="flex items-center gap-3 text-muted-foreground/60"
-                    >
-                      <Cross className="size-5 shrink-0" />
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <DirectoryLeadButton
-                  lakebed={lakebed}
-                  action={plan.cta}
-                  source={`pricing:${plan.name}`}
-                  pendingChildren={
-                    <>
-                      <DirectoryMutationSpinner />
-                      Recording
-                    </>
-                  }
-                  className={cn(
-                    'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    plan.featured
-                      ? 'bg-background text-foreground hover:bg-background/90'
-                      : 'border border-input text-foreground hover:border-muted-foreground/50 hover:bg-muted',
-                  )}
-                >
-                  {plan.cta}
-                </DirectoryLeadButton>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={plans}
+            heading="List Your Business"
+            subheading="Choose the plan that works for your business. Start free and upgrade as you grow."
+            className={cn(
+              'mx-auto grid max-w-5xl gap-6 md:grid-cols-3 lg:gap-8',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

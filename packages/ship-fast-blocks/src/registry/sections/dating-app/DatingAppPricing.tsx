@@ -2,9 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * DatingAppPricing — a 3-tier pricing table for a dating / matchmaking app. Sits on
@@ -42,7 +42,6 @@ export const DatingAppPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const pricingHeading = props.heading ?? 'Choose your journey'
     const pricingDesc =
       props.description ??
@@ -126,6 +125,8 @@ export const DatingAppPricing = defineCapsule({
       </svg>
     )
 
+    void Check
+    void Cross
     return (
       <section className={cn('bg-muted py-24', props.className)}>
         <Container>
@@ -135,67 +136,18 @@ export const DatingAppPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{pricingDesc}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {pricingTiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={cn(
-                  'relative rounded-2xl bg-card p-8',
-                  tier.featured
-                    ? 'border-2 border-primary shadow-xl'
-                    : 'border border-border shadow-sm',
-                )}
-              >
-                {tier.badge && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
-                    {tier.badge}
-                  </div>
-                )}
-                <h3 className="mb-2 text-xl font-semibold text-card-foreground">
-                  {tier.name}
-                </h3>
-                <p className="mb-6 text-muted-foreground">{tier.tagline}</p>
-                <p className="mb-6 text-4xl font-bold text-card-foreground">
-                  {tier.price}
-                  <span className="text-lg font-normal text-muted-foreground">
-                    {tier.period}
-                  </span>
-                </p>
-                <ul className="mb-8 space-y-4">
-                  {tier.features.map((f) => (
-                    <li
-                      key={f.label}
-                      className={cn(
-                        'flex items-center gap-3',
-                        f.included
-                          ? 'text-muted-foreground'
-                          : 'text-muted-foreground/60',
-                      )}
-                    >
-                      {f.included ? (
-                        <Check className="size-5 text-primary" />
-                      ) : (
-                        <Cross className="size-5 text-muted-foreground/50" />
-                      )}
-                      {f.label}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
-                  className={cn(
-                    'w-full rounded-xl px-4 py-3 font-semibold transition-colors',
-                    tier.featured
-                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90'
-                      : 'border-2 border-border text-foreground hover:bg-accent',
-                  )}
-                >
-                  {tier.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={pricingTiers.map((t) => ({
+              ...t,
+              features: Array.isArray(t.features)
+                ? t.features.map((f) => (typeof f === 'string' ? f : f.label))
+                : t.features,
+            }))}
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

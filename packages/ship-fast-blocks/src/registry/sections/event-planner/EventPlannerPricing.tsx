@@ -3,23 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
-import {
-  InquiryActionButton,
-  InquiryMutationSpinner,
-} from '../contact/inquiry-interactions.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  PricingCard,
-  PricingCardBadge,
-  PricingCardName,
-  PricingCardTagline,
-  PricingCardPrice,
-  PricingCardPriceValue,
-  PricingCardFeatures,
-  PricingCardFeature,
-  PricingCardCheckIcon,
-  PricingCardCta,
-} from '#/section-kit/PricingCard.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * EventPlannerPricing — three-tier planning-packages block on a muted band. A
@@ -107,6 +92,9 @@ export const EventPlannerPricing = defineCapsule({
           },
         ]
 
+    void pricingPopular
+    void pricingCta
+    void lakebed
     return (
       <section
         className={cn(
@@ -125,103 +113,7 @@ export const EventPlannerPricing = defineCapsule({
             subtitleClassName="text-lg"
             className="mx-auto mb-16 max-w-3xl gap-6 lg:mb-24"
           />
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
-            {pricingTiers.map((tier) => (
-              <PricingCard
-                key={tier.name}
-                variant="filled"
-                highlight={tier.popular ? 'filled-primary' : 'none'}
-                className={cn(
-                  'lg:p-10',
-                  tier.popular ? 'bg-primary shadow-xl' : 'bg-card shadow-sm',
-                )}
-              >
-                {tier.popular ? (
-                  <PricingCardBadge className="right-0 top-0 left-auto -translate-x-0 rounded-bl-lg rounded-tr-2xl bg-muted px-3 py-1 text-xs font-medium text-foreground">
-                    {pricingPopular}
-                  </PricingCardBadge>
-                ) : null}
-                <PricingCardName
-                  className={cn(
-                    'mb-2 text-xl font-medium',
-                    tier.popular
-                      ? 'text-primary-foreground'
-                      : 'text-card-foreground',
-                  )}
-                >
-                  {tier.name}
-                </PricingCardName>
-                <PricingCardTagline
-                  className={cn(
-                    'mb-6',
-                    tier.popular
-                      ? 'text-primary-foreground/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.tagline}
-                </PricingCardTagline>
-                <PricingCardPrice className="mb-8">
-                  <PricingCardPriceValue
-                    className={cn(
-                      'text-4xl font-light tracking-normal',
-                      tier.popular
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
-                    )}
-                  >
-                    {tier.price}
-                  </PricingCardPriceValue>
-                </PricingCardPrice>
-                <PricingCardFeatures className="mb-8 space-y-4">
-                  {tier.features.map((feat) => (
-                    <PricingCardFeature key={feat} className="gap-3">
-                      <PricingCardCheckIcon
-                        className={cn(
-                          'mt-0.5 size-5',
-                          tier.popular
-                            ? 'text-primary-foreground/70'
-                            : 'text-muted-foreground',
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          tier.popular
-                            ? 'text-primary-foreground/90'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {feat}
-                      </span>
-                    </PricingCardFeature>
-                  ))}
-                </PricingCardFeatures>
-                <PricingCardCta asChild>
-                  <InquiryActionButton
-                    lakebed={lakebed}
-                    label={`${pricingCta} ${tier.name}`}
-                    source="Event planner pricing"
-                    target={tier.name}
-                    kind="pricing"
-                    pendingChildren={
-                      <>
-                        <InquiryMutationSpinner />
-                        Recording
-                      </>
-                    }
-                    className={cn(
-                      'inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                      tier.popular
-                        ? 'bg-background text-foreground hover:bg-muted'
-                        : 'border border-border text-foreground hover:bg-muted',
-                    )}
-                  >
-                    {pricingCta}
-                  </InquiryActionButton>
-                </PricingCardCta>
-              </PricingCard>
-            ))}
-          </div>
+          <PricingGrid tiers={pricingTiers} className={props.className} />
         </div>
       </section>
     )

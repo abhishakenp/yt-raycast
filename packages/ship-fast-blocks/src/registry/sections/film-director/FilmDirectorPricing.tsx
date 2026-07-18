@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FilmDirectorPricing — an "Investment" pricing table for a film director or
@@ -15,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * filmmakers, directors, DPs, or video production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const FilmDirectorPricing = defineCapsule({
   name: 'FilmDirectorPricing',
   description:
@@ -40,7 +39,6 @@ export const FilmDirectorPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const pricingHeading = props.heading ?? 'Investment'
     const pricingDesc =
       props.description ??
@@ -109,6 +107,7 @@ export const FilmDirectorPricing = defineCapsule({
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
       </svg>
     )
+    void Check
     return (
       <section
         className={cn(
@@ -123,80 +122,13 @@ export const FilmDirectorPricing = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{pricingDesc}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {pricingTiers.map((tier) => (
-              <Card
-                key={tier.name}
-                variant="default"
-                rounded="none"
-                padding="lg"
-                className={cn(
-                  'relative rounded-md',
-                  tier.popular ? 'border-0 bg-foreground text-background' : '',
-                )}
-              >
-                {tier.popular && (
-                  <div className="absolute right-0 top-0 rounded-bl-md bg-background px-3 py-1 text-xs text-foreground">
-                    {tier.popularLabel ?? 'Most Popular'}
-                  </div>
-                )}
-                <p
-                  className={cn(
-                    'mb-2 text-sm uppercase tracking-wider',
-                    tier.popular
-                      ? 'text-background/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.name}
-                </p>
-                <div className="mb-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-light">{tier.price}</span>
-                  {tier.suffix && (
-                    <span
-                      className={
-                        tier.popular
-                          ? 'text-background/70'
-                          : 'text-muted-foreground'
-                      }
-                    >
-                      {tier.suffix}
-                    </span>
-                  )}
-                </div>
-                <p
-                  className={cn(
-                    'mb-6 text-sm',
-                    tier.popular
-                      ? 'text-background/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.description}
-                </p>
-                <ul className="mb-8 space-y-3 text-sm">
-                  {tier.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3">
-                      <Check />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
-                  className={cn(
-                    'w-full rounded-md py-3 text-sm transition-colors',
-                    tier.popular
-                      ? 'bg-background text-foreground hover:bg-background/90'
-                      : 'border border-border hover:border-foreground',
-                  )}
-                >
-                  {tier.cta}
-                </button>
-              </Card>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={pricingTiers}
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

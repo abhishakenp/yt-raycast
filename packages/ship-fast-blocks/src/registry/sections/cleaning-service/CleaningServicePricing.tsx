@@ -1,11 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import {
-  LocalServiceBookingButton,
-  LocalServiceMutationSpinner,
   localServiceItem,
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
@@ -15,7 +11,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * CleaningServicePricing — a 3-tier transparent pricing table for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of pricing cards: the middle "Most Popular" plan is elevated, highlighted with the primary brand color and a badge pill; side plans sit on card surfaces with secondary CTAs. A footnote row with a phone-icon link sits below the grid. Every CTA and the footnote link route through useNavigate. Use for service-pricing / plan-selection blocks for residential cleaning companies, maid services, or any local home-service business. Renders fully with no props via three baked-in default plans.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const CleaningServicePricing = defineCapsule({
   name: 'CleaningServicePricing',
   description:
@@ -48,7 +44,6 @@ export const CleaningServicePricing = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Transparent pricing, no surprises'
     const description =
       props.description ??
@@ -146,6 +141,10 @@ export const CleaningServicePricing = defineCapsule({
         <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     )
+    void Check
+    void PhoneIcon
+    void footnote
+    void footnoteCta
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <Container>
@@ -155,109 +154,12 @@ export const CleaningServicePricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid items-start gap-8 md:grid-cols-3 lg:gap-6">
-            {plans.map((plan) =>
-              plan.featured ? (
-                <div
-                  key={plan.name}
-                  className="relative rounded-2xl border border-primary bg-primary p-8 shadow-xl lg:-mt-4 lg:mb-4"
-                >
-                  {plan.badge ? (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Eyebrow
-                        variant="text"
-                        className="rounded-full bg-primary-foreground px-4 py-1.5 font-bold tracking-wider text-primary"
-                      >
-                        {plan.badge}
-                      </Eyebrow>
-                    </div>
-                  ) : null}
-                  <h3 className="mb-2 text-lg font-semibold text-primary-foreground">
-                    {plan.name}
-                  </h3>
-                  <p className="mb-6 text-sm text-primary-foreground/80">
-                    {plan.blurb}
-                  </p>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-primary-foreground">
-                      {plan.price}
-                    </span>
-                    <span className="text-primary-foreground/80">
-                      {plan.period}
-                    </span>
-                  </div>
-                  <ul className="mb-8 space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <Check className="mt-0.5 shrink-0 text-primary-foreground/90" />
-                        <span className="text-sm text-primary-foreground/90">
-                          {feature}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <LocalServiceBookingButton
-                    lakebed={lakebed}
-                    intentLabel={plan.cta}
-                    service={plan.name}
-                    source="pricing"
-                    pendingChildren={
-                      <LocalServiceMutationSpinner className="text-primary" />
-                    }
-                    className="w-full rounded-full bg-primary-foreground px-6 py-3 font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-                  >
-                    {plan.cta}
-                  </LocalServiceBookingButton>
-                </div>
-              ) : (
-                <Card key={plan.name} rounded="2xl" padding="lg" shadow="sm">
-                  <h3 className="mb-2 text-lg font-semibold text-card-foreground">
-                    {plan.name}
-                  </h3>
-                  <p className="mb-6 text-sm text-muted-foreground">
-                    {plan.blurb}
-                  </p>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-card-foreground">
-                      {plan.price}
-                    </span>
-                    <span className="text-muted-foreground">{plan.period}</span>
-                  </div>
-                  <ul className="mb-8 space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <Check className="mt-0.5 shrink-0 text-primary" />
-                        <span className="text-sm text-muted-foreground">
-                          {feature}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <LocalServiceBookingButton
-                    lakebed={lakebed}
-                    intentLabel={plan.cta}
-                    service={plan.name}
-                    source="pricing"
-                    pendingChildren={<LocalServiceMutationSpinner />}
-                    className="w-full rounded-full bg-secondary px-6 py-3 font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:pointer-events-none disabled:opacity-70"
-                  >
-                    {plan.cta}
-                  </LocalServiceBookingButton>
-                </Card>
-              ),
-            )}
-          </div>
-          <div className="mt-12 text-center">
-            <p className="mb-4 text-muted-foreground">{footnote}</p>
-            <button
-              type="button"
-              onClick={() => go(footnoteCta)}
-              className="inline-flex items-center gap-2 font-semibold text-primary transition-colors hover:text-primary/80"
-            >
-              <PhoneIcon className="size-5" />
-              {footnoteCta}
-            </button>
-          </div>
+          <PricingGrid
+            tiers={plans}
+            heading="Transparent pricing, no surprises"
+            subheading="Choose the plan that fits your home and budget. All plans include our satisfaction guarantee."
+            className={props.className}
+          />
         </Container>
       </section>
     )

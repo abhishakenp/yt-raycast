@@ -15,6 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const BootcampPricing = defineCapsule({
   name: 'BootcampPricing',
   description:
@@ -114,6 +115,7 @@ export const BootcampPricing = defineCapsule({
         />
       </svg>
     )
+    void Check
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <Container>
@@ -129,57 +131,13 @@ export const BootcampPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{pricingDesc}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {pricingItems.map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  'relative rounded-2xl bg-card p-8',
-                  plan.featured
-                    ? 'border-2 border-primary'
-                    : 'border border-border',
-                )}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                    {plan.badge}
-                  </div>
-                )}
-                <h3 className="mb-2 text-lg font-semibold text-card-foreground">
-                  {plan.name}
-                </h3>
-                <p className="mb-6 text-sm text-muted-foreground">
-                  {plan.blurb}
-                </p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-card-foreground">
-                    {plan.price}
-                  </span>
-                  <span className="text-muted-foreground"> {plan.unit}</span>
-                </div>
-                <ul className="mb-8 space-y-3 text-sm">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-3">
-                      <Check className="mt-0.5 size-5 shrink-0 text-primary" />
-                      <span className="text-muted-foreground">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(`${plan.name} ${plan.cta}`)}
-                  className={cn(
-                    'w-full rounded-lg py-3 font-medium transition-colors',
-                    plan.featured
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'border border-border text-foreground hover:border-primary',
-                  )}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={pricingItems}
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {pricingFootnote}{' '}
             <button

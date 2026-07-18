@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -12,6 +11,7 @@ import {
   useSyncSaasPlans,
 } from './saas-interactions.tsx'
 import { saasLakebed } from './saas-lakebed.ts'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * SaasPricing — a 3-tier pricing band for a B2B SaaS landing page. Thin
@@ -114,88 +114,35 @@ export const SaasPricing = defineCapsule({
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container className="flex flex-col gap-10">
           <SectionHeading title={heading} subtitle={subheading} />
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {tiers.map((tier) => (
-              <Card
-                key={tier.name}
-                variant="default"
-                rounded="xl"
-                padding="lg"
+          <PricingGrid
+            tiers={tiers}
+            heading="Pricing that scales with you"
+            subheading="Start free and upgrade when you"
+            renderCta={(tier) => (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={tier.cta ?? 'Get started'}
+                plan={tier.name}
+                source="pricing"
+                aria-label={`${tier.cta} for ${tier.name}`}
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Selecting
+                  </>
+                }
                 className={cn(
-                  'relative flex flex-col gap-6',
-                  tier.highlighted ? 'border-2 border-primary shadow-lg' : '',
+                  'mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                  tier.highlighted
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border border-border bg-background text-foreground hover:bg-muted',
                 )}
               >
-                {tier.highlighted ? (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                    Most popular
-                  </span>
-                ) : null}
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {tier.name}
-                  </h3>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-foreground">
-                      {tier.price}
-                    </span>
-                    {tier.period ? (
-                      <span className="text-sm text-muted-foreground">
-                        {tier.period}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-                {tier.features?.length ? (
-                  <ul className="flex flex-col gap-3">
-                    {tier.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <svg
-                          className="mt-0.5 size-4 shrink-0 text-primary"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m5 13 4 4L19 7"
-                          />
-                        </svg>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                <SaasPlanActionButton
-                  lakebed={lakebed}
-                  intentLabel={tier.cta}
-                  plan={tier.name}
-                  source="pricing"
-                  aria-label={`${tier.cta} for ${tier.name}`}
-                  pendingChildren={
-                    <>
-                      <SaasMutationSpinner className="size-4" />
-                      Selecting
-                    </>
-                  }
-                  className={cn(
-                    'mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    tier.highlighted
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'border border-border bg-background text-foreground hover:bg-muted',
-                  )}
-                >
-                  {tier.cta ?? 'Get started'}
-                </SaasPlanActionButton>
-              </Card>
-            ))}
-          </div>
+                {tier.cta ?? 'Get started'}
+              </SaasPlanActionButton>
+            )}
+            className={props.className}
+          />
         </Container>
       </section>
     )

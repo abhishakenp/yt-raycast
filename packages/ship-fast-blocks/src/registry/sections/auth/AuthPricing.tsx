@@ -10,18 +10,7 @@ import {
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  PricingCard,
-  PricingCardBadge,
-  PricingCardName,
-  PricingCardPrice,
-  PricingCardPriceValue,
-  PricingCardPriceUnit,
-  PricingCardFeatures,
-  PricingCardFeature,
-  PricingCardCheckIcon,
-  PricingCardCta,
-} from '#/section-kit/PricingCard.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * AuthPricing — three-tier pricing table for Authly, a developer authentication
@@ -133,60 +122,35 @@ export const AuthPricing = defineCapsule({
             className="mx-auto max-w-3xl"
           />
 
-          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {tiers.map((tier) => (
-              <PricingCard
-                key={tier.name}
-                variant="outlined"
-                highlight={tier.highlighted ? 'primary' : 'none'}
-                className={tier.highlighted ? undefined : 'border-border'}
+          <PricingGrid
+            tiers={tiers}
+            heading="Simple, usage-based pricing"
+            subheading="Start free and only pay as your monthly active users grow. No seat fees, no surprises."
+            renderCta={(tier) => (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={tier.cta ?? 'Get started'}
+                plan={tier.name}
+                source="pricing"
+                aria-label={`${tier.cta} for ${tier.name}`}
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Selecting
+                  </>
+                }
+                className={cn(
+                  'mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                  tier.highlighted
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border border-border bg-background text-foreground hover:bg-muted',
+                )}
               >
-                {tier.highlighted ? (
-                  <PricingCardBadge>Most popular</PricingCardBadge>
-                ) : null}
-                <PricingCardName>{tier.name}</PricingCardName>
-                <PricingCardPrice>
-                  <PricingCardPriceValue>{tier.price}</PricingCardPriceValue>
-                  {tier.period ? (
-                    <PricingCardPriceUnit>{tier.period}</PricingCardPriceUnit>
-                  ) : null}
-                </PricingCardPrice>
-                {tier.features?.length ? (
-                  <PricingCardFeatures>
-                    {tier.features.map((feature) => (
-                      <PricingCardFeature key={feature}>
-                        <PricingCardCheckIcon />
-                        <span>{feature}</span>
-                      </PricingCardFeature>
-                    ))}
-                  </PricingCardFeatures>
-                ) : null}
-                <PricingCardCta asChild>
-                  <SaasPlanActionButton
-                    lakebed={lakebed}
-                    intentLabel={tier.ctaTarget ?? tier.cta ?? 'Start Free'}
-                    plan={tier.name}
-                    source="pricing"
-                    aria-label={`${tier.cta ?? 'Start Free'} for ${tier.name}`}
-                    pendingChildren={
-                      <>
-                        <SaasMutationSpinner className="size-4" />
-                        Selecting
-                      </>
-                    }
-                    className={cn(
-                      'inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                      tier.highlighted
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'border border-border bg-background text-foreground hover:bg-muted',
-                    )}
-                  >
-                    {tier.cta ?? 'Start Free'}
-                  </SaasPlanActionButton>
-                </PricingCardCta>
-              </PricingCard>
-            ))}
-          </div>
+                {tier.cta ?? 'Get started'}
+              </SaasPlanActionButton>
+            )}
+            className={props.className}
+          />
         </div>
       </section>
     )

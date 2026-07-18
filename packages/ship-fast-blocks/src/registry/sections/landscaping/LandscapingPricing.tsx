@@ -2,9 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * LandscapingPricing — a centered-header 3-tier maintenance pricing section for a
@@ -42,7 +42,6 @@ export const LandscapingPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Maintenance plans'
     const description =
       props.description ??
@@ -109,6 +108,7 @@ export const LandscapingPricing = defineCapsule({
       </svg>
     )
 
+    void CheckIcon
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
@@ -118,104 +118,15 @@ export const LandscapingPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  'relative rounded-xl p-8',
-                  plan.featured
-                    ? 'bg-primary text-primary-foreground shadow-lg md:-mt-4 md:mb-4'
-                    : 'bg-card text-card-foreground shadow-sm',
-                )}
-              >
-                {plan.badge && (
-                  <div className="absolute right-0 top-0 rounded-bl-lg rounded-tr-xl bg-chart-4 px-3 py-1 text-xs font-bold text-foreground">
-                    {plan.badge}
-                  </div>
-                )}
-                <div className="mb-6">
-                  <h3
-                    className={cn(
-                      'mb-2 text-lg font-semibold',
-                      plan.featured
-                        ? 'text-primary-foreground'
-                        : 'text-foreground',
-                    )}
-                  >
-                    {plan.name}
-                  </h3>
-                  <p
-                    className={cn(
-                      'text-sm',
-                      plan.featured
-                        ? 'text-primary-foreground/80'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {plan.audience}
-                  </p>
-                </div>
-                <div className="mb-6">
-                  <span
-                    className={cn(
-                      'text-4xl font-bold',
-                      plan.featured
-                        ? 'text-primary-foreground'
-                        : 'text-foreground',
-                    )}
-                  >
-                    {plan.price}
-                  </span>
-                  {plan.period && (
-                    <span
-                      className={cn(
-                        plan.featured
-                          ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {plan.period}
-                    </span>
-                  )}
-                </div>
-                <ul className="mb-8 space-y-3">
-                  {plan.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className={cn(
-                        'flex items-start gap-3',
-                        plan.featured
-                          ? 'text-primary-foreground'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      <CheckIcon
-                        className={
-                          plan.featured
-                            ? 'text-primary-foreground/70'
-                            : 'text-primary'
-                        }
-                      />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
-                  className={cn(
-                    'block w-full rounded-lg px-6 py-3 text-center font-medium transition-colors',
-                    plan.featured
-                      ? 'bg-background text-primary hover:bg-muted'
-                      : 'bg-muted text-primary hover:bg-accent',
-                  )}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={plans}
+            heading="Maintenance plans"
+            subheading="Predictable pricing for ongoing care. All plans include scheduling flexibility and dedicated crew assignment."
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

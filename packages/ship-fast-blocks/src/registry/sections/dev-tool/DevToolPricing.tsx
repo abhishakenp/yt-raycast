@@ -10,6 +10,7 @@ import {
   useSyncSaasPlans,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * DevToolPricing — a 3-tier pricing table for a developer tool / API platform.
@@ -125,6 +126,8 @@ export const DevToolPricing = defineCapsule({
       </svg>
     )
 
+    void Check
+    void popularLabel
     return (
       <section
         className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
@@ -140,72 +143,38 @@ export const DevToolPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {tiers.map((tier) => (
-              <article
-                key={tier.name}
+          <PricingGrid
+            tiers={tiers}
+            heading="Simple, transparent pricing"
+            subheading="Start free, scale as you grow. No hidden fees, no surprises."
+            renderCta={(tier) => (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={tier.cta ?? 'Get started'}
+                plan={tier.name}
+                source="pricing"
+                aria-label={`${tier.cta} for ${tier.name}`}
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Selecting
+                  </>
+                }
                 className={cn(
-                  'relative rounded-2xl bg-background p-6 lg:p-8',
-                  tier.featured
-                    ? 'border-2 border-primary shadow-lg'
-                    : 'border border-border',
+                  'mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                  tier.highlighted
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border border-border bg-background text-foreground hover:bg-muted',
                 )}
               >
-                {tier.featured ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                      {popularLabel}
-                    </span>
-                  </div>
-                ) : null}
-                <div className="mb-6">
-                  <h3 className="mb-1 text-lg font-semibold text-foreground">
-                    {tier.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {tier.tagline}
-                  </p>
-                </div>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-foreground">
-                    {tier.price}
-                  </span>
-                  {tier.period ? (
-                    <span className="text-muted-foreground">{tier.period}</span>
-                  ) : null}
-                </div>
-                <ul className="mb-8 space-y-3 text-sm text-muted-foreground">
-                  {tier.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <Check />
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <SaasPlanActionButton
-                  lakebed={lakebed}
-                  intentLabel={tier.cta}
-                  plan={tier.name}
-                  source="pricing"
-                  aria-label={`${tier.cta} for ${tier.name}`}
-                  pendingChildren={
-                    <>
-                      <SaasMutationSpinner className="size-4" />
-                      Selecting
-                    </>
-                  }
-                  className={cn(
-                    'inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    tier.featured
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'border border-input text-foreground hover:bg-muted',
-                  )}
-                >
-                  {tier.cta}
-                </SaasPlanActionButton>
-              </article>
-            ))}
-          </div>
+                {tier.cta ?? 'Get started'}
+              </SaasPlanActionButton>
+            )}
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

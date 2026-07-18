@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MarketingAgencyPricing — a 3-tier pricing table. A centered eyebrow + heading +
@@ -14,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const MarketingAgencyPricing = defineCapsule({
   name: 'MarketingAgencyPricing',
   description:
@@ -47,7 +46,6 @@ export const MarketingAgencyPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Pricing'
     const heading = props.heading ?? 'Simple, Transparent Pricing'
     const description =
@@ -190,6 +188,8 @@ export const MarketingAgencyPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
+    void Check
+    void Cross
     return (
       <section className={cn('bg-muted py-24', props.className)}>
         <Container>
@@ -202,107 +202,20 @@ export const MarketingAgencyPricing = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {plans.map((plan) => (
-              <Card
-                key={plan.name}
-                variant="default"
-                rounded="xl"
-                padding="lg"
-                className={cn(
-                  'relative',
-                  plan.featured
-                    ? 'border-0 bg-primary text-primary-foreground'
-                    : '',
-                )}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-foreground">
-                      {plan.badge}
-                    </span>
-                  </div>
-                )}
-                <div className="mb-6">
-                  <h3
-                    className={cn(
-                      'text-lg font-semibold',
-                      plan.featured
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
-                    )}
-                  >
-                    {plan.name}
-                  </h3>
-                  <p
-                    className={cn(
-                      'text-sm',
-                      plan.featured
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {plan.audience}
-                  </p>
-                </div>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  {plan.period && (
-                    <span
-                      className={cn(
-                        plan.featured
-                          ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {plan.period}
-                    </span>
-                  )}
-                </div>
-                <ul className="mb-8 space-y-3 text-sm">
-                  {plan.features.map((f) => (
-                    <li
-                      key={f.label}
-                      className={cn(
-                        'flex items-center gap-3',
-                        f.included
-                          ? plan.featured
-                            ? 'text-primary-foreground/90'
-                            : 'text-muted-foreground'
-                          : 'text-muted-foreground/50',
-                      )}
-                    >
-                      {f.included ? (
-                        <Check
-                          className={cn(
-                            'size-5 shrink-0',
-                            plan.featured
-                              ? 'text-primary-foreground'
-                              : 'text-primary',
-                          )}
-                        />
-                      ) : (
-                        <Cross className="size-5 shrink-0" />
-                      )}
-                      {f.label}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
-                  className={cn(
-                    'block w-full rounded-full py-3 text-center font-medium transition-colors',
-                    plan.featured
-                      ? 'bg-background text-foreground hover:bg-background/90'
-                      : 'border border-border text-foreground hover:border-foreground/40',
-                  )}
-                >
-                  {plan.cta}
-                </button>
-              </Card>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={plans.map((t) => ({
+              ...t,
+              features: Array.isArray(t.features)
+                ? t.features.map((f) => (typeof f === 'string' ? f : f.label))
+                : t.features,
+            }))}
+            heading="Simple, Transparent Pricing"
+            subheading="No hidden fees. No long-term contracts. Cancel anytime."
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {note}
           </p>

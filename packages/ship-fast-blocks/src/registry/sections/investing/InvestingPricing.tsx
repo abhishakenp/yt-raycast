@@ -14,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * props via Essential / Pro / Elite defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const InvestingPricing = defineCapsule({
   name: 'InvestingPricing',
   description:
@@ -186,6 +186,10 @@ export const InvestingPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
+    void go
+    void Check
+    void Cross
+    void popularLabel
     return (
       <section
         id="pricing"
@@ -198,104 +202,20 @@ export const InvestingPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-3">
-            {tiers.map((tier) => (
-              <Card
-                key={tier.name}
-                variant="default"
-                rounded="2xl"
-                padding="lg"
-                className={cn(
-                  'relative',
-                  tier.popular &&
-                    'border-2 border-primary bg-primary text-primary-foreground',
-                )}
-              >
-                {tier.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-chart-1 px-3 py-1 text-xs font-semibold text-primary-foreground">
-                      {popularLabel}
-                    </span>
-                  </div>
-                )}
-                <div className="mb-6">
-                  <h3 className="mb-2 text-lg font-semibold">{tier.name}</h3>
-                  <p
-                    className={cn(
-                      'text-sm',
-                      tier.popular
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.tagline}
-                  </p>
-                </div>
-                <div className="mb-6">
-                  <span className="text-4xl font-semibold">{tier.price}</span>
-                  <span
-                    className={cn(
-                      tier.popular
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.period}
-                  </span>
-                </div>
-                <ul className="mb-8 space-y-3">
-                  {tier.features.map((feat) => (
-                    <li key={feat.label} className="flex items-start gap-3">
-                      {feat.included ? (
-                        <Check
-                          className={cn(
-                            'mt-0.5 size-5 flex-shrink-0',
-                            tier.popular
-                              ? 'text-primary-foreground'
-                              : 'text-chart-1',
-                          )}
-                        />
-                      ) : (
-                        <Cross
-                          className={cn(
-                            'mt-0.5 size-5 flex-shrink-0',
-                            tier.popular
-                              ? 'text-primary-foreground/40'
-                              : 'text-muted-foreground/40',
-                          )}
-                        />
-                      )}
-                      <span
-                        className={cn(
-                          feat.included
-                            ? tier.popular
-                              ? 'text-primary-foreground/90'
-                              : 'text-muted-foreground'
-                            : tier.popular
-                              ? 'text-primary-foreground/50'
-                              : 'text-muted-foreground/50',
-                        )}
-                      >
-                        {feat.label}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
-                  className={cn(
-                    'block w-full rounded-xl py-3 text-center font-medium transition-colors',
-                    tier.popular
-                      ? 'bg-background text-foreground hover:bg-muted'
-                      : 'bg-muted text-foreground hover:bg-accent',
-                  )}
-                >
-                  {tier.cta}
-                </button>
-              </Card>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={tiers.map((t) => ({
+              ...t,
+              features: Array.isArray(t.features)
+                ? t.features.map((f) => (typeof f === 'string' ? f : f.label))
+                : t.features,
+            }))}
+            heading="Simple, transparent pricing"
+            subheading="Start free and upgrade when you need more. No hidden fees, ever."
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 lg:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KidsEducationPricing — friendly 3-tier pricing table for a kids / family
@@ -15,8 +14,8 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const KidsEducationPricing = defineCapsule({
   name: 'KidsEducationPricing',
   description:
@@ -48,7 +47,6 @@ export const KidsEducationPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Pricing'
     const heading = props.heading ?? 'Simple, Transparent Pricing'
     const description =
@@ -119,6 +117,8 @@ export const KidsEducationPricing = defineCapsule({
         />
       </svg>
     )
+    void CheckMark
+    void note
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
@@ -135,106 +135,15 @@ export const KidsEducationPricing = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {plans.map((plan) => (
-              <Card
-                key={plan.name}
-                variant="muted"
-                rounded="3xl"
-                padding="lg"
-                className={cn(
-                  'relative',
-                  plan.popular
-                    ? 'border-0 bg-foreground text-background shadow-2xl md:-translate-y-4'
-                    : 'bg-muted/40 transition-colors hover:border-foreground/20',
-                )}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
-                      {plan.popularLabel ?? 'Most Popular'}
-                    </span>
-                  </div>
-                )}
-                <div className={cn('mb-6', plan.popular && 'pt-2')}>
-                  <h3
-                    className={cn(
-                      'mb-2 text-xl font-bold',
-                      plan.popular ? 'text-background' : 'text-foreground',
-                    )}
-                  >
-                    {plan.name}
-                  </h3>
-                  <p
-                    className={cn(
-                      'text-sm',
-                      plan.popular
-                        ? 'text-background/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {plan.tagline}
-                  </p>
-                </div>
-                <div className="mb-6">
-                  <span
-                    className={cn(
-                      'text-4xl font-bold',
-                      plan.popular ? 'text-background' : 'text-foreground',
-                    )}
-                  >
-                    {plan.price}
-                  </span>
-                  <span
-                    className={cn(
-                      plan.popular
-                        ? 'text-background/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {plan.period}
-                  </span>
-                </div>
-                <ul className="mb-8 space-y-4">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <CheckMark
-                        className={cn(
-                          'mt-0.5 size-5 shrink-0',
-                          plan.popular ? 'text-primary' : 'text-secondary',
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          plan.popular
-                            ? 'text-background/90'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {feat}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
-                  className={cn(
-                    'block w-full rounded-full py-3 text-center font-semibold transition-colors',
-                    plan.popular
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'border-2 border-border bg-card text-foreground hover:bg-muted',
-                  )}
-                >
-                  {plan.cta}
-                </button>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <p className="text-muted-foreground">{note}</p>
-          </div>
+          <PricingGrid
+            tiers={plans}
+            heading="Simple, Transparent Pricing"
+            subheading="Choose the plan that works for your family. All plans include a 14-day free trial."
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CorporatePricing — transparent 3-tier pricing table for an enterprise / corporate
@@ -12,6 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use for SaaS, managed services, or enterprise software pricing pages.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const CorporatePricing = defineCapsule({
   name: 'CorporatePricing',
   description:
@@ -39,7 +39,6 @@ export const CorporatePricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Transparent enterprise pricing'
     const description =
       props.description ??
@@ -111,6 +110,7 @@ export const CorporatePricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
+    void Check
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
         <Container>
@@ -120,102 +120,15 @@ export const CorporatePricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  'relative rounded-xl border p-8',
-                  plan.featured
-                    ? 'border-foreground bg-foreground'
-                    : 'border-border bg-background',
-                )}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-background px-3 py-1 text-xs font-medium text-foreground">
-                      {plan.badge}
-                    </span>
-                  </div>
-                )}
-                <h3
-                  className={cn(
-                    'mb-2 text-lg font-semibold',
-                    plan.featured ? 'text-background' : 'text-foreground',
-                  )}
-                >
-                  {plan.name}
-                </h3>
-                <p
-                  className={cn(
-                    'mb-6 text-sm',
-                    plan.featured
-                      ? 'text-background/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {plan.blurb}
-                </p>
-                <div className="mb-6">
-                  <span
-                    className={cn(
-                      'text-4xl font-semibold',
-                      plan.featured ? 'text-background' : 'text-foreground',
-                    )}
-                  >
-                    {plan.price}
-                  </span>
-                  {plan.period && (
-                    <span
-                      className={cn(
-                        plan.featured
-                          ? 'text-background/70'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {plan.period}
-                    </span>
-                  )}
-                </div>
-                <ul className="mb-8 space-y-4">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <Check
-                        className={cn(
-                          'mt-0.5 size-5 flex-shrink-0',
-                          plan.featured
-                            ? 'text-primary-foreground'
-                            : 'text-primary',
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          'text-sm',
-                          plan.featured
-                            ? 'text-background/80'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
-                  className={cn(
-                    'w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors',
-                    plan.featured
-                      ? 'bg-background text-foreground hover:bg-muted'
-                      : 'bg-muted text-foreground hover:bg-accent',
-                  )}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={plans}
+            heading="Transparent enterprise pricing"
+            subheading="Flexible plans designed to scale with your organization. All plans include implementation support."
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

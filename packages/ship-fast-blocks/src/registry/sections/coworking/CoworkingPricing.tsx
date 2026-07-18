@@ -1,6 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { Check, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
@@ -8,6 +8,7 @@ import { GridField } from '#/section-kit/motion.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * CoworkingPricing — calm, dimensional membership pricing for a coworking or
@@ -109,6 +110,7 @@ export const CoworkingPricing = defineCapsule({
       .filter((tier) => typeof tier?.name === 'string')
     const tiers = authored?.length ? authored : defaults
 
+    void go
     return (
       <section
         className={cn(
@@ -157,142 +159,13 @@ export const CoworkingPricing = defineCapsule({
             </p>
           </div>
 
-          <div className="mx-auto mt-16 grid max-w-md grid-cols-1 items-stretch gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {tiers.map((tier, index) => {
-              const highlighted = tier.highlighted === true
-              const features = Array.isArray(tier.features)
-                ? tier.features.filter(
-                    (feature) => typeof feature === 'string' && feature,
-                  )
-                : []
-              const cta =
-                typeof tier.cta === 'string' && tier.cta
-                  ? tier.cta
-                  : 'Get started'
-              const price = typeof tier.price === 'string' ? tier.price : ''
-              const period = typeof tier.period === 'string' ? tier.period : ''
-              return (
-                <div
-                  key={`${tier.name}-${index}`}
-                  className={cn(
-                    'relative',
-                    highlighted && 'lg:z-10 lg:-translate-y-4',
-                  )}
-                >
-                  {highlighted ? (
-                    <Eyebrow
-                      variant="text"
-                      icon={
-                        <Sparkles className="size-3.5" aria-hidden="true" />
-                      }
-                      className="absolute -top-3.5 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-primary/30 bg-card/90 px-4 py-1.5 tracking-wider shadow-md shadow-primary/15 backdrop-blur"
-                    >
-                      Most popular
-                    </Eyebrow>
-                  ) : null}
-
-                  <div
-                    className={cn(
-                      'relative h-full rounded-3xl',
-                      highlighted &&
-                        'shadow-[0_30px_90px_-25px] shadow-primary/35',
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'relative flex h-full flex-col overflow-hidden rounded-3xl border bg-card/80 p-8 backdrop-blur',
-                        highlighted
-                          ? 'border-primary/50 ring-1 ring-primary/50'
-                          : 'border-border/60 shadow-sm',
-                      )}
-                    >
-                      <div
-                        aria-hidden="true"
-                        className={cn(
-                          'absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent',
-                          highlighted ? 'via-primary/70' : 'via-border',
-                        )}
-                      />
-
-                      <Eyebrow
-                        variant="text"
-                        className="text-sm tracking-[0.16em] text-muted-foreground"
-                      >
-                        {tier.name}
-                      </Eyebrow>
-                      <div className="mt-4 flex items-baseline gap-1">
-                        <span className="text-5xl font-semibold tracking-tight text-card-foreground">
-                          {price}
-                        </span>
-                        {period ? (
-                          <span className="text-base text-muted-foreground">
-                            {period}
-                          </span>
-                        ) : null}
-                      </div>
-
-                      {features.length ? (
-                        <ul className="mt-7 flex flex-col gap-3.5">
-                          {features.map((feature) => (
-                            <li
-                              key={feature}
-                              className="flex items-start gap-3 text-sm leading-relaxed text-muted-foreground"
-                            >
-                              <span
-                                className={cn(
-                                  'mt-0.5 grid size-5 shrink-0 place-items-center rounded-full',
-                                  highlighted
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-primary/15 text-primary',
-                                )}
-                              >
-                                <Check className="size-3" aria-hidden="true" />
-                              </span>
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-
-                      <div className="mt-8 flex-1" />
-                      <button
-                        type="button"
-                        onClick={() => go(tier.ctaTarget ?? cta)}
-                        className={cn(
-                          'group relative inline-flex w-full items-center justify-center overflow-hidden rounded-2xl px-6 py-3.5 text-sm font-semibold transition-colors',
-                          highlighted
-                            ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
-                            : 'border border-border/70 bg-background/60 text-foreground hover:bg-muted',
-                        )}
-                      >
-                        {highlighted ? (
-                          <span
-                            aria-hidden="true"
-                            className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary-foreground/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
-                          />
-                        ) : null}
-                        <span className="relative">{cta}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-            {['No setup fees', 'Month-to-month', 'Cancel anytime'].map(
-              (item) => (
-                <span
-                  key={item}
-                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/60 px-4 py-1.5 text-sm text-muted-foreground backdrop-blur"
-                >
-                  <span className="size-1.5 rounded-full bg-primary" />
-                  {item}
-                </span>
-              ),
+          <PricingGrid
+            tiers={tiers}
+            className={cn(
+              'mx-auto mt-16 grid max-w-md grid-cols-1 items-stretch gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3',
+              props.className,
             )}
-          </div>
+          />
         </Container>
       </section>
     )

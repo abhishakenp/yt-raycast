@@ -22,7 +22,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const MobileAppPricing = defineCapsule({
   name: 'MobileAppPricing',
   description:
@@ -191,6 +191,8 @@ export const MobileAppPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
+    void CheckIcon
+    void CrossIcon
     return (
       <section
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
@@ -206,103 +208,43 @@ export const MobileAppPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3 lg:gap-6">
-            {tiers.map((tier) => (
-              <Card
-                key={tier.name}
-                variant="default"
-                rounded="2xl"
-                padding="lg"
+          <PricingGrid
+            tiers={tiers.map((t) => ({
+              ...t,
+              features: Array.isArray(t.features)
+                ? t.features.map((f) => (typeof f === 'string' ? f : f.label))
+                : t.features,
+            }))}
+            heading="Simple, transparent pricing"
+            subheading="Start free, upgrade when you"
+            renderCta={(tier) => (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={tier.cta ?? 'Get started'}
+                plan={tier.name}
+                source="pricing"
+                aria-label={`${tier.cta} for ${tier.name}`}
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Selecting
+                  </>
+                }
                 className={cn(
-                  'relative',
-                  tier.featured
-                    ? 'border-0 bg-primary text-primary-foreground md:-mt-4 md:mb-4'
-                    : '',
+                  'mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                  tier.highlighted
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border border-border bg-background text-foreground hover:bg-muted',
                 )}
               >
-                {tier.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-block rounded-full bg-background px-3 py-1 text-xs font-semibold text-foreground">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <h3 className="mb-2 text-lg font-semibold">{tier.name}</h3>
-                <p
-                  className={cn(
-                    'mb-6 text-sm',
-                    tier.featured
-                      ? 'text-primary-foreground/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.tagline}
-                </p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">{tier.price}</span>
-                  <span
-                    className={cn(
-                      tier.featured
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.period}
-                  </span>
-                </div>
-                <ul className="mb-8 space-y-4">
-                  {tier.features?.map((f) => (
-                    <li key={f.label} className="flex items-start gap-3">
-                      {f.included ? (
-                        <CheckIcon
-                          className={cn(
-                            'mt-0.5 size-5 shrink-0',
-                            tier.featured
-                              ? 'text-primary-foreground'
-                              : 'text-primary',
-                          )}
-                        />
-                      ) : (
-                        <CrossIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground/40" />
-                      )}
-                      <span
-                        className={cn(
-                          f.included
-                            ? tier.featured
-                              ? 'text-primary-foreground/90'
-                              : 'text-muted-foreground'
-                            : 'text-muted-foreground/60',
-                        )}
-                      >
-                        {f.label}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <SaasPlanActionButton
-                  lakebed={lakebed}
-                  intentLabel={tier.cta}
-                  plan={tier.name}
-                  source="pricing"
-                  aria-label={`${tier.cta} for ${tier.name}`}
-                  pendingChildren={
-                    <>
-                      <SaasMutationSpinner className="size-4" />
-                      Selecting
-                    </>
-                  }
-                  className={cn(
-                    'inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    tier.featured
-                      ? 'bg-background text-foreground hover:bg-muted'
-                      : 'bg-muted text-foreground hover:bg-accent',
-                  )}
-                >
-                  {tier.cta}
-                </SaasPlanActionButton>
-              </Card>
-            ))}
-          </div>
+                {tier.cta ?? 'Get started'}
+              </SaasPlanActionButton>
+            )}
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3 lg:gap-6',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

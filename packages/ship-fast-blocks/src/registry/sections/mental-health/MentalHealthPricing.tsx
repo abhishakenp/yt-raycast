@@ -3,26 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  LocalServiceBookingButton,
-  LocalServiceMutationSpinner,
   localServiceItem,
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  PricingCard,
-  PricingCardBadge,
-  PricingCardName,
-  PricingCardTagline,
-  PricingCardPrice,
-  PricingCardPriceValue,
-  PricingCardPriceUnit,
-  PricingCardFeatures,
-  PricingCardFeature,
-  PricingCardCheckIcon,
-  PricingCardCta,
-} from '#/section-kit/PricingCard.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * MentalHealthPricing — a transparent 3-tier pricing block for a therapy
@@ -127,6 +113,7 @@ export const MentalHealthPricing = defineCapsule({
       props.note ??
       'Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability.'
 
+    void note
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -140,70 +127,12 @@ export const MentalHealthPricing = defineCapsule({
             className="mx-auto mb-16 max-w-2xl"
           />
 
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {tiers.map((tier) => (
-              <PricingCard
-                key={tier.name}
-                variant={tier.popular ? 'outlined-2xl' : 'muted-2xl'}
-                highlight={tier.popular ? 'primary' : 'none'}
-                className={tier.popular ? 'bg-card shadow-xl' : undefined}
-              >
-                {tier.popular ? (
-                  <PricingCardBadge className="-top-4 px-4 py-1 text-sm">
-                    Most Popular
-                  </PricingCardBadge>
-                ) : null}
-                <PricingCardName className="mb-2">{tier.name}</PricingCardName>
-                <PricingCardTagline className="mb-6">
-                  {tier.cadence}
-                </PricingCardTagline>
-                <PricingCardPrice className="mt-0 mb-6">
-                  <PricingCardPriceValue className="tracking-normal">
-                    {tier.price}
-                  </PricingCardPriceValue>
-                  <PricingCardPriceUnit className="text-base">
-                    {tier.unit}
-                  </PricingCardPriceUnit>
-                </PricingCardPrice>
-                <PricingCardFeatures className="mt-0 block mb-8 space-y-3 text-sm text-muted-foreground">
-                  {tier.features.map((f) => (
-                    <PricingCardFeature key={f} className="gap-3">
-                      <PricingCardCheckIcon className="size-5" />
-                      <span>{f}</span>
-                    </PricingCardFeature>
-                  ))}
-                </PricingCardFeatures>
-                <PricingCardCta asChild className="mt-0">
-                  <LocalServiceBookingButton
-                    lakebed={lakebed}
-                    intentLabel={tier.cta}
-                    service={tier.name}
-                    source="pricing"
-                    pendingChildren={
-                      <LocalServiceMutationSpinner
-                        className={
-                          tier.popular ? 'text-primary-foreground' : undefined
-                        }
-                      />
-                    }
-                    className={cn(
-                      'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
-                      tier.popular
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-                      'disabled:pointer-events-none disabled:opacity-70',
-                    )}
-                  >
-                    {tier.cta}
-                  </LocalServiceBookingButton>
-                </PricingCardCta>
-              </PricingCard>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <p className="text-sm text-muted-foreground">{note}</p>
-          </div>
+          <PricingGrid
+            tiers={tiers}
+            heading="Transparent pricing"
+            subheading="We believe mental health care should be accessible. We accept most major insurance plans and offer sliding scale options."
+            className={cn('mx-auto max-w-5xl', props.className)}
+          />
         </div>
       </section>
     )

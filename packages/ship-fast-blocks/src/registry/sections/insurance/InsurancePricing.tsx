@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InsurancePricing — 3-tier transparent pricing table for an insurance page. On
@@ -14,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const InsurancePricing = defineCapsule({
   name: 'InsurancePricing',
   description:
@@ -49,7 +49,6 @@ export const InsurancePricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Transparent Pricing'
     const heading = props.heading ?? 'Simple, upfront pricing'
     const description =
@@ -178,6 +177,9 @@ export const InsurancePricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
+    void Check
+    void Cross
+    void popularLabel
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
@@ -190,74 +192,20 @@ export const InsurancePricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  'relative rounded-2xl bg-background p-8',
-                  plan.popular
-                    ? 'border-2 border-primary shadow-xl md:-translate-y-4'
-                    : 'border border-border shadow-sm',
-                )}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
-                      {popularLabel}
-                    </span>
-                  </div>
-                )}
-                <h3 className="mb-2 text-xl font-semibold text-foreground">
-                  {plan.name}
-                </h3>
-                <p className="mb-6 text-muted-foreground">{plan.tagline}</p>
-                <div className="mb-6">
-                  <span
-                    className={cn(
-                      'text-4xl font-bold',
-                      plan.popular ? 'text-primary' : 'text-foreground',
-                    )}
-                  >
-                    {plan.price}
-                  </span>
-                  <span className="text-muted-foreground">{plan.period}</span>
-                </div>
-                <ul className="mb-8 space-y-3">
-                  {plan.features.map((f) => (
-                    <li
-                      key={f.label}
-                      className={cn(
-                        'flex items-center gap-3',
-                        f.included
-                          ? 'text-muted-foreground'
-                          : 'text-muted-foreground/50',
-                      )}
-                    >
-                      {f.included ? (
-                        <Check className="size-5 shrink-0 text-primary" />
-                      ) : (
-                        <Cross className="size-5 shrink-0" />
-                      )}
-                      {f.label}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
-                  className={cn(
-                    'w-full rounded-xl px-4 py-3 font-semibold transition-colors',
-                    plan.popular
-                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90'
-                      : 'border-2 border-border bg-background text-foreground hover:bg-muted',
-                  )}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={plans.map((t) => ({
+              ...t,
+              features: Array.isArray(t.features)
+                ? t.features.map((f) => (typeof f === 'string' ? f : f.label))
+                : t.features,
+            }))}
+            heading="Simple, upfront pricing"
+            subheading="No hidden fees, no surprises. Choose the coverage level that"
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

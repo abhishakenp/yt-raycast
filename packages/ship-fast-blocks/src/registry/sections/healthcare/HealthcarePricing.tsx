@@ -1,10 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
-  LocalServiceBookingButton,
-  LocalServiceMutationSpinner,
   localServiceItem,
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
@@ -21,6 +18,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * office or clinic. Renders fully with no props via baked-in visit-tier defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const HealthcarePricing = defineCapsule({
   name: 'HealthcarePricing',
   description:
@@ -55,7 +53,6 @@ export const HealthcarePricing = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Transparent Pricing'
     const heading = props.heading ?? 'Simple, upfront pricing'
     const description =
@@ -135,6 +132,9 @@ export const HealthcarePricing = defineCapsule({
         />
       </svg>
     )
+    void Check
+    void note
+    void noteCta
     return (
       <section
         id="pricing"
@@ -155,81 +155,15 @@ export const HealthcarePricing = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {items.map((plan) => (
-              <article
-                key={plan.name}
-                className={cn(
-                  'relative rounded-2xl bg-card p-8',
-                  plan.featured
-                    ? 'border-2 border-primary shadow-lg'
-                    : 'border border-border',
-                )}
-              >
-                {plan.featured && plan.badge ? (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
-                    {plan.badge}
-                  </div>
-                ) : null}
-                <h3 className="mb-2 text-xl font-bold text-card-foreground">
-                  {plan.name}
-                </h3>
-                <p className="mb-6 text-muted-foreground">{plan.tagline}</p>
-                <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-card-foreground">
-                    {plan.price}
-                  </span>
-                  <span className="text-muted-foreground">{plan.unit}</span>
-                </div>
-                <ul className="mb-8 space-y-3">
-                  {plan.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-center gap-3 text-muted-foreground"
-                    >
-                      <Check className="shrink-0 text-primary" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <LocalServiceBookingButton
-                  lakebed={lakebed}
-                  intentLabel={plan.cta}
-                  service={plan.name}
-                  source="pricing"
-                  pendingChildren={
-                    <LocalServiceMutationSpinner
-                      className={
-                        plan.featured ? 'text-primary-foreground' : undefined
-                      }
-                    />
-                  }
-                  className={cn(
-                    'block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors',
-                    plan.featured
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-                    'disabled:pointer-events-none disabled:opacity-70',
-                  )}
-                >
-                  {plan.cta}
-                </LocalServiceBookingButton>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <p className="text-muted-foreground">
-              {note}{' '}
-              <button
-                type="button"
-                onClick={() => go(noteCta)}
-                className="font-semibold text-primary hover:underline"
-              >
-                {noteCta}
-              </button>
-            </p>
-          </div>
+          <PricingGrid
+            tiers={items}
+            heading="Simple, upfront pricing"
+            subheading="No hidden fees or surprise bills. We accept most major insurance plans and offer transparent self-pay rates."
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

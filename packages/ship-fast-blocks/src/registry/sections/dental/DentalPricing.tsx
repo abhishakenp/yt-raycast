@@ -2,8 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import {
-  LocalServiceBookingButton,
-  LocalServiceMutationSpinner,
   localServiceItem,
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
@@ -21,7 +19,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const DentalPricing = defineCapsule({
   name: 'DentalPricing',
   description:
@@ -128,6 +126,7 @@ export const DentalPricing = defineCapsule({
         />
       </svg>
     )
+    void Check
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
@@ -143,104 +142,13 @@ export const DentalPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{pricingDesc}</p>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {pricingPlans.map((plan) => (
-              <Card
-                key={plan.name}
-                variant={plan.featured ? 'outline' : 'muted'}
-                rounded="2xl"
-                padding="lg"
-                className={cn(
-                  'relative overflow-hidden',
-                  plan.featured
-                    ? 'border-0 bg-primary text-primary-foreground'
-                    : '',
-                )}
-              >
-                {plan.badge ? (
-                  <div className="absolute right-4 top-4 rounded-full bg-primary-foreground/20 px-3 py-1 text-sm font-medium">
-                    {plan.badge}
-                  </div>
-                ) : null}
-                <h3
-                  className={cn(
-                    'mb-2 text-xl font-bold',
-                    plan.featured ? '' : 'text-foreground',
-                  )}
-                >
-                  {plan.name}
-                </h3>
-                <p
-                  className={cn(
-                    'mb-6',
-                    plan.featured
-                      ? 'text-primary-foreground/80'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {plan.tagline}
-                </p>
-                <div className="mb-6">
-                  <span
-                    className={cn(
-                      'text-4xl font-bold',
-                      plan.featured ? '' : 'text-foreground',
-                    )}
-                  >
-                    {plan.price}
-                  </span>
-                  <span
-                    className={cn(
-                      plan.featured
-                        ? 'text-primary-foreground/80'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {plan.period}
-                  </span>
-                </div>
-                <ul className="mb-8 space-y-3">
-                  {plan.features.map((f) => (
-                    <li
-                      key={f}
-                      className={cn(
-                        'flex items-start gap-3',
-                        plan.featured ? '' : 'text-muted-foreground',
-                      )}
-                    >
-                      <Check
-                        className={cn(
-                          'mt-0.5 size-5 shrink-0',
-                          plan.featured ? '' : 'text-primary',
-                        )}
-                      />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <LocalServiceBookingButton
-                  lakebed={lakebed}
-                  intentLabel={plan.cta}
-                  service={plan.name}
-                  source="pricing"
-                  pendingChildren={
-                    <LocalServiceMutationSpinner
-                      className={plan.featured ? 'text-primary' : undefined}
-                    />
-                  }
-                  className={cn(
-                    'block w-full rounded-xl py-3 text-center font-semibold transition-colors',
-                    plan.featured
-                      ? 'bg-background text-primary hover:bg-muted'
-                      : 'border-2 border-border bg-background text-foreground hover:border-primary hover:text-primary',
-                    'disabled:pointer-events-none disabled:opacity-70',
-                  )}
-                >
-                  {plan.cta}
-                </LocalServiceBookingButton>
-              </Card>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={pricingPlans}
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {pricingNote}
           </p>

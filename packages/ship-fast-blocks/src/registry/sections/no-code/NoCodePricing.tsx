@@ -21,7 +21,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * subscription product. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const NoCodePricing = defineCapsule({
   name: 'NoCodePricing',
   description:
@@ -142,6 +142,7 @@ export const NoCodePricing = defineCapsule({
         <polyline points="20 6 9 17 4 12" />
       </svg>
     )
+    void Check
     return (
       <section
         className={cn('bg-muted/40 py-24', props.className)}
@@ -190,117 +191,38 @@ export const NoCodePricing = defineCapsule({
               </span>
             </div>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {plans.map((plan) => {
-              const featured = plan.featured ?? false
-              return (
-                <Card
-                  key={plan.name}
-                  variant="default"
-                  rounded="2xl"
-                  padding="lg"
-                  shadow="sm"
-                  className={cn(
-                    'relative',
-                    featured &&
-                      'border border-foreground bg-foreground text-background shadow-xl',
-                  )}
-                >
-                  {plan.badge && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-foreground">
-                        {plan.badge}
-                      </span>
-                    </div>
-                  )}
-                  <div className="mb-6">
-                    <h3
-                      className={cn(
-                        'mb-1 text-lg font-semibold',
-                        featured ? 'text-background' : 'text-card-foreground',
-                      )}
-                    >
-                      {plan.name}
-                    </h3>
-                    <p
-                      className={cn(
-                        'text-sm',
-                        featured
-                          ? 'text-background/60'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {plan.tagline}
-                    </p>
-                  </div>
-                  <div className="mb-6">
-                    <span
-                      className={cn(
-                        'text-4xl font-bold',
-                        featured ? 'text-background' : 'text-card-foreground',
-                      )}
-                    >
-                      {plan.price}
-                    </span>
-                    {plan.period && (
-                      <span
-                        className={
-                          featured
-                            ? 'text-background/60'
-                            : 'text-muted-foreground'
-                        }
-                      >
-                        {plan.period}
-                      </span>
-                    )}
-                  </div>
-                  <SaasPlanActionButton
-                    lakebed={lakebed}
-                    intentLabel={plan.cta}
-                    plan={plan.name}
-                    source={`pricing-${billing}`}
-                    aria-label={`${plan.cta} for ${plan.name}`}
-                    pendingChildren={
-                      <>
-                        <SaasMutationSpinner className="size-4" />
-                        Selecting
-                      </>
-                    }
-                    className={cn(
-                      'mb-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                      featured
-                        ? 'bg-background text-foreground hover:bg-background/90'
-                        : 'border border-border text-card-foreground hover:bg-accent',
-                    )}
-                  >
-                    {plan.cta}
-                  </SaasPlanActionButton>
-                  <ul className="space-y-3" role="list">
-                    {plan.features.map((feat) => (
-                      <li key={feat} className="flex items-start gap-3">
-                        <Check
-                          className={cn(
-                            'mt-0.5 size-5 shrink-0',
-                            featured ? 'text-background' : 'text-chart-2',
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            'text-sm',
-                            featured
-                              ? 'text-background/80'
-                              : 'text-muted-foreground',
-                          )}
-                        >
-                          {feat}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
-              )
-            })}
-          </div>
+          <PricingGrid
+            tiers={plans}
+            heading="Simple, transparent pricing"
+            subheading="Start free, scale as you grow. No hidden fees, no surprises."
+            renderCta={(tier) => (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={tier.cta ?? 'Get started'}
+                plan={tier.name}
+                source="pricing"
+                aria-label={`${tier.cta} for ${tier.name}`}
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Selecting
+                  </>
+                }
+                className={cn(
+                  'mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                  tier.highlighted
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border border-border bg-background text-foreground hover:bg-muted',
+                )}
+              >
+                {tier.cta ?? 'Get started'}
+              </SaasPlanActionButton>
+            )}
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

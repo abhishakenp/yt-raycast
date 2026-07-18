@@ -2,9 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * ConsultingPricing — 3-tier engagement-models pricing block for a
@@ -43,7 +43,6 @@ export const ConsultingPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Engagement Models'
     const description =
       props.description ??
@@ -111,6 +110,7 @@ export const ConsultingPricing = defineCapsule({
       </svg>
     )
 
+    void CheckIcon
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
@@ -120,104 +120,15 @@ export const ConsultingPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {tiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={cn(
-                  'relative rounded-xl border p-8',
-                  tier.featured
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-muted',
-                )}
-              >
-                {tier.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
-                      {tier.badge}
-                    </span>
-                  </div>
-                )}
-                <h3
-                  className={cn(
-                    'mb-2 text-xl font-semibold',
-                    tier.featured
-                      ? 'text-primary-foreground'
-                      : 'text-foreground',
-                  )}
-                >
-                  {tier.name}
-                </h3>
-                <div className="mb-6">
-                  <span
-                    className={cn(
-                      'text-3xl font-bold',
-                      tier.featured
-                        ? 'text-primary-foreground'
-                        : 'text-foreground',
-                    )}
-                  >
-                    {tier.price}
-                  </span>
-                  {tier.unit && (
-                    <span
-                      className={cn(
-                        tier.featured
-                          ? 'text-primary-foreground/60'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {tier.unit}
-                    </span>
-                  )}
-                </div>
-                <p
-                  className={cn(
-                    'mb-6 text-sm',
-                    tier.featured
-                      ? 'text-primary-foreground/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.description}
-                </p>
-                <ul
-                  className={cn(
-                    'mb-8 space-y-3 text-sm',
-                    tier.featured
-                      ? 'text-primary-foreground/80'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2">
-                      <CheckIcon
-                        className={cn(
-                          'mt-0.5 size-5 flex-shrink-0',
-                          tier.featured
-                            ? 'text-primary-foreground/60'
-                            : 'text-muted-foreground',
-                        )}
-                      />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
-                  className={cn(
-                    'w-full rounded-md px-4 py-3 font-medium transition-colors',
-                    tier.featured
-                      ? 'bg-background text-foreground hover:bg-muted'
-                      : 'border border-border bg-background text-foreground hover:bg-muted',
-                  )}
-                >
-                  {tier.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={tiers}
+            heading="Engagement Models"
+            subheading="Flexible approaches tailored to your unique challenges, timeline, and organizational needs."
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )

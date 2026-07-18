@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FitnessPricing — 3-tier membership pricing block for a gym or fitness studio. A
@@ -12,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use for membership tiers / plans on gyms, fitness studios, yoga or boxing studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const FitnessPricing = defineCapsule({
   name: 'FitnessPricing',
   description:
@@ -42,7 +41,6 @@ export const FitnessPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const pricingHeading = props.heading ?? 'Membership tiers'
     const pricingDesc =
       props.description ??
@@ -176,6 +174,8 @@ export const FitnessPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
+    void CheckIcon
+    void CrossIcon
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
@@ -186,129 +186,18 @@ export const FitnessPricing = defineCapsule({
             <p className="text-muted-foreground">{pricingDesc}</p>
           </div>
 
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {pricingTiers.map((tier) => (
-              <Card
-                asChild
-                key={tier.name}
-                variant={tier.popular ? 'outline' : 'default'}
-                rounded="lg"
-                padding="lg"
-                className={cn(
-                  'relative',
-                  tier.popular
-                    ? 'border-0 bg-primary text-primary-foreground'
-                    : '',
-                )}
-              >
-                <article>
-                  {tier.popular ? (
-                    <div className="absolute right-0 top-0 rounded-bl-sm bg-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground">
-                      Popular
-                    </div>
-                  ) : null}
-                  <h3
-                    className={cn(
-                      'mb-2 text-lg font-semibold',
-                      tier.popular
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
-                    )}
-                  >
-                    {tier.name}
-                  </h3>
-                  <p
-                    className={cn(
-                      'mb-6 text-sm',
-                      tier.popular
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.tagline}
-                  </p>
-                  <div className="mb-6">
-                    <span
-                      className={cn(
-                        'text-4xl font-semibold',
-                        tier.popular
-                          ? 'text-primary-foreground'
-                          : 'text-card-foreground',
-                      )}
-                    >
-                      {tier.price}
-                    </span>
-                    <span
-                      className={cn(
-                        tier.popular
-                          ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {tier.period}
-                    </span>
-                  </div>
-                  <ul
-                    className={cn(
-                      'mb-8 space-y-3 text-sm',
-                      tier.popular
-                        ? 'text-primary-foreground/90'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.features.map((feature) => (
-                      <li
-                        key={feature.label}
-                        className="flex items-center gap-2"
-                      >
-                        {feature.included ? (
-                          <CheckIcon
-                            className={cn(
-                              'size-4',
-                              tier.popular
-                                ? 'text-primary-foreground'
-                                : 'text-primary',
-                            )}
-                          />
-                        ) : (
-                          <CrossIcon
-                            className={cn(
-                              'size-4',
-                              tier.popular
-                                ? 'text-primary-foreground/50'
-                                : 'text-muted-foreground/50',
-                            )}
-                          />
-                        )}
-                        <span
-                          className={cn(
-                            !feature.included &&
-                              (tier.popular
-                                ? 'text-primary-foreground/60'
-                                : 'text-muted-foreground/70'),
-                          )}
-                        >
-                          {feature.label}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    type="button"
-                    onClick={() => go(tier.cta)}
-                    className={cn(
-                      'w-full rounded-sm py-3 text-sm font-medium transition-colors',
-                      tier.popular
-                        ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
-                        : 'border border-input text-foreground hover:border-border',
-                    )}
-                  >
-                    {tier.cta}
-                  </button>
-                </article>
-              </Card>
-            ))}
-          </div>
+          <PricingGrid
+            tiers={pricingTiers.map((t) => ({
+              ...t,
+              features: Array.isArray(t.features)
+                ? t.features.map((f) => (typeof f === 'string' ? f : f.label))
+                : t.features,
+            }))}
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {pricingFootnote}

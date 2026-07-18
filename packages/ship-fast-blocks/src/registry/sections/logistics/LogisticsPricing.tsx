@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LogisticsPricing — a three-tier service-pricing table for a global-logistics /
@@ -15,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * shipping, courier or cargo/transport companies. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const LogisticsPricing = defineCapsule({
   name: 'LogisticsPricing',
   description:
@@ -41,7 +40,6 @@ export const LogisticsPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Service tiers'
     const description =
       props.description ??
@@ -110,6 +108,7 @@ export const LogisticsPricing = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
+    void Check
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
         <Container>
@@ -120,105 +119,15 @@ export const LogisticsPricing = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {tiers.map((tier) => {
-              const featured = tier.featured
-              return (
-                <Card
-                  key={tier.name}
-                  variant="default"
-                  rounded="2xl"
-                  padding="lg"
-                  className={cn(
-                    'relative',
-                    featured
-                      ? 'border-0 bg-primary text-primary-foreground'
-                      : '',
-                  )}
-                >
-                  {tier.badge ? (
-                    <div className="absolute right-6 top-0 -translate-y-1/2 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-                      {tier.badge}
-                    </div>
-                  ) : null}
-                  <h3
-                    className={cn(
-                      'mb-2 text-lg font-semibold',
-                      featured
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
-                    )}
-                  >
-                    {tier.name}
-                  </h3>
-                  <p
-                    className={cn(
-                      'mb-6 text-sm',
-                      featured
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.tagline}
-                  </p>
-                  <div className="mb-6">
-                    <span
-                      className={cn(
-                        'text-4xl font-semibold',
-                        featured
-                          ? 'text-primary-foreground'
-                          : 'text-card-foreground',
-                      )}
-                    >
-                      {tier.price}
-                    </span>
-                    <span
-                      className={cn(
-                        featured
-                          ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {tier.unit}
-                    </span>
-                  </div>
-                  <ul
-                    className={cn(
-                      'mb-8 space-y-3 text-sm',
-                      featured
-                        ? 'text-primary-foreground/90'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2">
-                        <Check
-                          className={
-                            featured
-                              ? 'text-primary-foreground'
-                              : 'text-primary'
-                          }
-                        />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    type="button"
-                    onClick={() => go(tier.cta)}
-                    className={cn(
-                      'w-full rounded-xl py-3 font-medium transition-colors',
-                      featured
-                        ? 'bg-background text-foreground hover:bg-muted'
-                        : 'border border-primary text-primary hover:bg-muted/50',
-                    )}
-                  >
-                    {tier.cta}
-                  </button>
-                </Card>
-              )
-            })}
-          </div>
+          <PricingGrid
+            tiers={tiers}
+            heading="Service tiers"
+            subheading="Choose the service level that matches your timeline and budget."
+            className={cn(
+              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {footnote}

@@ -8,7 +8,6 @@ import {
   useSyncSaasPlans,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CrmPricing — centered 3-tier pricing table for a CRM / SaaS landing page on a
@@ -21,6 +20,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 export const CrmPricing = defineCapsule({
   name: 'CrmPricing',
   description:
@@ -139,6 +139,8 @@ export const CrmPricing = defineCapsule({
         <path d="M6 18L18 6M6 6l12 12" />
       </svg>
     )
+    void Check
+    void XIcon
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
         <Container>
@@ -148,122 +150,38 @@ export const CrmPricing = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            {plans.map((plan) => (
-              <Card
-                key={plan.name}
-                variant="default"
-                rounded="xl"
-                padding="lg"
-                shadow="sm"
+          <PricingGrid
+            tiers={plans}
+            heading="Simple, transparent pricing"
+            subheading="No hidden fees. Start free, upgrade when you"
+            renderCta={(tier) => (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={tier.cta ?? 'Get started'}
+                plan={tier.name}
+                source="pricing"
+                aria-label={`${tier.cta} for ${tier.name}`}
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Selecting
+                  </>
+                }
                 className={cn(
-                  'relative',
-                  plan.featured
-                    ? 'border-primary bg-primary text-primary-foreground shadow-xl'
-                    : '',
+                  'mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                  tier.highlighted
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border border-border bg-background text-foreground hover:bg-muted',
                 )}
               >
-                {plan.featured ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-background px-3 py-1 text-xs font-bold uppercase tracking-wide text-foreground">
-                      Most Popular
-                    </span>
-                  </div>
-                ) : null}
-                <h3
-                  className={cn(
-                    'mb-2 text-xl font-semibold',
-                    plan.featured
-                      ? 'text-primary-foreground'
-                      : 'text-card-foreground',
-                  )}
-                >
-                  {plan.name}
-                </h3>
-                <p
-                  className={cn(
-                    'mb-6',
-                    plan.featured
-                      ? 'text-primary-foreground/70'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {plan.description}
-                </p>
-                <div className="mb-6">
-                  <span
-                    className={cn(
-                      'text-4xl font-bold',
-                      plan.featured
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
-                    )}
-                  >
-                    {plan.price}
-                  </span>
-                  <span
-                    className={cn(
-                      plan.featured
-                        ? 'text-primary-foreground/60'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {plan.unit}
-                  </span>
-                </div>
-                <ul className="mb-8 space-y-4">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <Check
-                        className={cn(
-                          'mt-0.5 size-5 shrink-0',
-                          plan.featured
-                            ? 'text-primary-foreground/80'
-                            : 'text-chart-2',
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          plan.featured
-                            ? 'text-primary-foreground/90'
-                            : 'text-foreground/80',
-                        )}
-                      >
-                        {feat}
-                      </span>
-                    </li>
-                  ))}
-                  {(plan.excluded ?? []).map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <XIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground/50" />
-                      <span className="text-muted-foreground/60">{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-                <SaasPlanActionButton
-                  lakebed={lakebed}
-                  intentLabel={plan.cta}
-                  plan={plan.name}
-                  source="pricing"
-                  aria-label={`${plan.cta} for ${plan.name}`}
-                  pendingChildren={
-                    <>
-                      <SaasMutationSpinner className="size-4" />
-                      Selecting
-                    </>
-                  }
-                  className={cn(
-                    'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    plan.featured
-                      ? 'bg-background text-foreground hover:bg-muted'
-                      : 'border border-border text-foreground hover:bg-muted',
-                  )}
-                >
-                  {plan.cta}
-                </SaasPlanActionButton>
-              </Card>
-            ))}
-          </div>
+                {tier.cta ?? 'Get started'}
+              </SaasPlanActionButton>
+            )}
+            className={cn(
+              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
+              props.className,
+            )}
+          />
         </Container>
       </section>
     )
