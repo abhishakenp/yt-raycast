@@ -163,13 +163,70 @@ const StatLabel = React.forwardRef<
 })
 StatLabel.displayName = 'StatLabel'
 
+const statDeltaVariants = cva(
+  'inline-flex items-center gap-1 text-xs font-semibold',
+  {
+    variants: {
+      trend: {
+        up: 'bg-chart-1/10 text-chart-1',
+        down: 'bg-destructive/10 text-destructive',
+        neutral: 'bg-muted text-muted-foreground',
+      },
+      bare: {
+        true: '',
+        false: 'rounded px-1.5 py-0.5',
+      },
+    },
+    defaultVariants: {
+      trend: 'up',
+      bare: false,
+    },
+  },
+)
+
+const StatDelta = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> &
+    VariantProps<typeof statDeltaVariants> & { asChild?: boolean }
+>(({ className, trend, bare, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="stat-delta"
+      className={cn(statDeltaVariants({ trend, bare }), className)}
+      {...props}
+    />
+  )
+})
+StatDelta.displayName = 'StatDelta'
+
+const StatIcon = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="stat-icon"
+      className={cn('grid size-10 place-items-center rounded-lg', className)}
+      {...props}
+    />
+  )
+})
+StatIcon.displayName = 'StatIcon'
+
 export {
   StatGrid,
   StatItem,
   StatValue,
   StatLabel,
+  StatDelta,
+  StatIcon,
   statGridVariants,
   statItemVariants,
   statValueVariants,
   statLabelVariants,
+  statDeltaVariants,
 }
