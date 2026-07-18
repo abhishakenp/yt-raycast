@@ -3,6 +3,12 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * ManufacturingCapabilities — a 6-up capabilities / services grid for a
@@ -174,20 +180,18 @@ export const ManufacturingCapabilities = defineCapsule({
           </div>
           <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((item, i) => (
-              <article
+              <FeatureCard
                 key={item.title}
-                className="group rounded-lg bg-muted p-6 transition-colors hover:bg-accent"
+                className="group rounded-lg border-0 bg-muted p-6 transition-colors hover:bg-accent"
               >
-                <div className="mb-4 grid size-12 place-items-center rounded-lg bg-secondary text-foreground">
+                <FeatureIcon className="mb-4 grid size-12 place-items-center rounded-lg bg-secondary text-foreground">
                   {capIcons[i % capIcons.length]}
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                </FeatureIcon>
+                <FeatureTitle className="mb-2">{item.title}</FeatureTitle>
+                <FeatureDescription className="leading-relaxed">
                   {item.description}
-                </p>
-              </article>
+                </FeatureDescription>
+              </FeatureCard>
             ))}
           </ResponsiveGrid>
         </Container>
