@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * LogisticsStats — a compact KPI stat band for a global-logistics / freight-
@@ -13,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * site to quantify scale and trust. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const LogisticsStats = defineCapsule({
   name: 'LogisticsStats',
   description:
@@ -52,14 +53,15 @@ export const LogisticsStats = defineCapsule({
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
-            {items.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-4xl font-semibold lg:text-5xl">{s.value}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="semibold"
+            size="large"
+            className="lg:gap-12"
+          />
         </Container>
       </section>
     )

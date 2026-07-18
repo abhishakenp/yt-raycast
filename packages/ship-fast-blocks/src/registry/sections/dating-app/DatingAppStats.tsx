@@ -2,9 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * DatingAppStats — a bold full-width stats band for a dating / matchmaking app. A
@@ -38,16 +39,16 @@ export const DatingAppStats = defineCapsule({
     return (
       <section className={cn('bg-primary py-20', props.className)}>
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
-            {statsItems.map((s) => (
-              <div key={s.label}>
-                <p className="mb-2 text-4xl font-bold text-primary-foreground sm:text-5xl">
-                  {s.value}
-                </p>
-                <p className="text-primary-foreground/80">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={statsItems}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            valueColor="inverted"
+            labelColor="inverted"
+          />
         </Container>
       </section>
     )

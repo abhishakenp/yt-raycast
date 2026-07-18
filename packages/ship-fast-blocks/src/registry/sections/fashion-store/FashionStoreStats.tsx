@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * FashionStoreStats — slim brand stats strip for a minimalist fashion store. A
@@ -11,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * clothing brands, boutiques, or any premium retail storefront.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const FashionStoreStats = defineCapsule({
   name: 'FashionStoreStats',
   description:
@@ -56,20 +57,15 @@ export const FashionStoreStats = defineCapsule({
         )}
       >
         <Container>
-          <ResponsiveGrid
-            cols="2-lg-4"
-            gap="lg"
+          <StatGrid
+            stats={statsItems}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="xl"
             className="text-center lg:gap-12"
-          >
-            {statsItems.map((s) => (
-              <div key={s.label}>
-                <p className="mb-2 font-serif text-5xl text-foreground lg:text-6xl">
-                  {s.value}
-                </p>
-                <p className="text-sm text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          />
         </Container>
       </section>
     )

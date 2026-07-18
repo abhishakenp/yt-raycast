@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * InsuranceStats — compact 4-up impact stats strip for an insurance page. A
@@ -12,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const InsuranceStats = defineCapsule({
   name: 'InsuranceStats',
   description:
@@ -52,16 +53,15 @@ export const InsuranceStats = defineCapsule({
     return (
       <section className={cn('bg-background py-16 lg:py-20', props.className)}>
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
-            {items.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="mb-2 text-4xl font-bold text-primary lg:text-5xl">
-                  {s.value}
-                </p>
-                <p className="font-medium text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            className="lg:gap-12"
+          />
         </Container>
       </section>
     )

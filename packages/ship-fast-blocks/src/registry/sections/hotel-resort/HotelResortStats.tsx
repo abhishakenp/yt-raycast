@@ -2,7 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * HotelResortStats — quiet KPI stats band for a luxury hotel / resort & spa
@@ -37,18 +38,15 @@ export const HotelResortStats = defineCapsule({
     return (
       <section className={cn('bg-muted pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
-            {stats.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="mb-2 text-4xl font-light text-foreground lg:text-5xl">
-                  {s.value}
-                </p>
-                <p className="text-sm uppercase tracking-wider text-muted-foreground">
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={stats}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="light"
+            size="large"
+            className="lg:gap-12"
+          />
         </div>
       </section>
     )

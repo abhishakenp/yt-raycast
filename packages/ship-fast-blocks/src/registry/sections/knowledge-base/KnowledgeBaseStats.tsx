@@ -2,9 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * KnowledgeBaseStats — compact stats band for a help center on a raised card
@@ -44,16 +45,14 @@ export const KnowledgeBaseStats = defineCapsule({
         aria-label="Help center statistics"
       >
         <Container>
-          <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
-            {items.map((s) => (
-              <div key={s.label}>
-                <div className="mb-1 text-3xl font-semibold text-foreground sm:text-4xl">
-                  {s.value}
-                </div>
-                <div className="text-sm text-muted-foreground">{s.label}</div>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="semibold"
+            size="default"
+          />
         </Container>
       </section>
     )

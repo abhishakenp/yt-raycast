@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * MarketingAgencyStats — a high-contrast dark KPI / results band. A full-width
@@ -11,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * marketing-agency, growth, or B2B SaaS landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const MarketingAgencyStats = defineCapsule({
   name: 'MarketingAgencyStats',
   description:
@@ -55,14 +56,16 @@ export const MarketingAgencyStats = defineCapsule({
         )}
       >
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
-            {items.map((s) => (
-              <div key={s.label}>
-                <p className="mb-2 text-4xl font-bold sm:text-5xl">{s.value}</p>
-                <p className="text-sm text-primary-foreground/70">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            valueColor="inverted"
+            labelColor="inverted"
+          />
         </Container>
       </section>
     )

@@ -2,7 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * InteriorDesignStats — compact metrics band on a muted surface for an upscale
@@ -41,20 +42,15 @@ export const InteriorDesignStats = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl">
-          <ResponsiveGrid
-            cols="2-md-4"
-            gap="lg"
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="light"
+            size="large"
             className="text-center md:gap-12"
-          >
-            {items.map((stat) => (
-              <div key={stat.label}>
-                <p className="mb-2 text-4xl font-light text-foreground md:text-5xl">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          />
         </div>
       </section>
     )

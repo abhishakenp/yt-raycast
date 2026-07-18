@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * KidsEducationStats — dark stats band for a kids / family learning platform. A
@@ -12,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * and family learning apps. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const KidsEducationStats = defineCapsule({
   name: 'KidsEducationStats',
   description:
@@ -54,23 +55,16 @@ export const KidsEducationStats = defineCapsule({
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
-            {items.map((s, i) => (
-              <div key={s.label}>
-                <p
-                  className={cn(
-                    'mb-2 text-4xl font-bold sm:text-5xl',
-                    i % 3 === 0 && 'text-primary',
-                    i % 3 === 1 && 'text-secondary',
-                    i % 3 === 2 && 'text-accent',
-                  )}
-                >
-                  {s.value}
-                </p>
-                <p className="text-background/70">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            valueColor="inverted"
+            labelColor="inverted"
+          />
         </Container>
       </section>
     )

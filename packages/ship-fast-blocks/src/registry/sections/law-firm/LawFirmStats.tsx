@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * LawFirmStats — a dark full-width stats band on the primary surface. A
@@ -13,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const LawFirmStats = defineCapsule({
   name: 'LawFirmStats',
   description:
@@ -57,22 +58,17 @@ export const LawFirmStats = defineCapsule({
         )}
       >
         <Container>
-          <ResponsiveGrid
-            cols="2-lg-4"
-            gap="lg"
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="xl"
+            valueColor="inverted"
+            labelColor="inverted"
             className="text-center lg:gap-12"
-          >
-            {items.map((s) => (
-              <div key={s.label}>
-                <p className="mb-2 font-serif text-5xl lg:text-6xl">
-                  {s.value}
-                </p>
-                <p className="text-sm uppercase tracking-widest text-primary-foreground/70">
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          />
         </Container>
       </section>
     )

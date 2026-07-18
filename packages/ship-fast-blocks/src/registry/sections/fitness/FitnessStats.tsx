@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * FitnessStats — bold primary-filled stats band for a gym or fitness studio. A
@@ -11,6 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * gyms, fitness studios, yoga / pilates / boxing / spin studios or wellness clubs.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const FitnessStats = defineCapsule({
   name: 'FitnessStats',
   description:
@@ -50,18 +51,16 @@ export const FitnessStats = defineCapsule({
     return (
       <section className={cn('bg-primary py-16', props.className)}>
         <Container>
-          <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
-            {statsItems.map((stat) => (
-              <div key={stat.label}>
-                <div className="mb-2 text-3xl font-semibold text-primary-foreground md:text-4xl">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-primary-foreground/70">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={statsItems}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="semibold"
+            size="default"
+            valueColor="inverted"
+            labelColor="inverted"
+          />
         </Container>
       </section>
     )

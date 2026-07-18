@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * ManufacturingStats — a compact company stats band for a precision-
@@ -13,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const ManufacturingStats = defineCapsule({
   name: 'ManufacturingStats',
   description:
@@ -55,16 +56,14 @@ export const ManufacturingStats = defineCapsule({
       >
         <Container>
           <h2 className="sr-only">Company Statistics</h2>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
-            {items.map((s) => (
-              <div key={s.label}>
-                <p className="text-4xl font-semibold text-foreground lg:text-5xl">
-                  {s.value}
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="semibold"
+            size="large"
+          />
         </Container>
       </section>
     )

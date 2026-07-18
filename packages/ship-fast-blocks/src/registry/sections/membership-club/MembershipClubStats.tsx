@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * MembershipClubStats — community stats band for a private membership club /
@@ -42,18 +43,15 @@ export const MembershipClubStats = defineCapsule({
         aria-label="Community statistics"
       >
         <Container>
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
-            {stats.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="mb-2 text-4xl font-light text-foreground lg:text-5xl">
-                  {s.value}
-                </p>
-                <p className="text-sm uppercase tracking-wider text-muted-foreground">
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </div>
+          <StatGrid
+            stats={stats}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="light"
+            size="large"
+            labelUppercase
+          />
         </Container>
       </section>
     )

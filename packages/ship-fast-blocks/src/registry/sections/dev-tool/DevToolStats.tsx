@@ -2,7 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Container, ResponsiveGrid } from '#/section-kit/index.ts'
+import { Container } from '#/section-kit/index.ts'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * DevToolStats — a compact 4-up metrics band for a developer tool / API
@@ -38,16 +39,14 @@ export const DevToolStats = defineCapsule({
         aria-label="Platform statistics"
       >
         <Container>
-          <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
-            {items.map((s) => (
-              <div key={s.label}>
-                <div className="mb-1 text-3xl font-bold text-foreground sm:text-4xl">
-                  {s.value}
-                </div>
-                <div className="text-sm text-muted-foreground">{s.label}</div>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="default"
+          />
         </Container>
       </section>
     )

@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * HealthcareStats — full-bleed accent statistics band for a medical-clinic
@@ -13,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * Renders fully with no props via baked-in clinic-metric defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const HealthcareStats = defineCapsule({
   name: 'HealthcareStats',
   description:
@@ -56,18 +57,16 @@ export const HealthcareStats = defineCapsule({
         aria-label="Clinic statistics"
       >
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
-            {items.map((s) => (
-              <div key={s.label}>
-                <p className="mb-2 text-4xl font-bold text-primary-foreground sm:text-5xl">
-                  {s.value}
-                </p>
-                <p className="font-medium text-primary-foreground/80">
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            valueColor="inverted"
+            labelColor="inverted"
+          />
         </Container>
       </section>
     )

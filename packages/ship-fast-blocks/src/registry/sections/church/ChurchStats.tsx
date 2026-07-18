@@ -2,7 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * ChurchStats — a bordered congregation stats band for a church or faith-community
@@ -38,16 +39,15 @@ export const ChurchStats = defineCapsule({
         className={cn('border-y border-border pt-28 pb-20', props.className)}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
-            {items.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="mb-2 text-4xl font-medium text-foreground lg:text-5xl">
-                  {s.value}
-                </p>
-                <p className="text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            className="lg:gap-12"
+          />
         </div>
       </section>
     )

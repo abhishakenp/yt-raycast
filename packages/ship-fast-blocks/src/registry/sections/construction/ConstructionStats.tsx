@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * ConstructionStats — four-up stats band for a construction / general
@@ -12,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const ConstructionStats = defineCapsule({
   name: 'ConstructionStats',
   description:
@@ -52,18 +53,15 @@ export const ConstructionStats = defineCapsule({
     return (
       <section className={cn('bg-muted py-16', props.className)}>
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
-            {items.map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="mb-2 text-4xl font-bold text-foreground lg:text-5xl">
-                  {s.value}
-                </div>
-                <div className="font-medium text-muted-foreground">
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            className="lg:gap-12"
+          />
         </Container>
       </section>
     )

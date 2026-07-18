@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * DirectoryStats — compact 4-up statistics band for a local-business directory.
@@ -12,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * review-and-discovery sites to convey scale and trust.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const DirectoryStats = defineCapsule({
   name: 'DirectoryStats',
   description:
@@ -54,16 +55,14 @@ export const DirectoryStats = defineCapsule({
         className={cn('border-y border-border bg-muted py-12', props.className)}
       >
         <Container>
-          <ResponsiveGrid cols="2-md-4" gap="lg" className="text-center">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <div className="text-3xl font-semibold text-foreground sm:text-4xl">
-                  {s.value}
-                </div>
-                <div className="mt-1 text-muted-foreground">{s.label}</div>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={stats}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="semibold"
+            size="default"
+          />
         </Container>
       </section>
     )

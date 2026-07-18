@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * JobBoardStats — a dark, high-contrast metrics band for a job-board / careers
@@ -12,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * placements, time-to-hire). Static (no links). Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const JobBoardStats = defineCapsule({
   name: 'JobBoardStats',
   description:
@@ -54,16 +55,17 @@ export const JobBoardStats = defineCapsule({
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="lg:gap-12">
-            {items.map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="mb-2 text-4xl font-bold sm:text-5xl">
-                  {s.value}
-                </div>
-                <p className="text-background/60">{s.label}</p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={items}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            valueColor="inverted"
+            labelColor="inverted"
+            className="lg:gap-12"
+          />
         </Container>
       </section>
     )

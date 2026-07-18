@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * DentalStats — dark inverted stats band for a dental practice site. A full-width
@@ -12,6 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * content sections on a dentist, dental office, or clinic site.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const DentalStats = defineCapsule({
   name: 'DentalStats',
   description:
@@ -53,16 +54,16 @@ export const DentalStats = defineCapsule({
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
-            {statsItems.map((s) => (
-              <div key={s.label}>
-                <div className="mb-2 text-4xl font-bold text-primary sm:text-5xl">
-                  {s.value}
-                </div>
-                <div className="text-background/70">{s.label}</div>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={statsItems}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            valueColor="inverted"
+            labelColor="inverted"
+          />
         </Container>
       </section>
     )

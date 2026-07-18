@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import {} from '#/section-kit/index.ts'
 
 /**
  * FoodDeliveryStats — inverted KPI stats strip for a food-delivery /
@@ -13,6 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 export const FoodDeliveryStats = defineCapsule({
   name: 'FoodDeliveryStats',
   description:
@@ -58,14 +59,16 @@ export const FoodDeliveryStats = defineCapsule({
         )}
       >
         <Container>
-          <ResponsiveGrid cols="2-lg-4" gap="lg" className="text-center">
-            {statItems.map((s) => (
-              <div key={s.label}>
-                <div className="text-4xl font-bold lg:text-5xl">{s.value}</div>
-                <div className="mt-2 text-background/70">{s.label}</div>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <StatGrid
+            stats={statItems}
+            columns={4}
+            gap="wide"
+            align="center"
+            weight="bold"
+            size="large"
+            valueColor="inverted"
+            labelColor="inverted"
+          />
         </Container>
       </section>
     )
