@@ -13,7 +13,6 @@ import {
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { InventoryGrid, InventoryCard } from '#/section-kit/InventoryGrid.tsx'
 
 /**
@@ -146,16 +145,12 @@ export const AutoDealershipInventory = defineCapsule({
 
           <InventoryGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             {items.map((v) => (
-              <InventoryCard asChild key={v.name}>
-                <Card
-                  asChild
-                  variant="muted"
-                  rounded="lg"
-                  padding="none"
-                  className="group overflow-hidden transition-colors hover:border-foreground/30"
-                >
-                  <article>
-                    <div className="relative aspect-[4/3] overflow-hidden">
+              <InventoryCard
+                key={v.name}
+                className="rounded-lg bg-muted transition-colors hover:border-foreground/30"
+              >
+                <article>
+                  <div className="relative aspect-[4/3] overflow-hidden">
                       <Image
                         alt={v.imageAlt}
                         w={600}
@@ -213,7 +208,6 @@ export const AutoDealershipInventory = defineCapsule({
                       </div>
                     </div>
                   </article>
-                </Card>
               </InventoryCard>
             ))}
           </InventoryGrid>
