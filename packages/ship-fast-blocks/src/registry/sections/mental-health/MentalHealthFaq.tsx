@@ -10,6 +10,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MentalHealthFaq — a centered FAQ accordion for a therapy practice. A narrow
@@ -104,7 +105,7 @@ export const MentalHealthFaq = defineCapsule({
 
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <Container className="max-w-4xl">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-primary">
               {eyebrow}
@@ -147,7 +148,7 @@ export const MentalHealthFaq = defineCapsule({
               {footerCta}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

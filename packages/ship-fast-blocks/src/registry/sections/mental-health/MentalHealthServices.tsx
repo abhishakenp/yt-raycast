@@ -15,6 +15,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MentalHealthServices — a centered-heading services grid for a therapy practice.
@@ -123,7 +124,7 @@ export const MentalHealthServices = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -153,7 +154,7 @@ export const MentalHealthServices = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

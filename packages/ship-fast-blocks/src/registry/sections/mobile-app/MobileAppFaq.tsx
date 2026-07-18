@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -80,7 +81,7 @@ export const MobileAppFaq = defineCapsule({
         )}
         aria-labelledby="mobileapp-faq-heading"
       >
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           <div className="mb-16 text-center">
             <h2
               id="mobileapp-faq-heading"
@@ -105,7 +106,7 @@ export const MobileAppFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

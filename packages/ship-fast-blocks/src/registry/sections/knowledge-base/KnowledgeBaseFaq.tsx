@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -77,7 +78,7 @@ export const KnowledgeBaseFaq = defineCapsule({
         className={cn('bg-background py-16 sm:py-20', props.className)}
         aria-labelledby="kb-faq-heading"
       >
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           <div className="mb-12 text-center">
             <h2
               id="kb-faq-heading"
@@ -104,7 +105,7 @@ export const KnowledgeBaseFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

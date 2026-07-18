@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CommunityForumTopics — colorful topic / category directory grid for a
@@ -95,7 +96,7 @@ export const CommunityForumTopics = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -128,7 +129,7 @@ export const CommunityForumTopics = defineCapsule({
               </TopicCard>
             ))}
           </TopicGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -72,7 +73,7 @@ export const DirectoryFaq = defineCapsule({
 
     return (
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
               {heading}
@@ -99,7 +100,7 @@ export const DirectoryFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -70,7 +71,7 @@ export const NoCodeFaq = defineCapsule({
         className={cn('bg-background py-24', props.className)}
         aria-labelledby="nc-faq"
       >
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           <div className="mb-12 text-center">
             <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -97,7 +98,7 @@ export const NoCodeFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

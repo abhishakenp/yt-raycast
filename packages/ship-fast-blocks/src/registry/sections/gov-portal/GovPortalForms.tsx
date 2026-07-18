@@ -16,6 +16,7 @@ import {
   GovFormHeader,
   GovFormBody,
 } from '#/section-kit/GovFormTable.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
@@ -74,7 +75,7 @@ export const GovPortalGrievance = defineCapsule({
         variant="muted"
         className={cn('bg-muted/30 py-16 border-0', props.className)}
       >
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
@@ -169,7 +170,7 @@ export const GovPortalGrievance = defineCapsule({
               </button>
             </div>
           </form>
-        </div>
+        </Container>
       </GovFormTable>
     )
   },

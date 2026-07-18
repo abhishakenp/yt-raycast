@@ -11,6 +11,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NewsletterTestimonials — reader testimonials band for an editorial newsletter.
@@ -97,7 +98,7 @@ export const NewsletterTestimonials = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -144,7 +145,7 @@ export const NewsletterTestimonials = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

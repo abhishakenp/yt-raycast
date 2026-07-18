@@ -10,6 +10,7 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventSpeakers — a featured-speakers grid for a conference or event page. A muted
@@ -113,7 +114,7 @@ export const EventSpeakers = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -160,7 +161,7 @@ export const EventSpeakers = defineCapsule({
               </PersonCard>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

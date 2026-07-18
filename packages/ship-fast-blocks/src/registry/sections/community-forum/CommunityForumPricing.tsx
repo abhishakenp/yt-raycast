@@ -16,6 +16,7 @@ import {
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CommunityForumPricing — 3-tier pricing table for a community-platform / discussion-forum
@@ -111,7 +112,7 @@ export const CommunityForumPricing = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <div className="mx-auto max-w-5xl">
             <PricingGrid>
               <SectionHeading title={heading} subtitle={description} />
@@ -220,7 +221,7 @@ export const CommunityForumPricing = defineCapsule({
                 })}
             </PricingGrid>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

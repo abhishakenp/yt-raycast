@@ -10,6 +10,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FashionStoreFaq — native disclosure FAQ accordion for a minimalist fashion
@@ -116,7 +117,7 @@ export const FashionStoreFaq = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           <div className="mb-16 text-center">
             <p className={cn(eyebrowCls, 'mb-3')}>{faqEyebrow}</p>
             <h2 className="font-serif text-4xl font-normal sm:text-5xl">
@@ -152,7 +153,7 @@ export const FashionStoreFaq = defineCapsule({
               {faqFooterCta}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

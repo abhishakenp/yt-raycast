@@ -10,6 +10,7 @@ import {
   PricingTierTagline,
   PricingTierFeatures,
 } from '#/section-kit/PricingGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
@@ -128,7 +129,7 @@ export const NewsletterPricing = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <div className="mx-auto mb-12 max-w-2xl text-center md:mb-16">
             <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">
               {heading}
@@ -230,7 +231,7 @@ export const NewsletterPricing = defineCapsule({
             </button>
             {footnoteSuffix}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },

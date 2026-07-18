@@ -8,6 +8,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NonprofitStats — impact-by-the-numbers band for a nonprofit / charity / NGO
@@ -52,7 +53,7 @@ export const NonprofitStats = defineCapsule({
 
     return (
       <section className="pt-28 pb-20 lg:pt-32 lg:pb-28">
-        <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 sm:px-6 lg:px-8">
+        <Container size="xl" className="flex flex-col gap-12">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -69,7 +70,7 @@ export const NonprofitStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

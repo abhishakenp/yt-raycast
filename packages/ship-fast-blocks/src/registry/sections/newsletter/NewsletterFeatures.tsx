@@ -10,6 +10,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NewsletterFeatures — "What You Get" value grid for an editorial newsletter.
@@ -92,7 +93,7 @@ export const NewsletterFeatures = defineCapsule({
 
     return (
       <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -140,7 +141,7 @@ export const NewsletterFeatures = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

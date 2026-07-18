@@ -11,6 +11,7 @@ import {
   ScheduleTitle,
   ScheduleDetail,
 } from '#/section-kit/ScheduleList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventAgenda — a day-by-day agenda timeline for a conference or event page. A
@@ -166,7 +167,7 @@ export const EventAgenda = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -210,7 +211,7 @@ export const EventAgenda = defineCapsule({
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

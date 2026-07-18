@@ -9,6 +9,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const AeoUseCases = defineCapsule({
   name: 'AeoUseCases',
@@ -57,7 +58,7 @@ export const AeoUseCases = defineCapsule({
         className={cn('bg-muted/30 py-12 sm:py-16', props.className)}
         aria-label="Use cases"
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <div className="mb-10 max-w-2xl">
             <h2 className="mb-3 text-2xl font-semibold text-foreground sm:text-3xl">
               {heading}
@@ -91,7 +92,7 @@ export const AeoUseCases = defineCapsule({
                 )
               })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

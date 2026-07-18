@@ -10,6 +10,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CybersecurityFaq — accordion FAQ. A narrow, muted-band section with a
@@ -71,7 +72,7 @@ export const CybersecurityFaq = defineCapsule({
 
     return (
       <section className={cn('bg-muted/50 py-24', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <Container className="max-w-4xl">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-muted-foreground">{description}</p>
@@ -110,7 +111,7 @@ export const CybersecurityFaq = defineCapsule({
               )
             })}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

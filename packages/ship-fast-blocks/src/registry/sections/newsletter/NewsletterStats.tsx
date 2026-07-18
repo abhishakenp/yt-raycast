@@ -8,6 +8,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NewsletterStats — compact subscriber stats strip for an editorial newsletter.
@@ -44,7 +45,7 @@ export const NewsletterStats = defineCapsule({
       <section
         className={cn('border-t border-border bg-muted/40', props.className)}
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <StatGrid columns={4} className={'py-12 md:py-16'}>
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
@@ -58,7 +59,7 @@ export const NewsletterStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

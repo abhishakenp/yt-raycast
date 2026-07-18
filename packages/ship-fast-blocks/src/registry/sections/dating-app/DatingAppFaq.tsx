@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -78,7 +79,7 @@ export const DatingAppFaq = defineCapsule({
         ]
     return (
       <section className={cn('bg-background py-24', props.className)}>
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
               {faqHeading}
@@ -101,7 +102,7 @@ export const DatingAppFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

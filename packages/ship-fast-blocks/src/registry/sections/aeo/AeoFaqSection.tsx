@@ -9,6 +9,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const AeoFaqSection = defineCapsule({
   name: 'AeoFaqSection',
@@ -59,7 +60,7 @@ export const AeoFaqSection = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <Container size="sm">
           <div className="mb-10 text-center">
             <h2 className="mb-3 text-2xl font-semibold text-foreground sm:text-3xl">
               {heading}
@@ -85,7 +86,7 @@ export const AeoFaqSection = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

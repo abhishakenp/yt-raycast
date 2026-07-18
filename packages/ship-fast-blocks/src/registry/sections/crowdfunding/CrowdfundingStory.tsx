@@ -8,6 +8,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { SplitStory } from '#/section-kit/SplitStory.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CrowdfundingStory — a long-form founder STORY section for a crowdfunding /
@@ -90,7 +91,7 @@ export const CrowdfundingStory = defineCapsule({
 
     return (
       <SplitStory className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <Container className="max-w-4xl">
           <SectionHeading
             eyebrow={storyEyebrow}
             title={storyHeading}
@@ -147,7 +148,7 @@ export const CrowdfundingStory = defineCapsule({
               {p}
             </p>
           ))}
-        </div>
+        </Container>
       </SplitStory>
     )
   },

@@ -10,6 +10,7 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MentalHealthTeam — a clinician team gallery for a therapy practice. A centered
@@ -95,7 +96,7 @@ export const MentalHealthTeam = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-primary">
               {eyebrow}
@@ -163,7 +164,7 @@ export const MentalHealthTeam = defineCapsule({
               </svg>
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

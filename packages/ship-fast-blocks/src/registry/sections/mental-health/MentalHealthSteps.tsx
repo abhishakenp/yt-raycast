@@ -11,6 +11,7 @@ import {
   StepBadge,
   StepConnector,
 } from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MentalHealthSteps — a "how it works" / approach flow for a therapy practice.
@@ -105,7 +106,7 @@ export const MentalHealthSteps = defineCapsule({
       <StepTimeline
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -188,7 +189,7 @@ export const MentalHealthSteps = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

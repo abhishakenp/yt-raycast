@@ -12,6 +12,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CommunityForumHero — centered hero band for a community-platform / discussion-forum
@@ -80,7 +81,7 @@ export const CommunityForumHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <HeroContent className="mx-auto max-w-3xl text-center">
             <HeroBadge
               variant="pulsing-dot"
@@ -119,7 +120,7 @@ export const CommunityForumHero = defineCapsule({
               ))}
             </HeroSocialProof>
           </HeroContent>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

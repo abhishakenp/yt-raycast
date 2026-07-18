@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CommunityForumStats — dark KPI stats band for a community-platform / discussion-forum
@@ -40,7 +41,7 @@ export const CommunityForumStats = defineCapsule({
 
     return (
       <section className={cn('bg-foreground py-16', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <StatGrid columns={4} gap={'wide'}>
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
@@ -58,7 +59,7 @@ export const CommunityForumStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

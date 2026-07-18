@@ -24,6 +24,7 @@ import {
 } from '#/section-kit/PricingCard.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TicketGrid } from '#/section-kit/TicketGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventTickets — a 3-tier ticket pricing block for a conference or event page. A
@@ -159,7 +160,7 @@ export const EventTickets = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -262,7 +263,7 @@ export const EventTickets = defineCapsule({
               {note.split(noteLink)[1] ?? ''}
             </p>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

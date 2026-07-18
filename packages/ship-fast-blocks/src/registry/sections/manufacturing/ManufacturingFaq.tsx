@@ -8,6 +8,7 @@ import {
   FaqItem,
   FaqQuestion,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ManufacturingFaq — a static FAQ list for a precision-manufacturing site. On a
@@ -80,7 +81,7 @@ export const ManufacturingFaq = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <Container className="max-w-4xl">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
@@ -108,7 +109,7 @@ export const ManufacturingFaq = defineCapsule({
               ))}
             </dl>
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

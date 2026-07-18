@@ -7,6 +7,7 @@ import {
   HeroContent,
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
@@ -67,7 +68,7 @@ export const NewsletterHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <HeroContent className="mx-auto max-w-3xl text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-wide text-muted-foreground">
               {eyebrow}
@@ -98,7 +99,7 @@ export const NewsletterHero = defineCapsule({
               .
             </p>
           </HeroContent>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

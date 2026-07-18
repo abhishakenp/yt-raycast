@@ -13,6 +13,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -96,7 +97,7 @@ export const MentalHealthHero = defineCapsule({
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-muted"
         />
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg" className="relative">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="text-center lg:text-left">
               <HeroHeading className="font-semibold">
@@ -175,7 +176,7 @@ export const MentalHealthHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
