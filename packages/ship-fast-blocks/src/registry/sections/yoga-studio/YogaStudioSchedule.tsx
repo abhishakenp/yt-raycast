@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import {
   ScheduleList,
   ScheduleItem,
@@ -107,7 +109,7 @@ export const YogaStudioSchedule = defineCapsule({
         )}
         aria-labelledby="yoga-schedule-heading"
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2
               id="yoga-schedule-heading"
@@ -118,7 +120,7 @@ export const YogaStudioSchedule = defineCapsule({
             <p className="text-lg text-muted-foreground">{subheading}</p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-2-3" gap="sm">
             {days.map((day) => (
               <Card
                 key={day.day}
@@ -151,8 +153,8 @@ export const YogaStudioSchedule = defineCapsule({
                 </ScheduleList>
               </Card>
             ))}
-          </div>
-        </div>
+          </ResponsiveGrid>
+        </Container>
       </section>
     )
   },

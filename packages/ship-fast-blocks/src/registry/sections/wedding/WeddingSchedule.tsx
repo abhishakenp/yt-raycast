@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const WeddingSchedule = defineCapsule({
@@ -60,7 +62,7 @@ export const WeddingSchedule = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        <Container size="lg" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -68,7 +70,7 @@ export const WeddingSchedule = defineCapsule({
             titleClassName="font-serif"
           />
 
-          <div className="mt-16 grid gap-8 md:grid-cols-2">
+          <ResponsiveGrid cols="1-md-2" gap="lg" className="mt-16">
             {events.map((event, i) => (
               <Card
                 key={`${event.title}-${i}`}
@@ -117,8 +119,8 @@ export const WeddingSchedule = defineCapsule({
                 ) : null}
               </Card>
             ))}
-          </div>
-        </div>
+          </ResponsiveGrid>
+        </Container>
       </section>
     )
   },
