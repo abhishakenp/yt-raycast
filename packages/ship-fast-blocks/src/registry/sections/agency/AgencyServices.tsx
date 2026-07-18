@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid, Card } from '#/section-kit/index.ts'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * AgencyServices — capabilities / services grid for a creative digital-agency
@@ -70,100 +69,6 @@ export const AgencyServices = defineCapsule({
           },
         ]
 
-    const serviceIcons: ReactNode[] = [
-      <svg
-        key="compass"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-      </svg>,
-      <svg
-        key="layout"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <line x1="3" y1="9" x2="21" y2="9" />
-        <line x1="9" y1="21" x2="9" y2="9" />
-      </svg>,
-      <svg
-        key="code"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polyline points="16 18 22 12 16 6" />
-        <polyline points="8 6 2 12 8 18" />
-      </svg>,
-      <svg
-        key="megaphone"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="m3 11 18-5v12L3 14v-3z" />
-        <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
-      </svg>,
-      <svg
-        key="video"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polygon points="23 7 16 12 23 17 23 7" />
-        <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-      </svg>,
-      <svg
-        key="sparkles"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" />
-        <path d="M19 15l.95 2.55L22.5 18.5l-2.55.95L19 22l-.95-2.55L15.5 18.5l2.55-.95L19 15z" />
-      </svg>,
-    ]
-
     return (
       <section
         className={cn(
@@ -180,26 +85,7 @@ export const AgencyServices = defineCapsule({
               {description}
             </p>
           </div>
-          <ResponsiveGrid cols="1-md-2-3" gap="md">
-            {items.map((item, i) => (
-              <Card
-                key={item.title}
-                rounded="2xl"
-                padding="lg"
-                className="group transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.45)]"
-              >
-                <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-                  {serviceIcons[i % serviceIcons.length]}
-                </div>
-                <h3 className="mb-3 text-xl font-semibold text-card-foreground">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </Card>
-            ))}
-          </ResponsiveGrid>
+          <FeatureGrid features={items} columns={3} />
         </div>
       </section>
     )

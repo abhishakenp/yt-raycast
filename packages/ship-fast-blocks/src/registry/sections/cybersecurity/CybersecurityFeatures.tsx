@@ -1,12 +1,10 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * CybersecurityFeatures — security-capability grid. A light section with a
@@ -36,12 +34,10 @@ export const CybersecurityFeatures = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Complete security coverage'
     const description =
       props.description ??
       'From endpoint to cloud, our unified platform protects every layer of your digital infrastructure with enterprise-grade precision.'
-    const cta = props.cta ?? 'Learn more'
     const items = props.items?.length
       ? props.items
       : [
@@ -77,66 +73,6 @@ export const CybersecurityFeatures = defineCapsule({
           },
         ]
 
-    const ArrowRight = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-      </svg>
-    )
-
-    const featureIcons: ReactNode[] = [
-      <path
-        key="shield"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-      />,
-      <path
-        key="lock"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-      />,
-      <path
-        key="cloud"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
-      />,
-      <path
-        key="chart"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-      />,
-      <path
-        key="doc"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-      />,
-      <path
-        key="code"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-      />,
-    ]
-
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
@@ -144,40 +80,7 @@ export const CybersecurityFeatures = defineCapsule({
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((item, i) => (
-              <Card
-                key={item.title}
-                rounded="2xl"
-                padding="lg"
-                className="group transition-all hover:border-border/80 hover:shadow-lg"
-              >
-                <div className="mb-6 flex size-14 items-center justify-center rounded-xl bg-muted transition-colors group-hover:bg-primary">
-                  <svg
-                    className="size-7 text-foreground transition-colors group-hover:text-primary-foreground"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    {featureIcons[i % featureIcons.length]}
-                  </svg>
-                </div>
-                <h3 className="mb-3 text-xl font-bold text-card-foreground">
-                  {item.title}
-                </h3>
-                <p className="mb-4 text-muted-foreground">{item.description}</p>
-                <button
-                  type="button"
-                  onClick={() => go(item.title)}
-                  className="flex items-center gap-1 font-medium text-foreground hover:underline"
-                >
-                  {cta}
-                  <ArrowRight className="size-4" />
-                </button>
-              </Card>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={3} />
         </Container>
       </section>
     )

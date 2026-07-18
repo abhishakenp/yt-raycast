@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * NewsletterFeatures — "What You Get" value grid for an editorial newsletter.
@@ -83,51 +84,6 @@ export const NewsletterFeatures = defineCapsule({
       </svg>
     )
 
-    const featureIcons = [
-      <svg
-        key="book"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>,
-      <svg
-        key="links"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-      </svg>,
-      <svg
-        key="chat"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>,
-    ]
-
     return (
       <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -140,21 +96,7 @@ export const NewsletterFeatures = defineCapsule({
             className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
           />
 
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
-            {items.map((item, i) => (
-              <div key={item.title} className="group">
-                <div className="mb-5 grid size-12 place-items-center rounded-xl bg-muted text-foreground transition-colors group-hover:bg-accent">
-                  {featureIcons[i % featureIcons.length]}
-                </div>
-                <h3 className="mb-3 font-serif text-xl font-medium text-foreground">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={3} />
 
           <div className="mt-16 border-t border-border pt-16 md:mt-20 md:pt-20">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

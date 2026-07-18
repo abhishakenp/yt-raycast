@@ -1,11 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import {
-  LocalServiceBookingButton,
-  LocalServiceMutationSpinner,
   localServiceItem,
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
@@ -22,6 +18,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * pediatric, mental-health or telehealth clinic. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 export const HealthcareServices = defineCapsule({
   name: 'HealthcareServices',
   description:
@@ -102,107 +99,6 @@ export const HealthcareServices = defineCapsule({
         }),
       ),
     )
-    const ChevronRight = () => (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 5l7 7-7 7" />
-      </svg>
-    )
-    const serviceIcons: ReactNode[] = [
-      <svg
-        key="primary"
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      <svg
-        key="virtual"
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-      </svg>,
-      <svg
-        key="womens"
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>,
-      <svg
-        key="pediatrics"
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      <svg
-        key="mental"
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>,
-      <svg
-        key="labs"
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-      </svg>,
-    ]
     return (
       <section
         className={cn('bg-muted py-20 lg:py-28', props.className)}
@@ -222,39 +118,7 @@ export const HealthcareServices = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((item, i) => (
-              <Card
-                key={item.title}
-                rounded="2xl"
-                padding="lg"
-                className="transition-shadow hover:shadow-lg"
-              >
-                <div className="mb-6 grid size-14 place-items-center rounded-xl bg-accent text-primary">
-                  {serviceIcons[i % serviceIcons.length]}
-                </div>
-                <h3 className="mb-3 text-xl font-bold text-card-foreground">
-                  {item.title}
-                </h3>
-                <p className="mb-4 leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-                <LocalServiceBookingButton
-                  lakebed={lakebed}
-                  intentLabel={item.cta}
-                  service={item.title}
-                  source="services"
-                  pendingChildren={<LocalServiceMutationSpinner />}
-                  className="inline-flex items-center font-semibold text-primary transition-colors hover:text-primary/80 disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {item.cta}
-                  <span className="ml-1">
-                    <ChevronRight />
-                  </span>
-                </LocalServiceBookingButton>
-              </Card>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={3} />
         </Container>
       </section>
     )

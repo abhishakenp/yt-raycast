@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * NoCodeFeatures — centered-header 6-up feature grid on a bright canvas. A
@@ -13,6 +11,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * SaaS, or product landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 export const NoCodeFeatures = defineCapsule({
   name: 'NoCodeFeatures',
   description:
@@ -75,107 +74,6 @@ export const NoCodeFeatures = defineCapsule({
               'Connect with Stripe, Airtable, Zapier, Make, and more. Automate workflows and add powerful functionality without code.',
           },
         ]
-    const iconTints = [
-      'bg-primary/10 text-primary',
-      'bg-secondary text-secondary-foreground',
-      'bg-accent text-accent-foreground',
-      'bg-chart-2/15 text-chart-2',
-      'bg-chart-4/15 text-chart-4',
-      'bg-chart-1/15 text-chart-1',
-    ]
-    const icons: ReactNode[] = [
-      <svg
-        key="drag"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
-        <path d="M13 13l6 6" />
-      </svg>,
-      <svg
-        key="grid"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <rect x="3" y="3" width="7" height="7" rx="1" />
-        <rect x="14" y="3" width="7" height="7" rx="1" />
-        <rect x="3" y="14" width="7" height="7" rx="1" />
-        <rect x="14" y="14" width="7" height="7" rx="1" />
-      </svg>,
-      <svg
-        key="mobile"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <rect x="7" y="2" width="10" height="20" rx="2" />
-        <line x1="12" y1="18" x2="12" y2="18" />
-      </svg>,
-      <svg
-        key="bolt"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polygon points="13 2 4 14 11 14 11 22 20 10 13 10 13 2" />
-      </svg>,
-      <svg
-        key="shield"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        <path d="M9 12l2 2 4-4" />
-      </svg>,
-      <svg
-        key="plug"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 7V3M15 7V3M7 7h10v4a5 5 0 01-10 0V7z" />
-        <path d="M12 16v5" />
-      </svg>,
-    ]
     return (
       <section
         className={cn('bg-background py-24', props.className)}
@@ -194,30 +92,7 @@ export const NoCodeFeatures = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((item, i) => (
-              <Card
-                key={item.title}
-                rounded="2xl"
-                className="group transition-all hover:border-border/80 hover:shadow-lg"
-              >
-                <div
-                  className={cn(
-                    'mb-4 grid size-12 place-items-center rounded-xl transition-transform group-hover:scale-110',
-                    iconTints[i % iconTints.length],
-                  )}
-                >
-                  {icons[i % icons.length]}
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-card-foreground">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </Card>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={3} />
         </Container>
       </section>
     )

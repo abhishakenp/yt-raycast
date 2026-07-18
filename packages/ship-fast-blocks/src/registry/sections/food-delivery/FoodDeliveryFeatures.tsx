@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -14,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 export const FoodDeliveryFeatures = defineCapsule({
   name: 'FoodDeliveryFeatures',
   description:
@@ -58,50 +57,6 @@ export const FoodDeliveryFeatures = defineCapsule({
               'Reorder your go-to meals in seconds. Your favorite dishes and restaurants are always just one tap away.',
           },
         ]
-    const featureIcons: ReactNode[] = [
-      // clock — real-time tracking
-      <svg
-        key="clock"
-        className="size-6 text-foreground"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      // check-badge — curated selection
-      <svg
-        key="check"
-        className="size-6 text-foreground"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      // heart — saved favorites
-      <svg
-        key="heart"
-        className="size-6 text-foreground"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>,
-    ]
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
@@ -111,21 +66,7 @@ export const FoodDeliveryFeatures = defineCapsule({
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">{featuresDesc}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
-            {featureItems.map((item, i) => (
-              <Card key={item.title} padding="lg">
-                <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-muted">
-                  {featureIcons[i % featureIcons.length]}
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-card-foreground">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </Card>
-            ))}
-          </div>
+          <FeatureGrid features={featureItems} columns={3} />
         </Container>
       </section>
     )

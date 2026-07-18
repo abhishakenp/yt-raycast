@@ -1,10 +1,10 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * BarNightclubFeatures — 3-up centered features strip for a cocktail-bar /
@@ -47,67 +47,10 @@ export const BarNightclubFeatures = defineCapsule({
           },
         ]
 
-    const featureIcons: ReactNode[] = [
-      <svg
-        key="building"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>,
-      <svg
-        key="music"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-      </svg>,
-      <svg
-        key="clock"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-    ]
-
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
-          <div className="grid gap-12 md:grid-cols-3 lg:gap-16">
-            {items.map((f, i) => (
-              <div key={f.title} className="text-center">
-                <div className="mx-auto mb-6 flex size-12 items-center justify-center rounded-full border border-border text-foreground">
-                  {featureIcons[i % featureIcons.length]}
-                </div>
-                <h3 className="mb-3 text-lg font-medium">{f.title}</h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {f.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={3} />
         </Container>
       </section>
     )

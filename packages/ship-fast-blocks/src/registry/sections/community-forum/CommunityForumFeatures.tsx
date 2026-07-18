@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * CommunityForumFeatures — capabilities grid for a community-platform / discussion-forum
@@ -69,93 +68,6 @@ export const CommunityForumFeatures = defineCapsule({
           },
         ]
 
-    const featureIcons: ReactNode[] = [
-      // organized topics — list/lines
-      <svg
-        key="topics"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-6"
-        aria-hidden="true"
-      >
-        <path d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-      </svg>,
-      // powerful search
-      <svg
-        key="search"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-6"
-        aria-hidden="true"
-      >
-        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>,
-      // granular permissions — lock
-      <svg
-        key="lock"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-6"
-        aria-hidden="true"
-      >
-        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-      </svg>,
-      // real-time updates — bolt
-      <svg
-        key="bolt"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-6"
-        aria-hidden="true"
-      >
-        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>,
-      // community insights — chart
-      <svg
-        key="chart"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-6"
-        aria-hidden="true"
-      >
-        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>,
-      // rich text editor — lines
-      <svg
-        key="editor"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-6"
-        aria-hidden="true"
-      >
-        <path d="M10 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-      </svg>,
-    ]
-
     return (
       <section className={cn('py-24 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -165,25 +77,7 @@ export const CommunityForumFeatures = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((item, i) => (
-              <Card
-                key={item.title}
-                padding="lg"
-                className="group transition-colors hover:border-foreground/20"
-              >
-                <div className="mb-6 flex size-12 items-center justify-center rounded-xl bg-muted text-foreground/80">
-                  {featureIcons[i % featureIcons.length]}
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-card-foreground">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </Card>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={3} />
         </div>
       </section>
     )

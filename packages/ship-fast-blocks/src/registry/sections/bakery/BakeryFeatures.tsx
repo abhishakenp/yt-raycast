@@ -1,10 +1,10 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * BakeryFeatures — "why our bread is different" value-proposition trio for an
@@ -56,51 +56,6 @@ export const BakeryFeatures = defineCapsule({
           },
         ]
 
-    const featureIcons: ReactNode[] = [
-      <svg
-        key="grain"
-        width="32"
-        height="32"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
-      </svg>,
-      <svg
-        key="clock"
-        width="32"
-        height="32"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      <svg
-        key="check"
-        width="32"
-        height="32"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-    ]
-
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
@@ -110,21 +65,7 @@ export const BakeryFeatures = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
-            {items.map((item, i) => (
-              <div key={item.title} className="space-y-4 text-center">
-                <div className="mx-auto grid size-16 place-items-center rounded-xl bg-muted text-primary">
-                  {featureIcons[i % featureIcons.length]}
-                </div>
-                <h3 className="text-xl font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={3} />
         </Container>
       </section>
     )

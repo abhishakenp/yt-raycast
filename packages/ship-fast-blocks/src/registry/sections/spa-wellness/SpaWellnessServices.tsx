@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * SpaWellnessServices — treatment-menu grid for a day-spa / wellness page. A
@@ -105,31 +105,13 @@ export const SpaWellnessServices = defineCapsule({
             <p className="text-lg text-muted-foreground">{subheading}</p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
-              <Card
-                key={service.name}
-                rounded="2xl"
-                shadow="sm"
-                className="flex flex-col text-card-foreground transition-shadow hover:shadow-md lg:p-8"
-              >
-                <h3 className="font-serif text-xl font-semibold text-foreground">
-                  {service.name}
-                </h3>
-                <div className="mt-3 flex items-center gap-3 text-sm">
-                  <span className="rounded-full bg-muted px-3 py-1 text-muted-foreground">
-                    {service.duration}
-                  </span>
-                  <span className="font-semibold text-primary">
-                    {service.price}
-                  </span>
-                </div>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {service.description}
-                </p>
-              </Card>
-            ))}
-          </div>
+          <FeatureGrid
+            features={services.map((s) => ({
+              title: s.name,
+              description: `${s.duration} · ${s.price} — ${s.description}`,
+            }))}
+            columns={3}
+          />
         </div>
       </section>
     )

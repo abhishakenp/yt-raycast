@@ -1,5 +1,4 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
@@ -13,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * home-decor, interiors, or any warm retail brand. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 export const FurnitureStoreFeatures = defineCapsule({
   name: 'FurnitureStoreFeatures',
   description:
@@ -57,60 +57,6 @@ export const FurnitureStoreFeatures = defineCapsule({
               'Not the perfect fit? Return or exchange within 30 days, no questions asked.',
           },
         ]
-    const featureIcons: ReactNode[] = [
-      <svg
-        key="check"
-        className="size-6 text-primary"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>,
-      <svg
-        key="clock"
-        className="size-6 text-primary"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      <svg
-        key="cube"
-        className="size-6 text-primary"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-      </svg>,
-      <svg
-        key="refresh"
-        className="size-6 text-primary"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg>,
-    ]
     return (
       <section
         className={cn('py-16 lg:py-24', props.className)}
@@ -128,19 +74,7 @@ export const FurnitureStoreFeatures = defineCapsule({
               {heading}
             </h2>
           </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {items.map((item, i) => (
-              <div key={item.title} className="text-center">
-                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-muted">
-                  {featureIcons[i % featureIcons.length]}
-                </div>
-                <h3 className="mb-2 font-medium">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={4} />
         </Container>
       </section>
     )

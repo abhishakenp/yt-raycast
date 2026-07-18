@@ -1,5 +1,4 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
@@ -13,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * with no props; built-in line icons rotate across the items.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 export const JobBoardFeatures = defineCapsule({
   name: 'JobBoardFeatures',
   description:
@@ -58,49 +57,6 @@ export const JobBoardFeatures = defineCapsule({
               'Get notified instantly when jobs matching your skills are posted. Be among the first applicants and increase your chances.',
           },
         ]
-    const featureIcons: ReactNode[] = [
-      <svg
-        key="check"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-7"
-        aria-hidden="true"
-      >
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <polyline points="22 4 12 14.01 9 11.01" />
-      </svg>,
-      <svg
-        key="bolt"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-7"
-        aria-hidden="true"
-      >
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-      </svg>,
-      <svg
-        key="bell"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-7"
-        aria-hidden="true"
-      >
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-      </svg>,
-    ]
     return (
       <section className={cn('bg-muted/40 py-20', props.className)}>
         <Container>
@@ -112,26 +68,7 @@ export const JobBoardFeatures = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {items.map((item, i) => (
-              <div key={item.title} className="text-center">
-                <Card
-                  variant="elevated"
-                  rounded="2xl"
-                  padding="none"
-                  className="mx-auto mb-6 grid size-14 place-items-center text-foreground"
-                >
-                  {featureIcons[i % featureIcons.length]}
-                </Card>
-                <h3 className="mb-3 text-lg font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          <FeatureGrid features={items} columns={3} />
         </Container>
       </section>
     )
