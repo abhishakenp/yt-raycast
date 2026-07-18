@@ -22,15 +22,19 @@ const PathwayGridVariants = cva('grid', {
 
 const PathwayGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof PathwayGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="pathway-grid"
-    className={cn(PathwayGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof PathwayGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="pathway-grid"
+      className={cn(PathwayGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 PathwayGrid.displayName = 'PathwayGrid'
 
 const PathwayCard = React.forwardRef<
