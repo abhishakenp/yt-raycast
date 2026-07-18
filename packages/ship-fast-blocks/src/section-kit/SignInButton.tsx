@@ -1,9 +1,24 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
 
 import { useAuth, signInWithGoogle, signOut } from '@ship-fast/lakebed/react'
 
 import { Button } from '#/components/ui/button.tsx'
 import { cn } from '#/lib/utils.ts'
+
+const signInButtonVariants = cva('', {
+  variants: {
+    variant: {
+      primary: '',
+      outline: '',
+      ghost: '',
+    },
+  },
+  defaultVariants: {
+    variant: 'primary',
+  },
+})
 
 /**
  * A REAL working sign-in button wired to the site's Shoo/lakebed auth.
@@ -18,11 +33,12 @@ import { cn } from '#/lib/utils.ts'
  */
 const SignInButton = React.forwardRef<
   HTMLDivElement,
-  Omit<React.HTMLAttributes<HTMLDivElement>, 'label'> & {
-    label?: string
-    variant?: 'primary' | 'outline' | 'ghost'
-  }
->(({ label, variant, className, ...props }, ref) => {
+  React.ComponentProps<'div'> &
+    VariantProps<typeof signInButtonVariants> & {
+      asChild?: boolean
+      label?: string
+    }
+>(({ label, variant, className, asChild = false, ...props }, ref) => {
   const auth = useAuth()
   const [open, setOpen] = React.useState(false)
 
@@ -39,11 +55,12 @@ const SignInButton = React.forwardRef<
     const buttonVariant =
       variant === 'outline' || variant === 'ghost' ? variant : 'shiny'
 
+    const Comp = asChild ? Slot : 'div'
     return (
-      <div
+      <Comp
         ref={ref}
         data-slot="sign-in-button"
-        className={className}
+        className={cn(signInButtonVariants({ variant }), className)}
         {...props}
       >
         <Button
@@ -82,7 +99,7 @@ const SignInButton = React.forwardRef<
           </svg>
           {label ?? 'Sign in'}
         </Button>
-      </div>
+      </Comp>
     )
   }
 
@@ -90,11 +107,12 @@ const SignInButton = React.forwardRef<
   const avatar = auth.picture
   const initial = (name || '?').trim().charAt(0).toUpperCase() || '?'
 
+  const Comp = asChild ? Slot : 'div'
   return (
-    <div
+    <Comp
       ref={ref}
       data-slot="sign-in-button"
-      className={cn('relative', className)}
+      className={cn('relative', signInButtonVariants({ variant }), className)}
       {...props}
     >
       <button
@@ -140,9 +158,9 @@ const SignInButton = React.forwardRef<
           </button>
         </div>
       ) : null}
-    </div>
+    </Comp>
   )
 })
 SignInButton.displayName = 'SignInButton'
 
-export { SignInButton }
+export { SignInButton, signInButtonVariants }
