@@ -217,6 +217,93 @@ const StatIcon = React.forwardRef<
 })
 StatIcon.displayName = 'StatIcon'
 
+const statCardVariants = cva('', {
+  variants: {
+    variant: {
+      plain: '',
+      card: 'border border-border bg-card text-card-foreground',
+      muted: 'border border-border bg-muted text-foreground',
+      outline: 'border border-border bg-transparent text-foreground',
+      elevated: 'border border-border bg-card text-card-foreground shadow-sm',
+    },
+    rounded: {
+      none: '',
+      lg: 'rounded-lg',
+      xl: 'rounded-xl',
+      '2xl': 'rounded-2xl',
+      '3xl': 'rounded-3xl',
+    },
+    padding: {
+      none: '',
+      sm: 'p-4',
+      md: 'p-6',
+      lg: 'p-8',
+    },
+  },
+  defaultVariants: {
+    variant: 'card',
+    rounded: 'xl',
+    padding: 'md',
+  },
+})
+
+const StatCard = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> &
+    VariantProps<typeof statCardVariants> & { asChild?: boolean }
+>(
+  (
+    { className, variant, rounded, padding, asChild = false, ...props },
+    ref,
+  ) => {
+    const Comp = asChild ? Slot : 'div'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="stat-card"
+        className={cn(
+          statCardVariants({ variant, rounded, padding }),
+          className,
+        )}
+        {...props}
+      />
+    )
+  },
+)
+StatCard.displayName = 'StatCard'
+
+const StatCardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="stat-card-header"
+      className={cn('flex items-start justify-between', className)}
+      {...props}
+    />
+  )
+})
+StatCardHeader.displayName = 'StatCardHeader'
+
+const StatCaption = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="stat-caption"
+      className={cn('mt-4 text-xs text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+StatCaption.displayName = 'StatCaption'
+
 export {
   StatGrid,
   StatItem,
@@ -224,9 +311,13 @@ export {
   StatLabel,
   StatDelta,
   StatIcon,
+  StatCard,
+  StatCardHeader,
+  StatCaption,
   statGridVariants,
   statItemVariants,
   statValueVariants,
   statLabelVariants,
   statDeltaVariants,
+  statCardVariants,
 }

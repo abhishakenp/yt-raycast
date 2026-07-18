@@ -3,12 +3,16 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid, Card } from '#/section-kit/index.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   StatValue,
   StatLabel,
   StatDelta,
   StatIcon,
+  StatCard,
+  StatCardHeader,
+  StatCaption,
 } from '#/section-kit/StatGrid.tsx'
 
 /**
@@ -122,11 +126,11 @@ export const AnalyticsKpis = defineCapsule({
         aria-label="Key performance indicators"
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <Container size="xl">
           <ResponsiveGrid cols="1-2-4" gap="md">
             {kpis.map((kpi, i) => (
-              <Card key={kpi.label}>
-                <div className="flex items-start justify-between">
+              <StatCard key={kpi.label}>
+                <StatCardHeader>
                   <div>
                     <StatLabel className="text-sm font-medium">
                       {kpi.label}
@@ -159,14 +163,12 @@ export const AnalyticsKpis = defineCapsule({
                   <StatIcon className="rounded-lg bg-muted p-2 text-muted-foreground">
                     {kpiIcons[i % kpiIcons.length]}
                   </StatIcon>
-                </div>
-                <p className="mt-4 text-xs text-muted-foreground">
-                  {kpi.caption}
-                </p>
-              </Card>
+                </StatCardHeader>
+                <StatCaption>{kpi.caption}</StatCaption>
+              </StatCard>
             ))}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

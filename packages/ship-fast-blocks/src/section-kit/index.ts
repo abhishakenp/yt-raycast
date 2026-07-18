@@ -12,6 +12,7 @@ export {
   NavbarNav,
   NavbarNavLink,
   NavbarActions,
+  NavbarRouteLink,
   NavbarCta,
   siteNavHeaderVariants,
   siteNavRowVariants,
@@ -57,7 +58,17 @@ export {
   ctaBandActionsVariants,
 } from './CtaBand.tsx'
 export { StarRating } from './StarRating.tsx'
-export { StatGrid, StatItem, StatValue, StatLabel } from './StatGrid.tsx'
+export {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+  StatDelta,
+  StatIcon,
+  StatCard,
+  StatCardHeader,
+  StatCaption,
+} from './StatGrid.tsx'
 export {
   FeatureGrid,
   FeatureCard,

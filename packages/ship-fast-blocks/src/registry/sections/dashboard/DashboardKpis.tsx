@@ -4,12 +4,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
+import { ResponsiveGrid } from '#/section-kit/index.ts'
 import {
   StatValue,
   StatLabel,
   StatDelta,
   StatIcon,
+  StatCard,
+  StatCardHeader,
 } from '#/section-kit/StatGrid.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
@@ -146,13 +148,13 @@ export const DashboardKpis = defineCapsule({
               const tone = kpi.tone ?? 'primary'
               const up = kpi.trendUp ?? true
               return (
-                <Card
+                <StatCard
                   key={kpi.label}
                   aria-label={`${kpi.label}: ${kpi.value}`}
                   padding="sm"
                   className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)]"
                 >
-                  <div className="flex items-start justify-between">
+                  <StatCardHeader>
                     <div>
                       <StatLabel className="text-sm font-medium">
                         {kpi.label}
@@ -210,8 +212,8 @@ export const DashboardKpis = defineCapsule({
                         {kpiIcons[tone]}
                       </svg>
                     </StatIcon>
-                  </div>
-                </Card>
+                  </StatCardHeader>
+                </StatCard>
               )
             })}
           </ResponsiveGrid>
