@@ -23,6 +23,15 @@ import {
  * product drop for clothing brands, boutiques, or apparel shops.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  ProductCard,
+  ProductCardImage,
+  ProductCardBadge,
+  ProductCardActions,
+  ProductCardContent,
+  ProductCardTitle,
+  ProductCardPrice,
+} from '#/section-kit/ProductCard.tsx'
 export const FashionStoreProducts = defineCapsule({
   name: 'FashionStoreProducts',
   description:
@@ -177,8 +186,8 @@ export const FashionStoreProducts = defineCapsule({
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8">
             {visibleProductItems.map((product) => (
-              <article key={product.name} className="group">
-                <div className="relative mb-4 aspect-[3/4] overflow-hidden bg-muted">
+              <ProductCard key={product.name} className="group">
+                <ProductCardImage className="relative mb-4 aspect-[3/4] overflow-hidden bg-muted">
                   <Image
                     alt={product.imageAlt}
                     w={800}
@@ -187,46 +196,48 @@ export const FashionStoreProducts = defineCapsule({
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {product.badge ? (
-                    <div className="absolute left-3 top-3">
-                      <span
-                        className={cn(
-                          'px-2 py-1 text-xs font-medium',
-                          product.badge === 'Best Seller'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-background text-foreground',
-                        )}
-                      >
-                        {product.badge}
-                      </span>
-                    </div>
+                    <ProductCardBadge
+                      className={cn(
+                        'absolute left-3 top-3 px-2 py-1 text-xs font-medium',
+                        product.badge === 'Best Seller'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-background text-foreground',
+                      )}
+                    >
+                      {product.badge}
+                    </ProductCardBadge>
                   ) : null}
-                  <CommerceAddItemButton
-                    lakebed={lakebed}
-                    item={{
-                      label: product.name,
-                      price: product.price,
-                    }}
-                    pendingChildren={
-                      <>
-                        <CommerceMutationSpinner />
-                        Adding
-                      </>
-                    }
-                    className="absolute inset-x-4 bottom-4 inline-flex items-center justify-center gap-2 bg-background py-3 text-sm font-medium text-foreground opacity-0 transition-opacity disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
-                  >
-                    {quickAdd}
-                  </CommerceAddItemButton>
-                </div>
-                <h3 className="text-sm font-medium text-foreground">
-                  {product.name}
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {product.price}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {product.variant}
-                </p>
-              </article>
+                  <ProductCardActions asChild>
+                    <CommerceAddItemButton
+                      lakebed={lakebed}
+                      item={{
+                        label: product.name,
+                        price: product.price,
+                      }}
+                      pendingChildren={
+                        <>
+                          <CommerceMutationSpinner />
+                          Adding
+                        </>
+                      }
+                      className="absolute inset-x-4 bottom-4 inline-flex items-center justify-center gap-2 bg-background py-3 text-sm font-medium text-foreground opacity-0 transition-opacity disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
+                    >
+                      {quickAdd}
+                    </CommerceAddItemButton>
+                  </ProductCardActions>
+                </ProductCardImage>
+                <ProductCardContent>
+                  <ProductCardTitle className="text-sm font-medium text-foreground">
+                    {product.name}
+                  </ProductCardTitle>
+                  <ProductCardPrice className="mt-1 text-sm text-muted-foreground">
+                    {product.price}
+                  </ProductCardPrice>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {product.variant}
+                  </p>
+                </ProductCardContent>
+              </ProductCard>
             ))}
           </div>
 
