@@ -2,10 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * CrowdfundingGallery — a product photo GALLERY for a crowdfunding / campaign
@@ -51,19 +50,10 @@ export const CrowdfundingGallery = defineCapsule({
             </h2>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {galleryAlts.map((alt) => (
-              <ImageTile key={alt} treatment="4-3-xl">
-                <Image
-                  alt={alt}
-                  w={800}
-                  h={600}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </ImageTile>
-            ))}
-          </div>
+          <GalleryGrid
+            images={galleryAlts.map((alt) => ({ alt }))}
+            columns={3}
+          />
         </Container>
       </section>
     )

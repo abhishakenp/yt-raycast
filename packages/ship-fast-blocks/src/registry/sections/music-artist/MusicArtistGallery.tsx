@@ -2,8 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * MusicArtistGallery — "behind the music" masonry photo gallery for a music
@@ -60,23 +59,7 @@ export const MusicArtistGallery = defineCapsule({
             </h2>
           </div>
 
-          <BentoGrid cols="2-3-4" gap="sm">
-            {images.map((alt, i) => (
-              <BentoTile
-                key={alt}
-                span={i === 1 ? 'row-span-2' : undefined}
-                className="aspect-square overflow-hidden rounded-sm bg-muted"
-              >
-                <Image
-                  alt={alt}
-                  w={400}
-                  h={i === 1 ? 800 : 400}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </BentoTile>
-            ))}
-          </BentoGrid>
+          <GalleryGrid images={images.map((alt) => ({ alt }))} columns={3} />
         </div>
       </section>
     )

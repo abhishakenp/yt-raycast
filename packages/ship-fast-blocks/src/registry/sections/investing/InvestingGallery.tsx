@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { ContentCard } from '#/section-kit/ContentCard.tsx'
 
 /**
  * InvestingGallery — dark product-showcase gallery for an investing / fintech
@@ -14,6 +12,7 @@ import { ContentCard } from '#/section-kit/ContentCard.tsx'
  * trading-app page. Renders fully with no props via six baked-in screens.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const InvestingGallery = defineCapsule({
   name: 'InvestingGallery',
   description:
@@ -67,14 +66,7 @@ export const InvestingGallery = defineCapsule({
             description: 'Set it and forget it',
           },
         ]
-    const galleryTints = [
-      'from-chart-1/30',
-      'from-primary/30',
-      'from-chart-4/30',
-      'from-chart-2/30',
-      'from-chart-5/30',
-      'from-chart-3/30',
-    ]
+
     return (
       <section
         className={cn('bg-foreground py-24 text-background', props.className)}
@@ -86,34 +78,13 @@ export const InvestingGallery = defineCapsule({
             </h2>
             <p className="text-lg text-background/60">{description}</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((g, i) => (
-              <ContentCard key={g.title} variant="gradient-tinted">
-                <div
-                  className={cn(
-                    'flex aspect-[4/3] flex-col bg-gradient-to-br to-background/5 p-6',
-                    galleryTints[i % galleryTints.length],
-                  )}
-                >
-                  <div className="mb-4 flex-1 overflow-hidden rounded-lg bg-foreground/80 p-4">
-                    <Image
-                      alt={`${g.title} — fintech app interface screenshot`}
-                      w={600}
-                      h={400}
-                      loading="lazy"
-                      className="size-full rounded-md object-cover opacity-90"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="mb-1 font-semibold">{g.title}</h3>
-                    <p className="text-sm text-background/60">
-                      {g.description}
-                    </p>
-                  </div>
-                </div>
-              </ContentCard>
-            ))}
-          </div>
+          <GalleryGrid
+            images={items.map((item) => ({
+              alt: item.title,
+              caption: item.description,
+            }))}
+            columns={3}
+          />
         </Container>
       </section>
     )

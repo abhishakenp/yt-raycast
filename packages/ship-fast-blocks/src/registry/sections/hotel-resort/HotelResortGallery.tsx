@@ -2,8 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * HotelResortGallery — masonry photo gallery for a luxury hotel / resort & spa
@@ -62,33 +61,7 @@ export const HotelResortGallery = defineCapsule({
               {description}
             </p>
           </div>
-          <BentoGrid cols="1-md-2-4" gap="sm">
-            {images.map((alt, i) => (
-              <BentoTile
-                key={alt}
-                span={
-                  i === 0
-                    ? 'lg:col-span-2 lg:row-span-2'
-                    : i === 5 || i === 6
-                      ? 'lg:col-span-2'
-                      : undefined
-                }
-              >
-                <Image
-                  alt={alt}
-                  w={i === 0 ? 1200 : 800}
-                  h={i === 0 ? 1200 : 600}
-                  loading="lazy"
-                  className={cn(
-                    'w-full rounded-lg object-cover',
-                    i === 0
-                      ? 'min-h-[300px] lg:size-full lg:min-h-full'
-                      : 'h-48 lg:h-56',
-                  )}
-                />
-              </BentoTile>
-            ))}
-          </BentoGrid>
+          <GalleryGrid images={images.map((alt) => ({ alt }))} columns={3} />
         </div>
       </section>
     )

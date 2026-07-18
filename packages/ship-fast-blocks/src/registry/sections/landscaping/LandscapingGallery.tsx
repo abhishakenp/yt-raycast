@@ -3,11 +3,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { BentoTileCaption } from '#/section-kit/BentoGrid.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * LandscapingGallery — a centered-header selected-projects portfolio grid for a
@@ -96,39 +94,13 @@ export const LandscapingGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((proj) => (
-              <ImageTile
-                key={proj.title}
-                asChild
-                treatment="h-72-xl"
-                className="block w-full cursor-pointer text-left"
-              >
-                <button type="button" onClick={() => go(proj.title)}>
-                  <Image
-                    alt={proj.imageAlt}
-                    w={600}
-                    h={500}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <BentoTileCaption
-                    reveal="hover"
-                    className="inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent"
-                  >
-                    <div className="absolute bottom-0 left-0 p-6">
-                      <p className="mb-1 text-sm font-medium text-primary-foreground/80">
-                        {proj.location}
-                      </p>
-                      <h3 className="text-xl font-semibold text-background">
-                        {proj.title}
-                      </h3>
-                    </div>
-                  </BentoTileCaption>
-                </button>
-              </ImageTile>
-            ))}
-          </div>
+          <GalleryGrid
+            images={items.map((item) => ({
+              alt: item.imageAlt,
+              caption: item.title,
+            }))}
+            columns={3}
+          />
           <div className="mt-12 text-center">
             <button
               type="button"

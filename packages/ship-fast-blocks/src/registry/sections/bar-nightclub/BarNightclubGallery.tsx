@@ -2,10 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * BarNightclubGallery — masonry-style photo gallery for a cocktail-bar /
@@ -70,27 +69,7 @@ export const BarNightclubGallery = defineCapsule({
             </p>
           </div>
 
-          <BentoGrid cols="1-md-2-3" gap="sm">
-            {images.map((alt, i) => (
-              <BentoTile
-                key={alt}
-                span={i === 0 ? 'lg:col-span-2 lg:row-span-2' : undefined}
-              >
-                <Image
-                  alt={alt}
-                  w={i === 0 ? 800 : 400}
-                  h={i === 0 ? 800 : 300}
-                  loading="lazy"
-                  className={cn(
-                    'w-full rounded-sm object-cover',
-                    i === 0
-                      ? 'min-h-[300px] lg:h-full lg:min-h-full'
-                      : 'h-48 lg:h-64',
-                  )}
-                />
-              </BentoTile>
-            ))}
-          </BentoGrid>
+          <GalleryGrid images={images.map((alt) => ({ alt }))} columns={3} />
         </Container>
       </section>
     )

@@ -2,23 +2,14 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import {
-  ProductCard,
-  ProductCardImage,
-  ProductCardBadge,
-  ProductCardContent,
-  ProductCardTitle,
-} from '#/section-kit/ProductCard.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
-  CommerceAddItemButton,
-  CommerceMutationSpinner,
   commerceProduct,
   useCommerceFilteredProducts,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * EcommerceGallery — Featured Products grid for a general online store. A
@@ -57,7 +48,6 @@ export const EcommerceGallery = defineCapsule({
     const gallerySubheading =
       props.subheading ??
       'Shop our best sellers — handpicked favorites loved by thousands of customers.'
-    const addToCartLabel = props.addToCartLabel ?? 'Add to cart'
     const galleryProducts = props.products?.length
       ? props.products
       : [
@@ -158,60 +148,13 @@ export const EcommerceGallery = defineCapsule({
             ) : null}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-            {visibleProducts.map((product) => (
-              <ProductCard key={product.name} variant="outlined">
-                <ProductCardImage>
-                  <Image
-                    alt={
-                      product.imageAlt ??
-                      `${product.name} product photo on a clean background, online store`
-                    }
-                    w={800}
-                    h={800}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {product.badge ? (
-                    <ProductCardBadge className="rounded-full bg-primary px-2.5 py-1 text-primary-foreground">
-                      {product.badge}
-                    </ProductCardBadge>
-                  ) : null}
-                </ProductCardImage>
-                <ProductCardContent className="p-4">
-                  <ProductCardTitle className="text-sm text-foreground sm:text-base">
-                    {product.name}
-                  </ProductCardTitle>
-                  <div className="mt-1.5 flex items-baseline gap-2">
-                    <span className="font-semibold text-foreground">
-                      {product.price}
-                    </span>
-                    {product.oldPrice ? (
-                      <span className="text-sm text-muted-foreground line-through">
-                        {product.oldPrice}
-                      </span>
-                    ) : null}
-                  </div>
-                  <CommerceAddItemButton
-                    lakebed={lakebed}
-                    item={{
-                      label: product.name,
-                      price: product.price,
-                    }}
-                    pendingChildren={
-                      <>
-                        <CommerceMutationSpinner />
-                        Adding
-                      </>
-                    }
-                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border border-primary bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-70"
-                  >
-                    {addToCartLabel}
-                  </CommerceAddItemButton>
-                </ProductCardContent>
-              </ProductCard>
-            ))}
-          </div>
+          <GalleryGrid
+            images={visibleProducts.map((p) => ({
+              alt: p.imageAlt ?? p.name,
+              caption: p.price,
+            }))}
+            columns={3}
+          />
         </Container>
       </section>
     )

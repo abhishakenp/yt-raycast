@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 /**
  * DentalGallery — office-tour photo gallery for a dental practice site. A
@@ -13,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const DentalGallery = defineCapsule({
   name: 'DentalGallery',
   description:
@@ -56,27 +55,10 @@ export const DentalGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{galleryDesc}</p>
           </div>
-          <BentoGrid cols="1-2-4" gap="sm">
-            {galleryImages.map((alt, i) => (
-              <BentoTile
-                key={alt}
-                span={
-                  i === 0
-                    ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2'
-                    : undefined
-                }
-                className={cn('overflow-hidden rounded-2xl', i !== 0 && 'h-64')}
-              >
-                <Image
-                  alt={alt}
-                  w={i === 0 ? 800 : 600}
-                  h={i === 0 ? 600 : 400}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </BentoTile>
-            ))}
-          </BentoGrid>
+          <GalleryGrid
+            images={galleryImages.map((alt) => ({ alt }))}
+            columns={3}
+          />
         </Container>
       </section>
     )

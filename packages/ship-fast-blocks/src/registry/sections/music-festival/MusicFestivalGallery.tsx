@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * MusicFestivalGallery — a dark photo gallery band of past-year memories for a
@@ -14,6 +12,7 @@ import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
  * series, or any recurring multi-day event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const MusicFestivalGallery = defineCapsule({
   name: 'MusicFestivalGallery',
   description:
@@ -64,29 +63,7 @@ export const MusicFestivalGallery = defineCapsule({
               {description}
             </p>
           </div>
-          <BentoGrid cols="2-md-4" gap="sm">
-            {imageAlts.map((alt, i) => (
-              <BentoTile
-                key={alt}
-                span={
-                  i === 1
-                    ? 'md:row-span-2'
-                    : i === 5
-                      ? 'md:col-span-2'
-                      : undefined
-                }
-                className="h-48 overflow-hidden rounded-lg md:h-64"
-              >
-                <Image
-                  alt={alt}
-                  w={600}
-                  h={i === 1 ? 800 : 400}
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
-              </BentoTile>
-            ))}
-          </BentoGrid>
+          <GalleryGrid images={imageAlts.map((alt) => ({ alt }))} columns={4} />
         </Container>
       </section>
     )

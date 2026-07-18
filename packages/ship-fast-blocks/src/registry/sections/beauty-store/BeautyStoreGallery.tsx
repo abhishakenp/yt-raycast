@@ -2,14 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import {
-  BentoGrid,
-  BentoTile,
-  BentoTileCaption,
-} from '#/section-kit/BentoGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * BeautyStoreGallery — a behind-the-scenes mosaic image gallery for a beauty /
@@ -43,7 +38,6 @@ export const BeautyStoreGallery = defineCapsule({
     const description =
       props.description ??
       'From our curated collections to your daily routine, discover moments of beauty that inspire.'
-    const featureCaption = props.featureCaption ?? 'Spa Experiences'
     const imageAlts = props.imageAlts?.length
       ? props.imageAlts
       : [
@@ -66,43 +60,7 @@ export const BeautyStoreGallery = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <BentoGrid cols="2-lg-4" gap="sm">
-            {imageAlts.map((alt, i) =>
-              i === 0 ? (
-                <BentoTile
-                  key={alt}
-                  span="col-span-2 row-span-2"
-                  className="relative aspect-square overflow-hidden rounded-xl lg:aspect-auto"
-                >
-                  <Image
-                    alt={alt}
-                    w={800}
-                    h={800}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                  <BentoTileCaption className="inset-0 flex items-end bg-gradient-to-t from-foreground/40 to-transparent p-6">
-                    <span className="font-medium text-background">
-                      {featureCaption}
-                    </span>
-                  </BentoTileCaption>
-                </BentoTile>
-              ) : (
-                <BentoTile
-                  key={alt}
-                  className="relative aspect-square overflow-hidden rounded-xl"
-                >
-                  <Image
-                    alt={alt}
-                    w={400}
-                    h={400}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                </BentoTile>
-              ),
-            )}
-          </BentoGrid>
+          <GalleryGrid images={imageAlts.map((alt) => ({ alt }))} columns={4} />
         </Container>
       </section>
     )

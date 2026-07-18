@@ -2,14 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
-import {
-  ListingCard,
-  ListingCardBadge,
-  ListingCardMedia,
-  ListingCardSpecRow,
-} from '#/section-kit/ListingCard.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * RealEstateGallery — featured-listings grid for a premium brokerage. A
@@ -47,12 +40,10 @@ export const RealEstateGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Featured listings'
     const description =
       props.description ??
       'A handpicked selection of homes just hitting the market across our most sought-after neighborhoods.'
-    const viewLabel = props.viewLabel ?? 'View'
     const listings = props.listings?.length
       ? props.listings
       : [
@@ -122,46 +113,10 @@ export const RealEstateGallery = defineCapsule({
             ) : null}
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-16 lg:grid-cols-3">
-            {listings.map((listing, index) => (
-              <ListingCard key={`${listing.address}-${index}`}>
-                <ListingCardMedia>
-                  <Image
-                    alt={`exterior photo of the home at ${listing.address}`}
-                    w={800}
-                    h={600}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {listing.badge ? (
-                    <ListingCardBadge>{listing.badge}</ListingCardBadge>
-                  ) : null}
-                </ListingCardMedia>
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="text-xl font-semibold text-foreground">
-                    {listing.price}
-                  </div>
-                  <ListingCardSpecRow
-                    specs={[
-                      `${listing.beds} bd`,
-                      `${listing.baths} ba`,
-                      `${listing.sqft} sqft`,
-                    ]}
-                  />
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    {listing.address}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => go('Listing')}
-                    className="mt-5 inline-flex w-fit items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    {viewLabel}
-                  </button>
-                </div>
-              </ListingCard>
-            ))}
-          </div>
+          <GalleryGrid
+            images={listings.map((l) => ({ alt: l.address, caption: l.price }))}
+            columns={3}
+          />
         </div>
       </section>
     )

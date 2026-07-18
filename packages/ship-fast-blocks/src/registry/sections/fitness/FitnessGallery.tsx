@@ -1,9 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
  * FitnessGallery — facility photo gallery for a gym or fitness studio, on a muted
@@ -13,6 +10,7 @@ import { ImageTile } from '#/section-kit/ImageTile.tsx'
  * and recovery areas on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const FitnessGallery = defineCapsule({
   name: 'FitnessGallery',
   description:
@@ -50,23 +48,10 @@ export const FitnessGallery = defineCapsule({
             <p className="text-muted-foreground">{galleryDesc}</p>
           </div>
 
-          <ResponsiveGrid cols="2-md-4" gap="sm">
-            {galleryItems.map((alt) => (
-              <ImageTile
-                key={alt}
-                treatment="fixed-lg"
-                className="h-48 md:h-64"
-              >
-                <Image
-                  alt={alt}
-                  w={600}
-                  h={400}
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
-              </ImageTile>
-            ))}
-          </ResponsiveGrid>
+          <GalleryGrid
+            images={galleryItems.map((alt) => ({ alt }))}
+            columns={4}
+          />
         </Container>
       </section>
     )

@@ -2,11 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { ContentCard } from '#/section-kit/ContentCard.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * CybersecurityGallery — platform-screenshot gallery. A light section with a
@@ -33,7 +31,6 @@ export const CybersecurityGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Platform overview'
     const description =
       props.description ??
@@ -80,32 +77,13 @@ export const CybersecurityGallery = defineCapsule({
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              <ContentCard
-                key={item.title}
-                asChild
-                variant="bordered-shadowed"
-                className="text-left"
-              >
-                <button type="button" onClick={() => go(item.title)}>
-                  <Image
-                    alt={item.title}
-                    w={600}
-                    h={400}
-                    loading="lazy"
-                    className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="p-6">
-                    <h3 className="mb-2 text-lg font-bold">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {item.description}
-                    </p>
-                  </div>
-                </button>
-              </ContentCard>
-            ))}
-          </div>
+          <GalleryGrid
+            images={items.map((item) => ({
+              alt: item.title,
+              caption: item.description,
+            }))}
+            columns={3}
+          />
         </Container>
       </section>
     )

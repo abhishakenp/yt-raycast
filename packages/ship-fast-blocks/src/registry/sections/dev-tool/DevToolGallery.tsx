@@ -2,10 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { ContentCard } from '#/section-kit/ContentCard.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * DevToolGallery — a 2x2 product screenshot gallery for a developer tool / API
@@ -28,7 +26,6 @@ export const DevToolGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Built for modern teams'
     const description =
       props.description ??
@@ -69,31 +66,13 @@ export const DevToolGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2">
-            {items.map((item) => (
-              <figure key={item.title} className="group">
-                <ContentCard asChild variant="figure-dark">
-                  <button type="button" onClick={() => go(item.title)}>
-                    <Image
-                      alt={item.title}
-                      w={800}
-                      h={500}
-                      loading="lazy"
-                      className="h-auto w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </button>
-                </ContentCard>
-                <figcaption className="mt-4 text-center">
-                  <h3 className="font-semibold text-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {item.caption}
-                  </p>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <GalleryGrid
+            images={items.map((item) => ({
+              alt: item.title,
+              caption: item.caption,
+            }))}
+            columns={2}
+          />
         </Container>
       </section>
     )

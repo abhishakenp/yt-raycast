@@ -2,11 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * MembershipClubGallery — masonry-style photo gallery of gatherings for a private
@@ -57,23 +55,7 @@ export const MembershipClubGallery = defineCapsule({
               {heading}
             </h2>
           </div>
-          <ResponsiveGrid cols="2-lg-4" gap="sm" className="lg:gap-6">
-            {images.map((alt, i) => (
-              <ImageTile
-                key={alt}
-                treatment="fixed-lg"
-                className={cn(i % 2 === 0 ? 'h-64 lg:h-80' : 'h-48 lg:h-56')}
-              >
-                <Image
-                  alt={alt}
-                  w={400}
-                  h={i % 2 === 0 ? 500 : 300}
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
-              </ImageTile>
-            ))}
-          </ResponsiveGrid>
+          <GalleryGrid images={images.map((alt) => ({ alt }))} columns={4} />
         </Container>
       </section>
     )

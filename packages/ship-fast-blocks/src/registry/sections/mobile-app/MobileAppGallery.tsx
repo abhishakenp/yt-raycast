@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 /**
  * MobileAppGallery — a centered-intro, masonry-style app-screenshot gallery. A
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const MobileAppGallery = defineCapsule({
   name: 'MobileAppGallery',
   description:
@@ -55,25 +55,7 @@ export const MobileAppGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {items.map((alt, i) => (
-              <div
-                key={alt}
-                className={cn(
-                  'overflow-hidden rounded-2xl shadow-lg',
-                  i % 2 === 1 && 'sm:mt-12',
-                )}
-              >
-                <Image
-                  alt={alt}
-                  w={400}
-                  h={i % 2 === 0 ? 800 : 600}
-                  loading="lazy"
-                  className="w-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
+          <GalleryGrid images={items.map((alt) => ({ alt }))} columns={4} />
         </Container>
       </section>
     )

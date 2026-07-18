@@ -1,10 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { BentoTileCaption } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * CorporateGallery — global office / presence gallery for an enterprise /
@@ -14,6 +10,7 @@ import { BentoTileCaption } from '#/section-kit/BentoGrid.tsx'
  * presence, workspace culture, or location hubs for large organizations.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const CorporateGallery = defineCapsule({
   name: 'CorporateGallery',
   description:
@@ -36,7 +33,6 @@ export const CorporateGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Global presence, local expertise'
     const description =
       props.description ??
@@ -87,36 +83,13 @@ export const CorporateGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((office) => (
-              <ImageTile
-                key={office.title}
-                asChild
-                treatment="4-3-xl"
-                className="block text-left"
-              >
-                <button type="button" onClick={() => go(office.title)}>
-                  <Image
-                    alt={office.imageAlt}
-                    w={600}
-                    h={450}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <BentoTileCaption className="inset-0 flex items-end bg-gradient-to-t from-foreground/60 to-transparent p-6">
-                    <div>
-                      <p className="font-semibold text-background">
-                        {office.title}
-                      </p>
-                      <p className="text-sm text-background/80">
-                        {office.caption}
-                      </p>
-                    </div>
-                  </BentoTileCaption>
-                </button>
-              </ImageTile>
-            ))}
-          </div>
+          <GalleryGrid
+            images={items.map((item) => ({
+              alt: item.imageAlt,
+              caption: item.title,
+            }))}
+            columns={3}
+          />
         </Container>
       </section>
     )

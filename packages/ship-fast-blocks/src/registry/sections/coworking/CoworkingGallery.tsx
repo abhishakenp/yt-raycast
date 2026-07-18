@@ -12,6 +12,7 @@ import {
   HoverAccordion,
   HoverAccordionPanel,
 } from '#/section-kit/HoverAccordion.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * CoworkingGallery — immersive space tour for a coworking or shared-
@@ -195,23 +196,13 @@ export const CoworkingGallery = defineCapsule({
               </HoverAccordion>
 
               {/* Small screens: calm 2-col grid of the same tiles. */}
-              <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
-                {images.map((image, index) => (
-                  <div
-                    key={`${image.alt}-${index}`}
-                    className="group relative aspect-[4/3] overflow-hidden rounded-3xl ring-1 ring-border/60"
-                  >
-                    <Image
-                      alt={image.alt}
-                      w={800}
-                      h={600}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    {overlay}
-                    {captionPlate(image.caption, true)}
-                  </div>
-                ))}
-              </div>
+              <GalleryGrid
+                images={images.map((img) => ({
+                  alt: img.alt,
+                  caption: img.caption,
+                }))}
+                columns={3}
+              />
             </>
           ) : (
             <div className={cn('mt-14 grid grid-cols-1 gap-4', uniformCols)}>

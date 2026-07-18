@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
  * LogisticsGallery — a global-network image gallery for a logistics / freight-
@@ -14,6 +12,7 @@ import { ImageTile } from '#/section-kit/ImageTile.tsx'
  * or cargo/transport companies. Renders fully with no props via alt-driven images.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const LogisticsGallery = defineCapsule({
   name: 'LogisticsGallery',
   description:
@@ -49,19 +48,7 @@ export const LogisticsGallery = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {images.map((alt) => (
-              <ImageTile key={alt} treatment="4-3-2xl-muted">
-                <Image
-                  alt={alt}
-                  w={600}
-                  h={450}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </ImageTile>
-            ))}
-          </div>
+          <GalleryGrid images={images.map((alt) => ({ alt }))} columns={3} />
         </Container>
       </section>
     )

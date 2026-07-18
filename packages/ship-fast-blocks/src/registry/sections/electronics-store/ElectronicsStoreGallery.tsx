@@ -1,13 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
-import {
-  BentoGrid,
-  BentoTile,
-  BentoTileCaption,
-} from '#/section-kit/BentoGrid.tsx'
 
 /**
  * ElectronicsStoreGallery — a "Featured Collections" masonry gallery on a muted
@@ -19,6 +12,7 @@ import {
  * storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const ElectronicsStoreGallery = defineCapsule({
   name: 'ElectronicsStoreGallery',
   description:
@@ -39,7 +33,6 @@ export const ElectronicsStoreGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Featured Collections'
     const items = props.items?.length
       ? props.items
@@ -79,41 +72,13 @@ export const ElectronicsStoreGallery = defineCapsule({
           <h2 className="mb-8 text-2xl font-semibold text-foreground">
             {heading}
           </h2>
-          <BentoGrid cols="2-lg-3" gap="sm">
-            {items.map((g, i) => (
-              <BentoTile
-                key={g.name}
-                asChild
-                span={i === 0 ? 'lg:row-span-2' : undefined}
-                className={cn(
-                  'group relative overflow-hidden rounded-xl bg-muted text-left',
-                  i === 0 ? 'aspect-[3/4]' : 'aspect-[4/3]',
-                )}
-              >
-                <button type="button" onClick={() => go(g.name)}>
-                  <Image
-                    alt={g.imageAlt}
-                    w={600}
-                    h={i === 0 ? 800 : 450}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <BentoTileCaption
-                    aria-hidden="true"
-                    className="inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent"
-                  />
-                  <BentoTileCaption className="bottom-4 left-4 flex flex-col text-background sm:bottom-6 sm:left-6">
-                    <h3 className="mb-1 text-lg font-semibold sm:text-xl">
-                      {g.name}
-                    </h3>
-                    <p className="text-xs text-background/80 sm:text-sm">
-                      {g.count}
-                    </p>
-                  </BentoTileCaption>
-                </button>
-              </BentoTile>
-            ))}
-          </BentoGrid>
+          <GalleryGrid
+            images={items.map((item) => ({
+              alt: item.imageAlt,
+              caption: item.name,
+            }))}
+            columns={3}
+          />
         </Container>
       </section>
     )

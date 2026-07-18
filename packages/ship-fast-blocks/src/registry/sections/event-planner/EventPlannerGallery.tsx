@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * EventPlannerGallery — portfolio gallery of past events. A centered intro
@@ -92,27 +93,10 @@ export const EventPlannerGallery = defineCapsule({
               </button>
             ))}
           </ResponsiveGrid>
-          <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-6">
-            {galleryWide.map((alt, i) => (
-              <button
-                key={alt}
-                type="button"
-                onClick={() => go(galleryHeading)}
-                className={cn(
-                  'overflow-hidden rounded-xl',
-                  i === 2 && 'col-span-2 lg:col-span-1',
-                )}
-              >
-                <Image
-                  alt={alt}
-                  w={600}
-                  h={400}
-                  loading="lazy"
-                  className="h-48 w-full object-cover transition-transform duration-500 hover:scale-105 lg:h-64"
-                />
-              </button>
-            ))}
-          </div>
+          <GalleryGrid
+            images={galleryWide.map((alt) => ({ alt }))}
+            columns={3}
+          />
         </div>
       </section>
     )

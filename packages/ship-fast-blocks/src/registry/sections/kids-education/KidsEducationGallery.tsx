@@ -1,12 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import {
-  BentoGrid,
-  BentoTile,
-  BentoTileCaption,
-} from '#/section-kit/BentoGrid.tsx'
 
 /**
  * KidsEducationGallery — "learning in action" masonry photo gallery for a kids /
@@ -19,6 +13,7 @@ import {
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 export const KidsEducationGallery = defineCapsule({
   name: 'KidsEducationGallery',
   description:
@@ -107,35 +102,13 @@ export const KidsEducationGallery = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <BentoGrid cols="2-3-4" gap="sm">
-            {items.map((g, i) => (
-              <BentoTile
-                key={g.caption}
-                span={
-                  i === 1
-                    ? 'md:col-span-2 md:row-span-2'
-                    : i === 7
-                      ? 'md:col-span-2'
-                      : undefined
-                }
-                className="group relative aspect-square overflow-hidden rounded-2xl"
-              >
-                <Image
-                  alt={g.imageAlt}
-                  w={i === 1 ? 800 : 400}
-                  h={i === 1 ? 800 : 400}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <BentoTileCaption
-                  reveal="hover"
-                  className="inset-0 flex items-end bg-gradient-to-t from-foreground/60 to-transparent p-4"
-                >
-                  <p className="font-medium text-background">{g.caption}</p>
-                </BentoTileCaption>
-              </BentoTile>
-            ))}
-          </BentoGrid>
+          <GalleryGrid
+            images={items.map((item) => ({
+              alt: item.imageAlt,
+              caption: item.caption,
+            }))}
+            columns={3}
+          />
         </Container>
       </section>
     )
