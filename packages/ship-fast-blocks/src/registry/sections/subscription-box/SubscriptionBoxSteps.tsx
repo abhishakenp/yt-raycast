@@ -2,9 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
+import { StepTimeline, StepTimelineGrid, StepItem } from '#/section-kit/StepTimeline.tsx'
 
 /**
  * SubscriptionBoxSteps — bespoke "how it works" band for a subscription-box
@@ -134,11 +133,9 @@ export const SubscriptionBoxSteps = defineCapsule({
             {steps.map((step, i) => {
               const Icon = STEP_ICONS[i % STEP_ICONS.length]
               return (
-                <Card
+                <StepItem
                   key={i}
-                  rounded="2xl"
-                  padding="lg"
-                  className="relative flex flex-col gap-4"
+                  className="relative flex flex-col gap-4 rounded-2xl border bg-card p-6"
                 >
                   <span className="inline-flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
                     {i + 1}
@@ -152,7 +149,7 @@ export const SubscriptionBoxSteps = defineCapsule({
                   <p className="text-sm leading-6 text-muted-foreground">
                     {step.description}
                   </p>
-                </Card>
+                </StepItem>
               )
             })}
           </StepTimelineGrid>
