@@ -11,6 +11,7 @@ import {
   PricingTierFeatures,
 } from '#/section-kit/PricingGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
@@ -137,7 +138,7 @@ export const NewsletterPricing = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+          <ResponsiveGrid cols="1-md-2" gap="lg" className="mx-auto max-w-4xl">
             {/* Free Plan */}
             <PricingTier className="gap-0 p-8 lg:p-10">
               <div className="mb-2 flex items-baseline gap-1">
@@ -218,7 +219,7 @@ export const NewsletterPricing = defineCapsule({
                 {paidNote}
               </p>
             </PricingTier>
-          </div>
+          </ResponsiveGrid>
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {footnotePrefix}
