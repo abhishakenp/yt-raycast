@@ -15,8 +15,11 @@ import { Image } from '#/lib/img.tsx'
  * any multi-day live-music event.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
-import { LineupGrid, LineupCard } from '#/section-kit/LineupGrid.tsx'
+import {
+  LineupGrid,
+  ArtistCard,
+  ArtistTier,
+} from '#/section-kit/LineupGrid.tsx'
 export const MusicFestivalLineup = defineCapsule({
   name: 'MusicFestivalLineup',
   description:
@@ -164,11 +167,10 @@ export const MusicFestivalLineup = defineCapsule({
             </h3>
             <LineupGrid className="grid gap-6 md:grid-cols-3">
               {headliners.map((h) => (
-                <LineupCard asChild key={h.name}>
+                <ArtistCard asChild key={h.name}>
                   <button
                     type="button"
                     onClick={() => go(h.name)}
-                    className="group relative block overflow-hidden rounded-xl text-left"
                   >
                     <Image
                       alt={h.imageAlt}
@@ -186,7 +188,7 @@ export const MusicFestivalLineup = defineCapsule({
                       <p className="text-sm text-background/70">{h.genre}</p>
                     </div>
                   </button>
-                </LineupCard>
+                </ArtistCard>
               ))}
             </LineupGrid>
           </div>
@@ -197,21 +199,14 @@ export const MusicFestivalLineup = defineCapsule({
             </h3>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
               {featured.map((a) => (
-                <Card
-                  asChild
-                  key={a.name}
-                  variant="default"
-                  rounded="lg"
-                  padding="md"
-                  className="text-center transition-colors hover:border-primary/40"
-                >
+                <ArtistTier asChild key={a.name}>
                   <button type="button" onClick={() => go(a.name)}>
                     <p className="font-semibold">{a.name}</p>
                     <p className="mt-1 text-sm text-card-foreground/60">
                       {a.genre}
                     </p>
                   </button>
-                </Card>
+                </ArtistTier>
               ))}
             </div>
           </div>
