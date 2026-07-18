@@ -9,6 +9,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import {
   PopularList,
   PopularItem,
+  PopularCard,
   PopularMeta,
 } from '#/section-kit/PopularList.tsx'
 
@@ -204,34 +205,35 @@ export const KnowledgeBasePopular = defineCapsule({
               <p className="mb-8 text-muted-foreground">{description}</p>
               <div className="space-y-4">
                 {items.map((art) => (
-                  <PopularItem asChild key={art.title}>
-                    <button
-                      type="button"
-                      onClick={() => go(art.title)}
-                      className="group flex w-full items-start gap-4 rounded-lg p-4 text-left transition-colors hover:bg-muted"
+                  <PopularItem key={art.title}>
+                    <PopularCard
+                      asChild
+                      className="group w-full items-start rounded-lg border-0 bg-transparent hover:bg-muted"
                     >
-                      <span className="grid size-10 flex-shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent">
-                        <EyeIcon />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-base font-medium text-foreground transition-colors group-hover:text-muted-foreground">
-                          {art.title}
+                      <button type="button" onClick={() => go(art.title)}>
+                        <span className="grid size-10 flex-shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent">
+                          <EyeIcon />
                         </span>
-                        <span className="mt-1 block text-sm text-muted-foreground">
-                          {art.description}
-                        </span>
-                        <PopularMeta asChild>
-                          <span className="mt-2 flex items-center gap-3">
-                            <span className="flex items-center gap-1">
-                              <EyeIcon />
-                              {art.views}
-                            </span>
-                            <span>{art.updated}</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-base font-medium text-foreground transition-colors group-hover:text-muted-foreground">
+                            {art.title}
                           </span>
-                        </PopularMeta>
-                      </span>
-                      <ChevronRight className="size-5 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
-                    </button>
+                          <span className="mt-1 block text-sm text-muted-foreground">
+                            {art.description}
+                          </span>
+                          <PopularMeta asChild>
+                            <span className="mt-2 flex items-center gap-3">
+                              <span className="flex items-center gap-1">
+                                <EyeIcon />
+                                {art.views}
+                              </span>
+                              <span>{art.updated}</span>
+                            </span>
+                          </PopularMeta>
+                        </span>
+                        <ChevronRight className="size-5 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+                      </button>
+                    </PopularCard>
                   </PopularItem>
                 ))}
               </div>
