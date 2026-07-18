@@ -11,6 +11,12 @@ import {
   SplitStoryContent,
   SplitStoryFooter,
 } from '#/section-kit/SplitStory.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * AccountingFirmAbout — split about band for a CPA / accounting-firm site. A
@@ -112,16 +118,16 @@ export const AccountingFirmAbout = defineCapsule({
                 </p>
               ))}
 
-              <div className="mb-8 grid grid-cols-2 gap-6">
+              <StatGrid className="mb-8 grid grid-cols-2 gap-6">
                 {stats.map((s) => (
-                  <div key={s.label}>
-                    <p className="text-3xl font-bold text-foreground">
+                  <StatItem key={s.label}>
+                    <StatValue className="text-3xl font-bold text-foreground">
                       {s.value}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{s.label}</p>
-                  </div>
+                    </StatValue>
+                    <StatLabel className="text-sm">{s.label}</StatLabel>
+                  </StatItem>
                 ))}
-              </div>
+              </StatGrid>
 
               <SplitStoryFooter className="gap-4 pt-0">
                 <Image

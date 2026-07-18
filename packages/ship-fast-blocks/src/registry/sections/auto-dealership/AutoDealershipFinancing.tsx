@@ -5,6 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
+import {
   AutoLeadActionButton,
   AutoMutationSpinner,
 } from './auto-dealership-interactions.tsx'
@@ -130,16 +136,18 @@ export const AutoDealershipFinancing = defineCapsule({
                   ))}
                 </div>
                 <FinancingDisplay className="rounded-lg bg-muted p-6">
-                  <div className="grid grid-cols-3 gap-4 text-center">
+                  <StatGrid className="grid grid-cols-3 gap-4 text-center">
                     {stats.map((s) => (
-                      <div key={s.label}>
-                        <p className="text-3xl font-semibold">{s.value}</p>
-                        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                      <StatItem key={s.label}>
+                        <StatValue className="text-3xl font-semibold">
+                          {s.value}
+                        </StatValue>
+                        <StatLabel className="text-xs uppercase tracking-wider">
                           {s.label}
-                        </p>
-                      </div>
+                        </StatLabel>
+                      </StatItem>
                     ))}
-                  </div>
+                  </StatGrid>
                 </FinancingDisplay>
                 <AutoLeadActionButton
                   lakebed={lakebed}

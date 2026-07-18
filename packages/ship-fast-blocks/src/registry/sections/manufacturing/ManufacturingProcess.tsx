@@ -2,6 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * ManufacturingProcess — a numbered quote-to-delivery process band for a
@@ -131,18 +137,18 @@ export const ManufacturingProcess = defineCapsule({
             ))}
           </StepTimelineGrid>
           <Card variant="muted" rounded="lg" padding="lg" className="mt-16">
-            <div className="grid gap-8 text-center md:grid-cols-3">
+            <StatGrid className="grid gap-8 text-center md:grid-cols-3">
               {stats.map((s) => (
-                <div key={s.label}>
-                  <p className="text-3xl font-semibold text-foreground">
+                <StatItem key={s.label}>
+                  <StatValue className="text-3xl font-semibold text-foreground">
                     {s.value}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  </StatValue>
+                  <StatLabel className="mt-1 text-sm">
                     {s.label}
-                  </p>
-                </div>
+                  </StatLabel>
+                </StatItem>
               ))}
-            </div>
+            </StatGrid>
           </Card>
         </Container>
       </StepTimeline>
