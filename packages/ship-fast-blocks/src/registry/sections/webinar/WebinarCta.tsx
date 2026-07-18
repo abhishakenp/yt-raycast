@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * WebinarCta — a bold, centered registration band for a webinar landing page.
@@ -35,6 +44,7 @@ export const WebinarCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const eyebrow =
       props.eyebrow ?? 'July 17 · 11:00 AM PT — only 87 seats left'
     const headline = props.headline ?? 'Reserve your spot — free'
@@ -47,17 +57,21 @@ export const WebinarCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Register'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={eyebrow}
-        title={headline}
-        subtitle={subheading}
-        actions={[
-          { label: primaryCta, target: primaryTarget, variant: 'primary' },
-          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{headline}</CtaBandTitle>
+          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
+              {primaryCta}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
+              {secondaryCta}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

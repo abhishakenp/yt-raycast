@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SupportBand } from '#/section-kit/SupportBand.tsx'
 
 /**
@@ -27,6 +36,7 @@ export const KnowledgeBaseSupportCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const heading = props.heading ?? 'Still need help?'
     const description =
       props.description ??
@@ -39,17 +49,21 @@ export const KnowledgeBaseSupportCta = defineCapsule({
 
     return (
       <SupportBand asChild>
-        <CtaBand
-          tone="primary"
-          eyebrow={note}
-          title={heading}
-          subtitle={description}
-          actions={[
-            { label: primaryCta, target: primaryCta, variant: 'primary' },
-            { label: secondaryCta, target: secondaryCta, variant: 'outline' },
-          ]}
-          className={props.className}
-        />
+        <CtaBand tone="primary" className={props.className}>
+          <CtaBandInner>
+            <CtaBandEyebrow>{note}</CtaBandEyebrow>
+            <CtaBandTitle>{heading}</CtaBandTitle>
+            <CtaBandSubtitle>{description}</CtaBandSubtitle>
+            <CtaBandActions>
+              <CtaAction variant="primary" onClick={() => go(primaryCta)}>
+                {primaryCta}
+              </CtaAction>
+              <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
+                {secondaryCta}
+              </CtaAction>
+            </CtaBandActions>
+          </CtaBandInner>
+        </CtaBand>
       </SupportBand>
     )
   },

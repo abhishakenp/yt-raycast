@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * VacationRentalCta — a closing call-to-action band for a vacation-rental listing
@@ -35,30 +44,34 @@ export const VacationRentalCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     return (
-      <CtaBand
-        tone="primary"
-        align="center"
-        eyebrow={props.eyebrow ?? 'Dates fill up fast'}
-        title={props.title ?? 'Book your stay'}
-        subtitle={
-          props.subtitle ??
-          'Reserve your dates today and start counting down to slow mornings, salt air, and golden-hour swims.'
-        }
-        actions={[
-          {
-            label: props.primaryLabel ?? 'Book Now',
-            target: props.primaryTarget ?? 'Book Now',
-            variant: 'primary',
-          },
-          {
-            label: props.secondaryLabel ?? 'Contact host',
-            target: props.secondaryTarget ?? 'Contact',
-            variant: 'outline',
-          },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner align="center">
+          <CtaBandEyebrow>
+            {props.eyebrow ?? 'Dates fill up fast'}
+          </CtaBandEyebrow>
+          <CtaBandTitle>{props.title ?? 'Book your stay'}</CtaBandTitle>
+          <CtaBandSubtitle>
+            {props.subtitle ??
+              'Reserve your dates today and start counting down to slow mornings, salt air, and golden-hour swims.'}
+          </CtaBandSubtitle>
+          <CtaBandActions align="center">
+            <CtaAction
+              variant="primary"
+              onClick={() => go(props.primaryTarget ?? 'Book Now')}
+            >
+              {props.primaryLabel ?? 'Book Now'}
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              onClick={() => go(props.secondaryTarget ?? 'Contact')}
+            >
+              {props.secondaryLabel ?? 'Contact host'}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

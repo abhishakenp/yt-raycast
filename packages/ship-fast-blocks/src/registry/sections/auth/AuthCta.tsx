@@ -1,7 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SaasMutationSpinner,
@@ -55,55 +61,54 @@ export const AuthCta = defineCapsule({
     const secondaryIsDocs = /\b(doc|guide|learn|read)\b/i.test(secondaryCta)
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={eyebrow}
-        title={headline}
-        subtitle={subheading}
-        className={props.className}
-      >
-        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <SaasPlanActionButton
-            lakebed={lakebed}
-            intentLabel={primaryTarget}
-            plan={primaryCta}
-            source="cta"
-            pendingChildren={
-              <>
-                <SaasMutationSpinner className="size-4" />
-                Starting
-              </>
-            }
-            className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-          >
-            {primaryCta}
-          </SaasPlanActionButton>
-          {secondaryIsDocs ? (
-            <button
-              type="button"
-              onClick={() => go(secondaryTarget)}
-              className="inline-flex min-w-40 items-center justify-center rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
-            >
-              {secondaryCta}
-            </button>
-          ) : (
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{headline}</CtaBandTitle>
+          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <SaasPlanActionButton
               lakebed={lakebed}
-              intentLabel={secondaryTarget}
-              plan={secondaryCta}
+              intentLabel={primaryTarget}
+              plan={primaryCta}
               source="cta"
               pendingChildren={
                 <>
                   <SaasMutationSpinner className="size-4" />
-                  Sending
+                  Starting
                 </>
               }
-              className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
             >
-              {secondaryCta}
+              {primaryCta}
             </SaasPlanActionButton>
-          )}
-        </div>
+            {secondaryIsDocs ? (
+              <button
+                type="button"
+                onClick={() => go(secondaryTarget)}
+                className="inline-flex min-w-40 items-center justify-center rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+              >
+                {secondaryCta}
+              </button>
+            ) : (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={secondaryTarget}
+                plan={secondaryCta}
+                source="cta"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Sending
+                  </>
+                }
+                className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+              >
+                {secondaryCta}
+              </SaasPlanActionButton>
+            )}
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

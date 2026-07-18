@@ -1,7 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { kitActionClasses } from '#/section-kit/types.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -58,53 +64,52 @@ export const ProductDetailCta = defineCapsule({
         ]
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={eyebrow}
-        title={title}
-        subtitle={subtitle}
-        className={props.className}
-      >
-        <div className="flex flex-wrap justify-center gap-3">
-          {actions.map((action) => {
-            const isAddToCart = isProductPurchaseIntent(action.label)
-            const isInvert =
-              (action.variant ?? 'primary') === 'primary' || isAddToCart
-            const className = `${kitActionClasses(action.variant, isInvert)} inline-flex items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70`
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{title}</CtaBandTitle>
+          <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
+          <div className="flex flex-wrap justify-center gap-3">
+            {actions.map((action) => {
+              const isAddToCart = isProductPurchaseIntent(action.label)
+              const isInvert =
+                (action.variant ?? 'primary') === 'primary' || isAddToCart
+              const className = `${kitActionClasses(action.variant, isInvert)} inline-flex items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70`
 
-            if (isAddToCart) {
+              if (isAddToCart) {
+                return (
+                  <CommerceAddItemButton
+                    key={action.label}
+                    lakebed={lakebed}
+                    item={{ label: productTitle, price: productPrice }}
+                    pendingChildren={
+                      <>
+                        <CommerceMutationSpinner />
+                        Adding
+                      </>
+                    }
+                    className={className}
+                  >
+                    {action.label}
+                  </CommerceAddItemButton>
+                )
+              }
+
               return (
-                <CommerceAddItemButton
+                <button
                   key={action.label}
-                  lakebed={lakebed}
-                  item={{ label: productTitle, price: productPrice }}
-                  pendingChildren={
-                    <>
-                      <CommerceMutationSpinner />
-                      Adding
-                    </>
-                  }
+                  type="button"
+                  onClick={() => {
+                    go(action.target ?? action.label)
+                  }}
                   className={className}
                 >
                   {action.label}
-                </CommerceAddItemButton>
+                </button>
               )
-            }
-
-            return (
-              <button
-                key={action.label}
-                type="button"
-                onClick={() => {
-                  go(action.target ?? action.label)
-                }}
-                className={className}
-              >
-                {action.label}
-              </button>
-            )
-          })}
-        </div>
+            })}
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

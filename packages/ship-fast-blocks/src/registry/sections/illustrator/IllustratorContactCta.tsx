@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
@@ -45,54 +50,55 @@ export const IllustratorContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        title={heading}
-        subtitle={description}
-        titleClassName="font-serif"
         className={`bg-background text-foreground ${props.className ?? ''}`}
       >
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => go(email)}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-muted-foreground"
-          >
-            <svg
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              />
-            </svg>
-            {email}
-          </button>
-          <button
-            type="button"
-            onClick={() => go(secondaryCta)}
-            className="rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
-          >
-            {secondaryCta}
-          </button>
-        </div>
-        <div className="flex justify-center gap-6">
-          {socials.map((social) => (
+        <CtaBandInner>
+          <CtaBandTitle className="font-serif">{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <button
-              key={social}
               type="button"
-              aria-label={social}
-              onClick={() => go(social)}
-              className="text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => go(email)}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-muted-foreground"
             >
-              {social}
+              <svg
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              {email}
             </button>
-          ))}
-        </div>
+            <button
+              type="button"
+              onClick={() => go(secondaryCta)}
+              className="rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
+            >
+              {secondaryCta}
+            </button>
+          </div>
+          <div className="flex justify-center gap-6">
+            {socials.map((social) => (
+              <button
+                key={social}
+                type="button"
+                aria-label={social}
+                onClick={() => go(social)}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {social}
+              </button>
+            ))}
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

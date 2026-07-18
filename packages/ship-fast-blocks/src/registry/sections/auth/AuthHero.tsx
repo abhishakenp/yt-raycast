@@ -9,8 +9,10 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCodeWindow,
+  HeroCodeWindowHeader,
+  HeroCodeWindowBody,
 } from '#/section-kit/HeroSection.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -82,25 +84,27 @@ export const AuthHero = defineCapsule({
         ]
 
     return (
-      <HeroSection className={cn('bg-background', props.className)}>
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
-          <div className="flex flex-col">
+      <HeroSection
+        className={cn('overflow-hidden bg-background', props.className)}
+      >
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-16 sm:px-6 sm:py-20 md:grid-cols-[minmax(0,1fr)_minmax(20rem,0.95fr)] md:gap-8 lg:gap-14 lg:px-8 lg:py-28 xl:grid-cols-[minmax(0,0.92fr)_minmax(28rem,1.08fr)]">
+          <div className="flex min-w-0 flex-col md:max-w-xl lg:max-w-2xl">
             <HeroBadge
               variant="solid"
-              className="w-fit border border-border text-xs tracking-[0.18em] text-accent uppercase"
+              className="w-fit border border-border text-[0.68rem] tracking-[0.18em] text-accent uppercase sm:text-xs"
             >
               {eyebrow}
             </HeroBadge>
 
-            <HeroHeading className="mt-6 max-w-xl font-semibold">
+            <HeroHeading className="mt-5 max-w-xl text-3xl font-semibold sm:text-4xl md:text-5xl lg:text-6xl">
               {heading}
             </HeroHeading>
 
-            <HeroSubheading className="mt-6 max-w-xl text-base sm:text-lg">
+            <HeroSubheading className="mt-5 max-w-xl text-base leading-7 sm:text-lg">
               {subheading}
             </HeroSubheading>
 
-            <HeroActions className="mt-9 flex flex-col gap-4 sm:flex-row">
+            <HeroActions className="mt-8 grid grid-cols-1 gap-3 sm:inline-grid sm:w-fit sm:grid-cols-2">
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryTarget}
@@ -112,31 +116,31 @@ export const AuthHero = defineCapsule({
                     Starting
                   </>
                 }
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-7 py-3.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
                 {primaryCta}
               </SaasPlanActionButton>
               <button
                 type="button"
                 onClick={() => go(secondaryTarget)}
-                className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-7 py-3.5 font-medium text-foreground transition-colors hover:bg-muted"
+                className="inline-flex min-h-12 items-center justify-center rounded-lg border border-border bg-background px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
                 {secondaryCta}
               </button>
             </HeroActions>
 
-            <p className="mt-6 text-sm text-muted-foreground">{trustLine}</p>
+            <p className="mt-5 max-w-md text-sm leading-6 text-muted-foreground">
+              {trustLine}
+            </p>
           </div>
 
-          <div className="relative">
-            <Card
-              variant="default"
-              rounded="xl"
-              padding="none"
-              shadow="sm"
-              className="overflow-hidden"
-            >
-              <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
+          <div className="relative min-w-0 md:justify-self-stretch">
+            <div
+              aria-hidden="true"
+              className="absolute -inset-4 rounded-3xl border border-primary/10 bg-primary/[0.03]"
+            />
+            <HeroCodeWindow className="relative max-h-[26rem] min-w-0 overflow-hidden rounded-2xl shadow-lg shadow-foreground/5 md:max-h-[30rem]">
+              <HeroCodeWindowHeader className="bg-muted/70">
                 <span
                   aria-hidden="true"
                   className="size-3 rounded-full bg-border"
@@ -152,21 +156,23 @@ export const AuthHero = defineCapsule({
                 <span className="ml-3 font-mono text-xs text-muted-foreground">
                   auth.ts
                 </span>
-              </div>
-              <pre className="overflow-x-auto px-5 py-5 font-mono text-sm leading-relaxed text-card-foreground">
-                {codeLines.map((line, i) => (
-                  <div key={i} className="flex">
-                    <span
-                      aria-hidden="true"
-                      className="mr-4 select-none text-muted-foreground"
-                    >
-                      {String(i + 1).padStart(2, ' ')}
-                    </span>
-                    <span>{line || ' '}</span>
-                  </div>
-                ))}
-              </pre>
-            </Card>
+              </HeroCodeWindowHeader>
+              <HeroCodeWindowBody className="overflow-x-auto p-4 text-[0.78rem] leading-6 sm:p-5 sm:text-sm">
+                <pre className="min-w-max">
+                  {codeLines.map((line, i) => (
+                    <div key={i} className="flex min-w-max">
+                      <span
+                        aria-hidden="true"
+                        className="mr-4 w-5 shrink-0 select-none text-right text-muted-foreground"
+                      >
+                        {i + 1}
+                      </span>
+                      <span>{line || ' '}</span>
+                    </div>
+                  ))}
+                </pre>
+              </HeroCodeWindowBody>
+            </HeroCodeWindow>
           </div>
         </div>
       </HeroSection>

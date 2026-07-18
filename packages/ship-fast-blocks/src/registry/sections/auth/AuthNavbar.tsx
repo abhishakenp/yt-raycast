@@ -13,10 +13,7 @@ import {
 } from '#/section-kit/index.ts'
 import {
   SaasAccountButton,
-  SaasIntentBadge,
   SaasMobileMenu,
-  SaasMutationSpinner,
-  SaasPlanActionButton,
   SaasSearchButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
@@ -72,29 +69,28 @@ export const AuthNavbar = defineCapsule({
       ? props.nav
       : ['Product', 'Docs', 'Pricing', 'Customers']
     const brand = props.brand ?? 'Authly'
-    const ctaLabel = props.ctaLabel ?? 'Start Free'
-    const ctaTarget = props.ctaTarget ?? 'Sign Up'
 
     return (
       <SiteNav
         position="sticky"
-        height="default"
+        height="responsive"
         className={cn('bg-background/95', props.className)}
+        rowClassName="min-w-0 gap-3"
       >
         <NavbarBrand asChild>
           <button
             type="button"
             onClick={() => go(props.homeTarget ?? 'Home')}
-            className="min-w-0 gap-3"
+            className="min-w-0 shrink items-center gap-3"
           >
-            <BrandLogo brand={brand} className="size-7">
+            <BrandLogo brand={brand} className="min-w-0 flex-row">
               <LogoImage
                 className="size-7"
                 fallback={
                   <KeyholeMark className="size-7 shrink-0 text-primary" />
                 }
               />
-              <LogoLabel className="truncate text-xl font-semibold tracking-tight text-foreground" />
+              <LogoLabel className="hidden truncate text-lg font-semibold tracking-tight text-foreground sm:inline md:text-xl" />
             </BrandLogo>
           </button>
         </NavbarBrand>
@@ -107,8 +103,7 @@ export const AuthNavbar = defineCapsule({
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-3">
-          <SaasIntentBadge lakebed={lakebed} />
+        <NavbarActions className="shrink-0 gap-2 sm:gap-3">
           <SaasSearchButton
             lakebed={lakebed}
             buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
@@ -117,21 +112,6 @@ export const AuthNavbar = defineCapsule({
             lakebed={lakebed}
             buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
           />
-          <SaasPlanActionButton
-            lakebed={lakebed}
-            intentLabel={ctaTarget}
-            plan={ctaLabel}
-            source="navbar"
-            pendingChildren={
-              <>
-                <SaasMutationSpinner className="size-4" />
-                Starting
-              </>
-            }
-            className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
-          >
-            {ctaLabel}
-          </SaasPlanActionButton>
           <SaasMobileMenu
             brand={brand}
             nav={nav}

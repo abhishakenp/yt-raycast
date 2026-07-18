@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * TourExperiencesCta — closing call-to-action band for an adventure /
@@ -34,29 +43,34 @@ export const TourExperiencesCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={props.eyebrow ?? 'Limited seats each departure'}
-        title={props.title ?? 'Book your adventure'}
-        subtitle={
-          props.subtitle ??
-          'Lock in your spot on a small-group tour led by local experts. Free cancellation up to 48 hours before you go.'
-        }
-        actions={[
-          {
-            label: props.primaryCta ?? 'Book a Tour',
-            target: props.primaryTarget ?? 'Book a Tour',
-            variant: 'primary',
-          },
-          {
-            label: props.secondaryCta ?? 'Talk to a guide',
-            target: props.secondaryTarget ?? 'Contact',
-            variant: 'outline',
-          },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>
+            {props.eyebrow ?? 'Limited seats each departure'}
+          </CtaBandEyebrow>
+          <CtaBandTitle>{props.title ?? 'Book your adventure'}</CtaBandTitle>
+          <CtaBandSubtitle>
+            {props.subtitle ??
+              'Lock in your spot on a small-group tour led by local experts. Free cancellation up to 48 hours before you go.'}
+          </CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction
+              variant="primary"
+              onClick={() => go(props.primaryTarget ?? 'Book a Tour')}
+            >
+              {props.primaryCta ?? 'Book a Tour'}
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              onClick={() => go(props.secondaryTarget ?? 'Contact')}
+            >
+              {props.secondaryCta ?? 'Talk to a guide'}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

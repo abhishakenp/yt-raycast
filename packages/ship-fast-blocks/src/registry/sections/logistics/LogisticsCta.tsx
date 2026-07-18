@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LogisticsCta — a high-contrast closing call-to-action band for a global-
@@ -26,6 +35,7 @@ export const LogisticsCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const heading = props.heading ?? 'Ready to ship smarter?'
     const description =
       props.description ??
@@ -37,17 +47,21 @@ export const LogisticsCta = defineCapsule({
       'No account required for quotes. Volume discounts available for 50+ shipments/month.'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={note}
-        title={heading}
-        subtitle={description}
-        actions={[
-          { label: primary, target: primary, variant: 'primary' },
-          { label: secondary, target: secondary, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{note}</CtaBandEyebrow>
+          <CtaBandTitle>{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primary)}>
+              {primary}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(secondary)}>
+              {secondary}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

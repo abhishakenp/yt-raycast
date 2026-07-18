@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { DownloadBand, DownloadButton } from '#/section-kit/DownloadBand.tsx'
 import {
   SaasMutationSpinner,
@@ -81,34 +86,15 @@ export const MobileAppDownloadCta = defineCapsule({
 
     return (
       <DownloadBand asChild>
-        <CtaBand
-          tone="muted"
-          title={heading}
-          subtitle={description}
-          className={props.className}
-        >
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={primaryCta}
-              plan={primaryCta}
-              source="cta-download"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Opening
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              <AppleIcon />
-              {primaryCta}
-            </SaasPlanActionButton>
-            <DownloadButton asChild>
+        <CtaBand tone="muted" className={props.className}>
+          <CtaBandInner>
+            <CtaBandTitle>{heading}</CtaBandTitle>
+            <CtaBandSubtitle>{description}</CtaBandSubtitle>
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <SaasPlanActionButton
                 lakebed={lakebed}
-                intentLabel={secondaryCta}
-                plan={secondaryCta}
+                intentLabel={primaryCta}
+                plan={primaryCta}
                 source="cta-download"
                 pendingChildren={
                   <>
@@ -116,21 +102,39 @@ export const MobileAppDownloadCta = defineCapsule({
                     Opening
                   </>
                 }
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
-                <PlayIcon />
-                {secondaryCta}
+                <AppleIcon />
+                {primaryCta}
               </SaasPlanActionButton>
-            </DownloadButton>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-4 text-sm text-muted-foreground sm:flex-row sm:gap-6">
-            {badges.map((badge) => (
-              <span key={badge} className="flex items-center gap-2">
-                <CheckIcon className="size-4 text-primary" />
-                {badge}
-              </span>
-            ))}
-          </div>
+              <DownloadButton asChild>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  plan={secondaryCta}
+                  source="cta-download"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Opening
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                >
+                  <PlayIcon />
+                  {secondaryCta}
+                </SaasPlanActionButton>
+              </DownloadButton>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-4 text-sm text-muted-foreground sm:flex-row sm:gap-6">
+              {badges.map((badge) => (
+                <span key={badge} className="flex items-center gap-2">
+                  <CheckIcon className="size-4 text-primary" />
+                  {badge}
+                </span>
+              ))}
+            </div>
+          </CtaBandInner>
         </CtaBand>
       </DownloadBand>
     )

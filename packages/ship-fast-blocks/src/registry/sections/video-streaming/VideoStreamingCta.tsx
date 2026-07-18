@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * VideoStreamingCta — a bold, centered free-trial band for a video-streaming
@@ -35,6 +44,7 @@ export const VideoStreamingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'No commitment · Cancel anytime'
     const headline = props.headline ?? 'Start your free trial'
     const subheading =
@@ -46,17 +56,21 @@ export const VideoStreamingCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Pricing'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={eyebrow}
-        title={headline}
-        subtitle={subheading}
-        actions={[
-          { label: primaryCta, target: primaryTarget, variant: 'primary' },
-          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{headline}</CtaBandTitle>
+          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
+              {primaryCta}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
+              {secondaryCta}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

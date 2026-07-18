@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * SubscriptionBoxCta — closing conversion band for a subscription-box brand
@@ -24,6 +33,7 @@ export const SubscriptionBoxCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Ready when you are'
     const title = props.title ?? 'Start your subscription'
     const subtitle =
@@ -33,17 +43,21 @@ export const SubscriptionBoxCta = defineCapsule({
     const secondaryCta = props.secondaryCta ?? 'See plans'
 
     return (
-      <CtaBand
-        eyebrow={eyebrow}
-        title={title}
-        subtitle={subtitle}
-        tone="primary"
-        actions={[
-          { label: primaryCta, target: 'Pricing', variant: 'primary' },
-          { label: secondaryCta, target: 'Pricing', variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{title}</CtaBandTitle>
+          <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go('Pricing')}>
+              {primaryCta}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go('Pricing')}>
+              {secondaryCta}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

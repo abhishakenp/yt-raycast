@@ -697,7 +697,7 @@ describe('auth fullstack generated section behavior', () => {
         source: 'search',
         type: 'trial',
       })
-      expect(screen.getAllByText('Pro').length).toBeGreaterThan(1)
+      expect(screen.queryByText('Selected Pro')).toBeNull()
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
@@ -767,7 +767,8 @@ describe('auth fullstack generated section behavior', () => {
 
     expect(await screen.findByText('Avery Stone')).toBeTruthy()
     expect(screen.getByText('avery@example.com')).toBeTruthy()
-    expect(screen.getByText('Google via Shoo')).toBeTruthy()
+    expect(screen.queryByText('Shoo account')).toBeNull()
+    expect(screen.queryByText('Google via Shoo')).toBeNull()
 
     fireEvent.click(screen.getByText('Session history'))
 
@@ -776,7 +777,7 @@ describe('auth fullstack generated section behavior', () => {
     })
     expect(within(historyDialog).getByText('Avery Stone')).toBeTruthy()
     expect(within(historyDialog).getByText('avery@example.com')).toBeTruthy()
-    expect(within(historyDialog).getByText('Google via Shoo')).toBeTruthy()
+    expect(within(historyDialog).queryByText('Google via Shoo')).toBeNull()
 
     fireEvent.click(
       within(historyDialog).getByRole('button', { name: 'Clear history' }),
@@ -805,6 +806,71 @@ describe('auth fullstack generated section behavior', () => {
 
     expect(signOut).toHaveBeenCalledTimes(1)
     expect(signInWithGoogle).not.toHaveBeenCalled()
+  })
+
+  it('keeps the auth navbar logo horizontal and avoids duplicate sign-up actions', () => {
+    const { lakebed } = createAuthLakebedStub()
+    lakebedRef.current = lakebed
+
+    function AuthProbe() {
+      return AuthNavbar.client.component({
+        props: {
+          brand: 'Very Long Authentication Platform',
+          ctaLabel: 'Sign Up',
+          ctaTarget: 'Sign Up',
+          nav: ['Product', 'Pricing'],
+        },
+        statementId: 'auth_navbar',
+      })
+    }
+
+    render(<AuthProbe />)
+
+    const brandButton = screen.getByRole('button', {
+      name: 'Very Long Authentication Platform',
+    })
+    const logo = brandButton.querySelector('[data-slot="logo"]')
+    const label = brandButton.querySelector('[data-slot="logo-label"]')
+
+    expect(brandButton.className).toContain('min-w-0')
+    expect(brandButton.className).toContain('shrink')
+    expect(logo?.className).toContain('inline-flex')
+    expect(logo?.className).toContain('flex-row')
+    expect(label?.className).toContain('hidden')
+    expect(label?.className).toContain('sm:inline')
+    expect(screen.queryByRole('button', { name: 'Sign Up' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy()
+  })
+
+  it('renders AuthHero as a responsive grid with a shared code window', () => {
+    const { lakebed } = createAuthLakebedStub()
+    lakebedRef.current = lakebed
+
+    function AuthProbe() {
+      return AuthHero.client.component({
+        props: {
+          heading: 'Authorize every request without layout collapse',
+          primaryCta: 'Start Building',
+          secondaryCta: 'Docs',
+        },
+        statementId: 'auth_hero',
+      })
+    }
+
+    render(<AuthProbe />)
+
+    const heading = screen.getByRole('heading', {
+      name: 'Authorize every request without layout collapse',
+    })
+    const grid = heading.closest('.grid')
+    const codeWindow = document.querySelector('[data-slot="hero-code-window"]')
+
+    expect(grid?.className).toContain('md:grid-cols-')
+    expect(grid?.className).toContain('xl:grid-cols-')
+    expect(grid?.className).toContain('items-center')
+    expect(codeWindow?.className).toContain('rounded-2xl')
+    expect(screen.getByRole('button', { name: 'Start Building' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Docs' })).toBeTruthy()
   })
 
   it('scopes auth sign-up loading to the clicked action across hero, pricing, and CTA', async () => {

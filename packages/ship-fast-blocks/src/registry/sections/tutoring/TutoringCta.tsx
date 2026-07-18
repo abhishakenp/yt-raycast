@@ -1,8 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
-import type { KitAction } from '#/section-kit/types.ts'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 export const TutoringCta = defineCapsule({
   name: 'TutoringCta',
@@ -19,35 +27,35 @@ export const TutoringCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const eyebrow =
       props.eyebrow ?? 'First session 100% satisfaction guaranteed'
     const title = props.title ?? 'Book your first session'
     const subtitle =
       props.subtitle ??
       "Try us risk-free. If your first session isn't a great fit, it's on us — no questions asked. Let's help your learner thrive."
-    const actions: KitAction[] = [
-      {
-        label: props.primaryCta ?? 'Book your first session',
-        target: props.primaryTarget ?? 'Contact',
-        variant: 'primary',
-      },
-      {
-        label: props.secondaryCta ?? 'Talk to us',
-        target: props.secondaryTarget ?? 'Contact',
-        variant: 'outline',
-      },
-    ]
-
     return (
-      <CtaBand
-        eyebrow={eyebrow}
-        title={title}
-        subtitle={subtitle}
-        actions={actions}
-        tone="primary"
-        align="center"
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner align="center">
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{title}</CtaBandTitle>
+          <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
+          <CtaBandActions align="center">
+            <CtaAction
+              variant="primary"
+              onClick={() => go(props.primaryTarget ?? 'Contact')}
+            >
+              {props.primaryCta ?? 'Book your first session'}
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              onClick={() => go(props.secondaryTarget ?? 'Contact')}
+            >
+              {props.secondaryCta ?? 'Talk to us'}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

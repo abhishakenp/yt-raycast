@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * PortfolioDevCta — a bold, centered availability band for a modern developer
@@ -37,6 +46,7 @@ export const PortfolioDevCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const eyebrow = props.eyebrow ?? '// open to work'
     const title = props.title ?? "Let's build something"
     const subtitle =
@@ -48,17 +58,21 @@ export const PortfolioDevCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Work'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={eyebrow}
-        title={title}
-        subtitle={subtitle}
-        actions={[
-          { label: primaryCta, target: primaryTarget, variant: 'primary' },
-          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{title}</CtaBandTitle>
+          <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
+              {primaryCta}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
+              {secondaryCta}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

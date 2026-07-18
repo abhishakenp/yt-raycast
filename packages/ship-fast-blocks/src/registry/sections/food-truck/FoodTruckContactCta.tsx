@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FoodTruckContactCta — a dark, inverted closing contact CTA band. A foreground-filled,
@@ -23,6 +32,7 @@ export const FoodTruckContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const ctaHeading = props.heading ?? 'Ready to book the truck?'
     const ctaDesc =
       props.description ??
@@ -34,15 +44,22 @@ export const FoodTruckContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        eyebrow={ctaNote}
-        title={ctaHeading}
-        subtitle={ctaDesc}
-        actions={[
-          { label: ctaEmail, target: ctaEmail, variant: 'primary' },
-          { label: ctaPhone, target: ctaPhone, variant: 'outline' },
-        ]}
         className={`bg-foreground text-background ${props.className ?? ''}`}
-      />
+      >
+        <CtaBandInner>
+          <CtaBandEyebrow>{ctaNote}</CtaBandEyebrow>
+          <CtaBandTitle>{ctaHeading}</CtaBandTitle>
+          <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(ctaEmail)}>
+              {ctaEmail}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(ctaPhone)}>
+              {ctaPhone}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

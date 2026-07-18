@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import {
   ContactForm,
   ContactFormField,
@@ -86,131 +91,136 @@ export const AgencyContactCta = defineCapsule({
     return (
       <CtaBand
         tone="muted"
-        title={heading}
-        subtitle={description}
-        titleClassName="font-bold tracking-tight sm:text-5xl lg:text-6xl"
-        subtitleClassName="text-muted-foreground"
-        innerClassName="max-w-4xl gap-12 py-24 lg:py-28"
         className={`relative overflow-hidden ${props.className ?? ''}`}
       >
-        <div
-          aria-hidden="true"
-          className="absolute left-1/2 top-0 h-[400px] w-[800px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
-        />
-        <ContactForm
-          className="relative z-10 mx-auto max-w-xl space-y-5"
-          onSubmit={inquiry.submitForm}
-        >
-          <div className="grid gap-5 sm:grid-cols-2">
-            <ContactFormField className="mb-0">
-              <ContactFormLabel htmlFor="agency-name">Name</ContactFormLabel>
-              <ContactFormInput
-                id="agency-name"
-                name="name"
-                type="text"
-                required
-                placeholder="Jane Doe"
-                className={inputCls}
-              />
-            </ContactFormField>
-            <ContactFormField className="mb-0">
-              <ContactFormLabel htmlFor="agency-email">Email</ContactFormLabel>
-              <ContactFormInput
-                id="agency-email"
-                name="email"
-                type="email"
-                required
-                placeholder="jane@company.com"
-                className={inputCls}
-              />
-            </ContactFormField>
-          </div>
-          <ContactFormField className="mb-0">
-            <ContactFormLabel htmlFor="agency-type">
-              Project type
-            </ContactFormLabel>
-            <ContactFormSelect
-              id="agency-type"
-              name="projectType"
-              className={cn(inputCls, 'appearance-none')}
-            >
-              {projectTypes.map((opt) => (
-                <option key={opt} className="bg-background">
-                  {opt}
-                </option>
-              ))}
-            </ContactFormSelect>
-          </ContactFormField>
-          <ContactFormField className="mb-0">
-            <ContactFormLabel htmlFor="agency-message">
-              Message
-            </ContactFormLabel>
-            <ContactFormTextarea
-              id="agency-message"
-              name="message"
-              rows={4}
-              required
-              placeholder="Tell us about your project, goals, and timeline."
-              className={cn(inputCls, 'resize-none')}
-            />
-          </ContactFormField>
-          <ContactFormSubmit
-            type="submit"
-            aria-busy={inquiry.isPending}
-            disabled={inquiry.isPending}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+        <CtaBandInner className="max-w-4xl gap-12 py-24 lg:py-28">
+          <CtaBandTitle className="font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-muted-foreground">
+            {description}
+          </CtaBandSubtitle>
+          <div
+            aria-hidden="true"
+            className="absolute left-1/2 top-0 h-[400px] w-[800px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+          />
+          <ContactForm
+            className="relative z-10 mx-auto max-w-xl space-y-5"
+            onSubmit={inquiry.submitForm}
           >
-            {inquiry.isPending ? 'Sending' : submit}
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </ContactFormSubmit>
-          <ContactFormFooter
-            className="text-sm text-muted-foreground"
-            aria-live="polite"
-          >
-            {inquiry.statusText}
-          </ContactFormFooter>
-        </ContactForm>
-
-        <div className="relative z-10 mt-16 flex flex-col items-center justify-between gap-6 border-t border-border pt-10 sm:flex-row">
-          <div className="text-center sm:text-left">
-            <div className="mb-1 text-sm text-muted-foreground">
-              {emailLabel}
+            <div className="grid gap-5 sm:grid-cols-2">
+              <ContactFormField className="mb-0">
+                <ContactFormLabel htmlFor="agency-name">Name</ContactFormLabel>
+                <ContactFormInput
+                  id="agency-name"
+                  name="name"
+                  type="text"
+                  required
+                  placeholder="Jane Doe"
+                  className={inputCls}
+                />
+              </ContactFormField>
+              <ContactFormField className="mb-0">
+                <ContactFormLabel htmlFor="agency-email">
+                  Email
+                </ContactFormLabel>
+                <ContactFormInput
+                  id="agency-email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="jane@company.com"
+                  className={inputCls}
+                />
+              </ContactFormField>
             </div>
-            <button
-              type="button"
-              onClick={() => go(contactTarget)}
-              className="text-lg font-medium transition-colors hover:text-primary"
-            >
-              {email}
-            </button>
-          </div>
-          <div className="flex items-center gap-6">
-            {socials.map((social) => (
-              <button
-                key={social}
-                type="button"
-                aria-label={social}
-                onClick={() => go(social)}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            <ContactFormField className="mb-0">
+              <ContactFormLabel htmlFor="agency-type">
+                Project type
+              </ContactFormLabel>
+              <ContactFormSelect
+                id="agency-type"
+                name="projectType"
+                className={cn(inputCls, 'appearance-none')}
               >
-                {social}
+                {projectTypes.map((opt) => (
+                  <option key={opt} className="bg-background">
+                    {opt}
+                  </option>
+                ))}
+              </ContactFormSelect>
+            </ContactFormField>
+            <ContactFormField className="mb-0">
+              <ContactFormLabel htmlFor="agency-message">
+                Message
+              </ContactFormLabel>
+              <ContactFormTextarea
+                id="agency-message"
+                name="message"
+                rows={4}
+                required
+                placeholder="Tell us about your project, goals, and timeline."
+                className={cn(inputCls, 'resize-none')}
+              />
+            </ContactFormField>
+            <ContactFormSubmit
+              type="submit"
+              aria-busy={inquiry.isPending}
+              disabled={inquiry.isPending}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {inquiry.isPending ? 'Sending' : submit}
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </ContactFormSubmit>
+            <ContactFormFooter
+              className="text-sm text-muted-foreground"
+              aria-live="polite"
+            >
+              {inquiry.statusText}
+            </ContactFormFooter>
+          </ContactForm>
+
+          <div className="relative z-10 mt-16 flex flex-col items-center justify-between gap-6 border-t border-border pt-10 sm:flex-row">
+            <div className="text-center sm:text-left">
+              <div className="mb-1 text-sm text-muted-foreground">
+                {emailLabel}
+              </div>
+              <button
+                type="button"
+                onClick={() => go(contactTarget)}
+                className="text-lg font-medium transition-colors hover:text-primary"
+              >
+                {email}
               </button>
-            ))}
+            </div>
+            <div className="flex items-center gap-6">
+              {socials.map((social) => (
+                <button
+                  key={social}
+                  type="button"
+                  aria-label={social}
+                  onClick={() => go(social)}
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {social}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CorporateContactCta — dark conversion CTA band for an enterprise / corporate
@@ -28,6 +37,7 @@ export const CorporateContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const heading = props.heading ?? 'Ready to transform your enterprise?'
     const description =
       props.description ??
@@ -40,15 +50,22 @@ export const CorporateContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        eyebrow={note}
-        title={heading}
-        subtitle={description}
-        actions={[
-          { label: primaryCta, target: primaryCta, variant: 'primary' },
-          { label: secondaryCta, target: secondaryCta, variant: 'outline' },
-        ]}
         className={`bg-foreground text-background ${props.className ?? ''}`}
-      />
+      >
+        <CtaBandInner>
+          <CtaBandEyebrow>{note}</CtaBandEyebrow>
+          <CtaBandTitle>{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
+              {primaryCta}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
+              {secondaryCta}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

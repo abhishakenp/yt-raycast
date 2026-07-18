@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
 import {
@@ -46,28 +51,30 @@ export const DirectoryCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        title={heading}
-        subtitle={description}
         className={`bg-foreground text-background ${props.className ?? ''}`}
       >
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <DirectoryLeadButton
-            lakebed={lakebed}
-            action={primaryCta}
-            source="cta"
-            pendingChildren={<DirectoryMutationSpinner />}
-            className="inline-flex min-h-14 items-center justify-center rounded-lg bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
-          >
-            {primaryCta}
-          </DirectoryLeadButton>
-          <button
-            type="button"
-            onClick={() => go(secondaryCta)}
-            className="rounded-lg border border-background/40 px-8 py-4 font-medium text-background transition-colors hover:border-background/70"
-          >
-            {secondaryCta}
-          </button>
-        </div>
+        <CtaBandInner>
+          <CtaBandTitle>{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+            <DirectoryLeadButton
+              lakebed={lakebed}
+              action={primaryCta}
+              source="cta"
+              pendingChildren={<DirectoryMutationSpinner />}
+              className="inline-flex min-h-14 items-center justify-center rounded-lg bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {primaryCta}
+            </DirectoryLeadButton>
+            <button
+              type="button"
+              onClick={() => go(secondaryCta)}
+              className="rounded-lg border border-background/40 px-8 py-4 font-medium text-background transition-colors hover:border-background/70"
+            >
+              {secondaryCta}
+            </button>
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

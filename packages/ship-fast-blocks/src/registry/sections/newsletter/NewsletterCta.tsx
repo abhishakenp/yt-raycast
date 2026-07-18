@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
@@ -54,35 +59,38 @@ export const NewsletterCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        title={heading}
-        subtitle={description}
-        titleClassName="font-serif font-medium"
         className={`bg-foreground text-background ${props.className ?? ''}`}
       >
-        <NewsletterSubscribeForm
-          lakebed={lakebed}
-          source={submit}
-          placeholder={emailPlaceholder}
-          buttonLabel={submit}
-          successMessage="You're subscribed. The next issue will arrive by email."
-          className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-          inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
-          buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
-          emailLabel="Email address for newsletter subscription"
-          statusClassName="text-background/60"
-        />
+        <CtaBandInner>
+          <CtaBandTitle className="font-serif font-medium">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submit}
+            placeholder={emailPlaceholder}
+            buttonLabel={submit}
+            successMessage="You're subscribed. The next issue will arrive by email."
+            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+            inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
+            buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+            emailLabel="Email address for newsletter subscription"
+            statusClassName="text-background/60"
+          />
 
-        <p className="mt-6 text-sm text-background/60">
-          {notePrefix}
-          <button
-            type="button"
-            onClick={() => go(noteLink)}
-            className="text-background/80 underline hover:no-underline"
-          >
-            {noteLink}
-          </button>
-          {noteSuffix}
-        </p>
+          <p className="mt-6 text-sm text-background/60">
+            {notePrefix}
+            <button
+              type="button"
+              onClick={() => go(noteLink)}
+              className="text-background/80 underline hover:no-underline"
+            >
+              {noteLink}
+            </button>
+            {noteSuffix}
+          </p>
+        </CtaBandInner>
       </CtaBand>
     )
   },

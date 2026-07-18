@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
@@ -45,86 +50,85 @@ export const FitnessCta = defineCapsule({
     const ctaHours = props.hours ?? 'Mon–Fri: 5:30am–10pm, Sat–Sun: 7am–8pm'
 
     return (
-      <CtaBand
-        tone="primary"
-        title={ctaHeading}
-        subtitle={ctaDesc}
-        className={props.className}
-      >
-        <NewsletterSubscribeForm
-          lakebed={lakebed}
-          source={ctaSubmit}
-          placeholder={ctaPlaceholder}
-          buttonLabel={ctaSubmit}
-          successMessage="You're signed up. Trial details will arrive by email."
-          className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
-          inputClassName="flex-1 rounded-sm border-0 bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          buttonClassName="rounded-sm bg-primary-foreground px-6 py-3 font-medium text-primary transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-          emailLabel={ctaPlaceholder}
-          statusClassName="mb-8 text-primary-foreground/60"
-        />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandTitle>{ctaHeading}</CtaBandTitle>
+          <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={ctaSubmit}
+            placeholder={ctaPlaceholder}
+            buttonLabel={ctaSubmit}
+            successMessage="You're signed up. Trial details will arrive by email."
+            className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
+            inputClassName="flex-1 rounded-sm border-0 bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            buttonClassName="rounded-sm bg-primary-foreground px-6 py-3 font-medium text-primary transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+            emailLabel={ctaPlaceholder}
+            statusClassName="mb-8 text-primary-foreground/60"
+          />
 
-        <p className="text-sm text-primary-foreground/60">
-          Questions? Call us at{' '}
-          <button
-            type="button"
-            onClick={() => go(ctaPhone)}
-            className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
-          >
-            {ctaPhone}
-          </button>{' '}
-          or email{' '}
-          <button
-            type="button"
-            onClick={() => go(ctaEmail)}
-            className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
-          >
-            {ctaEmail}
-          </button>
-        </p>
+          <p className="text-sm text-primary-foreground/60">
+            Questions? Call us at{' '}
+            <button
+              type="button"
+              onClick={() => go(ctaPhone)}
+              className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+            >
+              {ctaPhone}
+            </button>{' '}
+            or email{' '}
+            <button
+              type="button"
+              onClick={() => go(ctaEmail)}
+              className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+            >
+              {ctaEmail}
+            </button>
+          </p>
 
-        <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
-          <div className="flex items-center gap-2">
-            <svg
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            <span>{ctaLocation}</span>
+          <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
+            <div className="flex items-center gap-2">
+              <svg
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span>{ctaLocation}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{ctaHours}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <svg
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{ctaHours}</span>
-          </div>
-        </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

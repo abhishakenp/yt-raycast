@@ -1,7 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -41,25 +47,24 @@ export const EcommerceCta = defineCapsule({
       'No spam, just deals. Unsubscribe anytime. By subscribing you agree to our Terms.'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={disclaimer}
-        title={heading}
-        subtitle={subheading}
-        className={props.className}
-      >
-        <NewsletterSubscribeForm
-          lakebed={lakebed}
-          source="ecommerce-cta"
-          buttonLabel={submit}
-          pendingLabel="Claiming"
-          placeholder={placeholder}
-          successMessage="You're in. Your welcome offer is ready in the live subscriber list."
-          className="mt-2 flex w-full max-w-xl flex-col gap-3 sm:flex-row"
-          inputClassName="min-h-12 flex-1 rounded-full border border-primary-foreground/30 bg-primary-foreground px-5 text-sm text-primary shadow-sm outline-none transition-colors placeholder:text-primary/60 focus:border-primary-foreground"
-          buttonClassName="inline-flex min-h-12 items-center justify-center rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-          statusClassName="text-primary-foreground/80"
-        />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{disclaimer}</CtaBandEyebrow>
+          <CtaBandTitle>{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source="ecommerce-cta"
+            buttonLabel={submit}
+            pendingLabel="Claiming"
+            placeholder={placeholder}
+            successMessage="You're in. Your welcome offer is ready in the live subscriber list."
+            className="mt-2 flex w-full max-w-xl flex-col gap-3 sm:flex-row"
+            inputClassName="min-h-12 flex-1 rounded-full border border-primary-foreground/30 bg-primary-foreground px-5 text-sm text-primary shadow-sm outline-none transition-colors placeholder:text-primary/60 focus:border-primary-foreground"
+            buttonClassName="inline-flex min-h-12 items-center justify-center rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+            statusClassName="text-primary-foreground/80"
+          />
+        </CtaBandInner>
       </CtaBand>
     )
   },

@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import {
   ContactForm,
   ContactFormField,
@@ -101,231 +107,234 @@ export const InteriorDesignContactCta = defineCapsule({
       'w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
 
     return (
-      <CtaBand
-        tone="muted"
-        align="left"
-        eyebrow={eyebrow}
-        title={heading}
-        subtitle={description}
-        titleClassName="font-light md:text-4xl"
-        eyebrowClassName="text-muted-foreground"
-        subtitleClassName="text-muted-foreground leading-relaxed"
-        innerClassName="max-w-7xl gap-12 px-4 pt-28 pb-20 sm:px-6 md:pt-32 md:pb-28 lg:px-8 lg:gap-20"
-        className={props.className}
-      >
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+      <CtaBand tone="muted" className={props.className}>
+        <CtaBandInner
+          align="left"
+          className="max-w-7xl gap-12 px-4 pt-28 pb-20 sm:px-6 md:pt-32 md:pb-28 lg:px-8 lg:gap-20"
+        >
+          <CtaBandEyebrow className="text-muted-foreground">
+            {eyebrow}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="font-light md:text-4xl">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-muted-foreground leading-relaxed">
+            {description}
+          </CtaBandSubtitle>
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{studioLabel}</p>
+                    <p className="whitespace-pre-line text-muted-foreground">
+                      {studioAddress}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">{studioLabel}</p>
-                  <p className="whitespace-pre-line text-muted-foreground">
-                    {studioAddress}
-                  </p>
-                </div>
-              </div>
 
-              <div className="flex items-start gap-4">
-                <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
+                <div className="flex items-start gap-4">
+                  <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{emailLabel}</p>
+                    <button
+                      type="button"
+                      onClick={() => go(email)}
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {email}
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">{emailLabel}</p>
-                  <button
-                    type="button"
-                    onClick={() => go(email)}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {email}
-                  </button>
-                </div>
-              </div>
 
-              <div className="flex items-start gap-4">
-                <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">{phoneLabel}</p>
-                  <button
-                    type="button"
-                    onClick={() => go(phone)}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {phone}
-                  </button>
+                <div className="flex items-start gap-4">
+                  <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{phoneLabel}</p>
+                    <button
+                      type="button"
+                      onClick={() => go(phone)}
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {phone}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <ContactForm className="space-y-6" onSubmit={inquiry.submitForm}>
+              <div className="grid gap-6 sm:grid-cols-2">
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
+                    htmlFor="interior-design-contact-first-name"
+                    className="text-foreground"
+                  >
+                    First Name
+                  </ContactFormLabel>
+                  <ContactFormInput
+                    id="interior-design-contact-first-name"
+                    name="firstName"
+                    type="text"
+                    required
+                    placeholder="Enter first name"
+                    className={inputCls}
+                  />
+                </ContactFormField>
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
+                    htmlFor="interior-design-contact-last-name"
+                    className="text-foreground"
+                  >
+                    Last Name
+                  </ContactFormLabel>
+                  <ContactFormInput
+                    id="interior-design-contact-last-name"
+                    name="lastName"
+                    type="text"
+                    required
+                    placeholder="Enter last name"
+                    className={inputCls}
+                  />
+                </ContactFormField>
+              </div>
+
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="interior-design-contact-email"
+                  className="text-foreground"
+                >
+                  Email Address
+                </ContactFormLabel>
+                <ContactFormInput
+                  id="interior-design-contact-email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="you@example.com"
+                  className={inputCls}
+                />
+              </ContactFormField>
+
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="interior-design-contact-project-type"
+                  className="text-foreground"
+                >
+                  Project Type
+                </ContactFormLabel>
+                <ContactFormSelect
+                  id="interior-design-contact-project-type"
+                  name="projectType"
+                  className={cn(inputCls, 'appearance-none')}
+                >
+                  {projectTypes.map((opt) => (
+                    <option key={opt} className="bg-background">
+                      {opt}
+                    </option>
+                  ))}
+                </ContactFormSelect>
+              </ContactFormField>
+
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="interior-design-contact-budget"
+                  className="text-foreground"
+                >
+                  Estimated Budget
+                </ContactFormLabel>
+                <ContactFormSelect
+                  id="interior-design-contact-budget"
+                  name="budget"
+                  className={cn(inputCls, 'appearance-none')}
+                >
+                  {budgets.map((opt) => (
+                    <option key={opt} className="bg-background">
+                      {opt}
+                    </option>
+                  ))}
+                </ContactFormSelect>
+              </ContactFormField>
+
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="interior-design-contact-message"
+                  className="text-foreground"
+                >
+                  Tell Us About Your Project
+                </ContactFormLabel>
+                <ContactFormTextarea
+                  id="interior-design-contact-message"
+                  name="message"
+                  rows={4}
+                  placeholder="Describe your space, timeline, and any specific design goals..."
+                  className={cn(inputCls, 'resize-none')}
+                />
+              </ContactFormField>
+
+              <ContactFormSubmit
+                type="submit"
+                aria-busy={inquiry.isPending}
+                disabled={inquiry.isPending}
+                className="w-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+              >
+                {inquiry.isPending ? 'Sending' : submit}
+              </ContactFormSubmit>
+
+              <ContactFormFooter className="text-center text-sm text-muted-foreground">
+                {inquiry.statusText}
+              </ContactFormFooter>
+
+              <p className="text-center text-xs text-muted-foreground">
+                {footnote}
+              </p>
+            </ContactForm>
           </div>
-
-          <ContactForm className="space-y-6" onSubmit={inquiry.submitForm}>
-            <div className="grid gap-6 sm:grid-cols-2">
-              <ContactFormField className="mb-0">
-                <ContactFormLabel
-                  htmlFor="interior-design-contact-first-name"
-                  className="text-foreground"
-                >
-                  First Name
-                </ContactFormLabel>
-                <ContactFormInput
-                  id="interior-design-contact-first-name"
-                  name="firstName"
-                  type="text"
-                  required
-                  placeholder="Enter first name"
-                  className={inputCls}
-                />
-              </ContactFormField>
-              <ContactFormField className="mb-0">
-                <ContactFormLabel
-                  htmlFor="interior-design-contact-last-name"
-                  className="text-foreground"
-                >
-                  Last Name
-                </ContactFormLabel>
-                <ContactFormInput
-                  id="interior-design-contact-last-name"
-                  name="lastName"
-                  type="text"
-                  required
-                  placeholder="Enter last name"
-                  className={inputCls}
-                />
-              </ContactFormField>
-            </div>
-
-            <ContactFormField className="mb-0">
-              <ContactFormLabel
-                htmlFor="interior-design-contact-email"
-                className="text-foreground"
-              >
-                Email Address
-              </ContactFormLabel>
-              <ContactFormInput
-                id="interior-design-contact-email"
-                name="email"
-                type="email"
-                required
-                placeholder="you@example.com"
-                className={inputCls}
-              />
-            </ContactFormField>
-
-            <ContactFormField className="mb-0">
-              <ContactFormLabel
-                htmlFor="interior-design-contact-project-type"
-                className="text-foreground"
-              >
-                Project Type
-              </ContactFormLabel>
-              <ContactFormSelect
-                id="interior-design-contact-project-type"
-                name="projectType"
-                className={cn(inputCls, 'appearance-none')}
-              >
-                {projectTypes.map((opt) => (
-                  <option key={opt} className="bg-background">
-                    {opt}
-                  </option>
-                ))}
-              </ContactFormSelect>
-            </ContactFormField>
-
-            <ContactFormField className="mb-0">
-              <ContactFormLabel
-                htmlFor="interior-design-contact-budget"
-                className="text-foreground"
-              >
-                Estimated Budget
-              </ContactFormLabel>
-              <ContactFormSelect
-                id="interior-design-contact-budget"
-                name="budget"
-                className={cn(inputCls, 'appearance-none')}
-              >
-                {budgets.map((opt) => (
-                  <option key={opt} className="bg-background">
-                    {opt}
-                  </option>
-                ))}
-              </ContactFormSelect>
-            </ContactFormField>
-
-            <ContactFormField className="mb-0">
-              <ContactFormLabel
-                htmlFor="interior-design-contact-message"
-                className="text-foreground"
-              >
-                Tell Us About Your Project
-              </ContactFormLabel>
-              <ContactFormTextarea
-                id="interior-design-contact-message"
-                name="message"
-                rows={4}
-                placeholder="Describe your space, timeline, and any specific design goals..."
-                className={cn(inputCls, 'resize-none')}
-              />
-            </ContactFormField>
-
-            <ContactFormSubmit
-              type="submit"
-              aria-busy={inquiry.isPending}
-              disabled={inquiry.isPending}
-              className="w-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {inquiry.isPending ? 'Sending' : submit}
-            </ContactFormSubmit>
-
-            <ContactFormFooter className="text-center text-sm text-muted-foreground">
-              {inquiry.statusText}
-            </ContactFormFooter>
-
-            <p className="text-center text-xs text-muted-foreground">
-              {footnote}
-            </p>
-          </ContactForm>
-        </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

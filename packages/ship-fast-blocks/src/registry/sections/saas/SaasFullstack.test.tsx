@@ -791,7 +791,8 @@ describe('SaaS fullstack generated section behavior', () => {
 
     expect(await screen.findByText('Avery Stone')).toBeTruthy()
     expect(screen.getByText('avery@example.com')).toBeTruthy()
-    expect(screen.getByText('Google via Shoo')).toBeTruthy()
+    expect(screen.queryByText('Shoo account')).toBeNull()
+    expect(screen.queryByText('Google via Shoo')).toBeNull()
 
     fireEvent.click(screen.getByText('Session history'))
 
@@ -800,7 +801,7 @@ describe('SaaS fullstack generated section behavior', () => {
     })
     expect(within(historyDialog).getByText('Avery Stone')).toBeTruthy()
     expect(within(historyDialog).getByText('avery@example.com')).toBeTruthy()
-    expect(within(historyDialog).getByText('Google via Shoo')).toBeTruthy()
+    expect(within(historyDialog).queryByText('Google via Shoo')).toBeNull()
 
     fireEvent.click(
       within(historyDialog).getByRole('button', { name: 'Clear history' }),

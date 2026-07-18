@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsCta — "Support Independent Journalism" subscribe call-to-action band for
@@ -32,29 +41,28 @@ export const NewsCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={props.eyebrow ?? 'Become a member'}
-        title={props.heading ?? 'Support Independent Journalism'}
-        subtitle={
-          props.subheading ??
-          'Subscribe today for unlimited access to award-winning reporting, expert analysis, and exclusive features. No paywalls on breaking news—ever.'
-        }
-        actions={[
-          {
-            label: props.primaryCta ?? 'Subscribe Now',
-            target: 'Subscribe',
-            variant: 'primary',
-          },
-          {
-            label: props.secondaryCta ?? 'View All Plans',
-            target: 'Plans',
-            variant: 'outline',
-          },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{props.eyebrow ?? 'Become a member'}</CtaBandEyebrow>
+          <CtaBandTitle>
+            {props.heading ?? 'Support Independent Journalism'}
+          </CtaBandTitle>
+          <CtaBandSubtitle>
+            {props.subheading ??
+              'Subscribe today for unlimited access to award-winning reporting, expert analysis, and exclusive features. No paywalls on breaking news—ever.'}
+          </CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go('Subscribe')}>
+              {props.primaryCta ?? 'Subscribe Now'}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go('Plans')}>
+              {props.secondaryCta ?? 'View All Plans'}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

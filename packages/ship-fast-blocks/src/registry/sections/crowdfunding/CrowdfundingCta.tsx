@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CrowdfundingCta — a full-width closing CTA band for a crowdfunding / campaign
@@ -27,6 +36,7 @@ export const CrowdfundingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const ctaHeading = props.heading ?? 'Be Part of the Solution'
     const ctaDesc =
       props.description ??
@@ -39,17 +49,21 @@ export const CrowdfundingCta = defineCapsule({
     const rewardsTarget = props.rewardsTarget ?? 'Rewards'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={ctaNote}
-        title={ctaHeading}
-        subtitle={ctaDesc}
-        actions={[
-          { label: ctaPrimary, target: rewardsTarget, variant: 'primary' },
-          { label: ctaSecondary, target: ctaSecondary, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{ctaNote}</CtaBandEyebrow>
+          <CtaBandTitle>{ctaHeading}</CtaBandTitle>
+          <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(rewardsTarget)}>
+              {ctaPrimary}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(ctaSecondary)}>
+              {ctaSecondary}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

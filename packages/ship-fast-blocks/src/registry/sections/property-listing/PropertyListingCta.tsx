@@ -1,7 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
@@ -54,43 +60,44 @@ export const PropertyListingCta = defineCapsule({
     const note = props.note ?? 'Free to browse · No account required to start'
 
     return (
-      <CtaBand
-        tone="muted"
-        eyebrow={eyebrow}
-        title={heading}
-        subtitle={subheading}
-        eyebrowClassName="text-primary-foreground/75 normal-case tracking-[0.18em] font-semibold"
-        titleClassName="text-primary-foreground font-bold tracking-tight sm:text-4xl"
-        subtitleClassName="text-primary-foreground/80 leading-7"
-        innerClassName="max-w-5xl rounded-3xl bg-primary px-6 py-14 sm:px-12 lg:py-16"
-        className={props.className}
-      >
-        <div className="flex flex-col justify-center gap-3 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => go(primaryTarget)}
-            className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary-foreground/90"
-          >
-            {primaryCta}
-          </button>
-          <PropertyListingInquiryButton
-            lakebed={lakebed}
-            intent={secondaryTarget}
-            source="cta"
-            pendingChildren={
-              <>
-                <PropertyListingMutationSpinner className="size-4" />
-                Sending
-              </>
-            }
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/40 px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
-          >
-            {secondaryCta}
-          </PropertyListingInquiryButton>
-        </div>
-        {note ? (
-          <p className="text-sm text-primary-foreground/70">{note}</p>
-        ) : null}
+      <CtaBand tone="muted" className={props.className}>
+        <CtaBandInner className="max-w-5xl rounded-3xl bg-primary px-6 py-14 sm:px-12 lg:py-16">
+          <CtaBandEyebrow className="text-primary-foreground/75 normal-case tracking-[0.18em] font-semibold">
+            {eyebrow}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="text-primary-foreground font-bold tracking-tight sm:text-4xl">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-primary-foreground/80 leading-7">
+            {subheading}
+          </CtaBandSubtitle>
+          <div className="flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => go(primaryTarget)}
+              className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary-foreground/90"
+            >
+              {primaryCta}
+            </button>
+            <PropertyListingInquiryButton
+              lakebed={lakebed}
+              intent={secondaryTarget}
+              source="cta"
+              pendingChildren={
+                <>
+                  <PropertyListingMutationSpinner className="size-4" />
+                  Sending
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/40 px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {secondaryCta}
+            </PropertyListingInquiryButton>
+          </div>
+          {note ? (
+            <p className="text-sm text-primary-foreground/70">{note}</p>
+          ) : null}
+        </CtaBandInner>
       </CtaBand>
     )
   },

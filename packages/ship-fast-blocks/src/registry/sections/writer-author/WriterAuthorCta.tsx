@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * WriterAuthorCta — a bold, centered book-purchase band for a literary author
@@ -37,6 +46,7 @@ export const WriterAuthorCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Out now'
     const title = props.title ?? 'Get your copy today'
     const subtitle =
@@ -48,21 +58,21 @@ export const WriterAuthorCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Stores'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={eyebrow}
-        title={title}
-        subtitle={subtitle}
-        actions={[
-          { label: primaryLabel, target: primaryTarget, variant: 'primary' },
-          {
-            label: secondaryLabel,
-            target: secondaryTarget,
-            variant: 'outline',
-          },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{title}</CtaBandTitle>
+          <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
+              {primaryLabel}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
+              {secondaryLabel}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

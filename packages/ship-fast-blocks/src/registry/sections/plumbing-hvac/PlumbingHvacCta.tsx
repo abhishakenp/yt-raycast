@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
 
 /**
  * PlumbingHvacCta — a full-width conversion band for the bottom of a plumbing &
@@ -35,6 +44,7 @@ export const PlumbingHvacCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const heading = props.heading ?? 'Schedule your service today'
     const subheading =
       props.subheading ??
@@ -45,32 +55,24 @@ export const PlumbingHvacCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Contact'
     const note = props.note ?? 'Upfront pricing • Satisfaction guaranteed'
 
-    const actions = [
-      {
-        label: primaryCta,
-        target: primaryTarget,
-        variant: 'primary' as const,
-      },
-      ...(secondaryCta
-        ? [
-            {
-              label: secondaryCta,
-              target: secondaryTarget,
-              variant: 'outline' as const,
-            },
-          ]
-        : []),
-    ]
-
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={note}
-        title={heading}
-        subtitle={subheading}
-        actions={actions}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{note}</CtaBandEyebrow>
+          <CtaBandTitle>{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
+              {primaryCta}
+            </CtaAction>
+            {secondaryCta && (
+              <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
+                {secondaryCta}
+              </CtaAction>
+            )}
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

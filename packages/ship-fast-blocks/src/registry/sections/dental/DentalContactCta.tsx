@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -59,70 +64,72 @@ export const DentalContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        title={contactHeading}
-        subtitle={contactDesc}
         className={`relative overflow-hidden ${props.className ?? ''}`}
       >
-        <div aria-hidden="true" className="absolute inset-0 opacity-10">
-          <div className="absolute left-0 top-0 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-foreground blur-3xl" />
-          <div className="absolute bottom-0 right-0 size-96 translate-x-1/2 translate-y-1/2 rounded-full bg-primary-foreground blur-3xl" />
-        </div>
-        <div className="relative flex flex-col justify-center gap-4 sm:flex-row">
-          <LocalServiceBookingButton
-            lakebed={lakebed}
-            intentLabel={contactCallCta}
-            service="Phone consultation"
-            source="final-cta-phone"
-            pendingChildren={<LocalServiceMutationSpinner />}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 text-lg font-semibold text-primary transition-colors hover:bg-muted"
-          >
-            <PhoneIcon className="size-5" />
-            {contactCallCta}
-          </LocalServiceBookingButton>
-          <LocalServiceBookingButton
-            lakebed={lakebed}
-            intentLabel={contactBookCta}
-            service="Dental appointment"
-            source="final-cta"
-            pendingChildren={
-              <LocalServiceMutationSpinner className="text-primary-foreground" />
-            }
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-foreground/15 px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/25 disabled:pointer-events-none disabled:opacity-70"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-5"
-              aria-hidden="true"
+        <CtaBandInner>
+          <CtaBandTitle>{contactHeading}</CtaBandTitle>
+          <CtaBandSubtitle>{contactDesc}</CtaBandSubtitle>
+          <div aria-hidden="true" className="absolute inset-0 opacity-10">
+            <div className="absolute left-0 top-0 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-foreground blur-3xl" />
+            <div className="absolute bottom-0 right-0 size-96 translate-x-1/2 translate-y-1/2 rounded-full bg-primary-foreground blur-3xl" />
+          </div>
+          <div className="relative flex flex-col justify-center gap-4 sm:flex-row">
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={contactCallCta}
+              service="Phone consultation"
+              source="final-cta-phone"
+              pendingChildren={<LocalServiceMutationSpinner />}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 text-lg font-semibold text-primary transition-colors hover:bg-muted"
             >
-              <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
-            </svg>
-            {contactBookCta}
-          </LocalServiceBookingButton>
-        </div>
-        <div className="relative flex flex-wrap items-center justify-center gap-8 text-sm text-primary-foreground/80">
-          {contactPerks.map((perk) => (
-            <div key={perk} className="flex items-center gap-2">
+              <PhoneIcon className="size-5" />
+              {contactCallCta}
+            </LocalServiceBookingButton>
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={contactBookCta}
+              service="Dental appointment"
+              source="final-cta"
+              pendingChildren={
+                <LocalServiceMutationSpinner className="text-primary-foreground" />
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-foreground/15 px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/25 disabled:pointer-events-none disabled:opacity-70"
+            >
               <svg
-                viewBox="0 0 20 20"
-                fill="currentColor"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 className="size-5"
                 aria-hidden="true"
               >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4z"
-                  clipRule="evenodd"
-                />
+                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
               </svg>
-              {perk}
-            </div>
-          ))}
-        </div>
+              {contactBookCta}
+            </LocalServiceBookingButton>
+          </div>
+          <div className="relative flex flex-wrap items-center justify-center gap-8 text-sm text-primary-foreground/80">
+            {contactPerks.map((perk) => (
+              <div key={perk} className="flex items-center gap-2">
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="size-5"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {perk}
+              </div>
+            ))}
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

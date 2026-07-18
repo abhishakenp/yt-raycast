@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
 
 /**
  * FintechCta — full-width closing call-to-action band for a fintech / neobank
@@ -36,6 +45,7 @@ export const FintechCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Get started today'
     const title = props.title ?? 'Start banking smarter'
     const subtitle =
@@ -53,15 +63,24 @@ export const FintechCta = defineCapsule({
         ]
 
     return (
-      <CtaBand
-        eyebrow={eyebrow}
-        title={title}
-        subtitle={subtitle}
-        actions={actions}
-        tone="primary"
-        align="center"
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner align="center">
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{title}</CtaBandTitle>
+          <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
+          <CtaBandActions align="center">
+            {actions.filter(Boolean).map((a) => (
+              <CtaAction
+                key={a.label}
+                variant={a.variant ?? 'primary'}
+                onClick={() => go(a.target ?? a.label)}
+              >
+                {a.label}
+              </CtaAction>
+            ))}
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

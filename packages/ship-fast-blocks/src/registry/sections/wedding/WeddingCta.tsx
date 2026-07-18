@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 export const WeddingCta = defineCapsule({
   name: 'WeddingCta',
@@ -18,29 +27,36 @@ export const WeddingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={props.rsvpBy ?? 'Kindly respond by August 1, 2025'}
-        title={props.headline ?? 'Join us — RSVP by August 1'}
-        subtitle={
-          props.subheading ??
-          "Nothing would mean more than celebrating this day with you. Let us know you're coming so we can save you a seat at the table."
-        }
-        actions={[
-          {
-            label: props.primaryCta ?? 'RSVP',
-            target: props.primaryTarget ?? 'RSVP',
-            variant: 'primary',
-          },
-          {
-            label: props.secondaryCta ?? 'View Details',
-            target: props.secondaryTarget ?? 'Details',
-            variant: 'outline',
-          },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>
+            {props.rsvpBy ?? 'Kindly respond by August 1, 2025'}
+          </CtaBandEyebrow>
+          <CtaBandTitle>
+            {props.headline ?? 'Join us — RSVP by August 1'}
+          </CtaBandTitle>
+          <CtaBandSubtitle>
+            {props.subheading ??
+              "Nothing would mean more than celebrating this day with you. Let us know you're coming so we can save you a seat at the table."}
+          </CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction
+              variant="primary"
+              onClick={() => go(props.primaryTarget ?? 'RSVP')}
+            >
+              {props.primaryCta ?? 'RSVP'}
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              onClick={() => go(props.secondaryTarget ?? 'Details')}
+            >
+              {props.secondaryCta ?? 'View Details'}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

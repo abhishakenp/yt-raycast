@@ -361,16 +361,6 @@ export function SaasAccountButton({
               </span>
             </span>
           </AccountDropdownLabel>
-          <div className="px-2 py-2">
-            <div className="rounded-md border border-border bg-background px-3 py-2">
-              <p className="text-xs font-medium uppercase text-muted-foreground">
-                Shoo account
-              </p>
-              <p className="mt-1 truncate text-sm text-foreground">
-                {statusLabel}
-              </p>
-            </div>
-          </div>
           <AccountDropdownSeparator className="m-0" />
           <div className="p-2">
             <AccountDropdownItem
@@ -420,8 +410,7 @@ export function SaasAccountButton({
                   <p className="mt-1 truncate text-xs text-muted-foreground">
                     {session.email}
                   </p>
-                  <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                    <span>{session.provider || 'Shoo'}</span>
+                  <div className="mt-3 flex items-center justify-end gap-3 text-xs text-muted-foreground">
                     <span>
                       {session.signedInAt
                         ? new Date(session.signedInAt).toLocaleString()

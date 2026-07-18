@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -81,57 +86,59 @@ export const MentalHealthContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        title={heading}
-        subtitle={description}
         className={`relative overflow-hidden ${props.className ?? ''}`}
       >
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <LocalServiceBookingButton
-            lakebed={lakebed}
-            intentLabel={bookLabel}
-            service={primaryCta}
-            source="final-cta"
-            pendingChildren={<LocalServiceMutationSpinner />}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 font-medium text-primary shadow-lg transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-70"
-          >
-            <svg
-              className="size-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
+        <CtaBandInner>
+          <CtaBandTitle>{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={bookLabel}
+              service={primaryCta}
+              source="final-cta"
+              pendingChildren={<LocalServiceMutationSpinner />}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 font-medium text-primary shadow-lg transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-70"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            {primaryCta}
-          </LocalServiceBookingButton>
-          <LocalServiceBookingButton
-            lakebed={lakebed}
-            intentLabel={secondaryCta}
-            service="Phone consultation"
-            source="final-cta-phone"
-            pendingChildren={
-              <LocalServiceMutationSpinner className="text-primary-foreground" />
-            }
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/30 bg-primary/80 px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/70 disabled:pointer-events-none disabled:opacity-70"
-          >
-            <Phone className="size-5" />
-            {secondaryCta}
-          </LocalServiceBookingButton>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-primary-foreground/80">
-          {badges.map((b) => (
-            <div key={b} className="flex items-center gap-2">
-              <Check className="size-5" />
-              <span>{b}</span>
-            </div>
-          ))}
-        </div>
+              <svg
+                className="size-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              {primaryCta}
+            </LocalServiceBookingButton>
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={secondaryCta}
+              service="Phone consultation"
+              source="final-cta-phone"
+              pendingChildren={
+                <LocalServiceMutationSpinner className="text-primary-foreground" />
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/30 bg-primary/80 px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/70 disabled:pointer-events-none disabled:opacity-70"
+            >
+              <Phone className="size-5" />
+              {secondaryCta}
+            </LocalServiceBookingButton>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-primary-foreground/80">
+            {badges.map((b) => (
+              <div key={b} className="flex items-center gap-2">
+                <Check className="size-5" />
+                <span>{b}</span>
+              </div>
+            ))}
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

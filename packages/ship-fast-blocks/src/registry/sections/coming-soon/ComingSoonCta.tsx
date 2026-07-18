@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
@@ -54,32 +59,33 @@ export const ComingSoonCta = defineCapsule({
     return (
       <CtaBand
         tone="muted"
-        title={heading}
-        subtitle={description}
-        titleClassName="font-light"
         className={`bg-background text-foreground ${props.className ?? ''}`}
       >
-        <NewsletterSubscribeForm
-          lakebed={lakebed}
-          source={submit}
-          placeholder={emailPlaceholder}
-          buttonLabel={submit}
-          successMessage="You're on the waitlist. Early access updates will arrive by email."
-          className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-          inputClassName={inputCls}
-          buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
-          emailLabel="Email address for final waitlist signup"
-        />
-        <p className="mt-8 text-xs text-muted-foreground">
-          {contactPrefix}{' '}
-          <button
-            type="button"
-            onClick={() => go(contactEmail)}
-            className="underline transition-colors hover:text-foreground"
-          >
-            {contactEmail}
-          </button>
-        </p>
+        <CtaBandInner>
+          <CtaBandTitle className="font-light">{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submit}
+            placeholder={emailPlaceholder}
+            buttonLabel={submit}
+            successMessage="You're on the waitlist. Early access updates will arrive by email."
+            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+            inputClassName={inputCls}
+            buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
+            emailLabel="Email address for final waitlist signup"
+          />
+          <p className="mt-8 text-xs text-muted-foreground">
+            {contactPrefix}{' '}
+            <button
+              type="button"
+              onClick={() => go(contactEmail)}
+              className="underline transition-colors hover:text-foreground"
+            >
+              {contactEmail}
+            </button>
+          </p>
+        </CtaBandInner>
       </CtaBand>
     )
   },

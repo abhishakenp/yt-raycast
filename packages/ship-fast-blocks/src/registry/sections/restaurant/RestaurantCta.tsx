@@ -1,7 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   RestaurantMutationSpinner,
@@ -56,34 +62,35 @@ export const RestaurantCta = defineCapsule({
     const hours = props.hours ?? 'Open Tue–Sun · 5pm–11pm'
 
     return (
-      <CtaBand
-        tone="muted"
-        eyebrow={hours}
-        title={headline}
-        subtitle={subheading}
-        titleClassName="font-serif text-primary-foreground"
-        subtitleClassName="text-primary-foreground/80"
-        eyebrowClassName="text-primary-foreground/75 normal-case tracking-[0.18em] font-medium"
-        innerClassName="max-w-7xl rounded-2xl bg-primary px-6 py-14 sm:px-10 lg:px-16"
-        className={props.className}
-      >
-        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <RestaurantReservationButton
-            lakebed={lakebed}
-            input={{ label: primaryCta, source: primaryTarget }}
-            className="inline-flex min-h-12 min-w-36 items-center justify-center rounded-full bg-background px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-60"
-            pendingChildren={<RestaurantMutationSpinner />}
-          >
-            {primaryCta}
-          </RestaurantReservationButton>
-          <button
-            type="button"
-            onClick={() => go(secondaryTarget)}
-            className="inline-flex min-h-12 min-w-36 items-center justify-center rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
-          >
-            {secondaryCta}
-          </button>
-        </div>
+      <CtaBand tone="muted" className={props.className}>
+        <CtaBandInner className="max-w-7xl rounded-2xl bg-primary px-6 py-14 sm:px-10 lg:px-16">
+          <CtaBandEyebrow className="text-primary-foreground/75 normal-case tracking-[0.18em] font-medium">
+            {hours}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="font-serif text-primary-foreground">
+            {headline}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-primary-foreground/80">
+            {subheading}
+          </CtaBandSubtitle>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <RestaurantReservationButton
+              lakebed={lakebed}
+              input={{ label: primaryCta, source: primaryTarget }}
+              className="inline-flex min-h-12 min-w-36 items-center justify-center rounded-full bg-background px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-60"
+              pendingChildren={<RestaurantMutationSpinner />}
+            >
+              {primaryCta}
+            </RestaurantReservationButton>
+            <button
+              type="button"
+              onClick={() => go(secondaryTarget)}
+              className="inline-flex min-h-12 min-w-36 items-center justify-center rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+            >
+              {secondaryCta}
+            </button>
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

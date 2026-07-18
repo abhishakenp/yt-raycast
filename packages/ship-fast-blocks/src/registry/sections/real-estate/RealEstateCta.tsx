@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * RealEstateCta — a confident closing call-to-action band for a brokerage. A
@@ -33,29 +42,36 @@ export const RealEstateCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={props.eyebrow ?? "Let's get started"}
-        title={props.heading ?? 'Ready to find your home?'}
-        subtitle={
-          props.subheading ??
-          "Tell us what you're looking for and we'll match you with an agent who knows the area — no pressure, no obligation."
-        }
-        actions={[
-          {
-            label: props.primaryCta ?? 'Find Your Home',
-            target: props.primaryTarget ?? 'Buy',
-            variant: 'primary',
-          },
-          {
-            label: props.secondaryCta ?? 'Talk to an Agent',
-            target: props.secondaryTarget ?? 'Agents',
-            variant: 'outline',
-          },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>
+            {props.eyebrow ?? "Let's get started"}
+          </CtaBandEyebrow>
+          <CtaBandTitle>
+            {props.heading ?? 'Ready to find your home?'}
+          </CtaBandTitle>
+          <CtaBandSubtitle>
+            {props.subheading ??
+              "Tell us what you're looking for and we'll match you with an agent who knows the area — no pressure, no obligation."}
+          </CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction
+              variant="primary"
+              onClick={() => go(props.primaryTarget ?? 'Buy')}
+            >
+              {props.primaryCta ?? 'Find Your Home'}
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              onClick={() => go(props.secondaryTarget ?? 'Agents')}
+            >
+              {props.secondaryCta ?? 'Talk to an Agent'}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
@@ -71,47 +76,49 @@ export const LendingCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        title={ctaHeading}
-        subtitle={ctaDesc}
         className={`bg-foreground text-background ${props.className ?? ''}`}
       >
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => go(ctaPrimary)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background/90 sm:w-auto"
-          >
-            {ctaPrimary}
-            <ArrowRight className="size-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => go(ctaPhone)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border/40 px-8 py-4 text-base font-medium text-background transition-colors hover:bg-background/10 sm:w-auto"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-5"
-              aria-hidden="true"
+        <CtaBandInner>
+          <CtaBandTitle>{ctaHeading}</CtaBandTitle>
+          <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => go(ctaPrimary)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background/90 sm:w-auto"
             >
-              <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-            {ctaPhone}
-          </button>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/60">
-          {ctaBadges.map((badge) => (
-            <div key={badge} className="flex items-center gap-2">
-              <Check className="size-5 text-primary" />
-              <span>{badge}</span>
-            </div>
-          ))}
-        </div>
+              {ctaPrimary}
+              <ArrowRight className="size-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => go(ctaPhone)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border/40 px-8 py-4 text-base font-medium text-background transition-colors hover:bg-background/10 sm:w-auto"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-5"
+                aria-hidden="true"
+              >
+                <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              {ctaPhone}
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/60">
+            {ctaBadges.map((badge) => (
+              <div key={badge} className="flex items-center gap-2">
+                <Check className="size-5 text-primary" />
+                <span>{badge}</span>
+              </div>
+            ))}
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

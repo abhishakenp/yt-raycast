@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MembershipClubCta — full-width primary-surface conversion CTA for a private
@@ -28,6 +37,7 @@ export const MembershipClubCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const heading = props.heading ?? 'Ready to join us?'
     const description =
       props.description ??
@@ -40,17 +50,21 @@ export const MembershipClubCta = defineCapsule({
       `Questions? Email us at ${email} — we reply within 24 hours.`
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={footnote}
-        title={heading}
-        subtitle={description}
-        actions={[
-          { label: primaryCta, target: primaryCta, variant: 'primary' },
-          { label: secondaryCta, target: secondaryCta, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{footnote}</CtaBandEyebrow>
+          <CtaBandTitle>{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
+              {primaryCta}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
+              {secondaryCta}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

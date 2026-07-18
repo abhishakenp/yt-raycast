@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import {
   ContactForm,
   ContactFormField,
@@ -86,129 +91,132 @@ export const BootcampApplyCta = defineCapsule({
     )
 
     return (
-      <CtaBand
-        tone="primary"
-        title={applyHeading}
-        subtitle={applyDesc}
-        titleClassName="font-bold sm:text-4xl lg:text-5xl"
-        subtitleClassName="text-primary-foreground/80"
-        className={props.className}
-      >
-        <div className="mx-auto max-w-xl rounded-2xl bg-card p-8 shadow-xl">
-          <ContactForm
-            className="space-y-4 text-left"
-            onSubmit={inquiry.submitForm}
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandTitle className="font-bold sm:text-4xl lg:text-5xl">
+            {applyHeading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-primary-foreground/80">
+            {applyDesc}
+          </CtaBandSubtitle>
+          <div className="mx-auto max-w-xl rounded-2xl bg-card p-8 shadow-xl">
+            <ContactForm
+              className="space-y-4 text-left"
+              onSubmit={inquiry.submitForm}
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
+                    htmlFor="bootcamp-apply-first"
+                    className="text-card-foreground"
+                  >
+                    First name
+                  </ContactFormLabel>
+                  <ContactFormInput
+                    id="bootcamp-apply-first"
+                    name="firstName"
+                    type="text"
+                    required
+                    placeholder="Jane"
+                    className={inputCls}
+                  />
+                </ContactFormField>
+                <ContactFormField className="mb-0">
+                  <ContactFormLabel
+                    htmlFor="bootcamp-apply-last"
+                    className="text-card-foreground"
+                  >
+                    Last name
+                  </ContactFormLabel>
+                  <ContactFormInput
+                    id="bootcamp-apply-last"
+                    name="lastName"
+                    type="text"
+                    required
+                    placeholder="Smith"
+                    className={inputCls}
+                  />
+                </ContactFormField>
+              </div>
               <ContactFormField className="mb-0">
                 <ContactFormLabel
-                  htmlFor="bootcamp-apply-first"
+                  htmlFor="bootcamp-apply-email"
                   className="text-card-foreground"
                 >
-                  First name
+                  Email address
                 </ContactFormLabel>
                 <ContactFormInput
-                  id="bootcamp-apply-first"
-                  name="firstName"
-                  type="text"
+                  id="bootcamp-apply-email"
+                  name="email"
+                  type="email"
                   required
-                  placeholder="Jane"
+                  placeholder="jane@example.com"
                   className={inputCls}
                 />
               </ContactFormField>
               <ContactFormField className="mb-0">
                 <ContactFormLabel
-                  htmlFor="bootcamp-apply-last"
+                  htmlFor="bootcamp-apply-program"
                   className="text-card-foreground"
                 >
-                  Last name
+                  Program preference
+                </ContactFormLabel>
+                <ContactFormSelect
+                  id="bootcamp-apply-program"
+                  name="program"
+                  className={cn(inputCls, 'appearance-none')}
+                >
+                  {applyPrograms.map((p) => (
+                    <option key={p} className="bg-background">
+                      {p}
+                    </option>
+                  ))}
+                </ContactFormSelect>
+              </ContactFormField>
+              <ContactFormField className="mb-0">
+                <ContactFormLabel
+                  htmlFor="bootcamp-apply-occupation"
+                  className="text-card-foreground"
+                >
+                  Current occupation
                 </ContactFormLabel>
                 <ContactFormInput
-                  id="bootcamp-apply-last"
-                  name="lastName"
+                  id="bootcamp-apply-occupation"
+                  name="occupation"
                   type="text"
-                  required
-                  placeholder="Smith"
+                  placeholder="e.g. Teacher, Retail Manager, Student"
                   className={inputCls}
                 />
               </ContactFormField>
-            </div>
-            <ContactFormField className="mb-0">
-              <ContactFormLabel
-                htmlFor="bootcamp-apply-email"
-                className="text-card-foreground"
+              <ContactFormSubmit
+                type="submit"
+                aria-busy={inquiry.isPending}
+                disabled={inquiry.isPending}
+                className="w-full rounded-lg bg-primary py-3.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
-                Email address
-              </ContactFormLabel>
-              <ContactFormInput
-                id="bootcamp-apply-email"
-                name="email"
-                type="email"
-                required
-                placeholder="jane@example.com"
-                className={inputCls}
-              />
-            </ContactFormField>
-            <ContactFormField className="mb-0">
-              <ContactFormLabel
-                htmlFor="bootcamp-apply-program"
-                className="text-card-foreground"
+                {inquiry.isPending ? 'Sending' : applySubmit}
+              </ContactFormSubmit>
+              <ContactFormFooter
+                className="text-sm text-muted-foreground"
+                aria-live="polite"
               >
-                Program preference
-              </ContactFormLabel>
-              <ContactFormSelect
-                id="bootcamp-apply-program"
-                name="program"
-                className={cn(inputCls, 'appearance-none')}
-              >
-                {applyPrograms.map((p) => (
-                  <option key={p} className="bg-background">
-                    {p}
-                  </option>
-                ))}
-              </ContactFormSelect>
-            </ContactFormField>
-            <ContactFormField className="mb-0">
-              <ContactFormLabel
-                htmlFor="bootcamp-apply-occupation"
-                className="text-card-foreground"
-              >
-                Current occupation
-              </ContactFormLabel>
-              <ContactFormInput
-                id="bootcamp-apply-occupation"
-                name="occupation"
-                type="text"
-                placeholder="e.g. Teacher, Retail Manager, Student"
-                className={inputCls}
-              />
-            </ContactFormField>
-            <ContactFormSubmit
-              type="submit"
-              aria-busy={inquiry.isPending}
-              disabled={inquiry.isPending}
-              className="w-full rounded-lg bg-primary py-3.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {inquiry.isPending ? 'Sending' : applySubmit}
-            </ContactFormSubmit>
-            <ContactFormFooter
-              className="text-sm text-muted-foreground"
-              aria-live="polite"
-            >
-              {inquiry.statusText}
-            </ContactFormFooter>
-          </ContactForm>
-          <p className="mt-4 text-xs text-muted-foreground">{applyFineprint}</p>
-        </div>
+                {inquiry.statusText}
+              </ContactFormFooter>
+            </ContactForm>
+            <p className="mt-4 text-xs text-muted-foreground">
+              {applyFineprint}
+            </p>
+          </div>
 
-        <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
-          {applyTrust.map((t) => (
-            <div key={t} className="flex items-center gap-2">
-              <Check className="size-5 text-primary-foreground" />
-              <span>{t}</span>
-            </div>
-          ))}
-        </div>
+          <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
+            {applyTrust.map((t) => (
+              <div key={t} className="flex items-center gap-2">
+                <Check className="size-5 text-primary-foreground" />
+                <span>{t}</span>
+              </div>
+            ))}
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

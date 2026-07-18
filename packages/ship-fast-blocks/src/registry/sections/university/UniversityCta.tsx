@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 export const UniversityCta = defineCapsule({
   name: 'UniversityCta',
@@ -18,6 +27,7 @@ export const UniversityCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Fall applications close January 15'
     const title = props.title ?? 'Start your application'
     const subtitle =
@@ -29,21 +39,21 @@ export const UniversityCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Admissions'
 
     return (
-      <CtaBand
-        eyebrow={eyebrow}
-        title={title}
-        subtitle={subtitle}
-        tone="primary"
-        actions={[
-          { label: primaryLabel, target: primaryTarget, variant: 'primary' },
-          {
-            label: secondaryLabel,
-            target: secondaryTarget,
-            variant: 'outline',
-          },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
+          <CtaBandTitle>{title}</CtaBandTitle>
+          <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
+              {primaryLabel}
+            </CtaAction>
+            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
+              {secondaryLabel}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

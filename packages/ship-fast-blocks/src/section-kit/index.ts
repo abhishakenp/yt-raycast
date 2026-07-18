@@ -44,7 +44,18 @@ export {
   type BrandLogoSelection,
 } from './Logo.tsx'
 export { SectionHeading } from './SectionHeading.tsx'
-export { CtaBand, ctaBandVariants } from './CtaBand.tsx'
+export {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+  ctaBandVariants,
+  ctaBandInnerVariants,
+  ctaBandActionsVariants,
+} from './CtaBand.tsx'
 export { StarRating } from './StarRating.tsx'
 export { StatGrid, StatItem, StatValue, StatLabel } from './StatGrid.tsx'
 export {

@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
@@ -82,44 +87,46 @@ export const InsuranceCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        title={heading}
-        subtitle={description}
         className={`bg-background text-foreground ${props.className ?? ''}`}
       >
-        <div className="relative overflow-hidden rounded-3xl bg-primary p-8 text-center lg:p-16">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 text-primary-foreground opacity-10"
-            style={{
-              backgroundImage:
-                'radial-gradient(currentColor 1px, transparent 1px)',
-              backgroundSize: '16px 16px',
-            }}
-          />
-          <div className="relative z-10">
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-muted"
-              >
-                {primaryCta}
-                <ArrowRight />
-              </button>
-              <button
-                type="button"
-                onClick={() => go(phone)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary-foreground/30 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
-              >
-                <Phone className="size-5" />
-                {phoneCta}
-              </button>
+        <CtaBandInner>
+          <CtaBandTitle>{heading}</CtaBandTitle>
+          <CtaBandSubtitle>{description}</CtaBandSubtitle>
+          <div className="relative overflow-hidden rounded-3xl bg-primary p-8 text-center lg:p-16">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 text-primary-foreground opacity-10"
+              style={{
+                backgroundImage:
+                  'radial-gradient(currentColor 1px, transparent 1px)',
+                backgroundSize: '16px 16px',
+              }}
+            />
+            <div className="relative z-10">
+              <div className="flex flex-col justify-center gap-4 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => go(primaryCta)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-muted"
+                >
+                  {primaryCta}
+                  <ArrowRight />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go(phone)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary-foreground/30 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+                >
+                  <Phone className="size-5" />
+                  {phoneCta}
+                </button>
+              </div>
+              <p className="mt-6 text-sm text-primary-foreground/70">
+                {footnote}
+              </p>
             </div>
-            <p className="mt-6 text-sm text-primary-foreground/70">
-              {footnote}
-            </p>
           </div>
-        </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },

@@ -1,7 +1,16 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+} from '#/section-kit/CtaBand.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DocsCta — a clean, centered closing band for a developer documentation home
@@ -38,29 +47,34 @@ export const DocsCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={props.eyebrow ?? 'Ready to build?'}
-        title={props.headline ?? 'Start building in minutes'}
-        subtitle={
-          props.subheading ??
-          'Grab an API key, follow the quickstart, and ship your first request — the full reference is one click away.'
-        }
-        actions={[
-          {
-            label: props.primaryCta ?? 'Start building',
-            target: props.primaryTarget ?? 'Getting Started',
-            variant: 'primary',
-          },
-          {
-            label: props.secondaryCta ?? 'View API Reference',
-            target: props.secondaryTarget ?? 'API Reference',
-            variant: 'outline',
-          },
-        ]}
-        className={props.className}
-      />
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner>
+          <CtaBandEyebrow>{props.eyebrow ?? 'Ready to build?'}</CtaBandEyebrow>
+          <CtaBandTitle>
+            {props.headline ?? 'Start building in minutes'}
+          </CtaBandTitle>
+          <CtaBandSubtitle>
+            {props.subheading ??
+              'Grab an API key, follow the quickstart, and ship your first request — the full reference is one click away.'}
+          </CtaBandSubtitle>
+          <CtaBandActions>
+            <CtaAction
+              variant="primary"
+              onClick={() => go(props.primaryTarget ?? 'Getting Started')}
+            >
+              {props.primaryCta ?? 'Start building'}
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              onClick={() => go(props.secondaryTarget ?? 'API Reference')}
+            >
+              {props.secondaryCta ?? 'View API Reference'}
+            </CtaAction>
+          </CtaBandActions>
+        </CtaBandInner>
+      </CtaBand>
     )
   },
 })

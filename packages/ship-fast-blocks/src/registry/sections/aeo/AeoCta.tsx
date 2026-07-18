@@ -1,7 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+import {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+} from '#/section-kit/CtaBand.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -60,45 +66,45 @@ export const AeoCta = defineCapsule({
         ]
 
     return (
-      <CtaBand
-        tone="primary"
-        align={props.align ?? 'center'}
-        eyebrow={props.eyebrow ?? 'Answer Engine Optimization'}
-        title={props.title ?? 'Win the AI answer'}
-        subtitle={
-          props.subtitle ??
-          'Start tracking how AI engines describe your brand today — and turn AI answers into your next growth channel.'
-        }
-        className={props.className}
-      >
-        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-          {actions.map((action) => {
-            const target = action.target ?? action.label
-            const isPrimary = (action.variant ?? 'primary') === 'primary'
-            return (
-              <SaasPlanActionButton
-                key={`${action.label}:${target}`}
-                lakebed={lakebed}
-                intentLabel={target}
-                plan={action.label}
-                source="cta"
-                pendingChildren={
-                  <>
-                    <SaasMutationSpinner className="size-4" />
-                    {isPrimary ? 'Starting' : 'Sending'}
-                  </>
-                }
-                className={`inline-flex min-w-40 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70 ${
-                  isPrimary
-                    ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
-                    : 'border border-primary-foreground/35 text-primary-foreground hover:bg-primary-foreground/10'
-                }`}
-              >
-                {action.label}
-              </SaasPlanActionButton>
-            )
-          })}
-        </div>
+      <CtaBand tone="primary" className={props.className}>
+        <CtaBandInner align={props.align ?? 'center'}>
+          <CtaBandEyebrow>
+            {props.eyebrow ?? 'Answer Engine Optimization'}
+          </CtaBandEyebrow>
+          <CtaBandTitle>{props.title ?? 'Win the AI answer'}</CtaBandTitle>
+          <CtaBandSubtitle>
+            {props.subtitle ??
+              'Start tracking how AI engines describe your brand today — and turn AI answers into your next growth channel.'}
+          </CtaBandSubtitle>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            {actions.map((action) => {
+              const target = action.target ?? action.label
+              const isPrimary = (action.variant ?? 'primary') === 'primary'
+              return (
+                <SaasPlanActionButton
+                  key={`${action.label}:${target}`}
+                  lakebed={lakebed}
+                  intentLabel={target}
+                  plan={action.label}
+                  source="cta"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      {isPrimary ? 'Starting' : 'Sending'}
+                    </>
+                  }
+                  className={`inline-flex min-w-40 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70 ${
+                    isPrimary
+                      ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
+                      : 'border border-primary-foreground/35 text-primary-foreground hover:bg-primary-foreground/10'
+                  }`}
+                >
+                  {action.label}
+                </SaasPlanActionButton>
+              )
+            })}
+          </div>
+        </CtaBandInner>
       </CtaBand>
     )
   },
