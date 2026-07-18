@@ -11,6 +11,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -97,7 +98,7 @@ export const CybersecurityHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-24 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2">
@@ -191,7 +192,7 @@ export const CybersecurityHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

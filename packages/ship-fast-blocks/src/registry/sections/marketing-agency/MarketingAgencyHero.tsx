@@ -13,6 +13,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MarketingAgencyHero — split, conversion-focused hero for a growth / marketing
@@ -100,7 +101,7 @@ export const MarketingAgencyHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-24 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <p className="mb-4 text-sm font-medium text-muted-foreground">
@@ -175,7 +176,7 @@ export const MarketingAgencyHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

@@ -17,6 +17,7 @@ import {
   HeroStatBadgeTitle,
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * HealthcareHero — split hero for a primary-care / medical-clinic landing page.
@@ -125,7 +126,7 @@ export const HealthcareHero = defineCapsule({
         )}
         aria-labelledby="hero-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+        <Container size="xl" className="py-20 lg:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground">
@@ -187,9 +188,7 @@ export const HealthcareHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <HeroStatBadge
-                className="absolute -bottom-6 -left-6 flex items-center gap-3 shadow-xl"
-              >
+              <HeroStatBadge className="absolute -bottom-6 -left-6 flex items-center gap-3 shadow-xl">
                 <HeroStatBadgeIcon className="size-12 rounded-full bg-accent text-primary">
                   <svg
                     width="24"
@@ -214,9 +213,7 @@ export const HealthcareHero = defineCapsule({
                   </HeroStatBadgeSubtitle>
                 </HeroStatBadgeContent>
               </HeroStatBadge>
-              <HeroStatBadge
-                className="absolute -right-4 -top-4 flex items-center gap-2 shadow-xl"
-              >
+              <HeroStatBadge className="absolute -right-4 -top-4 flex items-center gap-2 shadow-xl">
                 <HeroStatBadgeIcon className="flex -space-x-2 rounded-none bg-transparent">
                   {['a', 'b', 'c'].map((k) => (
                     <span
@@ -231,7 +228,7 @@ export const HealthcareHero = defineCapsule({
               </HeroStatBadge>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

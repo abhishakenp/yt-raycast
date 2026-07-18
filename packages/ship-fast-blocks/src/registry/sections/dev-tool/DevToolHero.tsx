@@ -67,6 +67,7 @@ export const DevToolHero = defineCapsule({
       props.code ??
       `import { DevStack } from '@devstack/sdk';
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const ds = new DevStack({
   apiKey: process.env.DS_API_KEY
@@ -110,7 +111,7 @@ await ds.storage.set(\`user:\${user.id}\`, {
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
         aria-labelledby="hero-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+        <Container size="xl" className="py-20 lg:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -212,7 +213,7 @@ await ds.storage.set(\`user:\${user.id}\`, {
               </Card>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
