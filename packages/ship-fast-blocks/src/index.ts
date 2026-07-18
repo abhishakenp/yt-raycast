@@ -15,6 +15,7 @@ export {
   useQuery,
 } from '@tanstack/react-query'
 export { ImageContextProvider, type ImageContext } from './lib/img.tsx'
+export { Image as BaseImage } from './lib/img.tsx'
 export { buildImageSearchQuery } from './lib/image-search-query.ts'
 export {
   matchElementToProp,

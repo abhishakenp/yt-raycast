@@ -243,11 +243,9 @@ function stampCapsuleAttrs(
   )
 }
 
-function createDefaultCapsuleLakebed(): CapsuleLakebedConfig<
-  TProps,
-  undefined,
-  JsonRecord
-> {
+function createDefaultCapsuleLakebed<
+  TProps = JsonRecord,
+>(): CapsuleLakebedConfig<TProps, undefined, JsonRecord> {
   return {
     queries: {
       sectionData: query((_ctx) => _ctx.data),
@@ -320,9 +318,9 @@ export function defineCapsule<
   ) as CapsuleLakebedConfig<
     z.infer<TProps>,
     TSchema,
-    TData,
-    TQueries,
-    TMutations,
+    LakebedDataFromSchema<TSchema>,
+    LakebedQueryMap<z.infer<TProps>, LakebedDataFromSchema<TSchema>>,
+    LakebedMutationMap<z.infer<TProps>, LakebedDataFromSchema<TSchema>>,
     TClientResult
   >
 

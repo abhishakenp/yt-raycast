@@ -105,8 +105,15 @@ function SidebarProvider({
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener(
+      'keydown',
+      handleKeyDown as unknown as EventListener,
+    )
+    return () =>
+      window.removeEventListener(
+        'keydown',
+        handleKeyDown as unknown as EventListener,
+      )
   }, [toggleSidebar])
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
