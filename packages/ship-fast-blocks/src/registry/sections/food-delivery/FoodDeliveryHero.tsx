@@ -4,6 +4,13 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
 import { useFoodDeliverySearch } from './food-delivery-interactions.tsx'
+import {
+  SearchForm,
+  SearchField,
+  SearchFieldIcon,
+  SearchFieldInput,
+  SearchSubmit,
+} from '#/section-kit/SearchForm.tsx'
 
 /**
  * FoodDeliveryHero — split two-column hero band for a food-delivery / restaurant
@@ -79,15 +86,16 @@ export const FoodDeliveryHero = defineCapsule({
               <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
                 {heroSub}
               </p>
-              <form
+              <SearchForm
                 key={addressValue}
-                className="mt-8 flex flex-col gap-3 sm:flex-row"
+                layout="row"
+                className="mt-8"
                 onSubmit={foodSearch.submitSearch}
               >
-                <div className="relative max-w-sm flex-1">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <SearchField className="max-w-sm flex-1">
+                  <SearchFieldIcon>
                     <svg
-                      className="size-5 text-muted-foreground"
+                      className="size-5"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
@@ -99,25 +107,24 @@ export const FoodDeliveryHero = defineCapsule({
                       <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                  </div>
-                  <input
+                  </SearchFieldIcon>
+                  <SearchFieldInput
                     type="text"
                     name="address"
                     defaultValue={addressValue}
                     aria-label={addressPlaceholder}
                     placeholder={addressPlaceholder}
-                    className="w-full rounded-full border border-input bg-background py-3.5 pl-11 pr-4 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
+                    className="rounded-full py-3.5 pl-11 transition-all focus:ring-ring/20"
                   />
-                </div>
-                <button
-                  type="submit"
+                </SearchField>
+                <SearchSubmit
                   aria-busy={foodSearch.isPending}
                   disabled={foodSearch.isPending}
-                  className="inline-flex items-center justify-center rounded-full bg-foreground px-6 py-3.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                  className="rounded-full bg-foreground px-6 py-3.5 text-sm text-background hover:bg-foreground/90"
                 >
                   {foodSearch.isPending ? 'Finding' : searchCta}
-                </button>
-              </form>
+                </SearchSubmit>
+              </SearchForm>
               <p
                 className="mt-3 text-sm text-muted-foreground"
                 aria-live="polite"

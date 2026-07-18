@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  SearchForm,
+  SearchField,
+  SearchFieldIcon,
+  SearchFieldInput,
+  SearchSubmit,
+} from '#/section-kit/SearchForm.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
 import { useDirectorySearch } from './directory-interactions.tsx'
 
@@ -68,42 +75,42 @@ export const DirectoryHero = defineCapsule({
             </p>
 
             <div className="mx-auto max-w-2xl">
-              <form
+              <SearchForm
                 key={`${queryValue}:${categoryValue}`}
                 onSubmit={directorySearch.submitSearch}
-                className="relative"
               >
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                  <svg
-                    className="size-5 text-muted-foreground"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
+                <SearchField>
+                  <SearchFieldIcon>
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </SearchFieldIcon>
+                  <SearchFieldInput
+                    name="query"
+                    type="search"
+                    defaultValue={queryValue || categoryValue}
+                    placeholder={searchPlaceholder}
+                    aria-label="Search businesses"
+                    className="bg-muted py-4 pr-32 transition-all focus:ring-ring"
+                  />
+                  <SearchSubmit
+                    aria-busy={directorySearch.isPending}
+                    disabled={directorySearch.isPending}
+                    className="absolute bottom-2 right-2 top-2 rounded-lg px-6"
                   >
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <input
-                  name="query"
-                  type="search"
-                  defaultValue={queryValue || categoryValue}
-                  placeholder={searchPlaceholder}
-                  aria-label="Search businesses"
-                  className="w-full rounded-xl border border-input bg-muted py-4 pl-12 pr-32 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button
-                  type="submit"
-                  aria-busy={directorySearch.isPending}
-                  disabled={directorySearch.isPending}
-                  className="absolute bottom-2 right-2 top-2 rounded-lg bg-primary px-6 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {directorySearch.isPending ? 'Searching' : searchCta}
-                </button>
-              </form>
+                    {directorySearch.isPending ? 'Searching' : searchCta}
+                  </SearchSubmit>
+                </SearchField>
+              </SearchForm>
               <p
                 className="mt-3 text-sm text-muted-foreground"
                 aria-live="polite"

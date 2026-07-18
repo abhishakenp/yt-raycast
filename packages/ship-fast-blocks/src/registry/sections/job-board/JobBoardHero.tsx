@@ -7,6 +7,13 @@ import { jobBoardLakebed } from './job-board-lakebed.ts'
 import { useJobBoardSearch } from './job-board-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  SearchForm,
+  SearchField,
+  SearchFieldIcon,
+  SearchFieldInput,
+  SearchSubmit,
+} from '#/section-kit/SearchForm.tsx'
 
 /**
  * JobBoardHero — centered, conversion-focused hero for a job-board / careers
@@ -91,26 +98,28 @@ export const JobBoardHero = defineCapsule({
               shadow="lg"
               className="mx-auto max-w-4xl p-2 sm:p-4"
             >
-              <form
+              <SearchForm
                 key={`${queryValue}:${locationValue}`}
-                className="flex flex-col gap-3 sm:flex-row"
+                layout="row"
                 role="search"
                 aria-label="Job search"
                 onSubmit={jobSearch.submitSearch}
               >
-                <div className="relative flex-1">
-                  <svg
-                    className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <circle cx="11" cy="11" r="7" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
-                  <input
+                <SearchField className="flex-1">
+                  <SearchFieldIcon className="left-3 top-1/2 -translate-y-1/2">
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <circle cx="11" cy="11" r="7" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </SearchFieldIcon>
+                  <SearchFieldInput
                     name="query"
                     type="text"
                     defaultValue={queryValue}
@@ -118,22 +127,24 @@ export const JobBoardHero = defineCapsule({
                     aria-label="Search for jobs by title, keywords, or company"
                     className={inputCls}
                   />
-                </div>
-                <div className="relative flex-1">
-                  <svg
-                    className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
-                  <input
+                </SearchField>
+                <SearchField className="flex-1">
+                  <SearchFieldIcon className="left-3 top-1/2 -translate-y-1/2">
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                  </SearchFieldIcon>
+                  <SearchFieldInput
                     name="location"
                     type="text"
                     defaultValue={locationValue}
@@ -141,16 +152,15 @@ export const JobBoardHero = defineCapsule({
                     aria-label="Search location"
                     className={inputCls}
                   />
-                </div>
-                <button
-                  type="submit"
+                </SearchField>
+                <SearchSubmit
                   aria-busy={jobSearch.isPending}
                   disabled={jobSearch.isPending}
-                  className="rounded-xl bg-primary px-8 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:whitespace-nowrap"
+                  className="px-8 py-3 sm:whitespace-nowrap"
                 >
                   {jobSearch.isPending ? 'Searching' : searchCta}
-                </button>
-              </form>
+                </SearchSubmit>
+              </SearchForm>
               <p
                 className="mt-3 text-sm text-muted-foreground"
                 aria-live="polite"
