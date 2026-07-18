@@ -10,7 +10,18 @@ import {
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import {
+  PricingCard,
+  PricingCardBadge,
+  PricingCardName,
+  PricingCardPrice,
+  PricingCardPriceValue,
+  PricingCardPriceUnit,
+  PricingCardFeatures,
+  PricingCardFeature,
+  PricingCardCheckIcon,
+  PricingCardCta,
+} from '#/section-kit/PricingCard.tsx'
 import {
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
@@ -173,63 +184,53 @@ export const NewsroomSubscribe = defineCapsule({
 
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {plans.map((plan) => (
-              <Card
+              <PricingCard
                 key={plan.name}
-                variant="default"
-                rounded="xl"
-                padding="lg"
-                shadow="sm"
+                variant="outlined"
+                highlight={plan.featured ? 'filled-primary' : 'none'}
                 className={cn(
-                  'relative',
+                  'shadow-sm',
                   plan.featured
-                    ? 'border-primary bg-primary text-primary-foreground shadow-xl'
+                    ? 'border-primary text-primary-foreground shadow-xl'
                     : '',
                 )}
               >
                 {plan.featured ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-background px-3 py-1 text-xs font-bold uppercase tracking-wide text-foreground">
-                      Most Popular
-                    </span>
-                  </div>
+                  <PricingCardBadge className="bg-background font-bold uppercase tracking-wide text-foreground">
+                    Most Popular
+                  </PricingCardBadge>
                 ) : null}
-                <h3
+                <PricingCardName
                   className={cn(
-                    'mb-4 font-serif text-xl font-semibold',
-                    plan.featured
-                      ? 'text-primary-foreground'
-                      : 'text-card-foreground',
+                    'mb-4 font-serif text-xl',
+                    plan.featured ? 'text-primary-foreground' : '',
                   )}
                 >
                   {plan.name}
-                </h3>
-                <div className="mb-6">
-                  <span
+                </PricingCardName>
+                <PricingCardPrice className="mb-6">
+                  <PricingCardPriceValue
                     className={cn(
-                      'text-4xl font-bold',
-                      plan.featured
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
+                      'font-bold',
+                      plan.featured ? 'text-primary-foreground' : '',
                     )}
                   >
                     {plan.price}
-                  </span>
-                  <span
+                  </PricingCardPriceValue>
+                  <PricingCardPriceUnit
                     className={cn(
-                      plan.featured
-                        ? 'text-primary-foreground/60'
-                        : 'text-muted-foreground',
+                      plan.featured ? 'text-primary-foreground/60' : '',
                     )}
                   >
                     {plan.period}
-                  </span>
-                </div>
-                <ul className="mb-8 space-y-4">
+                  </PricingCardPriceUnit>
+                </PricingCardPrice>
+                <PricingCardFeatures className="mb-8 space-y-4">
                   {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3">
-                      <Check
+                    <PricingCardFeature key={feat} className="gap-3">
+                      <PricingCardCheckIcon
                         className={cn(
-                          'mt-0.5 size-5 shrink-0',
+                          'size-5',
                           plan.featured
                             ? 'text-primary-foreground/80'
                             : 'text-accent',
@@ -244,29 +245,31 @@ export const NewsroomSubscribe = defineCapsule({
                       >
                         {feat}
                       </span>
-                    </li>
+                    </PricingCardFeature>
                   ))}
-                </ul>
-                <PublicationActionButton
-                  action={plan.cta}
-                  lakebed={lakebed}
-                  source={`plan:${plan.name}`}
-                  pendingChildren={
-                    <>
-                      <PublicationMutationSpinner className="size-4" />
-                      Saving
-                    </>
-                  }
-                  className={cn(
-                    'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70',
-                    plan.featured
-                      ? 'bg-background text-foreground hover:bg-muted'
-                      : 'border border-border text-foreground hover:bg-muted',
-                  )}
-                >
-                  {plan.cta}
-                </PublicationActionButton>
-              </Card>
+                </PricingCardFeatures>
+                <PricingCardCta>
+                  <PublicationActionButton
+                    action={plan.cta}
+                    lakebed={lakebed}
+                    source={`plan:${plan.name}`}
+                    pendingChildren={
+                      <>
+                        <PublicationMutationSpinner className="size-4" />
+                        Saving
+                      </>
+                    }
+                    className={cn(
+                      'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70',
+                      plan.featured
+                        ? 'bg-background text-foreground hover:bg-muted'
+                        : 'border border-border text-foreground hover:bg-muted',
+                    )}
+                  >
+                    {plan.cta}
+                  </PublicationActionButton>
+                </PricingCardCta>
+              </PricingCard>
             ))}
           </div>
 
