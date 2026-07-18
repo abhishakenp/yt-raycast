@@ -35,18 +35,21 @@ SplitStory.displayName = 'SplitStory'
 
 const SplitStoryGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="story-split-grid"
-    className={cn(
-      'grid items-center gap-12 lg:grid-cols-2 lg:gap-20',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="story-split-grid"
+      className={cn(
+        'grid items-center gap-12 lg:grid-cols-2 lg:gap-20',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 SplitStoryGrid.displayName = 'SplitStoryGrid'
 
 const SplitStoryMedia = React.forwardRef<

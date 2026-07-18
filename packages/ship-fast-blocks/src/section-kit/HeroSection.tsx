@@ -88,15 +88,18 @@ HeroBackgroundImage.displayName = 'HeroBackgroundImage'
 
 const HeroContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="hero-content"
-    className={cn('relative z-10', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-content"
+      className={cn('relative z-10', className)}
+      {...props}
+    />
+  )
+})
 HeroContent.displayName = 'HeroContent'
 
 /* ---------- HeroBadge ---------- */
