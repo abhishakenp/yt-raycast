@@ -9,10 +9,13 @@ import {
   ProductCardImage,
   ProductCardBadge,
   ProductCardTitle,
-  ProductCardSubtitle,
   ProductCardPrice,
 } from '#/section-kit/ProductCard.tsx'
-import { PiecesGrid, PiecesCard } from '#/section-kit/PiecesGrid.tsx'
+import {
+  PiecesGrid,
+  PiecesCard,
+  PieceSpecs,
+} from '#/section-kit/PiecesGrid.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -202,9 +205,9 @@ export const JewelryStorePieces = defineCapsule({
                       {p.title}
                     </ProductCardTitle>
                   </button>
-                  <ProductCardSubtitle className="mb-2 mt-0">
+                  <PieceSpecs className="mb-2 mt-0">
                     {p.spec}
-                  </ProductCardSubtitle>
+                  </PieceSpecs>
                   <ProductCardPrice className="text-primary">
                     {p.price}
                   </ProductCardPrice>
