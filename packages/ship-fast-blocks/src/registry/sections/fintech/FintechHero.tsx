@@ -5,6 +5,7 @@ import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * FintechHero — split hero for a fintech / neobank / digital-banking landing
@@ -63,7 +64,8 @@ export const FintechHero = defineCapsule({
     const imageAlt = props.imageAlt ?? 'fintech banking app dashboard'
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'relative overflow-hidden bg-background',
           props.className,
@@ -147,7 +149,7 @@ export const FintechHero = defineCapsule({
             </Card>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

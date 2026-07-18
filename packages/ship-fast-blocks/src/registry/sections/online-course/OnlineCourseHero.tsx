@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * OnlineCourseHero — split, two-column hero for an online-course / e-learning
@@ -79,7 +80,10 @@ export const OnlineCourseHero = defineCapsule({
     )
 
     return (
-      <section className={cn('py-20 sm:py-28 lg:py-28', props.className)}>
+      <HeroSection
+        variant="split"
+        className={cn('py-20 sm:py-28 lg:py-28', props.className)}
+      >
         <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
@@ -198,7 +202,7 @@ export const OnlineCourseHero = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </HeroSection>
     )
   },
 })

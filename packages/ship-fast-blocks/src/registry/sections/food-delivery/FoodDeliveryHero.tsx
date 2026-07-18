@@ -17,6 +17,7 @@ import { useFoodDeliverySearch } from './food-delivery-interactions.tsx'
  * online-ordering platforms, or grocery/takeout services.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 export const FoodDeliveryHero = defineCapsule({
   name: 'FoodDeliveryHero',
   description:
@@ -63,7 +64,10 @@ export const FoodDeliveryHero = defineCapsule({
     const badgeSubtitle = props.badgeSubtitle ?? 'Arriving in 24 min'
     const addressValue = foodSearch.state?.address ?? ''
     return (
-      <section className={cn('pb-16 pt-20 lg:pb-24 lg:pt-28', props.className)}>
+      <HeroSection
+        variant="split"
+        className={cn('pb-16 pt-20 lg:pb-24 lg:pt-28', props.className)}
+      >
         <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
@@ -158,7 +162,7 @@ export const FoodDeliveryHero = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </HeroSection>
     )
   },
 })

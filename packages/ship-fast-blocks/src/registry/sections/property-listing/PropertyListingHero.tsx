@@ -7,6 +7,7 @@ import { FilterChip } from '#/section-kit/index.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import { usePropertyListingSearch } from './property-listing-interactions.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * PropertyListingHero — search-portal hero for a property marketplace. A split
@@ -67,7 +68,10 @@ export const PropertyListingHero = defineCapsule({
     const activeFilter = propertySearch.state?.filter || searchTarget
 
     return (
-      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
+      <HeroSection
+        variant="split"
+        className={cn('bg-background py-16 lg:py-24', props.className)}
+      >
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
           <div>
             <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium tracking-[0.15em] text-primary uppercase">
@@ -199,7 +203,7 @@ export const PropertyListingHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -9,6 +9,7 @@ import {
   useKbSearch,
   useSyncKbCatalog,
 } from './knowledge-base-interactions.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * KnowledgeBaseHero — centered help-center hero on a raised card surface. A
@@ -114,7 +115,8 @@ export const KnowledgeBaseHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn('border-b border-border bg-card', props.className)}
       >
         <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-24 lg:px-8">
@@ -203,7 +205,7 @@ export const KnowledgeBaseHero = defineCapsule({
             </div>
           ) : null}
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

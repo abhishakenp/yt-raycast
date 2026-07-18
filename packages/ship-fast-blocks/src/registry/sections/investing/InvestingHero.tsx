@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * InvestingHero — split hero for a modern investing / fintech brokerage landing
@@ -87,7 +88,8 @@ export const InvestingHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'relative overflow-hidden bg-background',
           props.className,
@@ -221,7 +223,7 @@ export const InvestingHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

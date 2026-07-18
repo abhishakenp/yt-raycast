@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed, type DocsArticleRecord } from './docs-lakebed.ts'
 import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * DocsHero — search-forward hero band for a developer DOCUMENTATION / API-reference
@@ -209,7 +210,8 @@ export const DocsHero = defineCapsule({
     const showingResults = activeQuery.length > 0
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'mx-auto w-full max-w-4xl px-6 py-20 text-center sm:py-24',
           props.className,
@@ -316,7 +318,7 @@ export const DocsHero = defineCapsule({
             {secondaryCta}
           </button>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

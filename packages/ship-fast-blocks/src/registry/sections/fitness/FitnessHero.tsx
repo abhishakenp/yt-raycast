@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * the top hero for gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 export const FitnessHero = defineCapsule({
   name: 'FitnessHero',
   description:
@@ -66,7 +67,8 @@ export const FitnessHero = defineCapsule({
       </svg>
     )
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'relative overflow-hidden py-20 lg:py-28',
           props.className,
@@ -139,7 +141,7 @@ export const FitnessHero = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </HeroSection>
     )
   },
 })

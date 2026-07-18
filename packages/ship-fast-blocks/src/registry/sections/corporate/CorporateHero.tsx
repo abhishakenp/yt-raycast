@@ -5,6 +5,7 @@ import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * CorporateHero — split-layout enterprise hero section for a corporate B2B
@@ -79,7 +80,8 @@ export const CorporateHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn('relative overflow-hidden bg-muted/50', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
@@ -165,7 +167,7 @@ export const CorporateHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

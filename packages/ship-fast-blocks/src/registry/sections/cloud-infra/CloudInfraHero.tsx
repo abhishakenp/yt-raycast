@@ -9,6 +9,7 @@ import {
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * CloudInfraHero — two-column hero section for a cloud-infrastructure / developer-
@@ -95,7 +96,8 @@ export const CloudInfraHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
@@ -196,7 +198,7 @@ export const CloudInfraHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

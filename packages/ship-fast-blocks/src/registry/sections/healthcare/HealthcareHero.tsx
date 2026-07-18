@@ -10,6 +10,7 @@ import {
   LocalServiceMutationSpinner,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * HealthcareHero — split hero for a primary-care / medical-clinic landing page.
@@ -110,7 +111,8 @@ export const HealthcareHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'relative overflow-hidden bg-background',
           props.className,
@@ -232,7 +234,7 @@ export const HealthcareHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * NonprofitHero — warm 2-column hero band for a nonprofit / charity landing
@@ -96,7 +97,8 @@ export const NonprofitHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'relative overflow-hidden bg-background',
           props.className,
@@ -169,7 +171,7 @@ export const NonprofitHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

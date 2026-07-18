@@ -10,6 +10,7 @@ import {
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * DevToolHero — two-column product hero for a developer tool / API platform.
@@ -64,6 +65,7 @@ export const DevToolHero = defineCapsule({
     const code =
       props.code ??
       `import { DevStack } from '@devstack/sdk';
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 const ds = new DevStack({
   apiKey: process.env.DS_API_KEY
@@ -102,7 +104,8 @@ await ds.storage.set(\`user:\${user.id}\`, {
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
         aria-labelledby="hero-heading"
       >
@@ -209,7 +212,7 @@ await ds.storage.set(\`user:\${user.id}\`, {
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

@@ -12,6 +12,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * ElectronicsStoreHero — split storefront hero for a premium electronics /
@@ -112,7 +113,8 @@ export const ElectronicsStoreHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
@@ -191,7 +193,7 @@ export const ElectronicsStoreHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

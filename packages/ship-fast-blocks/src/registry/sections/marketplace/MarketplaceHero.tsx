@@ -13,6 +13,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * MarketplaceHero — a split, two-column marketplace hero. The left column stacks
@@ -174,7 +175,8 @@ export const MarketplaceHero = defineCapsule({
     ]
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn('border-b border-border bg-background', props.className)}
         aria-labelledby="hero-heading"
       >
@@ -296,7 +298,7 @@ export const MarketplaceHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

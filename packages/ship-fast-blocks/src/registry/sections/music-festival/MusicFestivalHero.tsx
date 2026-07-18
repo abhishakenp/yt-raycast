@@ -17,6 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * multi-day ticketed live event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 export const MusicFestivalHero = defineCapsule({
   name: 'MusicFestivalHero',
   description:
@@ -104,7 +105,8 @@ export const MusicFestivalHero = defineCapsule({
       </svg>
     )
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'relative overflow-hidden py-20 lg:py-28',
           props.className,
@@ -176,7 +178,7 @@ export const MusicFestivalHero = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </HeroSection>
     )
   },
 })

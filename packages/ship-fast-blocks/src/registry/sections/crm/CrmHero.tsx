@@ -9,6 +9,7 @@ import {
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * CrmHero — split, light-aesthetic hero band for a CRM / sales-platform landing
@@ -125,7 +126,8 @@ export const CrmHero = defineCapsule({
     ]
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn('relative overflow-hidden bg-muted/50', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
@@ -276,7 +278,7 @@ export const CrmHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

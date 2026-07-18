@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { Card, FilterChip } from '#/section-kit/index.ts'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import { useJobBoardSearch } from './job-board-interactions.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * JobBoardHero — centered, conversion-focused hero for a job-board / careers
@@ -64,7 +65,8 @@ export const JobBoardHero = defineCapsule({
       'w-full rounded-xl border border-input bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'relative border-b border-border bg-background',
           props.className,
@@ -180,7 +182,7 @@ export const JobBoardHero = defineCapsule({
             </Card>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

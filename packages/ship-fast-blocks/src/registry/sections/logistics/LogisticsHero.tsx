@@ -23,6 +23,7 @@ import {
  * fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 export const LogisticsHero = defineCapsule({
   name: 'LogisticsHero',
   description:
@@ -120,7 +121,10 @@ export const LogisticsHero = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-muted/50 py-16 lg:py-24', props.className)}>
+      <HeroSection
+        variant="split"
+        className={cn('bg-muted/50 py-16 lg:py-24', props.className)}
+      >
         <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
@@ -266,7 +270,7 @@ export const LogisticsHero = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </HeroSection>
     )
   },
 })

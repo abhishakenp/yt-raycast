@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * CoworkingHero — luminous opening scene for a coworking / workspace landing
@@ -128,7 +129,8 @@ export const CoworkingHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="default"
         className={cn(
           'relative isolate overflow-hidden bg-background',
           props.className,
@@ -291,7 +293,7 @@ export const CoworkingHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

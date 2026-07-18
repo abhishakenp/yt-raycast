@@ -22,6 +22,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * Renders fully with no props via baked-in "DailyFlow" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 export const MobileAppHero = defineCapsule({
   name: 'MobileAppHero',
   description:
@@ -105,7 +106,8 @@ export const MobileAppHero = defineCapsule({
       </svg>
     )
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'bg-muted/50 pt-20 pb-20 lg:pt-28 lg:pb-28',
           props.className,
@@ -232,7 +234,7 @@ export const MobileAppHero = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </HeroSection>
     )
   },
 })

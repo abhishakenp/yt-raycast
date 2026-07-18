@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * AccountingFirmHero — split, editorial hero band for a CPA / accounting-firm
@@ -83,7 +84,8 @@ export const AccountingFirmHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'relative border-b border-border bg-card',
           props.className,
@@ -153,7 +155,7 @@ export const AccountingFirmHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

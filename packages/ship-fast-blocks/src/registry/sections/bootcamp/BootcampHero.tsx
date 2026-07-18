@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * BootcampHero — split-layout hero section for a coding bootcamp / career-school
@@ -79,7 +80,8 @@ export const BootcampHero = defineCapsule({
     )
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
         <div
@@ -171,7 +173,7 @@ export const BootcampHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

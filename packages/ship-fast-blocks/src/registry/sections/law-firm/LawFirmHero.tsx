@@ -18,6 +18,7 @@ import { Image } from '#/lib/img.tsx'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 export const LawFirmHero = defineCapsule({
   name: 'LawFirmHero',
   description:
@@ -90,7 +91,10 @@ export const LawFirmHero = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-background py-24 lg:py-28', props.className)}>
+      <HeroSection
+        variant="split"
+        className={cn('bg-background py-24 lg:py-28', props.className)}
+      >
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
@@ -159,7 +163,7 @@ export const LawFirmHero = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </HeroSection>
     )
   },
 })

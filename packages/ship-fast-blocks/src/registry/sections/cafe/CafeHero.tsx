@@ -12,6 +12,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * CafeHero — split-layout hero section for a cozy neighborhood cafe / coffee
@@ -103,7 +104,8 @@ export const CafeHero = defineCapsule({
     ])
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn(
           'px-6 pt-20 pb-20 lg:px-8 lg:pt-28 lg:pb-28',
           props.className,
@@ -200,7 +202,7 @@ export const CafeHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })

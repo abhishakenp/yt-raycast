@@ -10,6 +10,7 @@ import {
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 
 /**
  * NoCodeHero — two-column landing hero for a no-code / drag-and-drop app-builder
@@ -187,7 +188,8 @@ export const NoCodeHero = defineCapsule({
     ]
 
     return (
-      <section
+      <HeroSection
+        variant="split"
         className={cn('relative overflow-hidden', props.className)}
         aria-labelledby="nc-hero"
       >
@@ -388,7 +390,7 @@ export const NoCodeHero = defineCapsule({
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
     )
   },
 })
