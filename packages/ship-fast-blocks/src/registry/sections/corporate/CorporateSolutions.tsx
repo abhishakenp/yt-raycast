@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { Card } from '#/section-kit/Card.tsx'
 import { SolutionGrid, SolutionCard } from '#/section-kit/SolutionGrid.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
@@ -208,31 +207,27 @@ export const CorporateSolutions = defineCapsule({
           {sectionHead(heading, description)}
           <SolutionGrid cols="1-md-2-3" className="grid gap-8">
             {items.map((item, i) => (
-              <SolutionCard asChild key={item.title}>
-                <Card
-                  key={item.title}
-                  variant="muted"
-                  padding="lg"
-                  className="group bg-muted/50 transition-colors hover:border-border/60"
+              <SolutionCard
+                key={item.title}
+                className="bg-muted/50 p-8 transition-colors hover:border-border/60"
+              >
+                <div className="mb-6 grid size-12 place-items-center rounded-lg bg-foreground text-background">
+                  {solutionIcons[i % solutionIcons.length]}
+                </div>
+                <h3 className="mb-3 text-xl font-semibold text-foreground">
+                  {item.title}
+                </h3>
+                <p className="mb-4 leading-relaxed text-muted-foreground">
+                  {item.description}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => go(item.title)}
+                  className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
                 >
-                  <div className="mb-6 grid size-12 place-items-center rounded-lg bg-foreground text-background">
-                    {solutionIcons[i % solutionIcons.length]}
-                  </div>
-                  <h3 className="mb-3 text-xl font-semibold text-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="mb-4 leading-relaxed text-muted-foreground">
-                    {item.description}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => go(item.title)}
-                    className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
-                  >
-                    Learn more
-                    <ArrowRight className="ml-1 size-4" />
-                  </button>
-                </Card>
+                  Learn more
+                  <ArrowRight className="ml-1 size-4" />
+                </button>
               </SolutionCard>
             ))}
           </SolutionGrid>
