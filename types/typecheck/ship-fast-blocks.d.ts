@@ -45,6 +45,7 @@ declare module '@ship-fast/blocks' {
     pageFromUrl: string | null
   }
   export const Image: ComponentType<any>
+  export const BaseImage: ComponentType<any>
   export function picsum(alt: unknown, w?: number, h?: number): string
   export function defineCapsule(input: any): any
 }

@@ -184,7 +184,8 @@ export const DocsHero = defineCapsule({
 
     useSyncDocsCatalog(lakebed, articles)
 
-    const catalog: DocsArticleRecord[] = lakebed.useQuery('docsCatalog') ?? []
+    const catalog = (lakebed.useQuery('docsCatalog') ??
+      []) as DocsArticleRecord[]
     const articleCatalog: ReadonlyArray<{
       title: string
       slug: string

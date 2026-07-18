@@ -13,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { PortfolioGrid } from '#/section-kit/PortfolioGrid.tsx'
 export const MobileAppHowItWorks = defineCapsule({
   name: 'MobileAppHowItWorks',
   description:
@@ -79,7 +80,7 @@ export const MobileAppHowItWorks = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          <PortfolioGrid cols="1-2-3" className="lg:gap-12">
             {items.map((step, i) => (
               <div key={step.title} className="relative">
                 <div className="mb-4 text-6xl font-bold text-muted-foreground/30">
@@ -98,7 +99,7 @@ export const MobileAppHowItWorks = defineCapsule({
                 />
               </div>
             ))}
-          </div>
+          </PortfolioGrid>
         </Container>
       </section>
     )

@@ -14,7 +14,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '#/components/ui/sheet.tsx'
-import { analyticsAdminLakebed, type AnalyticsNotificationRecord } from './analytics-admin-lakebed.ts'
+import {
+  analyticsAdminLakebed,
+  type AnalyticsNotificationRecord,
+} from './analytics-admin-lakebed.ts'
+import { PageHeader } from '#/section-kit/PageHeader.tsx'
 
 /**
  * AnalyticsHeader — sticky top header bar for a SaaS analytics dashboard. A
@@ -89,8 +93,10 @@ export const AnalyticsHeader = defineCapsule({
           'Notifications',
           'Settings',
         ]
-    const notifications = (lakebed.useQuery('notifications') ?? []) as AnalyticsNotificationRecord[]
-    const unreadCount = (lakebed.useQuery('unreadNotificationCount') ?? 0) as number
+    const notifications = (lakebed.useQuery('notifications') ??
+      []) as AnalyticsNotificationRecord[]
+    const unreadCount = (lakebed.useQuery('unreadNotificationCount') ??
+      0) as number
     const defaultNotifications = useMemo(
       () =>
         props.notifications?.length
@@ -157,7 +163,7 @@ export const AnalyticsHeader = defineCapsule({
     }
 
     return (
-      <header
+      <PageHeader
         className={cn(
           'sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
@@ -381,7 +387,7 @@ export const AnalyticsHeader = defineCapsule({
             </SheetFooter>
           </SheetContent>
         </Sheet>
-      </header>
+      </PageHeader>
     )
   },
 })

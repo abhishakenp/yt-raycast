@@ -333,10 +333,13 @@ export function PromptInputProvider({
     [attachmentFiles, add, remove, clear, openFileDialog],
   )
 
-  const __registerFileInput = useCallback((ref: React.RefObject<HTMLInputElement | null>, open: () => void) => {
-    fileInputRef.current = ref.current
-    openRef.current = open
-  }, [])
+  const __registerFileInput = useCallback(
+    (ref: React.RefObject<HTMLInputElement | null>, open: () => void) => {
+      fileInputRef.current = ref.current
+      openRef.current = open
+    },
+    [],
+  )
 
   const controller = useMemo<PromptInputControllerProps>(
     () => ({
@@ -581,7 +584,8 @@ export function PromptInput({
         })
         return
       }
-      const withinSize = (f: File) => (maxFileSize ? f.size <= maxFileSize : true)
+      const withinSize = (f: File) =>
+        maxFileSize ? f.size <= maxFileSize : true
       const sized = accepted.filter(withinSize)
       if (accepted.length > 0 && sized.length === 0) {
         onError?.({
@@ -644,7 +648,8 @@ export function PromptInput({
         })
         return
       }
-      const withinSize = (f: File) => (maxFileSize ? f.size <= maxFileSize : true)
+      const withinSize = (f: File) =>
+        maxFileSize ? f.size <= maxFileSize : true
       const sized = accepted.filter(withinSize)
       if (accepted.length > 0 && sized.length === 0) {
         onError?.({
@@ -743,11 +748,14 @@ export function PromptInput({
         add(e.dataTransfer.files)
       }
     }
-    form.addEventListener('dragover', onDragOver)
-    form.addEventListener('drop', onDrop)
+    form.addEventListener('dragover', onDragOver as unknown as EventListener)
+    form.addEventListener('drop', onDrop as unknown as EventListener)
     return () => {
-      form.removeEventListener('dragover', onDragOver)
-      form.removeEventListener('drop', onDrop)
+      form.removeEventListener(
+        'dragover',
+        onDragOver as unknown as EventListener,
+      )
+      form.removeEventListener('drop', onDrop as unknown as EventListener)
     }
   }, [add, globalDrop])
 
@@ -769,11 +777,17 @@ export function PromptInput({
         add(e.dataTransfer.files)
       }
     }
-    document.addEventListener('dragover', onDragOver)
-    document.addEventListener('drop', onDrop)
+    document.addEventListener(
+      'dragover',
+      onDragOver as unknown as EventListener,
+    )
+    document.addEventListener('drop', onDrop as unknown as EventListener)
     return () => {
-      document.removeEventListener('dragover', onDragOver)
-      document.removeEventListener('drop', onDrop)
+      document.removeEventListener(
+        'dragover',
+        onDragOver as unknown as EventListener,
+      )
+      document.removeEventListener('drop', onDrop as unknown as EventListener)
     }
   }, [add, globalDrop])
 

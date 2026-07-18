@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { EventList } from '#/section-kit/EventList.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 
 /**
@@ -150,7 +150,7 @@ export const ChurchEvents = defineCapsule({
               <ArrowRight className="ml-1 size-4" />
             </button>
           </div>
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
+          <EventList variant="card" className="gap-8">
             {items.map((ev) => (
               <button
                 key={ev.title}
@@ -185,7 +185,7 @@ export const ChurchEvents = defineCapsule({
                 </span>
               </button>
             ))}
-          </ResponsiveGrid>
+          </EventList>
         </div>
       </section>
     )

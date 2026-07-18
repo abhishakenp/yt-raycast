@@ -97,7 +97,7 @@ export const CoworkingCta = defineCapsule({
             <span className="relative">{primaryCta}</span>
           </button>
           <CtaAction
-            variant="secondary"
+            variant="outline"
             onClick={() => go(props.secondaryTarget ?? secondaryCta)}
             className="inline-flex items-center justify-center rounded-2xl border border-primary-foreground/30 px-8 py-4 text-base font-medium text-primary-foreground transition-colors duration-300 hover:bg-primary-foreground/10"
           >

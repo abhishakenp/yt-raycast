@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { SplitStory } from '#/section-kit/SplitStory.tsx'
 
 /**
  * AboutHero — mission hero band for a modern company / ABOUT page. A spacious
@@ -64,7 +65,7 @@ export const AboutHero = defineCapsule({
     )
 
     return (
-      <section
+      <SplitStory
         className={cn(
           'relative overflow-hidden py-20 sm:py-24 lg:py-28',
           props.className,
@@ -125,7 +126,7 @@ export const AboutHero = defineCapsule({
             </Card>
           </div>
         </div>
-      </section>
+      </SplitStory>
     )
   },
 })

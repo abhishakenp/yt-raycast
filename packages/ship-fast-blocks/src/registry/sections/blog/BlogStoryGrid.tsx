@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { StoryCard } from '#/section-kit/StoryCard.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
@@ -159,7 +159,7 @@ export const BlogStoryGrid = defineCapsule({
           </button>
         </div>
 
-        <ResponsiveGrid cols="1-2-3" gap="md">
+        <ArticleGrid cols="1-2-3">
           {posts.map((post) => (
             <StoryCard
               key={post.title}
@@ -191,7 +191,7 @@ export const BlogStoryGrid = defineCapsule({
               variant="bordered"
             />
           ))}
-        </ResponsiveGrid>
+        </ArticleGrid>
       </section>
     )
   },

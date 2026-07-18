@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { EventList } from '#/section-kit/EventList.tsx'
 
 /**
  * BarNightclubEvents — stacked weekly events list for a cocktail-bar /
@@ -117,7 +118,7 @@ export const BarNightclubEvents = defineCapsule({
             </p>
           </div>
 
-          <div className="space-y-6">
+          <EventList variant="list">
             {items.map((ev) => (
               <div
                 key={ev.title}
@@ -149,7 +150,7 @@ export const BarNightclubEvents = defineCapsule({
                 </button>
               </div>
             ))}
-          </div>
+          </EventList>
         </Container>
       </section>
     )

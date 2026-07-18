@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { StoryCard } from '#/section-kit/StoryCard.tsx'
 
 /**
@@ -141,7 +141,7 @@ export const NewsletterIssues = defineCapsule({
             className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
           />
 
-          <ResponsiveGrid cols="1-md-2-3" gap="md" className="lg:gap-8">
+          <ArticleGrid cols="1-md-2-3" className="lg:gap-8">
             {items.map((issue) => (
               <StoryCard
                 key={issue.number}
@@ -170,7 +170,7 @@ export const NewsletterIssues = defineCapsule({
                 bodyClassName="p-6"
               />
             ))}
-          </ResponsiveGrid>
+          </ArticleGrid>
 
           <div className="mt-12 text-center">
             <button

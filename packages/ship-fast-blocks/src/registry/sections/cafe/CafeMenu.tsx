@@ -6,7 +6,11 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
 import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { MenuList, MenuItemDescription, MenuItemPrice } from '#/section-kit/MenuList.tsx'
+import {
+  MenuList,
+  MenuItemDescription,
+  MenuItemPrice,
+} from '#/section-kit/MenuList.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -244,14 +248,18 @@ export const CafeMenu = defineCapsule({
       ),
     )
 
-    const MenuAddButton = ({ item }: { item?: { name: string; price: string } }) => (
+    const MenuAddButton = ({
+      item,
+    }: {
+      item?: { name: string; price: string }
+    }) => (
       <CommerceAddItemButton
         lakebed={lakebed}
         item={{
-          label: item.name,
-          price: item.price,
+          label: item?.name ?? '',
+          price: item?.price ?? '',
         }}
-        aria-label={`${addLabel} ${item.name} to cart`}
+        aria-label={`${addLabel} ${item?.name ?? ''} to cart`}
         pendingChildren={
           <>
             <CommerceMutationSpinner className="size-3" />
@@ -267,87 +275,85 @@ export const CafeMenu = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <MenuList>
-          <SectionHeading
-            eyebrow={cap}
-            title={heading}
-            subtitle={description}
-            align="center"
-            eyebrowClassName="text-primary tracking-wider"
-            titleClassName="mb-6 font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
-            className="mx-auto mb-16 max-w-2xl gap-6"
-          />
+          <MenuList>
+            <SectionHeading
+              eyebrow={cap}
+              title={heading}
+              subtitle={description}
+              align="center"
+              eyebrowClassName="text-primary tracking-wider"
+              titleClassName="mb-6 font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
+              className="mx-auto mb-16 max-w-2xl gap-6"
+            />
 
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-            {[
-              { title: coffeeTitle, items: coffee },
-              { title: foodTitle, items: food },
-            ].map((col) => (
-              <div key={col.title} className="space-y-8">
-                <MenuCategoryHeader
-                  title={col.title}
-                  icon={
-                    <svg
-                      className="size-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.5"
-                        d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 2.829a4.978 4.978 0 01-1.414-2.83M6 12a6 6 0 0112 0v1H6v-1z"
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+              {[
+                { title: coffeeTitle, items: coffee },
+                { title: foodTitle, items: food },
+              ].map((col) => (
+                <div key={col.title} className="space-y-8">
+                  <MenuCategoryHeader
+                    title={col.title}
+                    icon={
+                      <svg
+                        className="size-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.5"
+                          d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 2.829a4.978 4.978 0 01-1.414-2.83M6 12a6 6 0 0112 0v1H6v-1z"
+                        />
+                      </svg>
+                    }
+                  />
+                  <div className="space-y-6">
+                    {(col.items ?? []).map((item, idx) => (
+                      <MenuItemRow
+                        key={item.name}
+                        name={item.name}
+                        description={item.description}
+                        price={item.price}
+                        onNameClick={() => go(menuTarget)}
+                        action={<MenuAddButton item={item} />}
+                        showDivider={idx < col.items.length - 1}
                       />
-                    </svg>
-                  }
-                />
-                <div className="space-y-6">
-                  {(col.items ?? []).map((item, idx) => (
-                    <MenuItemRow
-                      key={item.name}
-                      name={item.name}
-                      description={item.description}
-                      price={item.price}
-                      onNameClick={() => go(menuTarget)}
-                      action={<MenuAddButton item={item} />}
-                      showDivider={idx < col.items.length - 1}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Teas & Non-Coffee */}
-          <div className="mt-16 border-t border-border pt-16">
-            <h3 className="mb-8 text-center font-serif text-xl font-medium text-foreground">
-              {teaTitle}
-            </h3>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {teas.map((tea) => (
-                <div
-                  key={tea.name}
-                  className="rounded-xl bg-muted p-6 text-center"
-                >
-                  <h4 className="mb-1 font-medium text-foreground">
-                    {tea.name}
-                  </h4>
-                  <MenuItemDescription className="mb-2">
-                    {tea.description}
-                  </MenuItemDescription>
-                  <MenuItemPrice>
-                    {tea.price}
-                  </MenuItemPrice>
-                  <div className="mt-4 flex justify-center">
-                    <MenuAddButton item={tea} />
+                    ))}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        </MenuList>
+
+            {/* Teas & Non-Coffee */}
+            <div className="mt-16 border-t border-border pt-16">
+              <h3 className="mb-8 text-center font-serif text-xl font-medium text-foreground">
+                {teaTitle}
+              </h3>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {teas.map((tea) => (
+                  <div
+                    key={tea.name}
+                    className="rounded-xl bg-muted p-6 text-center"
+                  >
+                    <h4 className="mb-1 font-medium text-foreground">
+                      {tea.name}
+                    </h4>
+                    <MenuItemDescription className="mb-2">
+                      {tea.description}
+                    </MenuItemDescription>
+                    <MenuItemPrice>{tea.price}</MenuItemPrice>
+                    <div className="mt-4 flex justify-center">
+                      <MenuAddButton item={tea} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </MenuList>
         </div>
       </section>
     )
