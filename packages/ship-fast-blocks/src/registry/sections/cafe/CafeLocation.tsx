@@ -5,7 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { LocationBlock, LocationMap } from '#/section-kit/LocationBlock.tsx'
+import {
+  LocationBlock,
+  LocationMap,
+  LocationHours,
+  LocationContact,
+} from '#/section-kit/LocationBlock.tsx'
 
 /**
  * CafeLocation — visit / location block for a cozy cafe / coffee shop page,
@@ -204,11 +209,25 @@ export const CafeLocation = defineCapsule({
                     <h3 className="mb-2 font-serif text-lg font-medium text-foreground">
                       {info.title}
                     </h3>
-                    <div className="space-y-1 text-muted-foreground">
-                      {info.lines.map((line, i) => (
-                        <p key={i}>{line}</p>
-                      ))}
-                    </div>
+                    {info.title === 'Hours' ? (
+                      <LocationHours className="space-y-1 text-muted-foreground">
+                        {info.lines.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </LocationHours>
+                    ) : info.title === 'Contact' ? (
+                      <LocationContact className="space-y-1 text-muted-foreground">
+                        {info.lines.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </LocationContact>
+                    ) : (
+                      <div className="space-y-1 text-muted-foreground">
+                        {info.lines.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
 

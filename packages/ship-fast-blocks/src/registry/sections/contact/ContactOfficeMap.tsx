@@ -5,7 +5,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { LocationBlock } from '#/section-kit/LocationBlock.tsx'
+import {
+  LocationBlock,
+  LocationMap,
+  LocationContact,
+} from '#/section-kit/LocationBlock.tsx'
 
 /**
  * ContactOfficeMap — split office information and photo section for a contact page.
@@ -105,7 +109,7 @@ export const ContactOfficeMap = defineCapsule({
               <p className="mb-6 text-[0.95rem] leading-[1.7] text-muted-foreground">
                 {description}
               </p>
-              <div className="flex flex-col gap-3.5">
+              <LocationContact className="flex flex-col gap-3.5">
                 {meta.map((line, i) => (
                   <div
                     key={line}
@@ -117,9 +121,9 @@ export const ContactOfficeMap = defineCapsule({
                     {line}
                   </div>
                 ))}
-              </div>
+              </LocationContact>
             </div>
-            <div className="relative min-h-[260px] bg-muted md:min-h-[340px]">
+            <LocationMap className="h-auto min-h-[260px] overflow-visible rounded-none md:min-h-[340px]">
               <Image
                 alt={imageAlt}
                 w={900}
@@ -147,7 +151,7 @@ export const ContactOfficeMap = defineCapsule({
                   <circle cx="12" cy="10" r="3" />
                 </svg>
               </span>
-            </div>
+            </LocationMap>
           </LocationBlock>
         </Container>
       </section>

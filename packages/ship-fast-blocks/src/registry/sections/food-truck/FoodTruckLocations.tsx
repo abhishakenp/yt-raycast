@@ -5,7 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { LocationBlock } from '#/section-kit/LocationBlock.tsx'
+import { LocationBlock, LocationHours } from '#/section-kit/LocationBlock.tsx'
 import { LocationList, LocationItem } from '#/section-kit/LocationList.tsx'
 
 /**
@@ -159,7 +159,7 @@ export const FoodTruckLocations = defineCapsule({
                       <p className="text-sm text-muted-foreground">{d.area}</p>
                     </div>
                   </div>
-                  <div className="space-y-2 text-sm">
+                  <LocationHours className="space-y-2 text-sm">
                     {(d.rows ?? []).map((row) => (
                       <div
                         key={row.label}
@@ -173,7 +173,7 @@ export const FoodTruckLocations = defineCapsule({
                         </span>
                       </div>
                     ))}
-                  </div>
+                  </LocationHours>
                 </div>
               </LocationItem>
             ))}
