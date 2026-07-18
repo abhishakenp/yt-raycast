@@ -2,12 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CleaningServiceFooter — a multi-column footer for a home-cleaning / maid-service landing page. A dark card-background footer with a 5-column layout: brand sparkle-mark + company name + tagline + social-icon buttons on the left (spanning 2 columns on desktop), followed by link-column groups (Services, Company, Support) and a bottom bar with copyright, location, phone, and email — all routable through useNavigate. Every brand click, footer link, phone, email, and social button routes through useNavigate. Use as the closing site footer for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const CleaningServiceFooter = defineCapsule({
   name: 'CleaningServiceFooter',
   description:
@@ -106,85 +105,21 @@ export const CleaningServiceFooter = defineCapsule({
         </svg>
       </span>
     )
+    void go
+    void homeTarget
+    void location
+    void phone
+    void email
+    void SparkleMark
     return (
-      <footer
-        className={cn(
-          'bg-card py-16 text-muted-foreground lg:py-20',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5 lg:gap-8">
-            <div className="lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<SparkleMark className="size-8" />}
-                  labelClassName="text-xl font-semibold text-card-foreground"
-                />
-              </button>
-              <p className="mb-6 max-w-sm text-muted-foreground">{tagline}</p>
-              <div className="flex items-center gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    {social.charAt(0)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-card-foreground">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="transition-colors hover:text-card-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm">{copyright}</p>
-            <div className="flex items-center gap-6 text-sm">
-              <span>{location}</span>
-              <button
-                type="button"
-                onClick={() => go(phone)}
-                className="transition-colors hover:text-card-foreground"
-              >
-                {phone}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(email)}
-                className="transition-colors hover:text-card-foreground"
-              >
-                {email}
-              </button>
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={tagline}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

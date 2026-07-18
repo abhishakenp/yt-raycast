@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * KidsEducationFooter — dark 5-column mega footer for a kids / family learning
@@ -14,7 +13,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * children's e-learning platforms, tutoring services, and family learning apps.
  * Renders fully with no props via baked-in "WonderLearn" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const KidsEducationFooter = defineCapsule({
   name: 'KidsEducationFooter',
   description:
@@ -95,86 +94,19 @@ export const KidsEducationFooter = defineCapsule({
         </svg>
       </span>
     )
+    void go
+    void homeTarget
+    void BookMark
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-foreground py-16 text-background',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
-            <div className="lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<BookMark className="size-10" />}
-                  labelClassName="text-xl font-bold text-background"
-                />
-              </button>
-              <p className="mb-6 max-w-sm text-background/70">{tagline}</p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-full bg-background/10 text-background/70 transition-colors hover:bg-background/20 hover:text-background"
-                  >
-                    <span className="text-xs font-semibold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-background">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-background/70 transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/15 pt-8 md:flex-row">
-            <p className="text-sm text-background/60">
-              © {new Date().getFullYear()} {brand} Inc. {note}
-            </p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-background/60 transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={tagline}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

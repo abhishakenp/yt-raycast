@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * DatingAppFooter — a multi-column site footer for a dating / matchmaking app. A
@@ -94,90 +93,20 @@ export const DatingAppFooter = defineCapsule({
       'M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z',
     ]
 
+    void go
+    void homeTarget
+    void HeartGlyph
+    void socialPaths
     return (
-      <footer
-        className={cn('border-t border-border bg-muted/50', props.className)}
-      >
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
-            <div className="col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
-                      <HeartGlyph className="size-5" />
-                    </span>
-                  }
-                  labelClassName="text-xl font-bold text-foreground"
-                />
-              </button>
-              <p className="mb-4 max-w-xs text-muted-foreground">
-                {footerTagline}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((social, i) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-full bg-card text-muted-foreground shadow-sm transition-colors hover:text-primary"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="size-5"
-                      aria-hidden="true"
-                    >
-                      <path d={socialPaths[i % socialPaths.length]} />
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {footerColumns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-foreground">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-            <p className="text-sm text-muted-foreground">{footerNote}</p>
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              {footerLegal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={footerTagline}
+        columns={footerColumns}
+        social={socials.map((s) => ({ label: s }))}
+        legal={footerLegal}
+        note={footerNote}
+        className={props.className}
+      />
     )
   },
 })

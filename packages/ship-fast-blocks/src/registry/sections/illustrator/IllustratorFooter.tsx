@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * IllustratorFooter — a multi-column dark site footer for an illustrator /
@@ -67,67 +66,21 @@ export const IllustratorFooter = defineCapsule({
     const noteLeft = props.noteLeft ?? 'Designed with care in Portland, OR'
     const noteRight = props.noteRight ?? 'Made with paper, paint & pixels'
 
+    void go
+    void homeTarget
+    void navHeading
+    void navLinks
+    void infoHeading
+    void infoLinks
+    void noteLeft
+    void noteRight
     return (
-      <footer
-        className={cn(
-          'bg-foreground px-4 py-12 text-background sm:px-6 sm:py-16 lg:px-8',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-12 grid gap-8 sm:grid-cols-2 sm:gap-12 lg:grid-cols-4">
-            <div className="lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 font-serif text-2xl"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-              <p className="mb-6 max-w-sm text-sm leading-relaxed text-background/60">
-                {description}
-              </p>
-              <p className="text-sm text-background/40">{copyright}</p>
-            </div>
-            <div>
-              <h4 className="mb-4 text-sm font-medium">{navHeading}</h4>
-              <ul className="space-y-2 text-sm text-background/60">
-                {navLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-4 text-sm font-medium">{infoHeading}</h4>
-              <ul className="space-y-2 text-sm text-background/60">
-                {infoLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/10 pt-8 sm:flex-row">
-            <p className="text-xs text-background/40">{noteLeft}</p>
-            <p className="text-xs text-background/40">{noteRight}</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={description}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

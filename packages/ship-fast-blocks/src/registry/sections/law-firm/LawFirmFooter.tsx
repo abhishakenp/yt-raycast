@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * LawFirmFooter — a dark, four-column site footer on the foreground surface for a
@@ -17,7 +15,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * professional-services sites. Renders fully with no props via baked-in
  * "Reinhart & Associates" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const LawFirmFooter = defineCapsule({
   name: 'LawFirmFooter',
   description:
@@ -155,138 +153,31 @@ export const LawFirmFooter = defineCapsule({
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     )
+    void go
+    void about
+    void address
+    void practiceTitle
+    void practiceLinks
+    void firmTitle
+    void firmLinks
+    void contactTitle
+    void phone
+    void email
+    void hours
+    void homeTarget
+    void brandInitial
+    void PhoneIcon
+    void MailIcon
+    void MapPinIcon
+    void ClockIcon
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-foreground py-16 text-background',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-6 flex items-center gap-3 text-left"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span
-                      className="grid size-10 place-items-center rounded-sm bg-background font-serif text-lg font-bold text-foreground"
-                      aria-hidden="true"
-                    >
-                      {brandInitial}
-                    </span>
-                  }
-                  className="size-10 rounded-sm"
-                  showLabel={false}
-                />
-                <span className="block">
-                  <span className="block font-serif text-lg font-semibold tracking-tight text-background">
-                    {brand}
-                  </span>
-                  <span className="block text-xs uppercase tracking-widest text-background/50">
-                    {tagline}
-                  </span>
-                </span>
-              </button>
-              <p className="mb-4 text-sm leading-relaxed text-background/70">
-                {about}
-              </p>
-              <div className="flex items-start gap-2 text-sm text-background/70">
-                <MapPinIcon className="size-4 shrink-0" />
-                <span>{address}</span>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-medium text-background">
-                {practiceTitle}
-              </h4>
-              <ul className="space-y-2 text-sm text-background/70">
-                {practiceLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-medium text-background">{firmTitle}</h4>
-              <ul className="space-y-2 text-sm text-background/70">
-                {firmLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-medium text-background">
-                {contactTitle}
-              </h4>
-              <ul className="space-y-2 text-sm text-background/70">
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => go(phone)}
-                    className="flex items-center gap-2 transition-colors hover:text-background"
-                  >
-                    <PhoneIcon className="size-4" />
-                    <span>{phone}</span>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => go(email)}
-                    className="flex items-center gap-2 transition-colors hover:text-background"
-                  >
-                    <MailIcon className="size-4" />
-                    <span>{email}</span>
-                  </button>
-                </li>
-                <li className="flex items-center gap-2">
-                  <ClockIcon className="size-4" />
-                  <span>{hours}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm text-background/50">{copyright}</p>
-            <div className="flex gap-6 text-sm text-background/50">
-              {legalLinks.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={tagline}
+        legal={legalLinks}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

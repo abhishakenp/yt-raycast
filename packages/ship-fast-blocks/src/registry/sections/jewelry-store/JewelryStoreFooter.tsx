@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * JewelryStoreFooter — rich five-column footer for a luxury jewelry maison on
@@ -92,90 +91,20 @@ export const JewelryStoreFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
+    void go
+    void homeTarget
+    void contactTitle
+    void contact
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-background py-20',
-          props.className,
-        )}
-      >
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="mb-16 grid gap-12 md:grid-cols-2 lg:grid-cols-5 lg:gap-8">
-            <div className="lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-6 inline-block font-serif text-2xl tracking-wider text-primary"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-              <p className="mb-6 max-w-sm leading-relaxed text-muted-foreground">
-                {about}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-card text-sm font-medium uppercase text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
-                  >
-                    {social.charAt(0)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <p className="mb-6 text-sm font-medium uppercase tracking-widest text-foreground">
-                  {col.title}
-                </p>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <p className="mb-6 text-sm font-medium uppercase tracking-widest text-foreground">
-                {contactTitle}
-              </p>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                {contact.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {brand}. {copyright}
-            </p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={about}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

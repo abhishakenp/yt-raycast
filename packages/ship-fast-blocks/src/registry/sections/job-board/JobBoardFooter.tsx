@@ -4,9 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
-import { Card } from '#/section-kit/Card.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * JobBoardFooter — a fat, multi-column site footer for a job-board / careers
@@ -160,87 +158,21 @@ export const JobBoardFooter = defineCapsule({
       </svg>
     )
 
+    void go
+    void homeTarget
+    void BriefcaseMark
+    void fallbackIcon
+    void socialIconMap
     return (
-      <footer
-        className={cn('border-t border-border bg-muted/40', props.className)}
-      >
-        <h2 className="sr-only">Footer</h2>
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          <ResponsiveGrid cols="2-4-5" gap="lg" className="lg:gap-12">
-            <div className="col-span-2 lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2 text-foreground"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<BriefcaseMark className="size-8" />}
-                  labelClassName="text-xl font-semibold tracking-tight"
-                />
-              </button>
-              <p className="mb-6 max-w-xs text-sm leading-relaxed text-muted-foreground">
-                {tagline}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((label) => (
-                  <Card
-                    key={label}
-                    asChild
-                    variant="default"
-                    rounded="lg"
-                    padding="none"
-                    className="grid size-10 cursor-pointer place-items-center text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
-                  >
-                    <button
-                      type="button"
-                      aria-label={label}
-                      onClick={() => go(label)}
-                    >
-                      {socialIconMap[label] ?? fallbackIcon}
-                    </button>
-                  </Card>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h3 className="mb-4 font-semibold text-foreground">
-                  {col.title}
-                </h3>
-                <ul className="space-y-3 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </ResponsiveGrid>
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-            <p className="text-sm text-muted-foreground">{note}</p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={tagline}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

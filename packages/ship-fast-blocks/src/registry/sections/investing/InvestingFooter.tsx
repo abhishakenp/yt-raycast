@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * InvestingFooter — rich multi-column footer for an investing / fintech site. A
@@ -14,7 +12,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * a brokerage, trading app, robo-advisor or crypto exchange. Renders fully with
  * no props via baked-in "Vestora" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const InvestingFooter = defineCapsule({
   name: 'InvestingFooter',
   description:
@@ -44,7 +42,6 @@ export const InvestingFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Vestora'
     const homeTarget = props.homeTarget ?? 'Features'
     const tagline =
@@ -105,73 +102,18 @@ export const InvestingFooter = defineCapsule({
         </svg>
       </span>
     )
+    void homeTarget
+    void disclosure
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-muted/50 pb-8 pt-16',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
-            <div className="col-span-2 md:col-span-4 lg:col-span-1">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-8" />}
-                  labelClassName="text-xl font-semibold tracking-tight"
-                />
-              </button>
-              <p className="mb-4 text-sm text-muted-foreground">{tagline}</p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-lg bg-secondary text-secondary-foreground transition-colors hover:bg-accent"
-                  >
-                    <span className="text-xs font-semibold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold">{col.title}</h4>
-                <ul className="space-y-3 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="border-t border-border pt-8">
-            <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-              <p className="text-sm text-muted-foreground">{copyright}</p>
-              <p className="max-w-2xl text-center text-xs text-muted-foreground/70 md:text-right">
-                {disclosure}
-              </p>
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={tagline}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

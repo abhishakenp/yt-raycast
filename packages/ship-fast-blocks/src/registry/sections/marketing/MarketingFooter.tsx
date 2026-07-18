@@ -2,8 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * MarketingFooter — a slim single-row footer for a SaaS / product-marketing
@@ -28,7 +27,6 @@ export const MarketingFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Flowstate'
     const homeTarget = props.homeTarget ?? 'Features'
     const links = props.links?.length
@@ -50,35 +48,15 @@ export const MarketingFooter = defineCapsule({
       </span>
     )
 
+    void homeTarget
     return (
-      <footer className={cn('border-t border-border py-10', props.className)}>
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-center sm:flex-row sm:text-left">
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-foreground"
-          >
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark className="size-6 text-xs" />}
-              className="size-6"
-            />
-          </button>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-            {links.map((link) => (
-              <button
-                key={link}
-                type="button"
-                onClick={() => go(link)}
-                className="transition-colors hover:text-foreground"
-              >
-                {link}
-              </button>
-            ))}
-          </div>
-          <p className="text-sm text-muted-foreground">{copyright}</p>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        legal={links}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

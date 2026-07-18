@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * ElectronicsStoreFooter — a multi-column site footer for an electronics
@@ -12,7 +11,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * through useNavigate. Use as the closing footer for electronics stores, gadget
  * shops, consumer-tech retailers, or audio/camera storefronts.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const ElectronicsStoreFooter = defineCapsule({
   name: 'ElectronicsStoreFooter',
   description:
@@ -133,86 +132,19 @@ export const ElectronicsStoreFooter = defineCapsule({
         </svg>
       </span>
     )
+    void go
+    void homeTarget
+    void BoltMark
     return (
-      <footer
-        className={cn('border-t border-border py-12 lg:py-16', props.className)}
-      >
-        <Container>
-          <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
-            <div className="col-span-2 lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<BoltMark className="size-8" />}
-                  labelClassName="text-xl font-semibold text-foreground"
-                />
-              </button>
-              <p className="mb-4 max-w-xs text-muted-foreground">
-                {description}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((s) => (
-                  <button
-                    key={s.label}
-                    type="button"
-                    aria-label={s.label}
-                    onClick={() => go(s.label)}
-                    className="grid size-10 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <svg
-                      className="size-5"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d={s.path} />
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-medium text-foreground">
-                  {col.title}
-                </h4>
-                <ul className="space-y-2">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-muted-foreground">{copyright}</p>
-            <div className="flex gap-6">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={description}
+        columns={columns}
+        social={socials.map((s) => ({ label: s.label }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

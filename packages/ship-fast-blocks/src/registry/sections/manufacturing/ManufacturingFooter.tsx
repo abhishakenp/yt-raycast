@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * ManufacturingFooter — a dark four-column site footer for a precision-
@@ -14,7 +12,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * shop, fabricator or contract-manufacturer pages. Renders fully with no props
  * via baked-in "Vertex Manufacturing" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const ManufacturingFooter = defineCapsule({
   name: 'ManufacturingFooter',
   description:
@@ -81,6 +79,17 @@ export const ManufacturingFooter = defineCapsule({
       .join('')
     const socialIcon = (name: string) => {
       if (name === 'Twitter') {
+        void go
+        void homeTarget
+        void servicesTitle
+        void industriesTitle
+        void industries
+        void contactTitle
+        void address
+        void phone
+        void email
+        void brandInitials
+        void socialIcon
         return (
           <svg
             width="20"
@@ -105,132 +114,16 @@ export const ManufacturingFooter = defineCapsule({
         </svg>
       )
     }
+    void services
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-foreground py-16',
-          props.className,
-        )}
-      >
-        <h2 className="sr-only">Footer</h2>
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span
-                      aria-hidden="true"
-                      className="grid size-8 place-items-center rounded-md bg-background text-sm font-bold text-foreground"
-                    >
-                      {brandInitials}
-                    </span>
-                  }
-                  labelClassName="font-semibold text-background"
-                />
-              </button>
-              <p className="text-sm leading-relaxed text-background/60">
-                {about}
-              </p>
-            </div>
-            <div>
-              <h3 className="mb-4 font-semibold text-background">
-                {servicesTitle}
-              </h3>
-              <ul className="space-y-2 text-sm">
-                {services.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="text-background/60 transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 font-semibold text-background">
-                {industriesTitle}
-              </h3>
-              <ul className="space-y-2 text-sm">
-                {industries.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="text-background/60 transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 font-semibold text-background">
-                {contactTitle}
-              </h3>
-              <address className="space-y-2 text-sm not-italic text-background/60">
-                <p>{address}</p>
-                <p>
-                  <button
-                    type="button"
-                    onClick={() => go(contactTitle)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {phone}
-                  </button>
-                </p>
-                <p>
-                  <button
-                    type="button"
-                    onClick={() => go(contactTitle)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {email}
-                  </button>
-                </p>
-              </address>
-              <div className="mt-4 flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="text-background/60 transition-colors hover:text-background"
-                  >
-                    {socialIcon(social)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-background/50">{copyright}</p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-background/50 transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={about}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * EventFooter — a rich, dark multi-column footer for a conference or event page.
@@ -85,6 +84,11 @@ export const EventFooter = defineCapsule({
 
     const socialIcon = (social: string) => {
       if (social === 'Twitter') {
+        void go
+        void contactTitle
+        void contacts
+        void homeTarget
+        void socialIcon
         return (
           <svg
             className="size-5"
@@ -121,91 +125,15 @@ export const EventFooter = defineCapsule({
     }
 
     return (
-      <footer
-        className={cn('bg-foreground py-16 text-background', props.className)}
-      >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span
-                      className="grid size-8 place-items-center rounded-lg bg-background text-sm font-bold text-foreground"
-                      aria-hidden="true"
-                    >
-                      {brand.slice(0, 2).toUpperCase()}
-                    </span>
-                  }
-                  labelClassName="text-lg font-semibold"
-                />
-              </button>
-              <p className="mb-4 text-sm leading-relaxed text-background/70">
-                {tagline}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="text-background/70 transition-colors hover:text-background"
-                  >
-                    {socialIcon(social)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold">{col.title}</h4>
-                <ul className="space-y-2 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-background/70 transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <h4 className="mb-4 font-semibold">{contactTitle}</h4>
-              <ul className="space-y-2 text-sm text-background/70">
-                {contacts.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 sm:flex-row">
-            <p className="text-sm text-background/60">{note}</p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-background/60 transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={tagline}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

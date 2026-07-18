@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * NoCodeFooter — rich multi-column footer on a card surface with a top border.
@@ -13,7 +11,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * route through useNavigate. Use as the closing site footer for a no-code
  * builder, SaaS, or product landing page. Renders fully with no props.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const NoCodeFooter = defineCapsule({
   name: 'NoCodeFooter',
   description:
@@ -43,7 +41,6 @@ export const NoCodeFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Buildr'
     const description =
       props.description ??
@@ -108,82 +105,18 @@ export const NoCodeFooter = defineCapsule({
         </svg>
       </span>
     )
+    void homeTarget
     return (
-      <footer
-        className={cn('border-t border-border bg-card py-16', props.className)}
-        role="contentinfo"
-      >
-        <Container>
-          <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
-            <div className="col-span-2 lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-8" />}
-                  labelClassName="text-xl font-semibold"
-                />
-              </button>
-              <p className="mb-4 max-w-xs text-muted-foreground">
-                {description}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <span className="text-xs font-semibold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-card-foreground">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-            <p className="text-sm text-muted-foreground">{copyright}</p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={description}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

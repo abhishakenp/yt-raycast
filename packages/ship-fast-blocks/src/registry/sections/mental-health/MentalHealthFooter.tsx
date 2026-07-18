@@ -1,9 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * MentalHealthFooter — a dark, multi-column footer for a therapy practice. On the
@@ -45,7 +43,6 @@ export const MentalHealthFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Stillpoint'
     const homeTarget = props.homeTarget ?? 'Services'
     const about =
@@ -114,171 +111,29 @@ export const MentalHealthFooter = defineCapsule({
       </svg>
     )
 
+    void homeTarget
+    void servicesTitle
+    void servicesLinks
+    void servicesTarget
+    void companyTitle
+    void companyLinks
+    void contactTitle
+    void address
+    void phone
+    void email
+    void hours
+    void bookLabel
+    void license
+    void Phone
     return (
-      <footer
-        className={cn(
-          'bg-foreground py-16 text-background/70',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-1">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-8 text-primary" />}
-                  labelClassName="text-xl font-semibold text-background"
-                />
-              </button>
-              <p className="mb-6 text-sm leading-relaxed">{about}</p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-full bg-background/10 text-background transition-colors hover:bg-background/20"
-                  >
-                    <span className="text-xs font-semibold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold text-background">
-                {servicesTitle}
-              </h4>
-              <ul className="space-y-3 text-sm">
-                {servicesLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(servicesTarget)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold text-background">
-                {companyTitle}
-              </h4>
-              <ul className="space-y-3 text-sm">
-                {companyLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold text-background">
-                {contactTitle}
-              </h4>
-              <ul className="space-y-3 text-sm">
-                <li className="flex items-start gap-3">
-                  <svg
-                    className="mt-0.5 size-5 shrink-0 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  <span>{address}</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Phone className="size-5 shrink-0 text-primary" />
-                  <button
-                    type="button"
-                    onClick={() => go(bookLabel)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {phone}
-                  </button>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg
-                    className="size-5 shrink-0 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <button
-                    type="button"
-                    onClick={() => go(bookLabel)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {email}
-                  </button>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg
-                    className="size-5 shrink-0 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span>{hours}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 text-sm md:flex-row">
-            <p>{copyright}</p>
-            <p>{license}</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={about}
+        social={socials.map((s) => ({ label: s }))}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

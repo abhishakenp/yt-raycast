@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * MusicFestivalFooter — a four-column footer for a music / arts festival landing
@@ -13,7 +11,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * festivals, arts festivals, concert series, camping/desert events, or any
  * multi-day ticketed event.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const MusicFestivalFooter = defineCapsule({
   name: 'MusicFestivalFooter',
   description:
@@ -70,72 +68,18 @@ export const MusicFestivalFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service']
+    void go
+    void socialLabel
     return (
-      <footer className={cn('border-t border-border py-16', props.className)}>
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-4">
-            <div>
-              <h3 className="mb-4 text-xl font-bold">
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </h3>
-              <p className="text-sm leading-relaxed text-foreground/60">
-                {about}
-              </p>
-            </div>
-            {columns.map((col) => (
-              <div key={col.heading}>
-                <h4 className="mb-4 font-semibold">{col.heading}</h4>
-                <ul className="space-y-3 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-foreground/60 transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <h4 className="mb-4 font-semibold">{socialLabel}</h4>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-full bg-accent text-accent-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
-                  >
-                    <span className="text-xs font-semibold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-foreground/50">{copyright}</p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-foreground/50 transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={about}
+        columns={columns.map((c) => ({ title: c.heading, links: c.links }))}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

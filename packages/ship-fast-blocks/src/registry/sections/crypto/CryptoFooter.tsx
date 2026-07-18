@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * CryptoFooter — rich multi-column footer for a crypto / DeFi infrastructure
@@ -98,88 +97,19 @@ export const CryptoFooter = defineCapsule({
       </svg>
     )
 
+    void go
+    void homeTarget
+    void BoltIcon
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-foreground text-background',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
-            <div className="col-span-2 lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span className="grid size-8 place-items-center rounded-lg bg-background text-foreground">
-                      <BoltIcon className="size-5" />
-                    </span>
-                  }
-                  labelClassName="text-xl font-semibold tracking-tight"
-                />
-              </button>
-              <p className="mb-6 max-w-xs text-sm leading-relaxed text-background/60">
-                {description}
-              </p>
-              <div className="flex items-center gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-8 place-items-center rounded-lg bg-background/10 text-background/60 transition-colors hover:bg-background/20 hover:text-background"
-                  >
-                    <span className="text-xs font-bold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.heading}>
-                <h4 className="mb-4 font-medium text-background">
-                  {col.heading}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-background/60 transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm text-background/50">{note}</p>
-            <div className="flex items-center gap-6">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm text-background/50 transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={description}
+        columns={columns.map((c) => ({ title: c.heading, links: c.links }))}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

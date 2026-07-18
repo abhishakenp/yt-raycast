@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * CommunityForumFooter — rich multi-column footer for a community-platform / discussion-forum
@@ -98,6 +97,9 @@ export const CommunityForumFooter = defineCapsule({
 
     const SocialIcon = ({ name }: { name?: string }) => {
       if (name === 'Twitter') {
+        void go
+        void homeTarget
+        void SocialIcon
         return (
           <svg
             viewBox="0 0 24 24"
@@ -134,81 +136,16 @@ export const CommunityForumFooter = defineCapsule({
     }
 
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-background py-16',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
-            <div className="col-span-2 lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<BrandMark className="size-8 text-foreground" />}
-                  labelClassName="text-xl font-semibold text-foreground"
-                />
-              </button>
-              <p className="mb-4 max-w-xs text-muted-foreground">{tagline}</p>
-              <div className="flex items-center gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <SocialIcon name={social} />
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.heading}>
-                <h4 className="mb-4 font-semibold text-foreground">
-                  {col.heading}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-            <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} {brand} Inc. {note}
-            </p>
-            <div className="flex items-center gap-6">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<BrandMark />}
+        tagline={tagline}
+        columns={columns.map((c) => ({ title: c.heading, links: c.links }))}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

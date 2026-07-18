@@ -2,10 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * LandscapingFooter — a slim, calm closing footer for a landscaping / outdoor-
@@ -33,7 +31,6 @@ export const LandscapingFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Earth & Edge'
     const tagline =
       props.tagline ??
@@ -59,46 +56,16 @@ export const LandscapingFooter = defineCapsule({
       </svg>
     )
 
+    void homeTarget
     return (
-      <footer
-        className={cn('border-t border-border bg-card py-12', props.className)}
-      >
-        <Container>
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row md:items-start">
-            <div className="max-w-sm text-center md:text-left">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-3 flex items-center justify-center gap-2 md:justify-start"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-7" />}
-                  labelClassName="text-lg font-semibold tracking-tight text-foreground"
-                />
-              </button>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {tagline}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-6">
-              {links.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} {brand}. {note}
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={tagline}
+        legal={links}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * DentalFooter — rich 4-column footer for a dental practice site. A dark inverted
@@ -13,7 +11,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * bar. Every link, social, phone, and email routes through useNavigate. Use as
  * the closing footer for dentists, dental offices, orthodontists, or clinics.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const DentalFooter = defineCapsule({
   name: 'DentalFooter',
   description:
@@ -47,7 +45,6 @@ export const DentalFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Bright Smile'
     const brandTagline = props.brandTagline ?? 'Dental Care'
     const homeTarget = props.homeTarget ?? 'Services'
@@ -138,163 +135,27 @@ export const DentalFooter = defineCapsule({
         <path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     )
+    void brandTagline
+    void homeTarget
+    void footerServicesHeading
+    void footerServiceLinks
+    void footerHoursHeading
+    void footerHours
+    void footerContactHeading
+    void footerAddress
+    void footerPhone
+    void footerEmail
+    void PhoneIcon
     return (
-      <footer
-        className={cn('bg-foreground py-16 text-background', props.className)}
-      >
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-            {/* Brand */}
-            <div>
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-6 flex items-center gap-3 text-left"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoBadge className="size-10" />}
-                  className="size-10"
-                  showLabel={false}
-                />
-                <span className="leading-tight">
-                  <span className="block text-xl font-semibold">{brand}</span>
-                  <span className="-mt-1 block text-sm text-background/60">
-                    {brandTagline}
-                  </span>
-                </span>
-              </button>
-              <p className="mb-6 leading-relaxed text-background/60">
-                {footerTagline}
-              </p>
-              <div className="flex gap-4">
-                {footerSocials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/60 transition-colors hover:bg-primary hover:text-primary-foreground"
-                  >
-                    <span className="text-sm font-bold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Services */}
-            <div>
-              <h4 className="mb-6 text-lg font-semibold">
-                {footerServicesHeading}
-              </h4>
-              <ul className="space-y-3">
-                {footerServiceLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="text-background/60 transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Hours */}
-            <div>
-              <h4 className="mb-6 text-lg font-semibold">
-                {footerHoursHeading}
-              </h4>
-              <ul className="space-y-3 text-background/60">
-                {footerHours.map((h) => (
-                  <li key={h.day} className="flex justify-between gap-4">
-                    <span>{h.day}</span>
-                    <span className="text-background">{h.time}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h4 className="mb-6 text-lg font-semibold">
-                {footerContactHeading}
-              </h4>
-              <ul className="space-y-4 text-background/60">
-                <li className="flex items-start gap-3">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mt-0.5 size-5 shrink-0 text-primary"
-                    aria-hidden="true"
-                  >
-                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z" />
-                    <path d="M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                  </svg>
-                  <span>{footerAddress}</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <PhoneIcon className="size-5 shrink-0 text-primary" />
-                  <button
-                    type="button"
-                    onClick={() => go(`Call ${footerPhone}`)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {footerPhone}
-                  </button>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="size-5 shrink-0 text-primary"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z" />
-                  </svg>
-                  <button
-                    type="button"
-                    onClick={() => go(`Email ${footerEmail}`)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {footerEmail}
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm text-background/50">
-              © {new Date().getFullYear()} {footerCopyright}
-            </p>
-            <div className="flex gap-6 text-sm">
-              {footerLegal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-background/50 transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoBadge />}
+        tagline={footerTagline}
+        social={footerSocials.map((s) => ({ label: s }))}
+        legal={footerLegal}
+        note={footerCopyright}
+        className={props.className}
+      />
     )
   },
 })

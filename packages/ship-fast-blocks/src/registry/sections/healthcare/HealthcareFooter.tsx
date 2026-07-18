@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * HealthcareFooter — rich multi-column footer for a medical-clinic page. A
@@ -15,7 +14,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * primary-care practices, telehealth or urgent-care clinics, hospitals or
  * medical groups. Renders fully with no props via baked-in clinic defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const HealthcareFooter = defineCapsule({
   name: 'HealthcareFooter',
   description:
@@ -109,168 +108,26 @@ export const HealthcareFooter = defineCapsule({
         </svg>
       </span>
     )
+    void go
+    void homeTarget
+    void servicesHeading
+    void servicesLinks
+    void companyHeading
+    void companyLinks
+    void contactHeading
+    void address
+    void phone
+    void email
+    void HeartMark
     return (
-      <footer
-        className={cn(
-          'bg-foreground py-16 text-background/70',
-          props.className,
-        )}
-        role="contentinfo"
-      >
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-6 flex items-center gap-3"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<HeartMark className="size-10" />}
-                  labelClassName="text-xl font-semibold text-background"
-                />
-              </button>
-              <p className="mb-6 leading-relaxed text-background/60">
-                {tagline}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-background/20 hover:text-background"
-                  >
-                    {social.charAt(0)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold text-background">
-                {servicesHeading}
-              </h4>
-              <ul className="space-y-3">
-                {servicesLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold text-background">
-                {companyHeading}
-              </h4>
-              <ul className="space-y-3">
-                {companyLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold text-background">
-                {contactHeading}
-              </h4>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <svg
-                    className="mt-0.5 size-5 shrink-0"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>{address}</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg
-                    className="size-5 shrink-0"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  <button
-                    type="button"
-                    onClick={() => go(phone)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {phone}
-                  </button>
-                </li>
-                <li className="flex items-center gap-3">
-                  <svg
-                    className="size-5 shrink-0"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <button
-                    type="button"
-                    onClick={() => go(email)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {email}
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm text-background/60">{copyright}</p>
-            <div className="flex gap-6 text-sm">
-              {legalLinks.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={tagline}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legalLinks}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

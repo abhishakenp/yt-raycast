@@ -1,9 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * MembershipClubFooter — multi-column site footer for a private membership club /
@@ -33,7 +31,6 @@ export const MembershipClubFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'The Guild'
     const homeTarget = props.homeTarget ?? 'Benefits'
     const about =
@@ -75,73 +72,17 @@ export const MembershipClubFooter = defineCapsule({
       </svg>
     )
 
+    void homeTarget
     return (
-      <footer
-        className={cn(
-          'w-full border-t border-border bg-muted',
-          props.className,
-        )}
-        role="contentinfo"
-      >
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mb-12 grid gap-12 md:grid-cols-4">
-            <div className="md:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-                aria-label={`${brand} Home`}
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-8 text-foreground" />}
-                  labelClassName="text-xl font-light tracking-tight text-foreground"
-                />
-              </button>
-              <p className="max-w-sm leading-relaxed text-muted-foreground">
-                {about}
-              </p>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 text-sm font-medium uppercase tracking-wider text-foreground">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {copyright}
-            </p>
-            <div className="flex items-center gap-6">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={about}
+        columns={columns}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

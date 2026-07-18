@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FitnessFooter — inverted multi-column site footer for a gym or fitness studio. A
@@ -12,7 +10,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * Use as the closing footer on gyms, fitness studios, yoga / pilates / boxing / spin
  * studios, wellness clubs or class-booking sites.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const FitnessFooter = defineCapsule({
   name: 'FitnessFooter',
   description:
@@ -67,74 +65,20 @@ export const FitnessFooter = defineCapsule({
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
+    void go
+    void brandShort
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-foreground py-12 text-background',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-12 grid gap-8 md:grid-cols-4">
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <BrandLogo
-                  brand={brandShort}
-                  fallback={
-                    <span
-                      className="grid size-8 place-items-center rounded-sm bg-background text-sm font-bold text-foreground"
-                      aria-hidden="true"
-                    >
-                      {brandShort.charAt(0)}
-                    </span>
-                  }
-                  labelClassName="text-lg font-semibold tracking-tight text-background"
-                />
-              </div>
-              <p className="text-sm text-background/60">{footerTagline}</p>
-            </div>
-
-            {footerColumns.map((col) => (
-              <div key={col.heading}>
-                <h4 className="mb-4 font-medium text-background">
-                  {col.heading}
-                </h4>
-                <ul className="space-y-2 text-sm text-background/60">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm text-background/50">
-              © {new Date().getFullYear()} {brand}. {footerCopyright}
-            </p>
-            <div className="flex gap-6 text-sm text-background/60">
-              {footerLegal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={footerTagline}
+        columns={footerColumns.map((c) => ({
+          title: c.heading,
+          links: c.links,
+        }))}
+        legal={footerLegal}
+        note={footerCopyright}
+        className={props.className}
+      />
     )
   },
 })

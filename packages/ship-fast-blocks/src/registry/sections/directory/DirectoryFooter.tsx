@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * DirectoryFooter — dark inverted multi-column footer for a local-business
@@ -13,7 +11,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * footer for local directories, business-listing marketplaces, find-a-service
  * platforms, or review-and-discovery sites.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const DirectoryFooter = defineCapsule({
   name: 'DirectoryFooter',
   description:
@@ -93,69 +91,18 @@ export const DirectoryFooter = defineCapsule({
         <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     )
+    void go
+    void copyright
+    void homeTarget
+    void PinLogo
     return (
-      <footer
-        className={cn(
-          'bg-foreground py-12 text-background lg:py-16',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-12 grid gap-8 md:grid-cols-4 lg:gap-12">
-            <div className="md:col-span-1">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<PinLogo className="size-6 text-background" />}
-                  labelClassName="text-lg font-semibold text-background"
-                />
-              </button>
-              <p className="text-sm text-background/60">{note}</p>
-            </div>
-
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-background">
-                  {col.title}
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-background/60 transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 sm:flex-row">
-            <p className="text-sm text-background/50">{copyright}</p>
-            <div className="flex gap-6">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm text-background/60 transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        columns={columns}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

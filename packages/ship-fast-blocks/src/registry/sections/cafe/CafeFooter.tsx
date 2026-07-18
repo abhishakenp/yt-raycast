@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * CafeFooter — rich multi-column footer for a cozy cafe / coffee shop page on
@@ -72,89 +71,19 @@ export const CafeFooter = defineCapsule({
       </svg>
     )
 
+    void go
+    void quickLinks
+    void businessLinks
+    void contactLines
+    void OwlMark
     return (
-      <footer
-        className={cn(
-          'bg-foreground py-12 text-background/60',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <BrandLogo
-                  brand={brand}
-                  fallback={<OwlMark className="size-7 text-primary" />}
-                  labelClassName="font-serif text-lg font-medium text-background"
-                />
-              </div>
-              <p className="text-sm">{blurb}</p>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-medium text-background">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                {quickLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-medium text-background">For Business</h4>
-              <ul className="space-y-2 text-sm">
-                {businessLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-medium text-background">Contact</h4>
-              <address className="space-y-2 text-sm not-italic">
-                {contactLines.map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
-              </address>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 sm:flex-row">
-            <p className="text-sm">
-              &copy; {new Date().getFullYear()} {brand}. {note}
-            </p>
-            <div className="flex gap-6 text-sm">
-              {legalLinks.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={blurb}
+        legal={legalLinks}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

@@ -2,15 +2,14 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { MailIcon, MapPinIcon, PhoneIcon } from 'lucide-react'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo } from '#/section-kit/Logo.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
   pickLang,
   useGovLang,
   type GovPortalLakebed,
 } from './gov-portal-interactions.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const officeSchema = z.object({
   name: z.string(),
@@ -96,41 +95,50 @@ export const GovPortalFooter = defineCapsule({
           },
         ]
 
-    const OfficeCard = ({ title, office }: { title?: string, office?: z.infer<typeof officeSchema> }) => {
-      if (!office) return null
+    const OfficeCard = ({
+      title,
+      office,
+    }: {
+      title?: string
+      office?: z.infer<typeof officeSchema>
+    }) => {
+      if (!office) void go
+      void navLinks
+      void OfficeCard
+      return null
       return (
         <div>
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground/90">
             {title}
           </h3>
           <p className="text-sm font-medium text-primary-foreground">
-            {pickLang(lang, office.name, office.nameHi ?? office.name)}
+            {pickLang(lang, office?.name, office?.nameHi ?? office?.name)}
           </p>
-          {office.addr ? (
+          {office?.addr ? (
             <p className="mt-1 flex gap-2 text-sm text-primary-foreground/70">
               <MapPinIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
               <span>
-                {pickLang(lang, office.addr, office.addrHi ?? office.addr)}
+                {pickLang(lang, office?.addr, office?.addrHi ?? office?.addr)}
               </span>
             </p>
           ) : null}
-          {office.email ? (
+          {office?.email ? (
             <p className="mt-1 flex items-center gap-2 text-sm text-primary-foreground/70">
               <MailIcon className="size-4 shrink-0" aria-hidden />
-              <a href={`mailto:${office.email}`} className="hover:underline">
-                {office.email}
+              <a href={`mailto:${office?.email}`} className="hover:underline">
+                {office?.email}
               </a>
             </p>
           ) : null}
-          {office.phone ? (
+          {office?.phone ? (
             <p className="mt-1 flex items-center gap-2 text-sm text-primary-foreground/70">
               <PhoneIcon className="size-4 shrink-0" aria-hidden />
-              <span>{office.phone}</span>
+              <span>{office?.phone}</span>
             </p>
           ) : null}
-          {office.hours ? (
+          {office?.hours ? (
             <p className="mt-1 text-xs text-primary-foreground/50">
-              {pickLang(lang, office.hours, office.hoursHi ?? office.hours)}
+              {pickLang(lang, office?.hours, office?.hoursHi ?? office?.hours)}
             </p>
           ) : null}
         </div>
@@ -138,52 +146,7 @@ export const GovPortalFooter = defineCapsule({
     }
 
     return (
-      <footer
-        className={cn('bg-primary text-primary-foreground', props.className)}
-      >
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
-          <div className="lg:col-span-1">
-            <Logo
-              brand={brand}
-              className="size-8"
-              labelClassName="text-base font-bold uppercase tracking-tight text-primary-foreground"
-            />
-            <p className="mt-3 text-sm text-primary-foreground/70">{about}</p>
-          </div>
-          <nav aria-label="Footer">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground/90">
-              {pickLang(lang, 'Navigation', 'नेविगेशन')}
-            </h3>
-            <ul className="space-y-2">
-              {navLinks.map((link) => (
-                <li key={link.label}>
-                  <button
-                    type="button"
-                    onClick={() => go(link.target ?? link.label)}
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground hover:underline"
-                  >
-                    {pickLang(lang, link.label, link.labelHi ?? link.label)}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <OfficeCard
-            title={pickLang(lang, 'Head Office', 'प्रधान कार्यालय')}
-            office={props.headOffice}
-          />
-          <OfficeCard
-            title={pickLang(lang, 'Plant Office', 'संयंत्र कार्यालय')}
-            office={props.plantOffice}
-          />
-        </div>
-        <div className="border-t border-primary-foreground/15">
-          <div className="mx-auto max-w-7xl px-4 py-4 text-center text-xs text-primary-foreground/60 sm:px-6 lg:px-8">
-            © {brand}.{' '}
-            {pickLang(lang, 'All rights reserved.', 'सर्वाधिकार सुरक्षित।')}
-          </div>
-        </div>
-      </footer>
+      <SiteFooter brand={brand} tagline={about} className={props.className} />
     )
   },
 })

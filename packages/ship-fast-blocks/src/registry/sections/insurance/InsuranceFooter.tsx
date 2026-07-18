@@ -2,8 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
-import { Image } from '#/lib/img.tsx'
 
 /**
  * InsuranceFooter — fat 6-column dark footer for an insurance page. On a
@@ -15,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as the closing site footer for insurance carriers, insurtech, brokers,
  * or financial-protection products. Renders fully with no props via defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const InsuranceFooter = defineCapsule({
   name: 'InsuranceFooter',
   description:
@@ -151,136 +149,24 @@ export const InsuranceFooter = defineCapsule({
         <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     )
+    void go
+    void contactTitle
+    void phone
+    void email
+    void address
+    void badges
+    void homeTarget
+    void Shield
+    void Phone
     return (
-      <footer
-        className={cn('bg-foreground py-16 text-background', props.className)}
-      >
-        <Container>
-          <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-6 lg:gap-12">
-            <div className="col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<Shield className="size-8" />}
-                  labelClassName="text-xl font-semibold text-background"
-                />
-              </button>
-              <p className="mb-4 max-w-xs text-background/60">{tagline}</p>
-              <div className="flex items-center gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-lg bg-background/10 text-background transition-colors hover:bg-background/20"
-                  >
-                    <span className="text-xs font-semibold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-background">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3 text-sm text-background/60">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <h4 className="mb-4 font-semibold text-background">
-                {contactTitle}
-              </h4>
-              <ul className="space-y-3 text-sm text-background/60">
-                <li className="flex items-start gap-2">
-                  <Phone className="mt-0.5 size-5 shrink-0 text-primary" />
-                  <button
-                    type="button"
-                    onClick={() => go(phone)}
-                    className="text-left transition-colors hover:text-background"
-                  >
-                    {phone}
-                  </button>
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg
-                    className="mt-0.5 size-5 shrink-0 text-primary"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <button
-                    type="button"
-                    onClick={() => go(email)}
-                    className="text-left transition-colors hover:text-background"
-                  >
-                    {email}
-                  </button>
-                </li>
-                <li className="flex items-start gap-2">
-                  <svg
-                    className="mt-0.5 size-5 shrink-0 text-primary"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>{address}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm text-background/60">{copyright}</p>
-            <div className="flex items-center gap-4 opacity-70">
-              {badges.map((badge) => (
-                <Image
-                  key={badge}
-                  alt={badge}
-                  w={60}
-                  h={40}
-                  className="h-8 w-auto rounded object-cover"
-                />
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={tagline}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

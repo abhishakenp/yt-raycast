@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * MusicArtistFooter — multi-column closing footer for a music artist / band
@@ -72,78 +71,19 @@ export const MusicArtistFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Use']
     const homeTarget = props.homeTarget ?? 'Music'
 
+    void go
+    void contactLabel
+    void email
+    void homeTarget
     return (
-      <footer
-        className={cn(
-          'border-t border-border px-6 py-16 lg:px-8',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 inline-block text-2xl font-light tracking-tight text-foreground"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-              <p className="mb-6 max-w-sm text-muted-foreground">
-                {description}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {contactLabel}
-                <br />
-                <button
-                  type="button"
-                  onClick={() => go(email)}
-                  className="text-foreground/80 transition-colors hover:text-foreground"
-                >
-                  {email}
-                </button>
-              </p>
-            </div>
-            {columns.map((column) => (
-              <div key={column.title}>
-                <h4 className="mb-4 font-medium text-foreground">
-                  {column.title}
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  {column.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {brand}. {note}
-            </p>
-            <div className="mt-4 flex gap-6 md:mt-0">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={description}
+        columns={columns}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

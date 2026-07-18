@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * EventPlannerFooter — inverted four-column site footer. A foreground-colored band
@@ -79,65 +78,17 @@ export const EventPlannerFooter = defineCapsule({
       </svg>
     )
 
+    void go
+    void footerLegalLinks
+    void footerLegal
+    void Clock
     return (
-      <footer
-        className={cn(
-          'bg-foreground px-4 py-12 sm:px-6 lg:px-8 lg:py-16',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-            <div className="lg:col-span-1">
-              <div className="mb-4 flex items-center gap-2">
-                <BrandLogo
-                  brand={brand}
-                  fallback={<Clock className="size-8 text-background/60" />}
-                  labelClassName="text-xl font-light text-background"
-                />
-              </div>
-              <p className="text-sm leading-relaxed text-background/60">
-                {footerTagline}
-              </p>
-            </div>
-            {footerColumns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 text-sm font-medium uppercase tracking-wider text-background">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-background/60 transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 sm:flex-row">
-            <p className="text-sm text-background/50">{footerLegal}</p>
-            <div className="flex gap-6">
-              {footerLegalLinks.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm text-background/50 transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        columns={footerColumns}
+        note={footerTagline}
+        className={props.className}
+      />
     )
   },
 })

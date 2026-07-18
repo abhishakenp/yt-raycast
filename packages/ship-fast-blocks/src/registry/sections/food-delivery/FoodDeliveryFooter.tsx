@@ -1,9 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * FoodDeliveryFooter — muted multi-column site footer for a food-delivery /
@@ -15,7 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * online-ordering platforms, or takeout services. Renders fully with no props
  * via baked-in "nosh" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const FoodDeliveryFooter = defineCapsule({
   name: 'FoodDeliveryFooter',
   description:
@@ -87,76 +84,23 @@ export const FoodDeliveryFooter = defineCapsule({
     }
     const fallbackSocialPath =
       'M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987H7.898v-2.891h2.54V9.797c0-2.508 1.493-3.891 3.777-3.891 1.094 0 2.238.195 2.238.195v2.461h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.891h-2.33v6.987C18.343 21.128 22 16.991 22 12z'
+    void go
+    void homeTarget
+    void footerDesc
+    void PinMark
+    void fallbackSocialPath
+    void socialPaths
     return (
-      <footer
-        className={cn('border-t border-border bg-muted py-16', props.className)}
-      >
-        <Container>
-          <ResponsiveGrid cols="2-4-5" gap="lg" className="lg:gap-12">
-            <div className="col-span-2 lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<PinMark className="size-8 text-foreground" />}
-                  labelClassName="text-xl font-semibold tracking-tight"
-                />
-              </button>
-              <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-                {footerDesc}
-              </p>
-            </div>
-            {footerColumns.map((col) => (
-              <div key={col.heading}>
-                <h4 className="mb-4 font-semibold text-foreground">
-                  {col.heading}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </ResponsiveGrid>
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {brand}, Inc. {footerNote}
-            </p>
-            <div className="flex items-center gap-4">
-              {socials.map((social) => (
-                <button
-                  key={social}
-                  type="button"
-                  aria-label={social}
-                  onClick={() => go(social)}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <svg
-                    className="size-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d={socialPaths[social] ?? fallbackSocialPath} />
-                  </svg>
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        columns={footerColumns.map((c) => ({
+          title: c.heading,
+          links: c.links,
+        }))}
+        social={socials.map((s) => ({ label: s }))}
+        note={footerNote}
+        className={props.className}
+      />
     )
   },
 })

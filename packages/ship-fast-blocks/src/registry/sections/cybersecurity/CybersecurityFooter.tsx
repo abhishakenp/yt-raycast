@@ -1,11 +1,9 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * CybersecurityFooter — dark, full-bleed 5-column mega-footer. A brand-surface
@@ -108,82 +106,19 @@ export const CybersecurityFooter = defineCapsule({
       </svg>
     )
 
+    void go
+    void homeTarget
+    void ShieldMark
     return (
-      <footer
-        className={cn(
-          'bg-foreground py-16 text-background/60',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
-            <div className="col-span-2 md:col-span-4 lg:col-span-1">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<ShieldMark className="size-8 text-background" />}
-                  labelClassName="text-xl font-bold text-background"
-                />
-              </button>
-              <p className="mb-4 text-sm">{tagline}</p>
-              <div className="flex gap-4">
-                {social.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    aria-label={s}
-                    onClick={() => go(s)}
-                    className="text-sm font-medium transition-colors hover:text-background"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-background">
-                  {col.title}
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm">
-              © {new Date().getFullYear()} {brand} Security, Inc. {note}
-            </p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={tagline}
+        columns={columns}
+        social={social.map((s) => ({ label: s }))}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

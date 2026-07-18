@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FashionStoreFooter — rich multi-column dark footer for a minimalist fashion
@@ -14,7 +12,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * footer for clothing brands, boutiques, apparel and accessories shops, or any
  * premium minimalist retail storefront.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const FashionStoreFooter = defineCapsule({
   name: 'FashionStoreFooter',
   description:
@@ -97,86 +95,18 @@ export const FashionStoreFooter = defineCapsule({
     const footerPayments = props.payments?.length
       ? props.payments
       : ['VISA', 'MC', 'AMEX', 'Pay']
+    void go
+    void homeTarget
+    void footerPayments
     return (
-      <footer
-        aria-label="Footer"
-        className={cn(
-          'bg-foreground py-16 text-background lg:py-20',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-16 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
-            {/* Brand column */}
-            <div className="col-span-2 md:col-span-4 lg:col-span-1">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 inline-block font-serif text-3xl font-medium text-background"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-              <p className="mb-6 max-w-xs text-sm text-background/60">
-                {footerTagline}
-              </p>
-              <div className="flex items-center gap-4">
-                {footerSocials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="text-sm font-medium text-background/60 transition-colors hover:text-background"
-                  >
-                    {social}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Link columns */}
-            {footerColumns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-medium text-background">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3 text-sm text-background/60">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/10 pt-8 md:flex-row">
-            <p className="text-sm text-background/50">
-              © {new Date().getFullYear()} {brand}. {footerCopyright}
-            </p>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-background/50">We accept:</span>
-              <div className="flex items-center gap-3">
-                {footerPayments.map((pay) => (
-                  <span
-                    key={pay}
-                    className="flex h-5 w-8 items-center justify-center rounded-sm bg-background/10 text-[8px] font-medium text-background/60"
-                  >
-                    {pay}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={footerTagline}
+        columns={footerColumns}
+        social={footerSocials.map((s) => ({ label: s }))}
+        note={footerCopyright}
+        className={props.className}
+      />
     )
   },
 })

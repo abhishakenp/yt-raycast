@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
@@ -11,7 +10,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * on hover. Links route through useNavigate. Use as the closing site footer for
  * filmmakers, directors, DPs, or production houses.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const FilmDirectorFooter = defineCapsule({
   name: 'FilmDirectorFooter',
   description:
@@ -30,30 +29,10 @@ export const FilmDirectorFooter = defineCapsule({
     const footerLinks = props.links?.length
       ? props.links
       : ['Privacy', 'Terms', 'Credits']
+    void go
+    void footerLinks
     return (
-      <footer
-        className={cn('bg-foreground py-8 text-background/70', props.className)}
-      >
-        <Container>
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <p className="text-sm">
-              © {new Date().getFullYear()} {brand}. {footerNote}
-            </p>
-            <div className="flex gap-6 text-sm">
-              {footerLinks.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter brand={brand} note={footerNote} className={props.className} />
     )
   },
 })

@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * BeautyStoreFooter — slim bottom footer for a beauty / skincare / cosmetics
@@ -37,33 +36,15 @@ export const BeautyStoreFooter = defineCapsule({
       : ['Privacy', 'Terms', 'Contact']
     const homeTarget = props.homeTarget ?? 'Bestsellers'
 
+    void go
+    void homeTarget
     return (
-      <footer className={cn('border-t border-border py-10', props.className)}>
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-sm text-muted-foreground sm:px-6 md:flex-row lg:px-8">
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="font-serif text-xl font-semibold text-foreground"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-          </button>
-          <div>
-            © {new Date().getFullYear()} {brand}. {note}
-          </div>
-          <div className="flex items-center gap-6">
-            {links.map((link) => (
-              <button
-                key={link}
-                type="button"
-                onClick={() => go(link)}
-                className="transition-colors hover:text-foreground"
-              >
-                {link}
-              </button>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        legal={links}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

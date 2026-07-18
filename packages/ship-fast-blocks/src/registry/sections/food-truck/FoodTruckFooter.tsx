@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * FoodTruckFooter — an inverted, multi-column site footer for a food-truck brand. A
@@ -70,93 +69,19 @@ export const FoodTruckFooter = defineCapsule({
       .slice(0, 2)
       .toUpperCase()
 
+    void go
+    void footerAbout
+    void socialsHeading
+    void initials
     return (
-      <footer
-        className={cn(
-          'bg-foreground px-6 py-12 text-background/70',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 grid gap-8 md:grid-cols-4">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span
-                      className="grid size-8 place-items-center rounded-full bg-background/10 text-xs font-bold text-background"
-                      aria-hidden="true"
-                    >
-                      {initials}
-                    </span>
-                  }
-                  labelClassName="font-semibold text-background"
-                />
-              </div>
-              <p className="text-sm">{footerAbout}</p>
-            </div>
-
-            {footerColumns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-background">
-                  {col.title}
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-
-            <div>
-              <h4 className="mb-4 font-semibold text-background">
-                {socialsHeading}
-              </h4>
-              <ul className="space-y-2 text-sm">
-                {footerSocials.map((social) => (
-                  <li key={social}>
-                    <button
-                      type="button"
-                      onClick={() => go(social)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {social}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 text-sm md:flex-row">
-            <p>
-              © {new Date().getFullYear()} {brand}. {footerCopyright}
-            </p>
-            <div className="flex flex-wrap gap-6">
-              {footerLegal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        columns={footerColumns}
+        social={footerSocials.map((s) => ({ label: s }))}
+        legal={footerLegal}
+        note={footerCopyright}
+        className={props.className}
+      />
     )
   },
 })

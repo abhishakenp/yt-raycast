@@ -1,9 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * ContactFooter — minimal bottom footer for a contact page.
@@ -30,14 +28,7 @@ export const ContactFooter = defineCapsule({
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
 
     return (
-      <footer
-        className={cn(
-          'relative z-[1] border-t border-border py-9 text-center text-[0.85rem] text-muted-foreground',
-          props.className,
-        )}
-      >
-        <Container className="max-w-[1160px] px-6">{copyright}</Container>
-      </footer>
+      <SiteFooter brand={brand} note={copyright} className={props.className} />
     )
   },
 })

@@ -3,9 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * CrowdfundingFooter — a 4-column closing footer for a crowdfunding / campaign
@@ -94,83 +93,27 @@ export const CrowdfundingFooter = defineCapsule({
       </span>
     )
 
+    void go
+    void footerTagline
+    void footerColumns
+    void footerSocials
+    void footerNote
+    void footerLegal
+    void LeafMark
+    void connectHeading
     return (
-      <footer
-        className={cn(
-          'bg-foreground py-16 text-background/70',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-4">
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LeafMark className="size-8" />}
-                  labelClassName="text-xl font-semibold text-background"
-                />
-              </div>
-              <p className="text-sm leading-relaxed">{footerTagline}</p>
-            </div>
-            {footerColumns.map((col) => (
-              <div key={col.heading}>
-                <h4 className="mb-4 font-medium text-background">
-                  {col.heading}
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <h4 className="mb-4 font-medium text-background">
-                {connectHeading}
-              </h4>
-              <div className="flex gap-4">
-                {footerSocials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-lg bg-background/10 text-background transition-colors hover:bg-background/20"
-                  >
-                    <span className="text-xs font-semibold">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm">{footerNote}</p>
-            <div className="flex gap-6 text-sm">
-              {footerLegal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={footerTagline}
+        columns={footerColumns.map((c) => ({
+          title: c.heading,
+          links: c.links,
+        }))}
+        social={footerSocials.map((s) => ({ label: s }))}
+        legal={footerLegal}
+        note={footerNote}
+        className={props.className}
+      />
     )
   },
 })

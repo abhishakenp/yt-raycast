@@ -2,9 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * KnowledgeBaseFooter — five-column site footer for a help center on the page
@@ -35,7 +33,6 @@ export const KnowledgeBaseFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Help Center'
     const tagline =
       props.tagline ??
@@ -90,82 +87,18 @@ export const KnowledgeBaseFooter = defineCapsule({
       </span>
     )
 
+    void homeTarget
     return (
-      <footer
-        className={cn('border-t border-border bg-background', props.className)}
-      >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <ResponsiveGrid cols="2-4-5" gap="lg">
-            <div className="col-span-2 lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-                aria-label={`${brand} home`}
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-8" />}
-                  labelClassName="text-lg font-semibold text-foreground"
-                />
-              </button>
-              <p className="mb-4 max-w-xs text-sm text-muted-foreground">
-                {tagline}
-              </p>
-              <div className="flex items-center gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    onClick={() => go(social)}
-                    aria-label={social}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <span className="text-sm font-medium">{social}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </ResponsiveGrid>
-          <div className="mt-12 border-t border-border pt-8">
-            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-              <p className="text-sm text-muted-foreground">{copyright}</p>
-              <div className="flex items-center gap-6">
-                {legal.map((link) => (
-                  <button
-                    key={link}
-                    type="button"
-                    onClick={() => go(link)}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {link}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={tagline}
+        columns={columns}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

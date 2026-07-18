@@ -1,8 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FurnitureStoreFooter — a rich, multi-column footer on the dark primary
@@ -15,7 +12,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * brands, or any warm boutique-retail site. Renders fully with no props via
  * baked-in "Haven & Home" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const FurnitureStoreFooter = defineCapsule({
   name: 'FurnitureStoreFooter',
   description:
@@ -38,7 +35,6 @@ export const FurnitureStoreFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Haven & Home'
     const about =
       props.about ??
@@ -105,83 +101,17 @@ export const FurnitureStoreFooter = defineCapsule({
         <path d="M12 2L2 9v11h8v-7h4v7h8V9L12 2z" />
       </svg>
     )
+    void address
     return (
-      <footer
-        className={cn(
-          'bg-primary py-16 text-primary-foreground/70',
-          props.className,
-        )}
-        aria-label="Footer"
-      >
-        <Container>
-          <div className="mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-12">
-            <div className="lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(brand)}
-                className="mb-4 flex items-center gap-2"
-                aria-label={`${brand} - Return to homepage`}
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <LogoMark className="size-8 text-primary-foreground" />
-                  }
-                  labelClassName="text-xl font-semibold tracking-tight text-primary-foreground"
-                />
-              </button>
-              <p className="mb-4 max-w-sm text-sm leading-relaxed">{about}</p>
-              <p className="text-sm text-primary-foreground/60">
-                {address.map((line, i) => (
-                  <span key={line}>
-                    {line}
-                    {i < address.length - 1 ? <br /> : null}
-                  </span>
-                ))}
-              </p>
-            </div>
-
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h3 className="mb-4 font-medium text-primary-foreground">
-                  {col.title}
-                </h3>
-                <ul className="space-y-3 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="transition-colors hover:text-primary-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-primary-foreground/15 pt-8 sm:flex-row">
-            <p className="text-sm text-primary-foreground/60">
-              © {new Date().getFullYear()} {copyright}
-            </p>
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-primary-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={about}
+        columns={columns}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * InteriorDesignFooter — rich inverted footer on the foreground surface for an
@@ -68,109 +67,23 @@ export const InteriorDesignFooter = defineCapsule({
     const brandMark = brandParts[0]
     const brandSuffix = brandParts.slice(1).join(' ')
 
+    void go
+    void servicesTitle
+    void servicesLinks
+    void companyTitle
+    void companyLinks
+    void homeTarget
+    void brandMark
+    void brandSuffix
     return (
-      <footer
-        className={cn(
-          'bg-foreground px-4 py-16 text-background sm:px-6 lg:px-8',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-12 grid gap-12 md:grid-cols-4">
-            <div className="md:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-6 flex items-center gap-2 text-2xl font-light tracking-tight"
-              >
-                <BrandLogo
-                  brand={brand}
-                  className="mr-2 size-7"
-                  showLabel={false}
-                />
-                <span>{brandMark}</span>
-                {brandSuffix && (
-                  <span className="text-background/60">{brandSuffix}</span>
-                )}
-              </button>
-              <p className="mb-6 max-w-sm leading-relaxed text-background/70">
-                {about}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="flex size-10 items-center justify-center rounded-full bg-background/10 text-background transition-colors hover:bg-background/20"
-                  >
-                    <span className="text-xs font-medium">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-medium text-background/80">
-                {servicesTitle}
-              </h4>
-              <ul className="space-y-3 text-sm text-background/70">
-                {servicesLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-medium text-background/80">
-                {companyTitle}
-              </h4>
-              <ul className="space-y-3 text-sm text-background/70">
-                {companyLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 md:flex-row">
-            <p className="text-sm text-background/60">
-              © {new Date().getFullYear()} {brand}. {copyright}
-            </p>
-            <div className="flex gap-6 text-sm text-background/60">
-              {legalLinks.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={about}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legalLinks}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

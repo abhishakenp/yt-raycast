@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * ComingSoonFooter — slim two-row footer for a "launching soon" / waitlist
@@ -43,56 +42,16 @@ export const ComingSoonFooter = defineCapsule({
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
 
+    void go
+    void copyright
     return (
-      <footer
-        className={cn(
-          'w-full border-t border-border px-4 py-12 sm:px-6 lg:px-8 xl:px-12',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => go(brand)}
-                className="text-lg font-semibold tracking-tight text-foreground"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-              <span className="text-muted-foreground/60">|</span>
-              <span className="text-sm text-muted-foreground">{note}</span>
-            </div>
-            <div className="flex items-center gap-6">
-              {socials.map((social) => (
-                <button
-                  key={social}
-                  type="button"
-                  onClick={() => go(social)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {social}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-            <p className="text-xs text-muted-foreground">{copyright}</p>
-            <div className="flex items-center gap-6">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

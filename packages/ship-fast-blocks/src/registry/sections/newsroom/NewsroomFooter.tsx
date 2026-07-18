@@ -1,14 +1,10 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
-import { PublicationSubscribeForm } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
-import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * NewsroomFooter — refined editorial footer for a digital newsroom or online
@@ -91,109 +87,18 @@ export const NewsroomFooter = defineCapsule({
       ? props.legal
       : ['Privacy', 'Terms', 'Cookies']
 
+    void go
+    void lakebed
     return (
-      <footer
-        className={cn(
-          'border-t border-border bg-background py-16',
-          props.className,
-        )}
-      >
-        <Container>
-          <div className="flex flex-col gap-10 border-b border-border pb-12 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-md">
-              <button
-                type="button"
-                onClick={() => go(brand)}
-                className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
-              >
-                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
-              </button>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {blurb}
-              </p>
-            </div>
-            <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center">
-              <label className="text-sm font-medium text-foreground">
-                The Morning Brief
-              </label>
-              <PublicationSubscribeForm
-                lakebed={lakebed}
-                source="Newsroom footer"
-                placeholder="you@example.com"
-                buttonLabel="Subscribe"
-                successMessage="You're subscribed to the morning brief."
-                className="flex flex-1 items-center gap-2"
-                inputClassName="h-10 flex-1 rounded-md border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground"
-                buttonClassName="h-10 shrink-0 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-70"
-                emailLabel="Email address for The Morning Brief"
-                statusClassName="sr-only"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-10 py-12 md:grid-cols-3 lg:grid-cols-5">
-            {columns.map((col) => (
-              <div key={col.heading}>
-                <Eyebrow
-                  asChild
-                  variant="text"
-                  className="mb-4 block tracking-wider text-accent"
-                >
-                  <h4>{col.heading}</h4>
-                </Eyebrow>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              {social.map((handle) => (
-                <button
-                  key={handle}
-                  type="button"
-                  onClick={() => go(handle)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {handle}
-                </button>
-              ))}
-            </div>
-            <p className="text-sm text-muted-foreground">{copyright}</p>
-            <div className="flex items-center gap-5">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => go(brand)}
-                className="text-sm font-medium text-foreground transition-colors hover:text-accent"
-              >
-                Back to top ↑
-              </button>
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={blurb}
+        columns={columns.map((c) => ({ title: c.heading, links: c.links }))}
+        social={social.map((s) => ({ label: s }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CorporateFooter — fat multi-column footer for an enterprise / corporate B2B
@@ -13,7 +11,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * enterprise software vendors, SaaS platforms, consultancies, or any corporate
  * site with extensive navigation.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const CorporateFooter = defineCapsule({
   name: 'CorporateFooter',
   description:
@@ -50,7 +48,6 @@ export const CorporateFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Nexus'
     const homeTarget = props.homeTarget ?? 'Solutions'
     const about =
@@ -112,7 +109,13 @@ export const CorporateFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
-    const LogoMark = ({ className, inverse }: { className?: string, inverse?: boolean }) => (
+    const LogoMark = ({
+      className,
+      inverse,
+    }: {
+      className?: string
+      inverse?: boolean
+    }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg font-bold',
@@ -126,87 +129,18 @@ export const CorporateFooter = defineCapsule({
         {brand.charAt(0).toUpperCase()}
       </span>
     )
+    void homeTarget
     return (
-      <footer className={cn('bg-foreground py-16 lg:py-20', props.className)}>
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
-            <div className="lg:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-6 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark inverse className="size-8 text-sm" />}
-                  labelClassName="text-lg font-semibold tracking-tight text-background"
-                />
-              </button>
-              <p className="mb-6 max-w-sm text-sm leading-relaxed text-background/70">
-                {about}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social.label}
-                    type="button"
-                    aria-label={social.label}
-                    onClick={() => go(social.label)}
-                    className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-background/20 hover:text-background"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d={social.path} />
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4 className="mb-4 font-medium text-background">
-                  {col.title}
-                </h4>
-                <ul className="space-y-3 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-background/70 transition-colors hover:text-background"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/10 pt-8 md:flex-row">
-            <p className="text-sm text-background/50">{copyright}</p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-background/50 transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={about}
+        columns={columns}
+        social={socials.map((s) => ({ label: s.label }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

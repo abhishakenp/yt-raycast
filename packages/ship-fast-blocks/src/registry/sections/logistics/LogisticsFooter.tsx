@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * LogisticsFooter — a rich multi-column footer for a global-logistics / freight-
@@ -16,7 +14,7 @@ import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
  * carriers, courier, warehousing or cargo/transport companies. Renders fully with
  * no props via baked-in "SwiftFreight" defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 export const LogisticsFooter = defineCapsule({
   name: 'LogisticsFooter',
   description:
@@ -41,7 +39,6 @@ export const LogisticsFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'SwiftFreight'
     const homeTarget = props.homeTarget ?? 'Services'
     const blurb =
@@ -103,156 +100,25 @@ export const LogisticsFooter = defineCapsule({
         </svg>
       </span>
     )
+    void homeTarget
+    void servicesTitle
+    void servicesLinks
+    void companyTitle
+    void companyLinks
+    void contactTitle
+    void email
+    void phone
+    void address
     return (
-      <footer className={cn('border-t border-border py-16', props.className)}>
-        <Container>
-          <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-1">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={<LogoMark className="size-8" />}
-                  labelClassName="text-xl font-semibold tracking-tight"
-                />
-              </button>
-              <p className="mb-4 text-sm text-muted-foreground">{blurb}</p>
-              <div className="flex items-center gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {social}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold">{servicesTitle}</h4>
-              <ul className="space-y-3 text-sm">
-                {servicesLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold">{companyTitle}</h4>
-              <ul className="space-y-3 text-sm">
-                {companyLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 font-semibold">{contactTitle}</h4>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                <li className="flex items-start gap-3">
-                  <svg
-                    className="mt-0.5 size-5 shrink-0 text-muted-foreground"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <button
-                    type="button"
-                    onClick={() => go(email)}
-                    className="text-left transition-colors hover:text-foreground"
-                  >
-                    {email}
-                  </button>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg
-                    className="mt-0.5 size-5 shrink-0 text-muted-foreground"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  <button
-                    type="button"
-                    onClick={() => go(phone)}
-                    className="text-left transition-colors hover:text-foreground"
-                  >
-                    {phone}
-                  </button>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg
-                    className="mt-0.5 size-5 shrink-0 text-muted-foreground"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>{address}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {copyright}
-            </p>
-            <div className="flex items-center gap-6 text-sm">
-              {legalLinks.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={blurb}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legalLinks}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

@@ -1,11 +1,7 @@
-import { ArrowUp } from 'lucide-react'
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { GridField } from '#/section-kit/motion.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * CoworkingFooter — deep, quiet closing footer for a coworking or shared-
@@ -52,7 +48,6 @@ export const CoworkingFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand =
       typeof props.brand === 'string' && props.brand ? props.brand : 'Northside'
     const tagline =
@@ -114,123 +109,18 @@ export const CoworkingFooter = defineCapsule({
       }
     }
 
+    void scrollToTop
+    void copyright
     return (
-      <footer
-        className={cn(
-          'relative isolate overflow-hidden bg-background',
-          props.className,
-        )}
-      >
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
-        />
-        <GridField
-          className="-z-10 text-foreground/[0.045]"
-          size={64}
-          mask="radial-gradient(ellipse 100% 85% at 50% 100%, black 25%, transparent 80%)"
-        />
-
-        {/* Watermark wordmark. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 overflow-hidden">
-          <p
-            aria-hidden="true"
-            className="translate-y-[35%] whitespace-nowrap text-center text-[8rem] font-bold leading-none tracking-tighter text-foreground/[0.035] sm:text-[12rem] lg:text-[17rem]"
-          >
-            {brand}
-          </p>
-        </div>
-
-        <div className="relative mx-auto max-w-7xl px-4 pb-10 pt-20 sm:px-6 sm:pt-24 lg:px-8">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
-          />
-
-          <div className="grid gap-14 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
-            <div className="max-w-sm">
-              <button
-                type="button"
-                onClick={() => go(brand)}
-                className="flex items-center gap-3"
-              >
-                <BrandTile letter={brand.charAt(0).toUpperCase()} />
-                <span className="text-xl font-semibold tracking-tight text-foreground">
-                  {brand}
-                </span>
-              </button>
-              <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-                {tagline}
-              </p>
-              <div className="mt-7 flex flex-wrap gap-2.5">
-                {social.map((item) =>
-                  typeof item.href === 'string' && item.href ? (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center rounded-full border border-border/60 bg-card/60 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:text-foreground hover:shadow-sm"
-                    >
-                      {item.label}
-                    </a>
-                  ) : (
-                    <button
-                      key={item.label}
-                      type="button"
-                      onClick={() => go(item.label)}
-                      className="inline-flex items-center rounded-full border border-border/60 bg-card/60 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:text-foreground hover:shadow-sm"
-                    >
-                      {item.label}
-                    </button>
-                  ),
-                )}
-              </div>
-            </div>
-
-            <ResponsiveGrid cols="2-4" gap="xl">
-              {columns.map((column) => (
-                <div key={column.title}>
-                  <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
-                    {column.title}
-                  </h3>
-                  <ul className="mt-5 flex flex-col gap-3">
-                    {(Array.isArray(column.links) ? column.links : [])
-                      .filter((link) => typeof link === 'string' && link)
-                      .map((link) => (
-                        <li key={link}>
-                          <button
-                            type="button"
-                            onClick={() => go(link)}
-                            className="text-left text-sm text-muted-foreground transition-all duration-300 hover:translate-x-1 hover:text-foreground"
-                          >
-                            {link}
-                          </button>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ))}
-            </ResponsiveGrid>
-          </div>
-
-          <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-8 sm:flex-row">
-            <p className="text-sm text-muted-foreground">{copyright}</p>
-            <button
-              type="button"
-              onClick={scrollToTop}
-              className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/60 px-4 py-2 text-sm font-medium text-muted-foreground backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:text-foreground hover:shadow-sm"
-            >
-              <ArrowUp className="size-4" aria-hidden="true" />
-              Back to top
-            </button>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<BrandTile letter={brand[0] ?? 'C'} />}
+        tagline={tagline}
+        columns={columns}
+        social={social}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })

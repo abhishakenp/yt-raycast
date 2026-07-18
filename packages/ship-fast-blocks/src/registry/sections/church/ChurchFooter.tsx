@@ -2,9 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * ChurchFooter — rich dark multi-column footer for a church or faith-community site.
@@ -128,133 +127,27 @@ export const ChurchFooter = defineCapsule({
       ),
     }
 
+    void go
+    void homeTarget
+    void quickLinksTitle
+    void quickLinks
+    void resourcesTitle
+    void resources
+    void contactTitle
+    void address
+    void phone
+    void email
+    void hours
+    void socialIcons
     return (
-      <footer
-        className={cn(
-          'bg-foreground py-16 text-background lg:py-20',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mb-16 grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-            <div className="lg:col-span-1">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-6 flex items-center gap-2"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <span className="text-2xl" aria-hidden="true">
-                      ✦
-                    </span>
-                  }
-                  labelClassName="text-xl font-medium tracking-tight"
-                />
-              </button>
-              <p className="mb-6 leading-relaxed text-background/70">{about}</p>
-              <div className="flex items-center gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="flex size-10 items-center justify-center rounded-full bg-background/10 text-background transition-colors hover:bg-background/20"
-                  >
-                    {socialIcons[social] ?? (
-                      <span className="text-xs font-medium">
-                        {social.charAt(0)}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h4 className="mb-6 font-medium">{quickLinksTitle}</h4>
-              <ul className="space-y-3 text-background/70">
-                {quickLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-6 font-medium">{resourcesTitle}</h4>
-              <ul className="space-y-3 text-background/70">
-                {resources.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-6 font-medium">{contactTitle}</h4>
-              <address className="space-y-3 not-italic text-background/70">
-                <p>{address}</p>
-                <p>
-                  <button
-                    type="button"
-                    onClick={() => go(phone)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {phone}
-                  </button>
-                </p>
-                <p>
-                  <button
-                    type="button"
-                    onClick={() => go(email)}
-                    className="transition-colors hover:text-background"
-                  >
-                    {email}
-                  </button>
-                </p>
-              </address>
-              <div className="mt-6 border-t border-background/20 pt-6">
-                <p className="text-sm text-background/60">
-                  Office Hours
-                  <br />
-                  {hours}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 sm:flex-row">
-            <p className="text-sm text-background/60">
-              © {new Date().getFullYear()} {copyright}
-            </p>
-            <div className="flex items-center gap-6 text-sm text-background/60">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        tagline={about}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legal}
+        note={copyright}
+        className={props.className}
+      />
     )
   },
 })

@@ -2,10 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
-import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * HotelResortFooter — rich 4-column dark footer for a luxury hotel / resort &
@@ -56,7 +54,6 @@ export const HotelResortFooter = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Azure Coast'
     const about =
       props.about ??
@@ -100,122 +97,26 @@ export const HotelResortFooter = defineCapsule({
       </span>
     )
 
+    void exploreHeading
+    void exploreLinks
+    void contactHeading
+    void contactLines
+    void newsletterHeading
+    void newsletterText
+    void newsletterCta
+    void copyrightSuffix
+    void homeTarget
+    void lakebed
     return (
-      <footer
-        className={cn(
-          'bg-foreground pb-10 pt-20 text-background',
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mb-16 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-6 flex items-center gap-3"
-              >
-                <BrandLogo
-                  brand={brand}
-                  fallback={
-                    <LogoMark className="size-10 bg-background text-lg text-foreground" />
-                  }
-                  labelClassName="text-xl font-medium tracking-tight"
-                />
-              </button>
-              <p className="mb-6 text-sm leading-relaxed text-background/60">
-                {about}
-              </p>
-              <div className="flex gap-4">
-                {socials.map((social) => (
-                  <button
-                    key={social}
-                    type="button"
-                    aria-label={social}
-                    onClick={() => go(social)}
-                    className="grid size-10 place-items-center rounded-full bg-background/10 transition-colors hover:bg-background/20"
-                  >
-                    <span className="text-xs font-medium">
-                      {social.charAt(0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h4 className="mb-6 font-medium">{exploreHeading}</h4>
-              <ul className="space-y-3 text-sm text-background/60">
-                {exploreLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      type="button"
-                      onClick={() => go(link)}
-                      className="transition-colors hover:text-background"
-                    >
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-6 font-medium">{contactHeading}</h4>
-              <ul className="space-y-3 text-sm text-background/60">
-                {contactLines.map((line, i) => (
-                  <li key={line} className={i === 2 ? 'pt-2' : undefined}>
-                    {i >= 2 ? (
-                      <button
-                        type="button"
-                        onClick={() => go(line)}
-                        className="transition-colors hover:text-background"
-                      >
-                        {line}
-                      </button>
-                    ) : (
-                      line
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-6 font-medium">{newsletterHeading}</h4>
-              <p className="mb-4 text-sm text-background/60">
-                {newsletterText}
-              </p>
-              <NewsletterSubscribeForm
-                lakebed={lakebed}
-                source={newsletterCta}
-                placeholder="Your email"
-                buttonLabel={newsletterCta}
-                successMessage="You're subscribed to resort updates."
-                className="flex gap-2"
-                inputClassName="flex-1 rounded-md border border-background/20 bg-background/10 px-4 py-3 text-sm text-background placeholder:text-background/40 focus:border-background/40 focus:outline-none"
-                buttonClassName="rounded-md bg-background px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
-                emailLabel="Your email"
-                statusClassName="sr-only"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-background/10 pt-8 md:flex-row">
-            <p className="text-sm text-background/40">
-              © {new Date().getFullYear()} {brand} {copyrightSuffix} {note}
-            </p>
-            <div className="flex gap-6 text-sm text-background/40">
-              {legalLinks.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="transition-colors hover:text-background"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={brand}
+        brandMark={<LogoMark />}
+        tagline={about}
+        social={socials.map((s) => ({ label: s }))}
+        legal={legalLinks}
+        note={note}
+        className={props.className}
+      />
     )
   },
 })
