@@ -19,6 +19,7 @@ import {
   RatesHeader,
   RatesBody,
   RatesRow,
+  RateCard,
 } from '#/section-kit/RatesTable.tsx'
 export const LendingRates = defineCapsule({
   name: 'LendingRates',
@@ -147,7 +148,7 @@ export const LendingRates = defineCapsule({
           <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <div className="grid divide-y divide-border md:grid-cols-3 md:divide-x md:divide-y-0">
               {rateHighlights.map((h) => (
-                <div key={h.label} className="p-8 text-center">
+                <RateCard key={h.label} className="block p-8 text-center">
                   <div className="mb-2 text-4xl font-bold text-card-foreground">
                     {h.value}
                   </div>
@@ -155,7 +156,7 @@ export const LendingRates = defineCapsule({
                     {h.label}
                   </div>
                   <p className="text-sm text-muted-foreground">{h.note}</p>
-                </div>
+                </RateCard>
               ))}
             </div>
             <div className="border-t border-border bg-muted px-8 py-6">
