@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { createElement } from 'react'
 
 import { applyImageSwap, applyPreviewTextEdit } from '@/lib/edit-helpers'
-import { Image } from '@ship-fast/blocks'
+import { BaseImage as Image } from '@ship-fast/blocks'
 import { encodeMultiImageSrc } from '@ship-fast/blocks/multi-image-src'
 
 /**

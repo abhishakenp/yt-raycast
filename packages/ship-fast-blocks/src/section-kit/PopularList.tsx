@@ -46,4 +46,45 @@ const PopularItem = React.forwardRef<
 })
 PopularItem.displayName = 'PopularItem'
 
-export { PopularList, PopularItem, PopularListVariants }
+const PopularCard = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="popular-card"
+      className={cn(
+        'flex items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-muted/50',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+PopularCard.displayName = 'PopularCard'
+
+const PopularMeta = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      data-slot="popular-meta"
+      className={cn('text-xs text-muted-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+PopularMeta.displayName = 'PopularMeta'
+
+export {
+  PopularList,
+  PopularItem,
+  PopularCard,
+  PopularMeta,
+  PopularListVariants,
+}

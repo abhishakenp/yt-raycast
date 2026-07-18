@@ -76,4 +76,9 @@ const CategoryIcon = React.forwardRef<
 ))
 CategoryIcon.displayName = 'CategoryIcon'
 
-export { CategoryGrid, CategoryCard, CategoryIcon, CategoryGridVariants as categoryGridVariants }
+export {
+  CategoryGrid,
+  CategoryCard,
+  CategoryIcon,
+  CategoryGridVariants as categoryGridVariants,
+}

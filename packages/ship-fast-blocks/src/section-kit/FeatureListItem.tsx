@@ -1,60 +1,116 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 
-/**
- * FeatureListItem — an icon + title + description row used in vertical
- * feature lists. Used by ChurchGive, EventVenue, JewelryStoreCraftsmanship,
- * MentalHealthServices.
- *
- * `iconShape` controls the icon container: "circle" (rounded-full) or
- * "square" (rounded-lg). `iconClassName` overrides the icon container bg/text.
- */
-export function FeatureListItem(props: {
-  icon?: React.ReactNode
-  title: string
-  description?: string
-  iconShape?: 'circle' | 'square'
-  iconSize?: 'sm' | 'md' | 'lg'
-  iconClassName?: string
-  titleClassName?: string
-  descriptionClassName?: string
-  className?: string
-}) {
-  const shape = props.iconShape ?? 'circle'
-  const size = props.iconSize ?? 'md'
-  const sizeCls =
-    size === 'sm' ? 'size-10' : size === 'lg' ? 'size-14' : 'size-12'
+const FeatureListItem = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
   return (
-    <div className={cn('flex items-start gap-4', props.className)}>
-      {props.icon ? (
-        <div
-          className={cn(
-            'flex shrink-0 items-center justify-center',
-            sizeCls,
-            shape === 'circle' ? 'rounded-full' : 'rounded-lg',
-            'bg-muted',
-            props.iconClassName,
-          )}
-        >
-          {props.icon}
-        </div>
-      ) : null}
-      <div>
-        <h4 className={cn('font-medium text-foreground', props.titleClassName)}>
-          {props.title}
-        </h4>
-        {props.description ? (
-          <p
-            className={cn(
-              'text-sm text-muted-foreground',
-              props.descriptionClassName,
-            )}
-          >
-            {props.description}
-          </p>
-        ) : null}
-      </div>
-    </div>
+    <Comp
+      ref={ref}
+      data-slot="feature-list-item"
+      className={cn('flex items-start gap-4', className)}
+      {...props}
+    />
   )
+})
+FeatureListItem.displayName = 'FeatureListItem'
+
+const featureListItemIconVariants = cva(
+  'flex shrink-0 items-center justify-center bg-muted',
+  {
+    variants: {
+      shape: {
+        circle: 'rounded-full',
+        square: 'rounded-lg',
+      },
+      size: {
+        sm: 'size-10',
+        md: 'size-12',
+        lg: 'size-14',
+      },
+    },
+    defaultVariants: {
+      shape: 'circle',
+      size: 'md',
+    },
+  },
+)
+
+const FeatureListItemIcon = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> &
+    VariantProps<typeof featureListItemIconVariants> & { asChild?: boolean }
+>(({ className, shape, size, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="feature-list-item-icon"
+      className={cn(featureListItemIconVariants({ shape, size }), className)}
+      {...props}
+    />
+  )
+})
+FeatureListItemIcon.displayName = 'FeatureListItemIcon'
+
+const FeatureListItemTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h4'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h4'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="feature-list-item-title"
+      className={cn('font-medium text-foreground', className)}
+      {...props}
+    />
+  )
+})
+FeatureListItemTitle.displayName = 'FeatureListItemTitle'
+
+const FeatureListItemDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="feature-list-item-description"
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+FeatureListItemDescription.displayName = 'FeatureListItemDescription'
+
+const FeatureListItemBody = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="feature-list-item-body"
+      className={className}
+      {...props}
+    />
+  )
+})
+FeatureListItemBody.displayName = 'FeatureListItemBody'
+
+export {
+  FeatureListItem,
+  FeatureListItemIcon,
+  FeatureListItemTitle,
+  FeatureListItemDescription,
+  FeatureListItemBody,
+  featureListItemIconVariants,
 }

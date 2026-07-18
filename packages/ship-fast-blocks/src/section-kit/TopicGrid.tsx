@@ -59,20 +59,24 @@ const TopicCard = React.forwardRef<
 })
 TopicCard.displayName = 'TopicCard'
 
-const TopicIcon = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="topic-icon"
-    className={cn(
-      'grid size-12 place-items-center rounded-lg text-lg',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+const TopicIcon = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
+  ({ className, ...props }, ref) => (
+    <div
+      data-slot="topic-icon"
+      className={cn(
+        'grid size-12 place-items-center rounded-lg text-lg',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  ),
+)
 TopicIcon.displayName = 'TopicIcon'
 
-export { TopicGrid, TopicCard, TopicIcon, TopicGridVariants as topicGridVariants }
+export {
+  TopicGrid,
+  TopicCard,
+  TopicIcon,
+  TopicGridVariants as topicGridVariants,
+}

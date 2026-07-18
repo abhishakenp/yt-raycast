@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
@@ -18,15 +19,19 @@ const activityGridVariants = cva('grid', {
 
 const ActivityGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof activityGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="activity-grid"
-    className={cn(activityGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof activityGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="activity-grid"
+      className={cn(activityGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ActivityGrid.displayName = 'ActivityGrid'
 
 export { ActivityGrid, activityGridVariants }

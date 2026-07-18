@@ -283,7 +283,9 @@ describe('HeroActions', () => {
 
 describe('HeroMediaPanel', () => {
   it('renders with image inside rounded container', () => {
-    const { container } = render(<HeroMediaPanel alt="Product" data-testid="img" />)
+    const { container } = render(
+      <HeroMediaPanel alt="Product" data-testid="img" />,
+    )
     const el = screen.getByTestId('img')
     expect(el.tagName).toBe('DIV')
     expect(el.className).toContain('overflow-hidden')
@@ -317,7 +319,11 @@ describe('HeroSocialProof', () => {
 
 describe('HeroSocialProofItem', () => {
   it('renders as li with flex items-center gap-2', () => {
-    render(<HeroSocialProofItem data-testid="item">Free shipping</HeroSocialProofItem>)
+    render(
+      <HeroSocialProofItem data-testid="item">
+        Free shipping
+      </HeroSocialProofItem>,
+    )
     const el = screen.getByTestId('item')
     expect(el.tagName).toBe('LI')
     expect(el.className).toContain('flex')

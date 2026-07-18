@@ -77,4 +77,27 @@ const RatesRow = React.forwardRef<
 })
 RatesRow.displayName = 'RatesRow'
 
-export { RatesTable, RatesHeader, RatesBody, RatesRow, RatesTableVariants }
+const RateCard = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="rate-card"
+      className={cn('flex flex-col gap-1 p-4', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+RateCard.displayName = 'RateCard'
+
+export {
+  RatesTable,
+  RatesHeader,
+  RatesBody,
+  RatesRow,
+  RateCard,
+  RatesTableVariants,
+}

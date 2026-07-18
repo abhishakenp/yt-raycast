@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '#/lib/utils.ts'
 
@@ -71,7 +72,7 @@ const statValueVariants = cva('', {
   },
 })
 
-const statLabelVariants = cva('', {
+const statLabelVariants = cva('text-sm', {
   variants: {
     color: {
       default: 'text-muted-foreground',
@@ -89,92 +90,86 @@ const statLabelVariants = cva('', {
   },
 })
 
-/**
- * StatGrid lays out key/value statistics in a responsive grid.
- * Column count (2/3/4) maps to responsive grid classes; each cell stacks a
- * value over a label. Supports font family, weight, color, and alignment
- * variants for different visual styles. Theme-token only.
- */
-export const StatGrid = React.forwardRef<
+const StatGrid = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & VariantProps<typeof statGridVariants>
+>(({ className, columns, gap, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="stat-grid"
+    className={cn(statGridVariants({ columns, gap }), className)}
+    {...props}
+  />
+))
+StatGrid.displayName = 'StatGrid'
+
+const StatItem = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
-    VariantProps<typeof statGridVariants> & {
-      stats: { value: string; label: string }[]
-      align?: 'center' | 'left'
-      accentBorder?: boolean
-      fontFamily?: 'sans' | 'serif'
-      weight?: 'bold' | 'semibold' | 'medium' | 'light'
-      size?: 'default' | 'large' | 'xl'
-      valueColor?: 'default' | 'primary' | 'inverted' | 'primaryFg'
-      labelColor?: 'default' | 'inverted' | 'primaryFg'
-      labelUppercase?: boolean
-      valueClassName?: string
-      labelClassName?: string
-    }
+    VariantProps<typeof statItemVariants> & { asChild?: boolean }
+>(({ className, align, accentBorder, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="stat-item"
+      className={cn(statItemVariants({ align, accentBorder }), className)}
+      {...props}
+    />
+  )
+})
+StatItem.displayName = 'StatItem'
+
+const StatValue = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> &
+    VariantProps<typeof statValueVariants> & { asChild?: boolean }
 >(
   (
-    {
-      className,
-      stats: rawStats,
-      columns,
-      gap,
-      align = 'center',
-      accentBorder = false,
-      fontFamily,
-      weight,
-      size,
-      valueColor,
-      labelColor,
-      labelUppercase,
-      valueClassName,
-      labelClassName,
-      ...props
-    },
+    { className, fontFamily, weight, size, color, asChild = false, ...props },
     ref,
   ) => {
-    const stats = Array.isArray(rawStats) ? rawStats : []
+    const Comp = asChild ? Slot : 'span'
     return (
-      <div
+      <Comp
         ref={ref}
-        data-slot="stat-grid"
-        className={cn(statGridVariants({ columns, gap }), className)}
+        data-slot="stat-value"
+        className={cn(
+          statValueVariants({ fontFamily, weight, size, color }),
+          'mb-1',
+          className,
+        )}
         {...props}
-      >
-        {stats.filter(Boolean).map((s, i) => (
-          <div
-            key={i}
-            className={cn(statItemVariants({ align, accentBorder }))}
-          >
-            <span
-              className={cn(
-                statValueVariants({
-                  fontFamily,
-                  weight,
-                  size,
-                  color: valueColor,
-                }),
-                'mb-1',
-                valueClassName,
-              )}
-            >
-              {s.value}
-            </span>
-            <span
-              className={cn(
-                'text-sm',
-                statLabelVariants({
-                  color: labelColor,
-                  uppercase: labelUppercase,
-                }),
-                labelClassName,
-              )}
-            >
-              {s.label}
-            </span>
-          </div>
-        ))}
-      </div>
+      />
     )
   },
 )
-StatGrid.displayName = 'StatGrid'
+StatValue.displayName = 'StatValue'
+
+const StatLabel = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> &
+    VariantProps<typeof statLabelVariants> & { asChild?: boolean }
+>(({ className, color, uppercase, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="stat-label"
+      className={cn(statLabelVariants({ color, uppercase }), className)}
+      {...props}
+    />
+  )
+})
+StatLabel.displayName = 'StatLabel'
+
+export {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+  statGridVariants,
+  statItemVariants,
+  statValueVariants,
+  statLabelVariants,
+}

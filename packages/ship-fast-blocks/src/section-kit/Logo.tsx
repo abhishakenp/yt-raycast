@@ -1,3 +1,5 @@
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { createContext, useContext, useEffect, type ReactNode } from 'react'
 
 import { cn } from '#/lib/utils.ts'
@@ -158,46 +160,90 @@ export function BrandLogoProvider({
 
 export const useBrandLogo = () => useContext(BrandLogoContext)
 
-export function Logo({
-  brand,
-  fallback,
-  className,
-  imageClassName,
-  labelClassName,
-  showLabel = true,
-}: {
+/* --- Compound Logo API --- */
+
+const LogoContext = createContext<{
   brand: string
-  fallback?: ReactNode
-  className?: string
-  imageClassName?: string
-  labelClassName?: string
-  showLabel?: boolean
-}) {
+  src: string | null
+} | null>(null)
+
+const Logo = React.forwardRef<
+  HTMLSpanElement,
+  Omit<React.ComponentProps<'span'>, 'children'> & {
+    brand: string
+    children?: React.ReactNode
+    asChild?: boolean
+  }
+>(({ brand, children, asChild = false, ...props }, ref) => {
   const selectedLogo = useBrandLogo()
   const src = getBrandLogoImageSrc(selectedLogo)
-
+  const ctx = React.useMemo(() => ({ brand, src }), [brand, src])
+  const Comp = asChild ? Slot : 'span'
   return (
-    <>
-      {src ? (
-        <span
-          aria-hidden="true"
-          className={cn(
-            'inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent',
-            className,
-          )}
-          data-brand-logo-selected="true"
-        >
-          <img
-            alt=""
-            className={cn('block size-full object-contain', imageClassName)}
-            draggable={false}
-            src={src}
-          />
-        </span>
-      ) : (
-        fallback
-      )}
-      {showLabel ? <span className={labelClassName}>{brand}</span> : null}
-    </>
+    <LogoContext.Provider value={ctx}>
+      <Comp
+        ref={ref}
+        data-slot="logo"
+        className="inline-flex items-center gap-2"
+        {...props}
+      >
+        {children ?? (
+          <>
+            <LogoImage />
+            <LogoLabel />
+          </>
+        )}
+      </Comp>
+    </LogoContext.Provider>
   )
-}
+})
+Logo.displayName = 'Logo'
+
+const LogoImage = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & {
+    asChild?: boolean
+    fallback?: React.ReactNode
+  }
+>(({ className, asChild = false, fallback = null, ...props }, ref) => {
+  const ctx = useContext(LogoContext)
+  const Comp = asChild ? Slot : 'span'
+  if (!ctx?.src) return <>{fallback}</>
+  return (
+    <Comp
+      ref={ref}
+      data-slot="logo-image"
+      aria-hidden="true"
+      className={cn(
+        'inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent',
+        className,
+      )}
+      data-brand-logo-selected="true"
+      {...props}
+    >
+      <img
+        alt=""
+        className="block size-full object-contain"
+        draggable={false}
+        src={ctx.src}
+      />
+    </Comp>
+  )
+})
+LogoImage.displayName = 'LogoImage'
+
+const LogoLabel = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const ctx = useContext(LogoContext)
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp ref={ref} data-slot="logo-label" className={className} {...props}>
+      {ctx?.brand}
+    </Comp>
+  )
+})
+LogoLabel.displayName = 'LogoLabel'
+
+export { Logo, LogoImage, LogoLabel }

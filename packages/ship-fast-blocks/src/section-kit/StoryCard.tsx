@@ -1,98 +1,214 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
-/**
- * StoryCard — a clickable article/story card with image, meta, title,
- * and excerpt. Used by BlogPostStoryGrid, BlogStoryGrid, NewsletterIssues.
- *
- * Variants:
- * - "simple": image + meta row + title + excerpt (no border, no shadow)
- * - "bordered": image + meta + title + excerpt + footer link (border + shadow)
- */
-export function StoryCard(props: {
-  title: string
-  excerpt?: string
-  imageAlt: string
-  imageW?: number
-  imageH?: number
-  imageClassName?: string
-  meta?: React.ReactNode
-  footer?: React.ReactNode
-  onClick?: () => void
-  variant?: 'simple' | 'bordered'
-  className?: string
-  bodyClassName?: string
-}) {
-  const variant = props.variant ?? 'simple'
-  const bordered = variant === 'bordered'
+const storyCardVariants = cva('group block w-full text-left', {
+  variants: {
+    variant: {
+      simple: '',
+      bordered:
+        'flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-all hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]',
+    },
+  },
+  defaultVariants: { variant: 'simple' },
+})
+
+const StoryCard = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<'button'> &
+    VariantProps<typeof storyCardVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'button'
   return (
-    <button
-      type="button"
-      onClick={props.onClick}
-      className={cn(
-        'group block w-full text-left',
-        bordered &&
-          'flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-all hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]',
-        props.className,
-      )}
-    >
-      {bordered ? (
-        <div className="relative overflow-hidden bg-muted">
-          <Image
-            alt={props.imageAlt}
-            w={props.imageW ?? 800}
-            h={props.imageH ?? 500}
-            loading="lazy"
-            className={cn(
-              'size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]',
-              props.imageClassName,
-            )}
-          />
-          {props.meta}
-        </div>
-      ) : (
-        <figure className="mb-4 overflow-hidden rounded-lg">
-          <Image
-            alt={props.imageAlt}
-            w={props.imageW ?? 600}
-            h={props.imageH ?? 400}
-            loading="lazy"
-            className={cn(
-              'h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105',
-              props.imageClassName,
-            )}
-          />
-        </figure>
-      )}
-      <div
-        className={cn(
-          bordered ? 'flex flex-1 flex-col p-5' : '',
-          props.bodyClassName,
-        )}
-      >
-        {!bordered ? props.meta : null}
-        <h3
-          className={cn(
-            'mb-2 text-lg font-semibold text-foreground transition-colors group-hover:text-muted-foreground',
-            bordered && 'text-[1.05rem] font-bold leading-snug tracking-tight',
-          )}
-        >
-          {props.title}
-        </h3>
-        {props.excerpt ? (
-          <p
-            className={cn(
-              'text-sm leading-relaxed text-muted-foreground',
-              bordered && 'mt-2 line-clamp-3 flex-1 text-[0.92rem]',
-            )}
-          >
-            {props.excerpt}
-          </p>
-        ) : null}
-        {props.footer}
-      </div>
-    </button>
+    <Comp
+      ref={ref}
+      data-slot="story-card"
+      className={cn(storyCardVariants({ variant }), className)}
+      {...props}
+    />
   )
+})
+StoryCard.displayName = 'StoryCard'
+
+const StoryCardImage = React.forwardRef<
+  HTMLImageElement,
+  Omit<React.ComponentProps<typeof Image>, 'w' | 'h'> & {
+    asChild?: boolean
+    w?: number
+    h?: number
+    variant?: 'simple' | 'bordered'
+  }
+>(
+  (
+    {
+      className,
+      asChild = false,
+      w = 600,
+      h = 400,
+      variant = 'simple',
+      ...props
+    },
+    ref,
+  ) => {
+    if (asChild) {
+      return (
+        <Slot
+          ref={ref}
+          className={cn(
+            variant === 'bordered'
+              ? 'size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]'
+              : 'h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105',
+            className,
+          )}
+          {...props}
+        />
+      )
+    }
+    return (
+      <Image
+        w={w}
+        h={h}
+        loading="lazy"
+        className={cn(
+          variant === 'bordered'
+            ? 'size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]'
+            : 'h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105',
+          className,
+        )}
+        {...props}
+      />
+    )
+  },
+)
+StoryCardImage.displayName = 'StoryCardImage'
+
+const StoryCardImageContainer = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="story-card-image-container"
+      className={cn('relative overflow-hidden bg-muted', className)}
+      {...props}
+    />
+  )
+})
+StoryCardImageContainer.displayName = 'StoryCardImageContainer'
+
+const StoryCardFigure = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'figure'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'figure'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="story-card-figure"
+      className={cn('mb-4 overflow-hidden rounded-lg', className)}
+      {...props}
+    />
+  )
+})
+StoryCardFigure.displayName = 'StoryCardFigure'
+
+const StoryCardMeta = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="story-card-meta"
+      className={className}
+      {...props}
+    />
+  )
+})
+StoryCardMeta.displayName = 'StoryCardMeta'
+
+const StoryCardTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h3'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h3'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="story-card-title"
+      className={cn(
+        'mb-2 text-lg font-semibold text-foreground transition-colors group-hover:text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+StoryCardTitle.displayName = 'StoryCardTitle'
+
+const StoryCardExcerpt = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="story-card-excerpt"
+      className={cn('text-sm leading-relaxed text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+StoryCardExcerpt.displayName = 'StoryCardExcerpt'
+
+const StoryCardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="story-card-footer"
+      className={className}
+      {...props}
+    />
+  )
+})
+StoryCardFooter.displayName = 'StoryCardFooter'
+
+const StoryCardBody = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="story-card-body"
+      className={className}
+      {...props}
+    />
+  )
+})
+StoryCardBody.displayName = 'StoryCardBody'
+
+export {
+  StoryCard,
+  StoryCardImage,
+  StoryCardImageContainer,
+  StoryCardFigure,
+  StoryCardMeta,
+  StoryCardTitle,
+  StoryCardExcerpt,
+  StoryCardFooter,
+  StoryCardBody,
+  storyCardVariants,
 }

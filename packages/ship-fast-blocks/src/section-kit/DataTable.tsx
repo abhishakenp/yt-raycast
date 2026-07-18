@@ -77,4 +77,27 @@ const DataRow = React.forwardRef<
 })
 DataRow.displayName = 'DataRow'
 
-export { DataTable, DataHeader, DataBody, DataRow, DataTableVariants }
+const DataTableCell = React.forwardRef<
+  HTMLTableCellElement,
+  React.ComponentProps<'td'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'td'
+  return (
+    <Comp
+      data-slot="data-table-cell"
+      className={cn('px-5 py-3.5', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+DataTableCell.displayName = 'DataTableCell'
+
+export {
+  DataTable,
+  DataHeader,
+  DataBody,
+  DataRow,
+  DataTableCell,
+  DataTableVariants,
+}

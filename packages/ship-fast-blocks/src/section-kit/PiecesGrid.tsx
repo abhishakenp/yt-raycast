@@ -52,4 +52,20 @@ const PiecesCard = React.forwardRef<
 })
 PiecesCard.displayName = 'PiecesCard'
 
-export { PiecesGrid, PiecesCard, PiecesGridVariants }
+const PieceSpecs = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      data-slot="piece-specs"
+      className={cn('text-sm text-muted-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+PieceSpecs.displayName = 'PieceSpecs'
+
+export { PiecesGrid, PiecesCard, PieceSpecs, PiecesGridVariants }

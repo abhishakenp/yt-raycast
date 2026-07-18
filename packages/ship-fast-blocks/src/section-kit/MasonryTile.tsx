@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
@@ -33,12 +34,15 @@ const masonryTileVariants = cva('overflow-hidden', {
 export interface MasonryTileProps
   extends
     React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof masonryTileVariants> {}
+    VariantProps<typeof masonryTileVariants> {
+  asChild?: boolean
+}
 
 const MasonryTile = React.forwardRef<HTMLDivElement, MasonryTileProps>(
-  ({ className, treatment, ...props }, ref) => {
+  ({ className, treatment, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'div'
     return (
-      <div
+      <Comp
         ref={ref}
         data-slot="masonry-tile"
         className={cn(masonryTileVariants({ treatment }), className)}

@@ -73,4 +73,10 @@ const PressAttribution = React.forwardRef<
 })
 PressAttribution.displayName = 'PressAttribution'
 
-export { PressList, PressItem, PressQuote, PressAttribution, PressListVariants as pressListVariants }
+export {
+  PressList,
+  PressItem,
+  PressQuote,
+  PressAttribution,
+  PressListVariants as pressListVariants,
+}

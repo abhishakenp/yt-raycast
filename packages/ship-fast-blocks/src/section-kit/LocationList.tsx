@@ -46,4 +46,23 @@ const LocationItem = React.forwardRef<
 })
 LocationItem.displayName = 'LocationItem'
 
-export { LocationList, LocationItem, LocationListVariants }
+const LocationCard = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="location-card"
+      className={cn(
+        'rounded-xl bg-card p-6 text-card-foreground shadow-sm',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+LocationCard.displayName = 'LocationCard'
+
+export { LocationList, LocationItem, LocationCard, LocationListVariants }

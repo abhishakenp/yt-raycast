@@ -247,16 +247,17 @@ HeroCta.displayName = 'HeroCta'
 
 /* ---------- HeroActions ---------- */
 
-const HeroActions = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      data-slot="hero-ctas"
-      className={cn('mt-8 flex flex-wrap gap-3.5', className)}
-      {...props}
-    />
-  ),
-)
+const HeroActions = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="hero-ctas"
+    className={cn('mt-8 flex flex-wrap gap-3.5', className)}
+    {...props}
+  />
+))
 HeroActions.displayName = 'HeroActions'
 
 /* ---------- HeroMediaPanel ---------- */

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
@@ -18,15 +19,19 @@ const dealsGridVariants = cva('grid', {
 
 const DealsGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof dealsGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="deals-grid"
-    className={cn(dealsGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof dealsGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="deals-grid"
+      className={cn(dealsGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 DealsGrid.displayName = 'DealsGrid'
 
 export { DealsGrid, dealsGridVariants }

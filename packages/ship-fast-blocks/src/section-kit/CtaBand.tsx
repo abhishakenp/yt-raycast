@@ -1,109 +1,138 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
 
-/**
- * Full-width call-to-action band: an eyebrow, title, optional subtitle, and a
- * row of routable pill actions. `tone` ("primary" | "muted" | "card") sets the
- * band surface, `align` toggles centered vs. left layout, and each action
- * navigates via `useNavigate()`. On a primary band the primary action inverts
- * to a light pill so it reads against the primary background.
- */
-export function CtaBand(props: {
-  eyebrow?: string
-  title: string
-  subtitle?: string
-  actions?: KitAction[]
-  children?: React.ReactNode
-  tone?: 'primary' | 'muted' | 'card'
-  align?: 'center' | 'left'
-  className?: string
-  innerClassName?: string
-  titleClassName?: string
-  eyebrowClassName?: string
-  subtitleClassName?: string
-}) {
-  const go = useNavigate()
-  const tone = props.tone ?? 'primary'
-  const align = props.align ?? 'center'
+const ctaBandVariants = cva('w-full', {
+  variants: {
+    tone: {
+      primary: 'bg-primary text-primary-foreground',
+      muted: 'bg-muted text-foreground',
+      card: 'bg-card text-card-foreground border border-border',
+    },
+  },
+  defaultVariants: { tone: 'primary' },
+})
 
-  const toneClasses =
-    tone === 'muted'
-      ? 'bg-muted text-foreground'
-      : tone === 'card'
-        ? 'bg-card text-card-foreground border border-border'
-        : 'bg-primary text-primary-foreground'
+const CtaBand = React.forwardRef<
+  HTMLElement,
+  Omit<React.ComponentProps<'section'>, 'title'> & {
+    asChild?: boolean
+    eyebrow?: string
+    title: string
+    subtitle?: string
+    actions?: KitAction[]
+    children?: React.ReactNode
+    tone?: 'primary' | 'muted' | 'card'
+    align?: 'center' | 'left'
+    innerClassName?: string
+    titleClassName?: string
+    eyebrowClassName?: string
+    subtitleClassName?: string
+  } & VariantProps<typeof ctaBandVariants>
+>(
+  (
+    {
+      className,
+      asChild = false,
+      eyebrow,
+      title,
+      subtitle,
+      actions,
+      children,
+      tone = 'primary',
+      align = 'center',
+      innerClassName,
+      titleClassName,
+      eyebrowClassName,
+      subtitleClassName,
+      ...props
+    },
+    ref,
+  ) => {
+    const go = useNavigate()
+    const Comp = asChild ? Slot : 'section'
+    const isCenter = align === 'center'
 
-  const isCenter = align === 'center'
-
-  return (
-    <section className={cn('w-full', toneClasses, props.className)}>
-      <div
-        className={cn(
-          'mx-auto flex max-w-4xl flex-col gap-5 px-6 py-16 lg:px-8',
-          isCenter ? 'items-center text-center' : 'items-start text-left',
-          props.innerClassName,
-        )}
+    return (
+      <Comp
+        ref={ref}
+        data-slot="cta-band"
+        className={cn(ctaBandVariants({ tone }), className)}
+        {...props}
       >
-        {props.eyebrow ? (
-          <span
-            className={cn(
-              'text-sm font-medium uppercase tracking-wide opacity-80',
-              props.eyebrowClassName,
-            )}
-          >
-            {props.eyebrow}
-          </span>
-        ) : null}
-        <h2
+        <div
+          data-slot="cta-band-inner"
           className={cn(
-            'text-3xl font-semibold md:text-4xl',
-            props.titleClassName,
+            'mx-auto flex max-w-4xl flex-col gap-5 px-6 py-16 lg:px-8',
+            isCenter ? 'items-center text-center' : 'items-start text-left',
+            innerClassName,
           )}
         >
-          {props.title}
-        </h2>
-        {props.subtitle ? (
-          <p
-            className={cn(
-              'max-w-2xl text-base opacity-90 md:text-lg',
-              props.subtitleClassName,
-            )}
+          {eyebrow ? (
+            <span
+              data-slot="cta-band-eyebrow"
+              className={cn(
+                'text-sm font-medium uppercase tracking-wide opacity-80',
+                eyebrowClassName,
+              )}
+            >
+              {eyebrow}
+            </span>
+          ) : null}
+          <h2
+            data-slot="cta-band-title"
+            className={cn('text-3xl font-semibold md:text-4xl', titleClassName)}
           >
-            {props.subtitle}
-          </p>
-        ) : null}
-        {props.children ? (
-          props.children
-        ) : props.actions && props.actions.length > 0 ? (
-          <div
-            className={cn(
-              'flex flex-wrap gap-3',
-              isCenter ? 'justify-center' : 'justify-start',
-            )}
-          >
-            {props.actions.filter(Boolean).map((a) => {
-              const isInvert =
-                tone === 'primary' && (a.variant ?? 'primary') === 'primary'
-              return (
-                <button
-                  key={a.label}
-                  onClick={() => go(a.target ?? a.label)}
-                  className={kitActionClasses(a.variant, isInvert)}
-                >
-                  {a.label}
-                </button>
-              )
-            })}
-          </div>
-        ) : null}
-      </div>
-    </section>
-  )
-}
+            {title}
+          </h2>
+          {subtitle ? (
+            <p
+              data-slot="cta-band-subtitle"
+              className={cn(
+                'max-w-2xl text-base opacity-90 md:text-lg',
+                subtitleClassName,
+              )}
+            >
+              {subtitle}
+            </p>
+          ) : null}
+          {children ? (
+            children
+          ) : actions && actions.length > 0 ? (
+            <div
+              data-slot="cta-band-actions"
+              className={cn(
+                'flex flex-wrap gap-3',
+                isCenter ? 'justify-center' : 'justify-start',
+              )}
+            >
+              {actions.filter(Boolean).map((a) => {
+                const isInvert =
+                  tone === 'primary' && (a.variant ?? 'primary') === 'primary'
+                return (
+                  <button
+                    key={a.label}
+                    onClick={() => go(a.target ?? a.label)}
+                    className={kitActionClasses(a.variant, isInvert)}
+                  >
+                    {a.label}
+                  </button>
+                )
+              })}
+            </div>
+          ) : null}
+        </div>
+      </Comp>
+    )
+  },
+)
+CtaBand.displayName = 'CtaBand'
 
 /**
  * CtaAction — standalone action button for use inside CtaBand's children.
@@ -116,15 +145,28 @@ export const CtaAction = React.forwardRef<
     invert?: boolean
     asChild?: boolean
   }
->(({ className, variant = 'primary', invert = false, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? React.Fragment : 'button'
-  return (
-    <Comp
-      ref={ref as never}
-      data-slot="cta-action"
-      className={cn(kitActionClasses(variant, invert), className)}
-      {...props}
-    />
-  )
-})
+>(
+  (
+    {
+      className,
+      variant = 'primary',
+      invert = false,
+      asChild = false,
+      ...props
+    },
+    ref,
+  ) => {
+    const Comp = asChild ? React.Fragment : 'button'
+    return (
+      <Comp
+        ref={ref as never}
+        data-slot="cta-action"
+        className={cn(kitActionClasses(variant, invert), className)}
+        {...props}
+      />
+    )
+  },
+)
 CtaAction.displayName = 'CtaAction'
+
+export { CtaBand, ctaBandVariants }
