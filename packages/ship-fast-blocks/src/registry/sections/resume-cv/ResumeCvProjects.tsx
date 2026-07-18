@@ -4,10 +4,10 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PortfolioGrid,
+  PortfolioItem,
   PortfolioMedia,
   PortfolioCaption,
   PortfolioTag,
@@ -107,13 +107,10 @@ export const ResumeCvProjects = defineCapsule({
 
           <PortfolioGrid cols="1-md-2" className="mt-12">
             {projects.map((project, i) => (
-              <Card
+              <PortfolioItem
                 asChild
                 key={i}
-                variant="default"
-                rounded="2xl"
-                padding="none"
-                className="flex flex-col overflow-hidden"
+                className="flex flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground"
               >
                 <article>
                   <PortfolioMedia aspect="16-10" className="bg-muted">
@@ -156,7 +153,7 @@ export const ResumeCvProjects = defineCapsule({
                     </div>
                   </PortfolioCaption>
                 </article>
-              </Card>
+              </PortfolioItem>
             ))}
           </PortfolioGrid>
         </div>
