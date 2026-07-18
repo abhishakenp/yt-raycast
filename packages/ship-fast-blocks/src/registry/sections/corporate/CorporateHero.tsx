@@ -1,11 +1,17 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroSection,
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * CorporateHero — split-layout enterprise hero section for a corporate B2B
@@ -133,37 +139,33 @@ export const CorporateHero = defineCapsule({
                 loading="eager"
                 className="aspect-[4/3] w-full rounded-xl object-cover shadow-2xl"
               />
-              <Card
-                padding="sm"
-                shadow="lg"
-                className="absolute -bottom-6 -left-6 hidden sm:block"
+              <HeroStatBadge
+                className="absolute -bottom-6 -left-6 hidden items-center gap-3 sm:flex"
               >
-                <div className="flex items-center gap-3">
-                  <div className="grid size-10 place-items-center rounded-lg bg-muted text-foreground">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">
-                      {heroStatLabel}
-                    </p>
-                    <p className="text-lg font-semibold text-card-foreground">
-                      {heroStatValue}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+                <HeroStatBadgeIcon>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeContent>
+                  <HeroStatBadgeSubtitle className="text-xs">
+                    {heroStatLabel}
+                  </HeroStatBadgeSubtitle>
+                  <HeroStatBadgeTitle className="text-lg font-semibold">
+                    {heroStatValue}
+                  </HeroStatBadgeTitle>
+                </HeroStatBadgeContent>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -23,6 +22,13 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 export const MobileAppHero = defineCapsule({
   name: 'MobileAppHero',
   description:
@@ -195,41 +201,31 @@ export const MobileAppHero = defineCapsule({
                   h={800}
                   className="relative w-72 rounded-[2.5rem] border-8 border-foreground object-cover shadow-2xl sm:w-80 lg:w-96"
                 />
-                <Card
-                  rounded="2xl"
-                  padding="sm"
-                  shadow="xl"
-                  className="absolute -bottom-6 -right-6"
+                <HeroStatBadge
+                  className="absolute -bottom-6 -right-6 flex items-center gap-3 rounded-2xl shadow-xl"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="grid size-10 place-items-center rounded-full bg-primary/10">
-                      <CheckIcon className="size-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-card-foreground">
-                        {chipTitle}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {chipSubtitle}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-                <Card
-                  rounded="2xl"
-                  padding="none"
-                  shadow="xl"
-                  className="absolute -right-4 -top-4 p-3"
+                  <HeroStatBadgeIcon className="size-10 rounded-full bg-primary/10">
+                    <CheckIcon className="size-5 text-primary" />
+                  </HeroStatBadgeIcon>
+                  <HeroStatBadgeContent>
+                    <HeroStatBadgeTitle className="text-sm font-semibold">
+                      {chipTitle}
+                    </HeroStatBadgeTitle>
+                    <HeroStatBadgeSubtitle className="text-xs">
+                      {chipSubtitle}
+                    </HeroStatBadgeSubtitle>
+                  </HeroStatBadgeContent>
+                </HeroStatBadge>
+                <HeroStatBadge
+                  className="absolute -right-4 -top-4 rounded-2xl p-3 text-center shadow-xl"
                 >
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-card-foreground">
-                      {streakValue}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {streakLabel}
-                    </p>
-                  </div>
-                </Card>
+                  <HeroStatBadgeTitle className="text-2xl font-bold">
+                    {streakValue}
+                  </HeroStatBadgeTitle>
+                  <HeroStatBadgeSubtitle className="text-xs">
+                    {streakLabel}
+                  </HeroStatBadgeSubtitle>
+                </HeroStatBadge>
               </div>
             </div>
           </div>

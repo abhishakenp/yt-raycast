@@ -5,7 +5,6 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -14,6 +13,13 @@ import {
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * MarketplaceHero — a split, two-column marketplace hero. The left column stacks
@@ -276,25 +282,21 @@ export const MarketplaceHero = defineCapsule({
                   ))}
                 </div>
               </div>
-              <Card
-                padding="sm"
-                shadow="lg"
-                className="absolute -bottom-4 -left-4"
+              <HeroStatBadge
+                className="absolute -bottom-4 -left-4 flex items-center gap-3"
               >
-                <div className="flex items-center gap-3">
-                  <div className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
-                    <Check className="size-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-card-foreground">
-                      {heroBadgeTitle}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {heroBadgeSubtitle}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+                <HeroStatBadgeIcon className="size-10 rounded-full bg-primary/10 text-primary">
+                  <Check className="size-5" />
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeContent>
+                  <HeroStatBadgeTitle className="text-sm font-semibold">
+                    {heroBadgeTitle}
+                  </HeroStatBadgeTitle>
+                  <HeroStatBadgeSubtitle className="text-xs">
+                    {heroBadgeSubtitle}
+                  </HeroStatBadgeSubtitle>
+                </HeroStatBadgeContent>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

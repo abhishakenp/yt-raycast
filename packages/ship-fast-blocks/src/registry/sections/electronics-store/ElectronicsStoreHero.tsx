@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,6 +12,13 @@ import {
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * ElectronicsStoreHero — split storefront hero for a premium electronics /
@@ -171,25 +177,21 @@ export const ElectronicsStoreHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <Card
-                padding="sm"
-                shadow="lg"
-                className="absolute -bottom-6 -left-6 max-w-xs"
+              <HeroStatBadge
+                className="absolute -bottom-6 -left-6 flex max-w-xs items-center gap-3"
               >
-                <div className="flex items-center gap-3">
-                  <div className="grid size-12 place-items-center rounded-lg bg-muted text-muted-foreground">
-                    <Star className="size-6" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-card-foreground">
-                      {floatTitle}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {floatMeta}
-                    </div>
-                  </div>
-                </div>
-              </Card>
+                <HeroStatBadgeIcon className="size-12 text-muted-foreground">
+                  <Star className="size-6" />
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeContent>
+                  <HeroStatBadgeTitle asChild className="text-sm font-medium">
+                    <div>{floatTitle}</div>
+                  </HeroStatBadgeTitle>
+                  <HeroStatBadgeSubtitle asChild className="text-xs">
+                    <div>{floatMeta}</div>
+                  </HeroStatBadgeSubtitle>
+                </HeroStatBadgeContent>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

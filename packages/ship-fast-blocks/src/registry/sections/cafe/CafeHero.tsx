@@ -4,7 +4,6 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -13,6 +12,13 @@ import {
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * CafeHero — split-layout hero section for a cozy neighborhood cafe / coffee
@@ -180,25 +186,29 @@ export const CafeHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <Card shadow="lg" className="absolute -bottom-6 -left-6 max-w-xs">
-                <p className="mb-2 font-serif text-lg text-card-foreground">
-                  &ldquo;{quote}&rdquo;
-                </p>
+              <HeroStatBadge className="absolute -bottom-6 -left-6 max-w-xs shadow-lg">
+                <HeroStatBadgeTitle asChild className="mb-2 font-serif text-lg">
+                  <p>&ldquo;{quote}&rdquo;</p>
+                </HeroStatBadgeTitle>
                 <div className="flex items-center gap-3">
-                  <Image
-                    alt={quoteAvatarAlt}
-                    w={100}
-                    h={100}
-                    className="size-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-card-foreground">
+                  <HeroStatBadgeIcon className="size-10 rounded-full bg-transparent p-0">
+                    <Image
+                      alt={quoteAvatarAlt}
+                      w={100}
+                      h={100}
+                      className="size-10 rounded-full object-cover"
+                    />
+                  </HeroStatBadgeIcon>
+                  <HeroStatBadgeContent>
+                    <HeroStatBadgeTitle className="text-sm font-medium">
                       {quoteName}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{quoteRole}</p>
-                  </div>
+                    </HeroStatBadgeTitle>
+                    <HeroStatBadgeSubtitle className="text-xs">
+                      {quoteRole}
+                    </HeroStatBadgeSubtitle>
+                  </HeroStatBadgeContent>
                 </div>
-              </Card>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

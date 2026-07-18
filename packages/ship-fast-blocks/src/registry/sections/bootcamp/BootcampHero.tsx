@@ -4,8 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
-import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroSection,
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * BootcampHero — split-layout hero section for a coding bootcamp / career-school
@@ -141,35 +147,33 @@ export const BootcampHero = defineCapsule({
                 h={600}
                 className="relative aspect-[4/3] w-full rounded-2xl border border-border object-cover shadow-lg"
               />
-              <Card
-                padding="sm"
-                shadow="lg"
-                className="absolute -bottom-6 -left-6"
+              <HeroStatBadge
+                className="absolute -bottom-6 -left-6 flex items-center gap-3"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    {[
-                      'professional headshot of a female graduate',
-                      'professional headshot of a male graduate',
-                      'professional headshot of a smiling graduate',
-                    ].map((a) => (
-                      <Image
-                        key={a}
-                        alt={a}
-                        w={80}
-                        h={80}
-                        className="size-8 rounded-full border-2 border-card object-cover"
-                      />
-                    ))}
-                  </div>
-                  <div className="text-sm">
-                    <p className="font-semibold text-card-foreground">
-                      {heroStatValue}
-                    </p>
-                    <p className="text-muted-foreground">{heroStatLabel}</p>
-                  </div>
-                </div>
-              </Card>
+                <HeroStatBadgeIcon className="flex -space-x-2 rounded-none bg-transparent">
+                  {[
+                    'professional headshot of a female graduate',
+                    'professional headshot of a male graduate',
+                    'professional headshot of a smiling graduate',
+                  ].map((a) => (
+                    <Image
+                      key={a}
+                      alt={a}
+                      w={80}
+                      h={80}
+                      className="size-8 rounded-full border-2 border-card object-cover"
+                    />
+                  ))}
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeContent className="text-sm">
+                  <HeroStatBadgeTitle className="font-semibold">
+                    {heroStatValue}
+                  </HeroStatBadgeTitle>
+                  <HeroStatBadgeSubtitle className="text-muted-foreground">
+                    {heroStatLabel}
+                  </HeroStatBadgeSubtitle>
+                </HeroStatBadgeContent>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

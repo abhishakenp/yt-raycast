@@ -4,9 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroSection,
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * OnlineCourseHero — split, two-column hero for an online-course / e-learning
@@ -153,37 +159,33 @@ export const OnlineCourseHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <Card
-                padding="sm"
-                shadow="lg"
-                className="absolute -bottom-6 -left-6 max-w-xs"
+              <HeroStatBadge
+                className="absolute -bottom-6 -left-6 flex max-w-xs items-center gap-3"
               >
-                <div className="flex items-center gap-3">
-                  <div className="grid size-12 place-items-center rounded-lg bg-primary/10 text-primary">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-card-foreground">
-                      {certTitle}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {certSubtitle}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+                <HeroStatBadgeIcon className="size-12 bg-primary/10 text-primary">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeContent>
+                  <HeroStatBadgeTitle className="font-semibold">
+                    {certTitle}
+                  </HeroStatBadgeTitle>
+                  <HeroStatBadgeSubtitle className="text-sm">
+                    {certSubtitle}
+                  </HeroStatBadgeSubtitle>
+                </HeroStatBadgeContent>
+              </HeroStatBadge>
               <div className="absolute -right-4 -top-4 rounded-xl border border-border bg-card px-4 py-3 shadow-lg">
                 <div className="flex items-center gap-2">
                   <div className="flex text-primary">

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -11,6 +10,13 @@ import {
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * HealthcareHero — split hero for a primary-care / medical-clinic landing page.
@@ -181,56 +187,48 @@ export const HealthcareHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <Card
-                padding="sm"
-                shadow="xl"
-                className="absolute -bottom-6 -left-6"
+              <HeroStatBadge
+                className="absolute -bottom-6 -left-6 flex items-center gap-3 shadow-xl"
               >
-                <div className="flex items-center gap-3">
-                  <div className="grid size-12 place-items-center rounded-full bg-accent text-primary">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-card-foreground">
-                      {hoursLabel}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {hoursValue}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-              <Card
-                padding="sm"
-                shadow="xl"
-                className="absolute -right-4 -top-4"
+                <HeroStatBadgeIcon className="size-12 rounded-full bg-accent text-primary">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeContent>
+                  <HeroStatBadgeTitle className="text-sm font-semibold">
+                    {hoursLabel}
+                  </HeroStatBadgeTitle>
+                  <HeroStatBadgeSubtitle className="text-sm">
+                    {hoursValue}
+                  </HeroStatBadgeSubtitle>
+                </HeroStatBadgeContent>
+              </HeroStatBadge>
+              <HeroStatBadge
+                className="absolute -right-4 -top-4 flex items-center gap-2 shadow-xl"
               >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2" aria-hidden="true">
-                    {['a', 'b', 'c'].map((k) => (
-                      <span
-                        key={k}
-                        className="size-8 rounded-full border-2 border-card bg-secondary"
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm font-semibold text-card-foreground">
-                    {patientCount}
-                  </span>
-                </div>
-              </Card>
+                <HeroStatBadgeIcon className="flex -space-x-2 rounded-none bg-transparent">
+                  {['a', 'b', 'c'].map((k) => (
+                    <span
+                      key={k}
+                      className="size-8 rounded-full border-2 border-card bg-secondary"
+                    />
+                  ))}
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeTitle asChild className="text-sm font-semibold">
+                  <span>{patientCount}</span>
+                </HeroStatBadgeTitle>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

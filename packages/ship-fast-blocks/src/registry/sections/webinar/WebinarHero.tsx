@@ -10,8 +10,12 @@ import {
   HeroBadge,
   HeroHeading,
   HeroSubheading,
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 
 export const WebinarHero = defineCapsule({
   name: 'WebinarHero',
@@ -98,43 +102,41 @@ export const WebinarHero = defineCapsule({
             </p>
           </div>
 
-          <Card
-            variant="default"
-            rounded="none"
-            padding="none"
+          <HeroStatBadge
             className="mt-10 inline-flex items-center gap-3 rounded-full px-4 py-2 text-left"
           >
-            <Image
-              alt={presenterAvatarAlt}
-              w={96}
-              h={96}
-              loading="lazy"
-              className="size-10 rounded-full object-cover"
-            />
-            <div>
-              <p className="text-sm font-semibold text-foreground">
+            <HeroStatBadgeIcon className="size-10 rounded-full bg-transparent p-0">
+              <Image
+                alt={presenterAvatarAlt}
+                w={96}
+                h={96}
+                loading="lazy"
+                className="size-10 rounded-full object-cover"
+              />
+            </HeroStatBadgeIcon>
+            <HeroStatBadgeContent>
+              <HeroStatBadgeTitle className="text-sm font-semibold text-foreground">
                 {presenterName}
-              </p>
-              <p className="text-xs text-muted-foreground">{presenterRole}</p>
-            </div>
-          </Card>
+              </HeroStatBadgeTitle>
+              <HeroStatBadgeSubtitle className="text-xs">
+                {presenterRole}
+              </HeroStatBadgeSubtitle>
+            </HeroStatBadgeContent>
+          </HeroStatBadge>
 
           <div className="mx-auto mt-12 grid max-w-md grid-cols-4 gap-3">
             {countdown.map((unit, i) => (
-              <Card
+              <HeroStatBadge
                 key={`${unit.label}-${i}`}
-                variant="default"
-                rounded="xl"
-                padding="none"
-                className="px-2 py-4"
+                className="rounded-xl px-2 py-4"
               >
-                <p className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">
+                <HeroStatBadgeTitle className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">
                   {unit.value}
-                </p>
-                <p className="mt-1 text-[0.65rem] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                </HeroStatBadgeTitle>
+                <HeroStatBadgeSubtitle className="mt-1 text-[0.65rem] font-medium uppercase tracking-[0.15em]">
                   {unit.label}
-                </p>
-              </Card>
+                </HeroStatBadgeSubtitle>
+              </HeroStatBadge>
             ))}
           </div>
         </HeroContent>

@@ -4,9 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroSection,
+  HeroStatBadge,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * NonprofitHero — warm 2-column hero band for a nonprofit / charity landing
@@ -156,18 +160,16 @@ export const NonprofitHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <Card
-                padding="sm"
-                shadow="lg"
+              <HeroStatBadge
                 className="absolute -bottom-6 -left-6 max-w-xs p-5"
               >
-                <p className="text-sm font-medium text-card-foreground">
+                <HeroStatBadgeTitle className="text-sm font-medium">
                   &ldquo;{quote}&rdquo;
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
+                </HeroStatBadgeTitle>
+                <HeroStatBadgeSubtitle className="mt-2 text-xs">
                   {quoteAuthor}
-                </p>
-              </Card>
+                </HeroStatBadgeSubtitle>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

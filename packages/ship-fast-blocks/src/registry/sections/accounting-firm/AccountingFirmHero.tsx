@@ -4,9 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroSection,
+  HeroStatBadge,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * AccountingFirmHero — split, editorial hero band for a CPA / accounting-firm
@@ -141,17 +145,16 @@ export const AccountingFirmHero = defineCapsule({
                 h={600}
                 className="aspect-[4/3] w-full rounded-lg object-cover shadow-xl"
               />
-              <Card
-                rounded="lg"
-                padding="sm"
-                shadow="lg"
-                className="absolute -bottom-6 -left-6 hidden sm:block"
+              <HeroStatBadge
+                className="absolute -bottom-6 -left-6 hidden rounded-lg sm:block"
               >
-                <p className="text-3xl font-bold text-foreground">
+                <HeroStatBadgeTitle className="text-3xl font-bold text-foreground">
                   {statValue}
-                </p>
-                <p className="text-sm text-muted-foreground">{statLabel}</p>
-              </Card>
+                </HeroStatBadgeTitle>
+                <HeroStatBadgeSubtitle className="text-sm">
+                  {statLabel}
+                </HeroStatBadgeSubtitle>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

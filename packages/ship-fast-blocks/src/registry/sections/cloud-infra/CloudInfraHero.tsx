@@ -3,13 +3,19 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import {
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+  HeroStatBadgeSubtitle,
+} from '#/section-kit/HeroSection.tsx'
 
 /**
  * CloudInfraHero — two-column hero section for a cloud-infrastructure / developer-
@@ -167,34 +173,32 @@ export const CloudInfraHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <Card
-                padding="sm"
-                shadow="lg"
-                className="absolute -bottom-6 -left-6 hidden sm:block"
+              <HeroStatBadge
+                className="absolute -bottom-6 -left-6 hidden items-center gap-3 sm:flex"
               >
-                <div className="flex items-center gap-3">
-                  <div className="grid size-10 place-items-center rounded-lg bg-chart-2/15 text-chart-2">
-                    <svg
-                      className="size-6"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{statLabel}</p>
-                    <p className="text-lg font-semibold text-card-foreground">
-                      {statValue}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+                <HeroStatBadgeIcon className="size-10 bg-chart-2/15 text-chart-2">
+                  <svg
+                    className="size-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeContent>
+                  <HeroStatBadgeSubtitle className="text-xs">
+                    {statLabel}
+                  </HeroStatBadgeSubtitle>
+                  <HeroStatBadgeTitle className="text-lg font-semibold">
+                    {statValue}
+                  </HeroStatBadgeTitle>
+                </HeroStatBadgeContent>
+              </HeroStatBadge>
             </div>
           </div>
         </div>

@@ -6,6 +6,12 @@ import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
+  HeroStatBadge,
+  HeroStatBadgeIcon,
+  HeroStatBadgeContent,
+  HeroStatBadgeTitle,
+} from '#/section-kit/HeroSection.tsx'
+import {
   SaasMutationSpinner,
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
@@ -373,20 +379,18 @@ export const NoCodeHero = defineCapsule({
                   </div>
                 </div>
               </div>
-              <Card
-                padding="none"
-                shadow="lg"
-                className="absolute -right-4 -top-4 p-3"
+              <HeroStatBadge
+                className="absolute -right-4 -top-4 flex items-center gap-2 p-3"
               >
-                <div className="flex items-center gap-2">
-                  <div className="grid size-8 place-items-center rounded-full bg-chart-2/15">
-                    <Check className="size-4 text-chart-2" />
-                  </div>
-                  <span className="text-sm font-medium text-card-foreground">
-                    {toast}
-                  </span>
-                </div>
-              </Card>
+                <HeroStatBadgeIcon className="size-8 rounded-full bg-chart-2/15">
+                  <Check className="size-4 text-chart-2" />
+                </HeroStatBadgeIcon>
+                <HeroStatBadgeContent>
+                  <HeroStatBadgeTitle asChild className="text-sm font-medium">
+                    <span>{toast}</span>
+                  </HeroStatBadgeTitle>
+                </HeroStatBadgeContent>
+              </HeroStatBadge>
             </div>
           </div>
         </div>
