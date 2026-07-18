@@ -3,6 +3,13 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import {
+  FeatureListItem,
+  FeatureListItemIcon,
+  FeatureListItemBody,
+  FeatureListItemTitle,
+  FeatureListItemDescription,
+} from '#/section-kit/FeatureListItem.tsx'
 
 /**
  * MusicFestivalExperience — an experience / features split for a music / arts
@@ -162,15 +169,22 @@ export const MusicFestivalExperience = defineCapsule({
               </p>
               <div className="space-y-6">
                 {features.map((f, i) => (
-                  <div key={f.title} className="flex gap-4">
-                    <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground">
+                  <FeatureListItem key={f.title} className="gap-4">
+                    <FeatureListItemIcon
+                      shape="square"
+                      className="grid size-12 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground"
+                    >
                       {featureIcons[i % featureIcons.length]}
-                    </div>
-                    <div>
-                      <h4 className="mb-1 font-semibold">{f.title}</h4>
-                      <p className="text-card-foreground/60">{f.description}</p>
-                    </div>
-                  </div>
+                    </FeatureListItemIcon>
+                    <FeatureListItemBody>
+                      <FeatureListItemTitle className="mb-1 font-semibold">
+                        {f.title}
+                      </FeatureListItemTitle>
+                      <FeatureListItemDescription className="text-card-foreground/60">
+                        {f.description}
+                      </FeatureListItemDescription>
+                    </FeatureListItemBody>
+                  </FeatureListItem>
                 ))}
               </div>
             </div>
