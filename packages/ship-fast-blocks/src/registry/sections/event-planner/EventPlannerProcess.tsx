@@ -11,6 +11,7 @@ import {
   StepTimelineGrid,
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventPlannerProcess — numbered "how we work" process row on a muted band. A
@@ -70,7 +71,7 @@ export const EventPlannerProcess = defineCapsule({
         variant="muted"
         className={cn('px-4 py-20 sm:px-6 lg:px-8 lg:py-28', props.className)}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <StepTimelineHeader className="max-w-3xl">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {processEyebrow}
@@ -103,7 +104,7 @@ export const EventPlannerProcess = defineCapsule({
               </StepItem>
             ))}
           </StepTimelineGrid>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

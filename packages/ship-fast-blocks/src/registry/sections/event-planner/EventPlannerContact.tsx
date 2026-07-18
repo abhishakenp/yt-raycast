@@ -14,6 +14,7 @@ import {
   ContactFormSubmit,
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -93,7 +94,7 @@ export const EventPlannerContact = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
             <div>
               <SectionHeading
@@ -315,7 +316,7 @@ export const EventPlannerContact = defineCapsule({
               </div>
             </ContactForm>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -85,7 +86,7 @@ export const EventPlannerFaq = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-4xl">
+        <Container size="4xl">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {faqEyebrow}
@@ -112,7 +113,7 @@ export const EventPlannerFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -10,6 +10,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventPlannerServices — airy services grid for an event-planning agency. A
@@ -106,7 +107,7 @@ export const EventPlannerServices = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <SectionHeading
             eyebrow={servicesEyebrow}
             title={servicesHeading}
@@ -137,7 +138,7 @@ export const EventPlannerServices = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

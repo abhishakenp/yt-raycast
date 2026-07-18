@@ -12,6 +12,7 @@ import {
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventPlannerGallery — portfolio gallery of past events. A centered intro
@@ -68,7 +69,7 @@ export const EventPlannerGallery = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {galleryEyebrow}
@@ -123,7 +124,7 @@ export const EventPlannerGallery = defineCapsule({
                 })}
             </GalleryGridItems>
           </GalleryGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -10,6 +10,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventPlannerTestimonials — client-love testimonials grid on a muted band. A
@@ -111,7 +112,7 @@ export const EventPlannerTestimonials = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <TestimonialGrid
             eyebrow={testimonialsEyebrow}
             heading={testimonialsHeading}
@@ -145,7 +146,7 @@ export const EventPlannerTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

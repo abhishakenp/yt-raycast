@@ -17,6 +17,7 @@ import {
   PricingTierFeature,
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventPlannerPricing — three-tier planning-packages block on a muted band. A
@@ -114,7 +115,7 @@ export const EventPlannerPricing = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <SectionHeading
             eyebrow={pricingEyebrow}
             title={pricingHeading}
@@ -215,7 +216,7 @@ export const EventPlannerPricing = defineCapsule({
               )
             })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -22,7 +21,7 @@ import {
  * agency site. A backdrop-blurred, border-bottomed header pinned to the top with a
  * thin clock-glyph logo + light-weight brand name on the left, horizontal nav links
  * in the center-right (desktop), a filled primary pill "Book Consultation" CTA, and
- * a hamburger menu button on mobile. Nav links route through useNavigate while
+ * a hamburger menu button on mobile. Nav links route through route hrefs while
  * consultation CTAs record real Lakebed contact actions. Use as the sticky site
  * header for wedding/event planners, party and gala organizers, or any premium
  * hospitality service.
@@ -30,7 +29,7 @@ import {
 export const EventPlannerNavbar = defineCapsule({
   name: 'EventPlannerNavbar',
   description:
-    "Fixed translucent top navigation bar for a luxury event-planning agency site: backdrop-blurred, border-bottomed header with a thin clock-glyph logo + light-weight brand name on the left, horizontal nav links on the right (desktop), a filled primary pill 'Book Consultation' CTA, and a hamburger menu button on mobile. Nav links route through useNavigate while consultation CTAs record real Lakebed contact actions. Use as the sticky site header for wedding/event planners, party, celebration, corporate-event and gala organizers, or any premium hospitality service.",
+    "Fixed translucent top navigation bar for a luxury event-planning agency site: backdrop-blurred, border-bottomed header with a thin clock-glyph logo + light-weight brand name on the left, horizontal nav links on the right (desktop), a filled primary pill 'Book Consultation' CTA, and a hamburger menu button on mobile. Nav links route through route hrefs while consultation CTAs record real Lakebed contact actions. Use as the sticky site header for wedding/event planners, party, celebration, corporate-event and gala organizers, or any premium hospitality service.",
   lakebed: inquiryLakebed,
   props: z.object({
     /** Brand / studio name shown beside the logo. */
@@ -42,7 +41,6 @@ export const EventPlannerNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Serene Events'
     const nav = props.nav?.length
       ? props.nav
@@ -72,20 +70,18 @@ export const EventPlannerNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<Clock className="size-8 text-foreground/80" />}
-              />
-              <LogoLabel className="text-xl font-light tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<Clock className="size-8 text-foreground/80" />}
+            />
+            <LogoLabel className="text-xl font-light tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

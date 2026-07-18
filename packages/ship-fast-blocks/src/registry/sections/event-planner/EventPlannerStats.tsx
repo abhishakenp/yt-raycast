@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * EventPlannerStats — impact band pairing a stats column with a photo collage. A
@@ -62,7 +63,7 @@ export const EventPlannerStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div>
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -123,7 +124,7 @@ export const EventPlannerStats = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

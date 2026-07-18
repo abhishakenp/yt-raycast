@@ -15,6 +15,7 @@ import {
   HeroStatValue,
   HeroStatLabel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import {
   InquiryActionButton,
@@ -89,7 +90,7 @@ export const EventPlannerHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="order-2 lg:order-1">
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -173,7 +174,7 @@ export const EventPlannerHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
