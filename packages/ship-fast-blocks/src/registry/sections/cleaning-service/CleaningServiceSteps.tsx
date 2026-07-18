@@ -12,6 +12,7 @@ import {
   StepTimeline,
   StepTimelineGrid,
   StepItem,
+  StepContent,
 } from '#/section-kit/StepTimeline.tsx'
 export const CleaningServiceSteps = defineCapsule({
   name: 'CleaningServiceSteps',
@@ -115,7 +116,7 @@ export const CleaningServiceSteps = defineCapsule({
           <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
               <StepItem key={step.title} className="relative">
-                <Card rounded="2xl" padding="lg" shadow="sm" className="h-full">
+                <StepContent className="mt-0 h-full gap-0 rounded-2xl border bg-card p-6 shadow-sm">
                   <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
                     {i + 1}
                   </div>
@@ -125,7 +126,7 @@ export const CleaningServiceSteps = defineCapsule({
                   <p className="leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
-                </Card>
+                </StepContent>
                 {i < items.length - 1 ? (
                   <div
                     aria-hidden="true"

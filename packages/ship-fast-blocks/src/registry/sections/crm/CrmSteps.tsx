@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -18,6 +17,7 @@ import {
   StepTimeline,
   StepTimelineGrid,
   StepItem,
+  StepContent,
 } from '#/section-kit/StepTimeline.tsx'
 export const CrmSteps = defineCapsule({
   name: 'CrmSteps',
@@ -87,7 +87,7 @@ export const CrmSteps = defineCapsule({
                 <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
                   {i + 1}
                 </div>
-                <Card shadow="sm">
+                <StepContent className="mt-0 gap-0 rounded-lg border bg-card p-5 shadow-sm">
                   <h3 className="mb-3 text-center text-xl font-semibold text-card-foreground">
                     {step.title}
                   </h3>
@@ -101,7 +101,7 @@ export const CrmSteps = defineCapsule({
                     loading="lazy"
                     className="h-40 w-full rounded-lg object-cover"
                   />
-                </Card>
+                </StepContent>
                 {i < items.length - 1 ? (
                   <div className="absolute left-full top-8 hidden h-0.5 w-12 -translate-x-6 bg-border md:block" />
                 ) : null}
