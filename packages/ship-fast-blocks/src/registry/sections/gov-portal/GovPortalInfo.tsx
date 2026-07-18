@@ -12,7 +12,7 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/index.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { ContentCard } from '#/section-kit/ContentCard.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
   pickLang,
@@ -221,13 +221,11 @@ export const GovPortalNewsEvents = defineCapsule({
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {rows.map((row, i) => (
-              <Card
+              <ContentCard
                 asChild
                 key={`${str(row, 'title')}-${i}`}
-                variant="default"
-                rounded="2xl"
-                padding="none"
-                className="overflow-hidden"
+                variant="bordered-shadowed"
+                className="bg-card text-card-foreground shadow-none"
               >
                 <article>
                   <Image
@@ -250,7 +248,7 @@ export const GovPortalNewsEvents = defineCapsule({
                     </p>
                   </div>
                 </article>
-              </Card>
+              </ContentCard>
             ))}
           </div>
         </Container>

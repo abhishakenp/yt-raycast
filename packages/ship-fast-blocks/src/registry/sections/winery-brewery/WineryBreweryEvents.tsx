@@ -4,8 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { Card } from '#/section-kit/Card.tsx'
-import { EventList } from '#/section-kit/EventList.tsx'
+import { EventList, EventCard } from '#/section-kit/EventList.tsx'
 
 /**
  * WineryBreweryEvents — tastings, tours, and seasonal-event list for a winery
@@ -102,13 +101,10 @@ export const WineryBreweryEvents = defineCapsule({
 
           <EventList variant="card" className="grid gap-6 md:grid-cols-2">
             {events.map((event) => (
-              <Card
+              <EventCard
                 asChild
                 key={event.name}
-                variant="default"
-                rounded="2xl"
-                padding="md"
-                className="group flex flex-col gap-4 text-left transition-colors hover:border-primary sm:flex-row sm:items-start"
+                className="gap-4 rounded-2xl border bg-card p-6 text-left text-card-foreground transition-colors hover:border-primary sm:flex-row sm:items-start"
               >
                 <button type="button" onClick={() => go(eventsTarget)}>
                   <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-muted px-4 py-3 text-center font-serif text-sm font-medium uppercase tracking-wide text-foreground">
@@ -141,7 +137,7 @@ export const WineryBreweryEvents = defineCapsule({
                     ) : null}
                   </div>
                 </button>
-              </Card>
+              </EventCard>
             ))}
           </EventList>
         </div>
