@@ -16,6 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SplitStory } from '#/section-kit/SplitStory.tsx'
 export const FurnitureStoreDesign = defineCapsule({
   name: 'FurnitureStoreDesign',
   description:
@@ -89,7 +90,7 @@ export const FurnitureStoreDesign = defineCapsule({
       </svg>
     )
     return (
-      <section
+      <SplitStory
         className={cn(
           'bg-primary py-16 text-primary-foreground lg:py-24',
           props.className,
@@ -158,7 +159,7 @@ export const FurnitureStoreDesign = defineCapsule({
             </div>
           </div>
         </Container>
-      </section>
+      </SplitStory>
     )
   },
 })

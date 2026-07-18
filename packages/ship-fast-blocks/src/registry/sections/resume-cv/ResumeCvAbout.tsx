@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { SplitStory } from '#/section-kit/SplitStory.tsx'
 
 /**
  * ResumeCvAbout — professional-summary section for a personal resume / CV /
@@ -50,7 +51,7 @@ export const ResumeCvAbout = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background', props.className)}>
+      <SplitStory className={cn('bg-background', props.className)}>
         <div className="mx-auto max-w-3xl px-6 py-24 lg:px-8 lg:py-28">
           <SectionHeading
             align="left"
@@ -84,7 +85,7 @@ export const ResumeCvAbout = defineCapsule({
             ))}
           </dl>
         </div>
-      </section>
+      </SplitStory>
     )
   },
 })
