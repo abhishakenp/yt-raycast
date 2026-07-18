@@ -3,6 +3,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * LendingStats — a stats / about split with a glowing photo and a floating review
@@ -94,18 +100,16 @@ export const LendingStats = defineCapsule({
               <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
                 {statsDesc}
               </p>
-              <div className="grid grid-cols-2 gap-6">
+              <StatGrid columns={2} gap="compact">
                 {statsItems.map((s) => (
-                  <Card key={s.label} variant="muted">
-                    <div className="mb-1 text-3xl font-bold text-foreground">
-                      {s.value}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {s.label}
-                    </div>
-                  </Card>
+                  <StatItem asChild key={s.label} align="left">
+                    <Card variant="muted">
+                      <StatValue>{s.value}</StatValue>
+                      <StatLabel>{s.label}</StatLabel>
+                    </Card>
+                  </StatItem>
                 ))}
-              </div>
+              </StatGrid>
             </div>
             <div className="relative">
               <Image
