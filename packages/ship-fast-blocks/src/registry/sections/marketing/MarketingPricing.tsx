@@ -2,7 +2,20 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
+import {
+  PricingGrid,
+  PricingTier,
+  PricingTierBadge,
+  PricingTierHeader,
+  PricingTierName,
+  PricingTierTagline,
+  PricingTierPrice,
+  PricingTierPeriod,
+  PricingTierFeatures,
+  PricingTierFeature,
+  PricingTierCta,
+} from '#/section-kit/PricingGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * MarketingPricing — a centered-header 3-tier pricing table for a SaaS /
@@ -91,18 +104,110 @@ export const MarketingPricing = defineCapsule({
     return (
       <section className={cn('py-20', props.className)}>
         <div className="mx-auto max-w-6xl px-6">
-          <PricingGrid
-            heading={heading}
-            subheading={description}
-            tiers={plans.map((plan) => ({
-              name: plan.name,
-              price: plan.price,
-              period: plan.period,
-              features: plan.features,
-              cta: plan.cta,
-              highlighted: plan.popular,
-            }))}
-          />
+          <PricingGrid>
+            <SectionHeading title={heading} subtitle={description} />
+            {plans
+              .map((plan) => ({
+                name: plan.name,
+                price: plan.price,
+                period: plan.period,
+                features: plan.features,
+                cta: plan.cta,
+                highlighted: plan.popular,
+              }))
+              .map((tier) => {
+                const t = tier as {
+                  name: string
+                  price: string
+                  features?: string[]
+                  cta?: string
+                  ctaTarget?: string
+                  tagline?: string
+                  blurb?: string
+                  description?: string
+                  audience?: string
+                  period?: string
+                  unit?: string
+                  cadence?: string
+                  suffix?: string
+                  highlighted?: boolean
+                  featured?: boolean
+                  popular?: boolean
+                  badge?: string
+                  popularLabel?: string
+                  excluded?: string[]
+                  annual?: string
+                  priceSuffix?: string
+                  note?: string
+                }
+                return (
+                  <PricingTier
+                    key={t.name}
+                    variant={
+                      t.highlighted || t.featured || t.popular
+                        ? 'highlighted'
+                        : undefined
+                    }
+                  >
+                    {t.highlighted || t.featured || t.popular ? (
+                      <PricingTierBadge>
+                        {t.badge ?? 'Popular'}
+                      </PricingTierBadge>
+                    ) : null}
+                    <PricingTierHeader>
+                      <PricingTierName>{t.name}</PricingTierName>
+                      {t.tagline && (
+                        <PricingTierTagline>{t.tagline}</PricingTierTagline>
+                      )}
+                      {t.blurb && (
+                        <PricingTierTagline>{t.blurb}</PricingTierTagline>
+                      )}
+                      {t.description && (
+                        <PricingTierTagline>{t.description}</PricingTierTagline>
+                      )}
+                      {t.audience && (
+                        <PricingTierTagline>{t.audience}</PricingTierTagline>
+                      )}
+                      <PricingTierPrice>{t.price}</PricingTierPrice>
+                      {t.period && (
+                        <PricingTierPeriod>{t.period}</PricingTierPeriod>
+                      )}
+                      {t.unit && (
+                        <PricingTierPeriod>{t.unit}</PricingTierPeriod>
+                      )}
+                      {t.cadence && (
+                        <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
+                      )}
+                      {t.suffix && (
+                        <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
+                      )}
+                    </PricingTierHeader>
+                    {t.features && (
+                      <PricingTierFeatures>
+                        {t.features.map((feature) => (
+                          <PricingTierFeature
+                            key={
+                              typeof feature === 'string'
+                                ? feature
+                                : (feature as { label: string }).label
+                            }
+                          >
+                            {typeof feature === 'string'
+                              ? feature
+                              : (feature as { label: string }).label}
+                          </PricingTierFeature>
+                        ))}
+                      </PricingTierFeatures>
+                    )}
+                    {t.cta && (
+                      <PricingTierCta target={t.ctaTarget}>
+                        {t.cta}
+                      </PricingTierCta>
+                    )}
+                  </PricingTier>
+                )
+              })}
+          </PricingGrid>
         </div>
       </section>
     )

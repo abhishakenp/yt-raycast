@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * HotelResortStats — quiet KPI stats band for a luxury hotel / resort & spa
@@ -38,15 +43,19 @@ export const HotelResortStats = defineCapsule({
     return (
       <section className={cn('bg-muted pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <StatGrid
-            stats={stats}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="light"
-            size="large"
-            className="lg:gap-12"
-          />
+          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+            {stats.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'light'} size={'large'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )

@@ -12,7 +12,12 @@ import {} from '#/section-kit/index.ts'
  * review-and-discovery sites to convey scale and trust.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const DirectoryStats = defineCapsule({
   name: 'DirectoryStats',
   description:
@@ -55,14 +60,19 @@ export const DirectoryStats = defineCapsule({
         className={cn('border-y border-border bg-muted py-12', props.className)}
       >
         <Container>
-          <StatGrid
-            stats={stats}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="semibold"
-            size="default"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {stats.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'semibold'} size={'default'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

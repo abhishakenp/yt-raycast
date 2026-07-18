@@ -5,7 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * DatingAppStats — a bold full-width stats band for a dating / matchmaking app. A
@@ -39,16 +44,19 @@ export const DatingAppStats = defineCapsule({
     return (
       <section className={cn('bg-primary py-20', props.className)}>
         <Container>
-          <StatGrid
-            stats={statsItems}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="large"
-            valueColor="inverted"
-            labelColor="inverted"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {statsItems.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'large'} color={'inverted'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

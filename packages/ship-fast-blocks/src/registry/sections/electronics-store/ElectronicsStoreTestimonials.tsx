@@ -11,7 +11,14 @@ import { cn } from '#/lib/utils.ts'
  * retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
+import {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from '#/section-kit/TestimonialGrid.tsx'
 export const ElectronicsStoreTestimonials = defineCapsule({
   name: 'ElectronicsStoreTestimonials',
   description:
@@ -68,7 +75,32 @@ export const ElectronicsStoreTestimonials = defineCapsule({
           <h2 className="mb-12 text-center text-2xl font-semibold text-foreground">
             {heading}
           </h2>
-          <TestimonialGrid items={items} columns={3} />
+          <TestimonialGrid columns={3}>
+            {items.map((t) => {
+              const __iv__ = t as {
+                quote: string
+                name: string
+                role?: string
+                company?: string
+                meta?: string
+                rating?: number
+                avatarAlt?: string
+              }
+              return (
+                <TestimonialCard key={__iv__.name}>
+                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                  <TestimonialAuthor>
+                    <TestimonialName>{__iv__.name}</TestimonialName>
+                    {(__iv__.role || __iv__.company || __iv__.meta) && (
+                      <TestimonialMeta>
+                        {__iv__.role || __iv__.company || __iv__.meta}
+                      </TestimonialMeta>
+                    )}
+                  </TestimonialAuthor>
+                </TestimonialCard>
+              )
+            })}
+          </TestimonialGrid>
         </Container>
       </section>
     )

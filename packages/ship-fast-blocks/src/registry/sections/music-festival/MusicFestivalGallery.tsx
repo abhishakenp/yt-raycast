@@ -12,7 +12,13 @@ import { cn } from '#/lib/utils.ts'
  * series, or any recurring multi-day event.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
 export const MusicFestivalGallery = defineCapsule({
   name: 'MusicFestivalGallery',
   description:
@@ -63,7 +69,30 @@ export const MusicFestivalGallery = defineCapsule({
               {description}
             </p>
           </div>
-          <GalleryGrid images={imageAlts.map((alt) => ({ alt }))} columns={4} />
+          <GalleryGrid>
+            <GalleryGridItems columns={4}>
+              {imageAlts
+                .map((alt) => ({ alt }))
+                .map((img) => {
+                  const __iv__ = img as {
+                    alt: string
+                    caption?: string
+                    title?: string
+                    location?: string
+                  }
+                  return (
+                    <GalleryTile key={__iv__.alt}>
+                      <GalleryTileImage alt={__iv__.alt} />
+                      {__iv__.caption && (
+                        <GalleryTileCaption>
+                          {__iv__.caption}
+                        </GalleryTileCaption>
+                      )}
+                    </GalleryTile>
+                  )
+                })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

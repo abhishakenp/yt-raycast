@@ -3,7 +3,21 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * FaqFooter — a five-column resource footer for a help-center / SaaS product page.
@@ -114,15 +128,35 @@ export const FaqFooter = defineCapsule({
     void statusLabel
     void homeTarget
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<LogoMark />}
-        tagline={tagline}
-        columns={columns}
-        social={socials.map((s) => ({ label: s }))}
-        note={copyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand} brandMark={<LogoMark />}>
+              <FooterTagline>{tagline}</FooterTagline>
+              <FooterSocial>
+                {socials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{copyright}</FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

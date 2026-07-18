@@ -6,7 +6,14 @@ import { cn } from '#/lib/utils.ts'
  * CleaningServiceReviews — a 6-up customer reviews grid for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 2/3-column grid of review cards; each card shows a 5-star rating row (inline filled-star icons), a quoted review paragraph, and an attribution row with a round lazy-loaded avatar + name + meta line. No links — pure social proof. Use for testimonial / review blocks for residential cleaning companies, maid services, or any local home-service brand wanting homeowner credibility. Renders fully with no props via six baked-in default reviews.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
+import {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from '#/section-kit/TestimonialGrid.tsx'
 export const CleaningServiceReviews = defineCapsule({
   name: 'CleaningServiceReviews',
   description:
@@ -95,7 +102,32 @@ export const CleaningServiceReviews = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <TestimonialGrid items={items} columns={3} />
+          <TestimonialGrid columns={3}>
+            {items.map((t) => {
+              const __iv__ = t as {
+                quote: string
+                name: string
+                role?: string
+                company?: string
+                meta?: string
+                rating?: number
+                avatarAlt?: string
+              }
+              return (
+                <TestimonialCard key={__iv__.name}>
+                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                  <TestimonialAuthor>
+                    <TestimonialName>{__iv__.name}</TestimonialName>
+                    {(__iv__.role || __iv__.company || __iv__.meta) && (
+                      <TestimonialMeta>
+                        {__iv__.role || __iv__.company || __iv__.meta}
+                      </TestimonialMeta>
+                    )}
+                  </TestimonialAuthor>
+                </TestimonialCard>
+              )
+            })}
+          </TestimonialGrid>
         </Container>
       </section>
     )

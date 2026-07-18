@@ -3,7 +3,14 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * VideoStreamingGallery — captioned "Trending now" poster wall for a
@@ -74,15 +81,33 @@ export const VideoStreamingGallery = defineCapsule({
         )}
       >
         <Container>
-          <GalleryGrid
-            heading={props.heading ?? 'Trending now'}
-            subheading={
-              props.description ??
-              "The titles everyone's streaming this week — originals, blockbusters, and fresh arrivals added all the time."
-            }
-            images={images}
-            columns={4}
-          />
+          <GalleryGrid>
+            <SectionHeading
+              title={props.heading ?? 'Trending now'}
+              subtitle={
+                props.description ??
+                "The titles everyone's streaming this week — originals, blockbusters, and fresh arrivals added all the time."
+              }
+            />
+            <GalleryGridItems columns={4}>
+              {images.map((img) => {
+                const __iv__ = img as {
+                  alt: string
+                  caption?: string
+                  title?: string
+                  location?: string
+                }
+                return (
+                  <GalleryTile key={__iv__.alt}>
+                    <GalleryTileImage alt={__iv__.alt} />
+                    {__iv__.caption && (
+                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                    )}
+                  </GalleryTile>
+                )
+              })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

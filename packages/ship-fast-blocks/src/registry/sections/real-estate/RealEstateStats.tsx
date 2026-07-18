@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * RealEstateStats — a confident track-record band for a brokerage. An optional
@@ -54,7 +59,17 @@ export const RealEstateStats = defineCapsule({
             <SectionHeading title={heading} subtitle={description} />
           ) : null}
           <div className="mt-12">
-            <StatGrid stats={stats} columns={4} />
+            <StatGrid columns={4}>
+              {stats.map((s) => {
+                const __iv__ = s as { value: string; label: string }
+                return (
+                  <StatItem key={__iv__.label}>
+                    <StatValue>{__iv__.value}</StatValue>
+                    <StatLabel>{__iv__.label}</StatLabel>
+                  </StatItem>
+                )
+              })}
+            </StatGrid>
           </div>
         </div>
       </section>

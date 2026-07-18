@@ -3,7 +3,13 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * InteriorDesignServices — left-aligned three-up design-services grid for an
@@ -101,16 +107,36 @@ export const InteriorDesignServices = defineCapsule({
       <FeatureGrid
         heading={heading}
         subheading={description}
-        features={items.map((item, i) => ({
-          ...item,
-          icon: icons[i % icons.length],
-        }))}
         columns={3}
         className={cn(
           'px-4 pt-28 pb-20 sm:px-6 md:pt-32 md:pb-28 lg:px-8',
           props.className,
         )}
-      />
+      >
+        {items
+          .map((item, i) => ({
+            ...item,
+            icon: icons[i % icons.length],
+          }))
+          .map((f) => {
+            const __iv__ = f as {
+              title: string
+              description: string
+              icon?: React.ReactNode
+              points?: string[]
+              cta?: string
+              price?: string
+              imageAlt?: string
+            }
+            return (
+              <FeatureCard key={__iv__.title}>
+                {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                <FeatureTitle>{__iv__.title}</FeatureTitle>
+                <FeatureDescription>{__iv__.description}</FeatureDescription>
+              </FeatureCard>
+            )
+          })}
+      </FeatureGrid>
     )
   },
 })

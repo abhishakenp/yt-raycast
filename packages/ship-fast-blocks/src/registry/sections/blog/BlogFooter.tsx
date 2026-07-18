@@ -1,7 +1,22 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * BlogFooter — a rich, multi-column closing footer for an editorial blog or
@@ -76,20 +91,47 @@ export const BlogFooter = defineCapsule({
         ]
 
     return (
-      <SiteFooter
-        brand={props.brand ?? 'Form & Function'}
-        brandMark={<PenMark className="size-8 text-primary" />}
-        brandClassName="font-serif text-xl font-medium"
-        tagline={
-          props.tagline ??
-          'Essays on design, engineering, and the craft of building products.'
-        }
-        social={social}
-        columns={columns}
-        legal={['Privacy', 'Terms', 'RSS']}
-        note={props.note ?? 'All rights reserved.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={props.brand ?? 'Form & Function'}
+              brandMark={<PenMark className="size-8 text-primary" />}
+              brandClassName={'font-serif text-xl font-medium'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'Essays on design, engineering, and the craft of building products.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'All rights reserved.'}
+            </FooterCopyright>
+            <FooterLegal>
+              {['Privacy', 'Terms', 'RSS'].map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

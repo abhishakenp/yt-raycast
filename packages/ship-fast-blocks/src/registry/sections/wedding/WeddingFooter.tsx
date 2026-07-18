@@ -1,7 +1,21 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 
 function Mark({ className }: { className?: string }) {
   return (
@@ -73,16 +87,39 @@ export const WeddingFooter = defineCapsule({
           },
         ]
     return (
-      <SiteFooter
-        brand={props.brand ?? 'Ava & Liam'}
-        brandMark={<Mark className="size-7 text-primary" />}
-        brandClassName="font-serif text-lg font-medium"
-        tagline={props.tagline ?? "Can't wait to celebrate with you."}
-        social={social}
-        columns={columns}
-        note={props.note ?? 'With love.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={props.brand ?? 'Ava & Liam'}
+              brandMark={<Mark className="size-7 text-primary" />}
+              brandClassName={'font-serif text-lg font-medium'}
+            >
+              <FooterTagline>
+                {props.tagline ?? "Can't wait to celebrate with you."}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{props.note ?? 'With love.'}</FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

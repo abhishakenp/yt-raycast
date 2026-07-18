@@ -4,7 +4,22 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * CrowdfundingFooter — a 4-column closing footer for a crowdfunding / campaign
@@ -102,18 +117,45 @@ export const CrowdfundingFooter = defineCapsule({
     void LeafMark
     void connectHeading
     return (
-      <SiteFooter
-        brand={brand}
-        tagline={footerTagline}
-        columns={footerColumns.map((c) => ({
-          title: c.heading,
-          links: c.links,
-        }))}
-        social={footerSocials.map((s) => ({ label: s }))}
-        legal={footerLegal}
-        note={footerNote}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterTagline>{footerTagline}</FooterTagline>
+              <FooterSocial>
+                {footerSocials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+            {footerColumns
+              .map((c) => ({
+                title: c.heading,
+                links: c.links,
+              }))
+              .map((col) => (
+                <FooterColumn key={col.title}>
+                  <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                  <FooterColumnList>
+                    {col.links.map((link) => (
+                      <FooterLink key={link}>{link}</FooterLink>
+                    ))}
+                  </FooterColumnList>
+                </FooterColumn>
+              ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{footerNote}</FooterCopyright>
+            <FooterLegal>
+              {footerLegal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

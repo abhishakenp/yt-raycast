@@ -11,7 +11,13 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * CleaningServiceServices — a 6-up cleaning-services capabilities grid for a home-cleaning / maid-service landing page. A centered section heading + lead paragraph above a responsive 1/2/3-column grid of clickable service cards; each card has a rounded icon tile (cycling through inline line-icons), a title, a description, and a from-price line. Cards gain a border highlight and lift shadow on hover, and each routes through useNavigate on click. Use for "what we do" / services blocks for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via six baked-in default services.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 export const CleaningServiceServices = defineCapsule({
   name: 'CleaningServiceServices',
   description:
@@ -98,7 +104,26 @@ export const CleaningServiceServices = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <FeatureGrid features={items} columns={3} />
+          <FeatureGrid columns={3}>
+            {items.map((f) => {
+              const __iv__ = f as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+                points?: string[]
+                cta?: string
+                price?: string
+                imageAlt?: string
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
         </Container>
       </section>
     )

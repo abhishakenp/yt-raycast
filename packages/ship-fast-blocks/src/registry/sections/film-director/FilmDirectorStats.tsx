@@ -13,7 +13,12 @@ import { cn } from '#/lib/utils.ts'
  * production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const FilmDirectorStats = defineCapsule({
   name: 'FilmDirectorStats',
   description:
@@ -96,14 +101,19 @@ export const FilmDirectorStats = defineCapsule({
         )}
       >
         <Container>
-          <StatGrid
-            stats={statMetrics}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="light"
-            size="large"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {statMetrics.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'light'} size={'large'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
           <div className="mt-16 grid gap-8 border-t border-border pt-16 md:grid-cols-3">
             {statAwards.map((a) => (
               <div key={a.name} className="flex items-center gap-4">

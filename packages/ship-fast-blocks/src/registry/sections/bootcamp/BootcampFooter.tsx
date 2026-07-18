@@ -10,7 +10,21 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * route through useNavigate. Use as the closing site footer for coding
  * bootcamps, dev academies, or any cohort-based education brand.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 export const BootcampFooter = defineCapsule({
   name: 'BootcampFooter',
   description:
@@ -69,14 +83,39 @@ export const BootcampFooter = defineCapsule({
     void go
     void homeTarget
     return (
-      <SiteFooter
-        brand={brand}
-        columns={footerColumns}
-        social={footerSocials.map((s) => ({ label: s }))}
-        legal={footerLegal}
-        note={footerTagline}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterSocial>
+                {footerSocials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+            {footerColumns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{footerTagline}</FooterCopyright>
+            <FooterLegal>
+              {footerLegal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

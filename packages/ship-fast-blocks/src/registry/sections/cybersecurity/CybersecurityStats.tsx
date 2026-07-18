@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * CybersecurityStats — dark, full-bleed real-time threat-intelligence stats
@@ -94,17 +99,19 @@ export const CybersecurityStats = defineCapsule({
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-background/60">{description}</p>
           </div>
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="xl"
-            valueColor="inverted"
-            labelColor="inverted"
-            className="lg:gap-12"
-          />
+          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'xl'} color={'inverted'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
           <div className="mt-16 border-t border-background/20 pt-16">
             <div className="grid gap-8 text-center md:grid-cols-3">
               {secondary.map((s) => (

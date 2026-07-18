@@ -14,7 +14,13 @@ import { cn } from '#/lib/utils.ts'
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 export const InsuranceCoverage = defineCapsule({
   name: 'InsuranceCoverage',
   description:
@@ -159,14 +165,34 @@ export const InsuranceCoverage = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <FeatureGrid
-            features={items.map((item, i) => ({
-              title: item.title,
-              description: item.description,
-              icon: coverageIcons[i % coverageIcons.length],
-            }))}
-            columns={4}
-          />
+          <FeatureGrid columns={4}>
+            {items
+              .map((item, i) => ({
+                title: item.title,
+                description: item.description,
+                icon: coverageIcons[i % coverageIcons.length],
+              }))
+              .map((f) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <FeatureCard key={__iv__.title}>
+                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                    <FeatureTitle>{__iv__.title}</FeatureTitle>
+                    <FeatureDescription>
+                      {__iv__.description}
+                    </FeatureDescription>
+                  </FeatureCard>
+                )
+              })}
+          </FeatureGrid>
         </Container>
       </section>
     )

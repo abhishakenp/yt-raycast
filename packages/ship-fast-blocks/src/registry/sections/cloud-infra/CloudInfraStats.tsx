@@ -10,7 +10,12 @@ import { cn } from '#/lib/utils.ts'
  * side: a 2x2 grid of big metric tiles. Tokens-only. Renders fully on zero arguments.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const CloudInfraStats = defineCapsule({
   name: 'CloudInfraStats',
   description:
@@ -134,13 +139,21 @@ export const CloudInfraStats = defineCapsule({
                 ))}
               </div>
             </div>
-            <StatGrid
-              stats={items.map((s) => ({ value: s.value, label: s.label }))}
-              columns={2}
-              gap="compact"
-              weight="semibold"
-              size="large"
-            />
+            <StatGrid columns={2} gap={'compact'}>
+              {items
+                .map((s) => ({ value: s.value, label: s.label }))
+                .map((s) => {
+                  const __iv__ = s as { value: string; label: string }
+                  return (
+                    <StatItem key={__iv__.label}>
+                      <StatValue weight={'semibold'} size={'large'}>
+                        {__iv__.value}
+                      </StatValue>
+                      <StatLabel>{__iv__.label}</StatLabel>
+                    </StatItem>
+                  )
+                })}
+            </StatGrid>
           </div>
         </Container>
       </section>

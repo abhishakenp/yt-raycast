@@ -2,7 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * MusicArtistGallery — "behind the music" masonry photo gallery for a music
@@ -59,7 +65,30 @@ export const MusicArtistGallery = defineCapsule({
             </h2>
           </div>
 
-          <GalleryGrid images={images.map((alt) => ({ alt }))} columns={3} />
+          <GalleryGrid>
+            <GalleryGridItems columns={3}>
+              {images
+                .map((alt) => ({ alt }))
+                .map((img) => {
+                  const __iv__ = img as {
+                    alt: string
+                    caption?: string
+                    title?: string
+                    location?: string
+                  }
+                  return (
+                    <GalleryTile key={__iv__.alt}>
+                      <GalleryTileImage alt={__iv__.alt} />
+                      {__iv__.caption && (
+                        <GalleryTileCaption>
+                          {__iv__.caption}
+                        </GalleryTileCaption>
+                      )}
+                    </GalleryTile>
+                  )
+                })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </div>
       </section>
     )

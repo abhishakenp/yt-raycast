@@ -10,7 +10,13 @@ import { cn } from '#/lib/utils.ts'
  * tint on hover. Tokens-only. Renders fully on zero arguments.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 export const CloudInfraFeatures = defineCapsule({
   name: 'CloudInfraFeatures',
   description:
@@ -79,7 +85,26 @@ export const CloudInfraFeatures = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <FeatureGrid features={items} columns={3} />
+          <FeatureGrid columns={3}>
+            {items.map((f) => {
+              const __iv__ = f as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+                points?: string[]
+                cta?: string
+                price?: string
+                imageAlt?: string
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
         </Container>
       </section>
     )

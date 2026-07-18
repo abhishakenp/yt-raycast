@@ -1,7 +1,22 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * PlumbingHvacFooter — a multi-column site footer for a plumbing & HVAC trade
@@ -106,20 +121,47 @@ export const PlumbingHvacFooter = defineCapsule({
       : ['Privacy', 'Terms', 'Licensing']
 
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<PipeMark />}
-        brandClassName="text-lg font-bold"
-        tagline={
-          props.tagline ??
-          'Licensed, insured, and available 24/7 for all your plumbing and HVAC needs. Honest work, fair prices, guaranteed.'
-        }
-        columns={columns}
-        social={social}
-        legal={legal}
-        note={props.note ?? 'License #PL-0042189 • All rights reserved.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={brand}
+              brandMark={<PipeMark />}
+              brandClassName={'text-lg font-bold'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'Licensed, insured, and available 24/7 for all your plumbing and HVAC needs. Honest work, fair prices, guaranteed.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'License #PL-0042189 • All rights reserved.'}
+            </FooterCopyright>
+            <FooterLegal>
+              {legal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

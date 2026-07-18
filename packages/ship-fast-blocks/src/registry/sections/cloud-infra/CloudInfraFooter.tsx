@@ -10,7 +10,21 @@ import { cn } from '#/lib/utils.ts'
  * columns list link groups (title + links). Every button routes through useNavigate.
  * Tokens-only. Renders fully on zero arguments.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 export const CloudInfraFooter = defineCapsule({
   name: 'CloudInfraFooter',
   description:
@@ -122,15 +136,35 @@ export const CloudInfraFooter = defineCapsule({
     void homeTarget
     void socialIcons
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<LogoMark />}
-        tagline={tagline}
-        columns={groups}
-        social={socials.map((s) => ({ label: s }))}
-        note={note}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand} brandMark={<LogoMark />}>
+              <FooterTagline>{tagline}</FooterTagline>
+              <FooterSocial>
+                {socials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+            {groups.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{note}</FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

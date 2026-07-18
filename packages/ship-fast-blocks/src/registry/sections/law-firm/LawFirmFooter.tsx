@@ -15,7 +15,17 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * professional-services sites. Renders fully with no props via baked-in
  * "Reinhart & Associates" defaults.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 export const LawFirmFooter = defineCapsule({
   name: 'LawFirmFooter',
   description:
@@ -171,13 +181,23 @@ export const LawFirmFooter = defineCapsule({
     void MapPinIcon
     void ClockIcon
     return (
-      <SiteFooter
-        brand={brand}
-        tagline={tagline}
-        legal={legalLinks}
-        note={copyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterTagline>{tagline}</FooterTagline>
+            </FooterBrand>
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{copyright}</FooterCopyright>
+            <FooterLegal>
+              {legalLinks.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

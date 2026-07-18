@@ -4,7 +4,13 @@ import { Container } from '#/section-kit/Container.tsx'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * BlogTopics — a clean, editorial "Browse by topic" grid for a blog or
@@ -174,12 +180,34 @@ export const BlogTopics = defineCapsule({
               props.subheading ?? 'Dive into the subjects we write about most.'
             }
             columns={props.columns ?? 4}
-            features={topics.map((t, i) => ({
-              title: t.title,
-              description: t.description,
-              icon: icons[i % icons.length],
-            }))}
-          />
+          >
+            {topics
+              .map((t, i) => ({
+                title: t.title,
+                description: t.description,
+                icon: icons[i % icons.length],
+              }))
+              .map((f) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <FeatureCard key={__iv__.title}>
+                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                    <FeatureTitle>{__iv__.title}</FeatureTitle>
+                    <FeatureDescription>
+                      {__iv__.description}
+                    </FeatureDescription>
+                  </FeatureCard>
+                )
+              })}
+          </FeatureGrid>
         </Container>
       </section>
     )

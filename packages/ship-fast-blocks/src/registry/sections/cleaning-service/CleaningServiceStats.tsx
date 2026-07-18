@@ -7,7 +7,12 @@ import {} from '#/section-kit/index.ts'
  * CleaningServiceStats — a brand-color stats band for a home-cleaning / maid-service landing page. A full-width primary-background band with a 4-column grid of big metric values (in primary-foreground) and descriptive labels (in muted primary-foreground). No links, no images — pure social-proof numbers. Use as a credibility / trust strip between content sections for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via four baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const CleaningServiceStats = defineCapsule({
   name: 'CleaningServiceStats',
   description:
@@ -48,16 +53,19 @@ export const CleaningServiceStats = defineCapsule({
     return (
       <section className={cn('bg-primary py-16 lg:py-20', props.className)}>
         <Container>
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="large"
-            valueColor="inverted"
-            labelColor="inverted"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'large'} color={'inverted'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

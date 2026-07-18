@@ -1,7 +1,21 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * SpaWellnessFooter — full footer for a day-spa / wellness site. Thin
@@ -65,18 +79,41 @@ export const SpaWellnessFooter = defineCapsule({
         ]
 
     return (
-      <SiteFooter
-        brand={props.brand ?? 'Lumen Spa'}
-        brandClassName="font-serif text-xl font-semibold tracking-tight"
-        tagline={
-          props.tagline ??
-          'A quiet sanctuary for rest, renewal, and everyday calm.'
-        }
-        social={social}
-        columns={columns}
-        note={props.note ?? 'All rights reserved.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={props.brand ?? 'Lumen Spa'}
+              brandClassName={'font-serif text-xl font-semibold tracking-tight'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'A quiet sanctuary for rest, renewal, and everyday calm.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'All rights reserved.'}
+            </FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

@@ -3,7 +3,19 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * ChurchFooter — rich dark multi-column footer for a church or faith-community site.
@@ -140,14 +152,30 @@ export const ChurchFooter = defineCapsule({
     void hours
     void socialIcons
     return (
-      <SiteFooter
-        brand={brand}
-        tagline={about}
-        social={socials.map((s) => ({ label: s }))}
-        legal={legal}
-        note={copyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterTagline>{about}</FooterTagline>
+              <FooterSocial>
+                {socials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{copyright}</FooterCopyright>
+            <FooterLegal>
+              {legal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

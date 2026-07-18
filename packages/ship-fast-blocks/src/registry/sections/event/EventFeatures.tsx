@@ -3,7 +3,13 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * EventFeatures — an "everything you get" feature grid for a conference or event
@@ -176,13 +182,33 @@ export const EventFeatures = defineCapsule({
       <FeatureGrid
         heading={heading}
         subheading={description}
-        features={items.map((item, i) => ({
-          ...item,
-          icon: featureIcons[i % featureIcons.length],
-        }))}
         columns={3}
         className={cn('py-20 lg:py-28', props.className)}
-      />
+      >
+        {items
+          .map((item, i) => ({
+            ...item,
+            icon: featureIcons[i % featureIcons.length],
+          }))
+          .map((f) => {
+            const __iv__ = f as {
+              title: string
+              description: string
+              icon?: React.ReactNode
+              points?: string[]
+              cta?: string
+              price?: string
+              imageAlt?: string
+            }
+            return (
+              <FeatureCard key={__iv__.title}>
+                {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                <FeatureTitle>{__iv__.title}</FeatureTitle>
+                <FeatureDescription>{__iv__.description}</FeatureDescription>
+              </FeatureCard>
+            )
+          })}
+      </FeatureGrid>
     )
   },
 })

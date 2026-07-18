@@ -1,7 +1,22 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * WriterAuthorFooter — a rich, multi-column closing footer for a literary
@@ -84,19 +99,49 @@ export const WriterAuthorFooter = defineCapsule({
         ]
 
     return (
-      <SiteFooter
-        brand={props.brand ?? 'Eleanor Vance'}
-        brandMark={<FeatherMark className="size-8 text-primary" />}
-        brandClassName="font-serif text-xl font-medium"
-        tagline={
-          props.tagline ?? 'Novelist. Storyteller. Letters from the page.'
-        }
-        social={social}
-        columns={columns}
-        legal={props.legal?.length ? props.legal : ['Privacy', 'Terms']}
-        note={props.note ?? 'All rights reserved.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={props.brand ?? 'Eleanor Vance'}
+              brandMark={<FeatherMark className="size-8 text-primary" />}
+              brandClassName={'font-serif text-xl font-medium'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'Novelist. Storyteller. Letters from the page.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'All rights reserved.'}
+            </FooterCopyright>
+            <FooterLegal>
+              {props.legal?.length
+                ? props.legal
+                : ['Privacy', 'Terms'].map((l) => (
+                    <FooterLink key={l}>{l}</FooterLink>
+                  ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

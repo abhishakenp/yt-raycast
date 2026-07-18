@@ -11,7 +11,22 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * festivals, arts festivals, concert series, camping/desert events, or any
  * multi-day ticketed event.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 export const MusicFestivalFooter = defineCapsule({
   name: 'MusicFestivalFooter',
   description:
@@ -71,15 +86,42 @@ export const MusicFestivalFooter = defineCapsule({
     void go
     void socialLabel
     return (
-      <SiteFooter
-        brand={brand}
-        tagline={about}
-        columns={columns.map((c) => ({ title: c.heading, links: c.links }))}
-        social={socials.map((s) => ({ label: s }))}
-        legal={legal}
-        note={copyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterTagline>{about}</FooterTagline>
+              <FooterSocial>
+                {socials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns
+              .map((c) => ({ title: c.heading, links: c.links }))
+              .map((col) => (
+                <FooterColumn key={col.title}>
+                  <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                  <FooterColumnList>
+                    {col.links.map((link) => (
+                      <FooterLink key={link}>{link}</FooterLink>
+                    ))}
+                  </FooterColumnList>
+                </FooterColumn>
+              ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{copyright}</FooterCopyright>
+            <FooterLegal>
+              {legal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

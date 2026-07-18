@@ -2,7 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * FoodTruckFeatures — a compact "why us" feature strip for a food-truck site. A
@@ -62,13 +68,33 @@ export const FoodTruckFeatures = defineCapsule({
 
     return (
       <FeatureGrid
-        features={features.map((f) => ({ ...f, icon: sparkleIcon }))}
         columns={3}
         className={cn(
           'border-t border-border px-6 pt-28 pb-16',
           props.className,
         )}
-      />
+      >
+        {features
+          .map((f) => ({ ...f, icon: sparkleIcon }))
+          .map((f) => {
+            const __iv__ = f as {
+              title: string
+              description: string
+              icon?: React.ReactNode
+              points?: string[]
+              cta?: string
+              price?: string
+              imageAlt?: string
+            }
+            return (
+              <FeatureCard key={__iv__.title}>
+                {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                <FeatureTitle>{__iv__.title}</FeatureTitle>
+                <FeatureDescription>{__iv__.description}</FeatureDescription>
+              </FeatureCard>
+            )
+          })}
+      </FeatureGrid>
     )
   },
 })

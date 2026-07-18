@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * HotelResortAmenities — editorial amenities grid for a luxury hotel / resort &
@@ -104,13 +110,33 @@ export const HotelResortAmenities = defineCapsule({
             subtitleClassName="leading-relaxed"
             className="mb-16 max-w-2xl gap-4"
           />
-          <FeatureGrid
-            features={items.map((item) => ({
-              title: item.title,
-              description: item.description,
-            }))}
-            columns={3}
-          />
+          <FeatureGrid columns={3}>
+            {items
+              .map((item) => ({
+                title: item.title,
+                description: item.description,
+              }))
+              .map((f) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <FeatureCard key={__iv__.title}>
+                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                    <FeatureTitle>{__iv__.title}</FeatureTitle>
+                    <FeatureDescription>
+                      {__iv__.description}
+                    </FeatureDescription>
+                  </FeatureCard>
+                )
+              })}
+          </FeatureGrid>
         </div>
       </section>
     )

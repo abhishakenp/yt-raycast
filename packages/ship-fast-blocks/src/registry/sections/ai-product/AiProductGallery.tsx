@@ -4,7 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * AiProductGallery — a product-screenshot showcase grid for a clean, light AI
@@ -74,13 +80,33 @@ export const AiProductGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <GalleryGrid
-            images={items.map((item) => ({
-              alt: item.title,
-              caption: item.description,
-            }))}
-            columns={3}
-          />
+          <GalleryGrid>
+            <GalleryGridItems columns={3}>
+              {items
+                .map((item) => ({
+                  alt: item.title,
+                  caption: item.description,
+                }))
+                .map((img) => {
+                  const __iv__ = img as {
+                    alt: string
+                    caption?: string
+                    title?: string
+                    location?: string
+                  }
+                  return (
+                    <GalleryTile key={__iv__.alt}>
+                      <GalleryTileImage alt={__iv__.alt} />
+                      {__iv__.caption && (
+                        <GalleryTileCaption>
+                          {__iv__.caption}
+                        </GalleryTileCaption>
+                      )}
+                    </GalleryTile>
+                  )
+                })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

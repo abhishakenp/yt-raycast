@@ -1,7 +1,21 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * SaasFooter — a multi-column site footer for a SaaS / AI-product landing page.
@@ -77,19 +91,42 @@ export const SaasFooter = defineCapsule({
       : [{ label: 'Twitter' }, { label: 'LinkedIn' }, { label: 'GitHub' }]
 
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<BrandTile brand={brand} />}
-        brandClassName="text-lg font-bold"
-        tagline={
-          props.tagline ??
-          'AI-powered scheduling that gives you back your time. Smart, secure, and built for teams that move fast.'
-        }
-        columns={columns}
-        social={social}
-        note={props.note ?? 'All rights reserved.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={brand}
+              brandMark={<BrandTile brand={brand} />}
+              brandClassName={'text-lg font-bold'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'AI-powered scheduling that gives you back your time. Smart, secure, and built for teams that move fast.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'All rights reserved.'}
+            </FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

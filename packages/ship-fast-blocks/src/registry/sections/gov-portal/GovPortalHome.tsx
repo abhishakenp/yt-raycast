@@ -18,7 +18,12 @@ import {
   CarouselItem,
   type CarouselApi,
 } from '#/components/ui/carousel.tsx'
-import { StatGrid } from '#/section-kit/index.ts'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/index.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
@@ -383,7 +388,14 @@ export const GovPortalStats = defineCapsule({
           <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
-          <StatGrid columns={4} stats={stats} />
+          <StatGrid columns={4}>
+            {stats.map((s) => (
+              <StatItem key={s.label}>
+                <StatValue>{s.value}</StatValue>
+                <StatLabel>{s.label}</StatLabel>
+              </StatItem>
+            ))}
+          </StatGrid>
         </Container>
       </section>
     )

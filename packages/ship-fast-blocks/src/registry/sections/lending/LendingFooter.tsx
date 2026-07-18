@@ -11,7 +11,22 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as the closing footer with legal disclosures on personal-loan, debt-
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 export const LendingFooter = defineCapsule({
   name: 'LendingFooter',
   description:
@@ -103,15 +118,40 @@ export const LendingFooter = defineCapsule({
     void footerDisclosure
     void Logo
     return (
-      <SiteFooter
-        brand={brand}
-        tagline={footerTagline}
-        columns={footerColumns}
-        social={socials.map((s) => ({ label: s }))}
-        legal={footerLegalLinks}
-        note={footerCopyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterTagline>{footerTagline}</FooterTagline>
+              <FooterSocial>
+                {socials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+            {footerColumns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{footerCopyright}</FooterCopyright>
+            <FooterLegal>
+              {footerLegalLinks.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

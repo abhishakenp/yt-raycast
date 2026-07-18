@@ -11,7 +11,13 @@ import { cn } from '#/lib/utils.ts'
  * catalog that wants quick reassurance under the hero.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 export const ElectronicsStoreFeatures = defineCapsule({
   name: 'ElectronicsStoreFeatures',
   description:
@@ -51,7 +57,26 @@ export const ElectronicsStoreFeatures = defineCapsule({
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
         <Container>
-          <FeatureGrid features={features} columns={3} />
+          <FeatureGrid columns={3}>
+            {features.map((f) => {
+              const __iv__ = f as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+                points?: string[]
+                cta?: string
+                price?: string
+                imageAlt?: string
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
         </Container>
       </section>
     )

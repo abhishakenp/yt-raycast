@@ -14,7 +14,19 @@ import { cn } from '#/lib/utils.ts'
  * carriers, courier, warehousing or cargo/transport companies. Renders fully with
  * no props via baked-in "SwiftFreight" defaults.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 export const LogisticsFooter = defineCapsule({
   name: 'LogisticsFooter',
   description:
@@ -110,15 +122,30 @@ export const LogisticsFooter = defineCapsule({
     void phone
     void address
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<LogoMark />}
-        tagline={blurb}
-        social={socials.map((s) => ({ label: s }))}
-        legal={legalLinks}
-        note={copyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand} brandMark={<LogoMark />}>
+              <FooterTagline>{blurb}</FooterTagline>
+              <FooterSocial>
+                {socials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{copyright}</FooterCopyright>
+            <FooterLegal>
+              {legalLinks.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

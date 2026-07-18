@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * DevToolGallery — a 2x2 product screenshot gallery for a developer tool / API
@@ -66,13 +72,33 @@ export const DevToolGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <GalleryGrid
-            images={items.map((item) => ({
-              alt: item.title,
-              caption: item.caption,
-            }))}
-            columns={2}
-          />
+          <GalleryGrid>
+            <GalleryGridItems columns={2}>
+              {items
+                .map((item) => ({
+                  alt: item.title,
+                  caption: item.caption,
+                }))
+                .map((img) => {
+                  const __iv__ = img as {
+                    alt: string
+                    caption?: string
+                    title?: string
+                    location?: string
+                  }
+                  return (
+                    <GalleryTile key={__iv__.alt}>
+                      <GalleryTileImage alt={__iv__.alt} />
+                      {__iv__.caption && (
+                        <GalleryTileCaption>
+                          {__iv__.caption}
+                        </GalleryTileCaption>
+                      )}
+                    </GalleryTile>
+                  )
+                })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

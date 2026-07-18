@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * InteriorDesignStats — compact metrics band on a muted surface for an upscale
@@ -43,14 +48,22 @@ export const InteriorDesignStats = defineCapsule({
       >
         <div className="mx-auto max-w-7xl">
           <StatGrid
-            stats={items}
             columns={4}
-            gap="wide"
-            align="center"
-            weight="light"
-            size="large"
-            className="text-center md:gap-12"
-          />
+            gap={'wide'}
+            className={'text-center md:gap-12'}
+          >
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'light'} size={'large'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )

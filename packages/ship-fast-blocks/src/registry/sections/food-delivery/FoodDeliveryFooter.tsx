@@ -12,7 +12,20 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * online-ordering platforms, or takeout services. Renders fully with no props
  * via baked-in "nosh" defaults.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 export const FoodDeliveryFooter = defineCapsule({
   name: 'FoodDeliveryFooter',
   description:
@@ -91,16 +104,39 @@ export const FoodDeliveryFooter = defineCapsule({
     void fallbackSocialPath
     void socialPaths
     return (
-      <SiteFooter
-        brand={brand}
-        columns={footerColumns.map((c) => ({
-          title: c.heading,
-          links: c.links,
-        }))}
-        social={socials.map((s) => ({ label: s }))}
-        note={footerNote}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterSocial>
+                {socials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+            {footerColumns
+              .map((c) => ({
+                title: c.heading,
+                links: c.links,
+              }))
+              .map((col) => (
+                <FooterColumn key={col.title}>
+                  <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                  <FooterColumnList>
+                    {col.links.map((link) => (
+                      <FooterLink key={link}>{link}</FooterLink>
+                    ))}
+                  </FooterColumnList>
+                </FooterColumn>
+              ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{footerNote}</FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

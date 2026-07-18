@@ -2,7 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * PlumbingHvacServices — a centered-heading feature grid of core trade services
@@ -120,14 +126,36 @@ export const PlumbingHvacServices = defineCapsule({
           <FeatureGrid
             heading={heading}
             subheading={subheading}
-            features={features.map((f, i) => ({
-              title: f.title,
-              description: f.description,
-              icon: <ServiceIcon glyph={ICONS[i % ICONS.length]} />,
-            }))}
             columns={props.columns ?? 4}
             className={props.className}
-          />
+          >
+            {features
+              .map((f, i) => ({
+                title: f.title,
+                description: f.description,
+                icon: <ServiceIcon glyph={ICONS[i % ICONS.length]} />,
+              }))
+              .map((f) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <FeatureCard key={__iv__.title}>
+                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                    <FeatureTitle>{__iv__.title}</FeatureTitle>
+                    <FeatureDescription>
+                      {__iv__.description}
+                    </FeatureDescription>
+                  </FeatureCard>
+                )
+              })}
+          </FeatureGrid>
         </div>
       </section>
     )

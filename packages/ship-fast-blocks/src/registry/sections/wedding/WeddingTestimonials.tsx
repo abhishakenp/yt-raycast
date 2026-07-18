@@ -3,7 +3,14 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
+import {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from '#/section-kit/TestimonialGrid.tsx'
 
 export const WeddingTestimonials = defineCapsule({
   name: 'WeddingTestimonials',
@@ -56,14 +63,40 @@ export const WeddingTestimonials = defineCapsule({
         <Container>
           <TestimonialGrid
             heading={props.heading ?? 'Well wishes'}
-            subheading="Notes from our favorite people"
-            items={wishes.map((w) => ({
-              quote: w.quote,
-              name: w.name,
-              role: w.relation,
-            }))}
+            subheading={'Notes from our favorite people'}
             columns={3}
-          />
+          >
+            {wishes
+              .map((w) => ({
+                quote: w.quote,
+                name: w.name,
+                role: w.relation,
+              }))
+              .map((t) => {
+                const __iv__ = t as {
+                  quote: string
+                  name: string
+                  role?: string
+                  company?: string
+                  meta?: string
+                  rating?: number
+                  avatarAlt?: string
+                }
+                return (
+                  <TestimonialCard key={__iv__.name}>
+                    <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                    <TestimonialAuthor>
+                      <TestimonialName>{__iv__.name}</TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta>
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </TestimonialAuthor>
+                  </TestimonialCard>
+                )
+              })}
+          </TestimonialGrid>
         </Container>
       </section>
     )

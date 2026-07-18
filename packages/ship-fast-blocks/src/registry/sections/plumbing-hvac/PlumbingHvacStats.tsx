@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
@@ -56,11 +61,17 @@ export const PlumbingHvacStats = defineCapsule({
             subtitle={subheading}
             className="mb-14"
           />
-          <StatGrid
-            stats={stats}
-            columns={props.columns ?? 4}
-            className={props.className}
-          />
+          <StatGrid columns={props.columns ?? 4} className={props.className}>
+            {stats.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label}>
+                  <StatValue>{__iv__.value}</StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )

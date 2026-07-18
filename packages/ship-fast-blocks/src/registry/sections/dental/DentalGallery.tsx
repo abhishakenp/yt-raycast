@@ -12,7 +12,13 @@ import { cn } from '#/lib/utils.ts'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
 export const DentalGallery = defineCapsule({
   name: 'DentalGallery',
   description:
@@ -55,10 +61,30 @@ export const DentalGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{galleryDesc}</p>
           </div>
-          <GalleryGrid
-            images={galleryImages.map((alt) => ({ alt }))}
-            columns={3}
-          />
+          <GalleryGrid>
+            <GalleryGridItems columns={3}>
+              {galleryImages
+                .map((alt) => ({ alt }))
+                .map((img) => {
+                  const __iv__ = img as {
+                    alt: string
+                    caption?: string
+                    title?: string
+                    location?: string
+                  }
+                  return (
+                    <GalleryTile key={__iv__.alt}>
+                      <GalleryTileImage alt={__iv__.alt} />
+                      {__iv__.caption && (
+                        <GalleryTileCaption>
+                          {__iv__.caption}
+                        </GalleryTileCaption>
+                      )}
+                    </GalleryTile>
+                  )
+                })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

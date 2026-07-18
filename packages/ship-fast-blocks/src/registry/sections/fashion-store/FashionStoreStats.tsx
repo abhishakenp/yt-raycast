@@ -11,7 +11,12 @@ import {} from '#/section-kit/index.ts'
  * clothing brands, boutiques, or any premium retail storefront.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const FashionStoreStats = defineCapsule({
   name: 'FashionStoreStats',
   description:
@@ -58,14 +63,22 @@ export const FashionStoreStats = defineCapsule({
       >
         <Container>
           <StatGrid
-            stats={statsItems}
             columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="xl"
-            className="text-center lg:gap-12"
-          />
+            gap={'wide'}
+            className={'text-center lg:gap-12'}
+          >
+            {statsItems.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'xl'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

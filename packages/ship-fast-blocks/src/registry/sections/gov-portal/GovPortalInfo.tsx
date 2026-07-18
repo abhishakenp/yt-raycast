@@ -4,7 +4,14 @@ import { MailIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { GalleryGrid } from '#/section-kit/index.ts'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/index.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
@@ -154,12 +161,19 @@ export const GovPortalMedia = defineCapsule({
     return (
       <section className={cn('bg-muted/30 py-16', props.className)}>
         <Container>
-          <GalleryGrid
-            heading={heading}
-            subheading={props.subheading}
-            images={images}
-            columns={3}
-          />
+          <GalleryGrid>
+            <SectionHeading title={heading} subtitle={props.subheading} />
+            <GalleryGridItems columns={3}>
+              {images.map((img) => (
+                <GalleryTile key={img.alt}>
+                  <GalleryTileImage alt={img.alt} />
+                  {img.caption && (
+                    <GalleryTileCaption>{img.caption}</GalleryTileCaption>
+                  )}
+                </GalleryTile>
+              ))}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

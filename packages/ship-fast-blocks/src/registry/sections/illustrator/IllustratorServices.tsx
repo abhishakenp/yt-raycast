@@ -3,7 +3,13 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * IllustratorServices — a centered-heading "what I create" services grid for an
@@ -107,16 +113,36 @@ export const IllustratorServices = defineCapsule({
       <FeatureGrid
         heading={heading}
         subheading={description}
-        features={items.map((item, i) => ({
-          ...item,
-          icon: icons[i % icons.length],
-        }))}
         columns={3}
         className={cn(
           'px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
           props.className,
         )}
-      />
+      >
+        {items
+          .map((item, i) => ({
+            ...item,
+            icon: icons[i % icons.length],
+          }))
+          .map((f) => {
+            const __iv__ = f as {
+              title: string
+              description: string
+              icon?: React.ReactNode
+              points?: string[]
+              cta?: string
+              price?: string
+              imageAlt?: string
+            }
+            return (
+              <FeatureCard key={__iv__.title}>
+                {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                <FeatureTitle>{__iv__.title}</FeatureTitle>
+                <FeatureDescription>{__iv__.description}</FeatureDescription>
+              </FeatureCard>
+            )
+          })}
+      </FeatureGrid>
     )
   },
 })

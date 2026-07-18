@@ -3,7 +3,19 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * HotelResortFooter — rich 4-column dark footer for a luxury hotel / resort &
@@ -108,15 +120,30 @@ export const HotelResortFooter = defineCapsule({
     void homeTarget
     void lakebed
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<LogoMark />}
-        tagline={about}
-        social={socials.map((s) => ({ label: s }))}
-        legal={legalLinks}
-        note={note}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand} brandMark={<LogoMark />}>
+              <FooterTagline>{about}</FooterTagline>
+              <FooterSocial>
+                {socials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{note}</FooterCopyright>
+            <FooterLegal>
+              {legalLinks.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

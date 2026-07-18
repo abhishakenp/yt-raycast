@@ -3,7 +3,13 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * PortfolioServices — a "what I do" capability grid for a creative-individual
@@ -81,16 +87,26 @@ export const PortfolioServices = defineCapsule({
               props.subheading ??
               'A focused set of services for brands and studios that care about craft — from the first concept to the final frame.'
             }
-            features={services.map((s, i) => ({
-              title: s.title,
-              description: s.description,
-              icon: (
-                <span aria-hidden="true" className="text-xl leading-none">
-                  {icons[i % icons.length]}
-                </span>
-              ),
-            }))}
-          />
+          >
+            {services.map((s, i) => {
+              const __iv__ = s as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  <FeatureIcon>
+                    <span aria-hidden="true" className="text-xl leading-none">
+                      {icons[i % icons.length]}
+                    </span>
+                  </FeatureIcon>
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
         </Container>
       </section>
     )

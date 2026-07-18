@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * CommunityForumStats — dark KPI stats band for a community-platform / discussion-forum
@@ -36,16 +41,23 @@ export const CommunityForumStats = defineCapsule({
     return (
       <section className={cn('bg-foreground py-16', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="default"
-            valueColor="inverted"
-            labelColor="inverted"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue
+                    weight={'bold'}
+                    size={'default'}
+                    color={'inverted'}
+                  >
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )

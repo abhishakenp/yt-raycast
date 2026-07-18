@@ -3,7 +3,13 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * WineryBreweryGallery — captioned image gallery for a winery or brewery page.
@@ -67,14 +73,31 @@ export const WineryBreweryGallery = defineCapsule({
         )}
       >
         <Container>
-          <GalleryGrid
-            heading={props.heading ?? 'From vine to glass'}
-            subheading={
-              props.description ??
-              'Sun-soaked rows, a candlelit barrel room, and the quiet ritual of the cellar — a look at the place behind every pour.'
-            }
-            images={images}
-          />
+          <GalleryGrid>
+            <SectionHeading
+              title={props.heading ?? 'From vine to glass'}
+              subtitle={
+                props.description ??
+                'Sun-soaked rows, a candlelit barrel room, and the quiet ritual of the cellar — a look at the place behind every pour.'
+              }
+            />
+            {images.map((img) => {
+              const __iv__ = img as {
+                alt: string
+                caption?: string
+                title?: string
+                location?: string
+              }
+              return (
+                <GalleryTile key={__iv__.alt}>
+                  <GalleryTileImage alt={__iv__.alt} />
+                  {__iv__.caption && (
+                    <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                  )}
+                </GalleryTile>
+              )
+            })}
+          </GalleryGrid>
         </Container>
       </section>
     )

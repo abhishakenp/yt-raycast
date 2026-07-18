@@ -10,7 +10,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * on hover. Links route through useNavigate. Use as the closing site footer for
  * filmmakers, directors, DPs, or production houses.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 export const FilmDirectorFooter = defineCapsule({
   name: 'FilmDirectorFooter',
   description:
@@ -32,7 +39,16 @@ export const FilmDirectorFooter = defineCapsule({
     void go
     void footerLinks
     return (
-      <SiteFooter brand={brand} note={footerNote} className={props.className} />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand} />
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{footerNote}</FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

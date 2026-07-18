@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * FoodTruckStats — a compact metrics strip on a subtle muted band. A centered 2-up
@@ -35,14 +40,19 @@ export const FoodTruckStats = defineCapsule({
     return (
       <section className={cn('bg-muted px-6 pt-28 pb-16', props.className)}>
         <div className="mx-auto max-w-6xl">
-          <StatGrid
-            stats={stats}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="default"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {stats.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'default'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )

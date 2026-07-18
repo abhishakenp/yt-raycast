@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * ChurchStats — a bordered congregation stats band for a church or faith-community
@@ -39,15 +44,19 @@ export const ChurchStats = defineCapsule({
         className={cn('border-y border-border pt-28 pb-20', props.className)}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="large"
-            className="lg:gap-12"
-          />
+          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'large'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )

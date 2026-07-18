@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * PropertyListingStats — a marketplace-scale band for a property portal. A
@@ -53,7 +58,17 @@ export const PropertyListingStats = defineCapsule({
           {heading || description ? (
             <SectionHeading title={heading} subtitle={description} />
           ) : null}
-          <StatGrid stats={stats} columns={4} className="mt-12" />
+          <StatGrid columns={4} className={'mt-12'}>
+            {stats.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label}>
+                  <StatValue>{__iv__.value}</StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )

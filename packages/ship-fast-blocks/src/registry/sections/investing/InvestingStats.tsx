@@ -12,7 +12,12 @@ import { cn } from '#/lib/utils.ts'
  * props via four baked-in metrics.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const InvestingStats = defineCapsule({
   name: 'InvestingStats',
   description:
@@ -58,14 +63,19 @@ export const InvestingStats = defineCapsule({
         )}
       >
         <Container>
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="semibold"
-            size="large"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'semibold'} size={'large'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

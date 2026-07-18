@@ -12,7 +12,12 @@ import { cn } from '#/lib/utils.ts'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const MobileAppStats = defineCapsule({
   name: 'MobileAppStats',
   description:
@@ -73,13 +78,19 @@ export const MobileAppStats = defineCapsule({
             </h2>
             <p className="text-lg text-primary-foreground/70">{description}</p>
           </div>
-          <StatGrid
-            stats={items.map((s) => ({ value: s.value, label: s.label }))}
-            columns={4}
-            gap="wide"
-            valueColor="primaryFg"
-            labelColor="primaryFg"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {items
+              .map((s) => ({ value: s.value, label: s.label }))
+              .map((s) => {
+                const __iv__ = s as { value: string; label: string }
+                return (
+                  <StatItem key={__iv__.label}>
+                    <StatValue color={'primaryFg'}>{__iv__.value}</StatValue>
+                    <StatLabel color={'primaryFg'}>{__iv__.label}</StatLabel>
+                  </StatItem>
+                )
+              })}
+          </StatGrid>
         </Container>
       </section>
     )

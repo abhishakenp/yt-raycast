@@ -3,7 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
+import {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * AnalyticsTestimonials — social-proof testimonial band for an analytics
@@ -78,7 +85,32 @@ export const AnalyticsTestimonials = defineCapsule({
             subtitle={subheading}
             className="mb-14"
           />
-          <TestimonialGrid items={items} columns={3} />
+          <TestimonialGrid columns={3}>
+            {items.map((t) => {
+              const __iv__ = t as {
+                quote: string
+                name: string
+                role?: string
+                company?: string
+                meta?: string
+                rating?: number
+                avatarAlt?: string
+              }
+              return (
+                <TestimonialCard key={__iv__.name}>
+                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                  <TestimonialAuthor>
+                    <TestimonialName>{__iv__.name}</TestimonialName>
+                    {(__iv__.role || __iv__.company || __iv__.meta) && (
+                      <TestimonialMeta>
+                        {__iv__.role || __iv__.company || __iv__.meta}
+                      </TestimonialMeta>
+                    )}
+                  </TestimonialAuthor>
+                </TestimonialCard>
+              )
+            })}
+          </TestimonialGrid>
         </div>
       </section>
     )

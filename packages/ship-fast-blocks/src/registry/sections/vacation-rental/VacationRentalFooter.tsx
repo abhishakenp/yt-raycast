@@ -1,7 +1,22 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * VacationRentalFooter — a multi-column site footer for a vacation-rental listing
@@ -95,20 +110,47 @@ export const VacationRentalFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Stay']
 
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<PalmMark className="size-7 text-primary" />}
-        brandClassName="text-lg font-semibold"
-        tagline={
-          props.tagline ??
-          'Bright, breezy homes by the water — thoughtfully designed for unforgettable getaways.'
-        }
-        columns={columns}
-        social={social}
-        legal={legal}
-        note={props.note ?? 'Made for slow mornings and golden evenings.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={brand}
+              brandMark={<PalmMark className="size-7 text-primary" />}
+              brandClassName={'text-lg font-semibold'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'Bright, breezy homes by the water — thoughtfully designed for unforgettable getaways.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'Made for slow mornings and golden evenings.'}
+            </FooterCopyright>
+            <FooterLegal>
+              {legal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

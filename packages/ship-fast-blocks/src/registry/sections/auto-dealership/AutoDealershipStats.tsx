@@ -5,7 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * AutoDealershipStats — bold full-bleed stats band for an auto dealership site.
@@ -45,16 +50,26 @@ export const AutoDealershipStats = defineCapsule({
       >
         <Container>
           <StatGrid
-            stats={items}
             columns={4}
-            gap="wide"
-            align="center"
-            weight="semibold"
-            size="large"
-            valueColor="inverted"
-            labelColor="inverted"
-            className="text-center lg:gap-12"
-          />
+            gap={'wide'}
+            className={'text-center lg:gap-12'}
+          >
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue
+                    weight={'semibold'}
+                    size={'large'}
+                    color={'inverted'}
+                  >
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

@@ -156,7 +156,7 @@ export const ChurchGive = defineCapsule({
                 <div className="mb-10 space-y-4">
                   {points.map((point, i) => (
                     <FeatureListItem>
-                      <FeatureListItemIcon iconShape="circle" iconSize="md">
+                      <FeatureListItemIcon shape="circle" size="md">
                         {giveIcons[i % giveIcons.length]}
                       </FeatureListItemIcon>
                       <FeatureListItemBody>

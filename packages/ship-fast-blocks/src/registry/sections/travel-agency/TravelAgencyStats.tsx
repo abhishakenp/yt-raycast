@@ -1,7 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
@@ -40,7 +45,17 @@ export const TravelAgencyStats = defineCapsule({
       >
         <Container className="flex flex-col gap-10">
           <SectionHeading title={heading} subtitle={subheading} />
-          <StatGrid stats={stats} columns={4} />
+          <StatGrid columns={4}>
+            {stats.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label}>
+                  <StatValue>{__iv__.value}</StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

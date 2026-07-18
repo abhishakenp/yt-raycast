@@ -1,7 +1,21 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * EcommerceFooter — clean, light multi-column footer for a general online store.
@@ -101,19 +115,42 @@ export const EcommerceFooter = defineCapsule({
         ]
 
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<LogoTile brand={brand} />}
-        brandClassName="text-lg font-bold"
-        tagline={
-          props.tagline ??
-          'Everyday essentials and the brands you love — quality you can trust at prices that make sense.'
-        }
-        columns={columns}
-        social={social}
-        note={props.note ?? 'All rights reserved.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={brand}
+              brandMark={<LogoTile brand={brand} />}
+              brandClassName={'text-lg font-bold'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'Everyday essentials and the brands you love — quality you can trust at prices that make sense.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'All rights reserved.'}
+            </FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * IllustratorStats — a compact dark stats band for an illustrator /
@@ -42,15 +47,26 @@ export const IllustratorStats = defineCapsule({
       >
         <div className="mx-auto max-w-7xl">
           <StatGrid
-            stats={items}
             columns={4}
-            gap="wide"
-            fontFamily="serif"
-            size="large"
-            valueColor="inverted"
-            labelColor="inverted"
-            className="text-center sm:gap-12"
-          />
+            gap={'wide'}
+            className={'text-center sm:gap-12'}
+          >
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label}>
+                  <StatValue
+                    fontFamily={'serif'}
+                    size={'large'}
+                    color={'inverted'}
+                  >
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )

@@ -3,7 +3,14 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
+import {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * SaasTestimonials — a social-proof band for a B2B SaaS landing page. Thin
@@ -90,11 +97,32 @@ export const SaasTestimonials = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <TestimonialGrid
-            heading={heading}
-            subheading={subheading}
-            items={items}
-          />
+          <TestimonialGrid heading={heading} subheading={subheading}>
+            {items.map((t) => {
+              const __iv__ = t as {
+                quote: string
+                name: string
+                role?: string
+                company?: string
+                meta?: string
+                rating?: number
+                avatarAlt?: string
+              }
+              return (
+                <TestimonialCard key={__iv__.name}>
+                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                  <TestimonialAuthor>
+                    <TestimonialName>{__iv__.name}</TestimonialName>
+                    {(__iv__.role || __iv__.company || __iv__.meta) && (
+                      <TestimonialMeta>
+                        {__iv__.role || __iv__.company || __iv__.meta}
+                      </TestimonialMeta>
+                    )}
+                  </TestimonialAuthor>
+                </TestimonialCard>
+              )
+            })}
+          </TestimonialGrid>
         </Container>
       </section>
     )

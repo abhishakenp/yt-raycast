@@ -2,7 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import type { ReactNode } from 'react'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon as KitFeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 const ICONS: ReactNode[] = [
   // battery (40-hour)
@@ -126,10 +132,30 @@ export const ProductDetailFeatures = defineCapsule({
           <FeatureGrid
             heading={heading}
             subheading={subheading}
-            features={withIcons}
             columns={columns}
             className={props.className}
-          />
+          >
+            {withIcons.map((f) => {
+              const __iv__ = f as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+                points?: string[]
+                cta?: string
+                price?: string
+                imageAlt?: string
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  {__iv__.icon && (
+                    <KitFeatureIcon>{__iv__.icon}</KitFeatureIcon>
+                  )}
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
         </div>
       </section>
     )

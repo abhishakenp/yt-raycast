@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * EventPlannerServices — airy services grid for an event-planning agency. A
@@ -111,7 +117,26 @@ export const EventPlannerServices = defineCapsule({
             subtitleClassName="text-lg"
             className="mb-16 max-w-3xl gap-6 lg:mb-24"
           />
-          <FeatureGrid features={serviceItems} columns={3} />
+          <FeatureGrid columns={3}>
+            {serviceItems.map((f) => {
+              const __iv__ = f as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+                points?: string[]
+                cta?: string
+                price?: string
+                imageAlt?: string
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
         </div>
       </section>
     )

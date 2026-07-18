@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * EventPlannerStats — impact band pairing a stats column with a photo collage. A
@@ -69,13 +74,19 @@ export const EventPlannerStats = defineCapsule({
               <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
                 {statsDesc}
               </p>
-              <StatGrid
-                stats={statsItems}
-                columns={2}
-                align="left"
-                weight="light"
-                size="large"
-              />
+              <StatGrid columns={2}>
+                {statsItems.map((s) => {
+                  const __iv__ = s as { value: string; label: string }
+                  return (
+                    <StatItem key={__iv__.label} align={'left'}>
+                      <StatValue weight={'light'} size={'large'}>
+                        {__iv__.value}
+                      </StatValue>
+                      <StatLabel>{__iv__.label}</StatLabel>
+                    </StatItem>
+                  )
+                })}
+              </StatGrid>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4">

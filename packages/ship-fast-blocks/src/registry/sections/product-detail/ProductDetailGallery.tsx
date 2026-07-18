@@ -1,7 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const ProductDetailGallery = defineCapsule({
   name: 'ProductDetailGallery',
@@ -59,13 +66,27 @@ export const ProductDetailGallery = defineCapsule({
     return (
       <section className="bg-muted/30 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <GalleryGrid
-            heading={heading}
-            subheading={subheading}
-            images={images}
-            columns={columns}
-            className={props.className}
-          />
+          <GalleryGrid className={props.className}>
+            <SectionHeading title={heading} subtitle={subheading} />
+            <GalleryGridItems columns={columns}>
+              {images.map((img) => {
+                const __iv__ = img as {
+                  alt: string
+                  caption?: string
+                  title?: string
+                  location?: string
+                }
+                return (
+                  <GalleryTile key={__iv__.alt}>
+                    <GalleryTileImage alt={__iv__.alt} />
+                    {__iv__.caption && (
+                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                    )}
+                  </GalleryTile>
+                )
+              })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </div>
       </section>
     )

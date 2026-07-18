@@ -6,7 +6,13 @@ import { cn } from '#/lib/utils.ts'
  * CleaningServiceGallery — a before/after transformations image gallery for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 1/2/3-column grid of clickable project cards; each card shows a lazy-loaded image that subtly zooms on hover, with a gradient-to-top overlay that fades in to reveal a title and location caption. Every card routes through useNavigate on click. Use for portfolio / results galleries for residential cleaning companies, maid services, renovation cleaners, or home-service brands that want visual proof. Renders fully with no props via six baked-in default transformations.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
 export const CleaningServiceGallery = defineCapsule({
   name: 'CleaningServiceGallery',
   description:
@@ -76,7 +82,26 @@ export const CleaningServiceGallery = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <GalleryGrid images={items} columns={3} />
+          <GalleryGrid>
+            <GalleryGridItems columns={3}>
+              {items.map((img) => {
+                const __iv__ = img as {
+                  alt: string
+                  caption?: string
+                  title?: string
+                  location?: string
+                }
+                return (
+                  <GalleryTile key={__iv__.alt}>
+                    <GalleryTileImage alt={__iv__.alt} />
+                    {__iv__.caption && (
+                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                    )}
+                  </GalleryTile>
+                )
+              })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

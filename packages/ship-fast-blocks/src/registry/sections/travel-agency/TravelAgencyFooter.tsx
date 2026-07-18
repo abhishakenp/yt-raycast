@@ -1,7 +1,22 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 function CompassMark({ className }: { className?: string }) {
   return (
@@ -77,22 +92,47 @@ export const TravelAgencyFooter = defineCapsule({
       ? props.legal
       : ['Privacy', 'Terms', 'Cookies', 'Accessibility']
     return (
-      <SiteFooter
-        brand={props.brand ?? 'Voyage & Co'}
-        brandMark={<CompassMark className="size-8 text-primary" />}
-        tagline={
-          props.tagline ??
-          "Crafting unforgettable journeys to the world's most breathtaking places."
-        }
-        columns={columns}
-        social={social}
-        legal={legal}
-        note={
-          props.note ??
-          'Voyage & Co is a registered travel agency. Fares and availability subject to change.'
-        }
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={props.brand ?? 'Voyage & Co'}
+              brandMark={<CompassMark className="size-8 text-primary" />}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  "Crafting unforgettable journeys to the world's most breathtaking places."}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ??
+                'Voyage & Co is a registered travel agency. Fares and availability subject to change.'}
+            </FooterCopyright>
+            <FooterLegal>
+              {legal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

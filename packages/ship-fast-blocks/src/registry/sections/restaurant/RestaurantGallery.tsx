@@ -3,7 +3,13 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * RestaurantGallery — captioned image gallery for a restaurant page. Thin
@@ -61,14 +67,31 @@ export const RestaurantGallery = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <GalleryGrid
-            heading={props.heading ?? 'A taste of the evening'}
-            subheading={
-              props.description ??
-              'Seasonal plates, a sunlit dining room, and the little details that make a night out feel like an occasion.'
-            }
-            images={images}
-          />
+          <GalleryGrid>
+            <SectionHeading
+              title={props.heading ?? 'A taste of the evening'}
+              subtitle={
+                props.description ??
+                'Seasonal plates, a sunlit dining room, and the little details that make a night out feel like an occasion.'
+              }
+            />
+            {images.map((img) => {
+              const __iv__ = img as {
+                alt: string
+                caption?: string
+                title?: string
+                location?: string
+              }
+              return (
+                <GalleryTile key={__iv__.alt}>
+                  <GalleryTileImage alt={__iv__.alt} />
+                  {__iv__.caption && (
+                    <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                  )}
+                </GalleryTile>
+              )
+            })}
+          </GalleryGrid>
         </Container>
       </section>
     )

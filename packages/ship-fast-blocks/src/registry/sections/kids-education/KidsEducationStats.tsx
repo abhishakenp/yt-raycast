@@ -12,7 +12,12 @@ import {} from '#/section-kit/index.ts'
  * and family learning apps. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const KidsEducationStats = defineCapsule({
   name: 'KidsEducationStats',
   description:
@@ -55,16 +60,19 @@ export const KidsEducationStats = defineCapsule({
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
         <Container>
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="large"
-            valueColor="inverted"
-            labelColor="inverted"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'large'} color={'inverted'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

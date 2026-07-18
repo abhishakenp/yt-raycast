@@ -328,7 +328,7 @@ export const CafeMenu = defineCapsule({
                     <MenuCategoryTitle>{col.title}</MenuCategoryTitle>
                   </MenuCategoryHeader>
                   <div className="space-y-6">
-                    {(col.items ?? []).map((item, idx) => (
+                    {(col.items ?? []).map((item) => (
                       <MenuItemRow>
                         <MenuItemContent>
                           <MenuItemBody>

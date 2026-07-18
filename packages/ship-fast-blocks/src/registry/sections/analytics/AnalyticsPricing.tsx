@@ -3,14 +3,21 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  SaasMutationSpinner,
-  SaasPlanActionButton,
-  saasPlan,
-  useSyncSaasPlans,
-} from '../saas/saas-interactions.tsx'
+import { saasPlan, useSyncSaasPlans } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
-import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
+import {
+  PricingGrid,
+  PricingTier,
+  PricingTierBadge,
+  PricingTierHeader,
+  PricingTierName,
+  PricingTierTagline,
+  PricingTierPrice,
+  PricingTierPeriod,
+  PricingTierFeatures,
+  PricingTierFeature,
+  PricingTierCta,
+} from '#/section-kit/PricingGrid.tsx'
 
 /**
  * AnalyticsPricing — three-tier pricing band for an analytics product, composing
@@ -117,35 +124,102 @@ export const AnalyticsPricing = defineCapsule({
             subtitle={subheading}
             className="mb-14"
           />
-          <PricingGrid
-            tiers={tiers}
-            heading="Start free, scale when you grow"
-            subheading="No credit card to start. Upgrade the moment your data does."
-            renderCta={(tier) => (
-              <SaasPlanActionButton
-                lakebed={lakebed}
-                intentLabel={tier.cta ?? 'Get started'}
-                plan={tier.name}
-                source="pricing"
-                aria-label={`${tier.cta} for ${tier.name}`}
-                pendingChildren={
-                  <>
-                    <SaasMutationSpinner className="size-4" />
-                    Selecting
-                  </>
-                }
-                className={cn(
-                  'mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                  tier.highlighted
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'border border-border bg-background text-foreground hover:bg-muted',
-                )}
-              >
-                {tier.cta ?? 'Get started'}
-              </SaasPlanActionButton>
-            )}
-            className={props.className}
-          />
+          <PricingGrid>
+            <SectionHeading
+              title={'Start free, scale when you grow'}
+              subtitle={
+                'No credit card to start. Upgrade the moment your data does.'
+              }
+            />
+            {tiers.map((tier) => {
+              const t = tier as {
+                name: string
+                price: string
+                features?: string[]
+                cta?: string
+                ctaTarget?: string
+                tagline?: string
+                blurb?: string
+                description?: string
+                audience?: string
+                period?: string
+                unit?: string
+                cadence?: string
+                suffix?: string
+                highlighted?: boolean
+                featured?: boolean
+                popular?: boolean
+                badge?: string
+                popularLabel?: string
+                excluded?: string[]
+                annual?: string
+                priceSuffix?: string
+                note?: string
+              }
+              return (
+                <PricingTier
+                  key={t.name}
+                  variant={
+                    t.highlighted || t.featured || t.popular
+                      ? 'highlighted'
+                      : undefined
+                  }
+                >
+                  {t.highlighted || t.featured || t.popular ? (
+                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
+                  ) : null}
+                  <PricingTierHeader>
+                    <PricingTierName>{t.name}</PricingTierName>
+                    {t.tagline && (
+                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
+                    )}
+                    {t.blurb && (
+                      <PricingTierTagline>{t.blurb}</PricingTierTagline>
+                    )}
+                    {t.description && (
+                      <PricingTierTagline>{t.description}</PricingTierTagline>
+                    )}
+                    {t.audience && (
+                      <PricingTierTagline>{t.audience}</PricingTierTagline>
+                    )}
+                    <PricingTierPrice>{t.price}</PricingTierPrice>
+                    {t.period && (
+                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
+                    )}
+                    {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
+                    {t.cadence && (
+                      <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
+                    )}
+                    {t.suffix && (
+                      <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
+                    )}
+                  </PricingTierHeader>
+                  {t.features && (
+                    <PricingTierFeatures>
+                      {t.features.map((feature) => (
+                        <PricingTierFeature
+                          key={
+                            typeof feature === 'string'
+                              ? feature
+                              : (feature as { label: string }).label
+                          }
+                        >
+                          {typeof feature === 'string'
+                            ? feature
+                            : (feature as { label: string }).label}
+                        </PricingTierFeature>
+                      ))}
+                    </PricingTierFeatures>
+                  )}
+                  {t.cta && (
+                    <PricingTierCta target={t.ctaTarget}>
+                      {t.cta}
+                    </PricingTierCta>
+                  )}
+                </PricingTier>
+              )
+            })}
+          </PricingGrid>
         </div>
       </section>
     )

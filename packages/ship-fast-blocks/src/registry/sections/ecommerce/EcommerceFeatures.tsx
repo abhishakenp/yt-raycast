@@ -4,7 +4,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * EcommerceFeatures — a clean "why shop with us" benefits row for a modern
@@ -135,16 +141,34 @@ export const EcommerceFeatures = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container>
-          <FeatureGrid
-            heading={heading}
-            subheading={subheading}
-            columns={4}
-            features={features.map((f, i) => ({
-              title: f.title,
-              description: f.description,
-              icon: ICONS[i % ICONS.length],
-            }))}
-          />
+          <FeatureGrid heading={heading} subheading={subheading} columns={4}>
+            {features
+              .map((f, i) => ({
+                title: f.title,
+                description: f.description,
+                icon: ICONS[i % ICONS.length],
+              }))
+              .map((f) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <FeatureCard key={__iv__.title}>
+                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                    <FeatureTitle>{__iv__.title}</FeatureTitle>
+                    <FeatureDescription>
+                      {__iv__.description}
+                    </FeatureDescription>
+                  </FeatureCard>
+                )
+              })}
+          </FeatureGrid>
         </Container>
       </section>
     )

@@ -1,7 +1,21 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * WineryBreweryFooter — a rich, multi-column closing footer for a winery or
@@ -93,19 +107,42 @@ export const WineryBreweryFooter = defineCapsule({
         ]
 
     return (
-      <SiteFooter
-        brand={props.brand ?? 'Cellar & Cask'}
-        brandMark={<GrapeClusterMark className="size-8 text-primary" />}
-        brandClassName="font-serif text-xl font-medium"
-        tagline={
-          props.tagline ??
-          'Estate-grown wine and barrel-aged ale from one sun-soaked hillside.'
-        }
-        social={social}
-        columns={columns}
-        note={props.note ?? 'All rights reserved.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={props.brand ?? 'Cellar & Cask'}
+              brandMark={<GrapeClusterMark className="size-8 text-primary" />}
+              brandClassName={'font-serif text-xl font-medium'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'Estate-grown wine and barrel-aged ale from one sun-soaked hillside.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'All rights reserved.'}
+            </FooterCopyright>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

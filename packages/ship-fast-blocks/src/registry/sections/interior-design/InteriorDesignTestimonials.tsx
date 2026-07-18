@@ -2,7 +2,14 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
+import {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * InteriorDesignTestimonials — three-up client testimonials grid for an upscale
@@ -69,20 +76,48 @@ export const InteriorDesignTestimonials = defineCapsule({
       <TestimonialGrid
         eyebrow={eyebrow}
         heading={heading}
-        items={items.map((t) => ({
-          quote: t.quote,
-          name: t.name,
-          role: t.role,
-          rating: 5,
-          avatarAlt: t.avatarAlt,
-        }))}
         columns={3}
-        cardClassName="border-0 bg-transparent p-0"
         className={cn(
           'px-4 pt-28 pb-20 sm:px-6 md:pt-32 md:pb-28 lg:px-8',
           props.className,
         )}
-      />
+      >
+        {items
+          .map((t) => ({
+            quote: t.quote,
+            name: t.name,
+            role: t.role,
+            rating: 5,
+            avatarAlt: t.avatarAlt,
+          }))
+          .map((t) => {
+            const __iv__ = t as {
+              quote: string
+              name: string
+              role?: string
+              company?: string
+              meta?: string
+              rating?: number
+              avatarAlt?: string
+            }
+            return (
+              <TestimonialCard
+                key={__iv__.name}
+                className={'border-0 bg-transparent p-0'}
+              >
+                <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                <TestimonialAuthor>
+                  <TestimonialName>{__iv__.name}</TestimonialName>
+                  {(__iv__.role || __iv__.company || __iv__.meta) && (
+                    <TestimonialMeta>
+                      {__iv__.role || __iv__.company || __iv__.meta}
+                    </TestimonialMeta>
+                  )}
+                </TestimonialAuthor>
+              </TestimonialCard>
+            )
+          })}
+      </TestimonialGrid>
     )
   },
 })

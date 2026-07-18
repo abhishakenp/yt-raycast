@@ -5,7 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * ArchitectureFirmStats — inverted statistics band for an architecture-studio /
@@ -44,16 +49,19 @@ export const ArchitectureFirmStats = defineCapsule({
         className={cn('bg-foreground py-20 text-background', props.className)}
       >
         <Container>
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="light"
-            size="large"
-            valueColor="inverted"
-            labelColor="inverted"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'light'} size={'large'} color={'inverted'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

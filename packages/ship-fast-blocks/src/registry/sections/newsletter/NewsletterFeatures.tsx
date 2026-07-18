@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * NewsletterFeatures — "What You Get" value grid for an editorial newsletter.
@@ -96,7 +102,26 @@ export const NewsletterFeatures = defineCapsule({
             className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
           />
 
-          <FeatureGrid features={items} columns={3} />
+          <FeatureGrid columns={3}>
+            {items.map((f) => {
+              const __iv__ = f as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+                points?: string[]
+                cta?: string
+                price?: string
+                imageAlt?: string
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
 
           <div className="mt-16 border-t border-border pt-16 md:mt-20 md:pt-20">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

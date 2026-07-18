@@ -2,7 +2,14 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * LinkInBioGallery — a bold, mobile-first "Featured" content grid for a creator
@@ -71,12 +78,31 @@ export const LinkInBioGallery = defineCapsule({
 
     return (
       <GalleryGrid
-        heading={props.heading ?? 'Featured'}
-        subheading={props.subheading ?? 'Recent posts, drops, and projects.'}
-        columns={props.columns ?? 2}
-        images={images}
         className={cn('mx-auto w-full max-w-2xl px-6 py-10', props.className)}
-      />
+      >
+        <SectionHeading
+          title={props.heading ?? 'Featured'}
+          subtitle={props.subheading ?? 'Recent posts, drops, and projects.'}
+        />
+        <GalleryGridItems columns={props.columns ?? 2}>
+          {images.map((img) => {
+            const __iv__ = img as {
+              alt: string
+              caption?: string
+              title?: string
+              location?: string
+            }
+            return (
+              <GalleryTile key={__iv__.alt}>
+                <GalleryTileImage alt={__iv__.alt} />
+                {__iv__.caption && (
+                  <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                )}
+              </GalleryTile>
+            )
+          })}
+        </GalleryGridItems>
+      </GalleryGrid>
     )
   },
 })

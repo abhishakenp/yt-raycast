@@ -3,7 +3,14 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * VacationRentalGallery — an airy property photo gallery for a vacation-rental
@@ -69,15 +76,33 @@ export const VacationRentalGallery = defineCapsule({
         )}
       >
         <Container>
-          <GalleryGrid
-            heading={props.heading ?? 'Take the tour'}
-            subheading={
-              props.subheading ??
-              'Every corner designed for comfort, from sun-drenched living spaces to a pool that opens to the horizon.'
-            }
-            images={images}
-            columns={props.columns ?? 3}
-          />
+          <GalleryGrid>
+            <SectionHeading
+              title={props.heading ?? 'Take the tour'}
+              subtitle={
+                props.subheading ??
+                'Every corner designed for comfort, from sun-drenched living spaces to a pool that opens to the horizon.'
+              }
+            />
+            <GalleryGridItems columns={props.columns ?? 3}>
+              {images.map((img) => {
+                const __iv__ = img as {
+                  alt: string
+                  caption?: string
+                  title?: string
+                  location?: string
+                }
+                return (
+                  <GalleryTile key={__iv__.alt}>
+                    <GalleryTileImage alt={__iv__.alt} />
+                    {__iv__.caption && (
+                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                    )}
+                  </GalleryTile>
+                )
+              })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

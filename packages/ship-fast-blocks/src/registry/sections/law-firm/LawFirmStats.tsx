@@ -13,7 +13,12 @@ import {} from '#/section-kit/index.ts'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const LawFirmStats = defineCapsule({
   name: 'LawFirmStats',
   description:
@@ -59,16 +64,22 @@ export const LawFirmStats = defineCapsule({
       >
         <Container>
           <StatGrid
-            stats={items}
             columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="xl"
-            valueColor="inverted"
-            labelColor="inverted"
-            className="text-center lg:gap-12"
-          />
+            gap={'wide'}
+            className={'text-center lg:gap-12'}
+          >
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'xl'} color={'inverted'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

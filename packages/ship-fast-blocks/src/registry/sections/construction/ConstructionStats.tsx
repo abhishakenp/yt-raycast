@@ -12,7 +12,12 @@ import {} from '#/section-kit/index.ts'
  * baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const ConstructionStats = defineCapsule({
   name: 'ConstructionStats',
   description:
@@ -53,15 +58,19 @@ export const ConstructionStats = defineCapsule({
     return (
       <section className={cn('bg-muted py-16', props.className)}>
         <Container>
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="bold"
-            size="large"
-            className="lg:gap-12"
-          />
+          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'bold'} size={'large'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

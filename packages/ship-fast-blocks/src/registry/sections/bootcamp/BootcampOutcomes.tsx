@@ -12,7 +12,12 @@ import { cn } from '#/lib/utils.ts'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 import { OutcomesGrid, OutcomesCard } from '#/section-kit/OutcomesGrid.tsx'
 export const BootcampOutcomes = defineCapsule({
   name: 'BootcampOutcomes',
@@ -106,17 +111,24 @@ export const BootcampOutcomes = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{outcomesDesc}</p>
           </div>
-          <StatGrid
-            stats={outcomeStats.map((s) => ({
-              value: s.value,
-              label: s.label,
-            }))}
-            columns={4}
-            gap="wide"
-            valueColor="primary"
-            size="xl"
-            className="mb-16"
-          />
+          <StatGrid columns={4} gap={'wide'} className={'mb-16'}>
+            {outcomeStats
+              .map((s) => ({
+                value: s.value,
+                label: s.label,
+              }))
+              .map((s) => {
+                const __iv__ = s as { value: string; label: string }
+                return (
+                  <StatItem key={__iv__.label}>
+                    <StatValue color={'primary'} size={'xl'}>
+                      {__iv__.value}
+                    </StatValue>
+                    <StatLabel>{__iv__.label}</StatLabel>
+                  </StatItem>
+                )
+              })}
+          </StatGrid>
           <OutcomesGrid className="grid gap-6 md:grid-cols-3">
             {outcomeBars.map((bar) => (
               <OutcomesCard asChild key={bar.label}>

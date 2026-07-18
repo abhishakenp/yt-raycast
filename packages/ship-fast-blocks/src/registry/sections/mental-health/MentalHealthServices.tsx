@@ -8,7 +8,13 @@ import {
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * MentalHealthServices — a centered-heading services grid for a therapy practice.
@@ -127,7 +133,26 @@ export const MentalHealthServices = defineCapsule({
             subtitleClassName="leading-relaxed"
             className="mx-auto mb-16 max-w-2xl"
           />
-          <FeatureGrid features={items} columns={3} />
+          <FeatureGrid columns={3}>
+            {items.map((f) => {
+              const __iv__ = f as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+                points?: string[]
+                cta?: string
+                price?: string
+                imageAlt?: string
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
         </div>
       </section>
     )

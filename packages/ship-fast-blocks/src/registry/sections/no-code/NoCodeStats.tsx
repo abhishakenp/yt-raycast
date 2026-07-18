@@ -10,7 +10,12 @@ import { cn } from '#/lib/utils.ts'
  * builder, SaaS, or product landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const NoCodeStats = defineCapsule({
   name: 'NoCodeStats',
   description:
@@ -57,11 +62,19 @@ export const NoCodeStats = defineCapsule({
         aria-label="Company statistics"
       >
         <Container>
-          <StatGrid
-            stats={items.map((s) => ({ value: s.value, label: s.label }))}
-            columns={4}
-            gap="wide"
-          />
+          <StatGrid columns={4} gap={'wide'}>
+            {items
+              .map((s) => ({ value: s.value, label: s.label }))
+              .map((s) => {
+                const __iv__ = s as { value: string; label: string }
+                return (
+                  <StatItem key={__iv__.label}>
+                    <StatValue>{__iv__.value}</StatValue>
+                    <StatLabel>{__iv__.label}</StatLabel>
+                  </StatItem>
+                )
+              })}
+          </StatGrid>
         </Container>
       </section>
     )

@@ -1,7 +1,22 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 function CodeMark({ className }: { className?: string }) {
   return (
@@ -65,20 +80,47 @@ export const PortfolioDevFooter = defineCapsule({
         ]
 
     return (
-      <SiteFooter
-        brand={props.brand ?? 'alex.dev'}
-        brandMark={<CodeMark className="size-8 text-primary" />}
-        brandClassName="font-mono text-lg font-semibold"
-        tagline={
-          props.tagline ??
-          'Full-stack developer building fast, accessible web apps.'
-        }
-        social={social}
-        columns={columns}
-        legal={['Privacy', 'Terms']}
-        note={props.note ?? 'Built with care.'}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand
+              brand={props.brand ?? 'alex.dev'}
+              brandMark={<CodeMark className="size-8 text-primary" />}
+              brandClassName={'font-mono text-lg font-semibold'}
+            >
+              <FooterTagline>
+                {props.tagline ??
+                  'Full-stack developer building fast, accessible web apps.'}
+              </FooterTagline>
+              <FooterSocial>
+                {social.map((s) => (
+                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns.map((col) => (
+              <FooterColumn key={col.title}>
+                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnList>
+                  {col.links.map((link) => (
+                    <FooterLink key={link}>{link}</FooterLink>
+                  ))}
+                </FooterColumnList>
+              </FooterColumn>
+            ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>
+              {props.note ?? 'Built with care.'}
+            </FooterCopyright>
+            <FooterLegal>
+              {['Privacy', 'Terms'].map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

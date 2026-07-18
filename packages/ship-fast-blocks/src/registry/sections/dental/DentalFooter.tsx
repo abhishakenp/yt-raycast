@@ -11,7 +11,19 @@ import { cn } from '#/lib/utils.ts'
  * bar. Every link, social, phone, and email routes through useNavigate. Use as
  * the closing footer for dentists, dental offices, orthodontists, or clinics.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 export const DentalFooter = defineCapsule({
   name: 'DentalFooter',
   description:
@@ -147,15 +159,30 @@ export const DentalFooter = defineCapsule({
     void footerEmail
     void PhoneIcon
     return (
-      <SiteFooter
-        brand={brand}
-        brandMark={<LogoBadge />}
-        tagline={footerTagline}
-        social={footerSocials.map((s) => ({ label: s }))}
-        legal={footerLegal}
-        note={footerCopyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand} brandMark={<LogoBadge />}>
+              <FooterTagline>{footerTagline}</FooterTagline>
+              <FooterSocial>
+                {footerSocials
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{footerCopyright}</FooterCopyright>
+            <FooterLegal>
+              {footerLegal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

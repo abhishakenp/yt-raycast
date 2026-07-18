@@ -4,7 +4,13 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 import type { ReactNode } from 'react'
 
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * AuthFeatures — capability grid for Authly, a developer authentication product.
@@ -193,12 +199,26 @@ export const AuthFeatures = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <FeatureGrid
-            heading={heading}
-            subheading={subheading}
-            features={features}
-            columns={3}
-          />
+          <FeatureGrid heading={heading} subheading={subheading} columns={3}>
+            {features.map((f) => {
+              const __iv__ = f as {
+                title: string
+                description: string
+                icon?: React.ReactNode
+                points?: string[]
+                cta?: string
+                price?: string
+                imageAlt?: string
+              }
+              return (
+                <FeatureCard key={__iv__.title}>
+                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
+                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                </FeatureCard>
+              )
+            })}
+          </FeatureGrid>
         </Container>
       </section>
     )

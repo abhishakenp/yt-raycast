@@ -3,7 +3,14 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const TravelAgencyGallery = defineCapsule({
   name: 'TravelAgencyGallery',
@@ -54,15 +61,33 @@ export const TravelAgencyGallery = defineCapsule({
         )}
       >
         <Container>
-          <GalleryGrid
-            heading={props.heading ?? 'Featured destinations'}
-            subheading={
-              props.subheading ??
-              'A taste of the journeys our travelers love most, each one ready to tailor to you.'
-            }
-            images={images}
-            columns={3}
-          />
+          <GalleryGrid>
+            <SectionHeading
+              title={props.heading ?? 'Featured destinations'}
+              subtitle={
+                props.subheading ??
+                'A taste of the journeys our travelers love most, each one ready to tailor to you.'
+              }
+            />
+            <GalleryGridItems columns={3}>
+              {images.map((img) => {
+                const __iv__ = img as {
+                  alt: string
+                  caption?: string
+                  title?: string
+                  location?: string
+                }
+                return (
+                  <GalleryTile key={__iv__.alt}>
+                    <GalleryTileImage alt={__iv__.alt} />
+                    {__iv__.caption && (
+                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                    )}
+                  </GalleryTile>
+                )
+              })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </Container>
       </section>
     )

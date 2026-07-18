@@ -2,7 +2,13 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * EventGallery — a dark photo highlights gallery for a conference or event page. A
@@ -53,7 +59,30 @@ export const EventGallery = defineCapsule({
             </h2>
             <p className="text-lg text-background/70">{description}</p>
           </div>
-          <GalleryGrid images={items.map((alt) => ({ alt }))} columns={3} />
+          <GalleryGrid>
+            <GalleryGridItems columns={3}>
+              {items
+                .map((alt) => ({ alt }))
+                .map((img) => {
+                  const __iv__ = img as {
+                    alt: string
+                    caption?: string
+                    title?: string
+                    location?: string
+                  }
+                  return (
+                    <GalleryTile key={__iv__.alt}>
+                      <GalleryTileImage alt={__iv__.alt} />
+                      {__iv__.caption && (
+                        <GalleryTileCaption>
+                          {__iv__.caption}
+                        </GalleryTileCaption>
+                      )}
+                    </GalleryTile>
+                  )
+                })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </div>
       </section>
     )

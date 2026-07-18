@@ -11,7 +11,12 @@ import {} from '#/section-kit/index.ts'
  * shops, consumer-tech retailers, or any product catalog.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 export const ElectronicsStoreStats = defineCapsule({
   name: 'ElectronicsStoreStats',
   description:
@@ -54,15 +59,19 @@ export const ElectronicsStoreStats = defineCapsule({
         className={cn('border-y border-border py-16 lg:py-20', props.className)}
       >
         <Container>
-          <StatGrid
-            stats={stats}
-            columns={4}
-            gap="wide"
-            align="center"
-            weight="semibold"
-            size="default"
-            className="lg:gap-12"
-          />
+          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+            {stats.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label} align={'center'}>
+                  <StatValue weight={'semibold'} size={'default'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

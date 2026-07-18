@@ -10,7 +10,20 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as the closing footer on gyms, fitness studios, yoga / pilates / boxing / spin
  * studios, wellness clubs or class-booking sites.
  */
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 export const FitnessFooter = defineCapsule({
   name: 'FitnessFooter',
   description:
@@ -68,17 +81,38 @@ export const FitnessFooter = defineCapsule({
     void go
     void brandShort
     return (
-      <SiteFooter
-        brand={brand}
-        tagline={footerTagline}
-        columns={footerColumns.map((c) => ({
-          title: c.heading,
-          links: c.links,
-        }))}
-        legal={footerLegal}
-        note={footerCopyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterTagline>{footerTagline}</FooterTagline>
+            </FooterBrand>
+            {footerColumns
+              .map((c) => ({
+                title: c.heading,
+                links: c.links,
+              }))
+              .map((col) => (
+                <FooterColumn key={col.title}>
+                  <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                  <FooterColumnList>
+                    {col.links.map((link) => (
+                      <FooterLink key={link}>{link}</FooterLink>
+                    ))}
+                  </FooterColumnList>
+                </FooterColumn>
+              ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{footerCopyright}</FooterCopyright>
+            <FooterLegal>
+              {footerLegal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

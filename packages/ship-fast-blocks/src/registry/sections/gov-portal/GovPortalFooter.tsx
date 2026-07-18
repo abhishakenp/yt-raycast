@@ -9,7 +9,13 @@ import {
   useGovLang,
   type GovPortalLakebed,
 } from './gov-portal-interactions.tsx'
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+} from '#/section-kit/SiteFooter.tsx'
 
 const officeSchema = z.object({
   name: z.string(),
@@ -146,7 +152,15 @@ export const GovPortalFooter = defineCapsule({
     }
 
     return (
-      <SiteFooter brand={brand} tagline={about} className={props.className} />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterTagline>{about}</FooterTagline>
+            </FooterBrand>
+          </FooterGrid>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

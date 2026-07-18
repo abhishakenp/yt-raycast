@@ -1,7 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * TourExperiencesGallery — destination gallery for an adventure / guided-tour
@@ -60,16 +67,33 @@ export const TourExperiencesGallery = defineCapsule({
     return (
       <section className="bg-muted/30 px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
         <div className="mx-auto max-w-7xl">
-          <GalleryGrid
-            heading={props.heading ?? 'Where the trail takes you'}
-            subheading={
-              props.subheading ??
-              'A glimpse of the places, plates, and panoramas waiting on our most-loved tours. Every photo is somewhere our guides will take you.'
-            }
-            images={images}
-            columns={3}
-            className={props.className}
-          />
+          <GalleryGrid className={props.className}>
+            <SectionHeading
+              title={props.heading ?? 'Where the trail takes you'}
+              subtitle={
+                props.subheading ??
+                'A glimpse of the places, plates, and panoramas waiting on our most-loved tours. Every photo is somewhere our guides will take you.'
+              }
+            />
+            <GalleryGridItems columns={3}>
+              {images.map((img) => {
+                const __iv__ = img as {
+                  alt: string
+                  caption?: string
+                  title?: string
+                  location?: string
+                }
+                return (
+                  <GalleryTile key={__iv__.alt}>
+                    <GalleryTileImage alt={__iv__.alt} />
+                    {__iv__.caption && (
+                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                    )}
+                  </GalleryTile>
+                )
+              })}
+            </GalleryGridItems>
+          </GalleryGrid>
         </div>
       </section>
     )

@@ -3,7 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
+import {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * FoodTruckTestimonials — a customer-reviews section with a press-logo strip. A
@@ -79,12 +86,35 @@ export const FoodTruckTestimonials = defineCapsule({
     return (
       <section className={cn('px-6 pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-6xl">
-          <TestimonialGrid
-            eyebrow={testEyebrow}
-            heading={testHeading}
-            items={gridItems}
-            cardClassName="bg-muted border-0 p-6"
-          />
+          <TestimonialGrid eyebrow={testEyebrow} heading={testHeading}>
+            {gridItems.map((t) => {
+              const __iv__ = t as {
+                quote: string
+                name: string
+                role?: string
+                company?: string
+                meta?: string
+                rating?: number
+                avatarAlt?: string
+              }
+              return (
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={'bg-muted border-0 p-6'}
+                >
+                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                  <TestimonialAuthor>
+                    <TestimonialName>{__iv__.name}</TestimonialName>
+                    {(__iv__.role || __iv__.company || __iv__.meta) && (
+                      <TestimonialMeta>
+                        {__iv__.role || __iv__.company || __iv__.meta}
+                      </TestimonialMeta>
+                    )}
+                  </TestimonialAuthor>
+                </TestimonialCard>
+              )
+            })}
+          </TestimonialGrid>
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
             {pressLogos.map((logo) => (

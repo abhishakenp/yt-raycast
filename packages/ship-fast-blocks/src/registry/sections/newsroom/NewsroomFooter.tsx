@@ -4,7 +4,22 @@ import { z } from 'zod/v4'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
-import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
+import {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from '#/section-kit/SiteFooter.tsx'
 
 /**
  * NewsroomFooter — refined editorial footer for a digital newsroom or online
@@ -90,15 +105,42 @@ export const NewsroomFooter = defineCapsule({
     void go
     void lakebed
     return (
-      <SiteFooter
-        brand={brand}
-        tagline={blurb}
-        columns={columns.map((c) => ({ title: c.heading, links: c.links }))}
-        social={social.map((s) => ({ label: s }))}
-        legal={legal}
-        note={copyright}
-        className={props.className}
-      />
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          <FooterGrid>
+            <FooterBrand brand={brand}>
+              <FooterTagline>{blurb}</FooterTagline>
+              <FooterSocial>
+                {social
+                  .map((s) => ({ label: s }))
+                  .map((s) => (
+                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  ))}
+              </FooterSocial>
+            </FooterBrand>
+            {columns
+              .map((c) => ({ title: c.heading, links: c.links }))
+              .map((col) => (
+                <FooterColumn key={col.title}>
+                  <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                  <FooterColumnList>
+                    {col.links.map((link) => (
+                      <FooterLink key={link}>{link}</FooterLink>
+                    ))}
+                  </FooterColumnList>
+                </FooterColumn>
+              ))}
+          </FooterGrid>
+          <FooterBottom>
+            <FooterCopyright>{copyright}</FooterCopyright>
+            <FooterLegal>
+              {legal.map((l) => (
+                <FooterLink key={l}>{l}</FooterLink>
+              ))}
+            </FooterLegal>
+          </FooterBottom>
+        </FooterContent>
+      </SiteFooter>
     )
   },
 })

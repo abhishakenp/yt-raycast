@@ -3,7 +3,13 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
-import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
+import {
+  GalleryGrid,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from '#/section-kit/GalleryGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * SpaWellnessGallery — serene image grid showcasing a spa's spaces and rituals.
@@ -75,11 +81,25 @@ export const SpaWellnessGallery = defineCapsule({
         )}
       >
         <Container>
-          <GalleryGrid
-            heading={heading}
-            subheading={subheading}
-            images={images}
-          />
+          <GalleryGrid>
+            <SectionHeading title={heading} subtitle={subheading} />
+            {images.map((img) => {
+              const __iv__ = img as {
+                alt: string
+                caption?: string
+                title?: string
+                location?: string
+              }
+              return (
+                <GalleryTile key={__iv__.alt}>
+                  <GalleryTileImage alt={__iv__.alt} />
+                  {__iv__.caption && (
+                    <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                  )}
+                </GalleryTile>
+              )
+            })}
+          </GalleryGrid>
         </Container>
       </section>
     )

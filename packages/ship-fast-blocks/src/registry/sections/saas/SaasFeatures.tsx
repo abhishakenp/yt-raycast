@@ -4,7 +4,13 @@ import { Container } from '#/section-kit/Container.tsx'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
-import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon as KitFeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * SaasFeatures — a centered-heading 3-column feature grid for a B2B SaaS /
@@ -130,15 +136,36 @@ export const SaasFeatures = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <FeatureGrid
-            heading={heading}
-            subheading={subheading}
-            features={features.map((f, i) => ({
-              title: f.title,
-              description: f.description,
-              icon: <FeatureIcon glyph={ICONS[i % ICONS.length]} />,
-            }))}
-          />
+          <FeatureGrid heading={heading} subheading={subheading}>
+            {features
+              .map((f, i) => ({
+                title: f.title,
+                description: f.description,
+                icon: <FeatureIcon glyph={ICONS[i % ICONS.length]} />,
+              }))
+              .map((f) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <FeatureCard key={__iv__.title}>
+                    {__iv__.icon && (
+                      <KitFeatureIcon>{__iv__.icon}</KitFeatureIcon>
+                    )}
+                    <FeatureTitle>{__iv__.title}</FeatureTitle>
+                    <FeatureDescription>
+                      {__iv__.description}
+                    </FeatureDescription>
+                  </FeatureCard>
+                )
+              })}
+          </FeatureGrid>
         </Container>
       </section>
     )

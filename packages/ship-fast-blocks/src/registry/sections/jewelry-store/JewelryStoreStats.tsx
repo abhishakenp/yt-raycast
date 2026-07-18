@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * JewelryStoreStats — heritage stats band for a luxury jewelry maison. A clean
@@ -40,16 +45,19 @@ export const JewelryStoreStats = defineCapsule({
         )}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <StatGrid
-            stats={items}
-            columns={4}
-            gap="wide"
-            fontFamily="serif"
-            size="xl"
-            valueColor="primary"
-            labelUppercase
-            className="text-center"
-          />
+          <StatGrid columns={4} gap={'wide'} className={'text-center'}>
+            {items.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem key={__iv__.label}>
+                  <StatValue fontFamily={'serif'} size={'xl'} color={'primary'}>
+                    {__iv__.value}
+                  </StatValue>
+                  <StatLabel uppercase>{__iv__.label}</StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </div>
       </section>
     )
