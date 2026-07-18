@@ -22,7 +22,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
       user: null,
     }),
     useMutation: () => vi.fn(),
-    useQuery: () => {
+    useQuery: (name: string) => {
       if (/(?:Catalog|notifications|orders|Listings|Articles)$/i.test(name)) {
         return []
       }

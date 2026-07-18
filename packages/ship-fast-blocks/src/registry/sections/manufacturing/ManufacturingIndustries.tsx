@@ -227,8 +227,12 @@ export const ManufacturingIndustries = defineCapsule({
                   <div className="inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     {indIcons[i % indIcons.length]}
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
               </IndustryCard>
             ))}

@@ -141,7 +141,10 @@ export const MusicArtistMusic = defineCapsule({
             className="mb-16 gap-6 lg:mb-24"
           />
 
-          <MusicList gap="lg" className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <MusicList
+            gap="lg"
+            className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {tracks.map((track) => (
               <MusicItem asChild key={track.title}>
                 <Card
@@ -150,34 +153,34 @@ export const MusicArtistMusic = defineCapsule({
                   padding="md"
                   className="group rounded-sm transition-colors hover:border-muted-foreground/40"
                 >
-                <div className="flex items-start gap-4">
-                  <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">
-                    <Image
-                      alt={track.imageAlt}
-                      w={100}
-                      h={100}
-                      loading="lazy"
-                      className="size-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
-                    />
+                  <div className="flex items-start gap-4">
+                    <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">
+                      <Image
+                        alt={track.imageAlt}
+                        w={100}
+                        h={100}
+                        loading="lazy"
+                        className="size-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-medium text-card-foreground">
+                        {track.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {track.duration}
+                      </p>
+                      <button
+                        type="button"
+                        aria-label={`Play ${track.title}`}
+                        onClick={() => go(track.title)}
+                        className="mt-3 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <PlayIcon />
+                        Listen
+                      </button>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-medium text-card-foreground">
-                      {track.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {track.duration}
-                    </p>
-                    <button
-                      type="button"
-                      aria-label={`Play ${track.title}`}
-                      onClick={() => go(track.title)}
-                      className="mt-3 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <PlayIcon />
-                      Listen
-                    </button>
-                  </div>
-                </div>
                 </Card>
               </MusicItem>
             ))}

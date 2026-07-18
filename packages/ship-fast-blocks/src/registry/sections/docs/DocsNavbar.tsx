@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo } from '#/section-kit/Logo.tsx'
+import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -75,10 +75,10 @@ export const DocsNavbar = defineCapsule({
             className="gap-3"
           >
             <StackedBlocksMark className="size-8 text-primary" />
-            <Logo
-              brand={brand}
-              labelClassName="text-xl font-medium text-foreground"
-            />
+            <Logo brand={brand}>
+              <LogoImage />
+              <LogoLabel className="text-xl font-medium text-foreground" />
+            </Logo>
           </button>
         </NavbarBrand>
         <NavbarNav>

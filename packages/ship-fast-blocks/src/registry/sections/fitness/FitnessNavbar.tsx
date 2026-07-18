@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -56,18 +56,19 @@ export const FitnessNavbar = defineCapsule({
       >
         <NavbarBrand asChild>
           <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo
-              brand={brandShort}
-              fallback={
-                <span
-                  className="grid size-8 place-items-center rounded-sm bg-foreground text-sm font-bold text-background"
-                  aria-hidden="true"
-                >
-                  {brandShort.charAt(0)}
-                </span>
-              }
-              labelClassName="text-lg font-semibold tracking-tight"
-            />
+            <BrandLogo brand={brandShort}>
+              <LogoImage
+                fallback={
+                  <span
+                    className="grid size-8 place-items-center rounded-sm bg-foreground text-sm font-bold text-background"
+                    aria-hidden="true"
+                  >
+                    {brandShort.charAt(0)}
+                  </span>
+                }
+              />
+              <LogoLabel className="text-lg font-semibold tracking-tight" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

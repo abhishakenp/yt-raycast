@@ -17,7 +17,11 @@ import { useDirectorySearch } from './directory-interactions.tsx'
  * marketplaces, or city guides.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { CategoryGrid, CategoryCard, CategoryIcon } from '#/section-kit/CategoryGrid.tsx'
+import {
+  CategoryGrid,
+  CategoryCard,
+  CategoryIcon,
+} from '#/section-kit/CategoryGrid.tsx'
 export const DirectoryCategories = defineCapsule({
   name: 'DirectoryCategories',
   description:
@@ -233,9 +237,7 @@ export const DirectoryCategories = defineCapsule({
                   className="group rounded-xl border border-border bg-background p-6 text-left transition-all hover:border-muted-foreground/40 hover:shadow-sm"
                 >
                   <CategoryIcon
-                    className={cn(
-                      categoryTints[i % categoryTints.length],
-                    )}
+                    className={cn(categoryTints[i % categoryTints.length])}
                   >
                     <span className="size-6 [&>svg]:size-6">
                       {categoryIcons[i % categoryIcons.length]}

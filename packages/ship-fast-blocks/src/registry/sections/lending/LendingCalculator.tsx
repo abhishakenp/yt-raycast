@@ -141,167 +141,170 @@ export const LendingCalculator = defineCapsule({
       <LoanCalculator asChild>
         <section className={cn('py-24 lg:py-28', props.className)}>
           <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {calcHeading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">{calcDesc}</p>
-          </div>
-          <div className="mx-auto max-w-4xl">
-            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
-              <div className="grid lg:grid-cols-2">
-                <div className="p-8 lg:p-10">
-                  <h3 className="mb-6 text-lg font-semibold text-card-foreground">
-                    {calcDetailsTitle}
-                  </h3>
-                  <div className="space-y-6">
-                    <div>
-                      <div className="mb-3 flex justify-between text-sm font-medium text-foreground">
-                        <span>{calcAmountLabel}</span>
-                        <span className="font-semibold text-foreground">
-                          ${calcAmountValue}
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={1000}
-                        max={50000}
-                        step={500}
-                        defaultValue={20000}
-                        aria-label={calcAmountLabel}
-                        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
-                      />
-                      <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                        <span>{calcAmountMin}</span>
-                        <span>{calcAmountMax}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="mb-3 block text-sm font-medium text-foreground">
-                        {calcPurposeLabel}
-                      </label>
-                      <select
-                        className={cn(inputCls, 'appearance-none font-normal')}
-                      >
-                        {calcPurposes.map((p) => (
-                          <option key={p} className="bg-background">
-                            {p}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <div className="mb-3 flex justify-between text-sm font-medium text-foreground">
-                        <span>{calcTermLabel}</span>
-                        <span className="font-semibold text-foreground">
-                          {calcTermValue}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        {calcTerms.map((term, i) => (
-                          <button
-                            key={term}
-                            type="button"
-                            onClick={() => go(`${calcTermLabel}: ${term}`)}
-                            className={cn(
-                              'rounded-lg px-4 py-3 text-sm font-medium transition-colors',
-                              i === 1
-                                ? 'border-2 border-primary bg-muted text-foreground'
-                                : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
-                            )}
-                          >
-                            {term}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="mb-3 block text-sm font-medium text-foreground">
-                        {calcScoreLabel}
-                      </label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {calcScores.map((s, i) => (
-                          <button
-                            key={s.tier}
-                            type="button"
-                            onClick={() => go(`Credit: ${s.tier}`)}
-                            className={cn(
-                              'rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors',
-                              i === 0
-                                ? 'border-2 border-primary bg-muted text-foreground'
-                                : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
-                            )}
-                          >
-                            <div className="font-semibold">{s.tier}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {s.range}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <LoanDisplay className="border-t border-border bg-muted p-8 lg:border-l lg:border-t-0 lg:p-10">
-                  <h3 className="mb-6 text-lg font-semibold text-foreground">
-                    {calcOfferTitle}
-                  </h3>
-                  <div className="space-y-6">
-                    <Card>
-                      <div className="mb-1 text-sm text-muted-foreground">
-                        {calcPaymentLabel}
-                      </div>
-                      <div className="text-4xl font-bold text-card-foreground">
-                        {calcPaymentValue}
-                      </div>
-                      <div className="mt-1 text-sm text-muted-foreground">
-                        {calcPaymentNote}
-                      </div>
-                    </Card>
-                    <div className="space-y-3">
-                      {calcSummary.map((row, i) => (
-                        <div
-                          key={row.label}
-                          className={cn(
-                            'flex justify-between py-2',
-                            i < calcSummary.length - 1 &&
-                              'border-b border-border',
-                          )}
-                        >
-                          <span className="text-muted-foreground">
-                            {row.label}
-                          </span>
-                          <span
-                            className={cn(
-                              'font-medium',
-                              row.value === '$0'
-                                ? 'text-primary'
-                                : 'text-foreground',
-                            )}
-                          >
-                            {row.value}
+            <div className="mx-auto mb-16 max-w-3xl text-center">
+              <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                {calcHeading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">{calcDesc}</p>
+            </div>
+            <div className="mx-auto max-w-4xl">
+              <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
+                <div className="grid lg:grid-cols-2">
+                  <div className="p-8 lg:p-10">
+                    <h3 className="mb-6 text-lg font-semibold text-card-foreground">
+                      {calcDetailsTitle}
+                    </h3>
+                    <div className="space-y-6">
+                      <div>
+                        <div className="mb-3 flex justify-between text-sm font-medium text-foreground">
+                          <span>{calcAmountLabel}</span>
+                          <span className="font-semibold text-foreground">
+                            ${calcAmountValue}
                           </span>
                         </div>
-                      ))}
-                    </div>
-                    <div className="pt-4">
-                      <button
-                        type="button"
-                        onClick={() => go(calcCta)}
-                        className="w-full rounded-xl bg-primary py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                      >
-                        {calcCta}
-                      </button>
-                      <p className="mt-3 text-center text-xs text-muted-foreground">
-                        {calcCtaNote}
-                      </p>
+                        <input
+                          type="range"
+                          min={1000}
+                          max={50000}
+                          step={500}
+                          defaultValue={20000}
+                          aria-label={calcAmountLabel}
+                          className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
+                        />
+                        <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                          <span>{calcAmountMin}</span>
+                          <span>{calcAmountMax}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-foreground">
+                          {calcPurposeLabel}
+                        </label>
+                        <select
+                          className={cn(
+                            inputCls,
+                            'appearance-none font-normal',
+                          )}
+                        >
+                          {calcPurposes.map((p) => (
+                            <option key={p} className="bg-background">
+                              {p}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <div className="mb-3 flex justify-between text-sm font-medium text-foreground">
+                          <span>{calcTermLabel}</span>
+                          <span className="font-semibold text-foreground">
+                            {calcTermValue}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          {calcTerms.map((term, i) => (
+                            <button
+                              key={term}
+                              type="button"
+                              onClick={() => go(`${calcTermLabel}: ${term}`)}
+                              className={cn(
+                                'rounded-lg px-4 py-3 text-sm font-medium transition-colors',
+                                i === 1
+                                  ? 'border-2 border-primary bg-muted text-foreground'
+                                  : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
+                              )}
+                            >
+                              {term}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-foreground">
+                          {calcScoreLabel}
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {calcScores.map((s, i) => (
+                            <button
+                              key={s.tier}
+                              type="button"
+                              onClick={() => go(`Credit: ${s.tier}`)}
+                              className={cn(
+                                'rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors',
+                                i === 0
+                                  ? 'border-2 border-primary bg-muted text-foreground'
+                                  : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
+                              )}
+                            >
+                              <div className="font-semibold">{s.tier}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {s.range}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </LoanDisplay>
+                  <LoanDisplay className="border-t border-border bg-muted p-8 lg:border-l lg:border-t-0 lg:p-10">
+                    <h3 className="mb-6 text-lg font-semibold text-foreground">
+                      {calcOfferTitle}
+                    </h3>
+                    <div className="space-y-6">
+                      <Card>
+                        <div className="mb-1 text-sm text-muted-foreground">
+                          {calcPaymentLabel}
+                        </div>
+                        <div className="text-4xl font-bold text-card-foreground">
+                          {calcPaymentValue}
+                        </div>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          {calcPaymentNote}
+                        </div>
+                      </Card>
+                      <div className="space-y-3">
+                        {calcSummary.map((row, i) => (
+                          <div
+                            key={row.label}
+                            className={cn(
+                              'flex justify-between py-2',
+                              i < calcSummary.length - 1 &&
+                                'border-b border-border',
+                            )}
+                          >
+                            <span className="text-muted-foreground">
+                              {row.label}
+                            </span>
+                            <span
+                              className={cn(
+                                'font-medium',
+                                row.value === '$0'
+                                  ? 'text-primary'
+                                  : 'text-foreground',
+                              )}
+                            >
+                              {row.value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="pt-4">
+                        <button
+                          type="button"
+                          onClick={() => go(calcCta)}
+                          className="w-full rounded-xl bg-primary py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                          {calcCta}
+                        </button>
+                        <p className="mt-3 text-center text-xs text-muted-foreground">
+                          {calcCtaNote}
+                        </p>
+                      </div>
+                    </div>
+                  </LoanDisplay>
+                </div>
               </div>
             </div>
-          </div>
-        </Container>
+          </Container>
         </section>
       </LoanCalculator>
     )

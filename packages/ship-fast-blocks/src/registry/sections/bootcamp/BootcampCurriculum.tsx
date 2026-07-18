@@ -14,7 +14,10 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Card } from '#/section-kit/Card.tsx'
-import { CurriculumList, CurriculumItem } from '#/section-kit/CurriculumList.tsx'
+import {
+  CurriculumList,
+  CurriculumItem,
+} from '#/section-kit/CurriculumList.tsx'
 export const BootcampCurriculum = defineCapsule({
   name: 'BootcampCurriculum',
   description:

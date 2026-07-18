@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { PressList, PressItem, PressQuote, PressAttribution } from '#/section-kit/PressList.tsx'
+import {
+  PressList,
+  PressItem,
+  PressQuote,
+  PressAttribution,
+} from '#/section-kit/PressList.tsx'
 
 /**
  * MusicArtistPress — press / review testimonial grid for a music artist / band
@@ -89,7 +94,10 @@ export const MusicArtistPress = defineCapsule({
             </h2>
             <div className="grid gap-8 md:grid-cols-3">
               {reviews.map((r) => (
-                <PressItem key={r.name} className="rounded-sm bg-card p-8 shadow-sm">
+                <PressItem
+                  key={r.name}
+                  className="rounded-sm bg-card p-8 shadow-sm"
+                >
                   <PressQuote className="mb-4 text-lg leading-relaxed text-foreground">
                     &ldquo;{r.quote}&rdquo;
                   </PressQuote>

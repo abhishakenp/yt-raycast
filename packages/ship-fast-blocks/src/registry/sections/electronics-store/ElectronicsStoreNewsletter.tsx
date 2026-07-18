@@ -56,29 +56,29 @@ export const ElectronicsStoreNewsletter = defineCapsule({
         className={cn('py-16 lg:py-24', props.className)}
       >
         <NewsletterCta asChild>
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <NewsletterCtaHeading className="text-background lg:text-4xl">
-            {heading}
-          </NewsletterCtaHeading>
-          <NewsletterCtaDescription className="text-background/60">
-            {description}
-          </NewsletterCtaDescription>
-          <NewsletterSubscribeForm
-            lakebed={lakebed}
-            source={submit}
-            placeholder={placeholder}
-            buttonLabel={submit}
-            successMessage="You're subscribed. Watch your inbox for the next tech drop."
-            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-            inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder:text-background/50 focus:border-background/40 focus:outline-none"
-            buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
-            emailLabel={placeholder}
-            statusClassName="text-background/50"
-          />
-          <NewsletterCtaFineprint className="text-sm text-background/50">
-            {disclaimer}
-          </NewsletterCtaFineprint>
-        </div>
+          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+            <NewsletterCtaHeading className="text-background lg:text-4xl">
+              {heading}
+            </NewsletterCtaHeading>
+            <NewsletterCtaDescription className="text-background/60">
+              {description}
+            </NewsletterCtaDescription>
+            <NewsletterSubscribeForm
+              lakebed={lakebed}
+              source={submit}
+              placeholder={placeholder}
+              buttonLabel={submit}
+              successMessage="You're subscribed. Watch your inbox for the next tech drop."
+              className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+              inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder:text-background/50 focus:border-background/40 focus:outline-none"
+              buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+              emailLabel={placeholder}
+              statusClassName="text-background/50"
+            />
+            <NewsletterCtaFineprint className="text-sm text-background/50">
+              {disclaimer}
+            </NewsletterCtaFineprint>
+          </div>
         </NewsletterCta>
       </SubscribeBand>
     )

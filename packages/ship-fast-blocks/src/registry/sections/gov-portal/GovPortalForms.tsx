@@ -10,7 +10,12 @@ import {
 } from 'lucide-react'
 
 import { Card } from '#/section-kit/Card.tsx'
-import { GovFormTable, GovFormRow, GovFormHeader, GovFormBody } from '#/section-kit/GovFormTable.tsx'
+import {
+  GovFormTable,
+  GovFormRow,
+  GovFormHeader,
+  GovFormBody,
+} from '#/section-kit/GovFormTable.tsx'
 import { cn } from '#/lib/utils.ts'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
@@ -462,15 +467,13 @@ function StatusList({
       </GovFormHeader>
       {rows.length ? (
         <GovFormBody asChild>
-        <ul className="space-y-2 text-xs text-muted-foreground">
-          {rows.slice(0, 8).map((row, i) => (
-            <GovFormRow asChild key={i}>
-              <li className="truncate">
-                {render(row)}
-              </li>
-            </GovFormRow>
-          ))}
-        </ul>
+          <ul className="space-y-2 text-xs text-muted-foreground">
+            {rows.slice(0, 8).map((row, i) => (
+              <GovFormRow asChild key={i}>
+                <li className="truncate">{render(row)}</li>
+              </GovFormRow>
+            ))}
+          </ul>
         </GovFormBody>
       ) : (
         <p className="text-xs text-muted-foreground">

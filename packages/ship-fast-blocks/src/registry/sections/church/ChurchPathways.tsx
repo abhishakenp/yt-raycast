@@ -70,7 +70,6 @@ export const ChurchPathways = defineCapsule({
           },
         ]
 
-
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -86,8 +85,12 @@ export const ChurchPathways = defineCapsule({
             {items.map((item) => (
               <PathwayCard key={item.title}>
                 <div className="flex flex-col gap-3 p-6">
-                  <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
               </PathwayCard>
             ))}

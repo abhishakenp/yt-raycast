@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -77,11 +77,12 @@ export const FurnitureStoreNavbar = defineCapsule({
             className="gap-2"
             aria-label={`${brand} - Return to homepage`}
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark className="size-8 text-muted-foreground" />}
-              labelClassName="text-xl font-semibold tracking-tight lg:text-2xl"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={<LogoMark className="size-8 text-muted-foreground" />}
+              />
+              <LogoLabel className="text-xl font-semibold tracking-tight lg:text-2xl" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

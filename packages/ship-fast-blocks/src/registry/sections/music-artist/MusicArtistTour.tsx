@@ -161,47 +161,49 @@ export const MusicArtistTour = defineCapsule({
                     i < dates.length - 1 && 'border-b border-border',
                   )}
                 >
-                <div className="w-20 shrink-0 text-center">
-                  <p className="text-sm uppercase text-muted-foreground">
-                    {date.month}
-                  </p>
-                  <p className="text-3xl font-light text-foreground">
-                    {date.day}
-                  </p>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-foreground">{date.venue}</h3>
-                  <p className="text-sm text-muted-foreground">{date.city}</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span
-                    className={cn(
-                      'text-sm',
-                      date.soldOut
-                        ? 'text-muted-foreground/60'
-                        : 'text-muted-foreground',
+                  <div className="w-20 shrink-0 text-center">
+                    <p className="text-sm uppercase text-muted-foreground">
+                      {date.month}
+                    </p>
+                    <p className="text-3xl font-light text-foreground">
+                      {date.day}
+                    </p>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-foreground">
+                      {date.venue}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{date.city}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={cn(
+                        'text-sm',
+                        date.soldOut
+                          ? 'text-muted-foreground/60'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {date.price}
+                    </span>
+                    {date.soldOut ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="cursor-not-allowed rounded-full border border-border px-5 py-2 text-sm text-muted-foreground/60"
+                      >
+                        Get Tickets
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => go(`Tickets ${date.venue}`)}
+                        className="rounded-full border border-muted-foreground/40 px-5 py-2 text-sm text-foreground/80 transition-colors hover:border-foreground hover:bg-primary hover:text-primary-foreground"
+                      >
+                        Get Tickets
+                      </button>
                     )}
-                  >
-                    {date.price}
-                  </span>
-                  {date.soldOut ? (
-                    <button
-                      type="button"
-                      disabled
-                      className="cursor-not-allowed rounded-full border border-border px-5 py-2 text-sm text-muted-foreground/60"
-                    >
-                      Get Tickets
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => go(`Tickets ${date.venue}`)}
-                      className="rounded-full border border-muted-foreground/40 px-5 py-2 text-sm text-foreground/80 transition-colors hover:border-foreground hover:bg-primary hover:text-primary-foreground"
-                    >
-                      Get Tickets
-                    </button>
-                  )}
-                </div>
+                  </div>
                 </div>
               </TourItem>
             ))}

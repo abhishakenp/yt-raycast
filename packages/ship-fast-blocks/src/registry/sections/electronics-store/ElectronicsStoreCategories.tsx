@@ -100,21 +100,21 @@ export const ElectronicsStoreCategories = defineCapsule({
                   onClick={() => go(c.name)}
                   className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
                 >
-                <Image
-                  alt={c.imageAlt}
-                  w={400}
-                  h={300}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent"
-                />
-                <div className="absolute bottom-4 left-4 text-background">
-                  <h3 className="font-semibold">{c.name}</h3>
-                  <p className="text-sm text-background/80">{c.count}</p>
-                </div>
+                  <Image
+                    alt={c.imageAlt}
+                    w={400}
+                    h={300}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent"
+                  />
+                  <div className="absolute bottom-4 left-4 text-background">
+                    <h3 className="font-semibold">{c.name}</h3>
+                    <p className="text-sm text-background/80">{c.count}</p>
+                  </div>
                 </button>
               </CategoryCard>
             ))}

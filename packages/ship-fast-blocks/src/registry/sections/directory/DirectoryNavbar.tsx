@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -82,11 +82,12 @@ export const DirectoryNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="gap-2"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<PinLogo className="size-8 text-foreground" />}
-              labelClassName="text-xl font-semibold text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={<PinLogo className="size-8 text-foreground" />}
+              />
+              <LogoLabel className="text-xl font-semibold text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

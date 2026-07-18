@@ -19,7 +19,6 @@ type TestProduct = {
   subtitle?: string
 }
 
-
 type TestLakebed = ReturnType<typeof createFoodTruckLakebedStub>['lakebed']
 
 const navigate = vi.fn()
@@ -56,7 +55,8 @@ if (typeof document === 'undefined') {
   }
   const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) =>
+    clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -255,12 +255,15 @@ function createFoodTruckLakebedStub() {
       )
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
-          isPending: false,
-          lastError: initialLastError,
-          pendingCount: 0,
-          reset,
-        })
+        const callable = Object.assign(
+          (input: Record<string, unknown>) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
         return callable
       }, [reset, runMutation])
 

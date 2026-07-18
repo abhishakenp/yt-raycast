@@ -5,7 +5,15 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StoryCard } from '#/section-kit/StoryCard.tsx'
+import {
+  StoryCard,
+  StoryCardImage,
+  StoryCardFigure,
+  StoryCardMeta,
+  StoryCardTitle,
+  StoryCardExcerpt,
+  StoryCardBody,
+} from '#/section-kit/StoryCard.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -96,23 +104,24 @@ export const BlogPostStoryGrid = defineCapsule({
           />
           <ArticleGrid cols="1-md-2-3">
             {items.map((post) => (
-              <StoryCard
-                key={post.title}
-                title={post.title}
-                excerpt={post.excerpt}
-                imageAlt={post.imageAlt}
-                imageW={600}
-                imageH={400}
-                meta={
-                  <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{post.category}</span>
-                    <span aria-hidden="true">•</span>
-                    <time>{post.date}</time>
-                  </div>
-                }
-                onClick={() => go(post.title)}
-                variant="simple"
-              />
+              <StoryCard onClick={() => go(post.title)} variant="simple">
+                <StoryCardFigure>
+                  <StoryCardImage alt={post.imageAlt} w={600} h={400} />
+                </StoryCardFigure>
+                <StoryCardBody>
+                  <StoryCardMeta>
+                    {
+                      <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{post.category}</span>
+                        <span aria-hidden="true">•</span>
+                        <time>{post.date}</time>
+                      </div>
+                    }
+                  </StoryCardMeta>
+                  <StoryCardTitle>{post.title}</StoryCardTitle>
+                  <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
+                </StoryCardBody>
+              </StoryCard>
             ))}
           </ArticleGrid>
         </div>

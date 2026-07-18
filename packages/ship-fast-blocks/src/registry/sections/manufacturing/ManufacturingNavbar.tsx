@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -68,18 +68,19 @@ export const ManufacturingNavbar = defineCapsule({
             className="gap-2"
             aria-label={`${brand} Home`}
           >
-            <BrandLogo
-              brand={brand}
-              fallback={
-                <span
-                  aria-hidden="true"
-                  className="grid size-8 place-items-center rounded-md bg-foreground text-sm font-bold text-background"
-                >
-                  {brandInitials}
-                </span>
-              }
-              labelClassName="text-lg font-semibold tracking-tight text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={
+                  <span
+                    aria-hidden="true"
+                    className="grid size-8 place-items-center rounded-md bg-foreground text-sm font-bold text-background"
+                  >
+                    {brandInitials}
+                  </span>
+                }
+              />
+              <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

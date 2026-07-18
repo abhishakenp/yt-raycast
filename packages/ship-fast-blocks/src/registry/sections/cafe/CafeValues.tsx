@@ -112,7 +112,10 @@ export const CafeValues = defineCapsule({
     ]
 
     return (
-      <ValuesGrid cols="1-2-4" className={cn('bg-card pt-28 pb-20', props.className)}>
+      <ValuesGrid
+        cols="1-2-4"
+        className={cn('bg-card pt-28 pb-20', props.className)}
+      >
         {items.map((v, i) => (
           <ValuesCard key={v.title}>
             <div className="flex flex-col items-center gap-3 p-6 text-center">

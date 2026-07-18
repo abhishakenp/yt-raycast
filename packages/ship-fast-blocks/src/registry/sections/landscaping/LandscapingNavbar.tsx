@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarBrand,
@@ -80,11 +80,10 @@ export const LandscapingNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="gap-2"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark className="size-8" />}
-              labelClassName="text-xl font-semibold tracking-tight text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage fallback={<LogoMark className="size-8" />} />
+              <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

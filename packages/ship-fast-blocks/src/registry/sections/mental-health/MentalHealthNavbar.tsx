@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -86,11 +86,12 @@ export const MentalHealthNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="flex items-center gap-2"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark className="size-8 text-primary" />}
-              labelClassName="text-xl font-semibold text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={<LogoMark className="size-8 text-primary" />}
+              />
+              <LogoLabel className="text-xl font-semibold text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

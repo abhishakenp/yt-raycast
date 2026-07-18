@@ -14,7 +14,10 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { WhyChooseUsGrid, WhyChooseUsCard } from '#/section-kit/WhyChooseUsGrid.tsx'
+import {
+  WhyChooseUsGrid,
+  WhyChooseUsCard,
+} from '#/section-kit/WhyChooseUsGrid.tsx'
 export const DentalWhyChooseUs = defineCapsule({
   name: 'DentalWhyChooseUs',
   description:

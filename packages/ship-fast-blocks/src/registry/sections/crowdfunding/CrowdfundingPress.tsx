@@ -36,7 +36,10 @@ export const CrowdfundingPress = defineCapsule({
     return (
       <PressList asChild>
         <section
-          className={cn('border-y border-border bg-card py-12', props.className)}
+          className={cn(
+            'border-y border-border bg-card py-12',
+            props.className,
+          )}
         >
           <Container>
             <LogoStrip

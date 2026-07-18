@@ -7,7 +7,10 @@ import {
   createLakebedQueryStub,
 } from '@ship-fast/lakebed/test-helpers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { autoDealershipLakebed, type AutoVehicleInput } from './auto-dealership-lakebed.ts'
+import {
+  autoDealershipLakebed,
+  type AutoVehicleInput,
+} from './auto-dealership-lakebed.ts'
 import type { AutoDealershipLakebed } from './auto-dealership-interactions.tsx'
 
 type TestVehicle = {
@@ -30,8 +33,6 @@ type TestLead = {
   updatedAt: string
   vehicle: string
 }
-
-
 
 type MutationArgs<TMutation> = TMutation extends (
   ctx: infer _TCtx,
@@ -117,12 +118,15 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
-        isPending: false,
-        lastError: emptyLastError,
-        pendingCount: 0,
-        reset,
-      }),
+      Object.assign(
+        (...args: MutationArgs<TMutation>) => runMutation(...args),
+        {
+          isPending: false,
+          lastError: emptyLastError,
+          pendingCount: 0,
+          reset,
+        },
+      ),
     [reset, runMutation],
   )
 

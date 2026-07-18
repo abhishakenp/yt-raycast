@@ -155,61 +155,63 @@ export const AutoDealershipInventory = defineCapsule({
                   className="group overflow-hidden transition-colors hover:border-foreground/30"
                 >
                   <article>
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      alt={v.imageAlt}
-                      w={600}
-                      h={450}
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <span
-                      className={cn(
-                        'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
-                        v.electric
-                          ? 'bg-chart-2 text-primary-foreground'
-                          : 'bg-primary text-primary-foreground',
-                      )}
-                    >
-                      {v.badge}
-                    </span>
-                  </div>
-                  <div className="space-y-4 p-6">
-                    <div>
-                      <h3 className="text-lg font-semibold">{v.name}</h3>
-                      <p className="text-sm text-muted-foreground">{v.specs}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {v.features.map((f) => (
-                        <span
-                          key={f}
-                          className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
-                        >
-                          {f}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between border-t border-border pt-4">
-                      <p className="text-2xl font-semibold">{v.price}</p>
-                      <AutoLeadActionButton
-                        lakebed={lakebed}
-                        action="vehicle_interest"
-                        label="View Details"
-                        intentKey={`vehicle:${v.name}`}
-                        source="inventory"
-                        vehicle={v.name}
-                        pendingChildren={
-                          <>
-                            <AutoMutationSpinner />
-                            Sending
-                          </>
-                        }
-                        className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                    <div className="relative aspect-[4/3] overflow-hidden">
+                      <Image
+                        alt={v.imageAlt}
+                        w={600}
+                        h={450}
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <span
+                        className={cn(
+                          'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
+                          v.electric
+                            ? 'bg-chart-2 text-primary-foreground'
+                            : 'bg-primary text-primary-foreground',
+                        )}
                       >
-                        View Details →
-                      </AutoLeadActionButton>
+                        {v.badge}
+                      </span>
                     </div>
-                  </div>
+                    <div className="space-y-4 p-6">
+                      <div>
+                        <h3 className="text-lg font-semibold">{v.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {v.specs}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {v.features.map((f) => (
+                          <span
+                            key={f}
+                            className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
+                          >
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between border-t border-border pt-4">
+                        <p className="text-2xl font-semibold">{v.price}</p>
+                        <AutoLeadActionButton
+                          lakebed={lakebed}
+                          action="vehicle_interest"
+                          label="View Details"
+                          intentKey={`vehicle:${v.name}`}
+                          source="inventory"
+                          vehicle={v.name}
+                          pendingChildren={
+                            <>
+                              <AutoMutationSpinner />
+                              Sending
+                            </>
+                          }
+                          className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                        >
+                          View Details →
+                        </AutoLeadActionButton>
+                      </div>
+                    </div>
                   </article>
                 </Card>
               </InventoryCard>

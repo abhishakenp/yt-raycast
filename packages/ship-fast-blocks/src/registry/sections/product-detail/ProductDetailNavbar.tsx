@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import { kitActionClasses } from '#/section-kit/types.ts'
 import {
@@ -91,11 +91,10 @@ export const ProductDetailNavbar = defineCapsule({
             onClick={() => go(nav[0])}
             className="flex items-center gap-3"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={mark}
-              labelClassName="text-xl font-medium text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage fallback={mark} />
+              <LogoLabel className="text-xl font-medium text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

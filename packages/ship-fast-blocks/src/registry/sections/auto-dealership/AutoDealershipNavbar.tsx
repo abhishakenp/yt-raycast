@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -69,7 +69,10 @@ export const AutoDealershipNavbar = defineCapsule({
             onClick={() => go(nav[0])}
             className="gap-2 text-xl font-semibold tracking-tight lg:text-2xl"
           >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+              <LogoImage className="mr-2 size-7 align-middle" />
+              <LogoLabel />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

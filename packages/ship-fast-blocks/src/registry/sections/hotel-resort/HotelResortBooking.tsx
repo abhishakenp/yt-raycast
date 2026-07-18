@@ -1,7 +1,11 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { FormField } from '#/section-kit/FormField.tsx'
+import {
+  FormField,
+  FormFieldLabel,
+  FormFieldControl,
+} from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { BookingForm } from '#/section-kit/BookingForm.tsx'
 import { cn } from '#/lib/utils.ts'
@@ -105,89 +109,105 @@ export const HotelResortBooking = defineCapsule({
             props.className,
           )}
         >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            align="left"
-            eyebrowClassName="text-background/60 tracking-widest"
-            titleClassName="text-3xl font-light text-background lg:text-4xl"
-            subtitleClassName="leading-relaxed text-background/70"
-            className="mb-16 max-w-2xl gap-4"
-          />
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-            <div className="space-y-8">
-              {steps.map((step, i) => (
-                <div key={step.title} className="flex gap-6">
-                  <div className="grid size-12 flex-shrink-0 place-items-center rounded-full bg-background/10">
-                    <span className="text-xl font-light">{i + 1}</span>
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              align="left"
+              eyebrowClassName="text-background/60 tracking-widest"
+              titleClassName="text-3xl font-light text-background lg:text-4xl"
+              subtitleClassName="leading-relaxed text-background/70"
+              className="mb-16 max-w-2xl gap-4"
+            />
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+              <div className="space-y-8">
+                {steps.map((step, i) => (
+                  <div key={step.title} className="flex gap-6">
+                    <div className="grid size-12 flex-shrink-0 place-items-center rounded-full bg-background/10">
+                      <span className="text-xl font-light">{i + 1}</span>
+                    </div>
+                    <div>
+                      <h3 className="mb-2 text-lg font-medium">{step.title}</h3>
+                      <p className="text-sm leading-relaxed text-background/60">
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="mb-2 text-lg font-medium">{step.title}</h3>
-                    <p className="text-sm leading-relaxed text-background/60">
-                      {step.description}
-                    </p>
+                ))}
+              </div>
+              <div className="rounded-lg bg-background p-8 text-foreground">
+                <h3 className="mb-6 text-xl font-medium">{formHeading}</h3>
+                <form className="space-y-5" onSubmit={inquiry.submitForm}>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField>
+                      <FormFieldLabel htmlFor="hotel-resort-booking-checkin">
+                        Check-in
+                      </FormFieldLabel>
+                      <FormFieldControl
+                        id="hotel-resort-booking-checkin"
+                        name="checkIn"
+                        type="date"
+                        className={inputCls}
+                      />
+                    </FormField>
+                    <FormField>
+                      <FormFieldLabel htmlFor="hotel-resort-booking-checkout">
+                        Check-out
+                      </FormFieldLabel>
+                      <FormFieldControl
+                        id="hotel-resort-booking-checkout"
+                        name="checkOut"
+                        type="date"
+                        className={inputCls}
+                      />
+                    </FormField>
                   </div>
-                </div>
-              ))}
-            </div>
-            <div className="rounded-lg bg-background p-8 text-foreground">
-              <h3 className="mb-6 text-xl font-medium">{formHeading}</h3>
-              <form className="space-y-5" onSubmit={inquiry.submitForm}>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    id="hotel-resort-booking-checkin"
-                    name="checkIn"
-                    label="Check-in"
-                    type="date"
-                    inputClassName={inputCls}
-                  />
-                  <FormField
-                    id="hotel-resort-booking-checkout"
-                    name="checkOut"
-                    label="Check-out"
-                    type="date"
-                    inputClassName={inputCls}
-                  />
-                </div>
-                <FormField
-                  id="hotel-resort-booking-guests"
-                  name="guests"
-                  label="Guests"
-                  as="select"
-                  options={guestOptions}
-                  inputClassName={inputCls}
-                />
-                <FormField
-                  id="hotel-resort-booking-roomtype"
-                  name="roomType"
-                  label="Room Type"
-                  as="select"
-                  options={roomOptions}
-                  inputClassName={inputCls}
-                />
-                <button
-                  type="submit"
-                  aria-busy={inquiry.isPending}
-                  disabled={inquiry.isPending}
-                  className="w-full rounded-md bg-foreground py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {inquiry.isPending ? 'Sending' : submit}
-                </button>
-                <p
-                  className="text-center text-sm text-muted-foreground"
-                  aria-live="polite"
-                >
-                  {inquiry.statusText}
+                  <FormField>
+                    <FormFieldLabel htmlFor="hotel-resort-booking-guests">
+                      Guests
+                    </FormFieldLabel>
+                    <FormFieldControl
+                      id="hotel-resort-booking-guests"
+                      name="guests"
+                      as="select"
+                      options={guestOptions}
+                      className={inputCls}
+                    />
+                  </FormField>
+                  <FormField>
+                    <FormFieldLabel htmlFor="hotel-resort-booking-roomtype">
+                      Room Type
+                    </FormFieldLabel>
+                    <FormFieldControl
+                      id="hotel-resort-booking-roomtype"
+                      name="roomType"
+                      as="select"
+                      options={roomOptions}
+                      className={inputCls}
+                    />
+                  </FormField>
+                  <button
+                    type="submit"
+                    aria-busy={inquiry.isPending}
+                    disabled={inquiry.isPending}
+                    className="w-full rounded-md bg-foreground py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+                  >
+                    {inquiry.isPending ? 'Sending' : submit}
+                  </button>
+                  <p
+                    className="text-center text-sm text-muted-foreground"
+                    aria-live="polite"
+                  >
+                    {inquiry.statusText}
+                  </p>
+                </form>
+                <p className="mt-4 text-center text-xs text-muted-foreground">
+                  {note}
                 </p>
-              </form>
-              <p className="mt-4 text-center text-xs text-muted-foreground">
-                {note}
-              </p>
+              </div>
             </div>
           </div>
-        </div>
         </section>
       </BookingForm>
     )

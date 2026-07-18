@@ -52,4 +52,20 @@ const OutcomesCard = React.forwardRef<
 })
 OutcomesCard.displayName = 'OutcomesCard'
 
-export { OutcomesGrid, OutcomesCard, OutcomesGridVariants }
+const OutcomeStat = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="outcome-stat"
+      className={cn('flex flex-col gap-1', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+OutcomeStat.displayName = 'OutcomeStat'
+
+export { OutcomesGrid, OutcomesCard, OutcomeStat, OutcomesGridVariants }

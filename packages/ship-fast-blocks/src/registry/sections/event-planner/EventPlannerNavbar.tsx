@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarBrand,
@@ -74,11 +74,12 @@ export const EventPlannerNavbar = defineCapsule({
       >
         <NavbarBrand asChild>
           <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo
-              brand={brand}
-              fallback={<Clock className="size-8 text-foreground/80" />}
-              labelClassName="text-xl font-light tracking-tight text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={<Clock className="size-8 text-foreground/80" />}
+              />
+              <LogoLabel className="text-xl font-light tracking-tight text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

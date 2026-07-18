@@ -1,82 +1,144 @@
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { Slot } from '@radix-ui/react-slot'
+
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
+
 import { SectionHeading } from './SectionHeading.tsx'
-import { StarRating } from './StarRating.tsx'
 
-/**
- * TestimonialGrid — responsive grid of customer testimonial cards. Optional
- * heading block via SectionHeading, per-item StarRating, quote, and an avatar
- * footer with name + role/company meta. Theme-token only; 2 or 3 columns.
- */
-export function TestimonialGrid(props: {
-  eyebrow?: string
-  heading?: string
-  subheading?: string
-  items: {
-    quote: string
-    name: string
-    role?: string
-    company?: string
-    rating?: number
-    avatarAlt?: string
-  }[]
-  columns?: 2 | 3
-  cardClassName?: string
-  className?: string
-}) {
-  const columns = props.columns ?? 3
-  const items = Array.isArray(props.items) ? props.items : []
-  const colClass =
-    columns === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'
+const testimonialGridVariants = cva('grid gap-6 grid-cols-1', {
+  variants: {
+    columns: {
+      2: 'md:grid-cols-2',
+      3: 'md:grid-cols-2 lg:grid-cols-3',
+    },
+  },
+  defaultVariants: {
+    columns: 3,
+  },
+})
 
-  return (
-    <section className={cn('flex flex-col gap-10', props.className)}>
-      {props.heading ? (
+const TestimonialGrid = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'section'> &
+    VariantProps<typeof testimonialGridVariants> & {
+      eyebrow?: string
+      heading?: string
+      subheading?: string
+    }
+>(
+  (
+    { className, columns, eyebrow, heading, subheading, children, ...props },
+    ref,
+  ) => (
+    <section
+      ref={ref}
+      data-slot="testimonial-grid"
+      className={cn('flex flex-col gap-10', className)}
+      {...props}
+    >
+      {heading ? (
         <SectionHeading
-          eyebrow={props.eyebrow}
-          title={props.heading}
-          subtitle={props.subheading}
+          eyebrow={eyebrow}
+          title={heading}
+          subtitle={subheading}
         />
       ) : null}
-      <div className={cn('grid gap-6', 'grid-cols-1', colClass)}>
-        {items.filter(Boolean).map((i, idx) => {
-          const meta = [i.role, i.company].filter(Boolean).join(' · ')
-          return (
-            <figure
-              key={idx}
-              className={cn(
-                'flex flex-col gap-4 rounded-xl border border-border bg-card p-6',
-                props.cardClassName,
-              )}
-            >
-              {i.rating != null ? (
-                <StarRating rating={i.rating} size="sm" />
-              ) : null}
-              <blockquote className="text-base leading-relaxed text-foreground">
-                “{i.quote}”
-              </blockquote>
-              <figcaption className="mt-auto flex items-center gap-3">
-                <Image
-                  alt={i.avatarAlt ?? i.name}
-                  w={48}
-                  h={48}
-                  className="size-12 rounded-full object-cover"
-                />
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-foreground">
-                    {i.name}
-                  </span>
-                  {meta ? (
-                    <span className="text-xs text-muted-foreground">
-                      {meta}
-                    </span>
-                  ) : null}
-                </div>
-              </figcaption>
-            </figure>
-          )
-        })}
-      </div>
+      <div className={cn(testimonialGridVariants({ columns }))}>{children}</div>
     </section>
+  ),
+)
+TestimonialGrid.displayName = 'TestimonialGrid'
+
+const TestimonialCard = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'figure'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'figure'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="testimonial-card"
+      className={cn(
+        'flex flex-col gap-4 rounded-xl border border-border bg-card p-6',
+        className,
+      )}
+      {...props}
+    />
   )
+})
+TestimonialCard.displayName = 'TestimonialCard'
+
+const TestimonialQuote = React.forwardRef<
+  HTMLQuoteElement,
+  React.ComponentProps<'blockquote'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'blockquote'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="testimonial-quote"
+      className={cn('text-base leading-relaxed text-foreground', className)}
+      {...props}
+    />
+  )
+})
+TestimonialQuote.displayName = 'TestimonialQuote'
+
+const TestimonialAuthor = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'figcaption'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'figcaption'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="testimonial-author"
+      className={cn('mt-auto flex items-center gap-3', className)}
+      {...props}
+    />
+  )
+})
+TestimonialAuthor.displayName = 'TestimonialAuthor'
+
+const TestimonialName = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="testimonial-name"
+      className={cn('text-sm font-semibold text-foreground', className)}
+      {...props}
+    />
+  )
+})
+TestimonialName.displayName = 'TestimonialName'
+
+const TestimonialMeta = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="testimonial-meta"
+      className={cn('text-xs text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+TestimonialMeta.displayName = 'TestimonialMeta'
+
+export {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+  testimonialGridVariants,
 }

@@ -106,15 +106,13 @@ export const RestaurantHero = defineCapsule({
             >
               {heroPrimary}
             </RestaurantReservationButton>
-            <HeroCta asChild
+            <HeroCta
+              asChild
               className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
             >
-            <button
-              type="button"
-              onClick={() => go(heroSecondaryTarget)}
-            >
-              {heroSecondary}
-            </button>
+              <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                {heroSecondary}
+              </button>
             </HeroCta>
           </HeroActions>
 

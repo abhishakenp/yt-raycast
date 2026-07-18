@@ -171,59 +171,56 @@ export const JewelryStorePieces = defineCapsule({
           <PiecesGrid className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((p) => (
               <PiecesCard asChild key={p.title}>
-                <ProductCard
-                  variant="none"
-                  className="w-full text-left"
-                >
-                <button
-                  type="button"
-                  onClick={() => go(p.title)}
-                  className="block w-full text-left"
-                >
-                  <ProductCardImage className="mb-5">
-                    <Image
-                      alt={p.imageAlt}
-                      w={600}
-                      h={600}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    {p.badge ? (
-                      <ProductCardBadge
-                        className={cn(
-                          'left-4 px-3 py-1 uppercase tracking-widest',
-                          p.badge === 'New'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-secondary text-secondary-foreground',
-                        )}
-                      >
-                        {p.badge}
-                      </ProductCardBadge>
-                    ) : null}
-                  </ProductCardImage>
-                  <ProductCardTitle className="mb-1 font-serif text-lg text-foreground">
-                    {p.title}
-                  </ProductCardTitle>
-                </button>
-                <ProductCardSubtitle className="mb-2 mt-0">
-                  {p.spec}
-                </ProductCardSubtitle>
-                <ProductCardPrice className="text-primary">
-                  {p.price}
-                </ProductCardPrice>
-                <CommerceAddItemButton
-                  lakebed={lakebed}
-                  item={{ label: p.title, price: p.price }}
-                  pendingChildren={
-                    <>
-                      <CommerceMutationSpinner />
-                      Adding
-                    </>
-                  }
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-primary px-4 py-2.5 text-xs uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {addToCartLabel}
-                </CommerceAddItemButton>
+                <ProductCard variant="none" className="w-full text-left">
+                  <button
+                    type="button"
+                    onClick={() => go(p.title)}
+                    className="block w-full text-left"
+                  >
+                    <ProductCardImage className="mb-5">
+                      <Image
+                        alt={p.imageAlt}
+                        w={600}
+                        h={600}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      {p.badge ? (
+                        <ProductCardBadge
+                          className={cn(
+                            'left-4 px-3 py-1 uppercase tracking-widest',
+                            p.badge === 'New'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-secondary text-secondary-foreground',
+                          )}
+                        >
+                          {p.badge}
+                        </ProductCardBadge>
+                      ) : null}
+                    </ProductCardImage>
+                    <ProductCardTitle className="mb-1 font-serif text-lg text-foreground">
+                      {p.title}
+                    </ProductCardTitle>
+                  </button>
+                  <ProductCardSubtitle className="mb-2 mt-0">
+                    {p.spec}
+                  </ProductCardSubtitle>
+                  <ProductCardPrice className="text-primary">
+                    {p.price}
+                  </ProductCardPrice>
+                  <CommerceAddItemButton
+                    lakebed={lakebed}
+                    item={{ label: p.title, price: p.price }}
+                    pendingChildren={
+                      <>
+                        <CommerceMutationSpinner />
+                        Adding
+                      </>
+                    }
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-primary px-4 py-2.5 text-xs uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
+                  >
+                    {addToCartLabel}
+                  </CommerceAddItemButton>
                 </ProductCard>
               </PiecesCard>
             ))}

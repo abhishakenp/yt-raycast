@@ -63,76 +63,76 @@ export const GovPortalLeadership = defineCapsule({
 
     return (
       <CompanyInfo asChild>
-      <section className={cn('bg-background py-16', props.className)}>
-        <Container>
-          <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+        <section className={cn('bg-background py-16', props.className)}>
+          <Container>
+            <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
+              {heading}
+            </h2>
 
-          {message ? (
-            <Card
-              rounded="2xl"
-              className="mb-12 grid items-start gap-6 sm:grid-cols-[auto_1fr] sm:p-8"
-            >
-              <div className="mx-auto size-32 overflow-hidden rounded-2xl bg-muted sm:mx-0">
-                <Image
-                  src={str(message, 'photoUrl') || undefined}
-                  alt={`${str(message, 'name')} portrait`}
-                  w={256}
-                  h={256}
-                  className="size-full object-cover"
-                />
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-                  {str(message, 'role') || pickLang(lang, 'Message', 'संदेश')}
-                </p>
-                <p className="mt-1 text-lg font-semibold text-card-foreground">
-                  {str(message, 'name')}
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {str(message, 'body')}
-                </p>
-              </div>
-            </Card>
-          ) : null}
+            {message ? (
+              <Card
+                rounded="2xl"
+                className="mb-12 grid items-start gap-6 sm:grid-cols-[auto_1fr] sm:p-8"
+              >
+                <div className="mx-auto size-32 overflow-hidden rounded-2xl bg-muted sm:mx-0">
+                  <Image
+                    src={str(message, 'photoUrl') || undefined}
+                    alt={`${str(message, 'name')} portrait`}
+                    w={256}
+                    h={256}
+                    className="size-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                    {str(message, 'role') || pickLang(lang, 'Message', 'संदेश')}
+                  </p>
+                  <p className="mt-1 text-lg font-semibold text-card-foreground">
+                    {str(message, 'name')}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {str(message, 'body')}
+                  </p>
+                </div>
+              </Card>
+            ) : null}
 
-          {board.length ? (
-            <>
-              <h3 className="mb-6 text-lg font-semibold text-foreground">
-                {pickLang(lang, 'Board of Directors', 'निदेशक मंडल')}
-              </h3>
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {board.map((member, i) => (
-                  <PersonCard
-                    key={`${str(member, 'name')}-${i}`}
-                    variant="outlined"
-                  >
-                    <PersonCardAvatar>
-                      <Image
-                        src={str(member, 'photoUrl') || undefined}
-                        alt={`${str(member, 'name')} portrait`}
-                        w={160}
-                        h={160}
-                        className="size-full object-cover"
-                      />
-                    </PersonCardAvatar>
-                    <PersonCardContent>
-                      <PersonCardName>{str(member, 'name')}</PersonCardName>
-                      <PersonCardRole>
-                        {str(member, 'designation')}
-                      </PersonCardRole>
-                      {str(member, 'bio') ? (
-                        <PersonCardBio>{str(member, 'bio')}</PersonCardBio>
-                      ) : null}
-                    </PersonCardContent>
-                  </PersonCard>
-                ))}
-              </div>
-            </>
-          ) : null}
-        </Container>
-      </section>
+            {board.length ? (
+              <>
+                <h3 className="mb-6 text-lg font-semibold text-foreground">
+                  {pickLang(lang, 'Board of Directors', 'निदेशक मंडल')}
+                </h3>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {board.map((member, i) => (
+                    <PersonCard
+                      key={`${str(member, 'name')}-${i}`}
+                      variant="outlined"
+                    >
+                      <PersonCardAvatar>
+                        <Image
+                          src={str(member, 'photoUrl') || undefined}
+                          alt={`${str(member, 'name')} portrait`}
+                          w={160}
+                          h={160}
+                          className="size-full object-cover"
+                        />
+                      </PersonCardAvatar>
+                      <PersonCardContent>
+                        <PersonCardName>{str(member, 'name')}</PersonCardName>
+                        <PersonCardRole>
+                          {str(member, 'designation')}
+                        </PersonCardRole>
+                        {str(member, 'bio') ? (
+                          <PersonCardBio>{str(member, 'bio')}</PersonCardBio>
+                        ) : null}
+                      </PersonCardContent>
+                    </PersonCard>
+                  ))}
+                </div>
+              </>
+            ) : null}
+          </Container>
+        </section>
       </CompanyInfo>
     )
   },

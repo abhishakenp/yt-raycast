@@ -3,7 +3,18 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
+import {
+  MenuItemRow,
+  MenuItemContent,
+  MenuItemBody,
+  MenuItemNameRow,
+  MenuItemName,
+  MenuItemTag,
+  MenuItemRowDescription,
+  MenuItemPriceColumn,
+  MenuItemRowPrice,
+  MenuItemAction,
+} from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList, MenuCategory, MenuItem } from '#/section-kit/MenuList.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -208,92 +219,112 @@ export const FoodTruckMenu = defineCapsule({
     return (
       <section className={cn('px-6 pt-28 pb-20', props.className)}>
         <div className="mx-auto max-w-6xl">
-        <MenuList>
-          <SectionHeading
-            eyebrow={menuEyebrow}
-            title={menuHeading}
-            subtitle={menuDesc}
-            align="center"
-            eyebrowClassName="text-muted-foreground tracking-widest"
-            titleClassName="text-3xl font-bold md:text-4xl"
-            subtitleClassName="mx-auto max-w-lg"
-            className="mb-16"
-          />
+          <MenuList>
+            <SectionHeading
+              eyebrow={menuEyebrow}
+              title={menuHeading}
+              subtitle={menuDesc}
+              align="center"
+              eyebrowClassName="text-muted-foreground tracking-widest"
+              titleClassName="text-3xl font-bold md:text-4xl"
+              subtitleClassName="mx-auto max-w-lg"
+              className="mb-16"
+            />
 
-          <div className="grid gap-8 md:grid-cols-2">
-            {menuCategories.map((cat) => (
-              <MenuCategory asChild key={cat.title}>
-              <div key={cat.title} className={cn(cat.wide && 'md:col-span-2')}>
-                <Image
-                  alt={cat.imageAlt}
-                  w={800}
-                  h={400}
-                  loading="lazy"
-                  className={cn(
-                    'mb-6 w-full rounded-xl object-cover',
-                    cat.wide ? 'h-48' : 'h-64',
-                  )}
-                />
-                <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-                  {cat.title}
-                  {cat.badge && (
-                    <span className="rounded-full bg-foreground px-2 py-0.5 text-xs text-background">
-                      {cat.badge}
-                    </span>
-                  )}
-                </h3>
-                <div
-                  className={cn(
-                    cat.wide ? 'grid gap-4 sm:grid-cols-2' : 'space-y-4',
-                  )}
-                >
-                  {(cat.items ?? []).map((item, i) => (
-                    <MenuItem asChild key={item.name}>
-                    <MenuItemRow
-                      key={item.name}
-                      name={item.name}
-                      description={item.description}
-                      price={item.price}
-                      tag={item.tag}
-                      tagClassName="bg-transparent px-0 py-0 text-chart-2 normal-case tracking-normal"
-                      priceClassName="font-serif text-base font-semibold"
+            <div className="grid gap-8 md:grid-cols-2">
+              {menuCategories.map((cat) => (
+                <MenuCategory asChild key={cat.title}>
+                  <div
+                    key={cat.title}
+                    className={cn(cat.wide && 'md:col-span-2')}
+                  >
+                    <Image
+                      alt={cat.imageAlt}
+                      w={800}
+                      h={400}
+                      loading="lazy"
                       className={cn(
-                        i < cat.items.length - 1 &&
-                          'border-b border-border pb-4',
+                        'mb-6 w-full rounded-xl object-cover',
+                        cat.wide ? 'h-48' : 'h-64',
                       )}
-                      action={
-                        <CommerceAddItemButton
-                          lakebed={lakebed}
-                          item={{ label: item.name, price: item.price }}
-                          aria-label={`${addLabel} ${item.name} to cart`}
-                          pendingChildren={
-                            <>
-                              <CommerceMutationSpinner className="size-3" />
-                              Adding
-                            </>
-                          }
-                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
-                        >
-                          {addLabel}
-                        </CommerceAddItemButton>
-                      }
                     />
-                    </MenuItem>
-                  ))}
-                </div>
-              </div>
-              </MenuCategory>
-            ))}
-          </div>
+                    <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+                      {cat.title}
+                      {cat.badge && (
+                        <span className="rounded-full bg-foreground px-2 py-0.5 text-xs text-background">
+                          {cat.badge}
+                        </span>
+                      )}
+                    </h3>
+                    <div
+                      className={cn(
+                        cat.wide ? 'grid gap-4 sm:grid-cols-2' : 'space-y-4',
+                      )}
+                    >
+                      {(cat.items ?? []).map((item, i) => (
+                        <MenuItem asChild key={item.name}>
+                          <MenuItemRow
+                            className={cn(
+                              i < cat.items.length - 1 &&
+                                'border-b border-border pb-4',
+                            )}
+                          >
+                            <MenuItemContent>
+                              <MenuItemBody>
+                                <MenuItemNameRow>
+                                  <MenuItemName>{item.name}</MenuItemName>
+                                  <MenuItemTag className="bg-transparent px-0 py-0 text-chart-2 normal-case tracking-normal">
+                                    {item.tag}
+                                  </MenuItemTag>
+                                </MenuItemNameRow>
+                                <MenuItemRowDescription>
+                                  {item.description}
+                                </MenuItemRowDescription>
+                              </MenuItemBody>
+                              <MenuItemPriceColumn>
+                                <MenuItemRowPrice className="font-serif text-base font-semibold">
+                                  {item.price}
+                                </MenuItemRowPrice>
+                                <MenuItemAction>
+                                  {
+                                    <CommerceAddItemButton
+                                      lakebed={lakebed}
+                                      item={{
+                                        label: item.name,
+                                        price: item.price,
+                                      }}
+                                      aria-label={`${addLabel} ${item.name} to cart`}
+                                      pendingChildren={
+                                        <>
+                                          <CommerceMutationSpinner className="size-3" />
+                                          Adding
+                                        </>
+                                      }
+                                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
+                                    >
+                                      {addLabel}
+                                    </CommerceAddItemButton>
+                                  }
+                                </MenuItemAction>
+                              </MenuItemPriceColumn>
+                            </MenuItemContent>
+                          </MenuItemRow>
+                        </MenuItem>
+                      ))}
+                    </div>
+                  </div>
+                </MenuCategory>
+              ))}
+            </div>
 
-          <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-center text-sm text-muted-foreground">
-            {menuLegend.map((entry) => (
-              <span key={entry} className="inline-block">
-                {entry}
-              </span>
-            ))}
-          </div>
-        </MenuList>
+            <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-center text-sm text-muted-foreground">
+              {menuLegend.map((entry) => (
+                <span key={entry} className="inline-block">
+                  {entry}
+                </span>
+              ))}
+            </div>
+          </MenuList>
         </div>
       </section>
     )

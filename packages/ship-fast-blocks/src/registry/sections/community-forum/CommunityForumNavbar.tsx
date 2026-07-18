@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -74,11 +74,12 @@ export const CommunityForumNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="gap-2"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<BrandMark className="size-8 text-foreground" />}
-              labelClassName="text-xl font-semibold text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={<BrandMark className="size-8 text-foreground" />}
+              />
+              <LogoLabel className="text-xl font-semibold text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarBrand,
@@ -65,19 +65,20 @@ export const LawFirmNavbar = defineCapsule({
             onClick={() => go(nav[0])}
             className="gap-3 text-left"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={
-                <span
-                  className="grid size-10 place-items-center rounded-sm bg-primary font-serif text-lg font-bold text-primary-foreground"
-                  aria-hidden="true"
-                >
-                  {brandInitial}
-                </span>
-              }
-              className="size-10 rounded-sm"
-              showLabel={false}
-            />
+            <BrandLogo brand={brand} className="size-10 rounded-sm">
+              <LogoImage
+                className="size-10 rounded-sm"
+                fallback={
+                  <span
+                    className="grid size-10 place-items-center rounded-sm bg-primary font-serif text-lg font-bold text-primary-foreground"
+                    aria-hidden="true"
+                  >
+                    {brandInitial}
+                  </span>
+                }
+              />
+              <LogoLabel />
+            </BrandLogo>
             <span className="block">
               <span className="block font-serif text-xl font-semibold tracking-tight text-foreground">
                 {brand}

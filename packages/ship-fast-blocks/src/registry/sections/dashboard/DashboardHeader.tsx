@@ -55,48 +55,48 @@ export const DashboardHeader = defineCapsule({
             props.className,
           )}
         >
-        <SectionHeading
-          title={title}
-          subtitle={subtitle}
-          align="left"
-          titleAs="h1"
-          titleClassName="text-2xl font-bold"
-          subtitleClassName="text-sm"
-          className="gap-1"
-        />
-        <PageHeaderActions className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => go(secondaryAction)}
-            className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
-          >
-            {secondaryAction}
-          </button>
-          <button
-            type="button"
-            aria-busy={newOrderPending}
-            disabled={newOrderPending}
-            onClick={() => {
-              const now = new Date()
-              void addOrder.run(newOrderKey, {
-                amount: '$0.00',
-                customer: 'New Customer',
-                date: now.toLocaleDateString('en-US', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                }),
-                orderId: `#${Math.floor(now.getTime() / 1000)}`,
-                product: 'Manual order',
-                status: 'Processing',
-                statusTone: 'sky',
-              })
-            }}
-            className="rounded-lg bg-gradient-to-br from-primary to-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/30 transition hover:-translate-y-px hover:shadow-md hover:shadow-primary/40 disabled:pointer-events-none disabled:opacity-70"
-          >
-            {newOrderPending ? 'Adding' : `+ ${primaryAction}`}
-          </button>
-        </PageHeaderActions>
+          <SectionHeading
+            title={title}
+            subtitle={subtitle}
+            align="left"
+            titleAs="h1"
+            titleClassName="text-2xl font-bold"
+            subtitleClassName="text-sm"
+            className="gap-1"
+          />
+          <PageHeaderActions className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => go(secondaryAction)}
+              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
+            >
+              {secondaryAction}
+            </button>
+            <button
+              type="button"
+              aria-busy={newOrderPending}
+              disabled={newOrderPending}
+              onClick={() => {
+                const now = new Date()
+                void addOrder.run(newOrderKey, {
+                  amount: '$0.00',
+                  customer: 'New Customer',
+                  date: now.toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  }),
+                  orderId: `#${Math.floor(now.getTime() / 1000)}`,
+                  product: 'Manual order',
+                  status: 'Processing',
+                  statusTone: 'sky',
+                })
+              }}
+              className="rounded-lg bg-gradient-to-br from-primary to-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/30 transition hover:-translate-y-px hover:shadow-md hover:shadow-primary/40 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {newOrderPending ? 'Adding' : `+ ${primaryAction}`}
+            </button>
+          </PageHeaderActions>
         </div>
       </PageHeader>
     )

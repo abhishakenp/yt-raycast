@@ -44,13 +44,13 @@ export const AeoDirectAnswer = defineCapsule({
             />
           ) : null}
           <DirectAnswer className="mb-6">
-          <p className="text-base leading-relaxed text-foreground sm:text-lg">
-            {answer}
-          </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            <strong className="text-foreground">Who this is for:</strong>{' '}
-            {whoFor}
-          </p>
+            <p className="text-base leading-relaxed text-foreground sm:text-lg">
+              {answer}
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              <strong className="text-foreground">Who this is for:</strong>{' '}
+              {whoFor}
+            </p>
           </DirectAnswer>
         </Container>
       </section>

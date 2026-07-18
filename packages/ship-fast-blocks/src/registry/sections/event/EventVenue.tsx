@@ -4,7 +4,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { FeatureListItem } from '#/section-kit/FeatureListItem.tsx'
+import {
+  FeatureListItem,
+  FeatureListItemIcon,
+  FeatureListItemTitle,
+  FeatureListItemDescription,
+  FeatureListItemBody,
+} from '#/section-kit/FeatureListItem.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { VenueBlock } from '#/section-kit/VenueBlock.tsx'
 
@@ -132,16 +138,23 @@ export const EventVenue = defineCapsule({
               />
               <div className="mb-8 space-y-4">
                 {details.map((d, i) => (
-                  <FeatureListItem
-                    key={d.title}
-                    icon={venueIcons[i % venueIcons.length]}
-                    title={d.title}
-                    description={d.text}
-                    iconShape="square"
-                    iconSize="sm"
-                    iconClassName="border border-border bg-background text-foreground"
-                    titleClassName="font-medium"
-                  />
+                  <FeatureListItem>
+                    <FeatureListItemIcon
+                      iconShape="square"
+                      iconSize="sm"
+                      className="border border-border bg-background text-foreground"
+                    >
+                      {venueIcons[i % venueIcons.length]}
+                    </FeatureListItemIcon>
+                    <FeatureListItemBody>
+                      <FeatureListItemTitle className="font-medium">
+                        {d.title}
+                      </FeatureListItemTitle>
+                      <FeatureListItemDescription>
+                        {d.text}
+                      </FeatureListItemDescription>
+                    </FeatureListItemBody>
+                  </FeatureListItem>
                 ))}
               </div>
             </div>

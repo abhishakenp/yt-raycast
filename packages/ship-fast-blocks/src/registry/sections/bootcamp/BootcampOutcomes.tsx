@@ -107,7 +107,10 @@ export const BootcampOutcomes = defineCapsule({
             <p className="text-lg text-muted-foreground">{outcomesDesc}</p>
           </div>
           <StatGrid
-            stats={outcomeStats.map((s) => ({ value: s.value, label: s.label }))}
+            stats={outcomeStats.map((s) => ({
+              value: s.value,
+              label: s.label,
+            }))}
             columns={4}
             gap="wide"
             valueColor="primary"

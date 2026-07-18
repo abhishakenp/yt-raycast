@@ -32,7 +32,6 @@ type TestProduct = {
   updatedAt: string
 }
 
-
 type TestProductInput = {
   imageAlt?: string
   label: string
@@ -139,12 +138,15 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args: [string, Record<string, unknown>]) => runMutation(...args), {
-        isPending: false,
-        lastError: emptyLastError,
-        pendingCount: 0,
-        reset,
-      }),
+      Object.assign(
+        (...args: [string, Record<string, unknown>]) => runMutation(...args),
+        {
+          isPending: false,
+          lastError: emptyLastError,
+          pendingCount: 0,
+          reset,
+        },
+      ),
     [reset, runMutation],
   )
 
@@ -187,7 +189,10 @@ function createCommerceLakebedStub() {
     (input.label
       ? state.items.find((item) => item.label === input.label)
       : undefined)
-  const replaceItem = (target: Record<string, unknown>, updater: (item: TestCartItem) => TestCartItem) => {
+  const replaceItem = (
+    target: Record<string, unknown>,
+    updater: (item: TestCartItem) => TestCartItem,
+  ) => {
     state = {
       ...state,
       items: state.items.map((item) =>

@@ -5,7 +5,13 @@ import { MenuIcon, PhoneIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo, NavbarActions, NavbarBrand } from '#/section-kit/index.ts'
+import {
+  Logo,
+  LogoImage,
+  LogoLabel,
+  NavbarActions,
+  NavbarBrand,
+} from '#/section-kit/index.ts'
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -319,24 +325,27 @@ export const GovPortalNavbar = defineCapsule({
         */}
         <Logo
           brand={brand}
-          showLabel={false}
           className="h-12 w-auto max-w-[8rem] shrink-0 rounded-none"
-          imageClassName="h-12 w-auto max-w-[8rem] object-contain"
-          fallback={
-            logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={`${brand} logo`}
-                className="h-12 w-auto max-w-[8rem] shrink-0 object-contain"
-                draggable={false}
-              />
-            ) : (
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-primary text-sm font-bold text-primary">
-                {initials || 'GOV'}
-              </span>
-            )
-          }
-        />
+        >
+          <LogoImage
+            className="h-12 w-auto max-w-[8rem] shrink-0 rounded-none"
+            fallback={
+              logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={`${brand} logo`}
+                  className="h-12 w-auto max-w-[8rem] shrink-0 object-contain"
+                  draggable={false}
+                />
+              ) : (
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-primary text-sm font-bold text-primary">
+                  {initials || 'GOV'}
+                </span>
+              )
+            }
+          />
+          <LogoLabel />
+        </Logo>
         <span className="min-w-0 text-left">
           <span className="block max-w-[16rem] truncate text-sm font-bold uppercase tracking-tight text-foreground sm:text-base">
             {brand}

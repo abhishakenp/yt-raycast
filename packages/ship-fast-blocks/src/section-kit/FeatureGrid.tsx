@@ -1,51 +1,119 @@
-import type { ReactNode } from 'react'
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '#/lib/utils.ts'
 
 import { SectionHeading } from './SectionHeading.tsx'
 
-/**
- * FeatureGrid renders a responsive grid of feature cards with an optional
- * heading/subheading. Columns default to 3 and adapt across breakpoints.
- * Each feature card shows an optional icon tile, a title, and a description.
- */
-export function FeatureGrid(props: {
-  heading?: string
-  subheading?: string
-  features: { title: string; description: string; icon?: ReactNode }[]
-  columns?: 2 | 3 | 4
-  className?: string
-}) {
-  const columns = props.columns ?? 3
-  const features = Array.isArray(props.features) ? props.features : []
-  const colClass =
-    columns === 2
-      ? 'md:grid-cols-2'
-      : columns === 4
-        ? 'md:grid-cols-2 lg:grid-cols-4'
-        : 'md:grid-cols-3'
+const featureGridVariants = cva('grid gap-6 grid-cols-1', {
+  variants: {
+    columns: {
+      2: 'md:grid-cols-2',
+      3: 'md:grid-cols-3',
+      4: 'md:grid-cols-2 lg:grid-cols-4',
+    },
+  },
+  defaultVariants: {
+    columns: 3,
+  },
+})
 
+const FeatureGrid = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'section'> &
+    VariantProps<typeof featureGridVariants> & {
+      heading?: string
+      subheading?: string
+    }
+>(({ className, columns, heading, subheading, children, ...props }, ref) => (
+  <section
+    ref={ref}
+    data-slot="feature-grid"
+    className={cn('flex flex-col gap-10', className)}
+    {...props}
+  >
+    {heading ? <SectionHeading title={heading} subtitle={subheading} /> : null}
+    <div className={cn(featureGridVariants({ columns }))}>{children}</div>
+  </section>
+))
+FeatureGrid.displayName = 'FeatureGrid'
+
+const FeatureCard = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
   return (
-    <section className={cn('flex flex-col gap-10', props.className)}>
-      {props.heading ? (
-        <SectionHeading title={props.heading} subtitle={props.subheading} />
-      ) : null}
-      <div className={cn('grid gap-6', 'grid-cols-1', colClass)}>
-        {features.filter(Boolean).map((f, i) => (
-          <div
-            key={i}
-            className="flex flex-col gap-3 rounded-xl border border-border bg-card p-6"
-          >
-            {f.icon ? (
-              <div className="inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                {f.icon}
-              </div>
-            ) : null}
-            <h3 className="text-lg font-semibold text-foreground">{f.title}</h3>
-            <p className="text-sm text-muted-foreground">{f.description}</p>
-          </div>
-        ))}
-      </div>
-    </section>
+    <Comp
+      ref={ref}
+      data-slot="feature-card"
+      className={cn(
+        'flex flex-col gap-3 rounded-xl border border-border bg-card p-6',
+        className,
+      )}
+      {...props}
+    />
   )
+})
+FeatureCard.displayName = 'FeatureCard'
+
+const FeatureIcon = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="feature-icon"
+      className={cn(
+        'inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+FeatureIcon.displayName = 'FeatureIcon'
+
+const FeatureTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h3'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h3'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="feature-title"
+      className={cn('text-lg font-semibold text-foreground', className)}
+      {...props}
+    />
+  )
+})
+FeatureTitle.displayName = 'FeatureTitle'
+
+const FeatureDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="feature-description"
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+FeatureDescription.displayName = 'FeatureDescription'
+
+export {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+  featureGridVariants,
 }

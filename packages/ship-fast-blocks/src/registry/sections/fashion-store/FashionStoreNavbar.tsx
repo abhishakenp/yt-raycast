@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -109,11 +109,10 @@ export const FashionStoreNavbar = defineCapsule({
             onClick={() => go(nav[0])}
             className="items-center"
           >
-            <BrandLogo
-              brand={brand}
-              className="mr-2 size-8"
-              showLabel={false}
-            />
+            <BrandLogo brand={brand} className="mr-2 size-8">
+              <LogoImage className="mr-2 size-8" />
+              <LogoLabel />
+            </BrandLogo>
             <span className="font-serif text-2xl font-medium tracking-tight lg:text-3xl">
               {brand}
             </span>

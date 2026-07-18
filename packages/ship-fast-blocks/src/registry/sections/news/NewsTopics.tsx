@@ -145,30 +145,30 @@ export const NewsTopics = defineCapsule({
                   onClick={() => go(topic.name)}
                   className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
                 >
-                <Image
-                  alt={topic.imageAlt}
-                  w={300}
-                  h={225}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/30 to-transparent"
-                />
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                  <h3 className="text-sm font-semibold text-background lg:text-base">
-                    {topic.name}
-                  </h3>
-                  {topic.blurb ? (
-                    <p className="mt-0.5 line-clamp-2 text-xs text-background/80">
-                      {topic.blurb}
+                  <Image
+                    alt={topic.imageAlt}
+                    w={300}
+                    h={225}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/30 to-transparent"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <h3 className="text-sm font-semibold text-background lg:text-base">
+                      {topic.name}
+                    </h3>
+                    {topic.blurb ? (
+                      <p className="mt-0.5 line-clamp-2 text-xs text-background/80">
+                        {topic.blurb}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 text-xs font-medium text-background/70">
+                      {topic.count}
                     </p>
-                  ) : null}
-                  <p className="mt-1 text-xs font-medium text-background/70">
-                    {topic.count}
-                  </p>
-                </div>
+                  </div>
                 </button>
               </TopicCard>
             ))}

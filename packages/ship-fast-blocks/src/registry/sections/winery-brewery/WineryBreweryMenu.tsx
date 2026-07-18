@@ -3,8 +3,23 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
-import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
+import {
+  MenuCategoryHeader,
+  MenuCategoryTitle,
+  MenuCategoryDivider,
+} from '#/section-kit/MenuCategoryHeader.tsx'
+import {
+  MenuItemRow,
+  MenuItemContent,
+  MenuItemBody,
+  MenuItemNameRow,
+  MenuItemName,
+  MenuItemTag,
+  MenuItemRowDescription,
+  MenuItemPriceColumn,
+  MenuItemRowPrice,
+  MenuItemAction,
+} from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -163,54 +178,69 @@ export const WineryBreweryMenu = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <MenuList>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            align="center"
-            titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
-            className="mx-auto mb-16 max-w-2xl gap-6"
-          />
+          <MenuList>
+            <SectionHeading
+              title={heading}
+              subtitle={description}
+              align="center"
+              titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
+              className="mx-auto mb-16 max-w-2xl gap-6"
+            />
 
-          <div className="space-y-16">
-            {categories.map((category) => (
-              <div key={category.name}>
-                <MenuCategoryHeader title={category.name} showDivider />
-                <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
-                  {(category.items ?? []).map((item) => (
-                    <MenuItemRow
-                      key={item.name}
-                      name={item.name}
-                      description={item.notes}
-                      price={item.price}
-                      tag={item.tag}
-                      onNameClick={() => go(menuTarget)}
-                      action={
-                        <CommerceAddItemButton
-                          lakebed={lakebed}
-                          item={{
-                            label: item.name,
-                            price: item.price,
-                          }}
-                          aria-label={`${addLabel} ${item.name} to cart`}
-                          pendingChildren={
-                            <>
-                              <CommerceMutationSpinner className="size-3" />
-                              Adding
-                            </>
-                          }
-                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
-                        >
-                          {addLabel}
-                        </CommerceAddItemButton>
-                      }
-                    />
-                  ))}
+            <div className="space-y-16">
+              {categories.map((category) => (
+                <div key={category.name}>
+                  <MenuCategoryHeader>
+                    <MenuCategoryTitle>{category.name}</MenuCategoryTitle>
+                    <MenuCategoryDivider />
+                  </MenuCategoryHeader>
+                  <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
+                    {(category.items ?? []).map((item) => (
+                      <MenuItemRow>
+                        <MenuItemContent>
+                          <MenuItemBody>
+                            <MenuItemNameRow>
+                              <MenuItemName onClick={() => go(menuTarget)}>
+                                {item.name}
+                              </MenuItemName>
+                              <MenuItemTag>{item.tag}</MenuItemTag>
+                            </MenuItemNameRow>
+                            <MenuItemRowDescription>
+                              {item.notes}
+                            </MenuItemRowDescription>
+                          </MenuItemBody>
+                          <MenuItemPriceColumn>
+                            <MenuItemRowPrice>{item.price}</MenuItemRowPrice>
+                            <MenuItemAction>
+                              {
+                                <CommerceAddItemButton
+                                  lakebed={lakebed}
+                                  item={{
+                                    label: item.name,
+                                    price: item.price,
+                                  }}
+                                  aria-label={`${addLabel} ${item.name} to cart`}
+                                  pendingChildren={
+                                    <>
+                                      <CommerceMutationSpinner className="size-3" />
+                                      Adding
+                                    </>
+                                  }
+                                  className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
+                                >
+                                  {addLabel}
+                                </CommerceAddItemButton>
+                              }
+                            </MenuItemAction>
+                          </MenuItemPriceColumn>
+                        </MenuItemContent>
+                      </MenuItemRow>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </MenuList>
+              ))}
+            </div>
+          </MenuList>
         </div>
       </section>
     )

@@ -221,11 +221,7 @@ export const FaqTopics = defineCapsule({
                 className="group text-left transition-all hover:border-border/60 hover:shadow-sm"
               >
                 <button type="button" onClick={() => go(topic.title)}>
-                  <TopicIcon
-                    className={cn(
-                      topicTints[i % topicTints.length],
-                    )}
-                  >
+                  <TopicIcon className={cn(topicTints[i % topicTints.length])}>
                     {topicIcons[i % topicIcons.length]}
                   </TopicIcon>
                   <h3 className="mb-1 font-semibold text-card-foreground">

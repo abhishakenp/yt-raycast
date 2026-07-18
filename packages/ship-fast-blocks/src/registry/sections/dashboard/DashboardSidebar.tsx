@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { NavSidebar } from '#/section-kit/NavSidebar.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -73,7 +73,9 @@ export const DashboardSidebar = defineCapsule({
     const supportNav = nav.slice(primaryCount)
     const supportLabel = props.supportLabel ?? 'Support'
     const badgeLabel = props.badgeLabel ?? 'Orders'
-    const orderSummary = lakebed.useQuery('orderSummary') as { count: number; currentOrderId: string } | undefined
+    const orderSummary = lakebed.useQuery('orderSummary') as
+      | { count: number; currentOrderId: string }
+      | undefined
     const badgeCount =
       props.badgeCount ??
       (badgeLabel.toLowerCase() === 'orders'
@@ -239,11 +241,10 @@ export const DashboardSidebar = defineCapsule({
             onClick={() => go(nav[0])}
             className="flex items-center gap-3"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark />}
-              labelClassName="text-lg font-bold tracking-tight text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage fallback={<LogoMark />} />
+              <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
+            </BrandLogo>
           </button>
         </div>
 

@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -49,7 +49,13 @@ export const CorporateNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Request Demo'
     const ctaTarget = props.ctaTarget ?? 'Schedule a Demo'
     const secondaryCta = props.secondaryCta ?? 'Explore Solutions'
-    const LogoMark = ({ className, inverse }: { className?: string, inverse?: string }) => (
+    const LogoMark = ({
+      className,
+      inverse,
+    }: {
+      className?: string
+      inverse?: string
+    }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg font-bold',
@@ -71,11 +77,10 @@ export const CorporateNavbar = defineCapsule({
       >
         <NavbarBrand asChild>
           <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark className="size-8 text-sm" />}
-              labelClassName="text-lg font-semibold tracking-tight"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
+              <LogoLabel className="text-lg font-semibold tracking-tight" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -69,18 +69,19 @@ export const EventNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="gap-2"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={
-                <span
-                  className="grid size-8 place-items-center rounded-lg bg-foreground text-sm font-bold text-background"
-                  aria-hidden="true"
-                >
-                  {brand.slice(0, 2).toUpperCase()}
-                </span>
-              }
-              labelClassName="text-lg font-semibold tracking-tight"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={
+                  <span
+                    className="grid size-8 place-items-center rounded-lg bg-foreground text-sm font-bold text-background"
+                    aria-hidden="true"
+                  >
+                    {brand.slice(0, 2).toUpperCase()}
+                  </span>
+                }
+              />
+              <LogoLabel className="text-lg font-semibold tracking-tight" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

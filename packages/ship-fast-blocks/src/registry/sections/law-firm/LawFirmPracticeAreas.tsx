@@ -16,7 +16,10 @@ import { cn } from '#/lib/utils.ts'
  * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { PracticeAreaGrid, PracticeAreaCard } from '#/section-kit/PracticeAreaGrid.tsx'
+import {
+  PracticeAreaGrid,
+  PracticeAreaCard,
+} from '#/section-kit/PracticeAreaGrid.tsx'
 export const LawFirmPracticeAreas = defineCapsule({
   name: 'LawFirmPracticeAreas',
   description:
@@ -183,8 +186,12 @@ export const LawFirmPracticeAreas = defineCapsule({
                   <div className="inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     {practiceIcons[i % practiceIcons.length]}
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
               </PracticeAreaCard>
             ))}

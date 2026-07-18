@@ -33,7 +33,9 @@ function isCrossRealmHTMLElement(
   )
 }
 
-function isCrossRealmHTMLButtonElement(value: unknown): boolean {
+function isCrossRealmHTMLButtonElement(
+  value: unknown,
+): value is CrossRealmHTMLElement {
   return isCrossRealmHTMLElement(value) && value.tagName === 'BUTTON'
 }
 

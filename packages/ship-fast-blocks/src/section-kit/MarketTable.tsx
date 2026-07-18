@@ -77,4 +77,47 @@ const MarketRow = React.forwardRef<
 })
 MarketRow.displayName = 'MarketRow'
 
-export { MarketTable, MarketHeader, MarketBody, MarketRow, MarketTableVariants }
+const MarketChart = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="market-chart"
+      className={cn('flex items-end gap-1', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+MarketChart.displayName = 'MarketChart'
+
+const MarketIndicator = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      data-slot="market-indicator"
+      className={cn(
+        'inline-flex items-center gap-1 text-xs font-medium',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+MarketIndicator.displayName = 'MarketIndicator'
+
+export {
+  MarketTable,
+  MarketHeader,
+  MarketBody,
+  MarketRow,
+  MarketChart,
+  MarketIndicator,
+  MarketTableVariants,
+}

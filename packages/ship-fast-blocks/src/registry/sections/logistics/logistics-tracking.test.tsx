@@ -30,7 +30,9 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }: { alt?: string; className?: string }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }: { alt?: string; className?: string }) => (
+    <img alt={alt} className={className} />
+  ),
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -60,7 +62,8 @@ if (typeof document === 'undefined') {
   }
   const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) =>
+    clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -142,11 +145,7 @@ function createLogisticsLakebedStub() {
     version += 1
     for (const listener of listeners) listener()
   }
-  const nextRow = (
-    prefix: string,
-    value: unknown,
-    index: number,
-  ) => ({
+  const nextRow = (prefix: string, value: unknown, index: number) => ({
     ...value,
     createdAt: now,
     id: `${prefix}-${index}`,
@@ -196,33 +195,39 @@ function createLogisticsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: Record<string, unknown>) => {
-        setPendingCount((count) => count + 1)
-        setLastError(null)
-        try {
-          const trackingId = String(input.trackingId)?.trim() ?? ''
-          state = nextRow('state', { trackingId }, 1)
-          searches = [
-            nextRow('search', { trackingId }, searches.length + 1),
-            ...searches,
-          ]
-          notify()
-          return state ? [state] : []
-        } catch (error) {
-          setLastError(error)
-          throw error
-        } finally {
-          setPendingCount((count) => Math.max(0, count - 1))
-        }
-      }, [])
+      const runMutation = useCallback(
+        async (input: Record<string, unknown>) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const trackingId = String(input.trackingId)?.trim() ?? ''
+            state = nextRow('state', { trackingId }, 1)
+            searches = [
+              nextRow('search', { trackingId }, searches.length + 1),
+              ...searches,
+            ]
+            notify()
+            return state ? [state] : []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
-          isPending: false,
-          lastError: initialLastError,
-          pendingCount: 0,
-          reset,
-        })
+        const callable = Object.assign(
+          (input: Record<string, unknown>) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
         return callable
       }, [reset, runMutation])
 
@@ -237,60 +242,67 @@ function createLogisticsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: Record<string, unknown>) => {
-        setPendingCount((count) => count + 1)
-        setLastError(null)
-        try {
-          const existingByTrackingId = new Map(
-            shipments.map((shipment) => [
-              shipment.trackingId.toLowerCase(),
-              shipment,
-            ]),
-          )
+      const runMutation = useCallback(
+        async (input: Record<string, unknown>) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingByTrackingId = new Map(
+              shipments.map((shipment) => [
+                shipment.trackingId.toLowerCase(),
+                shipment,
+              ]),
+            )
 
-          for (const item of input.items as Record<string, unknown>[]) {
-            const trackingId = String(item.trackingId).trim()
-            if (!trackingId) continue
+            for (const item of input.items as Record<string, unknown>[]) {
+              const trackingId = String(item.trackingId).trim()
+              if (!trackingId) continue
 
-            const next = {
-              destination: String(item.destination ?? '').trim() ?? '',
-              estimatedDelivery: String(item.estimatedDelivery ?? '').trim() ?? '',
-              origin: String(item.origin ?? '').trim() ?? '',
-              status: String(item.status ?? '').trim() ?? '',
-              trackingId,
+              const next = {
+                destination: String(item.destination ?? '').trim() ?? '',
+                estimatedDelivery:
+                  String(item.estimatedDelivery ?? '').trim() ?? '',
+                origin: String(item.origin ?? '').trim() ?? '',
+                status: String(item.status ?? '').trim() ?? '',
+                trackingId,
+              }
+              const current = existingByTrackingId.get(trackingId.toLowerCase())
+
+              if (current) {
+                shipments = shipments.map((candidate) =>
+                  candidate.id === current.id
+                    ? { ...current, ...next, updatedAt: now }
+                    : candidate,
+                )
+              } else {
+                shipments = [
+                  ...shipments,
+                  nextRow('shipment', next, shipments.length + 1),
+                ]
+              }
             }
-            const current = existingByTrackingId.get(trackingId.toLowerCase())
-
-            if (current) {
-              shipments = shipments.map((candidate) =>
-                candidate.id === current.id
-                  ? { ...current, ...next, updatedAt: now }
-                  : candidate,
-              )
-            } else {
-              shipments = [
-                ...shipments,
-                nextRow('shipment', next, shipments.length + 1),
-              ]
-            }
+            notify()
+            return shipments
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
           }
-          notify()
-          return shipments
-        } catch (error) {
-          setLastError(error)
-          throw error
-        } finally {
-          setPendingCount((count) => Math.max(0, count - 1))
-        }
-      }, [])
+        },
+        [],
+      )
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
-          isPending: false,
-          lastError: initialLastError,
-          pendingCount: 0,
-          reset,
-        })
+        const callable = Object.assign(
+          (input: Record<string, unknown>) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
         return callable
       }, [reset, runMutation])
 

@@ -241,84 +241,84 @@ export const JobBoardJobs = defineCapsule({
               const pending = pendingRole === job.role
               return (
                 <JobItem asChild key={job.role}>
-                <Card
-                  key={job.role}
-                  className="group transition-all hover:border-foreground/30 hover:shadow-lg"
-                >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                    <Image
-                      alt={job.logoAlt}
-                      w={100}
-                      h={100}
-                      loading="lazy"
-                      className="size-14 shrink-0 rounded-lg object-cover"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                        <h3 className="text-lg font-semibold text-card-foreground transition-colors group-hover:text-foreground/70">
-                          {job.role}
-                        </h3>
-                        {job.badge ? (
-                          <span
-                            className={cn(
-                              'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                              job.badge === 'New'
-                                ? 'bg-primary/10 text-primary'
-                                : 'bg-secondary text-secondary-foreground',
-                            )}
-                          >
-                            {job.badge}
-                          </span>
-                        ) : null}
+                  <Card
+                    key={job.role}
+                    className="group transition-all hover:border-foreground/30 hover:shadow-lg"
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                      <Image
+                        alt={job.logoAlt}
+                        w={100}
+                        h={100}
+                        loading="lazy"
+                        className="size-14 shrink-0 rounded-lg object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                          <h3 className="text-lg font-semibold text-card-foreground transition-colors group-hover:text-foreground/70">
+                            {job.role}
+                          </h3>
+                          {job.badge ? (
+                            <span
+                              className={cn(
+                                'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                job.badge === 'New'
+                                  ? 'bg-primary/10 text-primary'
+                                  : 'bg-secondary text-secondary-foreground',
+                              )}
+                            >
+                              {job.badge}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="mb-3 text-muted-foreground">
+                          {job.company}
+                        </p>
+                        <div className="mb-4 flex flex-wrap gap-2">
+                          {job.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="line-clamp-2 text-sm text-muted-foreground">
+                          {job.description}
+                        </p>
                       </div>
-                      <p className="mb-3 text-muted-foreground">
-                        {job.company}
-                      </p>
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        {job.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
-                          >
-                            {tag}
-                          </span>
-                        ))}
+                      <div className="mt-2 flex flex-row items-center gap-3 sm:mt-0 sm:flex-col sm:items-end sm:gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          {job.posted}
+                        </span>
+                        <button
+                          type="button"
+                          aria-busy={pending}
+                          disabled={pending || applied}
+                          onClick={() => {
+                            setPendingRole(job.role)
+                            void jobActions
+                              .apply({
+                                company: job.company,
+                                role: job.role,
+                              })
+                              .then(
+                                () => setPendingRole(''),
+                                () => setPendingRole(''),
+                              )
+                          }}
+                          className="whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                        >
+                          {pending
+                            ? 'Applying'
+                            : applied
+                              ? 'Applied'
+                              : applyLabel}
+                        </button>
                       </div>
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {job.description}
-                      </p>
                     </div>
-                    <div className="mt-2 flex flex-row items-center gap-3 sm:mt-0 sm:flex-col sm:items-end sm:gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        {job.posted}
-                      </span>
-                      <button
-                        type="button"
-                        aria-busy={pending}
-                        disabled={pending || applied}
-                        onClick={() => {
-                          setPendingRole(job.role)
-                          void jobActions
-                            .apply({
-                              company: job.company,
-                              role: job.role,
-                            })
-                            .then(
-                              () => setPendingRole(''),
-                              () => setPendingRole(''),
-                            )
-                        }}
-                        className="whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-                      >
-                        {pending
-                          ? 'Applying'
-                          : applied
-                            ? 'Applied'
-                            : applyLabel}
-                      </button>
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
                 </JobItem>
               )
             })}

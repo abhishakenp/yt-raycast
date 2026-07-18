@@ -102,7 +102,8 @@ if (typeof document === 'undefined') {
   }
   const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) =>
+    clearTimeout(id)
   class TestResizeObserver {
     disconnect() {}
     observe() {}
@@ -200,7 +201,10 @@ function createPublicationLakebedStub() {
       subscribers = existing
         ? subscribers.map((subscriber) =>
             subscriber.email === email
-              ? { ...subscriber, source: String(input.source ?? subscriber.source) }
+              ? {
+                  ...subscriber,
+                  source: String(input.source ?? subscriber.source),
+                }
               : subscriber,
           )
         : [

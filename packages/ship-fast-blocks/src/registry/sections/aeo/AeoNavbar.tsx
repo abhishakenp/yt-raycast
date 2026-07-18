@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -91,11 +91,10 @@ export const AeoNavbar = defineCapsule({
             onClick={() => go(props.homeTarget ?? brand)}
             className="min-w-0 gap-3"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<BrandMark />}
-              labelClassName="truncate text-lg font-semibold text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage fallback={<BrandMark />} />
+              <LogoLabel className="truncate text-lg font-semibold text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

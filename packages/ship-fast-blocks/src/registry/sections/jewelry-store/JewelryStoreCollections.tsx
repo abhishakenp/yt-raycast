@@ -6,7 +6,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { CollectionGrid, CollectionCard } from '#/section-kit/CollectionGrid.tsx'
+import {
+  CollectionGrid,
+  CollectionCard,
+} from '#/section-kit/CollectionGrid.tsx'
 
 /**
  * JewelryStoreCollections — curated collections grid for a luxury jewelry
@@ -113,22 +116,22 @@ export const JewelryStoreCollections = defineCapsule({
                   onClick={() => go(c.title)}
                   className="group block w-full cursor-pointer text-left"
                 >
-                <ImageTile treatment="4-5-xl-muted" className="mb-6">
-                  <Image
-                    alt={c.imageAlt}
-                    w={800}
-                    h={1000}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </ImageTile>
-                <p className="mb-2 text-xs uppercase tracking-[0.3em] text-primary">
-                  {c.tag}
-                </p>
-                <h3 className="mb-2 font-serif text-2xl text-foreground">
-                  {c.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{c.meta}</p>
+                  <ImageTile treatment="4-5-xl-muted" className="mb-6">
+                    <Image
+                      alt={c.imageAlt}
+                      w={800}
+                      h={1000}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </ImageTile>
+                  <p className="mb-2 text-xs uppercase tracking-[0.3em] text-primary">
+                    {c.tag}
+                  </p>
+                  <h3 className="mb-2 font-serif text-2xl text-foreground">
+                    {c.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{c.meta}</p>
                 </button>
               </CollectionCard>
             ))}

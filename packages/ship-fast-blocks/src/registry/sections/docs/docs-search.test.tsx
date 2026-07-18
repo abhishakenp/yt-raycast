@@ -30,7 +30,9 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 vi.mock('#/lib/img.tsx', () => ({
-  Image: ({ alt, className }: { alt?: string; className?: string }) => <img alt={alt} className={className} />,
+  Image: ({ alt, className }: { alt?: string; className?: string }) => (
+    <img alt={alt} className={className} />
+  ),
 }))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -60,7 +62,8 @@ if (typeof document === 'undefined') {
   }
   const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) =>
+    clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -147,11 +150,7 @@ function createDocsLakebedStub() {
     query: state?.query ?? '',
     searches,
   })
-  const nextRow = (
-    prefix: string,
-    value: unknown,
-    index: number,
-  ) => ({
+  const nextRow = (prefix: string, value: unknown, index: number) => ({
     ...value,
     createdAt: now,
     id: `${prefix}-${index}`,
@@ -192,44 +191,50 @@ function createDocsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: Record<string, unknown>) => {
-        setPendingCount((count) => count + 1)
-        setLastError(null)
-        try {
-          state = nextRow(
-            'state',
-            {
-              query: String(input.query)?.trim() ?? '',
-            },
-            1,
-          )
-          searches = [
-            nextRow(
-              'search',
+      const runMutation = useCallback(
+        async (input: Record<string, unknown>) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            state = nextRow(
+              'state',
               {
-                query: state.query,
+                query: String(input.query)?.trim() ?? '',
               },
-              searches.length + 1,
-            ),
-            ...searches,
-          ]
-          notify()
-          return state ? [state] : []
-        } catch (error) {
-          setLastError(error)
-          throw error
-        } finally {
-          setPendingCount((count) => Math.max(0, count - 1))
-        }
-      }, [])
+              1,
+            )
+            searches = [
+              nextRow(
+                'search',
+                {
+                  query: state.query,
+                },
+                searches.length + 1,
+              ),
+              ...searches,
+            ]
+            notify()
+            return state ? [state] : []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
-          isPending: false,
-          lastError: initialLastError,
-          pendingCount: 0,
-          reset,
-        })
+        const callable = Object.assign(
+          (input: Record<string, unknown>) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
         return callable
       }, [reset, runMutation])
 
@@ -244,56 +249,62 @@ function createDocsLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: Record<string, unknown>) => {
-        setPendingCount((count) => count + 1)
-        setLastError(null)
-        try {
-          const existingBySlug = new Map(
-            articles.map((article) => [article.slug.toLowerCase(), article]),
-          )
+      const runMutation = useCallback(
+        async (input: Record<string, unknown>) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            const existingBySlug = new Map(
+              articles.map((article) => [article.slug.toLowerCase(), article]),
+            )
 
-          for (const article of input.articles as Record<string, unknown>[]) {
-            const slug = String(article.slug).trim()
-            if (!slug) continue
+            for (const article of input.articles as Record<string, unknown>[]) {
+              const slug = String(article.slug).trim()
+              if (!slug) continue
 
-            const next = {
-              category: String(article.category ?? '').trim() ?? '',
-              content: String(article.content ?? '').trim() ?? '',
-              slug,
-              title: String(article.title ?? '').trim() ?? '',
+              const next = {
+                category: String(article.category ?? '').trim() ?? '',
+                content: String(article.content ?? '').trim() ?? '',
+                slug,
+                title: String(article.title ?? '').trim() ?? '',
+              }
+              const current = existingBySlug.get(slug.toLowerCase())
+
+              if (current) {
+                articles = articles.map((candidate) =>
+                  candidate.id === current.id
+                    ? { ...current, ...next, updatedAt: now }
+                    : candidate,
+                )
+              } else {
+                articles = [
+                  ...articles,
+                  nextRow('article', next, articles.length + 1),
+                ]
+              }
             }
-            const current = existingBySlug.get(slug.toLowerCase())
-
-            if (current) {
-              articles = articles.map((candidate) =>
-                candidate.id === current.id
-                  ? { ...current, ...next, updatedAt: now }
-                  : candidate,
-              )
-            } else {
-              articles = [
-                ...articles,
-                nextRow('article', next, articles.length + 1),
-              ]
-            }
+            notify()
+            return articles
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
           }
-          notify()
-          return articles
-        } catch (error) {
-          setLastError(error)
-          throw error
-        } finally {
-          setPendingCount((count) => Math.max(0, count - 1))
-        }
-      }, [])
+        },
+        [],
+      )
       const mutation = useMemo(() => {
         const initialLastError: unknown | null = null
-        const callable = Object.assign((input: Record<string, unknown>) => runMutation(input), {
-          isPending: false,
-          lastError: initialLastError,
-          pendingCount: 0,
-          reset,
-        })
+        const callable = Object.assign(
+          (input: Record<string, unknown>) => runMutation(input),
+          {
+            isPending: false,
+            lastError: initialLastError,
+            pendingCount: 0,
+            reset,
+          },
+        )
         return callable
       }, [reset, runMutation])
 

@@ -10,7 +10,7 @@ import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
 import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { MobileNavDrawer } from './MobileNavDrawer.tsx'
-import { Logo } from './Logo.tsx'
+import { Logo, LogoImage, LogoLabel } from './Logo.tsx'
 import { Container } from './Container.tsx'
 
 /**
@@ -218,15 +218,15 @@ function LegacySiteNav(props: SiteNavProps) {
           onClick={() => go(props.homeTarget ?? 'Home')}
           className="flex items-center gap-3"
         >
-          <Logo
-            brand={props.brand ?? ''}
-            className="size-8"
-            fallback={props.brandMark}
-            labelClassName={cn(
-              'text-xl font-medium text-foreground',
-              props.brandClassName,
-            )}
-          />
+          <Logo brand={props.brand ?? ''}>
+            <LogoImage className="size-8" fallback={props.brandMark} />
+            <LogoLabel
+              className={cn(
+                'text-xl font-medium text-foreground',
+                props.brandClassName,
+              )}
+            />
+          </Logo>
         </button>
 
         <div className="hidden items-center gap-8 md:flex">

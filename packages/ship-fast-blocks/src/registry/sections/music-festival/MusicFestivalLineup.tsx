@@ -170,21 +170,21 @@ export const MusicFestivalLineup = defineCapsule({
                     onClick={() => go(h.name)}
                     className="group relative block overflow-hidden rounded-xl text-left"
                   >
-                  <Image
-                    alt={h.imageAlt}
-                    w={800}
-                    h={600}
-                    loading="lazy"
-                    className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-6">
-                    <p className="mb-1 text-sm text-background/70">{h.day}</p>
-                    <h4 className="mb-1 text-2xl font-bold text-background">
-                      {h.name}
-                    </h4>
-                    <p className="text-sm text-background/70">{h.genre}</p>
-                  </div>
+                    <Image
+                      alt={h.imageAlt}
+                      w={800}
+                      h={600}
+                      loading="lazy"
+                      className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-6">
+                      <p className="mb-1 text-sm text-background/70">{h.day}</p>
+                      <h4 className="mb-1 text-2xl font-bold text-background">
+                        {h.name}
+                      </h4>
+                      <p className="text-sm text-background/70">{h.genre}</p>
+                    </div>
                   </button>
                 </LineupCard>
               ))}

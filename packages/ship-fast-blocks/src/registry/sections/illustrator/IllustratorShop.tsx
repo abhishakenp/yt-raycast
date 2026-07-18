@@ -149,45 +149,45 @@ export const IllustratorShop = defineCapsule({
                   variant="outlined"
                   className="border-border/60 transition-shadow hover:shadow-lg"
                 >
-                <ProductCardImage>
-                  <Image
-                    alt={item.title}
-                    w={500}
-                    h={500}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </ProductCardImage>
-                <ProductCardContent>
-                  <ProductCardTitle className="mb-1 font-serif text-lg text-card-foreground">
-                    {item.title}
-                  </ProductCardTitle>
-                  <p className="mb-3 text-xs text-muted-foreground">
-                    {item.meta}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-card-foreground">
-                      {item.price}
-                    </span>
-                    <CommerceAddItemButton
-                      lakebed={lakebed}
-                      item={{
-                        label: item.title,
-                        price: item.price,
-                      }}
-                      aria-label={`${addToCart} ${item.title}`}
-                      pendingChildren={
-                        <>
-                          <CommerceMutationSpinner />
-                          Adding
-                        </>
-                      }
-                      className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm text-background transition-colors hover:bg-muted-foreground disabled:pointer-events-none disabled:opacity-70"
-                    >
-                      {addToCart}
-                    </CommerceAddItemButton>
-                  </div>
-                </ProductCardContent>
+                  <ProductCardImage>
+                    <Image
+                      alt={item.title}
+                      w={500}
+                      h={500}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </ProductCardImage>
+                  <ProductCardContent>
+                    <ProductCardTitle className="mb-1 font-serif text-lg text-card-foreground">
+                      {item.title}
+                    </ProductCardTitle>
+                    <p className="mb-3 text-xs text-muted-foreground">
+                      {item.meta}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-card-foreground">
+                        {item.price}
+                      </span>
+                      <CommerceAddItemButton
+                        lakebed={lakebed}
+                        item={{
+                          label: item.title,
+                          price: item.price,
+                        }}
+                        aria-label={`${addToCart} ${item.title}`}
+                        pendingChildren={
+                          <>
+                            <CommerceMutationSpinner />
+                            Adding
+                          </>
+                        }
+                        className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm text-background transition-colors hover:bg-muted-foreground disabled:pointer-events-none disabled:opacity-70"
+                      >
+                        {addToCart}
+                      </CommerceAddItemButton>
+                    </div>
+                  </ProductCardContent>
                 </ProductCard>
               </ShopCard>
             ))}

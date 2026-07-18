@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -95,11 +95,10 @@ export const NoCodeNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="flex items-center gap-2"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark className="size-8" />}
-              labelClassName="text-xl font-semibold tracking-tight"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage fallback={<LogoMark className="size-8" />} />
+              <LogoLabel className="text-xl font-semibold tracking-tight" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

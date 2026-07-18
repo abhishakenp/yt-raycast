@@ -3,8 +3,22 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
-import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
+import {
+  MenuCategoryHeader,
+  MenuCategoryIcon,
+  MenuCategoryTitle,
+} from '#/section-kit/MenuCategoryHeader.tsx'
+import {
+  MenuItemRow,
+  MenuItemContent,
+  MenuItemBody,
+  MenuItemNameRow,
+  MenuItemName,
+  MenuItemRowDescription,
+  MenuItemPriceColumn,
+  MenuItemRowPrice,
+  MenuItemAction,
+} from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   MenuList,
@@ -292,36 +306,49 @@ export const CafeMenu = defineCapsule({
                 { title: foodTitle, items: food },
               ].map((col) => (
                 <div key={col.title} className="space-y-8">
-                  <MenuCategoryHeader
-                    title={col.title}
-                    icon={
-                      <svg
-                        className="size-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 2.829a4.978 4.978 0 01-1.414-2.83M6 12a6 6 0 0112 0v1H6v-1z"
-                        />
-                      </svg>
-                    }
-                  />
+                  <MenuCategoryHeader>
+                    <MenuCategoryIcon>
+                      {
+                        <svg
+                          className="size-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="1.5"
+                            d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 2.829a4.978 4.978 0 01-1.414-2.83M6 12a6 6 0 0112 0v1H6v-1z"
+                          />
+                        </svg>
+                      }
+                    </MenuCategoryIcon>
+                    <MenuCategoryTitle>{col.title}</MenuCategoryTitle>
+                  </MenuCategoryHeader>
                   <div className="space-y-6">
                     {(col.items ?? []).map((item, idx) => (
-                      <MenuItemRow
-                        key={item.name}
-                        name={item.name}
-                        description={item.description}
-                        price={item.price}
-                        onNameClick={() => go(menuTarget)}
-                        action={<MenuAddButton item={item} />}
-                        showDivider={idx < col.items.length - 1}
-                      />
+                      <MenuItemRow>
+                        <MenuItemContent>
+                          <MenuItemBody>
+                            <MenuItemNameRow>
+                              <MenuItemName onClick={() => go(menuTarget)}>
+                                {item.name}
+                              </MenuItemName>
+                            </MenuItemNameRow>
+                            <MenuItemRowDescription>
+                              {item.description}
+                            </MenuItemRowDescription>
+                          </MenuItemBody>
+                          <MenuItemPriceColumn>
+                            <MenuItemRowPrice>{item.price}</MenuItemRowPrice>
+                            <MenuItemAction>
+                              {<MenuAddButton item={item} />}
+                            </MenuItemAction>
+                          </MenuItemPriceColumn>
+                        </MenuItemContent>
+                      </MenuItemRow>
                     ))}
                   </div>
                 </div>

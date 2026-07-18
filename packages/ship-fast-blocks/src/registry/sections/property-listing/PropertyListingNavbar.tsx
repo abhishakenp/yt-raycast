@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -83,11 +83,10 @@ export const PropertyListingNavbar = defineCapsule({
             onClick={() => go('Home')}
             className="min-w-0 gap-3"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={brandMark}
-              labelClassName="truncate text-xl font-semibold tracking-tight text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage fallback={brandMark} />
+              <LogoLabel className="truncate text-xl font-semibold tracking-tight text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

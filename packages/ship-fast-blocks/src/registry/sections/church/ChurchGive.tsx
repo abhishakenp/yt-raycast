@@ -4,7 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { FeatureListItem } from '#/section-kit/FeatureListItem.tsx'
+import {
+  FeatureListItem,
+  FeatureListItemIcon,
+  FeatureListItemTitle,
+  FeatureListItemDescription,
+  FeatureListItemBody,
+} from '#/section-kit/FeatureListItem.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { DonationBand } from '#/section-kit/DonationBand.tsx'
@@ -131,89 +137,96 @@ export const ChurchGive = defineCapsule({
 
     return (
       <DonationBand asChild>
-        <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
+        <section
+          className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}
+        >
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid items-center gap-16 lg:grid-cols-2">
-            <div>
-              <SectionHeading
-                eyebrow={eyebrow}
-                title={heading}
-                subtitle={description}
-                align="left"
-                eyebrowClassName="text-muted-foreground tracking-widest"
-                titleClassName="text-3xl font-medium tracking-tight sm:text-4xl"
-                subtitleClassName="text-lg leading-relaxed"
-                className="mb-8 gap-4"
-              />
-              <div className="mb-10 space-y-4">
-                {points.map((point, i) => (
-                  <FeatureListItem
-                    key={point.title}
-                    icon={giveIcons[i % giveIcons.length]}
-                    title={point.title}
-                    description={point.detail}
-                    iconShape="circle"
-                    iconSize="md"
-                  />
-                ))}
-              </div>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
-                >
-                  {secondaryCta}
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <ImageTile treatment="4-5-xl-muted">
-                  <Image
-                    alt={imageAltOne}
-                    w={600}
-                    h={750}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                </ImageTile>
-                <div className="rounded-xl bg-muted p-6">
-                  <p className="mb-1 text-3xl font-medium text-foreground">
-                    {statOne.value}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {statOne.label}
-                  </p>
+            <div className="grid items-center gap-16 lg:grid-cols-2">
+              <div>
+                <SectionHeading
+                  eyebrow={eyebrow}
+                  title={heading}
+                  subtitle={description}
+                  align="left"
+                  eyebrowClassName="text-muted-foreground tracking-widest"
+                  titleClassName="text-3xl font-medium tracking-tight sm:text-4xl"
+                  subtitleClassName="text-lg leading-relaxed"
+                  className="mb-8 gap-4"
+                />
+                <div className="mb-10 space-y-4">
+                  {points.map((point, i) => (
+                    <FeatureListItem>
+                      <FeatureListItemIcon iconShape="circle" iconSize="md">
+                        {giveIcons[i % giveIcons.length]}
+                      </FeatureListItemIcon>
+                      <FeatureListItemBody>
+                        <FeatureListItemTitle>
+                          {point.title}
+                        </FeatureListItemTitle>
+                        <FeatureListItemDescription>
+                          {point.detail}
+                        </FeatureListItemDescription>
+                      </FeatureListItemBody>
+                    </FeatureListItem>
+                  ))}
+                </div>
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => go(primaryCta)}
+                    className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    {primaryCta}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => go(secondaryCta)}
+                    className="inline-flex items-center justify-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
+                  >
+                    {secondaryCta}
+                  </button>
                 </div>
               </div>
-              <div className="space-y-4 pt-8">
-                <div className="rounded-xl bg-primary p-6 text-primary-foreground">
-                  <p className="mb-1 text-3xl font-medium">{statTwo.value}</p>
-                  <p className="text-sm text-primary-foreground/80">
-                    {statTwo.label}
-                  </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <ImageTile treatment="4-5-xl-muted">
+                    <Image
+                      alt={imageAltOne}
+                      w={600}
+                      h={750}
+                      loading="lazy"
+                      className="size-full object-cover"
+                    />
+                  </ImageTile>
+                  <div className="rounded-xl bg-muted p-6">
+                    <p className="mb-1 text-3xl font-medium text-foreground">
+                      {statOne.value}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {statOne.label}
+                    </p>
+                  </div>
                 </div>
-                <ImageTile treatment="4-5-xl-muted">
-                  <Image
-                    alt={imageAltTwo}
-                    w={600}
-                    h={750}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                </ImageTile>
+                <div className="space-y-4 pt-8">
+                  <div className="rounded-xl bg-primary p-6 text-primary-foreground">
+                    <p className="mb-1 text-3xl font-medium">{statTwo.value}</p>
+                    <p className="text-sm text-primary-foreground/80">
+                      {statTwo.label}
+                    </p>
+                  </div>
+                  <ImageTile treatment="4-5-xl-muted">
+                    <Image
+                      alt={imageAltTwo}
+                      w={600}
+                      h={750}
+                      loading="lazy"
+                      className="size-full object-cover"
+                    />
+                  </ImageTile>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </section>
       </DonationBand>
     )

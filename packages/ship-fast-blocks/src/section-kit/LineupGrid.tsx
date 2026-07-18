@@ -52,4 +52,42 @@ const LineupCard = React.forwardRef<
 })
 LineupCard.displayName = 'LineupCard'
 
-export { LineupGrid, LineupCard, LineupGridVariants }
+const ArtistCard = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'article'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'article'
+  return (
+    <Comp
+      data-slot="artist-card"
+      className={cn(
+        'group relative block overflow-hidden rounded-xl text-left',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+ArtistCard.displayName = 'ArtistCard'
+
+const ArtistTier = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'article'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'article'
+  return (
+    <Comp
+      data-slot="artist-tier"
+      className={cn(
+        'flex flex-col items-center justify-center rounded-lg border border-border bg-card p-4 text-center transition-colors hover:border-primary/40',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+ArtistTier.displayName = 'ArtistTier'
+
+export { LineupGrid, LineupCard, ArtistCard, ArtistTier, LineupGridVariants }

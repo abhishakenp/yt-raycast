@@ -57,7 +57,8 @@ if (typeof document === 'undefined') {
   }
   const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) =>
+    clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -159,9 +160,8 @@ function createCommerceLakebedStub() {
         [name],
       )
       const mutation = useMemo(() => {
-        const callable = ((input: Record<string, unknown>) => runMutation(input)) as ReturnType<
-          TestLakebed['useMutation']
-        >
+        const callable = ((input: Record<string, unknown>) =>
+          runMutation(input)) as ReturnType<TestLakebed['useMutation']>
         callable.isPending = false
         callable.lastError = null
         callable.pendingCount = 0

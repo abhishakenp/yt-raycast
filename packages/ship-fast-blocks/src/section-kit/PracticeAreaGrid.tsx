@@ -52,4 +52,28 @@ const PracticeAreaCard = React.forwardRef<
 })
 PracticeAreaCard.displayName = 'PracticeAreaCard'
 
-export { PracticeAreaGrid, PracticeAreaCard, PracticeAreaGridVariants }
+const PracticeAreaIcon = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="practice-area-icon"
+      className={cn(
+        'mb-4 grid size-12 place-items-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+PracticeAreaIcon.displayName = 'PracticeAreaIcon'
+
+export {
+  PracticeAreaGrid,
+  PracticeAreaCard,
+  PracticeAreaIcon,
+  PracticeAreaGridVariants,
+}

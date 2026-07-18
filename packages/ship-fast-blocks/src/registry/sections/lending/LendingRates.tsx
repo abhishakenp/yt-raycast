@@ -14,7 +14,12 @@ import { Card } from '#/section-kit/Card.tsx'
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { RatesTable, RatesHeader, RatesBody, RatesRow } from '#/section-kit/RatesTable.tsx'
+import {
+  RatesTable,
+  RatesHeader,
+  RatesBody,
+  RatesRow,
+} from '#/section-kit/RatesTable.tsx'
 export const LendingRates = defineCapsule({
   name: 'LendingRates',
   description:
@@ -208,7 +213,8 @@ export const LendingRates = defineCapsule({
                         <RatesRow asChild key={row[0]}>
                           <tr
                             className={cn(
-                              ri < tableRows.length - 1 && 'border-b border-border',
+                              ri < tableRows.length - 1 &&
+                                'border-b border-border',
                             )}
                           >
                             {row.map((cell, ci) => (

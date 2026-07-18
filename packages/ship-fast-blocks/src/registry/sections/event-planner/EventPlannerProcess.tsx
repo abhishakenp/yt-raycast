@@ -90,12 +90,12 @@ export const EventPlannerProcess = defineCapsule({
                   className="mb-6"
                 />
                 <StepContent>
-                <h3 className="mb-3 text-xl font-medium text-foreground">
-                  {step.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {step.description}
-                </p>
+                  <h3 className="mb-3 text-xl font-medium text-foreground">
+                    {step.title}
+                  </h3>
+                  <p className="leading-relaxed text-muted-foreground">
+                    {step.description}
+                  </p>
                 </StepContent>
                 {i < processSteps.length - 1 && (
                   <StepConnector className="left-full top-8 hidden w-full -translate-y-1/2 lg:block" />

@@ -170,30 +170,30 @@ export const NoCodeTemplates = defineCapsule({
                   onClick={() => go(tpl.title)}
                   className="group relative block w-full overflow-hidden rounded-2xl border border-border text-left transition-all hover:shadow-xl"
                 >
-                <div className="aspect-[4/3] bg-muted">
-                  <Image
-                    alt={tpl.imageAlt}
-                    w={800}
-                    h={600}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="absolute inset-x-0 bottom-0 translate-y-4 p-6 text-background transition-transform group-hover:translate-y-0">
-                  <span
-                    className={cn(
-                      'mb-2 inline-block rounded px-2 py-1 text-xs font-medium',
-                      tagTints[i % tagTints.length],
-                    )}
-                  >
-                    {tpl.tag}
-                  </span>
-                  <h3 className="text-lg font-semibold">{tpl.title}</h3>
-                  <p className="text-sm text-background/80">
-                    {tpl.description}
-                  </p>
-                </div>
+                  <div className="aspect-[4/3] bg-muted">
+                    <Image
+                      alt={tpl.imageAlt}
+                      w={800}
+                      h={600}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="absolute inset-x-0 bottom-0 translate-y-4 p-6 text-background transition-transform group-hover:translate-y-0">
+                    <span
+                      className={cn(
+                        'mb-2 inline-block rounded px-2 py-1 text-xs font-medium',
+                        tagTints[i % tagTints.length],
+                      )}
+                    >
+                      {tpl.tag}
+                    </span>
+                    <h3 className="text-lg font-semibold">{tpl.title}</h3>
+                    <p className="text-sm text-background/80">
+                      {tpl.description}
+                    </p>
+                  </div>
                 </button>
               </TemplateCard>
             ))}

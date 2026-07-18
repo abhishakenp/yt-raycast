@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
@@ -43,6 +44,7 @@ export interface HoverAccordionPanelProps
   expanded?: boolean
   /** Flex-grow weight when expanded vs collapsed. */
   grow?: { expanded: number; collapsed: number }
+  asChild?: boolean
 }
 
 const HoverAccordionPanel = React.forwardRef<
@@ -56,12 +58,14 @@ const HoverAccordionPanel = React.forwardRef<
       grow = { expanded: 3, collapsed: 1 },
       rounded,
       ring,
+      asChild = false,
       ...props
     },
     ref,
   ) => {
+    const Comp = asChild ? Slot : 'div'
     return (
-      <div
+      <Comp
         ref={ref}
         data-slot="hover-accordion-panel"
         className={cn(
@@ -92,10 +96,21 @@ const HoverAccordionContext =
 export interface HoverAccordionProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Called when the expanded index changes (including null on leave). */
   onExpandedChange?: (index: number | null) => void
+  asChild?: boolean
 }
 
 const HoverAccordion = React.forwardRef<HTMLDivElement, HoverAccordionProps>(
-  ({ className, onExpandedChange, onMouseLeave, children, ...props }, ref) => {
+  (
+    {
+      className,
+      onExpandedChange,
+      onMouseLeave,
+      children,
+      asChild = false,
+      ...props
+    },
+    ref,
+  ) => {
     const [expanded, setExpanded] = React.useState<number | null>(null)
     const ctx = React.useMemo<HoverAccordionContextValue>(
       () => ({
@@ -107,9 +122,10 @@ const HoverAccordion = React.forwardRef<HTMLDivElement, HoverAccordionProps>(
       }),
       [expanded, onExpandedChange],
     )
+    const Comp = asChild ? Slot : 'div'
     return (
       <HoverAccordionContext.Provider value={ctx}>
-        <div
+        <Comp
           ref={ref}
           data-slot="hover-accordion"
           className={cn('flex gap-4', className)}
@@ -121,7 +137,7 @@ const HoverAccordion = React.forwardRef<HTMLDivElement, HoverAccordionProps>(
           {...props}
         >
           {children}
-        </div>
+        </Comp>
       </HoverAccordionContext.Provider>
     )
   },

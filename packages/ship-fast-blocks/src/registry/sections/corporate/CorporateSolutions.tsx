@@ -209,30 +209,30 @@ export const CorporateSolutions = defineCapsule({
           <SolutionGrid cols="1-md-2-3" className="grid gap-8">
             {items.map((item, i) => (
               <SolutionCard asChild key={item.title}>
-              <Card
-                key={item.title}
-                variant="muted"
-                padding="lg"
-                className="group bg-muted/50 transition-colors hover:border-border/60"
-              >
-                <div className="mb-6 grid size-12 place-items-center rounded-lg bg-foreground text-background">
-                  {solutionIcons[i % solutionIcons.length]}
-                </div>
-                <h3 className="mb-3 text-xl font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mb-4 leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => go(item.title)}
-                  className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                <Card
+                  key={item.title}
+                  variant="muted"
+                  padding="lg"
+                  className="group bg-muted/50 transition-colors hover:border-border/60"
                 >
-                  Learn more
-                  <ArrowRight className="ml-1 size-4" />
-                </button>
-              </Card>
+                  <div className="mb-6 grid size-12 place-items-center rounded-lg bg-foreground text-background">
+                    {solutionIcons[i % solutionIcons.length]}
+                  </div>
+                  <h3 className="mb-3 text-xl font-semibold text-foreground">
+                    {item.title}
+                  </h3>
+                  <p className="mb-4 leading-relaxed text-muted-foreground">
+                    {item.description}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => go(item.title)}
+                    className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                  >
+                    Learn more
+                    <ArrowRight className="ml-1 size-4" />
+                  </button>
+                </Card>
               </SolutionCard>
             ))}
           </SolutionGrid>

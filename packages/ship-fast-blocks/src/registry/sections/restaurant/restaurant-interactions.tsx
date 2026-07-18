@@ -69,7 +69,8 @@ export function useRestaurantOrder(lakebed: RestaurantLakebed) {
   )
 
   const add = useCallback(
-    (key: string, input: RestaurantMenuItemInput) => addMenuItem.run(key, input),
+    (key: string, input: RestaurantMenuItemInput) =>
+      addMenuItem.run(key, input),
     [addMenuItem],
   )
   const clear = useCallback(

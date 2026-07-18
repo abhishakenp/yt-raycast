@@ -18,22 +18,71 @@ export {
   navbarCtaVariants,
 } from './SiteNav.tsx'
 export type { SiteNavProps } from './SiteNav.tsx'
-export { SiteFooter } from './SiteFooter.tsx'
+export {
+  SiteFooter,
+  FooterContent,
+  FooterGrid,
+  FooterBrand,
+  FooterTagline,
+  FooterSocial,
+  FooterSocialLink,
+  FooterColumn,
+  FooterColumnTitle,
+  FooterColumnList,
+  FooterLink,
+  FooterBottom,
+  FooterCopyright,
+  FooterLegal,
+} from './SiteFooter.tsx'
 export {
   BrandLogoProvider,
   Logo,
+  LogoImage,
+  LogoLabel,
   getBrandLogoImageSrc,
   useBrandLogo,
   type BrandLogoSelection,
 } from './Logo.tsx'
 export { SectionHeading } from './SectionHeading.tsx'
-export { CtaBand } from './CtaBand.tsx'
+export { CtaBand, ctaBandVariants } from './CtaBand.tsx'
 export { StarRating } from './StarRating.tsx'
-export { StatGrid } from './StatGrid.tsx'
-export { FeatureGrid } from './FeatureGrid.tsx'
-export { PricingGrid } from './PricingGrid.tsx'
-export { TestimonialGrid } from './TestimonialGrid.tsx'
-export { GalleryGrid } from './GalleryGrid.tsx'
+export { StatGrid, StatItem, StatValue, StatLabel } from './StatGrid.tsx'
+export {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from './FeatureGrid.tsx'
+export {
+  PricingGrid,
+  PricingTier,
+  pricingTierVariants,
+  PricingTierBadge,
+  PricingTierHeader,
+  PricingTierName,
+  PricingTierTagline,
+  PricingTierPrice,
+  PricingTierPeriod,
+  PricingTierFeatures,
+  PricingTierFeature,
+  PricingTierCta,
+} from './PricingGrid.tsx'
+export {
+  TestimonialGrid,
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from './TestimonialGrid.tsx'
+export {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+  GalleryTileCaption,
+} from './GalleryGrid.tsx'
 export {
   CommandSearch,
   CommandSearchTrigger,
@@ -94,12 +143,9 @@ export {
 export {
   BentoGrid,
   BentoTile,
-  BentoTileCaption,
   bentoGridVariants,
-  bentoCaptionVariants,
   type BentoGridProps,
   type BentoTileProps,
-  type BentoTileCaptionProps,
 } from './BentoGrid.tsx'
 export {
   ImageTile,
@@ -252,6 +298,53 @@ export {
   PressAttribution,
   pressListVariants,
 } from './PressList.tsx'
+
+export {
+  MenuCategoryHeader,
+  MenuCategoryIcon,
+  MenuCategoryTitle,
+  MenuCategoryDivider,
+} from './MenuCategoryHeader.tsx'
+export {
+  MenuItemRow,
+  MenuItemContent,
+  MenuItemBody,
+  MenuItemNameRow,
+  MenuItemName,
+  MenuItemTag,
+  MenuItemRowDescription,
+  MenuItemPriceColumn,
+  MenuItemRowPrice,
+  MenuItemAction,
+  MenuItemDivider,
+} from './MenuItemRow.tsx'
+export {
+  StoryCard,
+  StoryCardImage,
+  StoryCardImageContainer,
+  StoryCardFigure,
+  StoryCardMeta,
+  StoryCardTitle,
+  StoryCardExcerpt,
+  StoryCardFooter,
+  StoryCardBody,
+  storyCardVariants,
+} from './StoryCard.tsx'
+export {
+  FeatureListItem,
+  FeatureListItemIcon,
+  FeatureListItemTitle,
+  FeatureListItemDescription,
+  FeatureListItemBody,
+  featureListItemIconVariants,
+} from './FeatureListItem.tsx'
+export {
+  FormField,
+  FormFieldLabel,
+  FormFieldControl,
+  formFieldControlVariants,
+} from './FormField.tsx'
+export { SignInButton } from './SignInButton.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

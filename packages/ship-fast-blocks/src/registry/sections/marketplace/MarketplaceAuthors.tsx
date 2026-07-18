@@ -199,59 +199,64 @@ export const MarketplaceAuthors = defineCapsule({
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {sellerItems.map((seller) => (
-              <PersonCard asChild variant="plain" rounded="xl" key={seller.name}>
+              <PersonCard
+                asChild
+                variant="plain"
+                rounded="xl"
+                key={seller.name}
+              >
                 <button
                   type="button"
                   onClick={() => go(seller.name)}
                   className="group block w-full text-left"
                 >
-                <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
-                  <Image
-                    alt={seller.coverAlt}
-                    w={600}
-                    h={450}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-card/95 px-2.5 py-1 text-xs font-semibold text-card-foreground backdrop-blur-sm">
-                    <Star className="size-3 text-primary" />
-                    {seller.rating}
-                  </div>
-                  {seller.eco ? (
-                    <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
-                      <Check className="size-3" />
-                      Eco Verified
-                    </div>
-                  ) : null}
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="size-10 shrink-0 overflow-hidden rounded-full border-2 border-card bg-muted shadow-sm">
+                  <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
                     <Image
-                      alt={seller.avatarAlt}
-                      w={100}
-                      h={100}
-                      className="size-full object-cover"
+                      alt={seller.coverAlt}
+                      w={600}
+                      h={450}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold text-foreground">
-                      {seller.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {seller.location}
-                    </p>
-                    <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <BoxIcon className="size-3" />
-                        {seller.products}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <UsersIcon className="size-3" />
-                        {seller.followers}
-                      </span>
+                    <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-card/95 px-2.5 py-1 text-xs font-semibold text-card-foreground backdrop-blur-sm">
+                      <Star className="size-3 text-primary" />
+                      {seller.rating}
+                    </div>
+                    {seller.eco ? (
+                      <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
+                        <Check className="size-3" />
+                        Eco Verified
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="size-10 shrink-0 overflow-hidden rounded-full border-2 border-card bg-muted shadow-sm">
+                      <Image
+                        alt={seller.avatarAlt}
+                        w={100}
+                        h={100}
+                        className="size-full object-cover"
+                      />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-semibold text-foreground">
+                        {seller.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {seller.location}
+                      </p>
+                      <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <BoxIcon className="size-3" />
+                          {seller.products}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <UsersIcon className="size-3" />
+                          {seller.followers}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
                 </button>
               </PersonCard>
             ))}

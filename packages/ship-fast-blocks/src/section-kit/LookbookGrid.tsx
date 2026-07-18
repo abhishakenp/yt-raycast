@@ -52,4 +52,20 @@ const LookbookCard = React.forwardRef<
 })
 LookbookCard.displayName = 'LookbookCard'
 
-export { LookbookGrid, LookbookCard, LookbookGridVariants }
+const LookbookCaption = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="lookbook-caption"
+      className={cn('absolute text-background', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+LookbookCaption.displayName = 'LookbookCaption'
+
+export { LookbookGrid, LookbookCard, LookbookCaption, LookbookGridVariants }

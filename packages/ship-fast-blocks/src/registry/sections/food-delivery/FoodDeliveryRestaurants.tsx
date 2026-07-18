@@ -22,7 +22,10 @@ import {
  * or online-ordering platforms.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { RestaurantList, RestaurantItem } from '#/section-kit/RestaurantList.tsx'
+import {
+  RestaurantList,
+  RestaurantItem,
+} from '#/section-kit/RestaurantList.tsx'
 export const FoodDeliveryRestaurants = defineCapsule({
   name: 'FoodDeliveryRestaurants',
   description:
@@ -232,35 +235,35 @@ export const FoodDeliveryRestaurants = defineCapsule({
                       : 'border-border',
                   )}
                 >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    alt={r.imageAlt}
-                    w={400}
-                    h={300}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
-                    {r.cuisine}
-                  </span>
-                  <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
-                    {r.rating}
-                  </span>
-                </div>
-                <div className="p-5">
-                  <h3 className="font-semibold text-foreground">{r.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {r.category}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {r.time}
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image
+                      alt={r.imageAlt}
+                      w={400}
+                      h={300}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
+                      {r.cuisine}
                     </span>
-                    <span className="text-sm font-medium text-foreground">
-                      {r.delivery}
+                    <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
+                      {r.rating}
                     </span>
                   </div>
-                </div>
+                  <div className="p-5">
+                    <h3 className="font-semibold text-foreground">{r.name}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {r.category}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        {r.time}
+                      </span>
+                      <span className="text-sm font-medium text-foreground">
+                        {r.delivery}
+                      </span>
+                    </div>
+                  </div>
                 </button>
               </RestaurantItem>
             ))}

@@ -125,41 +125,44 @@ export const FashionStoreLookbook = defineCapsule({
             </div>
           </div>
 
-          <LookbookGrid cols="1-2-3" className="grid items-start gap-4 lg:gap-6">
+          <LookbookGrid
+            cols="1-2-3"
+            className="grid items-start gap-4 lg:gap-6"
+          >
             {lookbookItems.map((item) => (
               <LookbookCard asChild key={item.look}>
-              <button
-                key={item.look}
-                type="button"
-                onClick={() => go(item.title ?? item.look)}
-                className={cn(
-                  'group relative overflow-hidden text-left',
-                  lookbookSpan(item.size),
-                )}
-              >
-                <Image
-                  alt={item.imageAlt}
-                  w={1200}
-                  h={1500}
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div
+                <button
+                  key={item.look}
+                  type="button"
+                  onClick={() => go(item.title ?? item.look)}
                   className={cn(
-                    'absolute text-background',
-                    item.size === 'feature' || item.size === 'wide'
-                      ? 'bottom-6 left-6'
-                      : 'bottom-4 left-4',
+                    'group relative overflow-hidden text-left',
+                    lookbookSpan(item.size),
                   )}
                 >
-                  <p className="text-xs font-medium uppercase tracking-[0.2em]">
-                    {item.look}
-                  </p>
-                  {item.title ? (
-                    <p className="mt-1 font-serif text-xl">{item.title}</p>
-                  ) : null}
-                </div>
-              </button>
+                  <Image
+                    alt={item.imageAlt}
+                    w={1200}
+                    h={1500}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div
+                    className={cn(
+                      'absolute text-background',
+                      item.size === 'feature' || item.size === 'wide'
+                        ? 'bottom-6 left-6'
+                        : 'bottom-4 left-4',
+                    )}
+                  >
+                    <p className="text-xs font-medium uppercase tracking-[0.2em]">
+                      {item.look}
+                    </p>
+                    {item.title ? (
+                      <p className="mt-1 font-serif text-xl">{item.title}</p>
+                    ) : null}
+                  </div>
+                </button>
               </LookbookCard>
             ))}
           </LookbookGrid>

@@ -1,68 +1,96 @@
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+
 import { cn } from '#/lib/utils.ts'
 
-/**
- * FormField — a labeled form field wrapper that supports input, select,
- * and textarea elements. Used by ConstructionQuote, EventPlannerContact,
- * FoodTruckCatering, HotelResortBooking.
- *
- * The `inputClassName` prop is applied to the input/select/textarea element.
- * The `labelClassName` prop is applied to the label element.
- */
-export function FormField(props: {
-  id: string
-  name: string
-  label: string
-  type?: 'text' | 'email' | 'tel' | 'date' | 'password' | 'number' | 'url'
-  as?: 'input' | 'select' | 'textarea'
-  placeholder?: string
-  required?: boolean
-  rows?: number
-  options?: string[]
-  inputClassName?: string
-  labelClassName?: string
-  className?: string
-}) {
-  const inputCls = cn(props.inputClassName, {
-    'appearance-none': props.as === 'select',
-    'resize-none': props.as === 'textarea',
-  })
-  const labelCls = cn('mb-2 block text-sm font-medium', props.labelClassName)
+const FormField = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
   return (
-    <div className={props.className}>
-      <label htmlFor={props.id} className={labelCls}>
-        {props.label}
-      </label>
-      {props.as === 'select' ? (
-        <select
-          id={props.id}
-          name={props.name}
-          required={props.required}
-          className={inputCls}
-        >
-          {(props.options ?? []).map((opt) => (
-            <option key={opt} className="bg-background">
-              {opt}
-            </option>
-          ))}
-        </select>
-      ) : props.as === 'textarea' ? (
-        <textarea
-          id={props.id}
-          name={props.name}
-          rows={props.rows ?? 4}
-          placeholder={props.placeholder}
-          className={inputCls}
-        />
-      ) : (
-        <input
-          id={props.id}
-          name={props.name}
-          type={props.type ?? 'text'}
-          required={props.required}
-          placeholder={props.placeholder}
-          className={inputCls}
-        />
-      )}
-    </div>
+    <Comp ref={ref} data-slot="form-field" className={className} {...props} />
   )
-}
+})
+FormField.displayName = 'FormField'
+
+const FormFieldLabel = React.forwardRef<
+  HTMLLabelElement,
+  React.ComponentProps<'label'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'label'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="form-field-label"
+      className={cn('mb-2 block text-sm font-medium', className)}
+      {...props}
+    />
+  )
+})
+FormFieldLabel.displayName = 'FormFieldLabel'
+
+const formFieldControlVariants = cva('', {
+  variants: {
+    as: {
+      input: '',
+      select: 'appearance-none',
+      textarea: 'resize-none',
+    },
+  },
+  defaultVariants: { as: 'input' },
+})
+
+const FormFieldControl = React.forwardRef<
+  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+  Omit<
+    React.InputHTMLAttributes<HTMLInputElement> &
+      React.SelectHTMLAttributes<HTMLSelectElement> &
+      React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+    'as'
+  > &
+    VariantProps<typeof formFieldControlVariants> & {
+      as?: 'input' | 'select' | 'textarea'
+      asChild?: boolean
+      options?: string[]
+    }
+>(({ className, as = 'input', asChild = false, options, ...props }, ref) => {
+  if (as === 'select') {
+    return (
+      <select
+        ref={ref as React.Ref<HTMLSelectElement>}
+        data-slot="form-field-control"
+        className={cn(formFieldControlVariants({ as }), className)}
+        {...(props as React.SelectHTMLAttributes<HTMLSelectElement>)}
+      >
+        {(options ?? []).map((opt) => (
+          <option key={opt} className="bg-background">
+            {opt}
+          </option>
+        ))}
+      </select>
+    )
+  }
+  if (as === 'textarea') {
+    return (
+      <textarea
+        ref={ref as React.Ref<HTMLTextAreaElement>}
+        data-slot="form-field-control"
+        className={cn(formFieldControlVariants({ as }), className)}
+        {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+      />
+    )
+  }
+  return (
+    <input
+      ref={ref as React.Ref<HTMLInputElement>}
+      data-slot="form-field-control"
+      className={cn(formFieldControlVariants({ as }), className)}
+      {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
+    />
+  )
+})
+FormFieldControl.displayName = 'FormFieldControl'
+
+export { FormField, FormFieldLabel, FormFieldControl, formFieldControlVariants }

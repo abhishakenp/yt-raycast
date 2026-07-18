@@ -30,7 +30,8 @@ if (typeof document === 'undefined') {
   }
   const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) =>
+    clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -86,7 +87,8 @@ if (typeof ResizeObserver === 'undefined') {
 if (typeof requestAnimationFrame === 'undefined') {
   Object.defineProperty(globalThis, 'requestAnimationFrame', {
     configurable: true,
-    value: (callback: (time: number) => void) => setTimeout(() => callback(Date.now()), 0),
+    value: (callback: (time: number) => void) =>
+      setTimeout(() => callback(Date.now()), 0),
     writable: true,
   })
 }
@@ -185,7 +187,6 @@ type MutationResult<TMutation> = TMutation extends (
   ? Awaited<TResult>
   : never
 
-
 const timestamp = '2026-06-26T00:00:00.000Z'
 
 function testCartItem(item: TestCartItemInput): TestCartItem {
@@ -273,12 +274,15 @@ function useTestLakebedMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
-        isPending: false,
-        lastError: emptyLastError,
-        pendingCount: 0,
-        reset,
-      }),
+      Object.assign(
+        (...args: MutationArgs<TMutation>) => runMutation(...args),
+        {
+          isPending: false,
+          lastError: emptyLastError,
+          pendingCount: 0,
+          reset,
+        },
+      ),
     [reset, runMutation],
   )
 
@@ -398,7 +402,9 @@ function createCommerceLakebedStub({
             setLastError(null)
             try {
               await mutationDelay?.syncCatalog?.()
-              state.products = (input.products as Record<string, unknown>[]).map((product: Record<string, unknown>, index: number) =>
+              state.products = (
+                input.products as Record<string, unknown>[]
+              ).map((product: Record<string, unknown>, index: number) =>
                 testProduct({
                   id: `product-${index + 1}`,
                   ...product,
@@ -1043,11 +1049,12 @@ function createSharedPendingCommerceLakebedStub({
             await mutationDelay?.syncCatalog?.()
             state = {
               ...state,
-              products: (input.products as Record<string, unknown>[]).map((product: Record<string, unknown>, index: number) =>
-                testProduct({
-                  id: `product-${index + 1}`,
-                  ...product,
-                }),
+              products: (input.products as Record<string, unknown>[]).map(
+                (product: Record<string, unknown>, index: number) =>
+                  testProduct({
+                    id: `product-${index + 1}`,
+                    ...product,
+                  }),
               ),
             }
             notify()
@@ -1233,7 +1240,8 @@ describe('commerce interaction surfaces', () => {
     )
     const lakebed = {
       useMutation: () => noopMutation,
-      useQuery: (name: string) => (name === 'cartSummary' ? { count: 3 } : null),
+      useQuery: (name: string) =>
+        name === 'cartSummary' ? { count: 3 } : null,
     } as unknown as CommerceLakebed
 
     render(<CommerceCartButton lakebed={lakebed} />)

@@ -42,60 +42,63 @@ function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
   }
   return (
     <TenderBody asChild>
-    <Card
-      asChild
-      variant="default"
-      rounded="xl"
-      padding="none"
-      className="divide-y divide-border overflow-hidden"
-    >
-      <ul>
-        {rows.map((row, i) => {
-          const nit = str(row, 'nitNo')
-          const title = str(row, 'title')
-          const date = str(row, 'date')
-          const docUrl = str(row, 'docUrl')
-          return (
-            <TenderRow asChild key={`${nit}-${i}`}>
-              <li
-                className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-start sm:justify-between"
-              >
-              <div className="min-w-0">
-                {nit ? (
-                  <span className="text-sm font-semibold text-destructive">
-                    {pickLang(lang, 'NIT No', 'एनआईटी सं.')}: {nit}
-                  </span>
-                ) : null}
-                <p className="text-sm text-card-foreground">{title}</p>
-                {date ? (
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {pickLang(lang, 'Dated', 'दिनांक')}: {date}
-                  </p>
-                ) : null}
-              </div>
-              {docUrl ? (
-                <a
-                  href={docUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg border border-input px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-                >
-                  <FileTextIcon className="size-3.5" aria-hidden />
-                  {pickLang(lang, 'View PDF', 'पीडीएफ देखें')}
-                </a>
-              ) : null}
-              </li>
-            </TenderRow>
-          )
-        })}
-      </ul>
-    </Card>
+      <Card
+        asChild
+        variant="default"
+        rounded="xl"
+        padding="none"
+        className="divide-y divide-border overflow-hidden"
+      >
+        <ul>
+          {rows.map((row, i) => {
+            const nit = str(row, 'nitNo')
+            const title = str(row, 'title')
+            const date = str(row, 'date')
+            const docUrl = str(row, 'docUrl')
+            return (
+              <TenderRow asChild key={`${nit}-${i}`}>
+                <li className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    {nit ? (
+                      <span className="text-sm font-semibold text-destructive">
+                        {pickLang(lang, 'NIT No', 'एनआईटी सं.')}: {nit}
+                      </span>
+                    ) : null}
+                    <p className="text-sm text-card-foreground">{title}</p>
+                    {date ? (
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {pickLang(lang, 'Dated', 'दिनांक')}: {date}
+                      </p>
+                    ) : null}
+                  </div>
+                  {docUrl ? (
+                    <a
+                      href={docUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg border border-input px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                    >
+                      <FileTextIcon className="size-3.5" aria-hidden />
+                      {pickLang(lang, 'View PDF', 'पीडीएफ देखें')}
+                    </a>
+                  ) : null}
+                </li>
+              </TenderRow>
+            )
+          })}
+        </ul>
+      </Card>
     </TenderBody>
   )
 }
 
 import { Container } from '#/section-kit/Container.tsx'
-import { TenderTable, TenderRow, TenderHeader, TenderBody } from '#/section-kit/TenderTable.tsx'
+import {
+  TenderTable,
+  TenderRow,
+  TenderHeader,
+  TenderBody,
+} from '#/section-kit/TenderTable.tsx'
 
 /**
  * GovPortalTenderBoard — a tabbed government e-tender board (Tenders /
@@ -196,9 +199,9 @@ export const GovPortalTenderBoard = defineCapsule({
       >
         <Container>
           <TenderHeader asChild>
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+            <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
+              {heading}
+            </h2>
           </TenderHeader>
 
           <div className="mb-5 flex flex-wrap gap-2">

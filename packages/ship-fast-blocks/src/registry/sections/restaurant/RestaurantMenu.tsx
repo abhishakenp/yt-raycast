@@ -3,7 +3,11 @@ import { useMemo } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
+import {
+  MenuCategoryHeader,
+  MenuCategoryTitle,
+  MenuCategoryDivider,
+} from '#/section-kit/MenuCategoryHeader.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 import {
@@ -165,113 +169,116 @@ export const RestaurantMenu = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <MenuList>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <SectionHeading
-              title={heading}
-              subtitle={description}
-              align="center"
-              titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
-              className="gap-6"
-            />
-            {experience?.selectedMenuItem ? (
-              <p
-                className="mx-auto mt-4 max-w-xl rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
+          <MenuList>
+            <div className="mx-auto mb-16 max-w-2xl text-center">
+              <SectionHeading
+                title={heading}
+                subtitle={description}
+                align="center"
+                titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
+                className="gap-6"
+              />
+              {experience?.selectedMenuItem ? (
+                <p
+                  className="mx-auto mt-4 max-w-xl rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
+                  aria-live="polite"
+                >
+                  Selected {experience.selectedMenuItem}
+                  {experience.selectedCategory
+                    ? ` from ${experience.selectedCategory}`
+                    : ''}
+                </p>
+              ) : null}
+              <div
+                className="mx-auto mt-6 flex max-w-xl flex-col items-center justify-between gap-3 rounded-full border border-border bg-muted/40 px-5 py-3 text-sm text-muted-foreground sm:flex-row"
                 aria-live="polite"
               >
-                Selected {experience.selectedMenuItem}
-                {experience.selectedCategory
-                  ? ` from ${experience.selectedCategory}`
-                  : ''}
-              </p>
-            ) : null}
-            <div
-              className="mx-auto mt-6 flex max-w-xl flex-col items-center justify-between gap-3 rounded-full border border-border bg-muted/40 px-5 py-3 text-sm text-muted-foreground sm:flex-row"
-              aria-live="polite"
-            >
-              <span>
-                {restaurantOrder.count
-                  ? `${restaurantOrder.count} item${restaurantOrder.count === 1 ? '' : 's'} in the table order`
-                  : 'Tap dishes to build a live table order.'}
-              </span>
-              <button
-                type="button"
-                aria-busy={restaurantOrder.clearPending}
-                disabled={
-                  !restaurantOrder.count || restaurantOrder.clearPending
-                }
-                onClick={() => {
-                  void restaurantOrder.clear()
-                }}
-                className="inline-flex h-8 items-center justify-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
-              >
-                {restaurantOrder.clearPending ? (
-                  <RestaurantMutationSpinner />
-                ) : (
-                  'Clear order'
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-16">
-            {categories.map((category) => (
-              <div key={category.name}>
-                <MenuCategoryHeader title={category.name} showDivider />
-                <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
-                  {(category.items ?? []).map((item) => (
-                    <button
-                      key={item.name}
-                      type="button"
-                      aria-label={`Add ${item.name}`}
-                      aria-busy={restaurantOrder.isAdding(item.name)}
-                      onClick={() => {
-                        void restaurantOrder.add(item.name, {
-                          category: category.name,
-                          description: item.description,
-                          name: item.name,
-                          price: item.price,
-                          tag: item.tag,
-                        })
-                      }}
-                      className="group flex w-full items-start justify-between gap-4 text-left"
-                    >
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="font-medium text-foreground transition-colors group-hover:text-primary">
-                            {item.name}
-                          </h4>
-                          {item.tag ? (
-                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs uppercase tracking-wide text-primary">
-                              {item.tag}
-                            </span>
-                          ) : null}
-                        </div>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </div>
-                      <span className="flex shrink-0 flex-col items-end gap-1">
-                        <span className="font-serif text-lg text-foreground">
-                          {item.price}
-                        </span>
-                        <span className="inline-flex min-h-5 items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-                          {restaurantOrder.isAdding(item.name) ? (
-                            <RestaurantMutationSpinner className="size-3" />
-                          ) : restaurantOrder.quantityFor(item.name) ? (
-                            `Added ${restaurantOrder.quantityFor(item.name)}`
-                          ) : (
-                            'Add'
-                          )}
-                        </span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                <span>
+                  {restaurantOrder.count
+                    ? `${restaurantOrder.count} item${restaurantOrder.count === 1 ? '' : 's'} in the table order`
+                    : 'Tap dishes to build a live table order.'}
+                </span>
+                <button
+                  type="button"
+                  aria-busy={restaurantOrder.clearPending}
+                  disabled={
+                    !restaurantOrder.count || restaurantOrder.clearPending
+                  }
+                  onClick={() => {
+                    void restaurantOrder.clear()
+                  }}
+                  className="inline-flex h-8 items-center justify-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {restaurantOrder.clearPending ? (
+                    <RestaurantMutationSpinner />
+                  ) : (
+                    'Clear order'
+                  )}
+                </button>
               </div>
-            ))}
-          </div>
-        </MenuList>
+            </div>
+
+            <div className="space-y-16">
+              {categories.map((category) => (
+                <div key={category.name}>
+                  <MenuCategoryHeader>
+                    <MenuCategoryTitle>{category.name}</MenuCategoryTitle>
+                    <MenuCategoryDivider />
+                  </MenuCategoryHeader>
+                  <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
+                    {(category.items ?? []).map((item) => (
+                      <button
+                        key={item.name}
+                        type="button"
+                        aria-label={`Add ${item.name}`}
+                        aria-busy={restaurantOrder.isAdding(item.name)}
+                        onClick={() => {
+                          void restaurantOrder.add(item.name, {
+                            category: category.name,
+                            description: item.description,
+                            name: item.name,
+                            price: item.price,
+                            tag: item.tag,
+                          })
+                        }}
+                        className="group flex w-full items-start justify-between gap-4 text-left"
+                      >
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="font-medium text-foreground transition-colors group-hover:text-primary">
+                              {item.name}
+                            </h4>
+                            {item.tag ? (
+                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs uppercase tracking-wide text-primary">
+                                {item.tag}
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {item.description}
+                          </p>
+                        </div>
+                        <span className="flex shrink-0 flex-col items-end gap-1">
+                          <span className="font-serif text-lg text-foreground">
+                            {item.price}
+                          </span>
+                          <span className="inline-flex min-h-5 items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                            {restaurantOrder.isAdding(item.name) ? (
+                              <RestaurantMutationSpinner className="size-3" />
+                            ) : restaurantOrder.quantityFor(item.name) ? (
+                              `Added ${restaurantOrder.quantityFor(item.name)}`
+                            ) : (
+                              'Add'
+                            )}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </MenuList>
         </div>
       </section>
     )

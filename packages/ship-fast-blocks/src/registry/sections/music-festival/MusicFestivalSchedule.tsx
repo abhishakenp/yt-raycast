@@ -14,7 +14,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
-import { EventList, EventCard, EventDate, EventDetails } from '#/section-kit/EventList.tsx'
+import {
+  EventList,
+  EventCard,
+  EventDate,
+  EventDetails,
+} from '#/section-kit/EventList.tsx'
 export const MusicFestivalSchedule = defineCapsule({
   name: 'MusicFestivalSchedule',
   description:
@@ -202,15 +207,15 @@ export const MusicFestivalSchedule = defineCapsule({
                       </div>
                     ))}
                   </div>
-                <div className="px-6 pb-6">
-                  <button
-                    type="button"
-                    onClick={() => go(day.cta)}
-                    className="w-full rounded-lg border border-border py-3 text-center text-sm font-medium transition-colors hover:bg-accent"
-                  >
-                    {day.cta}
-                  </button>
-                </div>
+                  <div className="px-6 pb-6">
+                    <button
+                      type="button"
+                      onClick={() => go(day.cta)}
+                      className="w-full rounded-lg border border-border py-3 text-center text-sm font-medium transition-colors hover:bg-accent"
+                    >
+                      {day.cta}
+                    </button>
+                  </div>
                 </Card>
               </EventCard>
             ))}

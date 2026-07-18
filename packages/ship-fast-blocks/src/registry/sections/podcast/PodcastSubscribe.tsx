@@ -4,7 +4,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { SubscribeBand, SubscribeForm, SubscribeInput } from '#/section-kit/SubscribeBand.tsx'
+import {
+  SubscribeBand,
+  SubscribeForm,
+  SubscribeInput,
+} from '#/section-kit/SubscribeBand.tsx'
 
 export const PodcastSubscribe = defineCapsule({
   name: 'PodcastSubscribe',

@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo } from '#/section-kit/Logo.tsx'
+import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -106,12 +106,13 @@ export const CoworkingNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="gap-3"
           >
-            <Logo
-              brand={brand}
-              className="size-9"
-              fallback={<BrandTile letter={brand.charAt(0).toUpperCase()} />}
-              labelClassName="text-lg font-semibold tracking-tight text-foreground"
-            />
+            <Logo brand={brand} className="size-9">
+              <LogoImage
+                className="size-9"
+                fallback={<BrandTile letter={brand.charAt(0).toUpperCase()} />}
+              />
+              <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
+            </Logo>
           </button>
         </NavbarBrand>
 

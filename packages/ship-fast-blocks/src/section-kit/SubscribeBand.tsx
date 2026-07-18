@@ -91,7 +91,10 @@ const SubscribeForm = React.forwardRef<
   return (
     <Comp
       data-slot="subscribe-form"
-      className={cn('flex w-full flex-col items-stretch gap-3 sm:flex-row', className)}
+      className={cn(
+        'flex w-full flex-col items-stretch gap-3 sm:flex-row',
+        className,
+      )}
       ref={ref}
       {...props}
     />

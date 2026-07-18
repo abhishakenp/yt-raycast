@@ -111,7 +111,8 @@ if (typeof document === 'undefined') {
   }
   const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) =>
+    clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -245,12 +246,15 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
-        isPending: false,
-        lastError: emptyLastError,
-        pendingCount: 0,
-        reset,
-      }),
+      Object.assign(
+        (...args: MutationArgs<TMutation>) => runMutation(...args),
+        {
+          isPending: false,
+          lastError: emptyLastError,
+          pendingCount: 0,
+          reset,
+        },
+      ),
     [reset, runMutation],
   )
 
@@ -370,7 +374,13 @@ function createAuthLakebedStub({
           : [...state.authSessions, next],
     }
   }
-  const recordIntent = ({ input, type }: { input: Record<string, unknown>; type: string }) => {
+  const recordIntent = ({
+    input,
+    type,
+  }: {
+    input: Record<string, unknown>
+    type: string
+  }) => {
     state = {
       ...state,
       intents: [
@@ -447,7 +457,10 @@ function createAuthLakebedStub({
               await mutationDelay?.syncPlans?.()
               state = {
                 ...state,
-                plans: ((input as Record<string, unknown>).plans as Array<TestPlanInput>).map(testPlan),
+                plans: (
+                  (input as Record<string, unknown>)
+                    .plans as Array<TestPlanInput>
+                ).map(testPlan),
               }
               notify()
               return state.plans
@@ -476,7 +489,10 @@ function createAuthLakebedStub({
             setLastError(null)
             try {
               await mutationDelay?.requestDemo?.()
-              recordIntent({ input: input as Record<string, unknown>, type: 'demo' })
+              recordIntent({
+                input: input as Record<string, unknown>,
+                type: 'demo',
+              })
               notify()
               return state.intents
             } catch (error) {
@@ -557,7 +573,10 @@ function createAuthLakebedStub({
             setLastError(null)
             try {
               await mutationDelay?.selectPlan?.()
-              recordIntent({ input: input as Record<string, unknown>, type: 'trial' })
+              recordIntent({
+                input: input as Record<string, unknown>,
+                type: 'trial',
+              })
               notify()
               return state.intents
             } catch (error) {

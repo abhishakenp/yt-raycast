@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -89,13 +89,14 @@ export const KidsEducationNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="group gap-2"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={
-                <BookMark className="size-10 transition-transform duration-300 group-hover:rotate-12" />
-              }
-              labelClassName="text-xl font-bold text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={
+                  <BookMark className="size-10 transition-transform duration-300 group-hover:rotate-12" />
+                }
+              />
+              <LogoLabel className="text-xl font-bold text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

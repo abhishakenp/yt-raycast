@@ -3,6 +3,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
+  LogoImage,
+  LogoLabel,
   NavbarActions,
   NavbarBrand,
   NavbarCta,
@@ -71,7 +73,10 @@ export const LendingNavbar = defineCapsule({
         <NavbarBrand asChild>
           <button type="button" onClick={() => go(nav[0])} className="gap-2">
             <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-              <Logo className="size-5" />
+              <Logo brand="" className="size-5">
+                <LogoImage className="size-5" />
+                <LogoLabel />
+              </Logo>
             </span>
             <span className="text-xl font-semibold text-foreground">
               {brand}

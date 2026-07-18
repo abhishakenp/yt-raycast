@@ -1,134 +1,242 @@
-import type { ReactNode } from 'react'
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { SectionHeading } from './SectionHeading.tsx'
 
-/**
- * PricingGrid — generic, reusable pricing section (optional heading + responsive
- * tier cards). Each tier renders a name, optional tagline, price/period, optional
- * feature list, and a CTA that routes via useNavigate. The highlighted tier gets
- * a badge pill (custom text or "Most popular") plus a primary border/shadow.
- * Composes SectionHeading for the header block. Supports tagline, badge, unit,
- * and aliases popular/featured for highlighted.
- */
-export function PricingGrid(props: {
-  heading?: string
-  subheading?: string
-  tiers: {
-    name: string
-    price: string
-    period?: string
-    unit?: string
-    tagline?: string
-    blurb?: string
-    badge?: string
-    features?: string[]
-    cta?: string
-    ctaTarget?: string
-    highlighted?: boolean
-    popular?: boolean
-    featured?: boolean
-  }[]
-  renderCta?: (tier: {
-    name: string
-    price: string
-    cta?: string
-    ctaTarget?: string
-    highlighted?: boolean
-  }) => ReactNode
-  className?: string
-}) {
-  const go = useNavigate()
-  const tiers = Array.isArray(props.tiers) ? props.tiers : []
+const pricingTierVariants = cva(
+  'relative flex flex-col gap-6 rounded-xl border bg-card p-8',
+  {
+    variants: {
+      variant: {
+        default: 'border-border',
+        highlighted: 'border-2 border-primary shadow-lg',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  },
+)
+
+const PricingGrid = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'section'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'section'
   return (
-    <section className={cn('flex flex-col gap-10', props.className)}>
-      {props.heading ? (
-        <SectionHeading title={props.heading} subtitle={props.subheading} />
-      ) : null}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {tiers.filter(Boolean).map((t, i) => {
-          const highlighted = t.highlighted || t.popular || t.featured
-          const badgeText = t.badge ?? (highlighted ? 'Most popular' : null)
-          const subtitle = t.tagline ?? t.blurb
-          const periodLabel = t.period ?? t.unit
-          return (
-            <div
-              key={i}
-              className={cn(
-                'relative flex flex-col gap-6 rounded-xl border bg-card p-8',
-                highlighted
-                  ? 'border-2 border-primary shadow-lg'
-                  : 'border-border',
-              )}
-            >
-              {badgeText ? (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                  {badgeText}
-                </span>
-              ) : null}
-              <div className="flex flex-col gap-2">
-                <h3 className="text-lg font-semibold text-foreground">
-                  {t.name}
-                </h3>
-                {subtitle ? (
-                  <p className="text-sm text-muted-foreground">{subtitle}</p>
-                ) : null}
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-foreground">
-                    {t.price}
-                  </span>
-                  {periodLabel ? (
-                    <span className="text-sm text-muted-foreground">
-                      {periodLabel}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-              {Array.isArray(t.features) && t.features.length ? (
-                <ul className="flex flex-col gap-3">
-                  {t.features.map((feat, fi) => (
-                    <li
-                      key={fi}
-                      className="flex items-start gap-2 text-sm text-muted-foreground"
-                    >
-                      <svg
-                        className="mt-0.5 size-4 shrink-0 text-primary"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m5 13 4 4L19 7"
-                        />
-                      </svg>
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              {props.renderCta ? (
-                props.renderCta({ ...t, highlighted })
-              ) : (
-                <button
-                  onClick={() => go(t.ctaTarget ?? t.cta ?? 'Pricing')}
-                  className={cn(
-                    'mt-auto inline-flex w-full items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium transition-colors',
-                    highlighted
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'border border-border bg-background text-foreground hover:bg-muted',
-                  )}
-                >
-                  {t.cta ?? 'Get started'}
-                </button>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </section>
+    <Comp
+      ref={ref}
+      data-slot="pricing-grid"
+      className={cn('flex flex-col gap-10', className)}
+      {...props}
+    />
   )
+})
+PricingGrid.displayName = 'PricingGrid'
+
+const PricingTier = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> &
+    VariantProps<typeof pricingTierVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier"
+      className={cn(pricingTierVariants({ variant }), className)}
+      {...props}
+    />
+  )
+})
+PricingTier.displayName = 'PricingTier'
+
+const PricingTierBadge = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-badge"
+      className={cn(
+        'absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+PricingTierBadge.displayName = 'PricingTierBadge'
+
+const PricingTierHeader = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-header"
+      className={cn('flex flex-col gap-2', className)}
+      {...props}
+    />
+  )
+})
+PricingTierHeader.displayName = 'PricingTierHeader'
+
+const PricingTierName = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h3'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h3'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-name"
+      className={cn('text-lg font-semibold text-foreground', className)}
+      {...props}
+    />
+  )
+})
+PricingTierName.displayName = 'PricingTierName'
+
+const PricingTierTagline = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-tagline"
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+PricingTierTagline.displayName = 'PricingTierTagline'
+
+const PricingTierPrice = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-price"
+      className={cn('text-4xl font-bold text-foreground', className)}
+      {...props}
+    />
+  )
+})
+PricingTierPrice.displayName = 'PricingTierPrice'
+
+const PricingTierPeriod = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-period"
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+PricingTierPeriod.displayName = 'PricingTierPeriod'
+
+const PricingTierFeatures = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentProps<'ul'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-features"
+      className={cn('flex flex-col gap-3', className)}
+      {...props}
+    />
+  )
+})
+PricingTierFeatures.displayName = 'PricingTierFeatures'
+
+const PricingTierFeature = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<'li'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'li'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-feature"
+      className={cn(
+        'flex items-start gap-2 text-sm text-muted-foreground',
+        className,
+      )}
+      {...props}
+    >
+      <svg
+        className="mt-0.5 size-4 shrink-0 text-primary"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
+      </svg>
+      {props.children}
+    </Comp>
+  )
+})
+PricingTierFeature.displayName = 'PricingTierFeature'
+
+const PricingTierCta = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<'button'> & {
+    asChild?: boolean
+    target?: string
+  }
+>(({ className, asChild = false, target, onClick, ...props }, ref) => {
+  const go = useNavigate()
+  const Comp = asChild ? Slot : 'button'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pricing-tier-cta"
+      className={cn(
+        'mt-auto inline-flex w-full items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium transition-colors',
+        className,
+      )}
+      onClick={(e: React.MouseEvent<HTMLElement>) => {
+        if (!asChild && target) {
+          go(target)
+        }
+        onClick?.(e as React.MouseEvent<HTMLButtonElement>)
+      }}
+      {...props}
+    />
+  )
+})
+PricingTierCta.displayName = 'PricingTierCta'
+
+export {
+  PricingGrid,
+  PricingTier,
+  pricingTierVariants,
+  PricingTierBadge,
+  PricingTierHeader,
+  PricingTierName,
+  PricingTierTagline,
+  PricingTierPrice,
+  PricingTierPeriod,
+  PricingTierFeatures,
+  PricingTierFeature,
+  PricingTierCta,
 }

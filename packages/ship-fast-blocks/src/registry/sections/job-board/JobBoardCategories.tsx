@@ -15,7 +15,11 @@ import { Card } from '#/section-kit/Card.tsx'
  * Renders fully with no props; built-in line icons rotate across the items.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { CategoryGrid, CategoryCard, CategoryIcon } from '#/section-kit/CategoryGrid.tsx'
+import {
+  CategoryGrid,
+  CategoryCard,
+  CategoryIcon,
+} from '#/section-kit/CategoryGrid.tsx'
 export const JobBoardCategories = defineCapsule({
   name: 'JobBoardCategories',
   description:

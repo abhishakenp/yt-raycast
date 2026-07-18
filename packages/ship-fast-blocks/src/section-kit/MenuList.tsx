@@ -9,17 +9,16 @@ const MenuListVariants = cva('flex flex-col', {
   defaultVariants: {},
 })
 
-const MenuList = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="menu-list"
-    className={cn('flex flex-col', className)}
-    ref={ref}
-    {...props}
-  />
-))
+const MenuList = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
+  ({ className, ...props }, ref) => (
+    <div
+      data-slot="menu-list"
+      className={cn('flex flex-col', className)}
+      ref={ref}
+      {...props}
+    />
+  ),
+)
 MenuList.displayName = 'MenuList'
 
 const MenuCategory = React.forwardRef<
@@ -80,4 +79,11 @@ const MenuItemPrice = React.forwardRef<
 ))
 MenuItemPrice.displayName = 'MenuItemPrice'
 
-export { MenuList, MenuCategory, MenuItem, MenuItemDescription, MenuItemPrice, MenuListVariants as menuListVariants }
+export {
+  MenuList,
+  MenuCategory,
+  MenuItem,
+  MenuItemDescription,
+  MenuItemPrice,
+  MenuListVariants as menuListVariants,
+}

@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -43,7 +43,13 @@ export const ConstructionNavbar = defineCapsule({
     const phone = props.phone ?? '(555) 123-4567'
     const ctaLabel = props.ctaLabel ?? 'Get a Quote'
 
-    const LogoMark = ({ className, tone }: { className?: string, tone?: string }) => (
+    const LogoMark = ({
+      className,
+      tone,
+    }: {
+      className?: string
+      tone?: string
+    }) => (
       <span
         className={cn(
           'grid place-items-center rounded-lg',
@@ -77,11 +83,12 @@ export const ConstructionNavbar = defineCapsule({
       >
         <NavbarBrand asChild>
           <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark className="size-8" tone="foreground" />}
-              labelClassName="text-xl font-semibold tracking-tight text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={<LogoMark className="size-8" tone="foreground" />}
+              />
+              <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

@@ -12,8 +12,22 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
-import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
+import {
+  MenuCategoryHeader,
+  MenuCategoryTitle,
+  MenuCategoryDivider,
+} from '#/section-kit/MenuCategoryHeader.tsx'
+import {
+  MenuItemRow,
+  MenuItemContent,
+  MenuItemBody,
+  MenuItemNameRow,
+  MenuItemName,
+  MenuItemRowDescription,
+  MenuItemPriceColumn,
+  MenuItemRowPrice,
+  MenuItemAction,
+} from '#/section-kit/MenuItemRow.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 
 /**
@@ -185,73 +199,85 @@ export const BarNightclubMenu = defineCapsule({
         )}
       >
         <Container>
-      <MenuList>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <p className="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <MenuList>
+            <div className="mx-auto mb-16 max-w-2xl text-center">
+              <p className="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
+                {eyebrow}
+              </p>
+              <h2 className="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                {description}
+              </p>
+            </div>
 
-          <div className="grid gap-12 md:grid-cols-2 lg:gap-16">
-            {columns.map((col) => (
-              <div key={col.title}>
-                <MenuCategoryHeader
-                  title={col.title}
-                  titleClassName="text-sm uppercase tracking-[0.2em] text-muted-foreground"
-                  showDivider
-                  className="mb-8"
-                />
-                <div className="space-y-6">
-                  {(col.items ?? []).map((drink) => (
-                    <MenuItemRow
-                      key={drink.name}
-                      name={drink.name}
-                      description={drink.description}
-                      price={drink.price}
-                      priceClassName="whitespace-nowrap text-muted-foreground"
-                      action={
-                        <CommerceAddItemButton
-                          lakebed={lakebed}
-                          item={{
-                            label: drink.name,
-                            price: drink.price,
-                          }}
-                          aria-label={`${addLabel} ${drink.name} to cart`}
-                          pendingChildren={
-                            <>
-                              <CommerceMutationSpinner className="size-3" />
-                              Adding
-                            </>
-                          }
-                          className="inline-flex h-8 items-center justify-center gap-1.5 border border-border px-3 text-xs tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
-                        >
-                          {addLabel}
-                        </CommerceAddItemButton>
-                      }
-                    />
-                  ))}
+            <div className="grid gap-12 md:grid-cols-2 lg:gap-16">
+              {columns.map((col) => (
+                <div key={col.title}>
+                  <MenuCategoryHeader className="mb-8">
+                    <MenuCategoryTitle className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+                      {col.title}
+                    </MenuCategoryTitle>
+                    <MenuCategoryDivider />
+                  </MenuCategoryHeader>
+                  <div className="space-y-6">
+                    {(col.items ?? []).map((drink) => (
+                      <MenuItemRow>
+                        <MenuItemContent>
+                          <MenuItemBody>
+                            <MenuItemNameRow>
+                              <MenuItemName>{drink.name}</MenuItemName>
+                            </MenuItemNameRow>
+                            <MenuItemRowDescription>
+                              {drink.description}
+                            </MenuItemRowDescription>
+                          </MenuItemBody>
+                          <MenuItemPriceColumn>
+                            <MenuItemRowPrice className="whitespace-nowrap text-muted-foreground">
+                              {drink.price}
+                            </MenuItemRowPrice>
+                            <MenuItemAction>
+                              {
+                                <CommerceAddItemButton
+                                  lakebed={lakebed}
+                                  item={{
+                                    label: drink.name,
+                                    price: drink.price,
+                                  }}
+                                  aria-label={`${addLabel} ${drink.name} to cart`}
+                                  pendingChildren={
+                                    <>
+                                      <CommerceMutationSpinner className="size-3" />
+                                      Adding
+                                    </>
+                                  }
+                                  className="inline-flex h-8 items-center justify-center gap-1.5 border border-border px-3 text-xs tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
+                                >
+                                  {addLabel}
+                                </CommerceAddItemButton>
+                              }
+                            </MenuItemAction>
+                          </MenuItemPriceColumn>
+                        </MenuItemContent>
+                      </MenuItemRow>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="mt-16 border border-border p-8 text-center">
-            <p className="mb-4 text-muted-foreground">{footnote}</p>
-            <button
-              type="button"
-              onClick={() => go(footnoteCta)}
-              className="border-b border-muted-foreground pb-1 text-sm tracking-wide transition-colors hover:border-foreground hover:text-foreground"
-            >
-              {footnoteCta}
-            </button>
-          </div>
-      </MenuList>
+            <div className="mt-16 border border-border p-8 text-center">
+              <p className="mb-4 text-muted-foreground">{footnote}</p>
+              <button
+                type="button"
+                onClick={() => go(footnoteCta)}
+                className="border-b border-muted-foreground pb-1 text-sm tracking-wide transition-colors hover:border-foreground hover:text-foreground"
+              >
+                {footnoteCta}
+              </button>
+            </div>
+          </MenuList>
         </Container>
       </section>
     )

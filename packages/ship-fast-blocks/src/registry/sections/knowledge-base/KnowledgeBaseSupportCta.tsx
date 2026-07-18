@@ -39,17 +39,17 @@ export const KnowledgeBaseSupportCta = defineCapsule({
 
     return (
       <SupportBand asChild>
-      <CtaBand
-        tone="primary"
-        eyebrow={note}
-        title={heading}
-        subtitle={description}
-        actions={[
-          { label: primaryCta, target: primaryCta, variant: 'primary' },
-          { label: secondaryCta, target: secondaryCta, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+        <CtaBand
+          tone="primary"
+          eyebrow={note}
+          title={heading}
+          subtitle={description}
+          actions={[
+            { label: primaryCta, target: primaryCta, variant: 'primary' },
+            { label: secondaryCta, target: secondaryCta, variant: 'outline' },
+          ]}
+          className={props.className}
+        />
       </SupportBand>
     )
   },

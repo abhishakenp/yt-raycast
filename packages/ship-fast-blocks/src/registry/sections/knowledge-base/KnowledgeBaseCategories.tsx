@@ -7,7 +7,11 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
-import { CategoryGrid, CategoryCard, CategoryIcon } from '#/section-kit/CategoryGrid.tsx'
+import {
+  CategoryGrid,
+  CategoryCard,
+  CategoryIcon,
+} from '#/section-kit/CategoryGrid.tsx'
 
 /**
  * KnowledgeBaseCategories — "browse by category" grid for a help center. A

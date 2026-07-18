@@ -76,16 +76,16 @@ export const BlogSubscribe = defineCapsule({
             {subheading}
           </NewsletterCtaDescription>
           <SubscribeForm asChild>
-          <PublicationSubscribeForm
-            lakebed={lakebed}
-            source={ctaTarget}
-            placeholder={placeholder}
-            buttonLabel={ctaLabel}
-            successMessage="You're on the list. Watch your inbox for the next edition."
-            className="mx-auto mt-7 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row"
-            inputClassName="w-full flex-1 rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
-            buttonClassName="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-          />
+            <PublicationSubscribeForm
+              lakebed={lakebed}
+              source={ctaTarget}
+              placeholder={placeholder}
+              buttonLabel={ctaLabel}
+              successMessage="You're on the list. Watch your inbox for the next edition."
+              className="mx-auto mt-7 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row"
+              inputClassName="w-full flex-1 rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+              buttonClassName="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            />
           </SubscribeForm>
           <NewsletterCtaFineprint className="mt-4 text-[0.8rem] text-muted-foreground">
             {note}

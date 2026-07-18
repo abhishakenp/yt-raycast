@@ -52,7 +52,8 @@ if (typeof document === 'undefined') {
   }
   const requestAnimationFrame = (callback: (time: number) => void) =>
     setTimeout(() => callback(Date.now()), 0)
-  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) => clearTimeout(id)
+  const cancelAnimationFrame = (id: ReturnType<typeof setTimeout>) =>
+    clearTimeout(id)
 
   defineGlobal('document', dom.window.document)
   defineGlobal('CustomEvent', dom.window.CustomEvent)
@@ -188,43 +189,49 @@ function createInquiryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: Record<string, unknown>) => {
-        setPendingCount((count) => count + 1)
-        setLastError(null)
+      const runMutation = useCallback(
+        async (input: Record<string, unknown>) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
 
-        try {
-          actions = [
-            ...actions,
-            {
-              createdAt: now,
-              id: `action-${actions.length + 1}`,
-              kind: normalize(input.kind) || 'contact',
-              label: normalize(input.label) || 'Contact',
-              source: normalize(input.source),
-              target: normalize(input.target),
-              updatedAt: now,
-            },
-          ]
+          try {
+            actions = [
+              ...actions,
+              {
+                createdAt: now,
+                id: `action-${actions.length + 1}`,
+                kind: normalize(input.kind) || 'contact',
+                label: normalize(input.label) || 'Contact',
+                source: normalize(input.source),
+                target: normalize(input.target),
+                updatedAt: now,
+              },
+            ]
 
-          notify()
-          return actions
-        } catch (error) {
-          setLastError(error)
-          throw error
-        } finally {
-          setPendingCount((count) => Math.max(0, count - 1))
-        }
-      }, [])
+            notify()
+            return actions
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
 
       const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input: Record<string, unknown>) => runMutation(input), {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          }),
+          Object.assign(
+            (input: Record<string, unknown>) => runMutation(input),
+            {
+              isPending: false,
+              lastError: initialLastError,
+              pendingCount: 0,
+              reset,
+            },
+          ),
         [reset, runMutation],
       )
 
@@ -239,71 +246,82 @@ function createInquiryLakebedStub() {
       const [pendingCount, setPendingCount] = useState(0)
       const [lastError, setLastError] = useState<unknown | null>(null)
       const reset = useCallback(() => setLastError(null), [])
-      const runMutation = useCallback(async (input: Record<string, unknown>) => {
-        setPendingCount((count) => count + 1)
-        setLastError(null)
+      const runMutation = useCallback(
+        async (input: Record<string, unknown>) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
 
-        try {
-          const fields = input.fields ?? {}
-          inquiries = [
-            ...inquiries,
-            {
-              createdAt: now,
-              email: normalizeEmail(
-                input.email || pickField(fields, ['email', 'emailAddress']),
-              ),
-              fieldsJson: JSON.stringify(fields),
-              id: `inquiry-${inquiries.length + 1}`,
-              message: normalize(
-                input.message ||
-                  pickField(fields, ['message', 'vision', 'details', 'notes']),
-              ),
-              name: normalize(
-                input.name ||
-                  pickField(fields, [
-                    'name',
-                    'fullName',
-                    'firstName',
-                    'first',
-                    'lastName',
-                  ]),
-              ),
-              phone: normalize(input.phone || pickField(fields, ['phone'])),
-              source: normalize(input.source),
-              subject: normalize(
-                input.subject ||
-                  pickField(fields, [
-                    'subject',
-                    'service',
-                    'eventType',
-                    'projectType',
-                    'budget',
-                    'date',
-                  ]),
-              ),
-              updatedAt: now,
-            },
-          ]
+          try {
+            const fields = input.fields ?? {}
+            inquiries = [
+              ...inquiries,
+              {
+                createdAt: now,
+                email: normalizeEmail(
+                  input.email || pickField(fields, ['email', 'emailAddress']),
+                ),
+                fieldsJson: JSON.stringify(fields),
+                id: `inquiry-${inquiries.length + 1}`,
+                message: normalize(
+                  input.message ||
+                    pickField(fields, [
+                      'message',
+                      'vision',
+                      'details',
+                      'notes',
+                    ]),
+                ),
+                name: normalize(
+                  input.name ||
+                    pickField(fields, [
+                      'name',
+                      'fullName',
+                      'firstName',
+                      'first',
+                      'lastName',
+                    ]),
+                ),
+                phone: normalize(input.phone || pickField(fields, ['phone'])),
+                source: normalize(input.source),
+                subject: normalize(
+                  input.subject ||
+                    pickField(fields, [
+                      'subject',
+                      'service',
+                      'eventType',
+                      'projectType',
+                      'budget',
+                      'date',
+                    ]),
+                ),
+                updatedAt: now,
+              },
+            ]
 
-          notify()
-          return inquiries
-        } catch (error) {
-          setLastError(error)
-          throw error
-        } finally {
-          setPendingCount((count) => Math.max(0, count - 1))
-        }
-      }, [])
+            notify()
+            return inquiries
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [],
+      )
 
       const initialLastError: unknown | null = null
       const mutation = useMemo(
         () =>
-          Object.assign((input: Record<string, unknown>) => runMutation(input), {
-            isPending: false,
-            lastError: initialLastError,
-            pendingCount: 0,
-            reset,
-          }),
+          Object.assign(
+            (input: Record<string, unknown>) => runMutation(input),
+            {
+              isPending: false,
+              lastError: initialLastError,
+              pendingCount: 0,
+              reset,
+            },
+          ),
         [reset, runMutation],
       )
 

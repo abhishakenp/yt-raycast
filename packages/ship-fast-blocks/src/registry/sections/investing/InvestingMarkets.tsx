@@ -16,7 +16,12 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
-import { MarketTable, MarketRow, MarketHeader, MarketBody } from '#/section-kit/MarketTable.tsx'
+import {
+  MarketTable,
+  MarketRow,
+  MarketHeader,
+  MarketBody,
+} from '#/section-kit/MarketTable.tsx'
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
@@ -150,79 +155,79 @@ export const InvestingMarkets = defineCapsule({
       >
         <Container>
           <MarketHeader asChild>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+            <div className="mx-auto mb-16 max-w-2xl text-center">
+              <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+                {heading}
+              </h2>
+              <p className="text-lg text-muted-foreground">{description}</p>
+            </div>
           </MarketHeader>
           <MarketTable
             variant="default"
             className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 border-0"
           >
             <MarketBody asChild>
-            <div className="contents">
-            {quotes.map((q, i) => (
-              <MarketRow asChild key={q.symbol}>
-                <Card
-                  asChild
-                  variant="outline"
-                  rounded="xl"
-                  padding="md"
-                  className="bg-muted/50 text-left transition-shadow hover:shadow-lg"
-                >
-                <button type="button" onClick={() => go(q.symbol)}>
-                  <div className="mb-4 flex items-center gap-3">
-                    <div
-                      className={cn(
-                        'grid size-10 place-items-center rounded-lg text-sm font-bold',
-                        symbolTones[i % symbolTones.length],
-                      )}
+              <div className="contents">
+                {quotes.map((q, i) => (
+                  <MarketRow asChild key={q.symbol}>
+                    <Card
+                      asChild
+                      variant="outline"
+                      rounded="xl"
+                      padding="md"
+                      className="bg-muted/50 text-left transition-shadow hover:shadow-lg"
                     >
-                      {q.symbol}
-                    </div>
-                    <div>
-                      <p className="font-semibold">{q.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {q.exchange}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-2xl font-semibold">{q.price}</p>
-                      <p
-                        className={cn(
-                          'text-sm font-medium',
-                          q.up ? 'text-chart-1' : 'text-destructive',
-                        )}
-                      >
-                        {q.change}
-                      </p>
-                    </div>
-                    <svg
-                      className={cn(
-                        'h-10 w-20',
-                        q.up ? 'text-chart-1' : 'text-destructive',
-                      )}
-                      viewBox="0 0 80 40"
-                      preserveAspectRatio="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        d={q.up ? trendUp : trendDown}
-                      />
-                    </svg>
-                  </div>
-                </button>
-                </Card>
-              </MarketRow>
-            ))}
-            </div>
+                      <button type="button" onClick={() => go(q.symbol)}>
+                        <div className="mb-4 flex items-center gap-3">
+                          <div
+                            className={cn(
+                              'grid size-10 place-items-center rounded-lg text-sm font-bold',
+                              symbolTones[i % symbolTones.length],
+                            )}
+                          >
+                            {q.symbol}
+                          </div>
+                          <div>
+                            <p className="font-semibold">{q.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {q.exchange}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-2xl font-semibold">{q.price}</p>
+                            <p
+                              className={cn(
+                                'text-sm font-medium',
+                                q.up ? 'text-chart-1' : 'text-destructive',
+                              )}
+                            >
+                              {q.change}
+                            </p>
+                          </div>
+                          <svg
+                            className={cn(
+                              'h-10 w-20',
+                              q.up ? 'text-chart-1' : 'text-destructive',
+                            )}
+                            viewBox="0 0 80 40"
+                            preserveAspectRatio="none"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              d={q.up ? trendUp : trendDown}
+                            />
+                          </svg>
+                        </div>
+                      </button>
+                    </Card>
+                  </MarketRow>
+                ))}
+              </div>
             </MarketBody>
           </MarketTable>
 

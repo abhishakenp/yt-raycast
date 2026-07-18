@@ -48,8 +48,6 @@ type TestIntent = {
   updatedAt: string
 }
 
-
-
 type MutationArgs<TMutation> = TMutation extends (
   ctx: unknown,
   ...args: infer TArgs
@@ -197,12 +195,15 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
-        isPending: false,
-        lastError: emptyLastError,
-        pendingCount: 0,
-        reset,
-      }),
+      Object.assign(
+        (...args: MutationArgs<TMutation>) => runMutation(...args),
+        {
+          isPending: false,
+          lastError: emptyLastError,
+          pendingCount: 0,
+          reset,
+        },
+      ),
     [reset, runMutation],
   )
 
@@ -259,15 +260,17 @@ function createHotelLakebedStub({
   const syncRooms = (input: Record<string, unknown>) => {
     state = {
       ...state,
-      rooms: (input.rooms as Record<string, unknown>[]).map((room: Record<string, unknown>, index: number) => ({
-        createdAt: timestamp,
-        description: room.description ?? '',
-        id: `room-${index + 1}`,
-        meta: room.meta ?? '',
-        name: room.name,
-        price: room.price ?? '',
-        updatedAt: timestamp,
-      })),
+      rooms: (input.rooms as Record<string, unknown>[]).map(
+        (room: Record<string, unknown>, index: number) => ({
+          createdAt: timestamp,
+          description: room.description ?? '',
+          id: `room-${index + 1}`,
+          meta: room.meta ?? '',
+          name: room.name,
+          price: room.price ?? '',
+          updatedAt: timestamp,
+        }),
+      ),
     }
   }
   const recordBooking = (input: Record<string, unknown>) => {

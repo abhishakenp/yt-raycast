@@ -13,7 +13,10 @@ import { Card } from '#/section-kit/Card.tsx'
  * sales-pipeline or B2B SaaS product. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { IntegrationGrid, IntegrationCard } from '#/section-kit/IntegrationGrid.tsx'
+import {
+  IntegrationGrid,
+  IntegrationCard,
+} from '#/section-kit/IntegrationGrid.tsx'
 export const CrmIntegrations = defineCapsule({
   name: 'CrmIntegrations',
   description:

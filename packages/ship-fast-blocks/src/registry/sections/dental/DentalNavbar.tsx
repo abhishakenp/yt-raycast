@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -93,12 +93,13 @@ export const DentalNavbar = defineCapsule({
             onClick={() => go(nav[0])}
             className="gap-3 text-left"
           >
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoBadge className="size-10" />}
-              className="size-10"
-              showLabel={false}
-            />
+            <BrandLogo brand={brand} className="size-10">
+              <LogoImage
+                className="size-10"
+                fallback={<LogoBadge className="size-10" />}
+              />
+              <LogoLabel />
+            </BrandLogo>
             <span className="leading-tight">
               <span className="block text-xl font-semibold text-foreground">
                 {brand}

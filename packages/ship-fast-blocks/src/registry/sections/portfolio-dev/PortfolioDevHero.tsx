@@ -92,42 +92,42 @@ export const PortfolioDevHero = defineCapsule({
             </div>
           </div>
           <HeroCodeWindow asChild>
-          <Card
-            variant="default"
-            rounded="xl"
-            padding="none"
-            shadow="sm"
-            className="overflow-hidden"
-          >
-            <HeroCodeWindowHeader>
-              <span className="size-3 rounded-full bg-muted-foreground/40" />
-              <span className="size-3 rounded-full bg-muted-foreground/30" />
-              <span className="size-3 rounded-full bg-muted-foreground/20" />
-              <span className="ml-2 font-mono text-xs text-muted-foreground">
-                ~/alex/intro.ts
-              </span>
-            </HeroCodeWindowHeader>
-            <HeroCodeWindowBody>
-              <p className="text-muted-foreground">
-                <span className="text-primary">const</span> dev = {'{'}
-              </p>
-              <p className="pl-4 text-muted-foreground">
-                name: <span className="text-accent">"Alex Chen"</span>,
-              </p>
-              <p className="pl-4 text-muted-foreground">
-                stack:{' '}
-                <span className="text-accent">["ts", "react", "node"]</span>,
-              </p>
-              <p className="pl-4 text-muted-foreground">
-                available: <span className="text-primary">true</span>,
-              </p>
-              <p className="text-muted-foreground">{'}'}</p>
-              <p className="pt-2 text-muted-foreground">
-                <span className="text-primary">$</span> npm run build{' '}
-                <span className="text-accent">✓</span>
-              </p>
-            </HeroCodeWindowBody>
-          </Card>
+            <Card
+              variant="default"
+              rounded="xl"
+              padding="none"
+              shadow="sm"
+              className="overflow-hidden"
+            >
+              <HeroCodeWindowHeader>
+                <span className="size-3 rounded-full bg-muted-foreground/40" />
+                <span className="size-3 rounded-full bg-muted-foreground/30" />
+                <span className="size-3 rounded-full bg-muted-foreground/20" />
+                <span className="ml-2 font-mono text-xs text-muted-foreground">
+                  ~/alex/intro.ts
+                </span>
+              </HeroCodeWindowHeader>
+              <HeroCodeWindowBody>
+                <p className="text-muted-foreground">
+                  <span className="text-primary">const</span> dev = {'{'}
+                </p>
+                <p className="pl-4 text-muted-foreground">
+                  name: <span className="text-accent">"Alex Chen"</span>,
+                </p>
+                <p className="pl-4 text-muted-foreground">
+                  stack:{' '}
+                  <span className="text-accent">["ts", "react", "node"]</span>,
+                </p>
+                <p className="pl-4 text-muted-foreground">
+                  available: <span className="text-primary">true</span>,
+                </p>
+                <p className="text-muted-foreground">{'}'}</p>
+                <p className="pt-2 text-muted-foreground">
+                  <span className="text-primary">$</span> npm run build{' '}
+                  <span className="text-accent">✓</span>
+                </p>
+              </HeroCodeWindowBody>
+            </Card>
           </HeroCodeWindow>
         </div>
       </HeroSection>

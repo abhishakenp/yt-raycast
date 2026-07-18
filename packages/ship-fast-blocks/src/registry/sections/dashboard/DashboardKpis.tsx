@@ -42,7 +42,9 @@ export const DashboardKpis = defineCapsule({
   }),
   lakebed: dashboardLakebed,
   component: ({ props, lakebed }) => {
-    const orderSummary = lakebed.useQuery('orderSummary') as { count: number; currentOrderId: string } | undefined
+    const orderSummary = lakebed.useQuery('orderSummary') as
+      | { count: number; currentOrderId: string }
+      | undefined
     const liveOrderCount = String(orderSummary?.count ?? 0)
     const baseKpis = props.kpis?.length
       ? props.kpis

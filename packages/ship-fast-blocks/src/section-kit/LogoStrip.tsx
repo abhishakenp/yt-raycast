@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
@@ -39,6 +40,7 @@ export const LogoStrip = React.forwardRef<
   HTMLElement,
   React.ComponentProps<'section'> &
     VariantProps<typeof logoStripVariants> & {
+      asChild?: boolean
       lead?: string
       logos: string[]
       leadClassName?: string
@@ -50,6 +52,7 @@ export const LogoStrip = React.forwardRef<
   (
     {
       className,
+      asChild = false,
       lead,
       logos: rawLogos,
       layout,
@@ -62,8 +65,9 @@ export const LogoStrip = React.forwardRef<
     ref,
   ) => {
     const logos = Array.isArray(rawLogos) ? rawLogos : []
+    const Comp = asChild ? Slot : 'section'
     return (
-      <section
+      <Comp
         ref={ref}
         data-slot="logo-strip"
         className={cn(className)}
@@ -106,43 +110,8 @@ export const LogoStrip = React.forwardRef<
             ),
           )}
         </div>
-      </section>
+      </Comp>
     )
   },
 )
 LogoStrip.displayName = 'LogoStrip'
-
-/** Label / eyebrow text above the logo strip. */
-export const LogoStripLabel = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    data-slot="logo-strip-label"
-    className={cn(
-      'text-center text-sm font-medium uppercase tracking-wide text-muted-foreground',
-      className,
-    )}
-    {...props}
-  />
-))
-LogoStripLabel.displayName = 'LogoStripLabel'
-
-/** Individual logo item in the strip. Use asChild for clickable logos. */
-export const LogoStripItem = React.forwardRef<
-  HTMLSpanElement,
-  React.HTMLAttributes<HTMLSpanElement> &
-    VariantProps<typeof logoItemVariants> & { asChild?: boolean }
->(({ className, style, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? React.Fragment : 'span'
-  return (
-    <Comp
-      ref={ref as never}
-      data-slot="logo-strip-item"
-      className={cn(logoItemVariants({ style }), className)}
-      {...props}
-    />
-  )
-})
-LogoStripItem.displayName = 'LogoStripItem'

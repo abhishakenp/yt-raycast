@@ -11,8 +11,22 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { MenuCategoryHeader } from '#/section-kit/MenuCategoryHeader.tsx'
-import { MenuItemRow } from '#/section-kit/MenuItemRow.tsx'
+import {
+  MenuCategoryHeader,
+  MenuCategoryIcon,
+  MenuCategoryTitle,
+} from '#/section-kit/MenuCategoryHeader.tsx'
+import {
+  MenuItemRow,
+  MenuItemContent,
+  MenuItemBody,
+  MenuItemNameRow,
+  MenuItemName,
+  MenuItemRowDescription,
+  MenuItemPriceColumn,
+  MenuItemRowPrice,
+  MenuItemAction,
+} from '#/section-kit/MenuItemRow.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 
 /**
@@ -241,87 +255,137 @@ export const BakeryMenu = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
-      <MenuList>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <MenuList>
+            <div className="mx-auto mb-16 max-w-3xl text-center">
+              <h2 className="mb-4 text-3xl font-semibold text-foreground lg:text-4xl">
+                {heading}
+              </h2>
+              <p className="text-lg text-muted-foreground">{description}</p>
+            </div>
 
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="rounded-xl bg-card p-8 shadow-sm">
-              <MenuCategoryHeader
-                title={breadsTitle}
-                icon={breadsEmoji}
-                iconClassName="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg"
-                titleClassName="text-2xl font-semibold text-card-foreground"
-                className="mb-6"
-              />
-              <div className="space-y-6">
-                {breads.map((item) => (
-                  <MenuItemRow
-                    key={item.name}
-                    name={item.name}
-                    description={item.description}
-                    price={item.price}
-                    nameClassName="font-semibold text-card-foreground"
-                    priceClassName="font-semibold text-card-foreground"
-                    action={<MenuAddButton item={item} section={breadsTitle} />}
-                  />
-                ))}
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+              <div className="rounded-xl bg-card p-8 shadow-sm">
+                <MenuCategoryHeader className="mb-6">
+                  <MenuCategoryIcon className="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg">
+                    {breadsEmoji}
+                  </MenuCategoryIcon>
+                  <MenuCategoryTitle className="text-2xl font-semibold text-card-foreground">
+                    {breadsTitle}
+                  </MenuCategoryTitle>
+                </MenuCategoryHeader>
+                <div className="space-y-6">
+                  {breads.map((item) => (
+                    <MenuItemRow>
+                      <MenuItemContent>
+                        <MenuItemBody>
+                          <MenuItemNameRow>
+                            <MenuItemName className="font-semibold text-card-foreground">
+                              {item.name}
+                            </MenuItemName>
+                          </MenuItemNameRow>
+                          <MenuItemRowDescription>
+                            {item.description}
+                          </MenuItemRowDescription>
+                        </MenuItemBody>
+                        <MenuItemPriceColumn>
+                          <MenuItemRowPrice className="font-semibold text-card-foreground">
+                            {item.price}
+                          </MenuItemRowPrice>
+                          <MenuItemAction>
+                            {
+                              <MenuAddButton
+                                item={item}
+                                section={breadsTitle}
+                              />
+                            }
+                          </MenuItemAction>
+                        </MenuItemPriceColumn>
+                      </MenuItemContent>
+                    </MenuItemRow>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-card p-8 shadow-sm">
+                <MenuCategoryHeader className="mb-6">
+                  <MenuCategoryIcon className="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg">
+                    {pastriesEmoji}
+                  </MenuCategoryIcon>
+                  <MenuCategoryTitle className="text-2xl font-semibold text-card-foreground">
+                    {pastriesTitle}
+                  </MenuCategoryTitle>
+                </MenuCategoryHeader>
+                <div className="space-y-6">
+                  {pastries.map((item) => (
+                    <MenuItemRow>
+                      <MenuItemContent>
+                        <MenuItemBody>
+                          <MenuItemNameRow>
+                            <MenuItemName className="font-semibold text-card-foreground">
+                              {item.name}
+                            </MenuItemName>
+                          </MenuItemNameRow>
+                          <MenuItemRowDescription>
+                            {item.description}
+                          </MenuItemRowDescription>
+                        </MenuItemBody>
+                        <MenuItemPriceColumn>
+                          <MenuItemRowPrice className="font-semibold text-card-foreground">
+                            {item.price}
+                          </MenuItemRowPrice>
+                          <MenuItemAction>
+                            {
+                              <MenuAddButton
+                                item={item}
+                                section={pastriesTitle}
+                              />
+                            }
+                          </MenuItemAction>
+                        </MenuItemPriceColumn>
+                      </MenuItemContent>
+                    </MenuItemRow>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="rounded-xl bg-card p-8 shadow-sm">
-              <MenuCategoryHeader
-                title={pastriesTitle}
-                icon={pastriesEmoji}
-                iconClassName="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg"
-                titleClassName="text-2xl font-semibold text-card-foreground"
-                className="mb-6"
-              />
-              <div className="space-y-6">
-                {pastries.map((item) => (
-                  <MenuItemRow
-                    key={item.name}
-                    name={item.name}
-                    description={item.description}
-                    price={item.price}
-                    nameClassName="font-semibold text-card-foreground"
-                    priceClassName="font-semibold text-card-foreground"
-                    action={
-                      <MenuAddButton item={item} section={pastriesTitle} />
-                    }
-                  />
+            <div className="mt-8 rounded-xl bg-card p-8 shadow-sm">
+              <MenuCategoryHeader className="mb-6">
+                <MenuCategoryIcon className="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg">
+                  {cakesEmoji}
+                </MenuCategoryIcon>
+                <MenuCategoryTitle className="text-2xl font-semibold text-card-foreground">
+                  {cakesTitle}
+                </MenuCategoryTitle>
+              </MenuCategoryHeader>
+              <div className="grid gap-6 md:grid-cols-3">
+                {cakes.map((item) => (
+                  <MenuItemRow>
+                    <MenuItemContent>
+                      <MenuItemBody>
+                        <MenuItemNameRow>
+                          <MenuItemName className="font-semibold text-card-foreground">
+                            {item.name}
+                          </MenuItemName>
+                        </MenuItemNameRow>
+                        <MenuItemRowDescription>
+                          {item.description}
+                        </MenuItemRowDescription>
+                      </MenuItemBody>
+                      <MenuItemPriceColumn>
+                        <MenuItemRowPrice className="font-semibold text-card-foreground">
+                          {item.price}
+                        </MenuItemRowPrice>
+                        <MenuItemAction>
+                          {<MenuAddButton item={item} section={cakesTitle} />}
+                        </MenuItemAction>
+                      </MenuItemPriceColumn>
+                    </MenuItemContent>
+                  </MenuItemRow>
                 ))}
               </div>
             </div>
-          </div>
-
-          <div className="mt-8 rounded-xl bg-card p-8 shadow-sm">
-            <MenuCategoryHeader
-              title={cakesTitle}
-              icon={cakesEmoji}
-              iconClassName="grid size-10 place-items-center rounded-lg bg-primary/10 text-lg"
-              titleClassName="text-2xl font-semibold text-card-foreground"
-              className="mb-6"
-            />
-            <div className="grid gap-6 md:grid-cols-3">
-              {cakes.map((item) => (
-                <MenuItemRow
-                  key={item.name}
-                  name={item.name}
-                  description={item.description}
-                  price={item.price}
-                  nameClassName="font-semibold text-card-foreground"
-                  priceClassName="font-semibold text-card-foreground"
-                  action={<MenuAddButton item={item} section={cakesTitle} />}
-                />
-              ))}
-            </div>
-          </div>
-      </MenuList>
+          </MenuList>
         </Container>
       </section>
     )

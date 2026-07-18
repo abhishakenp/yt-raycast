@@ -57,7 +57,10 @@ import { ChurchNavbar } from '#/registry/sections/church/ChurchNavbar.tsx'
 import { ChurchFaq } from '#/registry/sections/church/ChurchFaq.tsx'
 import { ChurchStats } from '#/registry/sections/church/ChurchStats.tsx'
 
-function renderCapsule(Component: CapsuleRenderer<P>, props: P) {
+function renderCapsule(
+  Component: CapsuleRenderer<Record<string, unknown>>,
+  props: Record<string, unknown>,
+) {
   return render(<Component props={props} statementId="invariant-test" />)
 }
 
@@ -136,7 +139,10 @@ describe('registry capsule invariants', () => {
     // Each is rendered and its root element must carry the capsule name as the
     // data-openui-component attribute — the runtime marker stamped by
     // defineCapsule's wrapper.
-    const button = renderCapsule(Button.client.component, { label: 'Click me' })
+    const button = renderCapsule(
+      Button.client.component as CapsuleRenderer<Record<string, unknown>>,
+      { label: 'Click me' },
+    )
     expect(
       button.container.firstElementChild?.getAttribute('data-openui-component'),
     ).toBe('Button')

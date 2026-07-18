@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { NavSidebar } from '#/section-kit/NavSidebar.tsx'
 import { Image } from '#/lib/img.tsx'
 import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
@@ -45,7 +45,8 @@ export const AnalyticsSidebar = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const auth = lakebed.useAuth()
-    const unreadCount = (lakebed.useQuery('unreadNotificationCount') ?? 0) as number
+    const unreadCount = (lakebed.useQuery('unreadNotificationCount') ??
+      0) as number
     const brand = props.brand ?? 'DataFlow'
     const nav = props.nav?.length
       ? props.nav
@@ -139,11 +140,10 @@ export const AnalyticsSidebar = defineCapsule({
       >
         <div className="border-b border-border p-6">
           <div className="flex items-center gap-3">
-            <BrandLogo
-              brand={brand}
-              fallback={<LogoMark className="size-8 text-sm" />}
-              labelClassName="text-lg font-semibold text-card-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
+              <LogoLabel className="text-lg font-semibold text-card-foreground" />
+            </BrandLogo>
           </div>
         </div>
 

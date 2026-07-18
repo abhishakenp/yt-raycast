@@ -115,12 +115,15 @@ function useTestMutation<TMutation>({
   const emptyLastError: unknown | null = null
   const mutation = useMemo(
     () =>
-      Object.assign((...args: MutationArgs<TMutation>) => runMutation(...args), {
-        isPending: false,
-        lastError: emptyLastError,
-        pendingCount: 0,
-        reset,
-      }),
+      Object.assign(
+        (...args: MutationArgs<TMutation>) => runMutation(...args),
+        {
+          isPending: false,
+          lastError: emptyLastError,
+          pendingCount: 0,
+          reset,
+        },
+      ),
     [reset, runMutation],
   )
 
@@ -160,16 +163,18 @@ function createCommerceLakebedStub() {
   const syncCatalogProducts = (products: readonly unknown[]) => {
     state = {
       ...state,
-      products: products.map((product: Record<string, unknown>, index: number) => ({
-        createdAt: timestamp,
-        id: `product-${index + 1}`,
-        imageAlt: product.imageAlt ?? '',
-        itemKey: '',
-        label: product.label,
-        price: product.price ?? '',
-        subtitle: product.subtitle ?? '',
-        updatedAt: timestamp,
-      })),
+      products: products.map(
+        (product: Record<string, unknown>, index: number) => ({
+          createdAt: timestamp,
+          id: `product-${index + 1}`,
+          imageAlt: product.imageAlt ?? '',
+          itemKey: '',
+          label: product.label,
+          price: product.price ?? '',
+          subtitle: product.subtitle ?? '',
+          updatedAt: timestamp,
+        }),
+      ),
     }
   }
   const addItem = async (input: Record<string, unknown>) => {

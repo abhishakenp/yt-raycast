@@ -144,33 +144,36 @@ export const FoodTruckLocations = defineCapsule({
           <ResponsiveGrid gap="md" className="md:grid-cols-3">
             {locDays.map((d, i) => (
               <LocationItem asChild key={d.day}>
-                <div
-                  className="rounded-xl bg-card p-6 text-card-foreground shadow-sm"
-                >
-                <div className="mb-4 flex items-center gap-3">
-                  <div
-                    className={cn(
-                      'grid size-12 place-items-center rounded-lg font-bold',
-                      dayAccents[i % dayAccents.length],
-                    )}
-                  >
-                    {d.initial}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{d.day}</h3>
-                    <p className="text-sm text-muted-foreground">{d.area}</p>
-                  </div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  {(d.rows ?? []).map((row) => (
-                    <div key={row.label} className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">{row.label}</span>
-                      <span className="text-right font-medium">
-                        {row.value}
-                      </span>
+                <div className="rounded-xl bg-card p-6 text-card-foreground shadow-sm">
+                  <div className="mb-4 flex items-center gap-3">
+                    <div
+                      className={cn(
+                        'grid size-12 place-items-center rounded-lg font-bold',
+                        dayAccents[i % dayAccents.length],
+                      )}
+                    >
+                      {d.initial}
                     </div>
-                  ))}
-                </div>
+                    <div>
+                      <h3 className="font-semibold">{d.day}</h3>
+                      <p className="text-sm text-muted-foreground">{d.area}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    {(d.rows ?? []).map((row) => (
+                      <div
+                        key={row.label}
+                        className="flex justify-between gap-4"
+                      >
+                        <span className="text-muted-foreground">
+                          {row.label}
+                        </span>
+                        <span className="text-right font-medium">
+                          {row.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </LocationItem>
             ))}

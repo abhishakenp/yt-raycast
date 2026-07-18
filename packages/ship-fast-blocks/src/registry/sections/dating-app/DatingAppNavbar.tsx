@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -74,15 +74,16 @@ export const DatingAppNavbar = defineCapsule({
       >
         <NavbarBrand asChild>
           <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo
-              brand={brand}
-              fallback={
-                <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
-                  <HeartGlyph className="size-5" />
-                </span>
-              }
-              labelClassName="text-xl font-bold text-foreground"
-            />
+            <BrandLogo brand={brand}>
+              <LogoImage
+                fallback={
+                  <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
+                    <HeartGlyph className="size-5" />
+                  </span>
+                }
+              />
+              <LogoLabel className="text-xl font-bold text-foreground" />
+            </BrandLogo>
           </button>
         </NavbarBrand>
 

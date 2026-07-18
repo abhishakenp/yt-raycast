@@ -11,7 +11,10 @@ import {
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { FinancingCalculator, FinancingDisplay } from '#/section-kit/FinancingCalculator.tsx'
+import {
+  FinancingCalculator,
+  FinancingDisplay,
+} from '#/section-kit/FinancingCalculator.tsx'
 
 /**
  * AutoDealershipFinancing — financing / pre-approval section for an auto
@@ -86,77 +89,77 @@ export const AutoDealershipFinancing = defineCapsule({
       <FinancingCalculator asChild>
         <section className={cn('bg-card py-16 lg:py-24', props.className)}>
           <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="order-2 lg:order-1">
-              <Image
-                alt={imageAlt}
-                w={800}
-                h={600}
-                loading="lazy"
-                className="aspect-[4/3] w-full rounded-lg object-cover shadow-lg"
-              />
-            </div>
-            <div className="order-1 space-y-8 lg:order-2">
-              <div className="space-y-4">
-                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                  {heading}
-                </h2>
-                <p className="text-lg leading-relaxed text-muted-foreground">
-                  {description}
-                </p>
+            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+              <div className="order-2 lg:order-1">
+                <Image
+                  alt={imageAlt}
+                  w={800}
+                  h={600}
+                  loading="lazy"
+                  className="aspect-[4/3] w-full rounded-lg object-cover shadow-lg"
+                />
               </div>
-              <div className="space-y-4">
-                {steps.map((step, i) => (
-                  <Card
-                    key={step.title}
-                    variant="muted"
-                    rounded="lg"
-                    padding="sm"
-                    className="flex items-start gap-4"
-                  >
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                      {i + 1}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">{step.title}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {step.description}
-                      </p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-              <FinancingDisplay className="rounded-lg bg-muted p-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  {stats.map((s) => (
-                    <div key={s.label}>
-                      <p className="text-3xl font-semibold">{s.value}</p>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                        {s.label}
-                      </p>
-                    </div>
+              <div className="order-1 space-y-8 lg:order-2">
+                <div className="space-y-4">
+                  <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                    {heading}
+                  </h2>
+                  <p className="text-lg leading-relaxed text-muted-foreground">
+                    {description}
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  {steps.map((step, i) => (
+                    <Card
+                      key={step.title}
+                      variant="muted"
+                      rounded="lg"
+                      padding="sm"
+                      className="flex items-start gap-4"
+                    >
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                        {i + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">{step.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {step.description}
+                        </p>
+                      </div>
+                    </Card>
                   ))}
                 </div>
-              </FinancingDisplay>
-              <AutoLeadActionButton
-                lakebed={lakebed}
-                action="financing"
-                label={cta}
-                intentKey="financing-application"
-                source="financing"
-                pendingChildren={
-                  <>
-                    <AutoMutationSpinner />
-                    Sending
-                  </>
-                }
-                className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {cta}
-              </AutoLeadActionButton>
+                <FinancingDisplay className="rounded-lg bg-muted p-6">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    {stats.map((s) => (
+                      <div key={s.label}>
+                        <p className="text-3xl font-semibold">{s.value}</p>
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                          {s.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </FinancingDisplay>
+                <AutoLeadActionButton
+                  lakebed={lakebed}
+                  action="financing"
+                  label={cta}
+                  intentKey="financing-application"
+                  source="financing"
+                  pendingChildren={
+                    <>
+                      <AutoMutationSpinner />
+                      Sending
+                    </>
+                  }
+                  className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {cta}
+                </AutoLeadActionButton>
+              </div>
             </div>
-          </div>
-        </Container>
+          </Container>
         </section>
       </FinancingCalculator>
     )
