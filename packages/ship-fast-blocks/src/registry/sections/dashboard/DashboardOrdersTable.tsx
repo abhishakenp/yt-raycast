@@ -12,6 +12,7 @@ import {
   DataHeader,
   DataBody,
   DataRow,
+  DataTableCell,
 } from '#/section-kit/DataTable.tsx'
 import {
   dashboardLakebed,
@@ -292,10 +293,10 @@ export const DashboardOrdersTable = defineCapsule({
                           key={id}
                           className="transition-colors hover:bg-muted/60"
                         >
-                          <td className="px-5 py-3.5 font-medium text-foreground">
+                          <DataTableCell className="font-medium text-foreground">
                             {id}
-                          </td>
-                          <td className="px-5 py-3.5">
+                          </DataTableCell>
+                          <DataTableCell>
                             <div className="flex items-center gap-2.5">
                               <span className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground">
                                 {initial}
@@ -304,17 +305,17 @@ export const DashboardOrdersTable = defineCapsule({
                                 {customer}
                               </span>
                             </div>
-                          </td>
-                          <td className="px-5 py-3.5 text-muted-foreground">
+                          </DataTableCell>
+                          <DataTableCell className="text-muted-foreground">
                             {product}
-                          </td>
-                          <td className="px-5 py-3.5 text-muted-foreground">
+                          </DataTableCell>
+                          <DataTableCell className="text-muted-foreground">
                             {date}
-                          </td>
-                          <td className="px-5 py-3.5 font-medium text-foreground">
+                          </DataTableCell>
+                          <DataTableCell className="font-medium text-foreground">
                             {amount}
-                          </td>
-                          <td className="px-5 py-3.5">
+                          </DataTableCell>
+                          <DataTableCell>
                             <span
                               className={cn(
                                 'inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium',
@@ -329,8 +330,8 @@ export const DashboardOrdersTable = defineCapsule({
                               />
                               {status}
                             </span>
-                          </td>
-                          <td className="px-5 py-3.5 text-right">
+                          </DataTableCell>
+                          <DataTableCell className="text-right">
                             <button
                               type="button"
                               aria-label={`Actions for ${id}`}
@@ -366,7 +367,7 @@ export const DashboardOrdersTable = defineCapsule({
                                 <circle cx="5" cy="12" r="1" />
                               </svg>
                             </button>
-                          </td>
+                          </DataTableCell>
                         </tr>
                       </DataRow>
                     )
