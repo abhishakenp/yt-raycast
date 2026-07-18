@@ -14,6 +14,7 @@ import {
   FeaturedArticleContent,
   FeaturedArticleMeta,
 } from '#/section-kit/FeaturedArticle.tsx'
+import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 
 /**
  * NewsroomFeaturedStory — editorial "Editor's Pick" featured long-read band for
@@ -131,9 +132,9 @@ export const NewsroomFeaturedStory = defineCapsule({
                   </li>
                 ))}
               </ul>
-              <blockquote className="mb-8 border-l-2 border-border pl-5 font-serif text-xl italic leading-relaxed text-foreground">
+              <PullQuoteText className="mb-8 border-l-2 border-border pl-5 font-serif text-xl italic leading-relaxed">
                 “{quote}”
-              </blockquote>
+              </PullQuoteText>
               <FeaturedArticleMeta className="mb-8">
                 <span className="font-medium text-foreground">{author}</span>
                 <span aria-hidden="true">•</span>

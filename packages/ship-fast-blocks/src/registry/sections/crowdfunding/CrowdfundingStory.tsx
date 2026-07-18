@@ -7,6 +7,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { SplitStory } from '#/section-kit/SplitStory.tsx'
+import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 
 /**
  * CrowdfundingStory — a long-form founder STORY section for a crowdfunding /
@@ -119,12 +120,12 @@ export const CrowdfundingStory = defineCapsule({
             ))}
           </ResponsiveGrid>
 
-          <blockquote className="my-12 border-l-4 border-primary py-2 pl-6 text-xl italic text-foreground/80">
+          <PullQuoteText className="my-12 block border-l-4 border-primary py-2 pl-6 text-xl italic text-foreground/80">
             &ldquo;{storyQuote}&rdquo;
             <footer className="mt-2 text-sm not-italic text-muted-foreground">
               — {storyQuoteAuthor}
             </footer>
-          </blockquote>
+          </PullQuoteText>
 
           <div className="mb-12 rounded-xl bg-card p-8 shadow-sm">
             <h3 className="mb-6 text-2xl font-semibold">{problemHeading}</h3>

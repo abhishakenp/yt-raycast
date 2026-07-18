@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 
 /**
  * BlogPostAbout — long-form editorial article body for a blog post detail page.
@@ -307,14 +308,14 @@ export const BlogPostAbout = defineCapsule({
 
               {/* Pull-quote after the first section */}
               {sIdx === 0 ? (
-                <blockquote className="my-12 border-l-4 border-primary py-2 pl-6">
+                <PullQuoteText className="my-12 block border-l-4 border-primary py-2 pl-6">
                   <p className="font-serif text-2xl italic leading-relaxed text-foreground md:text-3xl">
                     &ldquo;{pullQuote}&rdquo;
                   </p>
                   <footer className="mt-4 text-sm text-muted-foreground">
                     — {pullQuoteAttribution}
                   </footer>
-                </blockquote>
+                </PullQuoteText>
               ) : null}
             </div>
           ))}
