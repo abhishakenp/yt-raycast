@@ -18,6 +18,7 @@ import {
   PricingTierFeature,
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AnalyticsPricing — three-tier pricing band for an analytics product, composing
@@ -117,7 +118,7 @@ export const AnalyticsPricing = defineCapsule({
 
     return (
       <section className={cn('bg-background py-20 sm:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -220,7 +221,7 @@ export const AnalyticsPricing = defineCapsule({
               )
             })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },

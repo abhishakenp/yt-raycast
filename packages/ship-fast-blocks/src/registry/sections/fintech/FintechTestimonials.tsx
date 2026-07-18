@@ -10,6 +10,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FintechTestimonials — social-proof section for a fintech / neobank landing
@@ -87,7 +88,7 @@ export const FintechTestimonials = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <TestimonialGrid
             heading={heading}
             subheading={subheading}
@@ -118,7 +119,7 @@ export const FintechTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

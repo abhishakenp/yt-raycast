@@ -10,6 +10,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * HotelResortAmenities — editorial amenities grid for a luxury hotel / resort &
@@ -99,7 +100,7 @@ export const HotelResortAmenities = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -137,7 +138,7 @@ export const HotelResortAmenities = defineCapsule({
                 )
               })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

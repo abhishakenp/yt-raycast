@@ -9,6 +9,7 @@ import {
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * HotelResortGallery — masonry photo gallery for a luxury hotel / resort & spa
@@ -55,7 +56,7 @@ export const HotelResortGallery = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="mb-16 max-w-2xl">
             <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -91,7 +92,7 @@ export const HotelResortGallery = defineCapsule({
                 })}
             </GalleryGridItems>
           </GalleryGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -10,6 +10,7 @@ import {
   PortfolioMedia,
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * WriterAuthorWork — a "Selected works" books grid for a literary author site.
@@ -87,7 +88,7 @@ export const WriterAuthorWork = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow="Books"
             title={props.heading ?? 'Selected works'}
@@ -127,7 +128,7 @@ export const WriterAuthorWork = defineCapsule({
               </div>
             ))}
           </PortfolioGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -15,6 +15,7 @@ import {
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const DEFAULT_TIERS: {
   name: string
@@ -105,7 +106,7 @@ export const PetVeterinaryPricing = defineCapsule({
           (props.className ? ' ' + props.className : '')
         }
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <PricingGrid>
             <SectionHeading title={heading} subtitle={subheading} />
             {tiers.map((tier) => {
@@ -197,7 +198,7 @@ export const PetVeterinaryPricing = defineCapsule({
               )
             })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },

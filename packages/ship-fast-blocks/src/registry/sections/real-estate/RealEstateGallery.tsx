@@ -9,6 +9,7 @@ import {
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * RealEstateGallery — featured-listings grid for a premium brokerage. A
@@ -107,7 +108,7 @@ export const RealEstateGallery = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
               {heading}
@@ -143,7 +144,7 @@ export const RealEstateGallery = defineCapsule({
                 })}
             </GalleryGridItems>
           </GalleryGrid>
-        </div>
+        </Container>
       </section>
     )
   },

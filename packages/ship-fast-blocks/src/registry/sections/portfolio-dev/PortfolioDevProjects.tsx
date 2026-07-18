@@ -12,6 +12,7 @@ import {
   PortfolioCaption,
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const PortfolioDevProjects = defineCapsule({
   name: 'PortfolioDevProjects',
@@ -83,7 +84,7 @@ export const PortfolioDevProjects = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -145,7 +146,7 @@ export const PortfolioDevProjects = defineCapsule({
               </PortfolioItem>
             ))}
           </PortfolioGrid>
-        </div>
+        </Container>
       </section>
     )
   },

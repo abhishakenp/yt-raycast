@@ -25,6 +25,7 @@ import {
   MenuItemDescription,
   MenuItemPrice,
 } from '#/section-kit/MenuList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -288,7 +289,7 @@ export const CafeMenu = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <MenuList>
             <SectionHeading
               eyebrow={cap}
@@ -381,7 +382,7 @@ export const CafeMenu = defineCapsule({
               </div>
             </div>
           </MenuList>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -9,6 +9,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * SpaWellnessServices — treatment-menu grid for a day-spa / wellness page. A
@@ -100,7 +101,7 @@ export const SpaWellnessServices = defineCapsule({
         )}
         aria-labelledby="spa-services-heading"
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2
               id="spa-services-heading"
@@ -138,7 +139,7 @@ export const SpaWellnessServices = defineCapsule({
                 )
               })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

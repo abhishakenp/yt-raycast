@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * HotelResortStats — quiet KPI stats band for a luxury hotel / resort & spa
@@ -42,7 +43,7 @@ export const HotelResortStats = defineCapsule({
 
     return (
       <section className={cn('bg-muted pt-28 pb-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
@@ -56,7 +57,7 @@ export const HotelResortStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

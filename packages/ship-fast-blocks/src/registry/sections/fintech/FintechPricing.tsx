@@ -16,6 +16,7 @@ import {
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FintechPricing — three-tier pricing section for a fintech / neobank landing
@@ -104,7 +105,7 @@ export const FintechPricing = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <PricingGrid>
             <SectionHeading title={heading} subtitle={subheading} />
             {tiers.map((tier) => {
@@ -196,7 +197,7 @@ export const FintechPricing = defineCapsule({
               )
             })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },

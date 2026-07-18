@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { PathwayGrid, PathwayCard } from '#/section-kit/PathwayGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ChurchPathways — a 3-up "next step" pathways grid for a church or faith-community
@@ -72,7 +73,7 @@ export const ChurchPathways = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -95,7 +96,7 @@ export const ChurchPathways = defineCapsule({
               </PathwayCard>
             ))}
           </PathwayGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -18,6 +18,7 @@ import {
   PricingTierFeature,
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AeoPricing — three-tier pricing for an Answer-Engine-Optimization (AEO) SaaS.
@@ -116,7 +117,7 @@ export const AeoPricing = defineCapsule({
 
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             title={heading}
             subtitle={subheading}
@@ -222,7 +223,7 @@ export const AeoPricing = defineCapsule({
               )
             })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },

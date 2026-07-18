@@ -11,6 +11,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AnalyticsTestimonials — social-proof testimonial band for an analytics
@@ -78,7 +79,7 @@ export const AnalyticsTestimonials = defineCapsule({
 
     return (
       <section className={cn('bg-muted/30 py-20 sm:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -111,7 +112,7 @@ export const AnalyticsTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

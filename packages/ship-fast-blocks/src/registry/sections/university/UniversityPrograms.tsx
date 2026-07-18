@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ProgramGrid, ProgramCard } from '#/section-kit/ProgramGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { cn } from '#/lib/utils.ts'
 
@@ -84,7 +85,7 @@ export const UniversityPrograms = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -118,7 +119,7 @@ export const UniversityPrograms = defineCapsule({
               </ProgramCard>
             ))}
           </ProgramGrid>
-        </div>
+        </Container>
       </section>
     )
   },

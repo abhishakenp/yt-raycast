@@ -10,6 +10,7 @@ import {
   StepBadge,
   StepContent,
 } from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const TelehealthSteps = defineCapsule({
   name: 'TelehealthSteps',
@@ -55,7 +56,7 @@ export const TelehealthSteps = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading title={heading} subtitle={subheading} />
           <StepTimelineGrid columns={3} className="mt-14 gap-10">
             {steps.map((step, i) => (
@@ -79,7 +80,7 @@ export const TelehealthSteps = defineCapsule({
               </StepItem>
             ))}
           </StepTimelineGrid>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

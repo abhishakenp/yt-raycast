@@ -9,6 +9,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const ICONS: ReactNode[] = [
   // battery (40-hour)
@@ -128,7 +129,7 @@ export const ProductDetailFeatures = defineCapsule({
 
     return (
       <section className="bg-background py-20 sm:py-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <FeatureGrid
             heading={heading}
             subheading={subheading}
@@ -156,7 +157,7 @@ export const ProductDetailFeatures = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

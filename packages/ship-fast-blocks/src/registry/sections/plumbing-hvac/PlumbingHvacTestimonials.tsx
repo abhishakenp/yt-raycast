@@ -9,6 +9,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PlumbingHvacTestimonials — a social-proof band for a plumbing & HVAC trade
@@ -82,7 +83,7 @@ export const PlumbingHvacTestimonials = defineCapsule({
 
     return (
       <section className="bg-muted/30 pt-28 pb-20 lg:pt-32 lg:pb-28">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <TestimonialGrid
             heading={heading}
             subheading={subheading}
@@ -114,7 +115,7 @@ export const PlumbingHvacTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

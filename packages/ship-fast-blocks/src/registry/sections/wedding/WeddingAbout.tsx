@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { SplitStory, SplitStoryGrid } from '#/section-kit/SplitStory.tsx'
 import { StepItem, StepContent } from '#/section-kit/StepTimeline.tsx'
 
@@ -67,7 +68,7 @@ export const WeddingAbout = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -122,7 +123,7 @@ export const WeddingAbout = defineCapsule({
               ))}
             </ol>
           </SplitStoryGrid>
-        </div>
+        </Container>
       </SplitStory>
     )
   },

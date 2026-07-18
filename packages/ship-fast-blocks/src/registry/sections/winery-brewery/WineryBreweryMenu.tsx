@@ -22,6 +22,7 @@ import {
 } from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -177,7 +178,7 @@ export const WineryBreweryMenu = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <MenuList>
             <SectionHeading
               title={heading}
@@ -241,7 +242,7 @@ export const WineryBreweryMenu = defineCapsule({
               ))}
             </div>
           </MenuList>
-        </div>
+        </Container>
       </section>
     )
   },

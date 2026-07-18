@@ -7,6 +7,7 @@ import {
   ProgramCard,
   ProgramIcon,
 } from '#/section-kit/ProgramGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * YogaStudioPrograms — class-types grid for a yoga-studio page. A warm
@@ -91,7 +92,7 @@ export const YogaStudioPrograms = defineCapsule({
         )}
         aria-labelledby="yoga-programs-heading"
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2
               id="yoga-programs-heading"
@@ -133,7 +134,7 @@ export const YogaStudioPrograms = defineCapsule({
               </ProgramCard>
             ))}
           </ProgramGrid>
-        </div>
+        </Container>
       </section>
     )
   },

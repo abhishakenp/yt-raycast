@@ -8,6 +8,7 @@ import {
   GalleryMasonry,
   GalleryMasonryColumn,
 } from '#/section-kit/GalleryGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CafeGallery — masonry photo gallery for a cozy cafe / coffee shop page,
@@ -42,7 +43,7 @@ export const CafeGallery = defineCapsule({
 
     return (
       <section className={cn('bg-card pt-28 pb-20', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <GalleryMasonry columns="2-3">
             <GalleryMasonryColumn>
               <MasonryTile treatment="3-4-xl">
@@ -105,7 +106,7 @@ export const CafeGallery = defineCapsule({
               </MasonryTile>
             </GalleryMasonryColumn>
           </GalleryMasonry>
-        </div>
+        </Container>
       </section>
     )
   },

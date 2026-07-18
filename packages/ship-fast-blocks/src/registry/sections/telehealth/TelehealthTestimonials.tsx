@@ -9,6 +9,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const TelehealthTestimonials = defineCapsule({
   name: 'TelehealthTestimonials',
@@ -67,7 +68,7 @@ export const TelehealthTestimonials = defineCapsule({
 
     return (
       <section className="bg-muted/30 pt-28 pb-20 sm:pt-32 sm:pb-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <TestimonialGrid
             heading={heading}
             subheading={subheading}
@@ -99,7 +100,7 @@ export const TelehealthTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

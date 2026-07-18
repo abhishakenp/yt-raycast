@@ -8,6 +8,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const ICONS = {
   wellness: (
@@ -159,7 +160,7 @@ export const PetVeterinaryServices = defineCapsule({
           (props.className ? ' ' + props.className : '')
         }
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <FeatureGrid heading={heading} subheading={subheading} columns={4}>
             {features.map((f) => {
               const __iv__ = f as {
@@ -180,7 +181,7 @@ export const PetVeterinaryServices = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

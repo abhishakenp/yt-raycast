@@ -8,6 +8,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
 
 export const PetVeterinaryStats = defineCapsule({
@@ -39,7 +40,7 @@ export const PetVeterinaryStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           {props.heading ? (
             <SectionHeading title={props.heading} subtitle={props.subheading} />
           ) : null}
@@ -56,7 +57,7 @@ export const PetVeterinaryStats = defineCapsule({
               })}
             </StatGrid>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

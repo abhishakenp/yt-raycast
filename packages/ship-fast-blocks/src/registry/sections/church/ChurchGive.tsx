@@ -14,6 +14,7 @@ import {
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { DonationBand } from '#/section-kit/DonationBand.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ChurchGive — generosity / give split section for a church or faith-community site.
@@ -140,7 +141,7 @@ export const ChurchGive = defineCapsule({
         <section
           className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}
         >
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <Container size="xl" className="px-6">
             <div className="grid items-center gap-16 lg:grid-cols-2">
               <div>
                 <SectionHeading
@@ -226,7 +227,7 @@ export const ChurchGive = defineCapsule({
                 </div>
               </div>
             </div>
-          </div>
+          </Container>
         </section>
       </DonationBand>
     )

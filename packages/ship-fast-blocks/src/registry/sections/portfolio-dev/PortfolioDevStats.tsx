@@ -9,6 +9,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PortfolioDevStats — a track-record stats band for a modern developer
@@ -62,7 +63,7 @@ export const PortfolioDevStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
           <div className="mt-12">
             <StatGrid columns={4}>
@@ -77,7 +78,7 @@ export const PortfolioDevStats = defineCapsule({
               })}
             </StatGrid>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

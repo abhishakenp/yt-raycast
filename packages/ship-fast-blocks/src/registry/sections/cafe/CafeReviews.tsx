@@ -11,6 +11,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CafeReviews — 3-up customer-review wall for a cozy cafe / coffee shop page.
@@ -84,7 +85,7 @@ export const CafeReviews = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
               {cap}
@@ -144,7 +145,7 @@ export const CafeReviews = defineCapsule({
               </svg>
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

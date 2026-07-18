@@ -8,6 +8,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const ICONS = {
   math: (
@@ -201,7 +202,7 @@ export const TutoringServices = defineCapsule({
           (props.className ? ' ' + props.className : '')
         }
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <FeatureGrid
             heading={heading}
             subheading={subheading}
@@ -226,7 +227,7 @@ export const TutoringServices = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

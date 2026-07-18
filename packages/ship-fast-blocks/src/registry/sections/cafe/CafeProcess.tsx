@@ -9,6 +9,7 @@ import {
   StepTimelineGrid,
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CafeProcess — dark "farm to cup" numbered process band for a cozy cafe /
@@ -72,7 +73,7 @@ export const CafeProcess = defineCapsule({
         variant="inverted"
         className={cn('pt-28 pb-20', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <StepTimelineHeader>
             <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
               {cap}
@@ -96,7 +97,7 @@ export const CafeProcess = defineCapsule({
               </StepItem>
             ))}
           </StepTimelineGrid>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

@@ -8,6 +8,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AeoStats — proof-point stat band for an Answer-Engine-Optimization (AEO) SaaS.
@@ -53,7 +54,7 @@ export const AeoStats = defineCapsule({
           (props.className ? ' ' + props.className : '')
         }
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="mb-12">
             <SectionHeading
               eyebrow={props.eyebrow ?? 'By the numbers'}
@@ -77,7 +78,7 @@ export const AeoStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

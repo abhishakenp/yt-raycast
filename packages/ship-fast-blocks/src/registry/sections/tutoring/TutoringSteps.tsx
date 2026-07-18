@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StepTimeline, StepItem, StepContent } from '#/section-kit/StepTimeline.tsx'
+import {
+  StepTimeline,
+  StepItem,
+  StepContent,
+} from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const DEFAULT_STEPS: { title: string; description: string }[] = [
   {
@@ -56,7 +61,7 @@ export const TutoringSteps = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -88,7 +93,7 @@ export const TutoringSteps = defineCapsule({
               </StepItem>
             ))}
           </ol>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

@@ -9,6 +9,7 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const ProductDetailGallery = defineCapsule({
   name: 'ProductDetailGallery',
@@ -65,7 +66,7 @@ export const ProductDetailGallery = defineCapsule({
 
     return (
       <section className="bg-muted/30 py-20 sm:py-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <GalleryGrid className={props.className}>
             <SectionHeading title={heading} subtitle={subheading} />
             <GalleryGridItems columns={columns}>
@@ -87,7 +88,7 @@ export const ProductDetailGallery = defineCapsule({
               })}
             </GalleryGridItems>
           </GalleryGrid>
-        </div>
+        </Container>
       </section>
     )
   },

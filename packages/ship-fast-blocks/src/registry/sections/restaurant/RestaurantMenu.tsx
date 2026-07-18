@@ -10,6 +10,7 @@ import {
 } from '#/section-kit/MenuCategoryHeader.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   RestaurantMutationSpinner,
   useRestaurantExperience,
@@ -168,7 +169,7 @@ export const RestaurantMenu = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <MenuList>
             <div className="mx-auto mb-16 max-w-2xl text-center">
               <SectionHeading
@@ -279,7 +280,7 @@ export const RestaurantMenu = defineCapsule({
               ))}
             </div>
           </MenuList>
-        </div>
+        </Container>
       </section>
     )
   },

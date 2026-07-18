@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * RealEstateStats — a confident track-record band for a brokerage. An optional
@@ -54,7 +55,7 @@ export const RealEstateStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           {heading || description ? (
             <SectionHeading title={heading} subtitle={description} />
           ) : null}
@@ -71,7 +72,7 @@ export const RealEstateStats = defineCapsule({
               })}
             </StatGrid>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

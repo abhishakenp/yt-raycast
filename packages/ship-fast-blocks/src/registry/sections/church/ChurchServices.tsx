@@ -10,6 +10,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ChurchServices — split weekly service-times section for a church or faith-community
@@ -155,7 +156,7 @@ export const ChurchServices = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="grid items-start gap-16 lg:grid-cols-2">
             <div>
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -216,7 +217,7 @@ export const ChurchServices = defineCapsule({
               </Card>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

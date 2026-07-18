@@ -10,6 +10,7 @@ import {
   ListingCardMedia,
   ListingCardSpecRow,
 } from '#/section-kit/ListingCard.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import type { PropertyListingCatalogInput } from './property-listing-lakebed.ts'
 import {
   propertyListingLakebed,
@@ -156,7 +157,7 @@ export const PropertyListingGallery = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               {heading}
@@ -283,7 +284,7 @@ export const PropertyListingGallery = defineCapsule({
               </div>
             ) : null}
           </ResponsiveGrid>
-        </div>
+        </Container>
       </section>
     )
   },

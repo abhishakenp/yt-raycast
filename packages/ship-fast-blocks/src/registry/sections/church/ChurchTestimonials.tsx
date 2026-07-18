@@ -10,6 +10,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ChurchTestimonials — a 3-up member testimonials wall for a church or faith-community
@@ -86,7 +87,7 @@ export const ChurchTestimonials = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -124,7 +125,7 @@ export const ChurchTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

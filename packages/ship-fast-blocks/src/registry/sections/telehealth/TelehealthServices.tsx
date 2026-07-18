@@ -8,6 +8,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const ICONS = [
   // Primary Care — stethoscope
@@ -130,7 +131,7 @@ export const TelehealthServices = defineCapsule({
 
     return (
       <section className="bg-background pt-28 pb-20 sm:pt-32 sm:pb-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <FeatureGrid
             heading={heading}
             subheading={subheading}
@@ -156,7 +157,7 @@ export const TelehealthServices = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

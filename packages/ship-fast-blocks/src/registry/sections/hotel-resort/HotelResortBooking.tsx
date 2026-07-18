@@ -8,6 +8,7 @@ import {
 } from '#/section-kit/FormField.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { BookingForm } from '#/section-kit/BookingForm.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useHotelAvailabilitySubmission } from './hotel-resort-interactions.tsx'
 import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
@@ -109,7 +110,7 @@ export const HotelResortBooking = defineCapsule({
             props.className,
           )}
         >
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <Container size="xl" className="px-6">
             <SectionHeading
               eyebrow={eyebrow}
               title={heading}
@@ -207,7 +208,7 @@ export const HotelResortBooking = defineCapsule({
                 </p>
               </div>
             </div>
-          </div>
+          </Container>
         </section>
       </BookingForm>
     )

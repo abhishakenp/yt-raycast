@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AnalyticsStats — proof-point statistics band for an analytics product,
@@ -48,7 +49,7 @@ export const AnalyticsStats = defineCapsule({
 
     return (
       <section className={cn('bg-muted/30 py-20 sm:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           {heading ? (
             <SectionHeading
               eyebrow={eyebrow}
@@ -68,7 +69,7 @@ export const AnalyticsStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

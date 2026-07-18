@@ -11,6 +11,7 @@ import {
   LocationHours,
   LocationContact,
 } from '#/section-kit/LocationBlock.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CafeLocation — visit / location block for a cozy cafe / coffee shop page,
@@ -187,7 +188,7 @@ export const CafeLocation = defineCapsule({
       <section
         className={cn('bg-card pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={cap}
             title={heading}
@@ -291,7 +292,7 @@ export const CafeLocation = defineCapsule({
               </div>
             </LocationMap>
           </LocationBlock>
-        </div>
+        </Container>
       </section>
     )
   },

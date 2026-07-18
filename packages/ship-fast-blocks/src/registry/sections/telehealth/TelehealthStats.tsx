@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const TelehealthStats = defineCapsule({
   name: 'TelehealthStats',
@@ -43,7 +44,7 @@ export const TelehealthStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           {heading ? (
             <SectionHeading
               title={heading}
@@ -62,7 +63,7 @@ export const TelehealthStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

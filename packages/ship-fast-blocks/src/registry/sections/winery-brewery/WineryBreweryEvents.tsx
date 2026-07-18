@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { EventList, EventCard } from '#/section-kit/EventList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * WineryBreweryEvents — tastings, tours, and seasonal-event list for a winery
@@ -90,7 +91,7 @@ export const WineryBreweryEvents = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl" className="px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -140,7 +141,7 @@ export const WineryBreweryEvents = defineCapsule({
               </EventCard>
             ))}
           </EventList>
-        </div>
+        </Container>
       </section>
     )
   },
