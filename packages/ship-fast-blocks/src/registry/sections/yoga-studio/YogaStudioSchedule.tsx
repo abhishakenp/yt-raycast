@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import { ScheduleList } from '#/section-kit/ScheduleList.tsx'
 
 /**
  * YogaStudioSchedule — weekly class-schedule grid for a yoga-studio page. A
@@ -121,7 +122,7 @@ export const YogaStudioSchedule = defineCapsule({
                 <h3 className="border-b border-border pb-3 text-sm font-semibold uppercase tracking-wide text-foreground">
                   {day.day}
                 </h3>
-                <ul className="mt-4 space-y-4">
+                <ScheduleList layout="timeline" className="mt-4 space-y-4">
                   {day.classes.map((cls) => (
                     <li
                       key={`${cls.name}-${cls.time}`}
@@ -140,7 +141,7 @@ export const YogaStudioSchedule = defineCapsule({
                       </span>
                     </li>
                   ))}
-                </ul>
+                </ScheduleList>
               </Card>
             ))}
           </div>

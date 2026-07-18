@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { EventList } from '#/section-kit/EventList.tsx'
 
 /**
  * WineryBreweryEvents — tastings, tours, and seasonal-event list for a winery
@@ -99,7 +100,7 @@ export const WineryBreweryEvents = defineCapsule({
             className="mb-16"
           />
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <EventList variant="card" className="grid gap-6 md:grid-cols-2">
             {events.map((event) => (
               <Card
                 asChild
@@ -142,7 +143,7 @@ export const WineryBreweryEvents = defineCapsule({
                 </button>
               </Card>
             ))}
-          </div>
+          </EventList>
         </div>
       </section>
     )
