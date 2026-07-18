@@ -10,6 +10,7 @@ import {
   HeroActions,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MusicArtistHero — split, two-column hero for a music artist / band landing
@@ -79,7 +80,7 @@ export const MusicArtistHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="order-2 lg:order-1">
               <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
@@ -118,7 +119,7 @@ export const MusicArtistHero = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

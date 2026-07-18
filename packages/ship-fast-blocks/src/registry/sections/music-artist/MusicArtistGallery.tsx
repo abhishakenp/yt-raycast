@@ -9,6 +9,7 @@ import {
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MusicArtistGallery — "behind the music" masonry photo gallery for a music
@@ -55,7 +56,7 @@ export const MusicArtistGallery = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <div className="mb-16 text-center lg:mb-24">
             <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
               {eyebrow}
@@ -89,7 +90,7 @@ export const MusicArtistGallery = defineCapsule({
                 })}
             </GalleryGridItems>
           </GalleryGrid>
-        </div>
+        </Container>
       </section>
     )
   },

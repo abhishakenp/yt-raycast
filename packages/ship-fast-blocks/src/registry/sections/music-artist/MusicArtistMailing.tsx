@@ -8,6 +8,7 @@ import {
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -53,7 +54,7 @@ export const MusicArtistMailing = defineCapsule({
         variant="inverted"
         className={cn('px-6 py-20 lg:px-8 lg:py-28', props.className)}
       >
-        <div className="mx-auto max-w-4xl text-center">
+        <Container size="4xl" className="text-center">
           <NewsletterCtaHeading className="mb-6 text-3xl font-light lg:text-5xl">
             {heading}
           </NewsletterCtaHeading>
@@ -74,7 +75,7 @@ export const MusicArtistMailing = defineCapsule({
           <NewsletterCtaFineprint className="text-background/50">
             {note}
           </NewsletterCtaFineprint>
-        </div>
+        </Container>
       </SubscribeBand>
     )
   },

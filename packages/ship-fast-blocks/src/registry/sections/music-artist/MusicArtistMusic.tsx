@@ -12,6 +12,7 @@ import {
   MusicTrack,
   MusicPlayer,
 } from '#/section-kit/MusicList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MusicArtistMusic — latest-release track grid for a music artist / band page.
@@ -134,7 +135,7 @@ export const MusicArtistMusic = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -201,7 +202,7 @@ export const MusicArtistMusic = defineCapsule({
               <ArrowRight className="ml-1 size-4" />
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

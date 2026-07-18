@@ -14,6 +14,7 @@ import {
   SplitStoryImageTile,
   SplitStoryMedia,
 } from '#/section-kit/SplitStory.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MusicArtistAbout — split about-the-band section for a music artist / band
@@ -72,7 +73,7 @@ export const MusicArtistAbout = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <SplitStoryGrid>
             <SplitStoryContent>
               <SplitStoryEyebrow className="mb-4 text-muted-foreground">
@@ -123,7 +124,7 @@ export const MusicArtistAbout = defineCapsule({
               </SplitStoryMedia>
             </div>
           </SplitStoryGrid>
-        </div>
+        </Container>
       </SplitStory>
     )
   },

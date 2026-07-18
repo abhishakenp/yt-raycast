@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TourList, TourItem } from '#/section-kit/TourList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MusicArtistTour — long tour-date list for a music artist / band page. A
@@ -140,7 +141,7 @@ export const MusicArtistTour = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -219,7 +220,7 @@ export const MusicArtistTour = defineCapsule({
               <ArrowRight className="ml-1 size-4" />
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -19,14 +18,14 @@ import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
  * horizontal nav links (desktop), and a hamburger menu button (mobile), all on
  * a translucent border-bottomed header pinned to the top of the viewport. Warm,
  * airy, editorial indie-folk aesthetic on a soft neutral canvas. The brand and
- * every nav link route through useNavigate for page-switching. Use as the
+ * every nav link route through route hrefs for page-switching. Use as the
  * sticky site header for musicians, singers, bands, or any artist EPK/press
  * site. Renders fully with no props via baked-in defaults.
  */
 export const MusicArtistNavbar = defineCapsule({
   name: 'MusicArtistNavbar',
   description:
-    'Fixed, backdrop-blurred top navigation bar for a music artist / band site: a thin-weight brand wordmark on the left, centered horizontal nav links on desktop, and a hamburger menu button on mobile, on a translucent border-bottomed header pinned to the top of the viewport. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. The brand and every nav link route through useNavigate for page-switching. Use as the sticky site header for musicians, singers, bands, indie/folk/Americana acts, or any artist EPK/press site.',
+    'Fixed, backdrop-blurred top navigation bar for a music artist / band site: a thin-weight brand wordmark on the left, centered horizontal nav links on desktop, and a hamburger menu button on mobile, on a translucent border-bottomed header pinned to the top of the viewport. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. The brand and every nav link route through route hrefs for page-switching. Use as the sticky site header for musicians, singers, bands, indie/folk/Americana acts, or any artist EPK/press site.',
   props: z.object({
     /** Artist / band name shown as the brand wordmark. */
     brand: z.string().optional(),
@@ -37,7 +36,6 @@ export const MusicArtistNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Velvet Echo'
     const nav = props.nav?.length
       ? props.nav
@@ -51,22 +49,19 @@ export const MusicArtistNavbar = defineCapsule({
         className={cn('bg-background/90', props.className)}
         containerClassName="max-w-6xl px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="text-xl font-light tracking-tight text-foreground lg:text-2xl"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-              <LogoImage className="mr-2 size-7 align-middle" />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="text-xl font-light tracking-tight text-foreground lg:text-2xl"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+            <LogoImage className="mr-2 size-7 align-middle" />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
