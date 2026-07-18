@@ -11,6 +11,7 @@ import {
   HeroActions,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * LandscapingHero — calm, premium two-column hero for a landscaping / outdoor-
@@ -77,7 +78,7 @@ export const LandscapingHero = defineCapsule({
 
     return (
       <HeroSection className={cn('relative bg-muted', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <Container size="xl" className="py-16 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <HeroHeading className="font-semibold">{heading}</HeroHeading>
@@ -136,7 +137,7 @@ export const LandscapingHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

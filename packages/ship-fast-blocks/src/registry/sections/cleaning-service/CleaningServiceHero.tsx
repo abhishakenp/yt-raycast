@@ -15,6 +15,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -119,7 +120,7 @@ export const CleaningServiceHero = defineCapsule({
 
     return (
       <HeroSection className={cn('relative bg-muted/40', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <Container size="xl" className="py-16 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <HeroBadge variant="solid" className="gap-2 py-2">
@@ -212,7 +213,7 @@ export const CleaningServiceHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

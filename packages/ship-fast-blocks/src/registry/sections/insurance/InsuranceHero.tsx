@@ -13,6 +13,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * InsuranceHero — two-column hero band for an insurance / fintech landing page.
@@ -137,7 +138,7 @@ export const InsuranceHero = defineCapsule({
       <HeroSection
         className={cn('relative overflow-hidden bg-muted', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <Container size="xl" className="py-16 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground">
@@ -234,7 +235,7 @@ export const InsuranceHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

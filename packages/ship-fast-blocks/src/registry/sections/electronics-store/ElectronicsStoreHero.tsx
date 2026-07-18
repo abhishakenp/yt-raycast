@@ -19,6 +19,7 @@ import {
   HeroStatBadgeTitle,
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ElectronicsStoreHero — split storefront hero for a premium electronics /
@@ -123,7 +124,7 @@ export const ElectronicsStoreHero = defineCapsule({
         variant="split"
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <Container size="xl" className="py-16 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="max-w-xl">
               <span className="mb-6 inline-block rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
@@ -177,9 +178,7 @@ export const ElectronicsStoreHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <HeroStatBadge
-                className="absolute -bottom-6 -left-6 flex max-w-xs items-center gap-3"
-              >
+              <HeroStatBadge className="absolute -bottom-6 -left-6 flex max-w-xs items-center gap-3">
                 <HeroStatBadgeIcon className="size-12 text-muted-foreground">
                   <Star className="size-6" />
                 </HeroStatBadgeIcon>
@@ -194,7 +193,7 @@ export const ElectronicsStoreHero = defineCapsule({
               </HeroStatBadge>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

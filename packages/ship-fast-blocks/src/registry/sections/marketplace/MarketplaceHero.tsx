@@ -20,6 +20,7 @@ import {
   HeroStatBadgeTitle,
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MarketplaceHero — a split, two-column marketplace hero. The left column stacks
@@ -186,7 +187,7 @@ export const MarketplaceHero = defineCapsule({
         className={cn('border-b border-border bg-background', props.className)}
         aria-labelledby="hero-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <Container size="xl" className="py-16 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
@@ -282,9 +283,7 @@ export const MarketplaceHero = defineCapsule({
                   ))}
                 </div>
               </div>
-              <HeroStatBadge
-                className="absolute -bottom-4 -left-4 flex items-center gap-3"
-              >
+              <HeroStatBadge className="absolute -bottom-4 -left-4 flex items-center gap-3">
                 <HeroStatBadgeIcon className="size-10 rounded-full bg-primary/10 text-primary">
                   <Check className="size-5" />
                 </HeroStatBadgeIcon>
@@ -299,7 +298,7 @@ export const MarketplaceHero = defineCapsule({
               </HeroStatBadge>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
