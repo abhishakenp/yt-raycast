@@ -4,7 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import {
+  BentoGrid,
+  BentoTile,
+  BentoTileTitle,
+  BentoTileDescription,
+} from '#/section-kit/BentoGrid.tsx'
 
 /**
  * SaasBento — an asymmetric bento grid of product capabilities for a B2B SaaS /
@@ -83,7 +89,7 @@ export const SaasBento = defineCapsule({
 
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+        <Container size="xl" className="px-6 sm:px-8 lg:px-12">
           <SectionHeading
             title={heading}
             subtitle={subheading}
@@ -111,7 +117,7 @@ export const SaasBento = defineCapsule({
                       : 'bg-card text-card-foreground',
                   )}
                 >
-                  <h3
+                  <BentoTileTitle
                     className={cn(
                       'text-lg font-bold',
                       isFeature
@@ -120,17 +126,17 @@ export const SaasBento = defineCapsule({
                     )}
                   >
                     {tile.title}
-                  </h3>
-                  <p
+                  </BentoTileTitle>
+                  <BentoTileDescription
                     className={cn(
-                      'mt-2 max-w-md text-sm leading-relaxed',
+                      'mt-2 max-w-md',
                       isFeature
                         ? 'text-primary-foreground/80'
                         : 'text-muted-foreground',
                     )}
                   >
                     {tile.description}
-                  </p>
+                  </BentoTileDescription>
                   {isFeature ? (
                     <div className="mt-5 flex-1 overflow-hidden rounded-xl border border-primary-foreground/20 shadow-lg">
                       <Image
@@ -151,7 +157,7 @@ export const SaasBento = defineCapsule({
               )
             })}
           </BentoGrid>
-        </div>
+        </Container>
       </section>
     )
   },

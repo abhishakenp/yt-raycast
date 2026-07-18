@@ -4,8 +4,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
-import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import {
+  BentoGrid,
+  BentoTile,
+  BentoTileBody,
+  BentoTileTitle,
+  BentoTileDescription,
+} from '#/section-kit/BentoGrid.tsx'
 
 /**
  * AnalyticsBento — bespoke asymmetric capability bento for an analytics product.
@@ -71,7 +77,7 @@ export const AnalyticsBento = defineCapsule({
 
     return (
       <section className={cn('bg-background py-20 sm:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <Container size="xl">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -87,14 +93,12 @@ export const AnalyticsBento = defineCapsule({
               span="md:col-span-2 md:row-span-2"
               className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
             >
-              <div className="flex flex-col gap-2 p-7">
-                <h3 className="text-xl font-semibold text-foreground">
-                  {heroTitle}
-                </h3>
-                <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+              <BentoTileBody className="p-7">
+                <BentoTileTitle className="text-xl">{heroTitle}</BentoTileTitle>
+                <BentoTileDescription className="max-w-md">
                   {heroDescription}
-                </p>
-              </div>
+                </BentoTileDescription>
+              </BentoTileBody>
               <Image
                 alt="analytics explore chart drilldown dashboard"
                 w={1200}
@@ -103,23 +107,18 @@ export const AnalyticsBento = defineCapsule({
               />
             </BentoTile>
             {tiles.map((tile) => (
-              <BentoTile key={tile.title}>
-                <Card
-                  rounded="2xl"
-                  padding="none"
-                  className="flex flex-col gap-2 p-7"
-                >
-                  <h3 className="text-base font-semibold text-foreground">
-                    {tile.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {tile.description}
-                  </p>
-                </Card>
+              <BentoTile
+                key={tile.title}
+                className="flex flex-col rounded-2xl border border-border bg-card p-7"
+              >
+                <BentoTileTitle className="text-base">
+                  {tile.title}
+                </BentoTileTitle>
+                <BentoTileDescription>{tile.description}</BentoTileDescription>
               </BentoTile>
             ))}
           </BentoGrid>
-        </div>
+        </Container>
       </section>
     )
   },

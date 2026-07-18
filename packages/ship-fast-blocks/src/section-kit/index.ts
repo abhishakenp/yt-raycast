@@ -167,6 +167,9 @@ export {
 export {
   BentoGrid,
   BentoTile,
+  BentoTileBody,
+  BentoTileTitle,
+  BentoTileDescription,
   bentoGridVariants,
   type BentoGridProps,
   type BentoTileProps,

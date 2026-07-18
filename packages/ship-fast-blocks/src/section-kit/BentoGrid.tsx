@@ -87,4 +87,59 @@ const BentoTile = React.forwardRef<HTMLDivElement, BentoTileProps>(
 )
 BentoTile.displayName = 'BentoTile'
 
-export { BentoGrid, BentoTile, bentoGridVariants }
+const BentoTileBody = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="bento-tile-body"
+      className={cn('flex flex-col gap-2', className)}
+      {...props}
+    />
+  )
+})
+BentoTileBody.displayName = 'BentoTileBody'
+
+const BentoTileTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h3'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h3'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="bento-tile-title"
+      className={cn('font-semibold text-foreground', className)}
+      {...props}
+    />
+  )
+})
+BentoTileTitle.displayName = 'BentoTileTitle'
+
+const BentoTileDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="bento-tile-description"
+      className={cn('text-sm leading-relaxed text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+BentoTileDescription.displayName = 'BentoTileDescription'
+
+export {
+  BentoGrid,
+  BentoTile,
+  BentoTileBody,
+  BentoTileTitle,
+  BentoTileDescription,
+  bentoGridVariants,
+}
