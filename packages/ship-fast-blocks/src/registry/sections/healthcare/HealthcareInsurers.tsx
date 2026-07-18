@@ -12,8 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * practice, telehealth or urgent-care clinic to show accepted insurance plans.
  * Renders fully with no props via baked-in major-insurer defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const HealthcareInsurers = defineCapsule({
   name: 'HealthcareInsurers',
   description:
@@ -32,34 +31,17 @@ export const HealthcareInsurers = defineCapsule({
       ? props.items
       : ['Blue Shield', 'Aetna', 'Cigna', 'UnitedHealth', 'Kaiser', 'Medicare']
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={items}
+        layout="grid"
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn(
           'border-y border-border bg-background py-12',
           props.className,
         )}
-        aria-label="Insurance partners"
-      >
-        <Container>
-          <Eyebrow
-            variant="text"
-            className="mb-8 block text-center text-sm tracking-wider text-muted-foreground"
-          >
-            {label}
-          </Eyebrow>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 md:grid-cols-3 lg:grid-cols-6">
-            {items.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => go(name)}
-                className="flex items-center justify-center text-lg font-bold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })
