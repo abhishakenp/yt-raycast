@@ -2,8 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Card } from '#/section-kit/Card.tsx'
-
 /**
  * CrmIntegrations — centered integrations grid for a CRM / SaaS landing page. A
  * heading + supporting paragraph above a dense responsive (2/4/6-up) grid of
@@ -106,40 +104,36 @@ export const CrmIntegrations = defineCapsule({
           </div>
           <IntegrationGrid cols="2-4-6" gap="md">
             {items.map((item) => (
-              <IntegrationCard asChild key={item.name}>
-                <Card
-                  asChild
-                  variant="default"
-                  rounded="lg"
-                  padding="md"
-                  className="flex flex-col items-center text-center transition-all hover:shadow-md"
-                >
-                  <button type="button" onClick={() => go(item.name)}>
-                    <div className="mb-3 grid size-12 place-items-center rounded-lg bg-primary/10 text-primary">
-                      <svg
-                        className="size-6"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <rect x="3" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="3" width="7" height="7" rx="1" />
-                        <rect x="3" y="14" width="7" height="7" rx="1" />
-                        <rect x="14" y="14" width="7" height="7" rx="1" />
-                      </svg>
-                    </div>
-                    <span className="font-medium text-card-foreground">
-                      {item.name}
-                    </span>
-                    <span className="mt-1 text-xs text-muted-foreground">
-                      {item.label}
-                    </span>
-                  </button>
-                </Card>
+              <IntegrationCard
+                asChild
+                key={item.name}
+                className="rounded-lg p-6 items-center text-center transition-all hover:shadow-md"
+              >
+                <button type="button" onClick={() => go(item.name)}>
+                  <div className="mb-3 grid size-12 place-items-center rounded-lg bg-primary/10 text-primary">
+                    <svg
+                      className="size-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="3" width="7" height="7" rx="1" />
+                      <rect x="3" y="14" width="7" height="7" rx="1" />
+                      <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                  </div>
+                  <span className="font-medium text-card-foreground">
+                    {item.name}
+                  </span>
+                  <span className="mt-1 text-xs text-muted-foreground">
+                    {item.label}
+                  </span>
+                </button>
               </IntegrationCard>
             ))}
           </IntegrationGrid>
