@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * JobBoardCategories — a browse-by-category icon grid for a job-board / careers
@@ -215,24 +214,20 @@ export const JobBoardCategories = defineCapsule({
           </div>
           <CategoryGrid cols="2-3-4" gap="sm">
             {items.map((cat, i) => (
-              <CategoryCard asChild key={cat.title}>
-                <Card
-                  asChild
-                  variant="muted"
-                  rounded="xl"
-                  padding="md"
-                  className="group bg-muted/40 text-left transition-all hover:border-foreground/30 hover:shadow-md"
-                >
-                  <button type="button" onClick={() => go(cat.title)}>
-                    <CategoryIcon className="bg-card text-foreground shadow-sm">
-                      {categoryIcons[i % categoryIcons.length]}
-                    </CategoryIcon>
-                    <h3 className="mb-1 font-semibold text-foreground">
-                      {cat.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{cat.count}</p>
-                  </button>
-                </Card>
+              <CategoryCard
+                asChild
+                key={cat.title}
+                className="bg-muted/40 p-6 text-left transition-all hover:border-foreground/30 hover:shadow-md"
+              >
+                <button type="button" onClick={() => go(cat.title)}>
+                  <CategoryIcon className="bg-card text-foreground shadow-sm">
+                    {categoryIcons[i % categoryIcons.length]}
+                  </CategoryIcon>
+                  <h3 className="mb-1 font-semibold text-foreground">
+                    {cat.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{cat.count}</p>
+                </button>
               </CategoryCard>
             ))}
           </CategoryGrid>

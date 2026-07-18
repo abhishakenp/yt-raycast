@@ -6,7 +6,6 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import {
   CategoryGrid,
   CategoryCard,
@@ -235,33 +234,29 @@ export const KnowledgeBaseCategories = defineCapsule({
           </div>
           <CategoryGrid cols="1-2-4" gap="md">
             {items.map((cat, i) => (
-              <CategoryCard asChild key={cat.title}>
-                <Card
-                  asChild
-                  variant="default"
-                  rounded="xl"
-                  padding="md"
-                  className="group cursor-pointer text-left transition-all hover:border-primary/30 hover:shadow-md"
+              <CategoryCard
+                asChild
+                key={cat.title}
+                className="cursor-pointer p-6 text-left transition-all hover:border-primary/30 hover:shadow-md"
+              >
+                <button
+                  type="button"
+                  onClick={() => go(cat.title)}
+                  aria-label={`${cat.title} category, ${cat.count}`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => go(cat.title)}
-                    aria-label={`${cat.title} category, ${cat.count}`}
-                  >
-                    <CategoryIcon className="bg-muted text-primary transition-colors group-hover:bg-accent">
-                      {categoryIcons[i % categoryIcons.length]}
-                    </CategoryIcon>
-                    <h3 className="mb-1 text-lg font-semibold text-card-foreground">
-                      {cat.title}
-                    </h3>
-                    <p className="mb-3 text-sm text-muted-foreground">
-                      {cat.description}
-                    </p>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {cat.count}
-                    </span>
-                  </button>
-                </Card>
+                  <CategoryIcon className="bg-muted text-primary transition-colors group-hover:bg-accent">
+                    {categoryIcons[i % categoryIcons.length]}
+                  </CategoryIcon>
+                  <h3 className="mb-1 text-lg font-semibold text-card-foreground">
+                    {cat.title}
+                  </h3>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    {cat.description}
+                  </p>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {cat.count}
+                  </span>
+                </button>
               </CategoryCard>
             ))}
           </CategoryGrid>

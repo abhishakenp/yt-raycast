@@ -8,7 +8,6 @@ import {
   FaqItem,
   FaqQuestion,
 } from '#/section-kit/FaqAccordion.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * ManufacturingFaq — a static FAQ list for a precision-manufacturing site. On a
@@ -93,8 +92,8 @@ export const ManufacturingFaq = defineCapsule({
           <FaqAccordion asChild>
             <dl>
               {items.map((item) => (
-                <FaqItem key={item.question} asChild variant="minimal">
-                  <Card rounded="lg">
+                <FaqItem key={item.question} asChild variant="bordered-lg">
+                  <div>
                     <FaqQuestion
                       asChild
                       className="mb-2 font-semibold text-card-foreground"
@@ -104,7 +103,7 @@ export const ManufacturingFaq = defineCapsule({
                     <FaqAnswer asChild>
                       <dd>{item.answer}</dd>
                     </FaqAnswer>
-                  </Card>
+                  </div>
                 </FaqItem>
               ))}
             </dl>

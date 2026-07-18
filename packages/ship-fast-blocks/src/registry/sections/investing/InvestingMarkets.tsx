@@ -15,7 +15,6 @@ import { Image } from '#/lib/img.tsx'
  * Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import {
   MarketTable,
   MarketRow,
@@ -171,14 +170,11 @@ export const InvestingMarkets = defineCapsule({
             <MarketBody asChild>
               <div className="contents">
                 {quotes.map((q, i) => (
-                  <MarketRow asChild key={q.symbol}>
-                    <Card
-                      asChild
-                      variant="outline"
-                      rounded="xl"
-                      padding="md"
-                      className="bg-muted/50 text-left transition-shadow hover:shadow-lg"
-                    >
+                  <MarketRow
+                    asChild
+                    key={q.symbol}
+                    className="rounded-xl border border-border bg-muted/50 p-6 text-left transition-shadow hover:shadow-lg"
+                  >
                       <button type="button" onClick={() => go(q.symbol)}>
                         <div className="mb-4 flex items-center gap-3">
                           <div
@@ -228,7 +224,6 @@ export const InvestingMarkets = defineCapsule({
                           </svg>
                         </MarketChart>
                       </button>
-                    </Card>
                   </MarketRow>
                 ))}
               </div>
