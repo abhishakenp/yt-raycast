@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  */
 import {
   LogoStrip,
+  LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
@@ -29,10 +30,13 @@ export const ElectronicsStoreLogos = defineCapsule({
     const brands = props.brands?.length
       ? props.brands
       : ['Apple', 'Sony', 'Samsung', 'Bose', 'Logitech', 'DJI']
+    const caption =
+      props.caption ?? 'Trusted by leading electronics brands'
     return (
       <LogoStrip
         className={cn('border-b border-border py-12', props.className)}
       >
+        <LogoStripLabel>{caption}</LogoStripLabel>
         <LogoStripItems layout="flex">
           {brands.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="opacity-hover">
