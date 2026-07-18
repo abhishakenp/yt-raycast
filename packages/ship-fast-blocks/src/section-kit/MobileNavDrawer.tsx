@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { MenuIcon } from 'lucide-react'
 
 import {
@@ -10,9 +11,26 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
+import * as routeNav from '#/lib/use-navigate.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
+
+/** Optional active-route matcher: tolerates test environments that mock
+ *  use-navigate with only `useNavigate` exported (mock proxies throw on
+ *  missing exports, so the access itself must be guarded). */
+function useActiveRouteMatcher(): (target?: string) => boolean {
+  let matcher: ((target?: string) => boolean) | null = null
+  try {
+    matcher =
+      typeof routeNav.useIsActiveRoute === 'function'
+        ? routeNav.useIsActiveRoute()
+        : null
+  } catch {
+    matcher = null
+  }
+  return matcher ?? (() => false)
+}
 
 const MobileNavDrawer = React.forwardRef<
   HTMLButtonElement,
@@ -49,6 +67,7 @@ const MobileNavDrawer = React.forwardRef<
     ref,
   ) => {
     const go = useNavigate()
+    const isActiveRoute = useActiveRouteMatcher()
     const [open, setOpen] = React.useState(false)
     const targetHome = homeTarget ?? homeLabel
     const normalizedHomeLabel = homeLabel.trim().toLowerCase()
@@ -67,16 +86,28 @@ const MobileNavDrawer = React.forwardRef<
     return (
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <button
-            ref={ref}
-            type="button"
-            aria-label={label}
-            data-slot="mobile-nav-drawer"
-            className={cn(buttonClassName, className)}
-            {...props}
-          >
-            {children ?? <MenuIcon className="size-5" aria-hidden="true" />}
-          </button>
+          {asChild ? (
+            <Slot
+              ref={ref}
+              aria-label={label}
+              data-slot="mobile-nav-drawer"
+              className={cn(buttonClassName, className)}
+              {...props}
+            >
+              {children ?? <MenuIcon className="size-5" aria-hidden="true" />}
+            </Slot>
+          ) : (
+            <button
+              ref={ref}
+              type="button"
+              aria-label={label}
+              data-slot="mobile-nav-drawer"
+              className={cn(buttonClassName, className)}
+              {...props}
+            >
+              {children ?? <MenuIcon className="size-5" aria-hidden="true" />}
+            </button>
+          )}
         </SheetTrigger>
         <SheetContent
           side={side}
@@ -99,20 +130,33 @@ const MobileNavDrawer = React.forwardRef<
             <button
               type="button"
               onClick={() => navigate(targetHome)}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              aria-current={isActiveRoute(targetHome) ? 'page' : undefined}
+              className={cn(
+                'rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted',
+                isActiveRoute(targetHome) &&
+                  'border-l-2 border-primary bg-muted',
+              )}
             >
               {homeLabel}
             </button>
-            {links.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => navigate(item)}
-                className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                {item}
-              </button>
-            ))}
+            {links.map((item) => {
+              const isActive = isActiveRoute(item)
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => navigate(item)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(
+                    'rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+                    isActive &&
+                      'border-l-2 border-primary bg-muted text-foreground',
+                  )}
+                >
+                  {item}
+                </button>
+              )
+            })}
             {cta ? (
               <button
                 type="button"
