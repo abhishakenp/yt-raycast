@@ -1,7 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * LendingBenefits — a "why borrowers choose us" benefits grid for a lending or
@@ -90,10 +96,13 @@ export const LendingBenefits = defineCapsule({
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">{benefitsDesc}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <FeatureGrid className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {benefitItems.map((item, i) => (
-              <Card key={item.title} rounded="2xl" padding="lg" shadow="sm">
-                <div className="mb-5 grid size-12 place-items-center rounded-xl bg-muted text-foreground">
+              <FeatureCard
+                key={item.title}
+                className="rounded-2xl p-8 shadow-sm"
+              >
+                <FeatureIcon className="mb-5 grid size-12 place-items-center rounded-xl bg-muted text-foreground">
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
@@ -106,16 +115,16 @@ export const LendingBenefits = defineCapsule({
                   >
                     <path d={benefitIcons[i % benefitIcons.length]} />
                   </svg>
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-card-foreground">
+                </FeatureIcon>
+                <FeatureTitle className="mb-2 text-card-foreground">
                   {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
+                </FeatureTitle>
+                <FeatureDescription className="leading-relaxed">
                   {item.description}
-                </p>
-              </Card>
+                </FeatureDescription>
+              </FeatureCard>
             ))}
-          </div>
+          </FeatureGrid>
         </Container>
       </section>
     )

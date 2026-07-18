@@ -3,7 +3,13 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -177,25 +183,24 @@ export const MembershipClubBenefits = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+          <FeatureGrid className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
             {items.map((item, i) => (
-              <Card
+              <FeatureCard
                 key={item.title}
-                padding="lg"
-                className="transition-colors hover:border-border/60"
+                className="p-8 transition-colors hover:border-border/60"
               >
-                <div className="mb-6 grid size-12 place-items-center rounded-lg bg-muted text-foreground">
+                <FeatureIcon className="mb-6 grid size-12 place-items-center rounded-lg bg-muted text-foreground">
                   {benefitIcons[i % benefitIcons.length]}
-                </div>
-                <h3 className="mb-3 text-xl font-medium text-card-foreground">
+                </FeatureIcon>
+                <FeatureTitle className="mb-3 text-xl font-medium text-card-foreground">
                   {item.title}
-                </h3>
-                <p className="leading-relaxed text-muted-foreground">
+                </FeatureTitle>
+                <FeatureDescription className="leading-relaxed">
                   {item.description}
-                </p>
-              </Card>
+                </FeatureDescription>
+              </FeatureCard>
             ))}
-          </div>
+          </FeatureGrid>
         </Container>
       </section>
     )

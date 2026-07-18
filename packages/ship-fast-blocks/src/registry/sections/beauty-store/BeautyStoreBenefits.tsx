@@ -3,6 +3,13 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import {
+  FeatureGrid,
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -123,21 +130,24 @@ export const BeautyStoreBenefits = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <FeatureGrid className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {items.map((item, i) => (
-              <div key={item.title} className="p-6 text-center">
-                <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <FeatureCard
+                key={item.title}
+                className="border-0 bg-transparent p-6 text-center"
+              >
+                <FeatureIcon className="mx-auto mb-5 flex size-16 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   {benefitIcons[i % benefitIcons.length]}
-                </div>
-                <h3 className="mb-2 font-semibold text-foreground">
+                </FeatureIcon>
+                <FeatureTitle className="mb-2 font-semibold text-foreground">
                   {item.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">
+                </FeatureTitle>
+                <FeatureDescription>
                   {item.description}
-                </p>
-              </div>
+                </FeatureDescription>
+              </FeatureCard>
             ))}
-          </div>
+          </FeatureGrid>
         </Container>
       </section>
     )
