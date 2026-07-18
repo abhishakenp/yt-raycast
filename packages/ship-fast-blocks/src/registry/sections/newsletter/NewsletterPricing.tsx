@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import {
+  PricingTier,
+  PricingTierBadge,
+  PricingTierPrice,
+  PricingTierTagline,
+  PricingTierFeatures,
+} from '#/section-kit/PricingGrid.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
@@ -132,22 +138,24 @@ export const NewsletterPricing = defineCapsule({
 
           <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
             {/* Free Plan */}
-            <Card rounded="2xl" padding="lg" className="lg:p-10">
+            <PricingTier className="gap-0 p-8 lg:p-10">
               <div className="mb-2 flex items-baseline gap-1">
-                <span className="font-serif text-4xl font-medium text-foreground">
+                <PricingTierPrice className="font-serif text-4xl font-medium">
                   {freePrice}
-                </span>
+                </PricingTierPrice>
               </div>
-              <p className="mb-6 text-muted-foreground">{freeTagline}</p>
+              <PricingTierTagline className="mb-6">
+                {freeTagline}
+              </PricingTierTagline>
 
-              <ul className="mb-8 space-y-4">
+              <PricingTierFeatures className="mb-8 gap-0 space-y-4">
                 {freeFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-3">
                     <Check className="mt-0.5 size-5 flex-shrink-0 text-muted-foreground" />
                     <span className="text-foreground/80">{f}</span>
                   </li>
                 ))}
-              </ul>
+              </PricingTierFeatures>
 
               <NewsletterSubscribeForm
                 lakebed={lakebed}
@@ -160,32 +168,37 @@ export const NewsletterPricing = defineCapsule({
                 buttonClassName="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
                 emailLabel="Email address for free subscription"
               />
-            </Card>
+            </PricingTier>
 
             {/* Paid Plan */}
-            <div className="relative overflow-hidden rounded-2xl bg-foreground p-8 text-background lg:p-10">
+            <PricingTier
+              variant="highlighted"
+              className="relative gap-0 overflow-hidden rounded-2xl border-0 bg-foreground p-8 text-background shadow-none ring-0 lg:p-10"
+            >
               <div className="absolute right-4 top-4">
-                <span className="inline-flex items-center rounded-full bg-background/20 px-3 py-1 text-xs font-medium text-background">
+                <PricingTierBadge className="bg-background/20 text-background">
                   {paidBadge}
-                </span>
+                </PricingTierBadge>
               </div>
 
               <div className="mb-2 flex items-baseline gap-1">
-                <span className="font-serif text-4xl font-medium text-background">
+                <PricingTierPrice className="font-serif text-4xl font-medium text-background">
                   {paidPrice}
-                </span>
+                </PricingTierPrice>
                 <span className="text-background/60">{paidPeriod}</span>
               </div>
-              <p className="mb-6 text-background/70">{paidTagline}</p>
+              <PricingTierTagline className="mb-6 text-background/70">
+                {paidTagline}
+              </PricingTierTagline>
 
-              <ul className="mb-8 space-y-4">
+              <PricingTierFeatures className="mb-8 gap-0 space-y-4">
                 {paidFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-3">
                     <Check className="mt-0.5 size-5 flex-shrink-0 text-background/60" />
                     <span className="text-background/80">{f}</span>
                   </li>
                 ))}
-              </ul>
+              </PricingTierFeatures>
 
               <NewsletterSubscribeForm
                 lakebed={lakebed}
@@ -203,7 +216,7 @@ export const NewsletterPricing = defineCapsule({
               <p className="mt-4 text-center text-sm text-background/60">
                 {paidNote}
               </p>
-            </div>
+            </PricingTier>
           </div>
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
