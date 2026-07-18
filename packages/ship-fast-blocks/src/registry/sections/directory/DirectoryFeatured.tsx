@@ -198,61 +198,57 @@ export const DirectoryFeatured = defineCapsule({
 
           <FeaturedList className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {matchingItems.map((biz) => (
-              <FeaturedItem asChild key={biz.name}>
-                <Card
-                  asChild
-                  variant="default"
-                  rounded="xl"
-                  padding="none"
-                  className={cn(
-                    'group block overflow-hidden text-left transition-shadow hover:shadow-md',
-                    selectedName === biz.name ? 'border-primary shadow-md' : '',
-                  )}
+              <FeaturedItem
+                asChild
+                key={biz.name}
+                className={cn(
+                  'block text-left transition-shadow hover:shadow-md',
+                  selectedName === biz.name ? 'border-primary shadow-md' : '',
+                )}
+              >
+                <button
+                  type="button"
+                  aria-pressed={selectedName === biz.name}
+                  onClick={() => {
+                    void directoryListings.select({
+                      category: biz.category,
+                      name: biz.name,
+                    })
+                  }}
                 >
-                  <button
-                    type="button"
-                    aria-pressed={selectedName === biz.name}
-                    onClick={() => {
-                      void directoryListings.select({
-                        category: biz.category,
-                        name: biz.name,
-                      })
-                    }}
-                  >
-                    <div className="relative aspect-[4/3] bg-muted">
-                      <Image
-                        alt={biz.imageAlt}
-                        w={600}
-                        h={450}
-                        loading="lazy"
-                        className="size-full object-cover"
-                      />
-                      <span className="absolute left-3 top-3 rounded bg-card px-2 py-1 text-xs font-medium text-card-foreground">
-                        {biz.category}
+                  <div className="relative aspect-[4/3] bg-muted">
+                    <Image
+                      alt={biz.imageAlt}
+                      w={600}
+                      h={450}
+                      loading="lazy"
+                      className="size-full object-cover"
+                    />
+                    <span className="absolute left-3 top-3 rounded bg-card px-2 py-1 text-xs font-medium text-card-foreground">
+                      {biz.category}
+                    </span>
+                    <span className="absolute right-3 top-3 flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
+                      <Star className="size-3" />
+                      {biz.rating}
+                    </span>
+                  </div>
+                  <div className="p-5">
+                    <h3 className="mb-1 text-lg font-semibold text-card-foreground">
+                      {biz.name}
+                    </h3>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      {biz.address}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="size-4" />
+                        {biz.hours}
                       </span>
-                      <span className="absolute right-3 top-3 flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
-                        <Star className="size-3" />
-                        {biz.rating}
-                      </span>
+                      <span>·</span>
+                      <span>{biz.reviews}</span>
                     </div>
-                    <div className="p-5">
-                      <h3 className="mb-1 text-lg font-semibold text-card-foreground">
-                        {biz.name}
-                      </h3>
-                      <p className="mb-3 text-sm text-muted-foreground">
-                        {biz.address}
-                      </p>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="size-4" />
-                          {biz.hours}
-                        </span>
-                        <span>·</span>
-                        <span>{biz.reviews}</span>
-                      </div>
-                    </div>
-                  </button>
-                </Card>
+                  </div>
+                </button>
               </FeaturedItem>
             ))}
             {!matchingItems.length ? (
