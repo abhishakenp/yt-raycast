@@ -363,7 +363,12 @@ export async function validateMobbinSession({
 
   const sampleApps = [
     ...new Set(
-      apps.map((entry) => entry?.app_name || entry?.appName).filter(Boolean),
+      apps
+        .map((entry: unknown) => {
+          const e = entry as Record<string, unknown>
+          return e?.app_name ?? e?.appName
+        })
+        .filter((v): v is string => typeof v === 'string'),
     ),
   ].slice(0, 6)
   const screens = flattenPopularScreens(apps, 3)
@@ -384,7 +389,7 @@ export async function fetchLiveScreensForApp(
   const previews = Array.isArray(app?.previewScreens) ? app.previewScreens : []
   return previews
     .slice(0, limit)
-    .map((screen) => mapPreviewScreen(app?.appName || name, screen))
+    .map((screen: unknown) => mapPreviewScreen(app?.appName || name, screen))
 }
 
 export async function mobbinSessionStatus() {

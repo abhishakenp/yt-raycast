@@ -5,7 +5,6 @@ import {
   useState,
   type CSSProperties,
   type ElementType,
-  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type RefObject,
 } from 'react'
@@ -255,7 +254,7 @@ export function Tilt(props: {
   const max = finiteOr(props.max, 7)
   const perspective = finiteOr(props.perspective, 1200)
 
-  const handleMove = (event) => {
+  const handleMove = (event: React.PointerEvent<HTMLElement>) => {
     if (event.pointerType === 'touch') return
     const el = ref.current
     if (!el) return
@@ -456,7 +455,7 @@ export function Magnetic(props: {
   const springX = useSpring(x, { stiffness: 260, damping: 18 })
   const springY = useSpring(y, { stiffness: 260, damping: 18 })
 
-  const handleMove = (event) => {
+  const handleMove = (event: React.PointerEvent<HTMLElement>) => {
     if (event.pointerType === 'touch') return
     const el = ref.current
     if (!el) return
@@ -505,7 +504,7 @@ export function Marquee(props: {
   const duration = finiteOr(props.duration, 36)
   const gap = finiteOr(props.gap, 24)
 
-  const copy = (hidden) => (
+  const copy = (hidden: boolean) => (
     <div
       aria-hidden={hidden || undefined}
       className="flex shrink-0 items-stretch"
@@ -577,7 +576,7 @@ export function CountUp(props: {
     const decimals = digits.includes('.')
       ? (digits.split('.')[1]?.length ?? 0)
       : 0
-    const format = (value) =>
+    const format = (value: number) =>
       value.toLocaleString('en-US', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
@@ -635,7 +634,7 @@ export function Spotlight(props: {
   const [active, setActive] = useState(false)
   const radius = finiteOr(props.radius, 260)
 
-  const handleMove = (event) => {
+  const handleMove = (event: React.PointerEvent<HTMLElement>) => {
     if (event.pointerType === 'touch') return
     const el = ref.current
     if (!el) return

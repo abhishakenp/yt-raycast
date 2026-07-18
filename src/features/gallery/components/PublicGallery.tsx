@@ -253,7 +253,8 @@ function GalleryCard({
   return (
     <Link
       className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
-      to={`/generate/${encodeURIComponent(session.sessionId)}`}
+      to="/generate/$sessionId"
+      params={{ sessionId: session.sessionId }}
       preload={false}
       aria-label={getGalleryCardAriaLabel(session)}
       data-gallery-session-id={session.sessionId}
@@ -415,18 +416,18 @@ function GalleryGridInner({
     () => new Set(),
   )
 
-  const handleCardHoverStart = useCallback((sessionId) => {
+  const handleCardHoverStart = useCallback((sessionId: string) => {
     hoveredSessionIdRef.current = sessionId
   }, [])
 
-  const handleCardHoverEnd = useCallback((sessionId) => {
+  const handleCardHoverEnd = useCallback((sessionId: string) => {
     if (hoveredSessionIdRef.current === sessionId) {
       hoveredSessionIdRef.current = null
     }
   }, [])
 
   const deleteHoveredSession = useCallback(
-    (sessionId) => {
+    (sessionId: string) => {
       if (deletionInFlightRef.current.has(sessionId)) return
       const deleteMine = deleteMineRef.current
       if (!deleteMine) {
@@ -467,7 +468,7 @@ function GalleryGridInner({
   )
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.key.toLowerCase() !== 'd' ||
         event.altKey ||

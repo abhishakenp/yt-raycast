@@ -257,7 +257,7 @@ describe('groq client: streaming (synthesized chunks)', () => {
     )
     const tokens: Array<{ piece: string; acc: string }> = []
     const r = await groqStream('q', {
-      onToken: (piece, acc) => tokens.push({ piece, acc }),
+      onToken: (piece: string, acc: string) => tokens.push({ piece, acc }),
     })
     expect(r.content).toBe(content)
     expect(tokens.length).toBeGreaterThan(1)
@@ -648,7 +648,7 @@ describe('translator: language detection + HTML translation', () => {
   })
 
   // Helper: build a Groq chat completion Response with given content string
-  const groqResponse = (content) =>
+  const groqResponse = (content: unknown) =>
     new Response(
       JSON.stringify({
         choices: [{ message: { content } }],

@@ -241,7 +241,7 @@ export function applyImageSwap(
   // the client-side Image override; static HTML consumers (preview.html,
   // exports) degrade to the first selected image.
   const to = firstImageSrc(String(newSrc ?? ''))
-  if (!html.trim() || !alt.trim()) return { html, replaced: false }
+  if (!html.trim() || !alt.trim() || !to) return { html, replaced: false }
 
   const imgPattern = /<img\b[^>]*>/gi
   const matches: Array<{ index: number; tag: string }> = []

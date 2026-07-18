@@ -178,7 +178,7 @@ export function useCommerceSearch(lakebed: CommerceLakebed) {
   }, [setCommerceSearch])
 
   const chooseSearch = useCallback(
-    (input) => {
+    (input: CommerceSearchInput) => {
       if (!input.selectedLabel) {
         latestQueryRef.current = input
         flushLatestQuery()
@@ -550,7 +550,7 @@ export function CommerceMobileMenu({
   const [open, setOpen] = useState(false)
   const go = useNavigate()
 
-  const navigate = (target?) => {
+  const navigate = (target?: string) => {
     setOpen(false)
     go(target)
   }

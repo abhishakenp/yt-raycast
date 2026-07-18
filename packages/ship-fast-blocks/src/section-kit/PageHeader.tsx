@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { Slot } from '@radix-ui/react-slot'
 import { cn } from '#/lib/utils.ts'
 
 const pageHeaderVariants = cva('', {
@@ -18,19 +19,23 @@ const pageHeaderVariants = cva('', {
 
 const PageHeader = React.forwardRef<
   HTMLElement,
-  React.ComponentProps<'header'> & VariantProps<typeof pageHeaderVariants>
->(({ className, variant, ...props }, ref) => (
-  <header
-    data-slot="page-header"
-    className={cn(
-      'flex flex-col gap-4',
-      pageHeaderVariants({ variant }),
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'header'> &
+    VariantProps<typeof pageHeaderVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'header'
+  return (
+    <Comp
+      data-slot="page-header"
+      className={cn(
+        'flex flex-col gap-4',
+        pageHeaderVariants({ variant }),
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 PageHeader.displayName = 'PageHeader'
 
 const PageHeaderActions = React.forwardRef<

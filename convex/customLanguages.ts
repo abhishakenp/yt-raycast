@@ -402,7 +402,7 @@ Rules:
  */
 export const resolveOrCreate = action({
   args: { languageInput: v.string() },
-  handler: async (ctx, args): Promise<Doc<'customLanguages'> | null> => {
+  handler: async (ctx, args): Promise<CustomLanguageEntry | null> => {
     const input = args.languageInput.trim()
     if (!input) {
       throw new Error('Language input is empty.')

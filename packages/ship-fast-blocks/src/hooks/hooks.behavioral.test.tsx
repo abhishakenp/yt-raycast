@@ -18,12 +18,12 @@ function installMatchMedia(matches: boolean, width: number) {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     value: vi.fn(() => ({
-      addEventListener: (_event, listener) => {
+      addEventListener: (_event: string, listener: () => void) => {
         listeners.add(listener)
       },
       matches,
       media: '(max-width: 767px)',
-      removeEventListener: (_event, listener) => {
+      removeEventListener: (_event: string, listener: () => void) => {
         listeners.delete(listener)
       },
     })),

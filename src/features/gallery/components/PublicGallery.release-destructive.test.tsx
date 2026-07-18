@@ -77,7 +77,6 @@ const gallery: GalleryPayload = {
   hasPrev: false,
   items: [
     {
-      previewVersion: 1,
       prompt: 'Destructive project',
       sessionId: 'destructive-session',
     },

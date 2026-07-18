@@ -24,7 +24,7 @@ export type CommerceSearchInput = {
   selectedLabel?: string
 }
 
-type CartItemTarget = { id?: string; itemKey?: string; label?: string }
+export type CartItemTarget = { id?: string; itemKey?: string; label?: string }
 
 function clean(value: unknown): string {
   return String(value ?? '').trim()
@@ -137,7 +137,7 @@ export const commerceCartLakebed = {
     }),
   },
   mutations: {
-    addItem: commerce.mutation((_ctx, input) => {
+    addItem: commerce.mutation((_ctx, input: CommerceCartItemInput) => {
       const label = input.label.trim() || 'Item'
       const itemKey = commerceCartItemKey({ ...input, label })
       const existing = findExistingAddItem(_ctx, input)
@@ -159,7 +159,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.items.orderBy('createdAt').all()
     }),
-    incrementItem: commerce.mutation((_ctx, input) => {
+    incrementItem: commerce.mutation((_ctx, input: CartItemTarget) => {
       const existing = findCartItem(_ctx, input)
 
       if (!existing) return _ctx.db.items.orderBy('createdAt').all()
@@ -170,7 +170,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.items.orderBy('createdAt').all()
     }),
-    decrementItem: commerce.mutation((_ctx, input) => {
+    decrementItem: commerce.mutation((_ctx, input: CartItemTarget) => {
       const existing = findCartItem(_ctx, input)
 
       if (!existing) return _ctx.db.items.orderBy('createdAt').all()
@@ -182,7 +182,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.items.orderBy('createdAt').all()
     }),
-    deleteItem: commerce.mutation((_ctx, input) => {
+    deleteItem: commerce.mutation((_ctx, input: CartItemTarget) => {
       const existing = findCartItem(_ctx, input)
 
       if (existing) {
@@ -191,7 +191,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.items.orderBy('createdAt').all()
     }),
-    removeItem: commerce.mutation((_ctx, input) => {
+    removeItem: commerce.mutation((_ctx, input: CartItemTarget) => {
       const existing = findCartItem(_ctx, input)
 
       if (!existing) return _ctx.db.items.orderBy('createdAt').all()
@@ -210,7 +210,7 @@ export const commerceCartLakebed = {
 
       return []
     }),
-    setCommerceSearch: commerce.mutation((_ctx, input) => {
+    setCommerceSearch: commerce.mutation((_ctx, input: CommerceSearchInput) => {
       const query = clean(input.query)
       const selectedLabel = clean(input.selectedLabel)
       const current = _ctx.db.state.orderBy('createdAt').all().at(0)
@@ -226,7 +226,7 @@ export const commerceCartLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncCatalog: commerce.mutation((_ctx, input) => {
+    syncCatalog: commerce.mutation((_ctx, input: { products: CommerceCatalogProductInput[] }) => {
       for (const product of input.products) {
         const label = product.label.trim()
         if (!label) continue

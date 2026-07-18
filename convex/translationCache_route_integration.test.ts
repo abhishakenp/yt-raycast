@@ -27,13 +27,27 @@ const translationRequest = () =>
 
 function createCacheClient(t: ReturnType<typeof convexTest>) {
   return {
-    getBatch: (input) => t.query(api.translationCache.getBatch, input),
-    setBatch: (input) => t.mutation(api.translationCache.setBatch, input),
-    claimBatch: (input) => t.mutation(api.translationCache.claimBatch, input),
-    completeBatch: (input) =>
-      t.mutation(api.translationCache.completeBatch, input),
-    releaseBatch: (input) =>
-      t.mutation(api.translationCache.releaseBatch, input),
+    getBatch: (input: { locale: string; texts: string[] }) =>
+      t.query(api.translationCache.getBatch, input),
+    setBatch: (
+      input: {
+        locale: string
+        entries: Array<{ text: string; translation: string }>
+      },
+    ) => t.mutation(api.translationCache.setBatch, input),
+    claimBatch: (
+      input: { locale: string; texts: string[]; owner: string },
+    ) => t.mutation(api.translationCache.claimBatch, input),
+    completeBatch: (
+      input: {
+        locale: string
+        owner: string
+        entries: Array<{ text: string; translation: string }>
+      },
+    ) => t.mutation(api.translationCache.completeBatch, input),
+    releaseBatch: (
+      input: { locale: string; texts: string[]; owner: string },
+    ) => t.mutation(api.translationCache.releaseBatch, input),
   }
 }
 

@@ -37,10 +37,10 @@ afterEach(() => {
 function collectWindowRuntimeErrors(dom: JSDOM) {
   const errors: unknown[] = []
 
-  dom.window.addEventListener('error', (event) => {
+  dom.window.addEventListener('error', (event: ErrorEvent) => {
     errors.push(event.error ?? event.message)
   })
-  dom.window.addEventListener('unhandledrejection', (event) => {
+  dom.window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
     errors.push(event.reason ?? event)
   })
 

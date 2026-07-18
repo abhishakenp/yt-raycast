@@ -46,7 +46,7 @@ const isExecutableUrl = (value: string): boolean => {
 const removeExecutableUrlAttributes = (html: string): string =>
   html.replace(
     URL_ATTRIBUTE_PATTERN,
-    (attribute, whitespace, name, separator, encodedValue) => {
+    (_attribute, whitespace, name, separator, encodedValue) => {
       const value = /^(['"])/.test(encodedValue)
         ? encodedValue.slice(1, -1)
         : encodedValue

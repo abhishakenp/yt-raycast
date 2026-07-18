@@ -145,7 +145,10 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
     return headers
   }
 
-  const downloadFromUrl = async (downloadUrl, target) => {
+  const downloadFromUrl = async (
+    downloadUrl: string,
+    target: ExportTarget['target'],
+  ) => {
     setDownloadingTarget(target)
     try {
       const response = await fetch(downloadUrl, {
@@ -193,7 +196,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
     }
   }
 
-  const createExport = async (target) => {
+  const createExport = async (target: ExportTarget['target']) => {
     setError(undefined)
     setActiveTarget(target)
     try {
@@ -227,7 +230,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
     }
   }
 
-  const downloadExport = async (targetConfig) => {
+  const downloadExport = async (targetConfig: ExportTarget) => {
     if (!targetConfig.downloadUrl || targetConfig.requiresPayment) return
 
     setError(undefined)
@@ -242,7 +245,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
     }
   }
 
-  const runTargetAction = async (targetConfig) => {
+  const runTargetAction = async (targetConfig: ExportTarget) => {
     if (actionInFlightRef.current) return
     actionInFlightRef.current = true
     try {

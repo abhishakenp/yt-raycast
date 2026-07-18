@@ -19,7 +19,7 @@ const { mockAuth, capturedWaitlistProps, mockClerkClientEnabled } = vi.hoisted(
 )
 
 vi.mock('@clerk/tanstack-react-start', () => ({
-  Waitlist: (props) => {
+  Waitlist: (props: unknown) => {
     Object.assign(capturedWaitlistProps, props)
     return <div data-testid="clerk-waitlist">Join the waitlist</div>
   },

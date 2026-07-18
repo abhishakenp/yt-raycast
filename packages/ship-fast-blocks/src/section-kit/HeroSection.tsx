@@ -224,9 +224,30 @@ const HeroSubheading = React.forwardRef<
 ))
 HeroSubheading.displayName = 'HeroSubheading'
 
-/* ---------- HeroCtas ---------- */
+/* ---------- HeroCta ---------- */
 
-const HeroCtas = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
+const HeroCta = React.forwardRef<
+  HTMLAnchorElement,
+  React.ComponentProps<'a'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'a'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-cta"
+      className={cn(
+        'inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-medium transition-colors',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+HeroCta.displayName = 'HeroCta'
+
+/* ---------- HeroActions ---------- */
+
+const HeroActions = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
@@ -236,9 +257,9 @@ const HeroCtas = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
     />
   ),
 )
-HeroCtas.displayName = 'HeroCtas'
+HeroActions.displayName = 'HeroActions'
 
-/* ---------- HeroImage ---------- */
+/* ---------- HeroMediaPanel ---------- */
 
 interface HeroImageProps extends React.ComponentProps<'div'> {
   alt: string
@@ -247,7 +268,7 @@ interface HeroImageProps extends React.ComponentProps<'div'> {
   rounded?: 'xl' | '2xl' | '3xl'
 }
 
-const HeroImage = React.forwardRef<HTMLDivElement, HeroImageProps>(
+const HeroMediaPanel = React.forwardRef<HTMLDivElement, HeroImageProps>(
   ({ className, alt, w = 1200, h = 1200, rounded = '2xl', ...props }, ref) => (
     <div
       ref={ref}
@@ -265,11 +286,11 @@ const HeroImage = React.forwardRef<HTMLDivElement, HeroImageProps>(
     </div>
   ),
 )
-HeroImage.displayName = 'HeroImage'
+HeroMediaPanel.displayName = 'HeroMediaPanel'
 
-/* ---------- HeroTrustRow ---------- */
+/* ---------- HeroSocialProof ---------- */
 
-const HeroTrustRow = React.forwardRef<
+const HeroSocialProof = React.forwardRef<
   HTMLUListElement,
   React.ComponentProps<'ul'>
 >(({ className, ...props }, ref) => (
@@ -283,11 +304,11 @@ const HeroTrustRow = React.forwardRef<
     {...props}
   />
 ))
-HeroTrustRow.displayName = 'HeroTrustRow'
+HeroSocialProof.displayName = 'HeroSocialProof'
 
-/* ---------- HeroTrustItem ---------- */
+/* ---------- HeroSocialProofItem ---------- */
 
-const HeroTrustItem = React.forwardRef<
+const HeroSocialProofItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<'li'>
 >(({ className, ...props }, ref) => (
@@ -298,7 +319,7 @@ const HeroTrustItem = React.forwardRef<
     {...props}
   />
 ))
-HeroTrustItem.displayName = 'HeroTrustItem'
+HeroSocialProofItem.displayName = 'HeroSocialProofItem'
 
 /* ---------- HeroStats ---------- */
 
@@ -361,6 +382,87 @@ const HeroStatLabel = React.forwardRef<
 ))
 HeroStatLabel.displayName = 'HeroStatLabel'
 
+/* ---------- HeroCodeWindow ---------- */
+
+const HeroCodeWindow = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-code-window"
+      className={cn(
+        'overflow-hidden rounded-xl border border-border bg-card shadow-sm',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+HeroCodeWindow.displayName = 'HeroCodeWindow'
+
+const HeroCodeWindowHeader = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="hero-code-window-header"
+    className={cn(
+      'flex items-center gap-2 border-b border-border bg-muted px-4 py-3',
+      className,
+    )}
+    {...props}
+  />
+))
+HeroCodeWindowHeader.displayName = 'HeroCodeWindowHeader'
+
+const HeroCodeWindowBody = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="hero-code-window-body"
+    className={cn('space-y-2 p-5 font-mono text-sm', className)}
+    {...props}
+  />
+))
+HeroCodeWindowBody.displayName = 'HeroCodeWindowBody'
+
+/* ---------- HeroInfoStrip ---------- */
+
+const HeroInfoStrip = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="hero-info-strip"
+    className={cn(
+      'mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80',
+      className,
+    )}
+    {...props}
+  />
+))
+HeroInfoStrip.displayName = 'HeroInfoStrip'
+
+const HeroInfoStripItem = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="hero-info-strip-item"
+    className={cn('flex items-center gap-x-4', className)}
+    {...props}
+  />
+))
+HeroInfoStripItem.displayName = 'HeroInfoStripItem'
+
 /* ---------- Exports ---------- */
 
 export {
@@ -371,10 +473,11 @@ export {
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
-  HeroCtas,
-  HeroImage,
-  HeroTrustRow,
-  HeroTrustItem,
+  HeroActions,
+  HeroCta,
+  HeroMediaPanel,
+  HeroSocialProof,
+  HeroSocialProofItem,
   HeroStats,
   HeroStat,
   HeroStatValue,
@@ -383,4 +486,9 @@ export {
   heroBadgeVariants,
   heroHeadingVariants,
   heroSubheadingVariants,
+  HeroCodeWindow,
+  HeroCodeWindowHeader,
+  HeroCodeWindowBody,
+  HeroInfoStrip,
+  HeroInfoStripItem,
 }

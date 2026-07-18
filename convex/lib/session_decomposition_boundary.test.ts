@@ -3,6 +3,7 @@ import { convexTest } from 'convex-test'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { api, internal } from '../_generated/api'
+import type { Id } from '../_generated/dataModel'
 import schema from '../schema'
 
 const modules = import.meta.glob('../**/*.ts')
@@ -109,7 +110,7 @@ describe('session decomposition boundary', () => {
 
     await expect(
       t.mutation(api.sessions.create, {
-        prompt: 12,
+        prompt: 12 as unknown as string,
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
         isPrivate: false,
@@ -119,37 +120,37 @@ describe('session decomposition boundary', () => {
 
     await expect(
       t.query(api.sessions.getGenerationView, {
-        sessionId: 123,
+        sessionId: 123 as unknown as Id<'sessions'>,
       }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.getEventStream, {
-        lookup: 123,
+        lookup: 123 as unknown as string,
       }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.getSessionApiResponse, {
-        lookup: 123,
+        lookup: 123 as unknown as string,
       }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.getDeploymentBySlug, {
-        slug: 42,
+        slug: 42 as unknown as string,
       }),
     ).rejects.toThrow()
 
     await expect(
       t.query(api.sessions.listPublicSessions, {
-        limit: 'twenty',
+        limit: 'twenty' as unknown as number,
       }),
     ).rejects.toThrow()
 
     await expect(
       t.mutation(api.sessions.deleteMine, {
-        sessionId: 123,
+        sessionId: 123 as unknown as Id<'sessions'>,
       }),
     ).rejects.toThrow()
   })

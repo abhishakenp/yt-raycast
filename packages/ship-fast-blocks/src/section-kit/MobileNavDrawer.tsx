@@ -49,7 +49,7 @@ export function MobileNavDrawer({
   const close = () => setOpen(false)
   const footerContent = typeof footer === 'function' ? footer(close) : footer
 
-  const navigate = (target) => {
+  const navigate = (target: string) => {
     close()
     go(target)
   }

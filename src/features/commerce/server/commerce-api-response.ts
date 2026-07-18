@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import {
   getMedusaAdminApiToken,
   getMedusaAdminEmail,
@@ -293,7 +294,7 @@ export async function createSessionMedusaConfigResponse(
   try {
     const config = await createClient(clientOverride).query(
       api.sessions.getCommerceConfig,
-      { sessionId: sessionId },
+      { sessionId: sessionId as Id<'sessions'> },
     )
 
     return json({
@@ -386,7 +387,7 @@ export async function createSessionMedusaProvisionResponse(
 
     const client = createClient(clientOverride)
     const mutationArgs = {
-      sessionId: sessionId,
+      sessionId: sessionId as Id<'sessions'>,
       anonymousOwnerSecret: getOwnerSecret(request, body),
       backendUrl,
       adminUrl,

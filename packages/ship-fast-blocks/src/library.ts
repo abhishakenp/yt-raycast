@@ -1,7 +1,6 @@
 import {
   createLibrary,
   isCapsule,
-  type ShipFastCapsule,
 } from './capsules/openui.ts'
 import * as registry from './registry/all.ts'
 

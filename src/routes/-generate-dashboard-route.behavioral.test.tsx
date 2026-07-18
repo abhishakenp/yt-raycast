@@ -9,7 +9,7 @@ const routeParamMocks = vi.hoisted(() => ({
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
-  getRouteApi: (path: string) => ({
+  getRouteApi: (_path: string) => ({
     useParams: () => ({ sessionId: routeParamMocks.sessionId }),
   }),
   lazyRouteComponent: (_importer: unknown, exportName: string) => {

@@ -104,3 +104,27 @@ export function CtaBand(props: {
     </section>
   )
 }
+
+/**
+ * CtaAction — standalone action button for use inside CtaBand's children.
+ * Supports `asChild` for mutation buttons (e.g. Lakebed add-to-cart).
+ */
+export const CtaAction = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: 'primary' | 'outline' | 'ghost'
+    invert?: boolean
+    asChild?: boolean
+  }
+>(({ className, variant = 'primary', invert = false, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? React.Fragment : 'button'
+  return (
+    <Comp
+      ref={ref as never}
+      data-slot="cta-action"
+      className={cn(kitActionClasses(variant, invert), className)}
+      {...props}
+    />
+  )
+})
+CtaAction.displayName = 'CtaAction'

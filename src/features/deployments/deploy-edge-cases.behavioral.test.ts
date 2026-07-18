@@ -1486,7 +1486,7 @@ describe('GitHub OAuth', () => {
         githubLogin: 'alice-gh',
         accessToken: 'gho',
         scopes: ['Repo', '  user  ', 'repo', 'USER', ''],
-      })
+      }) as { scopes: string[] }
 
       expect(result.scopes).toEqual(['repo', 'user'])
       expect(state.githubConnections[0]?.scopes).toEqual(['repo', 'user'])

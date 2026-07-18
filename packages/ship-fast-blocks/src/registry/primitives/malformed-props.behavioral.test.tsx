@@ -30,12 +30,12 @@ vi.mock('@ship-fast/lakebed/react', () => ({
   }),
 }))
 
-function renderCapsule(component: CapsuleRenderer<P>, props: P) {
+function renderCapsule<P>(component: CapsuleRenderer<P>, props: P) {
   const Component = component
   return render(<Component props={props} statementId="malformed-props-test" />)
 }
 
-function renderMalformed(component: CapsuleRenderer<P>, props: P) {
+function renderMalformed<P>(component: CapsuleRenderer<P>, props: P) {
   expect(() => renderCapsule(component, props)).not.toThrow()
 }
 

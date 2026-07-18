@@ -182,7 +182,7 @@ async function searchPexels(
   if (!pexelsApiKey) return null
   const orientation = orientationFromSize(w, h)
 
-  const trySearch = async (q) => {
+  const trySearch = async (q: string) => {
     const pexelsUrl = new URL('https://api.pexels.com/v1/search')
     pexelsUrl.searchParams.set('query', q.slice(0, 96))
     pexelsUrl.searchParams.set('per_page', '15')
@@ -230,7 +230,7 @@ async function searchUnsplash(
   if (!unsplashAccessKey) return null
   const orientation = orientationFromSize(w, h)
 
-  const trySearch = async (q) => {
+  const trySearch = async (q: string) => {
     const unsplashUrl = new URL('https://api.unsplash.com/search/photos')
     unsplashUrl.searchParams.set('query', q.slice(0, 96))
     unsplashUrl.searchParams.set('per_page', '15')

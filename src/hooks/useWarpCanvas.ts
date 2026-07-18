@@ -41,10 +41,10 @@ export function createWarpController(
   const PTS = 200
   const SEG = 1.85
   const CYCLE = SEG + 2.0
-  const lerp = (a, b, t) => a + (b - a) * t
-  const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
-  const easeOut = (t) => 1 - Math.pow(1 - t, 3)
-  const col = (t) => {
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+  const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v)
+  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
+  const col = (t: number) => {
     if (t < 0.34) {
       const u = t / 0.34
       return [lerp(20, 64, u) | 0, lerp(12, 36, u) | 0, lerp(48, 140, u) | 0]
@@ -56,7 +56,7 @@ export function createWarpController(
     const u = (t - 0.67) / 0.33
     return [lerp(130, 251, u) | 0, lerp(72, 191, u) | 0, lerp(237, 52, u) | 0]
   }
-  const bezierArc = (p0, p1, p2, p3) => {
+  const bezierArc = (p0: { x: number; y: number }, p1: { x: number; y: number }, p2: { x: number; y: number }, p3: { x: number; y: number }) => {
     const pts: { x: number; y: number }[] = []
     const ns: { nx: number; ny: number }[] = []
     for (let i = 0; i <= PTS; i++) {
@@ -132,7 +132,7 @@ export function createWarpController(
     c.style.height = `${Math.max(1, h)}px`
   }
 
-  const draw = (ts) => {
+  const draw = (ts: number) => {
     if (!running || !ctx) return
     const t = ts / 1000
     const segNum = Math.floor(t / CYCLE)

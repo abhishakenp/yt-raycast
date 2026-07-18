@@ -241,7 +241,7 @@ function isPexelsPhoto(value: unknown): value is PexelsPhoto {
   if (value.src === undefined) return true
   if (!isRecord(value.src)) return false
   return ['large', 'large2x', 'original', 'medium'].every(
-    (key) => value.src?.[key] === undefined || isString(value.src[key]),
+    (key) => (value.src as Record<string, unknown>)?.[key] === undefined || isString((value.src as Record<string, unknown>)[key]),
   )
 }
 
@@ -1038,7 +1038,7 @@ export function buildLakebedThemeCss(
   const darkVars = styles
     ? { ...styles.light, ...styles.dark }
     : defaultLakebedThemeVars
-  const declarationsFor = (vars) =>
+  const declarationsFor = (vars: Record<string, unknown>) =>
     themeVarKeys
       .map((key) => {
         const value = vars[key] ?? defaultLakebedThemeVars[key]
@@ -1289,7 +1289,7 @@ function topLevelDeclarationNames(statement: ts.Statement): string[] {
 // survives compilation.
 function collectValueIdentifierTexts(node: ts.Node) {
   const identifiers = new Set<string>()
-  const visit = (current) => {
+  const visit = (current: ts.Node) => {
     if (ts.isTypeNode(current)) return
     if (ts.isIdentifier(current)) {
       identifiers.add(current.text)
@@ -1547,11 +1547,11 @@ function isReferenceIdentifier(node: ts.Identifier): boolean {
 // import that was dropped so the name is bound in NO scope — is preserved.
 function collectAllBoundNames(sourceFile: ts.SourceFile): Set<string> {
   const bound = new Set<string>()
-  const add = (name) => {
+  const add = (name: ts.Node) => {
     if (!name) return
-    for (const text of bindingIdentifierNames(name)) bound.add(text)
+    for (const text of bindingIdentifierNames(name as ts.BindingName)) bound.add(text)
   }
-  const visit = (node) => {
+  const visit = (node: ts.Node) => {
     if (ts.isImportClause(node)) {
       if (node.name) bound.add(node.name.text)
       const named = node.namedBindings
@@ -1605,7 +1605,7 @@ export function findUnboundClientReferences(
   )
   const bound = collectAllBoundNames(sourceFile)
   const unbound = new Set<string>()
-  const visit = (node) => {
+  const visit = (node: ts.Node) => {
     if (ts.isTypeNode(node)) return
     if (
       ts.isIdentifier(node) &&
@@ -1812,7 +1812,7 @@ function readNumericSchemaFields(
     if (!rawTableCall || !ts.isCallExpression(rawTableCall)) continue
     const tableCall = inlineTableCallArg(rawTableCall, sourceFile)
 
-    const tableShape = tableCall.arguments[0]
+    const tableShape = (tableCall as ts.CallExpression).arguments[0]
     if (!tableShape || !ts.isObjectLiteralExpression(tableShape)) continue
 
     for (const fieldProperty of tableShape.properties) {
@@ -2117,7 +2117,7 @@ export function readLakebedDefinition(
       const lakebedSource = resolveLakebedObject(lakebed, sourceFile, entry)
       if (!lakebedSource) return null
 
-      const prop = (name) =>
+      const prop = (name: string) =>
         lakebedSource.object.properties
           .filter(ts.isPropertyAssignment)
           .find(
@@ -2946,7 +2946,7 @@ function collectionItemsForTable(
   const items: Record<string, unknown>[] = []
   const seen = new Set<unknown>()
 
-  const visit = (value, fromCollection = false) => {
+  const visit = (value: unknown, fromCollection = false) => {
     if (!isPlainRecord(value) || seen.has(value)) return
     seen.add(value)
     const projectedFieldCount = fields.filter(
@@ -3563,7 +3563,7 @@ function rewriteLakebedClientImports(
     context.outPath.startsWith('client/components/') ||
     context.outPath.startsWith('client/section-kit/')
 
-  const rewriteModuleSpecifier = (moduleName) => {
+  const rewriteModuleSpecifier = (moduleName: string) => {
     const allowed = allowedLakebedClientBareImport(moduleName)
     if (allowed) return allowed
 
@@ -3729,14 +3729,14 @@ function normalizeNumericFieldWrites(
     ts.ScriptKind.TS,
   )
   const ranges: Array<{ start: number; end: number; text: string }> = []
-  const replaceNode = (node, text) => {
+  const replaceNode = (node: ts.Node, text: string) => {
     ranges.push({
       start: node.getStart(sourceFile) - prefix.length,
       end: node.getEnd() - prefix.length,
       text,
     })
   }
-  const visit = (node) => {
+  const visit = (node: ts.Node) => {
     if (ts.isPropertyAssignment(node)) {
       const fieldName = propertyNameText(node.name, sourceFile)
       if (numericFieldNames.has(fieldName)) {
@@ -3863,7 +3863,7 @@ ${shouldRecordSync ? `  commitIdempotencyKeyVersionedSyncOutboxChangeEvents(ctx,
   const asyncKeyword = isAsync ? 'async ' : ''
   const awaitKeyword = isAsync ? 'await ' : ''
 
-  const normalizeHandlerSource = (value) =>
+  const normalizeHandlerSource = (value: string) =>
     normalizeNumericFieldWrites(
       value.replace(
         /\.orderBy\((['"])createdAt\1\)/g,
@@ -4008,7 +4008,7 @@ function renderSharedContent(
       (typeof route.props.title === 'string' ? route.props.title : undefined) ??
       route.label
     const description =
-      (typeof hero === 'object' && typeof hero.description === 'string'
+      (isRecord(hero) && typeof hero.description === 'string'
         ? hero.description
         : undefined) ??
       (typeof route.props.description === 'string'

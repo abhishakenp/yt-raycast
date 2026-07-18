@@ -53,7 +53,7 @@ export function buildSitemapEntries(siteSpec: SiteSpecLike | null | undefined) {
     )
 
   const pages = siteSpec?.pages || []
-  const hasRoute = (path) => {
+  const hasRoute = (path: string) => {
     const n = normalizePath(path)
     return pages.some((p) => normalizePath(p?.route) === n)
   }

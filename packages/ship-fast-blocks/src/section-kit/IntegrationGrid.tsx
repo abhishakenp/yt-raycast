@@ -7,26 +7,37 @@ import { cn } from '#/lib/utils.ts'
 const IntegrationGridVariants = cva('grid', {
   variants: {
     cols: {
-      '1-2-3': 'gap-6 sm:grid-cols-2 lg:grid-cols-3',
-      '1-2': 'gap-6 sm:grid-cols-2',
-      '1-2-4': 'gap-6 sm:grid-cols-2 lg:grid-cols-4',
-      '1-3': 'gap-6 md:grid-cols-3',
-      '1-4': 'gap-6 lg:grid-cols-4',
-      '1-md-2-3': 'gap-6 md:grid-cols-2 lg:grid-cols-3',
+      '1-2-3': 'sm:grid-cols-2 lg:grid-cols-3',
+      '1-2': 'sm:grid-cols-2',
+      '1-2-4': 'sm:grid-cols-2 lg:grid-cols-4',
+      '1-3': 'md:grid-cols-3',
+      '1-4': 'lg:grid-cols-4',
+      '1-md-2-3': 'md:grid-cols-2 lg:grid-cols-3',
+      '2-3-4': 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+      '2-4-6': 'grid-cols-2 md:grid-cols-4 lg:grid-cols-6',
+      '2-lg-4': 'grid-cols-2 lg:grid-cols-4',
+    },
+    gap: {
+      none: 'gap-0',
+      sm: 'gap-4',
+      md: 'gap-6',
+      lg: 'gap-8',
+      xl: 'gap-10',
     },
   },
   defaultVariants: {
     cols: '1-2-3',
+    gap: 'md',
   },
 })
 
 const IntegrationGrid = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & VariantProps<typeof IntegrationGridVariants>
->(({ className, cols, ...props }, ref) => (
+>(({ className, cols, gap, ...props }, ref) => (
   <div
     data-slot="integration-grid"
-    className={cn(IntegrationGridVariants({ cols }), className)}
+    className={cn(IntegrationGridVariants({ cols, gap }), className)}
     ref={ref}
     {...props}
   />

@@ -11,7 +11,7 @@ type InlineEditGenerateWithToolsMock = ReturnType<typeof vi.fn>
 function generateWithCodeModeProgram(typescriptCode: string) {
   return vi.fn(async (_model, _system, _user, tools) => {
     const codeModeTool = tools.find(
-      (tool) => tool.name === 'execute_typescript',
+      (tool: { name: string }) => tool.name === 'execute_typescript',
     )
     if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
     return codeModeTool.execute({ typescriptCode })
@@ -213,7 +213,7 @@ describe('createSectionEditResponse', () => {
         return { text: 'no tool calls', toolCalls: [] }
       }
       const codeModeTool = tools.find(
-        (tool) => tool.name === 'execute_typescript',
+        (tool: { name: string }) => tool.name === 'execute_typescript',
       )
       if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
       return codeModeTool.execute({
@@ -368,7 +368,7 @@ describe('createSectionEditResponse', () => {
         return { text: 'no image tool guidance', toolCalls: [] }
       }
       const codeModeTool = tools.find(
-        (tool) => tool.name === 'execute_typescript',
+        (tool: { name: string }) => tool.name === 'execute_typescript',
       )
       if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
       return codeModeTool.execute({
@@ -1353,7 +1353,7 @@ home = Stack([home_hero_anchor, home_nav_anchor, home_pricing_anchor])`
         return { text: 'no rewrite tool guidance', toolCalls: [] }
       }
       const codeModeTool = tools.find(
-        (tool) => tool.name === 'execute_typescript',
+        (tool: { name: string }) => tool.name === 'execute_typescript',
       )
       if (!codeModeTool?.execute) throw new Error('execute_typescript missing')
       return codeModeTool.execute({

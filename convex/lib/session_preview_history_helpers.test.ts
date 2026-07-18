@@ -193,7 +193,7 @@ function queryCtxFor(input: {
   previews?: PreviewRecord[]
 }) {
   const db = {
-    query: (table: string) => {
+    query: (table: 'edits' | 'previews') => {
       let rows: Array<EditRecord | PreviewRecord> =
         table === 'edits'
           ? [...(input.edits ?? [])]

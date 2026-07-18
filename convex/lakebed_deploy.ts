@@ -118,7 +118,7 @@ async function readProjectFiles(
 
 export const deploy = action({
   args: publishPreviewArgs,
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<unknown> => {
     const startedAt = Date.now()
     let prepared: PreparedLakebedDeployment | null = null
     try {
@@ -159,14 +159,15 @@ export const deploy = action({
                 `lakebed-api:${message}`,
                 details,
               ),
-            onProgress: (stageKey) =>
-              ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
+            onProgress: (stageKey: string) => {
+              void ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
                 sessionId: artifact.sessionId,
                 target: 'lakebed',
                 previewVersion: artifact.previewVersion,
                 stageKey,
                 willDeploy: true,
-              }),
+              })
+            },
           })
           const result: unknown = await ctx.runMutation(
             internal.sessions.recordLakebedDeploymentSuccess,
@@ -264,14 +265,15 @@ export const deploy = action({
             `lakebed-api:${message}`,
             details,
           ),
-        onProgress: (stageKey) =>
-          ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
+        onProgress: (stageKey: string) => {
+          void ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
             sessionId: prepared!.sessionId,
             target: 'lakebed',
             previewVersion: prepared!.previewVersion,
             stageKey,
             willDeploy: true,
-          }),
+          })
+        },
       })
       logLakebedDeploy(prepared.sessionId, 'lakebed-api:complete', {
         clientBundleBytes: deployed.clientBundleBytes,
@@ -317,7 +319,7 @@ export const deployByLookup = action({
     anonymousOwnerSecret: v.optional(v.string()),
     requestedSlug: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<unknown> => {
     const artifactResult = await ctx.runQuery(
       api.sessions.getOwnedLakebedDeploymentArtifactByLookup,
       args,

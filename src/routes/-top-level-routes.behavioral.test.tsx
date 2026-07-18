@@ -16,11 +16,11 @@ const routeParamMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path) => (options) => ({ options, path }),
-  getRouteApi: (path) => ({
+  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({ options, path }),
+  getRouteApi: (path: string) => ({
     useParams: () => routeParamMocks.paramsByPath[path] ?? {},
   }),
-  lazyRouteComponent: (_importer, exportName) => {
+  lazyRouteComponent: (_importer: unknown, exportName: string) => {
     const LazyRouteComponent = () => (
       <div data-testid="lazy-route">{exportName}</div>
     )
@@ -57,7 +57,7 @@ vi.mock('@/features/referrals/components/ReferralDashboard', () => ({
 }))
 
 vi.mock('@/features/dashboard/components/Dashboard', () => ({
-  Dashboard: ({ initialAdminView, sessionId }) => (
+  Dashboard: ({ initialAdminView, sessionId }: { initialAdminView?: boolean; sessionId?: string }) => (
     <section
       data-admin={initialAdminView === true ? 'true' : 'false'}
       data-testid="dashboard-route"

@@ -66,7 +66,7 @@ const convexState = vi.hoisted(() => ({
 
 vi.mock('convex/react', () => ({
   useQuery: vi.fn(() => convexState.customLanguages),
-  useAction: vi.fn(() => async (args) => {
+  useAction: vi.fn(() => async (args: { languageInput: string }) => {
     convexState.resolveCalls.push(args)
     if (convexState.resolveImpl) return convexState.resolveImpl(args)
     return {

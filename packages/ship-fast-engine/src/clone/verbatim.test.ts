@@ -295,7 +295,7 @@ describe('selfContainPage', () => {
 
     const { document, window } = parseHTML(out.html)
     const getComputedStyle = (el: Element) => ({
-      display: el.style.display || '',
+      display: (el as HTMLElement).style.display || '',
     })
     new Function('window', 'document', 'getComputedStyle', NAV_SHIM_SCRIPT)(
       window,

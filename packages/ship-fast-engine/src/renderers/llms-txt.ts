@@ -1,5 +1,5 @@
 import { normalizeSiteUrl, resolvePageSeo } from './seo'
-import type { SitePageLike, SiteSpecLike } from '@ship-fast/aeo'
+import type { SiteSpecLike } from '@ship-fast/aeo'
 
 function normalizePath(value = '/') {
   const raw = String(value || '').trim()
@@ -31,7 +31,7 @@ export function renderShipFastLlmsTxt({
   includeInstitutional?: boolean
 }) {
   const base = normalizeSiteUrl(siteUrl || '')
-  const link = (path, name, note) =>
+  const link = (path: string, name: string, note: string) =>
     llmsLine(name, base ? joinUrl(base, path) : path, note)
 
   const lines = [

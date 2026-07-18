@@ -906,7 +906,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
         }
 
         function createBlimp() {
-          const makeBlimp = (color) => {
+          const makeBlimp = (color: string) => {
             const group = new THREE.Group()
             const bodyGeo = new THREE.SphereGeometry(20, 32, 32)
             bodyGeo.scale(1, 1, 2.7)
@@ -942,17 +942,17 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
             return group
           }
 
-          const b1 = makeBlimp(0xffff00)
+          const b1 = makeBlimp('#ffff00')
           b1.position.set(-550, 500, -800)
           b1.rotation.y = -1.5
           scene.add(b1)
 
-          const b2 = makeBlimp(0xff0000)
+          const b2 = makeBlimp('#ff0000')
           b2.position.set(1000, 1000, -2000)
           b2.rotation.y = 1.5
           scene.add(b2)
 
-          const b3 = makeBlimp(0xff007f)
+          const b3 = makeBlimp('#ff007f')
           b3.position.set(500, 600, 1000)
           b3.rotation.y = 2
           scene.add(b3)
@@ -1007,9 +1007,9 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
           playerVelocity = new THREE.Vector3()
           playerAngularVelocity = new THREE.Vector3()
 
-          const glslVec3FromHex = (hex, mult = 1) => {
+          const glslVec3FromHex = (hex: string, mult = 1) => {
             const c = hex.replace('#', '')
-            const f = (i) =>
+            const f = (i: number) =>
               Math.min(255, parseInt(c.slice(i, i + 2), 16) * mult) / 255
             return `vec3(${f(0).toFixed(3)}, ${f(2).toFixed(3)}, ${f(4).toFixed(3)})`
           }
@@ -1019,7 +1019,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
           // produced `vec3(NaN, NaN, NaN)`, which fails shader compilation and
           // makes the whole aircraft invisible. Only recolor on a real 3/6-digit
           // hex; otherwise keep the model's natural materials.
-          const normalizeHex = (v) => {
+          const normalizeHex = (v: string) => {
             if (typeof v !== 'string') return null
             const c = v.trim().replace(/^#/, '')
             if (/^[0-9a-fA-F]{6}$/.test(c)) return `#${c}`
@@ -1027,7 +1027,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
               return `#${c[0]}${c[0]}${c[1]}${c[1]}${c[2]}${c[2]}`
             return null
           }
-          const planeHex = normalizeHex(cfg.planeColorHex)
+          const planeHex = normalizeHex(cfg.planeColorHex ?? '')
 
           if (planeHex) {
             playerAircraft.traverse((child) => {
@@ -1036,7 +1036,7 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
                   ? child.material[0]
                   : child.material
 
-                mat.onBeforeCompile = (shader) => {
+                mat.onBeforeCompile = (shader: THREE.WebGLProgramParametersWithUniforms) => {
                   shader.fragmentShader = shader.fragmentShader.replace(
                     '#include <dithering_fragment>',
                     `

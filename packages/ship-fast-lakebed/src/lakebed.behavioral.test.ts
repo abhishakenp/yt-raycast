@@ -319,7 +319,7 @@ describe('lakebed behavioral', () => {
           text: string(),
         }),
       })
-      const handler = def.mutation(async (ctx, id) => {
+      const handler = def.mutation(async (ctx, id: string) => {
         ctx.db.todos.update(id, { done: true })
         const updated = ctx.db.todos.get(id)
         ctx.db.todos.delete(id)

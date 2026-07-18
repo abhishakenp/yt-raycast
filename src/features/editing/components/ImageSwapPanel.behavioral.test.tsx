@@ -73,10 +73,10 @@ let userImagesValue:
 const originalFetch = globalThis.fetch
 
 vi.mock('@/lib/stock-image', () => ({
-  searchStockImages: (...args) => searchStockImagesMock(...(args as [])),
+  searchStockImages: (...args: unknown[]) => searchStockImagesMock(...(args as [])),
 }))
 vi.mock('convex/react', () => ({
-  useMutation: (fn) => {
+  useMutation: (fn: unknown) => {
     if (fn === 'generateImageUploadUrl') return generateUploadUrlMock
     if (fn === 'saveUserImage') return saveUserImageMock
     return vi.fn(async () => undefined)
@@ -420,7 +420,7 @@ describe('ImageSwapPanel (behavioral)', () => {
 
   // ── Multi-select → carousel payload ─────────────────────────────────────
 
-  const searchAndAwaitTiles = async (count) => {
+  const searchAndAwaitTiles = async (count: number) => {
     fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
       target: { value: 'cats' },
     })

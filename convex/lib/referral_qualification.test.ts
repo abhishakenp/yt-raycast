@@ -68,17 +68,17 @@ function mockCtx(input: {
 
   const db = {
     get: async () => null,
-    query: (table) => {
+    query: (table: string) => {
       const rows =
         table === 'referrals'
           ? (referrals as Array<Record<string, unknown>>)
           : (rewards as Array<Record<string, unknown>>)
 
       const builder = {
-        withIndex: (_indexName, applyIndex) => {
+        withIndex: (_indexName: string, applyIndex: (index: { eq: (field: string, value: unknown) => unknown; gt?: (field: string, value: number) => void }) => void) => {
           const filters = new Map<string, unknown>()
           const index = {
-            eq: (field, value) => {
+            eq: (field: string, value: unknown) => {
               filters.set(field, value)
               return index
             },
@@ -98,14 +98,14 @@ function mockCtx(input: {
       }
       return builder
     },
-    insert: async (table, doc) => {
+    insert: async (table: string, doc: Record<string, unknown>) => {
       inserts.push({ table, doc })
       if (table === 'referralRewards') {
         rewards.push(doc as ReferralRewardDoc)
       }
       return `inserted_${table}_${rewards.length}` as Id<'referralRewards'>
     },
-    patch: async (id, patch) => {
+    patch: async (id: string, patch: Record<string, unknown>) => {
       patches.push({ id, patch })
       // Apply the patch to the in-memory store so subsequent reads see it.
       const reward = rewards.find((r) => r._id === id)

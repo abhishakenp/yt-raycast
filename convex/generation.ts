@@ -304,7 +304,7 @@ export const startGeneration = internalAction({
     status: 'skipped' | 'failed' | 'completed'
     reason?: string
     message?: string
-  }> => {
+  } | null> => {
     const startedAt = Date.now()
 
     try {

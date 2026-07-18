@@ -120,7 +120,7 @@ test("listOwnedSessions returns the caller's public AND private sessions (anonym
 test("listOwnedSessions returns the caller's sessions (signed-in owner) and excludes others", async () => {
   const t = convexTest(schema, modules)
   const ISS = 'https://clerk.test'
-  const asUser = (tt, user) =>
+  const asUser = (tt: ReturnType<typeof convexTest>, user: string) =>
     tt.withIdentity({
       tokenIdentifier: `${ISS}|${user}`,
       subject: user,
@@ -174,7 +174,7 @@ test("listOwnedSessions returns the caller's sessions (signed-in owner) and excl
     },
   )
 
-  expect(aliceMine.items.map((item) => item.sessionId)).toEqual([
+  expect(aliceMine.items.map((item: Record<string, unknown>) => item.sessionId)).toEqual([
     minePublic.sessionId,
   ])
   expect(aliceMine.total).toBe(1)
@@ -232,7 +232,7 @@ test('listOwnedSessions returns sessions sorted newest-first by createdAt', asyn
 test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed-in userId and skips already-owned', async () => {
   const t = convexTest(schema, modules)
   const ISS = 'https://clerk.test'
-  const asUser = (tt, user) =>
+  const asUser = (tt: ReturnType<typeof convexTest>, user: string) =>
     tt.withIdentity({
       tokenIdentifier: `${ISS}|${user}`,
       subject: user,
@@ -289,7 +289,7 @@ test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed
     },
   )
   expect(aliceMine.total).toBe(2)
-  expect(aliceMine.items.map((item) => item.sessionId).sort()).toEqual(
+  expect(aliceMine.items.map((item: Record<string, unknown>) => item.sessionId).sort()).toEqual(
     [anonSession1, anonSession2].sort(),
   )
 

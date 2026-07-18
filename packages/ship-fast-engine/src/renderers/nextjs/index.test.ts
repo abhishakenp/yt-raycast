@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { renderNextProject } from './index'
-import type { SiteSpecLike, SitePageLike } from '@ship-fast/aeo'
+import type { SitePageLike } from '@ship-fast/aeo'
 
 interface TestSection {
   id: string
@@ -20,12 +20,17 @@ interface TestPage extends SitePageLike {
     bodyHtml?: string
     originalHtmlDocument?: string
   }
+  [key: string]: unknown
 }
 
-interface TestSiteSpec extends SiteSpecLike {
+interface TestSiteSpec {
+  projectName?: string
   siteType: string
+  theme?: Record<string, unknown>
+  seo?: Record<string, unknown>
   pages: TestPage[]
   userPrompt?: string
+  [key: string]: unknown
 }
 
 interface TestSession {
@@ -33,6 +38,7 @@ interface TestSession {
     backendUrl?: string
     publishableKey?: string
   }
+  [key: string]: unknown
 }
 
 function makeSiteSpec(overrides: Partial<TestSiteSpec> = {}): TestSiteSpec {

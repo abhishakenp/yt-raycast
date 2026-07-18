@@ -74,9 +74,9 @@ export function slimSiteSpecForBundle(siteSpec: any): any {
   if (!siteSpec?.pages?.length) return siteSpec
   return {
     ...siteSpec,
-    pages: siteSpec.pages.map((page) => {
+    pages: siteSpec.pages.map((page: Record<string, unknown>) => {
       if (!page?.renderBlueprint) return page
-      const rb = { ...page.renderBlueprint }
+      const rb = { ...(page.renderBlueprint as Record<string, unknown>) }
       delete rb.originalHtmlDocument
       return { ...page, renderBlueprint: rb }
     }),
@@ -98,10 +98,10 @@ function readmeRoutes(siteSpec: any): string[] {
   const routes: string[] = Array.from(
     new Set(
       (siteSpec?.pages || [])
-        .map((page) => String(page?.route || '').trim())
+        .map((page: Record<string, unknown>) => String(page?.route || '').trim())
         .filter(Boolean)
-        .map((route) =>
-          route === '/' ? '/' : route.startsWith('/') ? route : `/${route}`,
+        .map((route: unknown) =>
+          route === '/' ? '/' : String(route).startsWith('/') ? route : `/${route}`,
         ),
     ),
   )
@@ -870,9 +870,9 @@ export function renderSectionHtml(section: any, siteSpec: any = {}): string {
         !shouldUseSwiper(siteSpec) &&
         siteSpec.siteType === 'ecommerce' &&
         items.length > 0
-      const productCardHtml = (item, dup) => `
-                  <article class="card product-card product-card--retail product-card--carousel"${dup ? ' aria-hidden="true"' : ''}>
-                    ${productFigureHtml(item, { emptyAlt: dup })}
+      const productCardHtml = (item: Record<string, unknown>, dup: unknown) => `
+                  <article class="card product-card product-card--retail product-card--carousel"${Boolean(dup) ? ' aria-hidden="true"' : ''}>
+                    ${productFigureHtml(item, { emptyAlt: Boolean(dup) })}
                     ${retailProductCardInnerHtml(item)}
                   </article>
                 `

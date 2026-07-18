@@ -14,9 +14,9 @@ vi.mock('@openuidev/react-lang', async (importOriginal) => {
   const { useState, useCallback } = await import('react')
   return {
     ...actual,
-    useStateField: (_key, initial) => {
+    useStateField: (_key: string, initial: unknown) => {
       const [value, setValue] = useState(initial)
-      const stableSetValue = useCallback((next) => {
+      const stableSetValue = useCallback((next: unknown) => {
         setValue(next)
         openUiState.setValue(next)
       }, [])
@@ -36,7 +36,7 @@ vi.mock('@ship-fast/lakebed/react', () => ({
 // Mock defineCapsule to bypass lakebed client creation (which needs Convex).
 // We only need the component function for these tests.
 vi.mock('#/capsules/openui.ts', () => ({
-  defineCapsule: (config) => ({
+  defineCapsule: (config: Record<string, unknown>) => ({
     name: config.name,
     description: config.description,
     props: config.props,

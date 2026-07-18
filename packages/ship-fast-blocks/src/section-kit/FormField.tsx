@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -24,12 +22,11 @@ export function FormField(props: {
   labelClassName?: string
   className?: string
 }) {
-  const Tag = props.as ?? 'input'
-  const labelCls = cn('mb-2 block text-sm font-medium', props.labelClassName)
   const inputCls = cn(props.inputClassName, {
     'appearance-none': props.as === 'select',
     'resize-none': props.as === 'textarea',
   })
+  const labelCls = cn('mb-2 block text-sm font-medium', props.labelClassName)
   return (
     <div className={props.className}>
       <label htmlFor={props.id} className={labelCls}>

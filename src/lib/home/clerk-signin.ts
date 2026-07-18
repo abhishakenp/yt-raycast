@@ -104,7 +104,7 @@ export function bindHomepageClerkSignIn({
     syncSignedInControls()
     openUserProfile()
   }
-  const openSignIn = (event?) => {
+  const openSignIn = (event?: Event) => {
     event?.preventDefault()
 
     if (hasActiveClerkSession(win.Clerk)) {
@@ -128,7 +128,7 @@ export function bindHomepageClerkSignIn({
 
     showFallbackOverlay(doc)
   }
-  const openSignUp = (event?) => {
+  const openSignUp = (event?: Event) => {
     event?.preventDefault()
 
     if (hasActiveClerkSession(win.Clerk)) {
@@ -152,7 +152,7 @@ export function bindHomepageClerkSignIn({
 
     openSignIn()
   }
-  const signOut = (event?) => {
+  const signOut = (event?: Event) => {
     event?.preventDefault()
 
     const result = win.Clerk?.signOut?.()
@@ -178,7 +178,7 @@ export function bindHomepageClerkSignIn({
     (element): element is AuthElement => element !== null,
   )
 
-  const handleDocumentClick = (event) => {
+  const handleDocumentClick = (event: Event) => {
     const target = event.target as AuthElement | null
     if (
       target?.closest?.(

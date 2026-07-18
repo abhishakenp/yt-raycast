@@ -274,13 +274,19 @@ function createDefaultCapsuleLakebed(): CapsuleLakebedConfig<
   }
 }
 
-export function defineCapsule(
+export function defineCapsule<
+  TProps extends $ZodObject,
+  TSchema extends LakebedSessionSchema | undefined =
+    | LakebedSessionSchema
+    | undefined,
+  TClientResult = unknown,
+>(
   input: DefineCapsuleInput<
     TProps,
     TSchema,
-    TData,
-    TQueries,
-    TMutations,
+    LakebedDataFromSchema<TSchema>,
+    LakebedQueryMap<z.infer<TProps>, LakebedDataFromSchema<TSchema>>,
+    LakebedMutationMap<z.infer<TProps>, LakebedDataFromSchema<TSchema>>,
     TClientResult
   >,
 ): ShipFastCapsule<
@@ -288,9 +294,9 @@ export function defineCapsule(
   CapsuleLakebedConfig<
     z.infer<TProps>,
     TSchema,
-    TData,
-    TQueries,
-    TMutations,
+    LakebedDataFromSchema<TSchema>,
+    LakebedQueryMap<z.infer<TProps>, LakebedDataFromSchema<TSchema>>,
+    LakebedMutationMap<z.infer<TProps>, LakebedDataFromSchema<TSchema>>,
     TClientResult
   >,
   TClientResult
@@ -377,7 +383,14 @@ export function defineCapsule(
  * `defineCapsule` applies internally; extracted here so it can be reused to
  * add Lakebed client wiring to an arbitrary component renderer.
  */
-export function withLakebed(
+export function withLakebed<
+  TProps extends JsonRecord = JsonRecord,
+  TLakebed extends
+    | CapsuleLakebedConfig<TProps, any, any, any, any, any>
+    | undefined =
+    | CapsuleLakebedConfig<TProps, any, any, any, any, any>
+    | undefined,
+>(
   renderer: CapsuleComponentRenderer<TProps, TLakebed>,
   lakebed: TLakebed,
   capsuleName: string,

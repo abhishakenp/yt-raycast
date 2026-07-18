@@ -7,6 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ReactNode, PointerEvent as ReactPointerEvent } from 'react'
 
 const galleryMocks = vi.hoisted(() => ({
   deleteMine: vi.fn(),
@@ -21,6 +22,14 @@ vi.mock('@tanstack/react-router', () => ({
     preload,
     to,
     ...props
+  }: {
+    children?: ReactNode
+    onPointerEnter?: (e: ReactPointerEvent) => void
+    onPointerLeave?: (e: ReactPointerEvent) => void
+    params?: Record<string, string>
+    preload?: boolean
+    to?: string
+    [key: string]: unknown
   }) => {
     const anchorProps = { ...props }
     const href =
@@ -47,7 +56,7 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({ source }) => (
+  GeneratedModulePreview: ({ source }: { source?: string }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
 }))

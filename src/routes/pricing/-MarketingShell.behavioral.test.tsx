@@ -9,7 +9,7 @@ const router = vi.hoisted(() => ({
 const partnerConfig = vi.hoisted(() => ({ enabled: false }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, ...props }) => (
+  Link: ({ children, to, ...props }: { children?: ReactNode; to?: string; [key: string]: unknown }) => (
     <a href={to} {...props}>
       {children}
     </a>

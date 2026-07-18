@@ -59,7 +59,7 @@ export const useCapsulePropResolver = () => {
     activeCapsuleKey || '__none__',
   )
 
-  const setActiveElement = useCallback((element) => {
+  const setActiveElement = useCallback((element: HTMLElement | null) => {
     activeElementRef.current = element
     const ancestor = resolveCapsuleAncestor(element)
     if (ancestor) {
@@ -70,8 +70,8 @@ export const useCapsulePropResolver = () => {
   }, [])
 
   const resolveProp = useCallback(
-    (element) => {
-      if (!data || !activeCapsuleKey) return null
+    (element: HTMLElement | null) => {
+      if (!data || !activeCapsuleKey || !element) return null
       const ancestor = resolveCapsuleAncestor(element)
       if (!ancestor) return null
       return matchElementToProp(
@@ -85,7 +85,7 @@ export const useCapsulePropResolver = () => {
   )
 
   const getPatch = useCallback(
-    (context, newValue) => {
+    (context: CapsulePropContext, newValue: string) => {
       if (!data) return {}
       return buildPropPatch(context, newValue, data)
     },

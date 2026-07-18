@@ -115,7 +115,9 @@ export async function runCloneJob(input: {
   if (bearer) client.setAuth?.(bearer)
 
   const sid = sessionId as Id<'sessions'>
-  const writePage = (args: Omit<ClonePageRecord, 'sessionId'>) =>
+  const writePage = (
+    args: Omit<ClonePageRecord, 'sessionId' | 'html'> & { html?: string },
+  ) =>
     client.mutation(api.sessions.writeClonePageDoc, {
       sessionId: sid,
       anonymousOwnerSecret,

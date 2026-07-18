@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-07-17T18:55:53.447Z",
+  "results": [
+    {
+      "name": "billing",
+      "status": "skipped",
+      "missingEnv": [
+        "SHIP_FAST_VERIFY_AUTH_TOKEN",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_PRO_PRICE_ID",
+        "STRIPE_CREDITS_3_PRICE_ID",
+        "STRIPE_WEBHOOK_SECRET",
+        "RAZORPAY_KEY_ID",
+        "RAZORPAY_KEY_SECRET",
+        "RAZORPAY_PRO_PLAN_ID",
+        "RAZORPAY_CREDITS_3_PAISE",
+        "RAZORPAY_WEBHOOK_SECRET",
+        "BILLING_WEBHOOK_MUTATION_SECRET"
+      ],
+      "reason": "Missing required environment variables: SHIP_FAST_VERIFY_AUTH_TOKEN, STRIPE_SECRET_KEY, STRIPE_PRO_PRICE_ID, STRIPE_CREDITS_3_PRICE_ID, STRIPE_WEBHOOK_SECRET, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RAZORPAY_PRO_PLAN_ID, RAZORPAY_CREDITS_3_PAISE, RAZORPAY_WEBHOOK_SECRET, BILLING_WEBHOOK_MUTATION_SECRET"
+    },
+    {
+      "name": "github",
+      "status": "skipped",
+      "missingEnv": [
+        "SHIP_FAST_VERIFY_AUTH_TOKEN",
+        "GITHUB_VERIFY_TOKEN",
+        "GITHUB_VERIFY_REPO",
+        "GITHUB_VERIFY_SESSION_ID"
+      ],
+      "reason": "Missing required environment variables: SHIP_FAST_VERIFY_AUTH_TOKEN, GITHUB_VERIFY_TOKEN, GITHUB_VERIFY_REPO, GITHUB_VERIFY_SESSION_ID"
+    },
+    {
+      "name": "brand-design-reference-generation",
+      "status": "skipped",
+      "missingEnv": [
+        "SHIP_FAST_VERIFY_REAL_GENERATION"
+      ],
+      "reason": "Missing required environment variables: SHIP_FAST_VERIFY_REAL_GENERATION"
+    },
+    {
+      "name": "cms-browser",
+      "status": "skipped",
+      "missingEnv": [
+        "SHIP_FAST_VERIFY_BROWSER"
+      ],
+      "reason": "Missing required environment variables: SHIP_FAST_VERIFY_BROWSER"
+    },
+    {
+      "name": "localization-browser",
+      "status": "skipped",
+      "missingEnv": [
+        "SHIP_FAST_VERIFY_BROWSER"
+      ],
+      "reason": "Missing required environment variables: SHIP_FAST_VERIFY_BROWSER"
+    },
+    {
+      "name": "seo-aeo",
+      "status": "skipped",
+      "missingEnv": [
+        "SHIP_FAST_VERIFY_REAL_GENERATION"
+      ],
+      "reason": "Missing required environment variables: SHIP_FAST_VERIFY_REAL_GENERATION"
+    },
+    {
+      "name": "monitoring",
+      "status": "skipped",
+      "missingEnv": [
+        "CONVEX_SELF_HOSTED_URL",
+        "CONVEX_SELF_HOSTED_ADMIN_KEY"
+      ],
+      "reason": "Missing required environment variables: CONVEX_SELF_HOSTED_URL, CONVEX_SELF_HOSTED_ADMIN_KEY"
+    },
+    {
+      "name": "medusa",
+      "status": "skipped",
+      "missingEnv": [
+        "MEDUSA_BACKEND_URL",
+        "MEDUSA_PUBLISHABLE_API_KEY",
+        "SHIP_FAST_VERIFY_MEDUSA"
+      ],
+      "reason": "Missing required environment variables: MEDUSA_BACKEND_URL, MEDUSA_PUBLISHABLE_API_KEY, SHIP_FAST_VERIFY_MEDUSA"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "skipped": 8,
+    "failed": 0
+  }
+}

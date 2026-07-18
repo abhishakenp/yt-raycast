@@ -43,7 +43,7 @@ export function useSectionCapsuleActions(
   const canEdit = canWrite && data !== null
 
   const addItem = useCallback(
-    async (collectionKey, item) => {
+    async (collectionKey: string, item: JsonRecord) => {
       const currentItems = Array.isArray(data?.[collectionKey])
         ? (data![collectionKey] as unknown[])
         : []
@@ -55,7 +55,7 @@ export function useSectionCapsuleActions(
   )
 
   const removeItem = useCallback(
-    async (collectionKey, index) => {
+    async (collectionKey: string, index: number) => {
       if (!Array.isArray(data?.[collectionKey])) return
       const items = data![collectionKey] as unknown[]
       const filtered = items.filter((_, i) => i !== index)
@@ -67,7 +67,7 @@ export function useSectionCapsuleActions(
   )
 
   const reorderItem = useCallback(
-    async (collectionKey, fromIndex, toIndex) => {
+    async (collectionKey: string, fromIndex: number, toIndex: number) => {
       if (!Array.isArray(data?.[collectionKey])) return
       const items = [...(data![collectionKey] as unknown[])]
       if (
@@ -87,7 +87,7 @@ export function useSectionCapsuleActions(
   )
 
   const editItem = useCallback(
-    async (collectionKey, index, patch) => {
+    async (collectionKey: string, index: number, patch: JsonRecord) => {
       if (!Array.isArray(data?.[collectionKey])) return
       const items = data![collectionKey] as unknown[]
       const item = items[index]
@@ -103,7 +103,7 @@ export function useSectionCapsuleActions(
   )
 
   const setProp = useCallback(
-    async (key, value) => {
+    async (key: string, value: unknown) => {
       await mergeData({ [key]: value } as Partial<JsonRecord>)
     },
     [mergeData],

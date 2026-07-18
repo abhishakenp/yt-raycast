@@ -130,7 +130,7 @@ describe('groqStream', () => {
     const chunks: Array<{ piece: string; accumulated: string }> = []
 
     const result = await groqStream('Prompt', {
-      onToken: (piece, accumulated) => chunks.push({ piece, accumulated }),
+      onToken: (piece: string, accumulated: string) => chunks.push({ piece, accumulated }),
     })
 
     expect(result.content).toBe('abcdefghijklmnopqrstuvwxyz')

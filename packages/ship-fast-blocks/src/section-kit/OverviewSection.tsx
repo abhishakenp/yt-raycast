@@ -241,9 +241,9 @@ const OverviewStatLabel = React.forwardRef<
 ))
 OverviewStatLabel.displayName = 'OverviewStatLabel'
 
-/* ---------- OverviewImagePanel ---------- */
+/* ---------- OverviewMediaPanel ---------- */
 
-interface OverviewImagePanelProps extends React.ComponentProps<'div'> {
+interface OverviewMediaPanelProps extends React.ComponentProps<'div'> {
   /** Alt text for the image */
   alt: string
   /** Brand caption shown in the card footer */
@@ -256,9 +256,9 @@ interface OverviewImagePanelProps extends React.ComponentProps<'div'> {
   h?: number
 }
 
-const OverviewImagePanel = React.forwardRef<
+const OverviewMediaPanel = React.forwardRef<
   HTMLDivElement,
-  OverviewImagePanelProps
+  OverviewMediaPanelProps
 >(({ className, alt, brand, caption, w = 900, h = 700, ...props }, ref) => (
   <div
     ref={ref}
@@ -290,7 +290,7 @@ const OverviewImagePanel = React.forwardRef<
     </div>
   </div>
 ))
-OverviewImagePanel.displayName = 'OverviewImagePanel'
+OverviewMediaPanel.displayName = 'OverviewMediaPanel'
 
 /* ---------- Exports ---------- */
 
@@ -309,5 +309,5 @@ export {
   OverviewStat,
   OverviewStatValue,
   OverviewStatLabel,
-  OverviewImagePanel,
+  OverviewMediaPanel,
 }

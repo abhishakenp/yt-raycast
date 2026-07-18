@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { Slot } from '@radix-ui/react-slot'
 import { cn } from '#/lib/utils.ts'
 
 const DonationBandVariants = cva('py-20 lg:py-28', {
@@ -19,15 +20,19 @@ const DonationBandVariants = cva('py-20 lg:py-28', {
 
 const DonationBand = React.forwardRef<
   HTMLElement,
-  React.ComponentProps<'section'> & VariantProps<typeof DonationBandVariants>
->(({ className, variant, ...props }, ref) => (
-  <section
-    data-slot="donation-band"
-    className={cn(DonationBandVariants({ variant }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'section'> &
+    VariantProps<typeof DonationBandVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'section'
+  return (
+    <Comp
+      data-slot="donation-band"
+      className={cn(DonationBandVariants({ variant }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 DonationBand.displayName = 'DonationBand'
 
 export { DonationBand, DonationBandVariants }

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 
 vi.mock('#/lib/use-navigate.tsx', () => ({
-  RoutesContext: ({ children }) => children,
+  RoutesContext: ({ children }: { children?: React.ReactNode }) => children,
   useNavigate: () => vi.fn(),
 }))
 

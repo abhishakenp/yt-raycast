@@ -1,6 +1,6 @@
 'use client'
 
-import { type ReactElement, useEffect, useMemo, useState } from 'react'
+import { type ReactElement, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Languages, Check, Plus, Loader2 } from 'lucide-react'
 import { useAction, useQuery } from 'convex/react'
 
@@ -213,7 +213,7 @@ export default function LanguagePicker({
     [customLanguages, repairedCustomLanguages, supersededCustomCodes],
   )
 
-  const submitCustom = async (e) => {
+  const submitCustom = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const trimmed = customLanguage.trim()
     if (!trimmed || isResolving) return

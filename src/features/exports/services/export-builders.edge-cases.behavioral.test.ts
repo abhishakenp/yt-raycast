@@ -38,7 +38,7 @@ function createRuntimeDocument(html: string) {
     runScripts: 'dangerously',
     url: 'https://export.test/',
   })
-  dom.window.requestAnimationFrame = (callback) => {
+  dom.window.requestAnimationFrame = (callback: (time: number) => void) => {
     callback(0)
     return 1
   }
@@ -146,9 +146,9 @@ function evaluateEsmDefault(source: string): unknown {
     .replace(/import\s+\{([^}]*)\}\s+from\s+['"]vite['"]/g, (_m, names) =>
       names
         .split(',')
-        .map((n) => n.trim())
+        .map((n: string) => n.trim())
         .filter(Boolean)
-        .map((n) => `const ${n} = (c) => c;`)
+        .map((n: string) => `const ${n} = (c) => c;`)
         .join(' '),
     )
     .replace(
@@ -156,9 +156,9 @@ function evaluateEsmDefault(source: string): unknown {
       (_m, names) =>
         names
           .split(',')
-          .map((n) => n.trim())
+          .map((n: string) => n.trim())
           .filter(Boolean)
-          .map((n) => `const ${n} = () => "${n}-plugin";`)
+          .map((n: string) => `const ${n} = () => "${n}-plugin";`)
           .join(' '),
     )
     .replace(
@@ -166,9 +166,9 @@ function evaluateEsmDefault(source: string): unknown {
       (_m, names) =>
         names
           .split(',')
-          .map((n) => n.trim())
+          .map((n: string) => n.trim())
           .filter(Boolean)
-          .map((n) => `const ${n} = () => "${n}-plugin";`)
+          .map((n: string) => `const ${n} = () => "${n}-plugin";`)
           .join(' '),
     )
     .replace(

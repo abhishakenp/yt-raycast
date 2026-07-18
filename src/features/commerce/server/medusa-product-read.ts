@@ -9,6 +9,7 @@ import {
 import { findRunningSessionContainer } from './medusa-container-provisioner'
 import type { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type FetchLike = typeof fetch
@@ -79,7 +80,7 @@ async function readTenantConfig(
   try {
     const config = await createClient(clientOverride).query(
       api.sessions.getCommerceConfig,
-      { sessionId: sessionId },
+      { sessionId: sessionId as Id<'sessions'> },
     )
     if (
       !config ||

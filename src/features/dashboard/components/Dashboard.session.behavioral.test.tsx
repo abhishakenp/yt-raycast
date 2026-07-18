@@ -134,6 +134,13 @@ interface RealDashboardEditSurfaceProps {
     newText: string
     element: HTMLElement
     occurrenceIndex: number
+    capsuleProp?: {
+      lakebedKey: string
+      capsuleName: string
+      statementId: string
+      propKey: string
+      kind: string
+    }
   }) => void
   onImageChange?: (change: {
     oldSrc: string
@@ -143,6 +150,15 @@ interface RealDashboardEditSurfaceProps {
   }) => void
   onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
   onCommitText?: (commitEdit: () => void, cancelEdit: () => void) => void
+  onSectionSelect?: (selection: {
+    tag: string
+    elementPath: string
+    textContent: string
+    outerHTML: string
+    boundingBox: { x: number; y: number; width: number; height: number }
+    openuiComponent: string
+    openuiVar: string
+  }) => void
 }
 
 type ConvexTestState = {
@@ -352,7 +368,7 @@ function ExportPanelStub({ sessionId }: ExportPanelStubProps) {
       <button
         type="button"
         data-testid="export-panel-download"
-        onClick={() => getConvexState().exportDownload(sessionId)}
+        onClick={() => (getConvexState().exportDownload as (id: string) => void)(sessionId)}
       >
         download export
       </button>
@@ -952,7 +968,8 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
               .closest('.genui-preview')
               ?.querySelector('[data-testid="gmp-editable-heading"]')
             if (!(heading instanceof HTMLElement)) return
-            const persistedText = heading.textContent ?? ''
+            const headingEl: HTMLElement = heading
+            const persistedText = headingEl.textContent ?? ''
             const draftText =
               props.locale === 'fr'
                 ? 'Brouillon français'
@@ -960,21 +977,21 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
                   ? 'हिंदी मसौदा'
                   : 'Unapplied English draft'
             const state = getConvexState()
-            heading.textContent = draftText
+            headingEl.textContent = draftText
 
             function commitLocalizedDraft(): void {
-              state.pendingTextEdit.commit()
+              (state.pendingTextEdit.commit as () => void)()
               props.onTextChange?.({
                 oldText: persistedText,
                 newText: draftText,
-                element: heading,
+                element: headingEl,
                 occurrenceIndex: 0,
               })
             }
 
             function cancelLocalizedDraft(): void {
-              state.pendingTextEdit.cancel()
-              heading.textContent = persistedText
+              (state.pendingTextEdit.cancel as () => void)()
+              headingEl.textContent = persistedText
             }
 
             props.onCommitText?.(commitLocalizedDraft, cancelLocalizedDraft)

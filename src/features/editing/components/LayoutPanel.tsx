@@ -105,8 +105,8 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
 
     setPosition(computed.position || 'static')
     const inline = activeElement.style
-    const readOffset = (v) =>
-      v && v !== 'auto' ? String(parseFloat(v) || 0) : ''
+    const readOffset = (v: unknown) =>
+      v && v !== 'auto' ? String(parseFloat(String(v)) || 0) : ''
     setOffsets({
       top: readOffset(inline.top),
       right: readOffset(inline.right),
@@ -121,33 +121,33 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
     onModified?.()
   }
 
-  const applyLiveStyle = (prop, value) => {
+  const applyLiveStyle = (prop: string, value: string) => {
     if (activeElement) {
       activeElement.style.setProperty(prop, value)
       markModified()
     }
   }
 
-  const removeLiveStyle = (prop) => {
+  const removeLiveStyle = (prop: string) => {
     if (activeElement) {
       activeElement.style.removeProperty(prop)
       markModified()
     }
   }
 
-  const applyOffset = (side, value) => {
+  const applyOffset = (side: string, value: string) => {
     setOffsets((prev) => ({ ...prev, [side]: value }))
     if (value === '') removeLiveStyle(side)
     else applyLiveStyle(side, `${value}px`)
   }
 
-  const applyZIndex = (value) => {
+  const applyZIndex = (value: string) => {
     setZIndex(value)
     if (value === '') removeLiveStyle('z-index')
     else applyLiveStyle('z-index', value)
   }
 
-  const onPositionChange = (v) => {
+  const onPositionChange = (v: string) => {
     setPosition(v)
     if (v === 'static') removeLiveStyle('position')
     else applyLiveStyle('position', v)

@@ -72,11 +72,12 @@ export function useElementInspector(
       hoverOverlay.style.display = 'none'
     }
 
-    const paintHover = (target) => {
+    const paintHover = (target: HTMLElement | null) => {
+      if (!target) return
       positionOverlay(hoverOverlay, target.getBoundingClientRect())
     }
 
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: MouseEvent) => {
       const target = e.target
       if (!(target instanceof HTMLElement) || !container.contains(target)) {
         hideHover()
@@ -91,7 +92,8 @@ export function useElementInspector(
 
     const onMouseLeave = () => hideHover()
 
-    const commitSelection = (target) => {
+    const commitSelection = (target: HTMLElement | null) => {
+      if (!target) return
       selectedElementRef.current = target
       positionOverlay(selectedOverlay, target.getBoundingClientRect())
       onSectionSelectRef.current?.(buildInspectorSelection(container, target))
@@ -103,7 +105,7 @@ export function useElementInspector(
       onSectionSelectRef.current?.(null)
     }
 
-    const onClick = (e) => {
+    const onClick = (e: MouseEvent) => {
       const target = e.target
       if (!(target instanceof HTMLElement) || !container.contains(target)) {
         return
@@ -135,7 +137,7 @@ export function useElementInspector(
       }
     }
 
-    const onKey = (e) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         clearSelection()
       }
@@ -143,7 +145,7 @@ export function useElementInspector(
 
     // Click outside the preview container AND outside the inline edit toolbar →
     // clear the selection (mirrors devtools' click-away-to-deselect).
-    const onDocumentMouseDown = (e) => {
+    const onDocumentMouseDown = (e: MouseEvent) => {
       const target = e.target
       if (!(target instanceof HTMLElement)) return
       if (container.contains(target)) return
@@ -167,7 +169,7 @@ export function useElementInspector(
     // e.g. a gapless page root). Routing it through commitSelection keeps the
     // cyan overlay, onSectionSelect, and the toolbar in sync — exactly as a
     // real click would.
-    const onSelectRequest = (e) => {
+    const onSelectRequest = (e: Event) => {
       const target = (e as CustomEvent<{ element?: HTMLElement }>).detail
         ?.element
       if (target instanceof HTMLElement && container.contains(target)) {

@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { z } from 'zod/v4'
 import { string, table } from '@ship-fast/lakebed/server'
+import type { LakebedDataFromSchema, LakebedQueryContext } from '@ship-fast/lakebed/server'
 import { createGoogleAuthFromToken } from '../../../packages/ship-fast-lakebed/src/auth-shared.ts'
 import { defineCapsule } from '@ship-fast/blocks/capsules'
 
@@ -39,18 +40,21 @@ test('lakebed auth creates user alias from Shoo identity claims', () => {
 })
 
 test('capsule lakebed query data is inferred from schema tables', () => {
+  const probeSchema = {
+    favorites: table({
+      productName: string(),
+    }),
+  }
+  type ProbeData = LakebedDataFromSchema<typeof probeSchema>
+
   defineCapsule({
     name: 'LakebedTypeProbe',
     description: 'Type-only probe for lakebed schema inference.',
     props: z.object({}),
     lakebed: {
-      schema: {
-        favorites: table({
-          productName: string(),
-        }),
-      },
+      schema: probeSchema,
       queries: {
-        favoriteProductNames: ({ auth, data }) => {
+        favoriteProductNames: ({ auth, data }: LakebedQueryContext<Record<string, never>, ProbeData>) => {
           const userId: string = auth.user.id
           // @ts-expect-error ctx.auth.user.id is a string.
           const numericUserId: number = auth.user.id
