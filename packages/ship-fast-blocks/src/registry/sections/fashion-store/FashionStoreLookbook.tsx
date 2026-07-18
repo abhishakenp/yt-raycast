@@ -3,7 +3,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { LookbookGrid, LookbookCard } from '#/section-kit/LookbookGrid.tsx'
+import {
+  LookbookGrid,
+  LookbookCard,
+  LookbookCaption,
+} from '#/section-kit/LookbookGrid.tsx'
 
 /**
  * FashionStoreLookbook — editorial Lookbook masonry gallery for a minimalist
@@ -147,9 +151,8 @@ export const FashionStoreLookbook = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div
+                  <LookbookCaption
                     className={cn(
-                      'absolute text-background',
                       item.size === 'feature' || item.size === 'wide'
                         ? 'bottom-6 left-6'
                         : 'bottom-4 left-4',
@@ -161,7 +164,7 @@ export const FashionStoreLookbook = defineCapsule({
                     {item.title ? (
                       <p className="mt-1 font-serif text-xl">{item.title}</p>
                     ) : null}
-                  </div>
+                  </LookbookCaption>
                 </button>
               </LookbookCard>
             ))}

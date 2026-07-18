@@ -5,7 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { LocationBlock } from '#/section-kit/LocationBlock.tsx'
+import { LocationBlock, LocationMap } from '#/section-kit/LocationBlock.tsx'
 
 /**
  * CafeLocation — visit / location block for a cozy cafe / coffee shop page,
@@ -252,7 +252,7 @@ export const CafeLocation = defineCapsule({
             </div>
 
             {/* Map */}
-            <div className="relative h-full min-h-[400px] overflow-hidden rounded-xl bg-muted">
+            <LocationMap>
               <Image
                 alt={mapAlt}
                 w={1200}
@@ -270,7 +270,7 @@ export const CafeLocation = defineCapsule({
                   {mapCta}
                 </button>
               </div>
-            </div>
+            </LocationMap>
           </LocationBlock>
         </div>
       </section>

@@ -6,7 +6,11 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { PopularList, PopularItem } from '#/section-kit/PopularList.tsx'
+import {
+  PopularList,
+  PopularItem,
+  PopularMeta,
+} from '#/section-kit/PopularList.tsx'
 
 /**
  * KnowledgeBasePopular — popular-articles list beside a sticky-style support
@@ -216,13 +220,15 @@ export const KnowledgeBasePopular = defineCapsule({
                         <span className="mt-1 block text-sm text-muted-foreground">
                           {art.description}
                         </span>
-                        <span className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <EyeIcon />
-                            {art.views}
+                        <PopularMeta asChild>
+                          <span className="mt-2 flex items-center gap-3">
+                            <span className="flex items-center gap-1">
+                              <EyeIcon />
+                              {art.views}
+                            </span>
+                            <span>{art.updated}</span>
                           </span>
-                          <span>{art.updated}</span>
-                        </span>
+                        </PopularMeta>
                       </span>
                       <ChevronRight className="size-5 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
                     </button>
@@ -260,9 +266,9 @@ export const KnowledgeBasePopular = defineCapsule({
                       <span className="block text-sm font-medium text-secondary-foreground transition-colors group-hover:text-foreground">
                         {t.title}
                       </span>
-                      <span className="mt-0.5 block text-xs text-muted-foreground">
-                        {t.change}
-                      </span>
+                      <PopularMeta asChild>
+                        <span className="mt-0.5 block">{t.change}</span>
+                      </PopularMeta>
                     </button>
                   ))}
                 </div>
