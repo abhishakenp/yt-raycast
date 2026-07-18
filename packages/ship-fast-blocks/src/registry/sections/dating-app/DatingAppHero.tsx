@@ -12,6 +12,7 @@ import {
   HeroActions,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * DatingAppHero — bright, romantic split hero for a dating / matchmaking app. A
@@ -130,7 +131,7 @@ export const DatingAppHero = defineCapsule({
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-muted"
         />
-        <div className="relative mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
+        <Container size="xl" className="relative pb-24 pt-20 lg:pb-40 lg:pt-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
@@ -229,7 +230,7 @@ export const DatingAppHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

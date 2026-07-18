@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StepBadge, StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
+import {
+  StepBadge,
+  StepTimeline,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AuthSteps — three-step handshake sequence for Authly, a developer
@@ -75,7 +80,7 @@ export const AuthSteps = defineCapsule({
       <StepTimeline
         className={cn('overflow-hidden bg-background', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
+        <Container size="xl" className="px-5 py-16 sm:px-5 sm:py-20 lg:py-28">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end">
             <div>
               <SectionHeading
@@ -162,7 +167,7 @@ export const AuthSteps = defineCapsule({
               </StepItem>
             ))}
           </div>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

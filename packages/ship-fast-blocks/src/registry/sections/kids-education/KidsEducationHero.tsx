@@ -13,6 +13,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * KidsEducationHero — bright, playful split hero for a kids / family learning
@@ -147,7 +148,7 @@ export const KidsEducationHero = defineCapsule({
           className="absolute bottom-20 right-10 size-96 rounded-full bg-secondary/20 opacity-30 blur-3xl"
         />
 
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="relative py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="text-center lg:text-left">
               <HeroBadge
@@ -257,7 +258,7 @@ export const KidsEducationHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

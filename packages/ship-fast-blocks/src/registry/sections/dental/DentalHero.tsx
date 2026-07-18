@@ -14,6 +14,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -115,7 +116,7 @@ export const DentalHero = defineCapsule({
           <div className="absolute -right-40 -top-40 size-96 rounded-full bg-primary/20 blur-3xl" />
           <div className="absolute -left-20 top-20 size-72 rounded-full bg-secondary/40 blur-3xl" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="relative py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="text-center lg:text-left">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-background px-4 py-2 shadow-sm">
@@ -221,7 +222,7 @@ export const DentalHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

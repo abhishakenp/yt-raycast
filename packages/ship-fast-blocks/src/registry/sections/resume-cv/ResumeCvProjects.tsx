@@ -12,6 +12,7 @@ import {
   PortfolioCaption,
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ResumeCvProjects — selected-work grid for a personal resume / CV / portfolio
@@ -97,7 +98,7 @@ export const ResumeCvProjects = defineCapsule({
 
     return (
       <section className={cn('bg-background', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-28">
+        <Container size="xl" className="px-6 py-24 lg:px-6 lg:py-28">
           <SectionHeading
             align="left"
             eyebrow={props.eyebrow}
@@ -156,7 +157,7 @@ export const ResumeCvProjects = defineCapsule({
               </PortfolioItem>
             ))}
           </PortfolioGrid>
-        </div>
+        </Container>
       </section>
     )
   },

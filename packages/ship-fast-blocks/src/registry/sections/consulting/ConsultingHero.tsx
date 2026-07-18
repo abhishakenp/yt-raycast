@@ -12,6 +12,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ConsultingHero — two-column hero section for a management-consulting firm
@@ -110,7 +111,7 @@ export const ConsultingHero = defineCapsule({
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-br from-muted via-background to-muted"
         />
-        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="relative py-24 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-medium uppercase tracking-wide text-secondary-foreground">
@@ -174,7 +175,7 @@ export const ConsultingHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

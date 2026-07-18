@@ -12,6 +12,7 @@ import {
   HeroStatBadgeTitle,
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * BootcampHero — split-layout hero section for a coding bootcamp / career-school
@@ -94,7 +95,7 @@ export const BootcampHero = defineCapsule({
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent"
         />
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="relative py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5">
@@ -147,9 +148,7 @@ export const BootcampHero = defineCapsule({
                 h={600}
                 className="relative aspect-[4/3] w-full rounded-2xl border border-border object-cover shadow-lg"
               />
-              <HeroStatBadge
-                className="absolute -bottom-6 -left-6 flex items-center gap-3"
-              >
+              <HeroStatBadge className="absolute -bottom-6 -left-6 flex items-center gap-3">
                 <HeroStatBadgeIcon className="flex -space-x-2 rounded-none bg-transparent">
                   {[
                     'professional headshot of a female graduate',
@@ -176,7 +175,7 @@ export const BootcampHero = defineCapsule({
               </HeroStatBadge>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

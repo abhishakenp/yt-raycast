@@ -14,6 +14,7 @@ import {
   HeroStatValue,
   HeroStatLabel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FilmDirectorHero — full-height split hero for a film director / cinematographer
@@ -96,7 +97,7 @@ export const FilmDirectorHero = defineCapsule({
       <HeroSection
         className={cn('flex min-h-screen items-center', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-24 lg:px-8">
+        <Container size="xl" className="py-12 md:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="order-2 lg:order-1">
               <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
@@ -149,7 +150,7 @@ export const FilmDirectorHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

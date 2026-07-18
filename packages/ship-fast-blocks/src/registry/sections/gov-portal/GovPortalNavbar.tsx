@@ -4,14 +4,15 @@ import { z } from 'zod/v4'
 import { MenuIcon, PhoneIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   Logo,
   LogoImage,
   LogoLabel,
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
 } from '#/section-kit/index.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -46,6 +47,42 @@ type NavGroup = {
   page: string
   key?: GovStringKey
   links?: NavLink[]
+}
+
+type BrandRow = {
+  name?: string
+  nameHi?: string
+  tagline?: string
+  taglineHi?: string
+  cin?: string
+  location?: string
+  locationHi?: string
+  logoUrl?: string
+  stateLogoUrl?: string
+}
+
+type GovSeed = { brand?: BrandRow[] }
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isBrandRow(value: unknown): value is BrandRow {
+  return isRecord(value)
+}
+
+function isGovSeed(value: unknown): value is GovSeed {
+  return (
+    isRecord(value) &&
+    (!('brand' in value) ||
+      (Array.isArray(value.brand) && value.brand.every(isBrandRow)))
+  )
+}
+
+function bakedGovBrand(): BrandRow | undefined {
+  if (typeof globalThis === 'undefined') return undefined
+  const seed: unknown = Reflect.get(globalThis, '__LAKEBED_GOV_SEED__')
+  return isGovSeed(seed) ? seed.brand?.[0] : undefined
 }
 
 const DEFAULT_NAV: NavGroup[] = [
@@ -250,31 +287,13 @@ export const GovPortalNavbar = defineCapsule({
   }),
   lakebed: govPortalLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
-    const account = lakebed as GovPortalLakebed
+    const account: GovPortalLakebed = lakebed
     const { t, lang } = useGovLang(account)
-    type BrandRow = {
-      name?: string
-      nameHi?: string
-      tagline?: string
-      taglineHi?: string
-      cin?: string
-      location?: string
-      locationHi?: string
-      logoUrl?: string
-      stateLogoUrl?: string
-    }
-    const liveBrand = account.useQuery('govPortalBrand') as BrandRow | null
+    const liveBrandValue: unknown = account.useQuery('govPortalBrand')
+    const liveBrand = isBrandRow(liveBrandValue) ? liveBrandValue : null
     // Deployed sites read baked catalog data (Lakebed's per-context DB state is
     // not reliably shared with page queries), so fall back to the baked brand.
-    const bakedBrand =
-      typeof globalThis !== 'undefined'
-        ? (
-            globalThis as {
-              __LAKEBED_GOV_SEED__?: { brand?: BrandRow[] }
-            }
-          ).__LAKEBED_GOV_SEED__?.brand?.[0]
-        : undefined
+    const bakedBrand = bakedGovBrand()
     const dbBrand: BrandRow | null =
       liveBrand && liveBrand.name
         ? liveBrand
@@ -304,9 +323,12 @@ export const GovPortalNavbar = defineCapsule({
     const stateLogoUrl = dbBrand?.stateLogoUrl || ''
     const phone = props.phone || ''
     const nav = DEFAULT_NAV
-    const label = (group: NavGroup) => (group.key ? t(group.key) : group.label)
-    const linkLabel = (link: NavLink) =>
-      lang === 'hi' && link.labelHi ? link.labelHi : link.label
+    function label(group: NavGroup) {
+      return group.key ? t(group.key) : group.label
+    }
+    function linkLabel(link: NavLink) {
+      return lang === 'hi' && link.labelHi ? link.labelHi : link.label
+    }
 
     const initials = brand
       .split(/\s+/)
@@ -374,20 +396,18 @@ export const GovPortalNavbar = defineCapsule({
                   {phone}
                 </span>
               ) : null}
-              <button
-                type="button"
-                onClick={() => go('Info Desk')}
+              <NavbarRouteLink
+                href={'Info Desk'}
                 className="font-medium transition-opacity hover:opacity-80"
               >
                 {t('career')}
-              </button>
-              <button
-                type="button"
-                onClick={() => go('Media')}
+              </NavbarRouteLink>
+              <NavbarRouteLink
+                href={'Media'}
                 className="font-medium transition-opacity hover:opacity-80"
               >
                 {t('events')}
-              </button>
+              </NavbarRouteLink>
             </div>
             <div className="flex items-center gap-2">
               {stateLogoUrl ? (
@@ -413,20 +433,17 @@ export const GovPortalNavbar = defineCapsule({
         {/* brand header */}
         <div className="border-b border-border">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-            <NavbarBrand asChild>
-              <button
-                type="button"
-                onClick={() => go('Home')}
-                className="flex items-center gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={`${brand} — home`}
-              >
-                {Brandmark}
-                {cin ? (
-                  <span className="hidden border-l border-border pl-3 text-xs text-muted-foreground lg:block">
-                    CIN {cin}
-                  </span>
-                ) : null}
-              </button>
+            <NavbarBrand
+              href="Home"
+              className="flex items-center gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={`${brand} — home`}
+            >
+              {Brandmark}
+              {cin ? (
+                <span className="hidden border-l border-border pl-3 text-xs text-muted-foreground lg:block">
+                  CIN {cin}
+                </span>
+              ) : null}
             </NavbarBrand>
             <NavbarActions className="gap-3">
               {location ? (
@@ -463,17 +480,14 @@ export const GovPortalNavbar = defineCapsule({
                   </SheetHeader>
                   <div className="flex flex-col gap-1 px-3 py-4">
                     {nav.map((group) => (
-                      <button
+                      <NavbarRouteLink
                         key={group.page}
-                        type="button"
-                        onClick={() => {
-                          setOpen(false)
-                          go(group.page)
-                        }}
+                        href={group.page}
+                        onClick={() => setOpen(false)}
                         className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
                       >
                         {label(group)}
-                      </button>
+                      </NavbarRouteLink>
                     ))}
                     <div className="mt-3 border-t border-border px-1 pt-4">
                       <GovAccountButton lakebed={account}>
@@ -489,30 +503,31 @@ export const GovPortalNavbar = defineCapsule({
 
         {/* mega-nav */}
         <div className="hidden bg-primary text-primary-foreground shadow-sm md:block">
-          <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-6">
+          <Container size="xl" className="px-2 sm:px-4 lg:px-6">
             <NavigationMenu viewport={false} className="max-w-none">
               <NavigationMenuList className="flex-wrap justify-start gap-0">
                 {nav.map((group) =>
                   group.links?.length ? (
                     <NavigationMenuItem key={group.page}>
                       <NavigationMenuTrigger
-                        onClick={() => go(group.page)}
+                        asChild
                         className="bg-transparent text-sm font-medium text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground focus:bg-primary-foreground/15 focus:text-primary-foreground data-[state=open]:bg-primary-foreground/15 data-[state=open]:text-primary-foreground data-[state=open]:hover:bg-primary-foreground/15 data-[state=open]:hover:text-primary-foreground data-[state=open]:focus:bg-primary-foreground/15 data-[state=open]:focus:text-primary-foreground"
                       >
-                        {label(group)}
+                        <NavbarRouteLink href={group.page}>
+                          {label(group)}
+                        </NavbarRouteLink>
                       </NavigationMenuTrigger>
                       <NavigationMenuContent className="z-50 border border-border bg-popover text-popover-foreground shadow-xl">
                         <ul className="grid w-[17rem] gap-0.5 p-2">
                           {group.links.map((link) => (
                             <li key={link.label}>
                               <NavigationMenuLink asChild>
-                                <button
-                                  type="button"
-                                  onClick={() => go(link.target ?? group.page)}
+                                <NavbarRouteLink
+                                  href={link.target ?? group.page}
                                   className="block w-full rounded-md px-3 py-2 text-left text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                                 >
                                   {linkLabel(link)}
-                                </button>
+                                </NavbarRouteLink>
                               </NavigationMenuLink>
                             </li>
                           ))}
@@ -525,23 +540,22 @@ export const GovPortalNavbar = defineCapsule({
                         asChild
                         className="hover:bg-primary-foreground/15 hover:text-primary-foreground focus:bg-primary-foreground/15 focus:text-primary-foreground"
                       >
-                        <button
-                          type="button"
-                          onClick={() => go(group.page)}
+                        <NavbarRouteLink
+                          href={group.page}
                           className={cn(
                             navigationMenuTriggerStyle(),
                             'bg-transparent text-sm font-medium text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground focus:bg-primary-foreground/15 focus:text-primary-foreground',
                           )}
                         >
                           {label(group)}
-                        </button>
+                        </NavbarRouteLink>
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   ),
                 )}
               </NavigationMenuList>
             </NavigationMenu>
-          </div>
+          </Container>
         </div>
       </header>
     )

@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { saasPlan, useSyncSaasPlans } from '../saas/saas-interactions.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -16,22 +21,21 @@ import {
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AuthPricing — three-tier pricing table for Authly, a developer authentication
- * product. Thin configuration over the shared `PricingGrid` composite: a centered
- * heading ("Simple, usage-based pricing") above Free, Pro (highlighted), and
- * Enterprise plans, each listing the included MAUs, auth features, and support
- * level. Free and Pro CTAs route to sign-up while Enterprise routes to a sales
- * contact. Use to price an auth platform, identity API, or login SDK. Renders
- * fully with no props.
+ * product. A centered heading sits above Free, Pro (highlighted and lifted),
+ * and Enterprise cards, each carrying an oversized tabular price, the included
+ * MAUs, auth features, and support level. Free and Pro CTAs route to sign-up
+ * while Enterprise routes to a sales contact. Use to price an auth platform,
+ * identity API, or login SDK. Renders fully with no props.
  */
 export const AuthPricing = defineCapsule({
   name: 'AuthPricing',
   description:
-    "Three-tier pricing table for a developer-auth product backed by shared Lakebed conversion state: a centered heading ('Simple, usage-based pricing') above Free, Pro (highlighted), and Enterprise plans, each listing included MAUs, auth features, and support level. Plans seed the command search catalog; scoped CTAs record sign-up or sales intent without fake navigation. Use to price an auth platform, identity API, or login SDK.",
+    "Three-tier pricing table for a developer-auth product backed by shared Lakebed conversion state: a centered heading ('Simple, usage-based pricing') above Free, Pro (highlighted and lifted), and Enterprise cards, each carrying an oversized tabular price and listing included MAUs, auth features, and support level. Plans seed the command search catalog; scoped CTAs record sign-up or sales intent without fake navigation. Use to price an auth platform, identity API, or login SDK.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -104,6 +108,11 @@ export const AuthPricing = defineCapsule({
             ctaTarget: 'Contact Sales',
           },
         ]
+    const tierLayouts = [
+      'xl:translate-y-8 xl:-rotate-1',
+      '',
+      'xl:translate-y-8 xl:rotate-1',
+    ]
 
     useSyncSaasPlans(
       lakebed,
@@ -118,114 +127,129 @@ export const AuthPricing = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section
+        className={cn('bg-background py-16 sm:py-20 lg:py-28', props.className)}
+      >
+        <Container size="xl" className="px-5 sm:px-5">
           <SectionHeading
             title={heading}
             subtitle={subheading}
             align="center"
-            titleClassName="tracking-tight"
+            titleClassName="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.6rem] lg:leading-[1.12]"
             subtitleClassName="leading-7"
             className="mx-auto max-w-3xl"
           />
 
-          <PricingGrid>
-            <SectionHeading
-              title={'Simple, usage-based pricing'}
-              subtitle={
-                'Start free and only pay as your monthly active users grow. No seat fees, no surprises.'
-              }
-            />
-            {tiers.map((tier) => {
-              const t = tier as {
-                name: string
-                price: string
-                features?: string[]
-                cta?: string
-                ctaTarget?: string
-                tagline?: string
-                blurb?: string
-                description?: string
-                audience?: string
-                period?: string
-                unit?: string
-                cadence?: string
-                suffix?: string
-                highlighted?: boolean
-                featured?: boolean
-                popular?: boolean
-                badge?: string
-                popularLabel?: string
-                excluded?: string[]
-                annual?: string
-                priceSuffix?: string
-                note?: string
-              }
+          <PricingGrid className="mt-12 sm:mt-14">
+            {tiers.map((tier, index) => {
               return (
                 <PricingTier
-                  key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  key={tier.name}
+                  variant={tier.highlighted ? 'highlighted' : undefined}
+                  className={cn(
+                    'shadow-sm shadow-foreground/5',
+                    tierLayouts[index % tierLayouts.length],
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
+                  {tier.highlighted ? (
+                    <PricingTierBadge className="absolute -top-3.5 left-1/2 -translate-x-1/2 shadow-md shadow-primary/25">
+                      Most popular
+                    </PricingTierBadge>
                   ) : null}
+                  <span
+                    aria-hidden="true"
+                    className="mx-auto -mb-2 block h-2.5 w-12 rounded-full border border-border bg-background shadow-inner"
+                  />
+                  <span className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
+                    clearance level {String(index + 1).padStart(2, '0')}
+                  </span>
                   <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
-                    {t.tagline && (
-                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
-                    )}
-                    {t.blurb && (
-                      <PricingTierTagline>{t.blurb}</PricingTierTagline>
-                    )}
-                    {t.description && (
-                      <PricingTierTagline>{t.description}</PricingTierTagline>
-                    )}
-                    {t.audience && (
-                      <PricingTierTagline>{t.audience}</PricingTierTagline>
-                    )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
-                    {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
-                    )}
-                    {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
-                    {t.cadence && (
-                      <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
-                    )}
-                    {t.suffix && (
-                      <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
-                    )}
+                    <PricingTierName className="tracking-tight">
+                      {tier.name}
+                    </PricingTierName>
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <PricingTierPrice className="font-semibold tabular-nums tracking-tight sm:text-5xl">
+                        {tier.price}
+                      </PricingTierPrice>
+                      {tier.period ? (
+                        <PricingTierPeriod className="font-mono text-xs uppercase tracking-[0.14em]">
+                          {tier.period}
+                        </PricingTierPeriod>
+                      ) : null}
+                    </div>
+                    {tier.features?.at(0) ? (
+                      <PricingTierTagline className="border-b border-border pb-4">
+                        {tier.features[0]}
+                      </PricingTierTagline>
+                    ) : null}
                   </PricingTierHeader>
-                  {t.features && (
+                  {tier.features?.length ? (
                     <PricingTierFeatures>
-                      {t.features.map((feature) => (
-                        <PricingTierFeature
-                          key={
-                            typeof feature === 'string'
-                              ? feature
-                              : (feature as { label: string }).label
-                          }
-                        >
-                          {typeof feature === 'string'
-                            ? feature
-                            : (feature as { label: string }).label}
+                      {tier.features.slice(1).map((feature) => (
+                        <PricingTierFeature key={feature}>
+                          {feature}
                         </PricingTierFeature>
                       ))}
                     </PricingTierFeatures>
-                  )}
-                  {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
-                      {t.cta}
-                    </PricingTierCta>
-                  )}
+                  ) : null}
+                  <span
+                    aria-hidden="true"
+                    className="flex h-6 items-stretch gap-[3px] opacity-50"
+                  >
+                    {[
+                      'w-0.5',
+                      'w-px',
+                      'w-1',
+                      'w-px',
+                      'w-0.5',
+                      'w-1',
+                      'w-px',
+                      'w-0.5',
+                      'w-px',
+                      'w-1',
+                      'w-0.5',
+                      'w-px',
+                      'w-1',
+                      'w-px',
+                      'w-0.5',
+                      'w-1',
+                      'w-px',
+                      'w-0.5',
+                    ].map((width, barIndex) => (
+                      <span
+                        key={barIndex}
+                        className={cn('bg-foreground', width)}
+                      />
+                    ))}
+                  </span>
+                  {tier.cta ? (
+                    <SaasPlanActionButton
+                      lakebed={lakebed}
+                      intentLabel={tier.ctaTarget ?? tier.cta}
+                      plan={tier.name}
+                      source="pricing"
+                      aria-label={`${tier.cta} for ${tier.name}`}
+                      pendingChildren={
+                        <>
+                          <SaasMutationSpinner className="size-4" />
+                          Selecting
+                        </>
+                      }
+                      className={cn(
+                        'mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70',
+                        tier.highlighted
+                          ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
+                          : 'border border-border bg-background text-foreground hover:border-foreground/25 hover:bg-muted',
+                      )}
+                    >
+                      {tier.cta}
+                    </SaasPlanActionButton>
+                  ) : null}
                 </PricingTier>
               )
             })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },

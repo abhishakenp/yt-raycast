@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CoworkingHero — luminous opening scene for a coworking / workspace landing
@@ -165,7 +166,10 @@ export const CoworkingHero = defineCapsule({
           ))}
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-32 sm:px-6 sm:pb-28 sm:pt-36 lg:px-8 lg:pb-32 lg:pt-44">
+        <Container
+          size="xl"
+          className="relative pb-20 pt-32 sm:pb-28 sm:pt-36 lg:pb-32 lg:pt-44"
+        >
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
@@ -292,7 +296,7 @@ export const CoworkingHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CybersecurityStats — dark, full-bleed real-time threat-intelligence stats
@@ -94,7 +95,7 @@ export const CybersecurityStats = defineCapsule({
 
     return (
       <section className={cn('bg-foreground text-background', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <Container size="xl" className="py-20">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
             <p className="text-lg text-background/60">{description}</p>
@@ -122,7 +123,7 @@ export const CybersecurityStats = defineCapsule({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

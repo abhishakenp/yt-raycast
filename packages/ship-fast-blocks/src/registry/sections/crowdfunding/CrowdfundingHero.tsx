@@ -11,6 +11,7 @@ import {
   HeroSubheading,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CrowdfundingHero — a 2-column campaign hero for a crowdfunding / pre-order
@@ -97,7 +98,7 @@ export const CrowdfundingHero = defineCapsule({
 
     return (
       <HeroSection className={cn('bg-card', props.className)}>
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
+        <Container size="xl" className="py-12 lg:py-20">
           <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
             {/* Campaign image gallery */}
             <div className="order-2 lg:order-1">
@@ -216,7 +217,7 @@ export const CrowdfundingHero = defineCapsule({
               </p>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
