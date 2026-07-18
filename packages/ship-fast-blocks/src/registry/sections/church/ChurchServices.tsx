@@ -4,6 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  FeatureCard,
+  FeatureIcon,
+  FeatureTitle,
+  FeatureDescription,
+} from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * ChurchServices — split weekly service-times section for a church or faith-community
@@ -163,20 +169,25 @@ export const ChurchServices = defineCapsule({
               </p>
               <div className="space-y-6">
                 {items.map((s, i) => (
-                  <Card key={s.title} className="flex items-start gap-4">
-                    <div className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-muted">
+                  <FeatureCard
+                    key={s.title}
+                    className="flex flex-row items-start gap-4"
+                  >
+                    <FeatureIcon className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
                       {serviceIcons[i % serviceIcons.length]}
-                    </div>
+                    </FeatureIcon>
                     <div>
-                      <h3 className="mb-1 font-medium text-card-foreground">
+                      <FeatureTitle className="mb-1 font-medium text-card-foreground">
                         {s.title}
-                      </h3>
-                      <p className="mb-2 text-muted-foreground">{s.detail}</p>
+                      </FeatureTitle>
+                      <FeatureDescription className="mb-2">
+                        {s.detail}
+                      </FeatureDescription>
                       <p className="text-sm text-muted-foreground">
                         {s.location}
                       </p>
                     </div>
-                  </Card>
+                  </FeatureCard>
                 ))}
               </div>
             </div>
