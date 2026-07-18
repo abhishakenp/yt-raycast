@@ -11,6 +11,7 @@ import {
   HeroActions,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NutritionHero — split two-column hero for a nutrition-coaching / wellness landing
@@ -89,7 +90,7 @@ export const NutritionHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8 lg:pb-32 lg:pt-24">
+        <Container size="xl" className="pb-24 pt-16 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary">
@@ -157,7 +158,7 @@ export const NutritionHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

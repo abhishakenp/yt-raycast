@@ -5,6 +5,7 @@ import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * InvestingHero — split hero for a modern investing / fintech brokerage landing
@@ -95,7 +96,7 @@ export const InvestingHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8 lg:pb-32 lg:pt-24">
+        <Container size="xl" className="pb-24 pt-16 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
@@ -222,7 +223,7 @@ export const InvestingHero = defineCapsule({
               </Card>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
