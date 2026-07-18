@@ -21,6 +21,8 @@ import {
   MarketRow,
   MarketHeader,
   MarketBody,
+  MarketChart,
+  MarketIndicator,
 } from '#/section-kit/MarketTable.tsx'
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
@@ -194,17 +196,19 @@ export const InvestingMarkets = defineCapsule({
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-end justify-between">
+                        <MarketChart className="justify-between gap-0">
                           <div>
                             <p className="text-2xl font-semibold">{q.price}</p>
-                            <p
-                              className={cn(
-                                'text-sm font-medium',
-                                q.up ? 'text-chart-1' : 'text-destructive',
-                              )}
-                            >
-                              {q.change}
-                            </p>
+                            <MarketIndicator asChild>
+                              <p
+                                className={cn(
+                                  'text-sm',
+                                  q.up ? 'text-chart-1' : 'text-destructive',
+                                )}
+                              >
+                                {q.change}
+                              </p>
+                            </MarketIndicator>
                           </div>
                           <svg
                             className={cn(
@@ -222,7 +226,7 @@ export const InvestingMarkets = defineCapsule({
                               d={q.up ? trendUp : trendDown}
                             />
                           </svg>
-                        </div>
+                        </MarketChart>
                       </button>
                     </Card>
                   </MarketRow>
@@ -248,14 +252,16 @@ export const InvestingMarkets = defineCapsule({
                         {idx.name}
                       </p>
                       <p className="text-xl font-semibold">{idx.value}</p>
-                      <p
-                        className={cn(
-                          'text-sm',
-                          idx.up ? 'text-chart-1' : 'text-destructive',
-                        )}
-                      >
-                        {idx.change}
-                      </p>
+                      <MarketIndicator asChild>
+                        <p
+                          className={cn(
+                            'text-sm',
+                            idx.up ? 'text-chart-1' : 'text-destructive',
+                          )}
+                        >
+                          {idx.change}
+                        </p>
+                      </MarketIndicator>
                     </div>
                   ))}
                 </div>
