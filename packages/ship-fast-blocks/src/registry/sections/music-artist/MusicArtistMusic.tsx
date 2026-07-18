@@ -6,7 +6,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
-import { MusicList, MusicItem } from '#/section-kit/MusicList.tsx'
+import {
+  MusicList,
+  MusicItem,
+  MusicTrack,
+  MusicPlayer,
+} from '#/section-kit/MusicList.tsx'
 
 /**
  * MusicArtistMusic — latest-release track grid for a music artist / band page.
@@ -153,7 +158,7 @@ export const MusicArtistMusic = defineCapsule({
                   padding="md"
                   className="group rounded-sm transition-colors hover:border-muted-foreground/40"
                 >
-                  <div className="flex items-start gap-4">
+                  <MusicTrack className="items-start">
                     <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">
                       <Image
                         alt={track.imageAlt}
@@ -170,17 +175,17 @@ export const MusicArtistMusic = defineCapsule({
                       <p className="mt-1 text-sm text-muted-foreground">
                         {track.duration}
                       </p>
-                      <button
+                      <MusicPlayer
                         type="button"
                         aria-label={`Play ${track.title}`}
                         onClick={() => go(track.title)}
-                        className="mt-3 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                        className="mt-3 gap-1 rounded-none text-xs text-muted-foreground hover:text-foreground justify-start"
                       >
                         <PlayIcon />
                         Listen
-                      </button>
+                      </MusicPlayer>
                     </div>
-                  </div>
+                  </MusicTrack>
                 </Card>
               </MusicItem>
             ))}
