@@ -17,6 +17,7 @@ import {
 } from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList, MenuCategory, MenuItem } from '#/section-kit/MenuList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -218,7 +219,7 @@ export const FoodTruckMenu = defineCapsule({
 
     return (
       <section className={cn('px-6 pt-28 pb-20', props.className)}>
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <MenuList>
             <SectionHeading
               eyebrow={menuEyebrow}
@@ -325,7 +326,7 @@ export const FoodTruckMenu = defineCapsule({
               ))}
             </div>
           </MenuList>
-        </div>
+        </Container>
       </section>
     )
   },

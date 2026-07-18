@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -59,7 +60,7 @@ export const FoodTruckFaq = defineCapsule({
         ]
     return (
       <section className={cn('px-6 pt-28 pb-20', props.className)}>
-        <div className="mx-auto max-w-3xl">
+        <Container size="sm">
           <div className="mb-16 space-y-4 text-center">
             <span className="text-sm uppercase tracking-widest text-muted-foreground">
               {faqEyebrow}
@@ -80,7 +81,7 @@ export const FoodTruckFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

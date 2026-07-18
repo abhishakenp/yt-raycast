@@ -20,6 +20,7 @@ import {
   ContactFormSubmit,
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -111,7 +112,7 @@ export const FoodTruckCatering = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <div className="grid items-center gap-12 md:grid-cols-2">
             <div className="space-y-6">
               <SectionHeading
@@ -287,7 +288,7 @@ export const FoodTruckCatering = defineCapsule({
               </ContactForm>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

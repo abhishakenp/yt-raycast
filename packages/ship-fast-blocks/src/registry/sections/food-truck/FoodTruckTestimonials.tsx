@@ -11,6 +11,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FoodTruckTestimonials — a customer-reviews section with a press-logo strip. A
@@ -85,7 +86,7 @@ export const FoodTruckTestimonials = defineCapsule({
 
     return (
       <section className={cn('px-6 pt-28 pb-20', props.className)}>
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <TestimonialGrid eyebrow={testEyebrow} heading={testHeading}>
             {gridItems.map((t) => {
               const __iv__ = t as {
@@ -128,7 +129,7 @@ export const FoodTruckTestimonials = defineCapsule({
               </button>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

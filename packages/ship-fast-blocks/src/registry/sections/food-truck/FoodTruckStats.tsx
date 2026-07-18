@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FoodTruckStats — a compact metrics strip on a subtle muted band. A centered 2-up
@@ -39,7 +40,7 @@ export const FoodTruckStats = defineCapsule({
 
     return (
       <section className={cn('bg-muted px-6 pt-28 pb-16', props.className)}>
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <StatGrid columns={4} gap={'wide'}>
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
@@ -53,7 +54,7 @@ export const FoodTruckStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

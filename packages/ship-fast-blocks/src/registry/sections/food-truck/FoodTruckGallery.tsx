@@ -8,6 +8,7 @@ import {
   GalleryMasonry,
   GalleryMasonryColumn,
 } from '#/section-kit/GalleryGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FoodTruckGallery — a masonry-style food GALLERY section. A centered eyebrow +
@@ -43,7 +44,7 @@ export const FoodTruckGallery = defineCapsule({
 
     return (
       <section className={cn('px-6 pt-28 pb-20', props.className)}>
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <div className="mb-16 space-y-4 text-center">
             <span className="text-sm uppercase tracking-widest text-muted-foreground">
               {galleryEyebrow}
@@ -74,7 +75,7 @@ export const FoodTruckGallery = defineCapsule({
               </GalleryMasonryColumn>
             ))}
           </GalleryMasonry>
-        </div>
+        </Container>
       </section>
     )
   },
