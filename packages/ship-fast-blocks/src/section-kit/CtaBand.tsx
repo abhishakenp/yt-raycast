@@ -3,9 +3,7 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 
-import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
 
 const ctaBandVariants = cva('w-full', {
@@ -19,126 +17,158 @@ const ctaBandVariants = cva('w-full', {
   defaultVariants: { tone: 'primary' },
 })
 
-const CtaBand = React.forwardRef<
-  HTMLElement,
-  Omit<React.ComponentProps<'section'>, 'title'> & {
-    asChild?: boolean
-    eyebrow?: string
-    title: string
-    subtitle?: string
-    actions?: KitAction[]
-    children?: React.ReactNode
-    tone?: 'primary' | 'muted' | 'card'
-    align?: 'center' | 'left'
-    innerClassName?: string
-    titleClassName?: string
-    eyebrowClassName?: string
-    subtitleClassName?: string
-  } & VariantProps<typeof ctaBandVariants>
->(
-  (
-    {
-      className,
-      asChild = false,
-      eyebrow,
-      title,
-      subtitle,
-      actions,
-      children,
-      tone = 'primary',
-      align = 'center',
-      innerClassName,
-      titleClassName,
-      eyebrowClassName,
-      subtitleClassName,
-      ...props
+const ctaBandInnerVariants = cva(
+  'mx-auto flex max-w-4xl flex-col gap-5 px-6 py-16 lg:px-8',
+  {
+    variants: {
+      align: {
+        center: 'items-center text-center',
+        left: 'items-start text-left',
+      },
     },
-    ref,
-  ) => {
-    const go = useNavigate()
-    const Comp = asChild ? Slot : 'section'
-    const isCenter = align === 'center'
-
-    return (
-      <Comp
-        ref={ref}
-        data-slot="cta-band"
-        className={cn(ctaBandVariants({ tone }), className)}
-        {...props}
-      >
-        <div
-          data-slot="cta-band-inner"
-          className={cn(
-            'mx-auto flex max-w-4xl flex-col gap-5 px-6 py-16 lg:px-8',
-            isCenter ? 'items-center text-center' : 'items-start text-left',
-            innerClassName,
-          )}
-        >
-          {eyebrow ? (
-            <span
-              data-slot="cta-band-eyebrow"
-              className={cn(
-                'text-sm font-medium uppercase tracking-wide opacity-80',
-                eyebrowClassName,
-              )}
-            >
-              {eyebrow}
-            </span>
-          ) : null}
-          <h2
-            data-slot="cta-band-title"
-            className={cn('text-3xl font-semibold md:text-4xl', titleClassName)}
-          >
-            {title}
-          </h2>
-          {subtitle ? (
-            <p
-              data-slot="cta-band-subtitle"
-              className={cn(
-                'max-w-2xl text-base opacity-90 md:text-lg',
-                subtitleClassName,
-              )}
-            >
-              {subtitle}
-            </p>
-          ) : null}
-          {children ? (
-            children
-          ) : actions && actions.length > 0 ? (
-            <div
-              data-slot="cta-band-actions"
-              className={cn(
-                'flex flex-wrap gap-3',
-                isCenter ? 'justify-center' : 'justify-start',
-              )}
-            >
-              {actions.filter(Boolean).map((a) => {
-                const isInvert =
-                  tone === 'primary' && (a.variant ?? 'primary') === 'primary'
-                return (
-                  <button
-                    key={a.label}
-                    onClick={() => go(a.target ?? a.label)}
-                    className={kitActionClasses(a.variant, isInvert)}
-                  >
-                    {a.label}
-                  </button>
-                )
-              })}
-            </div>
-          ) : null}
-        </div>
-      </Comp>
-    )
+    defaultVariants: { align: 'center' },
   },
 )
+
+const ctaBandActionsVariants = cva('flex flex-wrap gap-3', {
+  variants: {
+    align: {
+      center: 'justify-center',
+      left: 'justify-start',
+    },
+  },
+  defaultVariants: { align: 'center' },
+})
+
+/**
+ * CtaBand — full-width conversion band with a tone-colored background.
+ * Compose with `CtaBandInner`, `CtaBandEyebrow`, `CtaBandTitle`,
+ * `CtaBandSubtitle`, `CtaBandActions`, and `CtaAction` subs.
+ */
+const CtaBand = React.forwardRef<
+  HTMLElement,
+  React.ComponentProps<'section'> &
+    VariantProps<typeof ctaBandVariants> & { asChild?: boolean }
+>(({ className, asChild = false, tone, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'section'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="cta-band"
+      className={cn(ctaBandVariants({ tone }), className)}
+      {...props}
+    />
+  )
+})
 CtaBand.displayName = 'CtaBand'
 
 /**
- * CtaAction — standalone action button for use inside CtaBand's children.
+ * CtaBandInner — the inner max-w-4xl flex container. Use `align` to control
+ * text alignment and item positioning.
+ */
+const CtaBandInner = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> &
+    VariantProps<typeof ctaBandInnerVariants> & { asChild?: boolean }
+>(({ className, asChild = false, align, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="cta-band-inner"
+      className={cn(ctaBandInnerVariants({ align }), className)}
+      {...props}
+    />
+  )
+})
+CtaBandInner.displayName = 'CtaBandInner'
+
+/**
+ * CtaBandEyebrow — small uppercase label above the title.
+ */
+const CtaBandEyebrow = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="cta-band-eyebrow"
+      className={cn(
+        'text-sm font-medium uppercase tracking-wide opacity-80',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+CtaBandEyebrow.displayName = 'CtaBandEyebrow'
+
+/**
+ * CtaBandTitle — the main `<h2>` headline.
+ */
+const CtaBandTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h2'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h2'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="cta-band-title"
+      className={cn('text-3xl font-semibold md:text-4xl', className)}
+      {...props}
+    />
+  )
+})
+CtaBandTitle.displayName = 'CtaBandTitle'
+
+/**
+ * CtaBandSubtitle — supporting paragraph under the title.
+ */
+const CtaBandSubtitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="cta-band-subtitle"
+      className={cn('max-w-2xl text-base opacity-90 md:text-lg', className)}
+      {...props}
+    />
+  )
+})
+CtaBandSubtitle.displayName = 'CtaBandSubtitle'
+
+/**
+ * CtaBandActions — flex container for action buttons. Use `align` to control
+ * justification.
+ */
+const CtaBandActions = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> &
+    VariantProps<typeof ctaBandActionsVariants> & { asChild?: boolean }
+>(({ className, asChild = false, align, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="cta-band-actions"
+      className={cn(ctaBandActionsVariants({ align }), className)}
+      {...props}
+    />
+  )
+})
+CtaBandActions.displayName = 'CtaBandActions'
+
+/**
+ * CtaAction — standalone action button for use inside CtaBandActions.
  * Supports `asChild` for mutation buttons (e.g. Lakebed add-to-cart).
  */
-export const CtaAction = React.forwardRef<
+const CtaAction = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: 'primary' | 'outline' | 'ghost'
@@ -156,7 +186,7 @@ export const CtaAction = React.forwardRef<
     },
     ref,
   ) => {
-    const Comp = asChild ? React.Fragment : 'button'
+    const Comp = asChild ? Slot : 'button'
     return (
       <Comp
         ref={ref as never}
@@ -169,4 +199,15 @@ export const CtaAction = React.forwardRef<
 )
 CtaAction.displayName = 'CtaAction'
 
-export { CtaBand, ctaBandVariants }
+export {
+  CtaBand,
+  CtaBandInner,
+  CtaBandEyebrow,
+  CtaBandTitle,
+  CtaBandSubtitle,
+  CtaBandActions,
+  CtaAction,
+  ctaBandVariants,
+  ctaBandInnerVariants,
+  ctaBandActionsVariants,
+}
