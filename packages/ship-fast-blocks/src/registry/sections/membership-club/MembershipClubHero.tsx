@@ -11,6 +11,7 @@ import {
   HeroActions,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MembershipClubHero — calm, editorial split hero for a private membership club /
@@ -78,7 +79,7 @@ export const MembershipClubHero = defineCapsule({
         className={cn('w-full bg-background', props.className)}
         aria-labelledby="hero-heading"
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="space-y-8">
               <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -137,7 +138,7 @@ export const MembershipClubHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

@@ -11,6 +11,7 @@ import {
   HeroStatBadgeTitle,
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AccountingFirmHero — split, editorial hero band for a CPA / accounting-firm
@@ -95,7 +96,7 @@ export const AccountingFirmHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <Eyebrow
@@ -145,9 +146,7 @@ export const AccountingFirmHero = defineCapsule({
                 h={600}
                 className="aspect-[4/3] w-full rounded-lg object-cover shadow-xl"
               />
-              <HeroStatBadge
-                className="absolute -bottom-6 -left-6 hidden rounded-lg sm:block"
-              >
+              <HeroStatBadge className="absolute -bottom-6 -left-6 hidden rounded-lg sm:block">
                 <HeroStatBadgeTitle className="text-3xl font-bold text-foreground">
                   {statValue}
                 </HeroStatBadgeTitle>
@@ -157,7 +156,7 @@ export const AccountingFirmHero = defineCapsule({
               </HeroStatBadge>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

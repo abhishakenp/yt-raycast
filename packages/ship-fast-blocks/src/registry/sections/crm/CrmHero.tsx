@@ -11,6 +11,7 @@ import {
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CrmHero — split, light-aesthetic hero band for a CRM / sales-platform landing
@@ -131,7 +132,7 @@ export const CrmHero = defineCapsule({
         variant="split"
         className={cn('relative overflow-hidden bg-muted/50', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-sm font-medium text-foreground/80">
@@ -180,7 +181,10 @@ export const CrmHero = defineCapsule({
 
             {/* Pipeline mockup card */}
             <div className="relative">
-              <ContentCard variant="bordered-light" className="shadow-xl transition-none hover:shadow-xl">
+              <ContentCard
+                variant="bordered-light"
+                className="shadow-xl transition-none hover:shadow-xl"
+              >
                 <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
                   <div className="flex gap-1.5">
                     <div className="size-3 rounded-full bg-destructive/60" />
@@ -277,7 +281,7 @@ export const CrmHero = defineCapsule({
               </Card>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

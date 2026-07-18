@@ -6,6 +6,7 @@ import { Card, FilterChip } from '#/section-kit/index.ts'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import { useJobBoardSearch } from './job-board-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * JobBoardHero — centered, conversion-focused hero for a job-board / careers
@@ -72,7 +73,7 @@ export const JobBoardHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-20 lg:py-32">
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-6 inline-block rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
               {badge}
@@ -181,7 +182,7 @@ export const JobBoardHero = defineCapsule({
               </div>
             </Card>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

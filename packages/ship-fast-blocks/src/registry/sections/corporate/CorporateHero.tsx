@@ -12,6 +12,7 @@ import {
   HeroStatBadgeTitle,
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CorporateHero — split-layout enterprise hero section for a corporate B2B
@@ -90,7 +91,7 @@ export const CorporateHero = defineCapsule({
         variant="split"
         className={cn('relative overflow-hidden bg-muted/50', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1">
@@ -139,9 +140,7 @@ export const CorporateHero = defineCapsule({
                 loading="eager"
                 className="aspect-[4/3] w-full rounded-xl object-cover shadow-2xl"
               />
-              <HeroStatBadge
-                className="absolute -bottom-6 -left-6 hidden items-center gap-3 sm:flex"
-              >
+              <HeroStatBadge className="absolute -bottom-6 -left-6 hidden items-center gap-3 sm:flex">
                 <HeroStatBadgeIcon>
                   <svg
                     width="20"
@@ -168,7 +167,7 @@ export const CorporateHero = defineCapsule({
               </HeroStatBadge>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

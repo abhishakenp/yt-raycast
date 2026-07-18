@@ -13,6 +13,7 @@ import {
   HeroActions,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PetVeterinaryHero — split, two-column hero for a veterinary clinic / pet
@@ -144,7 +145,7 @@ export const PetVeterinaryHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="max-w-2xl">
               <HeroBadge
@@ -264,7 +265,7 @@ export const PetVeterinaryHero = defineCapsule({
               )}
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

@@ -16,6 +16,7 @@ import {
   HeroStatBadgeTitle,
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CloudInfraHero — two-column hero section for a cloud-infrastructure / developer-
@@ -106,7 +107,7 @@ export const CloudInfraHero = defineCapsule({
         variant="split"
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <Container size="xl" className="py-20 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
               <div className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
@@ -173,9 +174,7 @@ export const CloudInfraHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <HeroStatBadge
-                className="absolute -bottom-6 -left-6 hidden items-center gap-3 sm:flex"
-              >
+              <HeroStatBadge className="absolute -bottom-6 -left-6 hidden items-center gap-3 sm:flex">
                 <HeroStatBadgeIcon className="size-10 bg-chart-2/15 text-chart-2">
                   <svg
                     className="size-6"
@@ -201,7 +200,7 @@ export const CloudInfraHero = defineCapsule({
               </HeroStatBadge>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
