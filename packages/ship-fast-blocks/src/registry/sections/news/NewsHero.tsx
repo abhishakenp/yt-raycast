@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NewsHero — print-style newspaper masthead hero for a news outlet. A bespoke,
@@ -50,46 +51,48 @@ export const NewsHero = defineCapsule({
         variant="default"
         className={cn('bg-background', props.className)}
       >
-        <HeroContent className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          {/* Edition strip: volume · date · late edition */}
-          <div className="grid grid-cols-3 items-center gap-4 border-y border-border py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            <span className="justify-self-start">{edition}</span>
-            <time className="justify-self-center text-center text-foreground">
-              {date}
-            </time>
-            <span className="justify-self-end text-right">Late Edition</span>
-          </div>
+        <Container asChild size="xl" className="py-12 lg:py-16">
+          <HeroContent>
+            {/* Edition strip: volume · date · late edition */}
+            <div className="grid grid-cols-3 items-center gap-4 border-y border-border py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="justify-self-start">{edition}</span>
+              <time className="justify-self-center text-center text-foreground">
+                {date}
+              </time>
+              <span className="justify-self-end text-right">Late Edition</span>
+            </div>
 
-          {/* Masthead wordmark */}
-          <div className="py-8 text-center sm:py-10">
-            <button
-              type="button"
-              onClick={() => go(brand)}
-              className="font-serif text-5xl font-bold tracking-tight text-foreground transition-colors hover:text-muted-foreground sm:text-6xl lg:text-7xl"
-            >
-              {brand}
-            </button>
-          </div>
-
-          {/* Top headline + standfirst */}
-          <div className="border-t border-border pt-8 text-center sm:pt-10">
-            <button
-              type="button"
-              onClick={() => go(headline)}
-              className="group block w-full"
-            >
-              <h1
-                id="news-hero-heading"
-                className="mx-auto max-w-4xl font-serif text-3xl font-bold leading-[1.1] tracking-tight text-foreground transition-colors group-hover:text-muted-foreground sm:text-4xl lg:text-5xl"
+            {/* Masthead wordmark */}
+            <div className="py-8 text-center sm:py-10">
+              <button
+                type="button"
+                onClick={() => go(brand)}
+                className="font-serif text-5xl font-bold tracking-tight text-foreground transition-colors hover:text-muted-foreground sm:text-6xl lg:text-7xl"
               >
-                {headline}
-              </h1>
-            </button>
-            <p className="mx-auto mt-5 max-w-2xl font-serif text-lg italic leading-relaxed text-muted-foreground sm:text-xl">
-              {dek}
-            </p>
-          </div>
-        </HeroContent>
+                {brand}
+              </button>
+            </div>
+
+            {/* Top headline + standfirst */}
+            <div className="border-t border-border pt-8 text-center sm:pt-10">
+              <button
+                type="button"
+                onClick={() => go(headline)}
+                className="group block w-full"
+              >
+                <h1
+                  id="news-hero-heading"
+                  className="mx-auto max-w-4xl font-serif text-3xl font-bold leading-[1.1] tracking-tight text-foreground transition-colors group-hover:text-muted-foreground sm:text-4xl lg:text-5xl"
+                >
+                  {headline}
+                </h1>
+              </button>
+              <p className="mx-auto mt-5 max-w-2xl font-serif text-lg italic leading-relaxed text-muted-foreground sm:text-xl">
+                {dek}
+              </p>
+            </div>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

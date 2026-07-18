@@ -10,6 +10,7 @@ import {
   SplitStoryContent,
   SplitStoryBody,
 } from '#/section-kit/SplitStory.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * WriterAuthorAbout — a two-column "About" band for a literary author site.
@@ -50,27 +51,29 @@ export const WriterAuthorAbout = defineCapsule({
           props.className,
         )}
       >
-        <SplitStoryGrid className="mx-auto max-w-7xl px-6 lg:px-8 lg:gap-12">
-          <Image
-            alt={props.portraitAlt ?? 'author portrait black and white'}
-            w={640}
-            h={800}
-            className="w-full rounded-2xl border border-border object-cover"
-          />
-
-          <SplitStoryContent>
-            <SectionHeading
-              align="left"
-              eyebrow={props.eyebrow ?? 'About'}
-              title={props.heading ?? 'On writing and a life of letters'}
+        <Container asChild size="xl" className="px-6 lg:px-6 lg:gap-12">
+          <SplitStoryGrid>
+            <Image
+              alt={props.portraitAlt ?? 'author portrait black and white'}
+              w={640}
+              h={800}
+              className="w-full rounded-2xl border border-border object-cover"
             />
-            <SplitStoryBody className="mt-6 space-y-4 font-serif text-lg leading-relaxed text-muted-foreground">
-              {paragraphs.map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
-              ))}
-            </SplitStoryBody>
-          </SplitStoryContent>
-        </SplitStoryGrid>
+
+            <SplitStoryContent>
+              <SectionHeading
+                align="left"
+                eyebrow={props.eyebrow ?? 'About'}
+                title={props.heading ?? 'On writing and a life of letters'}
+              />
+              <SplitStoryBody className="mt-6 space-y-4 font-serif text-lg leading-relaxed text-muted-foreground">
+                {paragraphs.map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+              </SplitStoryBody>
+            </SplitStoryContent>
+          </SplitStoryGrid>
+        </Container>
       </SplitStory>
     )
   },

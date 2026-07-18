@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   HotelBookingActionButton,
   HotelMutationSpinner,
@@ -91,68 +92,70 @@ export const HotelResortHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/20 to-foreground/50" />
         </div>
-        <HeroContent className="mx-auto max-w-7xl px-6 py-32 lg:px-8 lg:py-48">
-          <div className="max-w-2xl">
-            <p className="mb-4 text-sm uppercase tracking-widest text-background/80">
-              {location}
-            </p>
-            <h1 className="mb-6 text-4xl font-light leading-tight text-background md:text-5xl lg:text-7xl">
-              {headingTop}
-              <br />
-              {headingBottom}
-            </h1>
-            <p className="mb-10 max-w-xl text-lg font-light leading-relaxed text-background/90 md:text-xl">
-              {subheading}
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <HotelBookingActionButton
-                lakebed={lakebed}
-                intentLabel={primaryCta}
-                intentKey="hero-primary-booking"
-                source="hero"
-                pendingChildren={
-                  <>
-                    <HotelMutationSpinner />
-                    Sending
-                  </>
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-background px-8 py-4 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
-              >
-                {primaryCta}
-              </HotelBookingActionButton>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="rounded-md border border-background/30 bg-background/10 px-8 py-4 text-center text-sm font-medium text-background backdrop-blur-sm transition-colors hover:bg-background/20"
-              >
-                {secondaryCta}
-              </button>
+        <Container asChild size="xl" className="px-6 py-32 lg:px-6 lg:py-48">
+          <HeroContent>
+            <div className="max-w-2xl">
+              <p className="mb-4 text-sm uppercase tracking-widest text-background/80">
+                {location}
+              </p>
+              <h1 className="mb-6 text-4xl font-light leading-tight text-background md:text-5xl lg:text-7xl">
+                {headingTop}
+                <br />
+                {headingBottom}
+              </h1>
+              <p className="mb-10 max-w-xl text-lg font-light leading-relaxed text-background/90 md:text-xl">
+                {subheading}
+              </p>
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <HotelBookingActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  intentKey="hero-primary-booking"
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <HotelMutationSpinner />
+                      Sending
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-background px-8 py-4 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {primaryCta}
+                </HotelBookingActionButton>
+                <button
+                  type="button"
+                  onClick={() => go(secondaryCta)}
+                  className="rounded-md border border-background/30 bg-background/10 px-8 py-4 text-center text-sm font-medium text-background backdrop-blur-sm transition-colors hover:bg-background/20"
+                >
+                  {secondaryCta}
+                </button>
+              </div>
+              <div className="mt-16 flex flex-wrap items-center gap-8 text-sm text-background/70">
+                {badges.map((badge, i) => (
+                  <div key={badge} className="flex items-center gap-2">
+                    {i === 0 ? (
+                      <StarIcon className="size-5" />
+                    ) : (
+                      <svg
+                        className="size-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                    <span>{badge}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="mt-16 flex flex-wrap items-center gap-8 text-sm text-background/70">
-              {badges.map((badge, i) => (
-                <div key={badge} className="flex items-center gap-2">
-                  {i === 0 ? (
-                    <StarIcon className="size-5" />
-                  ) : (
-                    <svg
-                      className="size-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                  <span>{badge}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </HeroContent>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

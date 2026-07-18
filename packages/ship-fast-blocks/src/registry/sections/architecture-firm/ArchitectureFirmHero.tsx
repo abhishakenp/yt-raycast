@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ArchitectureFirmHero — split editorial hero for an architecture-studio /
@@ -62,40 +63,42 @@ export const ArchitectureFirmHero = defineCapsule({
           props.className,
         )}
       >
-        <HeroContent className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
-          <div className="max-w-3xl">
-            <p className="mb-6 text-sm uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h1
-              id="architecture-firm-hero-heading"
-              className="mb-8 text-4xl font-light leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
-            >
-              {headingLine1}
-              <br />
-              {headingLine2}
-            </h1>
-            <p className="mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-              {subheading}
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        <Container asChild size="xl" className="py-24 lg:py-32">
+          <HeroContent>
+            <div className="max-w-3xl">
+              <p className="mb-6 text-sm uppercase tracking-widest text-muted-foreground">
+                {eyebrow}
+              </p>
+              <h1
+                id="architecture-firm-hero-heading"
+                className="mb-8 text-4xl font-light leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
               >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="inline-flex items-center border border-border px-6 py-3 text-sm font-medium text-foreground transition-colors hover:border-foreground/40"
-              >
-                {secondaryCta}
-              </button>
+                {headingLine1}
+                <br />
+                {headingLine2}
+              </h1>
+              <p className="mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+                {subheading}
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  type="button"
+                  onClick={() => go(primaryCta)}
+                  className="inline-flex items-center bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {primaryCta}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go(secondaryCta)}
+                  className="inline-flex items-center border border-border px-6 py-3 text-sm font-medium text-foreground transition-colors hover:border-foreground/40"
+                >
+                  {secondaryCta}
+                </button>
+              </div>
             </div>
-          </div>
-        </HeroContent>
+          </HeroContent>
+        </Container>
         <div className="absolute right-0 top-0 hidden h-full w-2/5 lg:block">
           <Image
             alt={imageAlt}

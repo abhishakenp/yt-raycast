@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -127,90 +128,94 @@ export const NewsroomHero = defineCapsule({
         variant="default"
         className={cn('bg-background', props.className)}
       >
-        <HeroContent className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-          <div className="grid gap-12 lg:grid-cols-3 lg:gap-16">
-            {/* Lead story */}
-            <article className="lg:col-span-2">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-                {kicker}
-              </p>
-              <h1
-                id="newsroom-hero-heading"
-                className="mb-6 font-serif text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
-              >
-                {headline}
-              </h1>
-              <p className="mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                {dek}
-              </p>
+        <Container asChild size="xl" className="py-16 lg:py-24">
+          <HeroContent>
+            <div className="grid gap-12 lg:grid-cols-3 lg:gap-16">
+              {/* Lead story */}
+              <article className="lg:col-span-2">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+                  {kicker}
+                </p>
+                <h1
+                  id="newsroom-hero-heading"
+                  className="mb-6 font-serif text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+                >
+                  {headline}
+                </h1>
+                <p className="mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+                  {dek}
+                </p>
 
-              {/* Byline */}
-              <div className="mb-8 flex items-center gap-3 border-y border-border py-4">
-                <Image
-                  alt={author.avatarAlt}
-                  w={80}
-                  h={80}
-                  className="size-10 rounded-full object-cover"
-                />
-                <div className="text-sm">
-                  <p className="font-semibold text-foreground">{author.name}</p>
-                  <p className="text-muted-foreground">{author.role}</p>
+                {/* Byline */}
+                <div className="mb-8 flex items-center gap-3 border-y border-border py-4">
+                  <Image
+                    alt={author.avatarAlt}
+                    w={80}
+                    h={80}
+                    className="size-10 rounded-full object-cover"
+                  />
+                  <div className="text-sm">
+                    <p className="font-semibold text-foreground">
+                      {author.name}
+                    </p>
+                    <p className="text-muted-foreground">{author.role}</p>
+                  </div>
+                  <div className="ml-auto text-right text-xs text-muted-foreground">
+                    <p>{date}</p>
+                    <p>{readTime}</p>
+                  </div>
                 </div>
-                <div className="ml-auto text-right text-xs text-muted-foreground">
-                  <p>{date}</p>
-                  <p>{readTime}</p>
-                </div>
-              </div>
 
-              {/* Lead image */}
-              <figure className="mb-6">
-                <Image
-                  alt={imageAlt}
-                  w={1600}
-                  h={900}
-                  loading="eager"
-                  className="aspect-[16/9] w-full object-cover"
-                />
-                <figcaption className="mt-3 font-serif text-sm italic text-muted-foreground">
-                  {caption}
-                </figcaption>
-              </figure>
+                {/* Lead image */}
+                <figure className="mb-6">
+                  <Image
+                    alt={imageAlt}
+                    w={1600}
+                    h={900}
+                    loading="eager"
+                    className="aspect-[16/9] w-full object-cover"
+                  />
+                  <figcaption className="mt-3 font-serif text-sm italic text-muted-foreground">
+                    {caption}
+                  </figcaption>
+                </figure>
 
-              <button
-                type="button"
-                onClick={() => go(cta)}
-                className="inline-flex items-center bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {cta}
-              </button>
-            </article>
+                <button
+                  type="button"
+                  onClick={() => go(cta)}
+                  className="inline-flex items-center bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {cta}
+                </button>
+              </article>
 
-            {/* Also in the news rail */}
-            <aside className="lg:border-l lg:border-border lg:pl-12">
-              <h2 className="mb-6 border-b border-border pb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                Also in the news
-              </h2>
-              <ul className="divide-y divide-border">
-                {sideStories.map((story, i) => (
-                  <li key={i} className="py-4 first:pt-0">
-                    <button
-                      type="button"
-                      onClick={() => go(story.title ?? '')}
-                      className="group block w-full text-left"
-                    >
-                      <span className="mb-1 block text-xs font-semibold uppercase tracking-widest text-accent">
-                        {story.tag}
-                      </span>
-                      <span className="block font-serif text-lg font-medium leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
-                        {story.title}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </aside>
-          </div>
-        </HeroContent>
+              {/* Also in the news rail */}
+              <aside className="lg:border-l lg:border-border lg:pl-12">
+                <h2 className="mb-6 border-b border-border pb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Also in the news
+                </h2>
+                <ul className="divide-y divide-border">
+                  {sideStories.map((story, i) => (
+                    <li key={i} className="py-4 first:pt-0">
+                      <button
+                        type="button"
+                        onClick={() => go(story.title ?? '')}
+                        className="group block w-full text-left"
+                      >
+                        <span className="mb-1 block text-xs font-semibold uppercase tracking-widest text-accent">
+                          {story.tag}
+                        </span>
+                        <span className="block font-serif text-lg font-medium leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
+                          {story.title}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+            </div>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

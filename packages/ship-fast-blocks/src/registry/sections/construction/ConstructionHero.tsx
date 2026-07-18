@@ -9,6 +9,7 @@ import {
   HeroContent,
   HeroHeading,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ConstructionHero — full-bleed dark hero section for a construction / general
@@ -110,49 +111,51 @@ export const ConstructionHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/70 to-transparent" />
         </div>
-        <HeroContent className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
-          <div className="max-w-2xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-background/10 px-4 py-2 backdrop-blur-sm">
-              <span className="size-2 animate-pulse rounded-full bg-primary" />
-              <span className="text-sm font-medium text-background/80">
-                {badge}
-              </span>
+        <Container asChild size="xl" className="py-24 lg:py-32">
+          <HeroContent>
+            <div className="max-w-2xl">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-background/10 px-4 py-2 backdrop-blur-sm">
+                <span className="size-2 animate-pulse rounded-full bg-primary" />
+                <span className="text-sm font-medium text-background/80">
+                  {badge}
+                </span>
+              </div>
+              <HeroHeading className="mb-6 text-background">
+                {headingTop}
+                <br />
+                {headingBottom}
+              </HeroHeading>
+              <p className="mb-8 max-w-xl text-lg leading-relaxed text-background/70 sm:text-xl">
+                {subheading}
+              </p>
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => go(primaryCta)}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-6 py-3.5 font-semibold text-foreground transition-colors hover:bg-background/90"
+                >
+                  {primaryCta}
+                  <ArrowRight />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go(secondaryCta)}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background/10 px-6 py-3.5 font-semibold text-background backdrop-blur-sm transition-colors hover:bg-background/20"
+                >
+                  {secondaryCta}
+                </button>
+              </div>
+              <div className="mt-12 flex flex-wrap items-center gap-6 text-sm text-background/60">
+                {trust.map((item) => (
+                  <div key={item} className="flex items-center gap-2">
+                    <CheckCircle className="text-primary" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <HeroHeading className="mb-6 text-background">
-              {headingTop}
-              <br />
-              {headingBottom}
-            </HeroHeading>
-            <p className="mb-8 max-w-xl text-lg leading-relaxed text-background/70 sm:text-xl">
-              {subheading}
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-6 py-3.5 font-semibold text-foreground transition-colors hover:bg-background/90"
-              >
-                {primaryCta}
-                <ArrowRight />
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background/10 px-6 py-3.5 font-semibold text-background backdrop-blur-sm transition-colors hover:bg-background/20"
-              >
-                {secondaryCta}
-              </button>
-            </div>
-            <div className="mt-12 flex flex-wrap items-center gap-6 text-sm text-background/60">
-              {trust.map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <CheckCircle className="text-primary" />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </HeroContent>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },
