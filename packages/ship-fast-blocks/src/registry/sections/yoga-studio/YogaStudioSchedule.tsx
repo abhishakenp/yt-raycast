@@ -3,7 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
-import { ScheduleList } from '#/section-kit/ScheduleList.tsx'
+import {
+  ScheduleList,
+  ScheduleItem,
+  ScheduleContent,
+  ScheduleTitle,
+  ScheduleDetail,
+  ScheduleTime,
+} from '#/section-kit/ScheduleList.tsx'
 
 /**
  * YogaStudioSchedule — weekly class-schedule grid for a yoga-studio page. A
@@ -124,22 +131,22 @@ export const YogaStudioSchedule = defineCapsule({
                 </h3>
                 <ScheduleList layout="timeline" className="mt-4 space-y-4">
                   {day.classes.map((cls) => (
-                    <li
+                    <ScheduleItem
                       key={`${cls.name}-${cls.time}`}
-                      className="flex items-start justify-between gap-3"
+                      className="flex-row items-start justify-between gap-3 sm:flex-row sm:gap-3"
                     >
-                      <div>
-                        <div className="text-sm font-medium text-foreground">
+                      <ScheduleContent>
+                        <ScheduleTitle className="text-sm font-medium text-foreground">
                           {cls.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
+                        </ScheduleTitle>
+                        <ScheduleDetail className="mt-0 text-xs text-muted-foreground">
                           with {cls.teacher}
-                        </div>
-                      </div>
-                      <span className="whitespace-nowrap text-xs font-medium text-accent">
+                        </ScheduleDetail>
+                      </ScheduleContent>
+                      <ScheduleTime className="whitespace-nowrap text-xs font-medium text-accent sm:w-auto">
                         {cls.time}
-                      </span>
-                    </li>
+                      </ScheduleTime>
+                    </ScheduleItem>
                   ))}
                 </ScheduleList>
               </Card>
