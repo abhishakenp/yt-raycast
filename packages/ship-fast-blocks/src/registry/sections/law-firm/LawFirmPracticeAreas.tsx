@@ -19,6 +19,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import {
   PracticeAreaGrid,
   PracticeAreaCard,
+  PracticeAreaIcon,
 } from '#/section-kit/PracticeAreaGrid.tsx'
 export const LawFirmPracticeAreas = defineCapsule({
   name: 'LawFirmPracticeAreas',
@@ -183,9 +184,9 @@ export const LawFirmPracticeAreas = defineCapsule({
             {items.map((item, i) => (
               <PracticeAreaCard key={item.title}>
                 <div className="flex flex-col gap-3 p-6">
-                  <div className="inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <PracticeAreaIcon className="mb-0 inline-flex size-11 items-center justify-center">
                     {practiceIcons[i % practiceIcons.length]}
-                  </div>
+                  </PracticeAreaIcon>
                   <h3 className="text-lg font-semibold text-foreground">
                     {item.title}
                   </h3>
