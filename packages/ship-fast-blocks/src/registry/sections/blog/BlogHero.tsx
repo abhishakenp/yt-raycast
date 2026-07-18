@@ -6,6 +6,11 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  FeaturedArticleMedia,
+  FeaturedArticleContent,
+  FeaturedArticleMeta,
+} from '#/section-kit/FeaturedArticle.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
 
@@ -107,22 +112,27 @@ export const BlogHero = defineCapsule({
           className="grid overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:grid-cols-[1.15fr_1fr]"
         >
           <article>
-            <button
-              type="button"
-              onClick={() => go(postTarget)}
-              className="group relative block min-h-[15rem] w-full overflow-hidden bg-gradient-to-br from-primary/10 to-accent/20 md:min-h-[24rem]"
+            <FeaturedArticleMedia
+              asChild
+              className="block min-h-[15rem] w-full bg-gradient-to-br from-primary/10 to-accent/20 md:min-h-[24rem]"
             >
-              <Image
-                alt={alt}
-                w={1200}
-                h={900}
-                className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-              />
-              <span className="absolute left-[1.125rem] top-[1.125rem] rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.08em] text-foreground shadow-sm backdrop-blur">
-                {badge}
-              </span>
-            </button>
-            <div className="flex flex-col justify-center p-8 md:p-10">
+              <button
+                type="button"
+                onClick={() => go(postTarget)}
+                className="group"
+              >
+                <Image
+                  alt={alt}
+                  w={1200}
+                  h={900}
+                  className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+                <span className="absolute left-[1.125rem] top-[1.125rem] rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.08em] text-foreground shadow-sm backdrop-blur">
+                  {badge}
+                </span>
+              </button>
+            </FeaturedArticleMedia>
+            <FeaturedArticleContent className="justify-center p-8 md:p-10">
               <div className="mb-3 inline-flex items-center gap-2 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-primary">
                 {topic}
               </div>
@@ -132,7 +142,7 @@ export const BlogHero = defineCapsule({
               <p className="mt-3.5 text-base leading-relaxed text-muted-foreground">
                 {excerpt}
               </p>
-              <div className="mt-5 flex flex-wrap items-center gap-x-3.5 gap-y-2 text-[0.85rem] text-muted-foreground">
+              <FeaturedArticleMeta className="mt-5 gap-x-3.5 gap-y-2 text-[0.85rem]">
                 <span className="inline-flex items-center gap-2.5 font-semibold text-foreground">
                   <span className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.7rem] font-bold text-primary-foreground">
                     {author.charAt(0)}
@@ -141,7 +151,7 @@ export const BlogHero = defineCapsule({
                 </span>
                 <span>{readTime}</span>
                 <span>{date}</span>
-              </div>
+              </FeaturedArticleMeta>
               <button
                 type="button"
                 onClick={() => go(postTarget)}
@@ -150,7 +160,7 @@ export const BlogHero = defineCapsule({
                 {readLabel}
                 <Arrow />
               </button>
-            </div>
+            </FeaturedArticleContent>
           </article>
         </Card>
       </HeroSection>
