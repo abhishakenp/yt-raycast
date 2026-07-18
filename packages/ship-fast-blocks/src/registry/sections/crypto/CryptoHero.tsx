@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * CryptoHero — split-layout hero section for a crypto / DeFi infrastructure
@@ -96,7 +97,7 @@ export const CryptoHero = defineCapsule({
         variant="split"
         className={cn('relative overflow-hidden', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
+        <Container size="xl" className="pb-24 pt-20 lg:pb-40 lg:pt-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1">
@@ -220,7 +221,7 @@ export const CryptoHero = defineCapsule({
               </Card>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

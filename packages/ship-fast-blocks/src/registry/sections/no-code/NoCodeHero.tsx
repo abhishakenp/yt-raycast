@@ -17,6 +17,7 @@ import {
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NoCodeHero — two-column landing hero for a no-code / drag-and-drop app-builder
@@ -199,7 +200,7 @@ export const NoCodeHero = defineCapsule({
         className={cn('relative overflow-hidden', props.className)}
         aria-labelledby="nc-hero"
       >
-        <div className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
+        <Container size="xl" className="pb-24 pt-20 lg:pb-40 lg:pt-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="text-center lg:text-left">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5">
@@ -379,9 +380,7 @@ export const NoCodeHero = defineCapsule({
                   </div>
                 </div>
               </div>
-              <HeroStatBadge
-                className="absolute -right-4 -top-4 flex items-center gap-2 p-3"
-              >
+              <HeroStatBadge className="absolute -right-4 -top-4 flex items-center gap-2 p-3">
                 <HeroStatBadgeIcon className="size-8 rounded-full bg-chart-2/15">
                   <Check className="size-4 text-chart-2" />
                 </HeroStatBadgeIcon>
@@ -393,7 +392,7 @@ export const NoCodeHero = defineCapsule({
               </HeroStatBadge>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
