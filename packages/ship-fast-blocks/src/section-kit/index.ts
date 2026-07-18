@@ -362,7 +362,7 @@ export {
   FormFieldControl,
   formFieldControlVariants,
 } from './FormField.tsx'
-export { SignInButton } from './SignInButton.tsx'
+export { SignInButton, signInButtonVariants } from './SignInButton.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'
