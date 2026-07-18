@@ -8,6 +8,12 @@ import {
   NavSidebarSection,
   NavSidebarLink,
 } from '#/section-kit/NavSidebar.tsx'
+import {
+  SearchForm,
+  SearchField,
+  SearchFieldIcon,
+  SearchFieldInput,
+} from '#/section-kit/SearchForm.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed, type DocsArticleRecord } from './docs-lakebed.ts'
@@ -254,7 +260,7 @@ export const DocsSidebar = defineCapsule({
       >
         <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto p-6">
           {/* Search */}
-          <form
+          <SearchForm
             className="mb-6"
             key={queryValue}
             onSubmit={docsSearch.submitSearch}
@@ -264,18 +270,20 @@ export const DocsSidebar = defineCapsule({
             <label htmlFor="docs-sidebar-search" className="sr-only">
               Search documentation
             </label>
-            <div className="relative">
-              <input
+            <SearchField>
+              <SearchFieldIcon className="left-3 top-2.5 flex-col justify-start pl-0">
+                <SearchIcon className="size-4" />
+              </SearchFieldIcon>
+              <SearchFieldInput
                 type="search"
                 id="docs-sidebar-search"
                 name="query"
                 defaultValue={queryValue}
                 placeholder={searchPlaceholder}
-                className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-4 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
+                className="rounded-lg py-2 pl-9 pr-4 text-sm focus:border-ring focus:ring-2 focus:ring-ring"
               />
-              <SearchIcon className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-            </div>
-          </form>
+            </SearchField>
+          </SearchForm>
 
           {showingResults ? (
             <Card
