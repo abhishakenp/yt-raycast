@@ -1,6 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
+import {
+  DataTable,
+  DataHeader,
+  DataBody,
+  DataRow,
+  DataTableCell,
+} from '#/section-kit/DataTable.tsx'
 
 /**
  * FitnessSchedule — scrollable weekly class-schedule table for a gym or fitness
@@ -140,45 +147,53 @@ export const FitnessSchedule = defineCapsule({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="px-4 py-4 text-left font-medium text-muted-foreground">
-                    Time
-                  </th>
-                  {scheduleDays.map((day) => (
-                    <th
-                      key={day}
-                      className="px-4 py-4 text-left font-medium text-foreground"
-                    >
-                      {day}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {scheduleRows.map((row) => (
-                  <tr key={row.time} className="hover:bg-muted">
-                    <td className="px-4 py-4 font-medium text-foreground">
-                      {row.time}
-                    </td>
-                    {(row.slots ?? []).map((slot, i) => (
-                      <td
-                        key={`${row.time}-${i}`}
-                        className={cn(
-                          'px-4 py-4',
-                          slot === '—'
-                            ? 'text-muted-foreground/60'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {slot}
-                      </td>
+            <DataTable className="w-full min-w-[800px] text-sm">
+              <table className="w-full text-sm">
+                <DataHeader asChild>
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="px-4 py-4 text-left font-medium text-muted-foreground">
+                        Time
+                      </th>
+                      {scheduleDays.map((day) => (
+                        <th
+                          key={day}
+                          className="px-4 py-4 text-left font-medium text-foreground"
+                        >
+                          {day}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                </DataHeader>
+                <DataBody asChild>
+                  <tbody>
+                    {scheduleRows.map((row) => (
+                      <DataRow asChild key={row.time}>
+                        <tr className="hover:bg-muted">
+                          <DataTableCell className="px-4 py-4 font-medium text-foreground">
+                            {row.time}
+                          </DataTableCell>
+                          {(row.slots ?? []).map((slot, i) => (
+                            <DataTableCell
+                              key={`${row.time}-${i}`}
+                              className={cn(
+                                'px-4 py-4',
+                                slot === '—'
+                                  ? 'text-muted-foreground/60'
+                                  : 'text-muted-foreground',
+                              )}
+                            >
+                              {slot}
+                            </DataTableCell>
+                          ))}
+                        </tr>
+                      </DataRow>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  </tbody>
+                </DataBody>
+              </table>
+            </DataTable>
           </div>
 
           <div className="mt-8 flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
