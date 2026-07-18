@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container, ResponsiveGrid } from '#/section-kit/index.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * AccountingFirmLogos — slim "trusted by" client logo strip for a CPA /
@@ -41,33 +41,13 @@ export const AccountingFirmLogos = defineCapsule({
         ]
 
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={names}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn('border-b border-border bg-muted py-12', props.className)}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {names.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => go(name)}
-                className="flex h-12 items-center justify-center"
-              >
-                <span className="text-xl font-bold text-muted-foreground">
-                  {name}
-                </span>
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

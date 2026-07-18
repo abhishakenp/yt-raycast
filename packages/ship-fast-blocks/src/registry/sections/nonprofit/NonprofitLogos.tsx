@@ -2,9 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * NonprofitLogos — trusted-by partner / funder logo strip for a nonprofit /
@@ -40,32 +39,15 @@ export const NonprofitLogos = defineCapsule({
         ]
 
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={logos}
+        logoStyle="opacity-hover"
         className={cn(
           'border-y border-border bg-card pt-28 pb-12',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {logos.map((logo) => (
-              <div
-                key={logo}
-                className="flex h-12 items-center justify-center text-lg font-semibold text-muted-foreground"
-              >
-                {logo}
-              </div>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

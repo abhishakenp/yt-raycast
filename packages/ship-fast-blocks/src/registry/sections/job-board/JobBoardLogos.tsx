@@ -12,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * platforms or any marketing page that wants a logo cloud. Renders fully with no
  * props.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const JobBoardLogos = defineCapsule({
   name: 'JobBoardLogos',
   description:
@@ -31,30 +31,16 @@ export const JobBoardLogos = defineCapsule({
       ? props.companies
       : ['Stripe', 'Notion', 'Figma', 'Shopify', 'Webflow', 'Linear']
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={companies}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn(
           'border-b border-border bg-muted/40 py-12',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            {heading}
-          </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 sm:grid-cols-3 md:grid-cols-6">
-            {companies.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => go(c)}
-                className="flex items-center justify-center text-lg font-semibold tracking-tight text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })

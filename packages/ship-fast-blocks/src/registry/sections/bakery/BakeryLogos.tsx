@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * BakeryLogos — "Featured in" press / media logo strip for an artisan-bakery
@@ -40,27 +40,13 @@ export const BakeryLogos = defineCapsule({
         ]
 
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn('border-b border-border bg-card py-12', props.className)}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 opacity-60 lg:gap-16">
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="text-xl text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })

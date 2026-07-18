@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * DentalLogos — insurance-provider / trust logo strip for a dental practice
@@ -13,7 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * hero of a dentist, dental office, or clinic site to signal accepted insurance
  * and build trust.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const DentalLogos = defineCapsule({
   name: 'DentalLogos',
   description:
@@ -30,34 +29,16 @@ export const DentalLogos = defineCapsule({
       ? props.items
       : ['Delta Dental', 'Cigna', 'Aetna', 'MetLife', 'Guardian', 'Humana']
     return (
-      <section
+      <LogoStrip
+        lead={logosLabel}
+        logos={logoItems}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn(
           'border-b border-border bg-background py-16',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {logosLabel}
-          </p>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {logoItems.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex h-12 items-center justify-center font-semibold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

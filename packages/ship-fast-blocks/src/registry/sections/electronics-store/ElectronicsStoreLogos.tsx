@@ -9,7 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * Use beneath a hero to establish credibility on electronics stores, gadget
  * shops, consumer-tech retailers, or audio/camera storefronts.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const ElectronicsStoreLogos = defineCapsule({
   name: 'ElectronicsStoreLogos',
   description:
@@ -22,25 +22,15 @@ export const ElectronicsStoreLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const caption = props.caption ?? 'Trusted by leading tech brands worldwide'
     const brands = props.brands?.length
       ? props.brands
       : ['Apple', 'Sony', 'Samsung', 'Bose', 'Logitech', 'DJI']
     return (
-      <section className={cn('border-b border-border py-12', props.className)}>
-        <Container>
-          <p className="mb-8 text-center text-sm text-muted-foreground">
-            {caption}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 opacity-60 lg:gap-16">
-            {brands.map((b) => (
-              <span key={b} className="text-lg font-semibold text-foreground">
-                {b}
-              </span>
-            ))}
-          </div>
-        </Container>
-      </section>
+      <LogoStrip
+        logos={brands}
+        logoStyle="opacity-hover"
+        className={cn('border-b border-border py-12', props.className)}
+      />
     )
   },
 })

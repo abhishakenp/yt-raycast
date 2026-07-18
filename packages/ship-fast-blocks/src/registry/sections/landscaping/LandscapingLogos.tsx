@@ -2,9 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * LandscapingLogos — a slim "trusted by" social-proof strip for a landscaping /
@@ -39,32 +38,12 @@ export const LandscapingLogos = defineCapsule({
         ]
 
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={items}
+        logoStyle="opacity-hover"
         className={cn('border-b border-border bg-card py-12', props.className)}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo, i) => (
-              <div
-                key={logo}
-                className={cn(
-                  'flex h-12 items-center justify-center font-semibold text-muted-foreground',
-                  i >= 4 && 'hidden md:flex',
-                )}
-              >
-                {logo}
-              </div>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * CybersecurityLogos — enterprise trust-logo strip. A muted, top-and-bottom
@@ -34,31 +34,13 @@ export const CybersecurityLogos = defineCapsule({
       : ['Google', 'Amazon', 'Microsoft', 'Apple', 'Netflix', 'Tesla']
 
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn('border-y border-border bg-muted/50', props.className)}
-      >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="mx-auto text-lg font-bold tracking-tight text-foreground transition-opacity hover:opacity-100"
-              >
-                {logo}
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </div>
-      </section>
+      />
     )
   },
 })

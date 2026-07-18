@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Container, ResponsiveGrid } from '#/section-kit/index.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * InteriorDesignLogos — understated "trusted by" brand logo strip for an upscale
@@ -37,37 +37,15 @@ export const InteriorDesignLogos = defineCapsule({
         ]
 
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
         className={cn(
           'border-y border-border bg-muted pt-28 pb-16',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-10 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo, i) => (
-              <div
-                key={logo}
-                className={cn(
-                  'flex h-12 items-center justify-center',
-                  i >= 4 && 'hidden lg:flex',
-                )}
-              >
-                <span className="text-xl font-light tracking-wide text-foreground">
-                  {logo}
-                </span>
-              </div>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

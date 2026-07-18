@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * LawFirmLogos — a quiet "trusted by industry leaders" client logo strip on the
@@ -14,7 +13,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * credibility with recognizable client names. Renders fully with no props via
  * baked-in defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const LawFirmLogos = defineCapsule({
   name: 'LawFirmLogos',
   description:
@@ -31,31 +30,13 @@ export const LawFirmLogos = defineCapsule({
       ? props.items
       : ['MORGAN', 'CITADEL', 'VENTURE', 'APEX', 'MERIDIAN', 'CONSOL']
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn('border-y border-border bg-card py-16', props.className)}
-      >
-        <Container>
-          <p className="mb-10 text-center text-sm uppercase tracking-widest text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex justify-center font-serif text-lg font-bold tracking-tight text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

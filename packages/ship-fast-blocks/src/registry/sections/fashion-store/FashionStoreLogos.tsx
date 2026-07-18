@@ -9,7 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * muted tone. Use directly under the hero to convey press credibility for
  * clothing brands, boutiques, or any premium retail storefront.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const FashionStoreLogos = defineCapsule({
   name: 'FashionStoreLogos',
   description:
@@ -24,27 +24,13 @@ export const FashionStoreLogos = defineCapsule({
     const pressLogos = props.logos?.length
       ? props.logos
       : ['VOGUE', "Harper's Bazaar", 'Elle', 'GQ', 'W Magazine', 'The Cut']
-    const eyebrowCls =
-      'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
     return (
-      <section
-        aria-label="Featured press"
+      <LogoStrip
+        lead={pressEyebrow}
+        logos={pressLogos}
+        logoStyle="text"
         className={cn('border-b border-border pt-28 pb-12', props.className)}
-      >
-        <Container>
-          <p className={cn(eyebrowCls, 'mb-8 text-center')}>{pressEyebrow}</p>
-          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 lg:gap-16">
-            {pressLogos.map((logo) => (
-              <span
-                key={logo}
-                className="font-serif text-xl tracking-tight text-muted-foreground sm:text-2xl"
-              >
-                {logo}
-              </span>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })

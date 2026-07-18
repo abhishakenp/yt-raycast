@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * EventPlannerLogos — understated "trusted by" partner-logo strip for an event
@@ -37,30 +37,16 @@ export const EventPlannerLogos = defineCapsule({
         ]
 
     return (
-      <section
+      <LogoStrip
+        lead={logosHeading}
+        logos={logoBrands}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn(
           'border-y border-border bg-muted pt-28 pb-12',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm uppercase tracking-widest text-muted-foreground">
-            {logosHeading}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-12 opacity-60 lg:gap-20">
-            {logoBrands.map((b) => (
-              <button
-                key={b}
-                type="button"
-                onClick={() => go(b)}
-                className="text-xl font-light text-foreground"
-              >
-                {b}
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })

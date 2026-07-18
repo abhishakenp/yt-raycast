@@ -12,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * mentions, partner brands, or trust-signal logos on loan, fintech, SaaS, or any
  * conversion landing page. Renders fully with no props via baked-in defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const LendingLogos = defineCapsule({
   name: 'LendingLogos',
   description:
@@ -30,35 +30,13 @@ export const LendingLogos = defineCapsule({
       ? props.names
       : ['TechCrunch', 'Forbes', 'Bloomberg', 'CNBC', 'NerdWallet', 'Bankrate']
     return (
-      <section
+      <LogoStrip
+        lead={logosCaption}
+        logos={logoNames}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn('border-y border-border bg-card py-12', props.className)}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm text-muted-foreground">
-            {logosCaption}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-60">
-            {logoNames.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => go(name)}
-                className="flex items-center gap-2 text-foreground"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="size-6"
-                  aria-hidden="true"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-                <span className="text-lg font-semibold">{name}</span>
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })

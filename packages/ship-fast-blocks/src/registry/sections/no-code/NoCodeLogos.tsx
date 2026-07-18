@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * NoCodeLogos — slim trusted-by logo strip on a card-surface band with top and
@@ -10,7 +9,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * meant to sit just below a hero. Use as the logo / "trusted by" strip on any
  * SaaS, no-code builder, or product landing page. Renders fully with no props.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const NoCodeLogos = defineCapsule({
   name: 'NoCodeLogos',
   description:
@@ -28,30 +27,12 @@ export const NoCodeLogos = defineCapsule({
       ? props.names
       : ['stripe', 'notion', 'linear', 'vercel', 'shopify', 'slack']
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={names}
+        logoStyle="opacity-hover"
         className={cn('border-y border-border bg-card py-12', props.className)}
-        aria-label="Trusted by companies"
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-70"
-          >
-            {names.map((name) => (
-              <div
-                key={name}
-                className="flex items-center justify-center text-2xl font-semibold lowercase text-muted-foreground"
-              >
-                {name}
-              </div>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

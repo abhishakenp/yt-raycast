@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * CorporateLogos — client logo trust bar for an enterprise / corporate B2B
@@ -12,8 +11,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * through useNavigate. Use beneath the hero to establish credibility for SaaS
  * platforms, consultancies, or any B2B offering.
  */
-import { Container } from '#/section-kit/Container.tsx'
-import { LogoStripLabel, LogoStripItem } from '#/section-kit/LogoStrip.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const CorporateLogos = defineCapsule({
   name: 'CorporateLogos',
   description:
@@ -32,36 +30,16 @@ export const CorporateLogos = defineCapsule({
       ? props.items
       : ['AcmeCorp', 'Globex', 'Initech', 'Hooli', 'Massive', 'Soylent']
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn(
           'border-b border-border bg-background py-16',
           props.className,
         )}
-      >
-        <Container>
-          <LogoStripLabel className="mb-10">
-            {heading}
-          </LogoStripLabel>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-70"
-          >
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex h-12 items-center justify-center"
-              >
-                <LogoStripItem className="text-xl font-bold">
-                  {logo}
-                </LogoStripItem>
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

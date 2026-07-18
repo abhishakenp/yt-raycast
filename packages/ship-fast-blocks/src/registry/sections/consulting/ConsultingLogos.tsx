@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * ConsultingLogos — trusted-by client-logo strip for a management-consulting
@@ -35,30 +35,16 @@ export const ConsultingLogos = defineCapsule({
       : ['Alphabet', 'Microsoft', 'JPMorgan', 'Pfizer', 'Siemens', 'Unilever']
 
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn(
           'border-b border-border bg-background py-16',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-10 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {heading}
-          </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 sm:grid-cols-3 md:grid-cols-6">
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex h-12 items-center justify-center text-xl font-bold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })

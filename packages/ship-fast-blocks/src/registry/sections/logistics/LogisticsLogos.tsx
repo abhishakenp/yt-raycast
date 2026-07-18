@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * LogisticsLogos — a slim client trust strip for a global-logistics / freight-
@@ -13,7 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * a logistics, freight-forwarding, shipping, courier or cargo/transport site to
  * establish credibility. Renders fully with no props.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const LogisticsLogos = defineCapsule({
   name: 'LogisticsLogos',
   description:
@@ -30,31 +29,13 @@ export const LogisticsLogos = defineCapsule({
       ? props.items
       : ['TechFlow', 'Globex', 'Acme Corp', 'Stark Ind', 'Wayne Ent', 'Oscorp']
     return (
-      <section className={cn('border-b border-border py-12', props.className)}>
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex h-12 items-center justify-center"
-              >
-                <span className="text-xl font-bold text-foreground/80">
-                  {logo}
-                </span>
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
+        className={cn('border-b border-border py-12', props.className)}
+      />
     )
   },
 })

@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * AiProductLogos — a slim "trusted by" social-proof logo strip for a clean,
@@ -33,31 +33,13 @@ export const AiProductLogos = defineCapsule({
       : ['Notion', 'Figma', 'Stripe', 'Linear', 'Vercel', 'Shopify']
 
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn('border-y border-border bg-muted/50', props.className)}
-      >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex justify-center text-lg font-semibold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </div>
-      </section>
+      />
     )
   },
 })

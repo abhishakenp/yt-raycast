@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * KidsEducationLogos — trusted-by school/partner logo strip for a kids /
@@ -13,7 +12,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * platforms, tutoring services, and family learning apps. Renders fully with no
  * props via baked-in defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const KidsEducationLogos = defineCapsule({
   name: 'KidsEducationLogos',
   description:
@@ -40,42 +39,16 @@ export const KidsEducationLogos = defineCapsule({
           'StarKids',
         ]
     return (
-      <section
+      <LogoStrip
+        lead={eyebrow}
+        logos={names}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn(
           'border-y border-border bg-background py-12',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {eyebrow}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {names.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => go(name)}
-                className="flex items-center justify-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <svg
-                  className="size-8"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                <span className="text-lg font-bold">{name}</span>
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

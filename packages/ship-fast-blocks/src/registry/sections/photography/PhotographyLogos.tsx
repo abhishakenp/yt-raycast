@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * PhotographyLogos — a "Featured In" publication logo strip for a fine-art /
@@ -40,38 +40,16 @@ export const PhotographyLogos = defineCapsule({
         ]
 
     return (
-      <section
+      <LogoStrip
+        lead={label}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
         className={cn(
           'border-b border-border bg-card py-16 lg:py-20',
           props.className,
         )}
-        aria-label="Featured publications"
-      >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <p className="mb-12 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {label}
-          </p>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-60 lg:gap-12"
-          >
-            {items.map((logo, i) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className={cn(
-                  'mx-auto font-serif text-lg font-medium tracking-tight text-muted-foreground transition-colors hover:text-foreground',
-                  i >= 4 && 'hidden md:block',
-                )}
-              >
-                {logo}
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </div>
-      </section>
+      />
     )
   },
 })

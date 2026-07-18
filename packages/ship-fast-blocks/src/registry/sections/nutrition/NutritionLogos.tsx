@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * NutritionLogos — press / featured-in social-proof strip for a wellness or
@@ -28,31 +28,15 @@ export const NutritionLogos = defineCapsule({
       : ['Healthline', 'Shape', 'Well+Good', 'MindBody', 'Prevention']
 
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={names}
+        logoStyle="opacity-hover"
         className={cn(
           'border-y border-border bg-card pt-28 pb-10',
           props.className,
         )}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            {heading}
-          </p>
-          <div className="grid grid-cols-2 items-center justify-items-center gap-8 opacity-60 md:grid-cols-5">
-            {names.map((name, i) => (
-              <span
-                key={name}
-                className={cn(
-                  'text-lg font-semibold text-muted-foreground',
-                  i === 4 && 'hidden md:block',
-                )}
-              >
-                {name}
-              </span>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })

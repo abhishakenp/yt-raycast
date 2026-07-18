@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * MarketingAgencyLogos — a horizontal client trust strip. A muted, border-banded
@@ -11,7 +10,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * social proof for marketing / growth agencies, SaaS, or any B2B landing page.
  * Renders fully with no props via baked-in defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const MarketingAgencyLogos = defineCapsule({
   name: 'MarketingAgencyLogos',
   description:
@@ -27,29 +26,12 @@ export const MarketingAgencyLogos = defineCapsule({
       ? props.items
       : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Webflow']
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
         className={cn('border-y border-border bg-muted py-12', props.className)}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-70"
-          >
-            {items.map((logo) => (
-              <div
-                key={logo}
-                className="text-center text-lg font-semibold text-muted-foreground"
-              >
-                {logo}
-              </div>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

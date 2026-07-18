@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * CryptoLogos — trusted-by protocol logo strip for a crypto / DeFi landing
@@ -32,27 +32,13 @@ export const CryptoLogos = defineCapsule({
       : ['Aave', 'Compound', 'Uniswap', 'Chainlink', 'Polygon', 'Arbitrum']
 
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="text-bold"
+        onClickLogo={go}
         className={cn('border-y border-border bg-card', props.className)}
-      >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <p className="mb-8 text-center text-sm text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid cols="2-3-6" gap="lg" className="items-center">
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex h-12 items-center justify-center text-xl font-bold text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {logo}
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </div>
-      </section>
+      />
     )
   },
 })

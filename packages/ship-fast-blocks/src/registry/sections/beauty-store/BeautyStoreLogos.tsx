@@ -3,9 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * BeautyStoreLogos — trusted-by beauty-brand logo strip for a cosmetics / skincare
@@ -41,31 +40,13 @@ export const BeautyStoreLogos = defineCapsule({
         ]
 
     return (
-      <section className={cn('border-b border-border py-16', props.className)}>
-        <Container>
-          <p className="mb-10 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {brands.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => go(name)}
-                className="flex h-12 items-center justify-center"
-              >
-                <span className="font-serif text-xl text-muted-foreground">
-                  {name}
-                </span>
-              </button>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      <LogoStrip
+        lead={heading}
+        logos={brands}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
+        className={cn('border-b border-border py-16', props.className)}
+      />
     )
   },
 })

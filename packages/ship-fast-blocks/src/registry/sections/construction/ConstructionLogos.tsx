@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * ConstructionLogos — trusted-by client logo wall for a construction /
@@ -11,7 +10,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * contractors, builders, or any service business showcasing trusted
  * partnerships. Renders fully with no props via baked-in defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const ConstructionLogos = defineCapsule({
   name: 'ConstructionLogos',
   description:
@@ -29,28 +28,12 @@ export const ConstructionLogos = defineCapsule({
       ? props.items
       : ['Microsoft', 'Amazon', 'Starbucks', 'Boeing', 'Nordstrom', 'Costco']
     return (
-      <section
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
         className={cn('border-b border-border bg-card py-10', props.className)}
-      >
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {heading}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo) => (
-              <div key={logo} className="flex items-center justify-center">
-                <span className="text-xl font-bold text-muted-foreground">
-                  {logo}
-                </span>
-              </div>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      />
     )
   },
 })

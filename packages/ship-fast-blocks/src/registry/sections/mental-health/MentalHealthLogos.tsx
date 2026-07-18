@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * MentalHealthLogos — a subtle insurance / trust logo strip for a therapy
@@ -28,31 +28,15 @@ export const MentalHealthLogos = defineCapsule({
       : ['BlueCross', 'Aetna', 'United', 'Cigna', 'Kaiser', 'Providence']
 
     return (
-      <section
+      <LogoStrip
+        lead={title}
+        logos={items}
+        logoStyle="opacity-hover"
         className={cn(
           'border-y border-border bg-background py-12',
           props.className,
         )}
-      >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <p className="mb-8 text-center text-sm text-muted-foreground">
-            {title}
-          </p>
-          <ResponsiveGrid
-            cols="2-4-6"
-            gap="lg"
-            className="items-center opacity-60"
-          >
-            {items.map((logo) => (
-              <div key={logo} className="flex items-center justify-center">
-                <span className="text-lg font-semibold text-muted-foreground">
-                  {logo}
-                </span>
-              </div>
-            ))}
-          </ResponsiveGrid>
-        </div>
-      </section>
+      />
     )
   },
 })

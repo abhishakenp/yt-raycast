@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * InsuranceLogos — press / trust logo strip for an insurance / fintech page. A
@@ -10,7 +9,7 @@ import { ResponsiveGrid } from '#/section-kit/index.ts'
  * bottomed band. Use right under the hero to establish credibility with press
  * mentions or partner brands. Renders fully with no props via baked-in defaults.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const InsuranceLogos = defineCapsule({
   name: 'InsuranceLogos',
   description:
@@ -28,26 +27,12 @@ export const InsuranceLogos = defineCapsule({
       ? props.items
       : ['Forbes', 'Bloomberg', 'TechCrunch', 'WSJ', 'Inc. 5000', 'NerdWallet']
     return (
-      <section className={cn('border-b border-border py-12', props.className)}>
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <ResponsiveGrid
-            cols="2-3-6"
-            gap="lg"
-            className="items-center opacity-70"
-          >
-            {items.map((logo) => (
-              <div key={logo} className="flex items-center justify-center">
-                <span className="text-lg font-semibold text-muted-foreground">
-                  {logo}
-                </span>
-              </div>
-            ))}
-          </ResponsiveGrid>
-        </Container>
-      </section>
+      <LogoStrip
+        lead={label}
+        logos={items}
+        logoStyle="opacity-hover"
+        className={cn('border-b border-border py-12', props.className)}
+      />
     )
   },
 })

@@ -10,7 +10,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Each item is a clickable button that routes through useNavigate. Token-only
  * colors with subtle opacity. Renders fully on zero arguments.
  */
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 export const CloudInfraLogos = defineCapsule({
   name: 'CloudInfraLogos',
   description:
@@ -29,27 +29,13 @@ export const CloudInfraLogos = defineCapsule({
       ? props.items
       : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Raycast']
     return (
-      <section className={cn('border-b border-border py-16', props.className)}>
-        <Container>
-          <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            {heading}
-          </p>
-          <div className="grid grid-cols-2 items-center gap-8 opacity-70 sm:grid-cols-3 md:grid-cols-6">
-            {items.map((logo) => (
-              <button
-                key={logo}
-                type="button"
-                onClick={() => go(logo)}
-                className="flex items-center justify-center"
-              >
-                <span className="text-xl font-bold text-foreground/80">
-                  {logo}
-                </span>
-              </button>
-            ))}
-          </div>
-        </Container>
-      </section>
+      <LogoStrip
+        lead={heading}
+        logos={items}
+        logoStyle="opacity-hover"
+        onClickLogo={go}
+        className={cn('border-b border-border py-16', props.className)}
+      />
     )
   },
 })

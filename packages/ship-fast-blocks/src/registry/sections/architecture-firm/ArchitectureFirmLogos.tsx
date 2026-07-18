@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
-import { Container } from '#/section-kit/Container.tsx'
+import { LogoStrip } from '#/section-kit/LogoStrip.tsx'
 
 /**
  * ArchitectureFirmLogos — "Featured in" publication strip for an
@@ -40,26 +40,12 @@ export const ArchitectureFirmLogos = defineCapsule({
         ]
 
     return (
-      <section
-        aria-label="Featured publications"
+      <LogoStrip
+        lead={label}
+        logos={items}
+        logoStyle="opacity-hover"
         className={cn('border-y border-border bg-card py-16', props.className)}
-      >
-        <Container>
-          <p className="mb-10 text-center text-xs uppercase tracking-widest text-muted-foreground">
-            {label}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-60">
-            {items.map((item) => (
-              <span
-                key={item}
-                className="text-lg font-light text-muted-foreground"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-        </Container>
-      </section>
+      />
     )
   },
 })
