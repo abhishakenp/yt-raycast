@@ -4,8 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { Card } from '#/section-kit/Card.tsx'
-import { TopicGrid, TopicIcon } from '#/section-kit/TopicGrid.tsx'
+import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
 
 /**
  * CommunityForumTopics — colorful topic / category directory grid for a
@@ -107,13 +106,10 @@ export const CommunityForumTopics = defineCapsule({
           />
           <TopicGrid cols="1-2-4" gap="sm">
             {items.map((topic, i) => (
-              <Card
+              <TopicCard
                 asChild
                 key={topic.title}
-                variant="default"
-                rounded="xl"
-                padding="md"
-                className="group text-left transition-all hover:border-foreground/20 hover:shadow-sm"
+                className="p-6 text-left text-card-foreground transition-all hover:border-foreground/20 hover:shadow-sm"
               >
                 <button type="button" onClick={() => go(topic.title)}>
                   <TopicIcon
@@ -129,7 +125,7 @@ export const CommunityForumTopics = defineCapsule({
                   </h4>
                   <p className="text-sm text-muted-foreground">{topic.count}</p>
                 </button>
-              </Card>
+              </TopicCard>
             ))}
           </TopicGrid>
         </div>

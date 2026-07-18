@@ -4,10 +4,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { TopicGrid, TopicIcon } from '#/section-kit/TopicGrid.tsx'
+import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
 
 /**
  * FaqTopics — a "Browse by Topic" category grid for a help-center / knowledge-base
@@ -212,13 +211,10 @@ export const FaqTopics = defineCapsule({
 
           <TopicGrid cols="1-2-3" gap="sm">
             {items.map((topic, i) => (
-              <Card
+              <TopicCard
                 key={topic.title}
                 asChild
-                variant="default"
-                rounded="xl"
-                padding="md"
-                className="group text-left transition-all hover:border-border/60 hover:shadow-sm"
+                className="p-6 text-left text-card-foreground transition-all hover:border-border/60 hover:shadow-sm"
               >
                 <button type="button" onClick={() => go(topic.title)}>
                   <TopicIcon className={cn(topicTints[i % topicTints.length])}>
@@ -235,7 +231,7 @@ export const FaqTopics = defineCapsule({
                     <CaretRight className="ml-1 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </button>
-              </Card>
+              </TopicCard>
             ))}
           </TopicGrid>
         </Container>
