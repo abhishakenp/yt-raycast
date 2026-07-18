@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
+import {
+  TestimonialCard,
+  TestimonialQuote,
+  TestimonialAuthor,
+  TestimonialName,
+  TestimonialMeta,
+} from '#/section-kit/TestimonialGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -163,10 +170,10 @@ export const CoworkingTestimonials = defineCapsule({
                 .filter(Boolean)
                 .join(' · ')
               return (
-                <figure
+                <TestimonialCard
                   key={`${member.name}-${index}`}
                   className={cn(
-                    'relative flex h-full flex-col overflow-hidden rounded-3xl border bg-card/75 p-8 shadow-sm backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10',
+                    'relative h-full overflow-hidden rounded-3xl bg-card/75 p-8 shadow-sm backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10',
                     featured
                       ? 'border-primary/30 lg:-translate-y-3'
                       : 'border-border/60',
@@ -192,11 +199,11 @@ export const CoworkingTestimonials = defineCapsule({
                     ))}
                   </div>
 
-                  <blockquote className="mt-5 flex-1 text-[15px] font-medium leading-relaxed text-card-foreground">
+                  <TestimonialQuote className="mt-5 flex-1 text-[15px] font-medium leading-relaxed text-card-foreground">
                     &ldquo;{member.quote}&rdquo;
-                  </blockquote>
+                  </TestimonialQuote>
 
-                  <figcaption className="mt-7 flex items-center gap-3.5 border-t border-border/50 pt-5">
+                  <TestimonialAuthor className="mt-7 gap-3.5 border-t border-border/50 pt-5">
                     <Image
                       alt={`Professional headshot portrait of ${member.name}`}
                       w={96}
@@ -204,17 +211,17 @@ export const CoworkingTestimonials = defineCapsule({
                       className="size-11 rounded-full object-cover ring-2 ring-border/60"
                     />
                     <div>
-                      <p className="text-sm font-semibold text-card-foreground">
+                      <TestimonialName className="text-card-foreground">
                         {member.name}
-                      </p>
+                      </TestimonialName>
                       {attribution ? (
-                        <p className="text-sm text-muted-foreground">
+                        <TestimonialMeta className="text-sm">
                           {attribution}
-                        </p>
+                        </TestimonialMeta>
                       ) : null}
                     </div>
-                  </figcaption>
-                </figure>
+                  </TestimonialAuthor>
+                </TestimonialCard>
               )
             })}
           </div>
