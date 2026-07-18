@@ -18,7 +18,15 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { ActivityGrid } from '#/section-kit/ActivityGrid.tsx'
+import {
+  ActivityGrid,
+  ActivityTile,
+  ActivityTileMedia,
+  ActivityTileBadge,
+  ActivityTileIcon,
+  ActivityTileTitle,
+  ActivityTileDescription,
+} from '#/section-kit/ActivityGrid.tsx'
 export const KidsEducationActivities = defineCapsule({
   name: 'KidsEducationActivities',
   description:
@@ -237,11 +245,8 @@ export const KidsEducationActivities = defineCapsule({
 
           <ActivityGrid cols="1-2-3" className="gap-8">
             {items.map((item, i) => (
-              <article
-                key={item.title}
-                className="group rounded-3xl border border-border bg-muted/40 p-6 transition-all duration-300 hover:bg-card hover:shadow-xl"
-              >
-                <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-2xl">
+              <ActivityTile key={item.title}>
+                <ActivityTileMedia>
                   <Image
                     alt={item.imageAlt}
                     w={600}
@@ -249,22 +254,15 @@ export const KidsEducationActivities = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute left-4 top-4 rounded-full bg-card/95 px-3 py-1 text-xs font-semibold text-card-foreground backdrop-blur-sm">
-                    {item.badge}
-                  </div>
-                </div>
-                <div
-                  className={cn(
-                    'mb-4 grid size-12 place-items-center rounded-xl',
-                    iconTints[i % iconTints.length],
-                  )}
-                >
+                  <ActivityTileBadge>{item.badge}</ActivityTileBadge>
+                </ActivityTileMedia>
+                <ActivityTileIcon className={iconTints[i % iconTints.length]}>
                   {activityIcons[i % activityIcons.length]}
-                </div>
-                <h3 className="mb-2 text-xl font-bold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mb-4 text-muted-foreground">{item.description}</p>
+                </ActivityTileIcon>
+                <ActivityTileTitle>{item.title}</ActivityTileTitle>
+                <ActivityTileDescription>
+                  {item.description}
+                </ActivityTileDescription>
                 <button
                   type="button"
                   onClick={() => go(item.cta)}
@@ -273,7 +271,7 @@ export const KidsEducationActivities = defineCapsule({
                   {item.cta}
                   <ArrowRight className="size-4" />
                 </button>
-              </article>
+              </ActivityTile>
             ))}
           </ActivityGrid>
         </Container>
