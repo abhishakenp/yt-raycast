@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
+import { ContentCard } from '#/section-kit/ContentCard.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { cn } from '#/lib/utils.ts'
 import {
@@ -179,7 +180,7 @@ export const CrmHero = defineCapsule({
 
             {/* Pipeline mockup card */}
             <div className="relative">
-              <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+              <ContentCard variant="bordered-light" className="shadow-xl transition-none hover:shadow-xl">
                 <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
                   <div className="flex gap-1.5">
                     <div className="size-3 rounded-full bg-destructive/60" />
@@ -242,8 +243,7 @@ export const CrmHero = defineCapsule({
                     </div>
                   </div>
                 </div>
-              </div>
-              {/* Floating badge */}
+              </ContentCard>
               <Card
                 rounded="lg"
                 padding="none"

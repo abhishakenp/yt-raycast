@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
+import { ContentCard } from '#/section-kit/ContentCard.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -156,7 +157,7 @@ await ds.storage.set(\`user:\${user.id}\`, {
 
             {/* Code window mockup */}
             <div className="relative">
-              <div className="overflow-hidden rounded-xl border border-border bg-foreground shadow-2xl">
+              <ContentCard variant="figure-dark" className="shadow-2xl">
                 <div className="flex items-center gap-2 border-b border-border/30 bg-foreground/95 px-4 py-3">
                   <div className="flex gap-1.5">
                     <div className="size-3 rounded-full bg-destructive" />
@@ -172,7 +173,7 @@ await ds.storage.set(\`user:\${user.id}\`, {
                     <code>{code}</code>
                   </pre>
                 </div>
-              </div>
+              </ContentCard>
               <Card
                 rounded="lg"
                 padding="none"
