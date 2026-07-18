@@ -16,6 +16,7 @@ import {
   PiecesCard,
   PieceSpecs,
 } from '#/section-kit/PiecesGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -153,7 +154,7 @@ export const JewelryStorePieces = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <Container size="xl" className="sm:px-4">
           <div className="mb-16 flex flex-col lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
@@ -205,9 +206,7 @@ export const JewelryStorePieces = defineCapsule({
                       {p.title}
                     </ProductCardTitle>
                   </button>
-                  <PieceSpecs className="mb-2 mt-0">
-                    {p.spec}
-                  </PieceSpecs>
+                  <PieceSpecs className="mb-2 mt-0">{p.spec}</PieceSpecs>
                   <ProductCardPrice className="text-primary">
                     {p.price}
                   </ProductCardPrice>
@@ -228,7 +227,7 @@ export const JewelryStorePieces = defineCapsule({
               </PiecesCard>
             ))}
           </PiecesGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -16,6 +16,7 @@ import {
   SplitStoryGrid,
   SplitStoryContent,
 } from '#/section-kit/SplitStory.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * JewelryStoreCraftsmanship — split craftsmanship / values band for a luxury
@@ -148,7 +149,7 @@ export const JewelryStoreCraftsmanship = defineCapsule({
         variant="muted"
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <Container size="xl" className="sm:px-4">
           <SplitStoryGrid className="gap-20">
             <SplitStoryContent className="space-y-0">
               <SectionHeading
@@ -229,7 +230,7 @@ export const JewelryStoreCraftsmanship = defineCapsule({
               </div>
             </div>
           </SplitStoryGrid>
-        </div>
+        </Container>
       </SplitStory>
     )
   },

@@ -8,6 +8,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * JewelryStoreStats — heritage stats band for a luxury jewelry maison. A clean
@@ -44,7 +45,7 @@ export const JewelryStoreStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <Container size="xl" className="sm:px-4">
           <StatGrid columns={4} gap={'wide'} className={'text-center'}>
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
@@ -58,7 +59,7 @@ export const JewelryStoreStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },
