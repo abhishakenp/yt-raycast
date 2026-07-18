@@ -6,8 +6,9 @@ import {
   HeroSection,
   HeroContent,
   HeroSubheading,
+  HeroStatBadge,
+  HeroStatBadgeTitle,
 } from '#/section-kit/HeroSection.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -102,17 +103,13 @@ export const ComingSoonHero = defineCapsule({
           >
             {countdown.map((unit) => (
               <div key={unit.label} className="flex flex-col items-center">
-                <Card
-                  variant="default"
-                  rounded="lg"
-                  padding="none"
-                  shadow="sm"
-                  className="flex size-16 items-center justify-center sm:size-20"
+                <HeroStatBadge
+                  className="flex size-16 items-center justify-center rounded-lg sm:size-20"
                 >
-                  <span className="text-2xl font-light text-card-foreground sm:text-3xl">
-                    {unit.value}
-                  </span>
-                </Card>
+                  <HeroStatBadgeTitle asChild className="text-2xl font-light sm:text-3xl">
+                    <span>{unit.value}</span>
+                  </HeroStatBadgeTitle>
+                </HeroStatBadge>
                 <span className="mt-2 text-xs uppercase tracking-wider text-muted-foreground">
                   {unit.label}
                 </span>

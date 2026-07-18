@@ -6,13 +6,13 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
+  HeroBadge,
   HeroHeading,
   HeroSubheading,
   HeroActions,
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * KidsEducationHero — bright, playful split hero for a kids / family learning
@@ -150,17 +150,15 @@ export const KidsEducationHero = defineCapsule({
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="text-center lg:text-left">
-              <Card
-                variant="elevated"
-                rounded="none"
-                padding="none"
-                className="mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2"
+              <HeroBadge
+                variant="pulsing-dot"
+                className="mb-6 bg-background shadow-sm"
               >
                 <span className="size-2 animate-pulse rounded-full bg-secondary" />
                 <span className="text-sm font-medium text-muted-foreground">
                   {badge}
                 </span>
-              </Card>
+              </HeroBadge>
               <HeroHeading className="mb-6">
                 {headingTop}{' '}
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">

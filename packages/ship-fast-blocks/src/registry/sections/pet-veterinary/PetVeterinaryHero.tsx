@@ -6,13 +6,13 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
+  HeroBadge,
   HeroHeading,
   HeroHighlight,
   HeroSubheading,
   HeroActions,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * PetVeterinaryHero — split, two-column hero for a veterinary clinic / pet
@@ -147,17 +147,15 @@ export const PetVeterinaryHero = defineCapsule({
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="max-w-2xl">
-              <Card
-                variant="elevated"
-                rounded="none"
-                padding="none"
-                className="mb-8 inline-flex items-center gap-2 rounded-full px-4 py-2"
+              <HeroBadge
+                variant="pulsing-dot"
+                className="mb-8 bg-background shadow-sm"
               >
                 <span className="size-2 animate-pulse rounded-full bg-primary" />
                 <span className="text-sm font-medium text-muted-foreground">
                   {heroBadge}
                 </span>
-              </Card>
+              </HeroBadge>
               <HeroHeading className="mb-6">
                 {heroHeadingTop} <HeroHighlight>{heroHighlight}</HeroHighlight>
               </HeroHeading>
