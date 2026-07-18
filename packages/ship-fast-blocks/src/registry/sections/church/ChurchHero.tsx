@@ -11,6 +11,7 @@ import {
   HeroSubheading,
   HeroActions,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ChurchHero — centered, image-backed hero section for a church or faith-community
@@ -76,79 +77,81 @@ export const ChurchHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
         </div>
-        <HeroContent className="mx-auto max-w-4xl px-6 text-center lg:px-8">
-          <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {eyebrow}
-          </p>
-          <HeroHeading className="mb-6 font-medium">
-            {headingTop}
-            <br />
-            <span className="text-muted-foreground">{headingBottom}</span>
-          </HeroHeading>
-          <HeroSubheading variant="large" className="sm:text-lg">
-            {subheading}
-          </HeroSubheading>
-          <HeroActions className="mt-0 flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
-            >
-              <svg
-                className="mr-2 size-4"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
+        <Container asChild size="4xl" className="px-6 text-center lg:px-6">
+          <HeroContent>
+            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
+              {eyebrow}
+            </p>
+            <HeroHeading className="mb-6 font-medium">
+              {headingTop}
+              <br />
+              <span className="text-muted-foreground">{headingBottom}</span>
+            </HeroHeading>
+            <HeroSubheading variant="large" className="sm:text-lg">
+              {subheading}
+            </HeroSubheading>
+            <HeroActions className="mt-0 flex-col items-center justify-center gap-4 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => go(primaryCta)}
+                className="inline-flex items-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              {secondaryCta}
-            </button>
-          </HeroActions>
-          <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <svg
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
+                {primaryCta}
+              </button>
+              <button
+                type="button"
+                onClick={() => go(secondaryCta)}
+                className="inline-flex items-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>{serviceTime}</span>
+                <svg
+                  className="mr-2 size-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                {secondaryCta}
+              </button>
+            </HeroActions>
+            <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="size-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>{serviceTime}</span>
+              </div>
+              <div className="hidden items-center gap-2 sm:flex">
+                <svg
+                  className="size-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                </svg>
+                <span>{address}</span>
+              </div>
             </div>
-            <div className="hidden items-center gap-2 sm:flex">
-              <svg
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-              </svg>
-              <span>{address}</span>
-            </div>
-          </div>
-        </HeroContent>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

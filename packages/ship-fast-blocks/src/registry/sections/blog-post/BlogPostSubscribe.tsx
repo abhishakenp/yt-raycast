@@ -10,6 +10,7 @@ import {
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * BlogPostSubscribe — newsletter signup band for an editorial blog/article
@@ -49,7 +50,7 @@ export const BlogPostSubscribe = defineCapsule({
 
     return (
       <SubscribeBand className={cn('py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-2xl px-6 lg:px-8">
+        <Container size="sm" className="max-w-2xl px-6 lg:px-6">
           <div className="rounded-2xl bg-muted px-6 py-12 text-center sm:px-12">
             <NewsletterCtaHeading className="mb-3 text-2xl font-semibold tracking-tight">
               {heading}
@@ -70,7 +71,7 @@ export const BlogPostSubscribe = defineCapsule({
             />
             <NewsletterCtaFineprint>{note}</NewsletterCtaFineprint>
           </div>
-        </div>
+        </Container>
       </SubscribeBand>
     )
   },

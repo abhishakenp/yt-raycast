@@ -10,6 +10,7 @@ import {
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -71,58 +72,64 @@ export const AeoHero = defineCapsule({
         variant="default"
         className={cn('bg-background', props.className)}
       >
-        <HeroContent className="mx-auto max-w-4xl px-4 pb-16 pt-20 text-center sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
-          <HeroBadge className="bg-muted text-xs shadow-none">
-            {eyebrow}
-          </HeroBadge>
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            {headingLead}{' '}
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              {headingAccent}
-            </span>
-          </h1>
-          <HeroSubheading className="mx-auto max-w-2xl">
-            {subheading}
-          </HeroSubheading>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={primaryCta}
-              plan={primaryCta}
-              source="hero"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Starting
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {primaryCta}
-            </SaasPlanActionButton>
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={secondaryCta}
-              plan={secondaryCta}
-              source="hero"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Sending
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
-            >
-              {secondaryCta}
-            </SaasPlanActionButton>
-          </div>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Tracks:</span>
-            {engines.map((engine) => (
-              <span key={engine}>{engine}</span>
-            ))}
-          </div>
-        </HeroContent>
+        <Container
+          asChild
+          size="4xl"
+          className="pb-16 pt-20 text-center sm:pb-20 sm:pt-28"
+        >
+          <HeroContent>
+            <HeroBadge className="bg-muted text-xs shadow-none">
+              {eyebrow}
+            </HeroBadge>
+            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              {headingLead}{' '}
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                {headingAccent}
+              </span>
+            </h1>
+            <HeroSubheading className="mx-auto max-w-2xl">
+              {subheading}
+            </HeroSubheading>
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={primaryCta}
+                plan={primaryCta}
+                source="hero"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Starting
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+              >
+                {primaryCta}
+              </SaasPlanActionButton>
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={secondaryCta}
+                plan={secondaryCta}
+                source="hero"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Sending
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+              >
+                {secondaryCta}
+              </SaasPlanActionButton>
+            </div>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Tracks:</span>
+              {engines.map((engine) => (
+                <span key={engine}>{engine}</span>
+              ))}
+            </div>
+          </HeroContent>
+        </Container>
         <div className="mx-auto max-w-5xl px-4 pb-20 sm:px-6 lg:px-8">
           <Card
             variant="default"

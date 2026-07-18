@@ -10,6 +10,7 @@ import {
   HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PortfolioHero — split, cinematic hero band for a dark creative-individual
@@ -75,7 +76,7 @@ export const PortfolioHero = defineCapsule({
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_500px_at_80%_-10%,var(--primary),transparent),radial-gradient(700px_400px_at_10%_60%,var(--primary),transparent)] opacity-[0.08]"
         />
-        <div className="relative mx-auto max-w-[1200px] px-6">
+        <Container size="xl" className="relative max-w-[1200px] px-6 lg:px-6">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
             <div>
               <p className="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-primary">
@@ -143,7 +144,7 @@ export const PortfolioHero = defineCapsule({
               </button>
             </Card>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

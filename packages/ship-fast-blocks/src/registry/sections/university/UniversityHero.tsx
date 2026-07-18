@@ -12,6 +12,7 @@ import {
   HeroSubheading,
   HeroActions,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const UniversityHero = defineCapsule({
   name: 'UniversityHero',
@@ -60,51 +61,53 @@ export const UniversityHero = defineCapsule({
           overlayClassName="bg-foreground/60"
           gradientClassName="bg-transparent"
         />
-        <HeroContent className="mx-auto max-w-4xl px-6 text-center lg:px-8">
-          <HeroBadge variant="pill" className="py-2 text-sm tracking-wide">
-            {eyebrow}
-          </HeroBadge>
-          <HeroHeading
-            variant="serif"
-            className="font-bold max-w-none tracking-normal sm:text-6xl"
-          >
-            {heading}
-          </HeroHeading>
-          <HeroSubheading
-            variant="large"
-            className="mt-6 mb-0 leading-8 text-background/85 sm:text-lg"
-          >
-            {subheading}
-          </HeroSubheading>
-          <HeroActions className="mt-10 flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryTarget)}
-              className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+        <Container asChild size="4xl" className="px-6 text-center lg:px-6">
+          <HeroContent>
+            <HeroBadge variant="pill" className="py-2 text-sm tracking-wide">
+              {eyebrow}
+            </HeroBadge>
+            <HeroHeading
+              variant="serif"
+              className="font-bold max-w-none tracking-normal sm:text-6xl"
             >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryTarget)}
-              className="rounded-full border border-background/40 bg-background/10 px-7 py-3 text-sm font-semibold text-background backdrop-blur-sm transition hover:bg-background/20"
+              {heading}
+            </HeroHeading>
+            <HeroSubheading
+              variant="large"
+              className="mt-6 mb-0 leading-8 text-background/85 sm:text-lg"
             >
-              {secondaryCta}
-            </button>
-          </HeroActions>
-          <div className="mx-auto mt-12 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-background/20 pt-8 text-sm font-medium text-background/80">
-            {quickStats.map((stat, i) => (
-              <span key={stat} className="flex items-center gap-3">
-                {i > 0 ? (
-                  <span aria-hidden="true" className="text-background/40">
-                    ·
-                  </span>
-                ) : null}
-                {stat}
-              </span>
-            ))}
-          </div>
-        </HeroContent>
+              {subheading}
+            </HeroSubheading>
+            <HeroActions className="mt-10 flex-col justify-center gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => go(primaryTarget)}
+                className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              >
+                {primaryCta}
+              </button>
+              <button
+                type="button"
+                onClick={() => go(secondaryTarget)}
+                className="rounded-full border border-background/40 bg-background/10 px-7 py-3 text-sm font-semibold text-background backdrop-blur-sm transition hover:bg-background/20"
+              >
+                {secondaryCta}
+              </button>
+            </HeroActions>
+            <div className="mx-auto mt-12 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-background/20 pt-8 text-sm font-medium text-background/80">
+              {quickStats.map((stat, i) => (
+                <span key={stat} className="flex items-center gap-3">
+                  {i > 0 ? (
+                    <span aria-hidden="true" className="text-background/40">
+                      ·
+                    </span>
+                  ) : null}
+                  {stat}
+                </span>
+              ))}
+            </div>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

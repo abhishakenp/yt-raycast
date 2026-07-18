@@ -14,6 +14,7 @@ import {
   StoryCardExcerpt,
   StoryCardBody,
 } from '#/section-kit/StoryCard.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -95,7 +96,7 @@ export const BlogPostStoryGrid = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-5xl px-6 lg:px-8">
+        <Container size="md" className="px-6 lg:px-6">
           <SectionHeading
             title={heading}
             align="left"
@@ -124,7 +125,7 @@ export const BlogPostStoryGrid = defineCapsule({
               </StoryCard>
             ))}
           </ArticleGrid>
-        </div>
+        </Container>
       </section>
     )
   },

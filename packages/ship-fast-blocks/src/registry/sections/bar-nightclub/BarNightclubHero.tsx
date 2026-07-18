@@ -9,6 +9,7 @@ import {
   HeroContent,
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -97,47 +98,49 @@ export const BarNightclubHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
         </div>
-        <HeroContent className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          <p className="mb-6 text-sm uppercase tracking-[0.3em] text-muted-foreground">
-            {eyebrow}
-          </p>
-          <h1 className="mb-8 text-5xl font-light tracking-tight sm:text-6xl lg:text-8xl">
-            {headingTop}
-            <br />
-            {headingBottom}
-          </h1>
-          <HeroSubheading variant="large" className="mb-12">
-            {subheading}
-          </HeroSubheading>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="w-full bg-foreground px-8 py-4 text-sm tracking-wide text-background transition-colors hover:bg-foreground/90 sm:w-auto"
-            >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="w-full border border-foreground px-8 py-4 text-sm tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto"
-            >
-              {secondaryCta}
-            </button>
-            <CommerceAddItemButton
-              lakebed={lakebed}
-              item={{
-                label: featuredItemName,
-                price: featuredItemPrice,
-              }}
-              aria-label={`${addLabel} ${featuredItemName}`}
-              pendingChildren={<CommerceMutationSpinner />}
-              className="inline-flex w-full items-center justify-center bg-primary px-8 py-4 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:w-auto"
-            >
-              {addLabel}
-            </CommerceAddItemButton>
-          </div>
-        </HeroContent>
+        <Container asChild size="md" className="text-center">
+          <HeroContent>
+            <p className="mb-6 text-sm uppercase tracking-[0.3em] text-muted-foreground">
+              {eyebrow}
+            </p>
+            <h1 className="mb-8 text-5xl font-light tracking-tight sm:text-6xl lg:text-8xl">
+              {headingTop}
+              <br />
+              {headingBottom}
+            </h1>
+            <HeroSubheading variant="large" className="mb-12">
+              {subheading}
+            </HeroSubheading>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => go(primaryCta)}
+                className="w-full bg-foreground px-8 py-4 text-sm tracking-wide text-background transition-colors hover:bg-foreground/90 sm:w-auto"
+              >
+                {primaryCta}
+              </button>
+              <button
+                type="button"
+                onClick={() => go(secondaryCta)}
+                className="w-full border border-foreground px-8 py-4 text-sm tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto"
+              >
+                {secondaryCta}
+              </button>
+              <CommerceAddItemButton
+                lakebed={lakebed}
+                item={{
+                  label: featuredItemName,
+                  price: featuredItemPrice,
+                }}
+                aria-label={`${addLabel} ${featuredItemName}`}
+                pendingChildren={<CommerceMutationSpinner />}
+                className="inline-flex w-full items-center justify-center bg-primary px-8 py-4 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:w-auto"
+              >
+                {addLabel}
+              </CommerceAddItemButton>
+            </div>
+          </HeroContent>
+        </Container>
         <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-muted-foreground">
           <span className="text-xs uppercase tracking-widest">{scroll}</span>
           <svg

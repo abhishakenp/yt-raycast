@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
 import { useDirectorySearch } from './directory-interactions.tsx'
 
@@ -57,82 +58,84 @@ export const DirectoryHero = defineCapsule({
         variant="default"
         className={cn('bg-card pb-20 pt-16 lg:pb-28 lg:pt-24', props.className)}
       >
-        <HeroContent className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="mb-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            {heading}
-          </h1>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            {subheading}
-          </p>
-
-          <div className="mx-auto max-w-2xl">
-            <form
-              key={`${queryValue}:${categoryValue}`}
-              onSubmit={directorySearch.submitSearch}
-              className="relative"
-            >
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <svg
-                  className="size-5 text-muted-foreground"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                name="query"
-                type="search"
-                defaultValue={queryValue || categoryValue}
-                placeholder={searchPlaceholder}
-                aria-label="Search businesses"
-                className="w-full rounded-xl border border-input bg-muted py-4 pl-12 pr-32 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              <button
-                type="submit"
-                aria-busy={directorySearch.isPending}
-                disabled={directorySearch.isPending}
-                className="absolute bottom-2 right-2 top-2 rounded-lg bg-primary px-6 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-              >
-                {directorySearch.isPending ? 'Searching' : searchCta}
-              </button>
-            </form>
-            <p
-              className="mt-3 text-sm text-muted-foreground"
-              aria-live="polite"
-            >
-              {queryValue || categoryValue
-                ? `Showing directory results for ${queryValue || categoryValue}.`
-                : 'Search is shared with featured listings below.'}
+        <Container asChild size="4xl" className="text-center">
+          <HeroContent>
+            <h1 className="mb-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              {heading}
+            </h1>
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
+              {subheading}
             </p>
 
-            <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm text-muted-foreground">
-              <span>{popularLabel}</span>
-              {popular.map((term, i) => (
-                <span key={term} className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      directorySearch.chooseSearch({
-                        category: term,
-                        query: '',
-                      })
-                    }
-                    className="underline-offset-2 transition-colors hover:text-foreground hover:underline"
+            <div className="mx-auto max-w-2xl">
+              <form
+                key={`${queryValue}:${categoryValue}`}
+                onSubmit={directorySearch.submitSearch}
+                className="relative"
+              >
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                  <svg
+                    className="size-5 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
-                    {term}
-                  </button>
-                  {i < popular.length - 1 ? <span>·</span> : null}
-                </span>
-              ))}
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  name="query"
+                  type="search"
+                  defaultValue={queryValue || categoryValue}
+                  placeholder={searchPlaceholder}
+                  aria-label="Search businesses"
+                  className="w-full rounded-xl border border-input bg-muted py-4 pl-12 pr-32 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <button
+                  type="submit"
+                  aria-busy={directorySearch.isPending}
+                  disabled={directorySearch.isPending}
+                  className="absolute bottom-2 right-2 top-2 rounded-lg bg-primary px-6 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {directorySearch.isPending ? 'Searching' : searchCta}
+                </button>
+              </form>
+              <p
+                className="mt-3 text-sm text-muted-foreground"
+                aria-live="polite"
+              >
+                {queryValue || categoryValue
+                  ? `Showing directory results for ${queryValue || categoryValue}.`
+                  : 'Search is shared with featured listings below.'}
+              </p>
+
+              <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm text-muted-foreground">
+                <span>{popularLabel}</span>
+                {popular.map((term, i) => (
+                  <span key={term} className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        directorySearch.chooseSearch({
+                          category: term,
+                          query: '',
+                        })
+                      }
+                      className="underline-offset-2 transition-colors hover:text-foreground hover:underline"
+                    >
+                      {term}
+                    </button>
+                    {i < popular.length - 1 ? <span>·</span> : null}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        </HeroContent>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

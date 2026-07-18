@@ -11,6 +11,7 @@ import {
   PortfolioMedia,
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PortfolioWork — selected-work / project gallery for a dark creative portfolio.
@@ -108,7 +109,7 @@ export const PortfolioWork = defineCapsule({
         className={cn('pt-28 pb-24', props.className)}
         aria-labelledby="portfolio-work-heading"
       >
-        <div className="mx-auto max-w-[1200px] px-6">
+        <Container size="xl" className="max-w-[1200px] px-6 lg:px-6">
           <div className="mb-14 flex flex-col gap-3">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
               {label}
@@ -169,7 +170,7 @@ export const PortfolioWork = defineCapsule({
               </Card>
             ))}
           </PortfolioGrid>
-        </div>
+        </Container>
       </section>
     )
   },

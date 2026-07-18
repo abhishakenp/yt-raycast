@@ -11,6 +11,7 @@ import {
   PullQuoteRole,
   PullQuoteText,
 } from '#/section-kit/PullQuote.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AgencyTestimonial — oversized pull-quote testimonial band for a creative
@@ -64,7 +65,7 @@ export const AgencyTestimonial = defineCapsule({
         variant="muted"
         className={cn('py-24 lg:py-28', props.className)}
       >
-        <div className="mx-auto max-w-5xl px-6 text-center">
+        <Container size="md" className="px-6 text-center lg:px-6">
           <PullQuoteIcon size="lg">
             <svg
               width="32"
@@ -92,7 +93,7 @@ export const AgencyTestimonial = defineCapsule({
               <PullQuoteRole>{role}</PullQuoteRole>
             </div>
           </PullQuoteAttribution>
-        </div>
+        </Container>
       </PullQuote>
     )
   },

@@ -2,10 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
-import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * LinkInBioHero — the opening hero of a minimal "link in bio" / link-hub page,
@@ -256,89 +256,89 @@ export const LinkInBioHero = defineCapsule({
     )
 
     return (
-      <HeroSection
-        variant="default"
-        className={cn(
-          'mx-auto max-w-md px-6 py-16 sm:py-20 lg:py-24',
-          props.className,
-        )}
+      <Container
+        asChild
+        size="sm"
+        className="max-w-md px-6 py-16 sm:py-20 lg:py-24 lg:px-6"
       >
-        {/* Avatar & identity */}
-        <div className="mb-10 text-center">
-          <div className="relative mb-5 inline-block">
-            <Image
-              alt={avatarAlt}
-              w={200}
-              h={200}
-              className="size-24 rounded-full object-cover shadow-sm ring-4 ring-background sm:size-28"
-            />
-            <span
-              className="absolute bottom-1 right-1 size-4 rounded-full bg-primary ring-2 ring-background"
-              aria-label={status}
-            />
+        <HeroSection variant="default" className={props.className}>
+          {/* Avatar & identity */}
+          <div className="mb-10 text-center">
+            <div className="relative mb-5 inline-block">
+              <Image
+                alt={avatarAlt}
+                w={200}
+                h={200}
+                className="size-24 rounded-full object-cover shadow-sm ring-4 ring-background sm:size-28"
+              />
+              <span
+                className="absolute bottom-1 right-1 size-4 rounded-full bg-primary ring-2 ring-background"
+                aria-label={status}
+              />
+            </div>
+
+            <h1 className="mb-2 text-2xl font-semibold text-foreground sm:text-3xl">
+              {brand}
+            </h1>
+            <p className="text-sm font-light text-muted-foreground sm:text-base">
+              {role}
+            </p>
+            <p className="mx-auto mt-3 max-w-xs text-base leading-relaxed text-foreground/80">
+              {bio}
+            </p>
           </div>
 
-          <h1 className="mb-2 text-2xl font-semibold text-foreground sm:text-3xl">
-            {brand}
-          </h1>
-          <p className="text-sm font-light text-muted-foreground sm:text-base">
-            {role}
-          </p>
-          <p className="mx-auto mt-3 max-w-xs text-base leading-relaxed text-foreground/80">
-            {bio}
-          </p>
-        </div>
-
-        {/* Primary links */}
-        <nav aria-label="Primary links" className="mb-10 space-y-3">
-          {links.map((link, i) => (
-            <button
-              key={link.title}
-              type="button"
-              onClick={() => go(linkTargets[i] ?? link.title)}
-              className="group flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-5 py-4 text-left shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
-            >
-              <span className="flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-lg bg-muted text-muted-foreground">
-                  {linkIcons[link.icon]}
-                </span>
-                <span className="text-left">
-                  <span className="block font-medium text-card-foreground">
-                    {link.title}
+          {/* Primary links */}
+          <nav aria-label="Primary links" className="mb-10 space-y-3">
+            {links.map((link, i) => (
+              <button
+                key={link.title}
+                type="button"
+                onClick={() => go(linkTargets[i] ?? link.title)}
+                className="group flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-5 py-4 text-left shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="grid size-10 place-items-center rounded-lg bg-muted text-muted-foreground">
+                    {linkIcons[link.icon]}
                   </span>
-                  <span className="block text-xs text-muted-foreground">
-                    {link.subtitle}
+                  <span className="text-left">
+                    <span className="block font-medium text-card-foreground">
+                      {link.title}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {link.subtitle}
+                    </span>
                   </span>
                 </span>
-              </span>
-              {link.badge ? (
-                <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
-                  {link.badge}
-                </span>
-              ) : (
-                <span className="text-muted-foreground transition-colors group-hover:text-foreground">
-                  <ExternalArrow />
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
+                {link.badge ? (
+                  <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
+                    {link.badge}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground transition-colors group-hover:text-foreground">
+                    <ExternalArrow />
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
 
-        {/* Socials */}
-        <div className="flex justify-center gap-3">
-          {socials.map((social) => (
-            <button
-              key={social.label}
-              type="button"
-              aria-label={social.label}
-              onClick={() => go(social.label)}
-              className="grid size-12 place-items-center rounded-full border border-border/60 bg-card text-muted-foreground transition-all duration-200 hover:border-border hover:text-foreground hover:shadow-sm"
-            >
-              {socialIcons[social.icon]}
-            </button>
-          ))}
-        </div>
-      </HeroSection>
+          {/* Socials */}
+          <div className="flex justify-center gap-3">
+            {socials.map((social) => (
+              <button
+                key={social.label}
+                type="button"
+                aria-label={social.label}
+                onClick={() => go(social.label)}
+                className="grid size-12 place-items-center rounded-full border border-border/60 bg-card text-muted-foreground transition-all duration-200 hover:border-border hover:text-foreground hover:shadow-sm"
+              >
+                {socialIcons[social.icon]}
+              </button>
+            ))}
+          </div>
+        </HeroSection>
+      </Container>
     )
   },
 })
