@@ -2,9 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * BeautyStoreTestimonials — a 3-up customer testimonials band for a beauty /
@@ -69,17 +69,6 @@ export const BeautyStoreTestimonials = defineCapsule({
           },
         ]
 
-    const Star = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-      </svg>
-    )
-
     return (
       <section className={cn('bg-primary/10 py-20 lg:py-28', props.className)}>
         <Container>
@@ -91,34 +80,7 @@ export const BeautyStoreTestimonials = defineCapsule({
               {heading}
             </h2>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {items.map((t) => (
-              <div key={t.name} className="rounded-xl bg-card p-8 shadow-sm">
-                <div className="mb-4 flex text-primary">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="size-5" />
-                  ))}
-                </div>
-                <p className="mb-6 leading-relaxed text-card-foreground/90">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-semibold text-card-foreground">
-                      {t.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{t.meta}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TestimonialGrid items={items} columns={3} />
         </Container>
       </section>
     )

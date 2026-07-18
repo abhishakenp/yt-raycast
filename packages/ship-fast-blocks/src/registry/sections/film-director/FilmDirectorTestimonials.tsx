@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 /**
  * FilmDirectorTestimonials — a client-testimonial grid for a film director or
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 export const FilmDirectorTestimonials = defineCapsule({
   name: 'FilmDirectorTestimonials',
   description:
@@ -98,28 +98,7 @@ export const FilmDirectorTestimonials = defineCapsule({
             </h2>
             <p className="text-muted-foreground">{testimonialsDesc}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {testimonialItems.map((t) => (
-              <div key={t.name} className="rounded-md border border-border p-6">
-                <div className="mb-4 flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-                <p className="text-sm italic leading-relaxed text-muted-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-              </div>
-            ))}
-          </div>
+          <TestimonialGrid items={testimonialItems} columns={3} />
         </Container>
       </section>
     )

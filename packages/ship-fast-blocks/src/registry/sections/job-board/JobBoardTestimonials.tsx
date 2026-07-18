@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 /**
  * JobBoardTestimonials — a 3-up success-story testimonial grid for a job-board /
@@ -13,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 export const JobBoardTestimonials = defineCapsule({
   name: 'JobBoardTestimonials',
   description:
@@ -80,41 +79,7 @@ export const JobBoardTestimonials = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {items.map((t) => (
-              <Card
-                key={t.name}
-                asChild
-                variant="muted"
-                rounded="2xl"
-                padding="lg"
-                className="bg-muted/40"
-              >
-                <figure>
-                  <blockquote className="mb-6">
-                    <p className="leading-relaxed text-foreground/80">
-                      &ldquo;{t.quote}&rdquo;
-                    </p>
-                  </blockquote>
-                  <figcaption className="flex items-center gap-4">
-                    <Image
-                      alt={t.avatarAlt}
-                      w={100}
-                      h={100}
-                      loading="lazy"
-                      className="size-12 rounded-full object-cover"
-                    />
-                    <div>
-                      <cite className="font-semibold not-italic text-foreground">
-                        {t.name}
-                      </cite>
-                      <p className="text-sm text-muted-foreground">{t.role}</p>
-                    </div>
-                  </figcaption>
-                </figure>
-              </Card>
-            ))}
-          </div>
+          <TestimonialGrid items={items} columns={3} />
         </Container>
       </section>
     )

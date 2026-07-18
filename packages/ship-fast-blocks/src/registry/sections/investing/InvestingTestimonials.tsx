@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 /**
  * InvestingTestimonials — star-rated testimonial wall for an investing / fintech
@@ -13,6 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * or crypto exchange. Renders fully with no props via six baked-in reviews.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 export const InvestingTestimonials = defineCapsule({
   name: 'InvestingTestimonials',
   description:
@@ -92,16 +91,6 @@ export const InvestingTestimonials = defineCapsule({
               'professional headshot of a man in his thirties with short dark hair and clean shaven face',
           },
         ]
-    const Star = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    )
     return (
       <section
         id="reviews"
@@ -114,35 +103,7 @@ export const InvestingTestimonials = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((t) => (
-              <Card key={t.name} padding="lg" className="text-card-foreground">
-                <div className="mb-4 flex items-center gap-1">
-                  {Array.from({
-                    length: 5,
-                  }).map((_, s) => (
-                    <Star key={s} className="size-5 text-chart-4" />
-                  ))}
-                </div>
-                <p className="mb-6 leading-relaxed text-foreground/80">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-semibold">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <TestimonialGrid items={items} columns={3} />
         </Container>
       </section>
     )

@@ -2,8 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * ChurchTestimonials — a 3-up member testimonials wall for a church or faith-community
@@ -92,27 +91,7 @@ export const ChurchTestimonials = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {items.map((t) => (
-              <Card key={t.name} padding="lg">
-                <blockquote className="mb-6 leading-relaxed text-card-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </blockquote>
-                <figcaption className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={200}
-                    h={200}
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-card-foreground">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.meta}</p>
-                  </div>
-                </figcaption>
-              </Card>
-            ))}
-          </div>
+          <TestimonialGrid items={items} columns={3} />
         </div>
       </section>
     )

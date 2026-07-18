@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 /**
  * FashionStoreTestimonials — dark inverted customer testimonials band for a
@@ -13,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * social proof for clothing brands, boutiques, or premium apparel labels.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 export const FashionStoreTestimonials = defineCapsule({
   name: 'FashionStoreTestimonials',
   description:
@@ -63,17 +63,6 @@ export const FashionStoreTestimonials = defineCapsule({
               'Professional headshot of Elena Vasquez, architect and design consultant',
           },
         ]
-    const StarIcon = () => (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    )
     return (
       <section
         aria-label="Customer testimonials"
@@ -92,37 +81,7 @@ export const FashionStoreTestimonials = defineCapsule({
             </h2>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
-            {testimonialItems.map((t) => (
-              <blockquote
-                key={t.name}
-                className="border-t border-background/20 pt-8"
-              >
-                <div className="mb-4 flex items-center gap-1 text-background">
-                  {Array.from({
-                    length: 5,
-                  }).map((_, i) => (
-                    <StarIcon key={i} />
-                  ))}
-                </div>
-                <p className="mb-6 text-lg font-light leading-relaxed text-background/80">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <footer className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={120}
-                    h={120}
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-background">{t.name}</p>
-                    <p className="text-sm text-background/60">{t.role}</p>
-                  </div>
-                </footer>
-              </blockquote>
-            ))}
-          </div>
+          <TestimonialGrid items={testimonialItems} columns={3} />
         </Container>
       </section>
     )

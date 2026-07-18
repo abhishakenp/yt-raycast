@@ -2,9 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * NewsletterTestimonials — reader testimonials band for an editorial newsletter.
@@ -101,31 +100,7 @@ export const NewsletterTestimonials = defineCapsule({
             className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
           />
 
-          <ResponsiveGrid gap="md" className="md:grid-cols-3 lg:gap-8">
-            {items.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-2xl bg-card p-6 text-card-foreground md:p-8"
-              >
-                <div className="mb-4 flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-foreground">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-                <p className="italic leading-relaxed text-foreground/80">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <TestimonialGrid items={items} columns={3} />
 
           <div className="mt-8 grid gap-4 text-center sm:grid-cols-2 lg:grid-cols-4">
             {mini.map((m) => (

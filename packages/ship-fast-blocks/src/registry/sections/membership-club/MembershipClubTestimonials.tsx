@@ -2,10 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * MembershipClubTestimonials — 6-up member-testimonials grid for a private
@@ -108,28 +107,7 @@ export const MembershipClubTestimonials = defineCapsule({
               {heading}
             </h2>
           </div>
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
-            {items.map((t) => (
-              <div key={t.name} className="rounded-xl bg-muted p-8">
-                <div className="mb-6 flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-14 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-foreground">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-                <p className="italic leading-relaxed text-muted-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-              </div>
-            ))}
-          </ResponsiveGrid>
+          <TestimonialGrid items={items} columns={3} />
         </Container>
       </section>
     )

@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
 
 /**
  * NoCodeTestimonials — centered-header 3-column star-rated testimonials grid on
@@ -13,6 +11,7 @@ import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
  * product landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 export const NoCodeTestimonials = defineCapsule({
   name: 'NoCodeTestimonials',
   description:
@@ -70,18 +69,6 @@ export const NoCodeTestimonials = defineCapsule({
               'Professional headshot of Elena Rodriguez, CEO of Brightside Agency',
           },
         ]
-    const Star = () => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        aria-hidden="true"
-        className="text-chart-4"
-      >
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    )
     return (
       <section
         className={cn('bg-muted/40 py-24', props.className)}
@@ -100,38 +87,7 @@ export const NoCodeTestimonials = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
-            {items.map((t) => (
-              <Card key={t.name} rounded="2xl" shadow="sm">
-                <div className="mb-4 flex gap-1" aria-label="5 star rating">
-                  {Array.from({
-                    length: 5,
-                  }).map((_, si) => (
-                    <Star key={si} />
-                  ))}
-                </div>
-                <p className="mb-6 leading-relaxed text-card-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <div className="font-semibold text-card-foreground">
-                      {t.name}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {t.role}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </ResponsiveGrid>
+          <TestimonialGrid items={items} columns={3} />
         </Container>
       </section>
     )

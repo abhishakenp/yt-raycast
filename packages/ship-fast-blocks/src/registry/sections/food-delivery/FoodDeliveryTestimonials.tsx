@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 /**
  * FoodDeliveryTestimonials — card-surfaced 3-up testimonials grid for a
@@ -14,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 export const FoodDeliveryTestimonials = defineCapsule({
   name: 'FoodDeliveryTestimonials',
   description:
@@ -69,15 +68,6 @@ export const FoodDeliveryTestimonials = defineCapsule({
               'Professional headshot of a smiling middle-aged man with beard and casual attire',
           },
         ]
-    const StarIcon = () => (
-      <svg
-        className="size-5 fill-primary text-primary"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-      </svg>
-    )
     return (
       <section
         className={cn('bg-card pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
@@ -91,44 +81,7 @@ export const FoodDeliveryTestimonials = defineCapsule({
               {testimonialsDesc}
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {testimonialItems.map((t) => (
-              <Card
-                key={t.name}
-                variant="outline"
-                padding="lg"
-                className="bg-background"
-              >
-                <div className="mb-4 flex items-center gap-1">
-                  {Array.from({
-                    length: 5,
-                  }).map((_, i) => (
-                    <StarIcon key={i} />
-                  ))}
-                </div>
-                <p className="mb-6 leading-relaxed text-foreground/80">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {t.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t.location}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <TestimonialGrid items={testimonialItems} columns={3} />
         </Container>
       </section>
     )

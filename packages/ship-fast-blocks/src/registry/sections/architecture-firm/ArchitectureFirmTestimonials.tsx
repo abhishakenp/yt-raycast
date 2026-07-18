@@ -2,10 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * ArchitectureFirmTestimonials — client testimonials grid for an
@@ -72,17 +71,6 @@ export const ArchitectureFirmTestimonials = defineCapsule({
           },
         ]
 
-    const QuoteMark = () => (
-      <svg
-        className="mb-4 size-8 text-muted-foreground/40"
-        fill="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-      </svg>
-    )
-
     return (
       <section
         aria-labelledby="architecture-firm-testimonials-heading"
@@ -101,29 +89,7 @@ export const ArchitectureFirmTestimonials = defineCapsule({
             </h2>
           </div>
 
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
-            {items.map((t) => (
-              <blockquote key={t.name} className="bg-muted p-8">
-                <QuoteMark />
-                <p className="mb-6 leading-relaxed text-foreground/80">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <footer className="flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-foreground">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </footer>
-              </blockquote>
-            ))}
-          </ResponsiveGrid>
+          <TestimonialGrid items={items} columns={3} />
         </Container>
       </section>
     )

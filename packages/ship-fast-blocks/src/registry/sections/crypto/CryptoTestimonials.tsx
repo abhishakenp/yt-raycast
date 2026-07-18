@@ -1,11 +1,10 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
-import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * CryptoTestimonials — 6-up customer testimonial grid for a crypto / DeFi
@@ -109,28 +108,7 @@ export const CryptoTestimonials = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((t) => (
-              <Card key={t.name} variant="muted">
-                <div className="mb-4 flex items-center gap-4">
-                  <Image
-                    alt={t.avatarAlt}
-                    w={96}
-                    h={96}
-                    loading="lazy"
-                    className="size-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <h4 className="font-semibold">{t.name}</h4>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-              </Card>
-            ))}
-          </div>
+          <TestimonialGrid items={items} columns={3} />
         </Container>
       </section>
     )
