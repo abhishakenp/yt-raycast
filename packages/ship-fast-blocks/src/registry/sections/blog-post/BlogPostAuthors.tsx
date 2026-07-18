@@ -10,6 +10,7 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * BlogPostAuthors — bespoke "About the author" bio card for the end of an
@@ -66,7 +67,7 @@ export const BlogPostAuthors = defineCapsule({
 
     return (
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <Container size="sm" className="px-6 lg:px-6">
           <PersonCard variant="outlined" rounded="2xl" className="p-8">
             <div className="flex flex-col items-start gap-6 sm:flex-row">
               <Image
@@ -111,7 +112,7 @@ export const BlogPostAuthors = defineCapsule({
               </div>
             </div>
           </PersonCard>
-        </div>
+        </Container>
       </section>
     )
   },

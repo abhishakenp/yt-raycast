@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const WebinarFaq = defineCapsule({
   name: 'WebinarFaq',
@@ -67,7 +68,7 @@ export const WebinarFaq = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <Container size="sm" className="px-6 lg:px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -90,7 +91,7 @@ export const WebinarFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

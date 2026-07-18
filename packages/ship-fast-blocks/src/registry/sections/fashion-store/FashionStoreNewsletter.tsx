@@ -8,6 +8,7 @@ import {
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -55,7 +56,7 @@ export const FashionStoreNewsletter = defineCapsule({
         aria-label="Newsletter signup"
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+        <Container size="sm" className="text-center">
           <p className={cn(eyebrowCls, 'mb-4')}>{nlEyebrow}</p>
           <NewsletterCtaHeading className="mb-6 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
             {nlHeading}
@@ -76,7 +77,7 @@ export const FashionStoreNewsletter = defineCapsule({
           <NewsletterCtaFineprint className="mt-4 text-xs text-muted-foreground">
             {nlDisclaimer}
           </NewsletterCtaFineprint>
-        </div>
+        </Container>
       </SubscribeBand>
     )
   },

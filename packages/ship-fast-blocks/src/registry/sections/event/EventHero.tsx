@@ -8,6 +8,7 @@ import {
   HeroContent,
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   EventActionButton,
   EventMutationSpinner,
@@ -65,7 +66,7 @@ export const EventHero = defineCapsule({
         className={cn('relative overflow-hidden', props.className)}
       >
         <HeroContent className="mx-auto max-w-6xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
-          <div className="mx-auto max-w-3xl text-center">
+          <Container size="sm" className="text-center px-0 sm:px-0 lg:px-0">
             <p className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
               {eyebrow}
             </p>
@@ -104,7 +105,7 @@ export const EventHero = defineCapsule({
                 <span key={stat}>{stat}</span>
               ))}
             </div>
-          </div>
+          </Container>
         </HeroContent>
       </HeroSection>
     )

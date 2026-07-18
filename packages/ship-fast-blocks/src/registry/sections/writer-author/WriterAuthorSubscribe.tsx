@@ -6,6 +6,7 @@ import { Card } from '#/section-kit/Card.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { NewsletterCtaFineprint } from '#/section-kit/NewsletterCta.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -56,7 +57,7 @@ export const WriterAuthorSubscribe = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <Container size="sm" className="px-6 lg:px-6">
           <Card
             rounded="2xl"
             padding="lg"
@@ -82,7 +83,7 @@ export const WriterAuthorSubscribe = defineCapsule({
               {privacy}
             </NewsletterCtaFineprint>
           </Card>
-        </div>
+        </Container>
       </SubscribeBand>
     )
   },

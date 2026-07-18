@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -74,7 +75,7 @@ export const HotelResortFaq = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <Container size="sm" className="px-6 lg:px-6">
           <div className="mb-16 text-center">
             <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -101,7 +102,7 @@ export const HotelResortFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

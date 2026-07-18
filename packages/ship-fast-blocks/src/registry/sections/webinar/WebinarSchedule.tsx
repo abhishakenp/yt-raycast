@@ -12,6 +12,7 @@ import {
   ScheduleTitle,
   ScheduleDetail,
 } from '#/section-kit/ScheduleList.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const WebinarSchedule = defineCapsule({
   name: 'WebinarSchedule',
@@ -80,7 +81,7 @@ export const WebinarSchedule = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <Container size="sm" className="px-6 lg:px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -108,7 +109,7 @@ export const WebinarSchedule = defineCapsule({
               ))}
             </ScheduleList>
           </Card>
-        </div>
+        </Container>
       </section>
     )
   },

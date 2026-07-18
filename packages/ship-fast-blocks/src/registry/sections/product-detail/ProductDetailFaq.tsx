@@ -9,6 +9,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const ProductDetailFaq = defineCapsule({
   name: 'ProductDetailFaq',
@@ -62,7 +63,7 @@ export const ProductDetailFaq = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <Container size="sm" className="px-6 lg:px-6">
           <h2 className="text-center text-3xl font-bold text-foreground sm:text-4xl">
             {heading}
           </h2>
@@ -88,7 +89,7 @@ export const ProductDetailFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

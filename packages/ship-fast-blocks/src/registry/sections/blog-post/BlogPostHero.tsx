@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * BlogPostHero — bespoke single-article masthead for an editorial blog post
@@ -60,42 +61,44 @@ export const BlogPostHero = defineCapsule({
         variant="default"
         className={cn('bg-background py-16 lg:py-24', props.className)}
       >
-        <HeroContent className="mx-auto max-w-3xl px-6 lg:px-8">
-          <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {kicker}
-          </p>
-          <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
-            <button
-              type="button"
-              onClick={() => go(title)}
-              className="text-left"
-            >
-              {title}
-            </button>
-          </h1>
-          <p className="mb-8 text-lg leading-relaxed text-muted-foreground md:text-xl">
-            {dek}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-            <span className="flex items-center gap-3">
-              <Image
-                alt={authorAvatarAlt}
-                w={80}
-                h={80}
-                className="size-9 rounded-full object-cover"
-              />
-              <span className="font-medium text-foreground">{author}</span>
-            </span>
-            <span className="text-border" aria-hidden="true">
-              &middot;
-            </span>
-            <time>{date}</time>
-            <span className="text-border" aria-hidden="true">
-              &middot;
-            </span>
-            <span>{readingTime}</span>
-          </div>
-        </HeroContent>
+        <Container asChild size="sm" className="px-6 lg:px-6">
+          <HeroContent>
+            <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {kicker}
+            </p>
+            <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+              <button
+                type="button"
+                onClick={() => go(title)}
+                className="text-left"
+              >
+                {title}
+              </button>
+            </h1>
+            <p className="mb-8 text-lg leading-relaxed text-muted-foreground md:text-xl">
+              {dek}
+            </p>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+              <span className="flex items-center gap-3">
+                <Image
+                  alt={authorAvatarAlt}
+                  w={80}
+                  h={80}
+                  className="size-9 rounded-full object-cover"
+                />
+                <span className="font-medium text-foreground">{author}</span>
+              </span>
+              <span className="text-border" aria-hidden="true">
+                &middot;
+              </span>
+              <time>{date}</time>
+              <span className="text-border" aria-hidden="true">
+                &middot;
+              </span>
+              <span>{readingTime}</span>
+            </div>
+          </HeroContent>
+        </Container>
         <div className="mx-auto mt-12 max-w-5xl px-6 lg:px-8">
           <Image
             alt={coverAlt}

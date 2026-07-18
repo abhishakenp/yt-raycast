@@ -16,6 +16,7 @@ import {
   HeroStatBadgeTitle,
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const WebinarHero = defineCapsule({
   name: 'WebinarHero',
@@ -70,76 +71,76 @@ export const WebinarHero = defineCapsule({
           props.className,
         )}
       >
-        <HeroContent className="mx-auto max-w-3xl px-6 text-center lg:px-8">
-          <HeroBadge className="bg-muted text-xs uppercase tracking-[0.2em] shadow-none">
-            <span
-              className="size-2 rounded-full bg-primary"
-              aria-hidden="true"
-            />
-            {eyebrow}
-          </HeroBadge>
-
-          <HeroHeading className="mt-6 font-semibold">{title}</HeroHeading>
-
-          <div className="mt-6 inline-flex items-center justify-center rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-sm font-semibold text-primary">
-            {dateTime}
-          </div>
-
-          <HeroSubheading className="mx-auto max-w-2xl leading-8">
-            {subheading}
-          </HeroSubheading>
-
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <button
-              type="button"
-              onClick={() => go(primaryTarget)}
-              className="rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-            >
-              {primaryCta}
-            </button>
-            <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-              {note}
-            </p>
-          </div>
-
-          <HeroStatBadge
-            className="mt-10 inline-flex items-center gap-3 rounded-full px-4 py-2 text-left"
-          >
-            <HeroStatBadgeIcon className="size-10 rounded-full bg-transparent p-0">
-              <Image
-                alt={presenterAvatarAlt}
-                w={96}
-                h={96}
-                loading="lazy"
-                className="size-10 rounded-full object-cover"
+        <Container asChild size="sm" className="px-6 text-center lg:px-6">
+          <HeroContent>
+            <HeroBadge className="bg-muted text-xs uppercase tracking-[0.2em] shadow-none">
+              <span
+                className="size-2 rounded-full bg-primary"
+                aria-hidden="true"
               />
-            </HeroStatBadgeIcon>
-            <HeroStatBadgeContent>
-              <HeroStatBadgeTitle className="text-sm font-semibold text-foreground">
-                {presenterName}
-              </HeroStatBadgeTitle>
-              <HeroStatBadgeSubtitle className="text-xs">
-                {presenterRole}
-              </HeroStatBadgeSubtitle>
-            </HeroStatBadgeContent>
-          </HeroStatBadge>
+              {eyebrow}
+            </HeroBadge>
 
-          <div className="mx-auto mt-12 grid max-w-md grid-cols-4 gap-3">
-            {countdown.map((unit, i) => (
-              <HeroStatBadge
-                key={`${unit.label}-${i}`}
-                className="rounded-xl px-2 py-4"
+            <HeroHeading className="mt-6 font-semibold">{title}</HeroHeading>
+
+            <div className="mt-6 inline-flex items-center justify-center rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-sm font-semibold text-primary">
+              {dateTime}
+            </div>
+
+            <HeroSubheading className="mx-auto max-w-2xl leading-8">
+              {subheading}
+            </HeroSubheading>
+
+            <div className="mt-8 flex flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => go(primaryTarget)}
+                className="rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
-                <HeroStatBadgeTitle className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">
-                  {unit.value}
+                {primaryCta}
+              </button>
+              <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                {note}
+              </p>
+            </div>
+
+            <HeroStatBadge className="mt-10 inline-flex items-center gap-3 rounded-full px-4 py-2 text-left">
+              <HeroStatBadgeIcon className="size-10 rounded-full bg-transparent p-0">
+                <Image
+                  alt={presenterAvatarAlt}
+                  w={96}
+                  h={96}
+                  loading="lazy"
+                  className="size-10 rounded-full object-cover"
+                />
+              </HeroStatBadgeIcon>
+              <HeroStatBadgeContent>
+                <HeroStatBadgeTitle className="text-sm font-semibold text-foreground">
+                  {presenterName}
                 </HeroStatBadgeTitle>
-                <HeroStatBadgeSubtitle className="mt-1 text-[0.65rem] font-medium uppercase tracking-[0.15em]">
-                  {unit.label}
+                <HeroStatBadgeSubtitle className="text-xs">
+                  {presenterRole}
                 </HeroStatBadgeSubtitle>
-              </HeroStatBadge>
-            ))}
-          </div>
-        </HeroContent>
+              </HeroStatBadgeContent>
+            </HeroStatBadge>
+
+            <div className="mx-auto mt-12 grid max-w-md grid-cols-4 gap-3">
+              {countdown.map((unit, i) => (
+                <HeroStatBadge
+                  key={`${unit.label}-${i}`}
+                  className="rounded-xl px-2 py-4"
+                >
+                  <HeroStatBadgeTitle className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">
+                    {unit.value}
+                  </HeroStatBadgeTitle>
+                  <HeroStatBadgeSubtitle className="mt-1 text-[0.65rem] font-medium uppercase tracking-[0.15em]">
+                    {unit.label}
+                  </HeroStatBadgeSubtitle>
+                </HeroStatBadge>
+              ))}
+            </div>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

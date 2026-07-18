@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { SplitStory } from '#/section-kit/SplitStory.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ResumeCvAbout — professional-summary section for a personal resume / CV /
@@ -52,7 +53,7 @@ export const ResumeCvAbout = defineCapsule({
 
     return (
       <SplitStory className={cn('bg-background', props.className)}>
-        <div className="mx-auto max-w-3xl px-6 py-24 lg:px-8 lg:py-28">
+        <Container size="sm" className="px-6 py-24 lg:px-6 lg:py-28">
           <SectionHeading
             align="left"
             eyebrow={props.eyebrow}
@@ -84,7 +85,7 @@ export const ResumeCvAbout = defineCapsule({
               </div>
             ))}
           </dl>
-        </div>
+        </Container>
       </SplitStory>
     )
   },

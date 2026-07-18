@@ -3,10 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  StepItem,
-  StepContent,
-} from '#/section-kit/StepTimeline.tsx'
+import { StepItem, StepContent } from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ResumeCvWork — vertical experience timeline for a personal resume / CV /
@@ -77,7 +75,7 @@ export const ResumeCvWork = defineCapsule({
 
     return (
       <section className={cn('bg-background', props.className)}>
-        <div className="mx-auto max-w-3xl px-6 py-24 lg:px-8 lg:py-28">
+        <Container size="sm" className="px-6 py-24 lg:px-6 lg:py-28">
           <SectionHeading
             align="left"
             eyebrow={props.eyebrow}
@@ -113,7 +111,7 @@ export const ResumeCvWork = defineCapsule({
               </StepItem>
             ))}
           </ol>
-        </div>
+        </Container>
       </section>
     )
   },

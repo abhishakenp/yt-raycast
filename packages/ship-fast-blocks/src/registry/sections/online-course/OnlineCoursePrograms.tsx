@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ProgramCard } from '#/section-kit/ProgramGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * OnlineCoursePrograms — bespoke curriculum-modules band for an online-course
@@ -67,7 +68,7 @@ export const OnlineCoursePrograms = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <Container size="sm" className="px-6 lg:px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -101,7 +102,7 @@ export const OnlineCoursePrograms = defineCapsule({
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {summary}
           </p>
-        </div>
+        </Container>
       </section>
     )
   },
