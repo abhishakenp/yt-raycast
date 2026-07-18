@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -18,7 +17,7 @@ import {
  * bordered-bottom bar with a serif wordmark on the left, a centered set of nav
  * links (Treatments / Memberships / Gift Cards / Contact), a filled primary
  * "Book Now" CTA on the right, and a real mobile drawer (Sheet) on small
- * screens. The wordmark and every nav item route through useNavigate. Use as the
+ * screens. The wordmark and every nav item route through route hrefs. Use as the
  * opening site navigation for spas, wellness retreats, massage studios,
  * bathhouses, and treatment clinics. Renders fully with no props via baked-in
  * defaults.
@@ -26,7 +25,7 @@ import {
 export const SpaWellnessNavbar = defineCapsule({
   name: 'SpaWellnessNavbar',
   description:
-    "Serene top navigation bar for a day-spa / wellness site built on the shared SiteNav composite: a light bordered-bottom bar with a serif wordmark on the left, centered nav links (Treatments / Memberships / Gift Cards / Contact), a filled primary 'Book Now' CTA on the right, and a real mobile drawer. The wordmark and links route through useNavigate. Use as the opening site navigation for spas, wellness retreats, massage studios, bathhouses, and treatment clinics.",
+    "Serene top navigation bar for a day-spa / wellness site built on the shared SiteNav composite: a light bordered-bottom bar with a serif wordmark on the left, centered nav links (Treatments / Memberships / Gift Cards / Contact), a filled primary 'Book Now' CTA on the right, and a real mobile drawer. The wordmark and links route through route hrefs. Use as the opening site navigation for spas, wellness retreats, massage studios, bathhouses, and treatment clinics.",
   props: z.object({
     /** Serif wordmark / brand name on the left. */
     brand: z.string().optional(),
@@ -44,7 +43,6 @@ export const SpaWellnessNavbar = defineCapsule({
     const links = props.links?.length
       ? props.links
       : ['Treatments', 'Memberships', 'Gift Cards', 'Contact']
-    const go = useNavigate()
     const brand = props.brand ?? 'Lumen Spa'
     const brandClassName = 'font-serif text-xl font-semibold tracking-tight'
     const ctaLabel = props.cta ?? 'Book Now'
@@ -53,21 +51,15 @@ export const SpaWellnessNavbar = defineCapsule({
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className={brandClassName} />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className={brandClassName} />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {links.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -76,7 +68,7 @@ export const SpaWellnessNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -20,7 +19,7 @@ import {
  * bottomed header pinned to the top: a light-weight two-tone wordmark (bold mark
  * + faded suffix) on the left, a horizontal set of nav links in the center, and
  * an outlined square primary CTA on the right (desktop), with a hamburger menu
- * button on mobile. Every link and the CTA route through useNavigate so labels
+ * button on mobile. Every link and the CTA route through route hrefs so labels
  * can drive page-switching. Editorial, refined, gallery-like. Use as the sticky
  * site header for interior designers, design studios, architecture firms, home
  * staging or renovation businesses. Renders fully with no props via baked-in
@@ -29,7 +28,7 @@ import {
 export const InteriorDesignNavbar = defineCapsule({
   name: 'InteriorDesignNavbar',
   description:
-    'Fixed translucent top navigation bar for an upscale interior-design / architecture studio site: backdrop-blurred, border-bottomed header pinned to the top with a light-weight two-tone wordmark (bold mark + faded suffix) on the left, horizontal nav links in the center, and an outlined square primary CTA on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through useNavigate for page-switching. Editorial, refined and gallery-like. Use as the sticky site header for interior designers, design studios, architecture firms, home staging or renovation businesses.',
+    'Fixed translucent top navigation bar for an upscale interior-design / architecture studio site: backdrop-blurred, border-bottomed header pinned to the top with a light-weight two-tone wordmark (bold mark + faded suffix) on the left, horizontal nav links in the center, and an outlined square primary CTA on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through route hrefs for page-switching. Editorial, refined and gallery-like. Use as the sticky site header for interior designers, design studios, architecture firms, home staging or renovation businesses.',
   props: z.object({
     /** Brand / studio name; split into bold mark + faded suffix on a space. */
     brand: z.string().optional(),
@@ -42,7 +41,6 @@ export const InteriorDesignNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Atelier Studio'
     const nav = props.nav?.length
       ? props.nav
@@ -61,26 +59,23 @@ export const InteriorDesignNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(nav[0])}
-            className="gap-2 text-2xl font-light tracking-tight"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7">
-              <LogoImage className="mr-2 size-7" />
-              <LogoLabel />
-            </BrandLogo>
-            <span className="text-foreground">{brandMark}</span>
-            {brandSuffix && (
-              <span className="text-muted-foreground">{brandSuffix}</span>
-            )}
-          </button>
+        <NavbarBrand
+          href={nav[0]}
+          className="gap-2 text-2xl font-light tracking-tight"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7">
+            <LogoImage className="mr-2 size-7" />
+            <LogoLabel />
+          </BrandLogo>
+          <span className="text-foreground">{brandMark}</span>
+          {brandSuffix && (
+            <span className="text-muted-foreground">{brandSuffix}</span>
+          )}
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -89,7 +84,7 @@ export const InteriorDesignNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="outline"
-            onClick={() => go(contactTarget)}
+            href={contactTarget}
             className="hidden border-foreground px-6 py-2.5 text-foreground hover:bg-foreground hover:text-background md:inline-flex"
           >
             {cta}

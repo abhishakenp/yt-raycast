@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -26,14 +25,14 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * header pinned to the top: a cloud-glyph logo tile beside the brand name on
  * the left, horizontal nav links in the center, and a "Sign in" text link +
  * "Get Started" primary pill CTA on the right (desktop). Every nav link and
- * CTA routes through useNavigate so labels drive page-switching. Use as the
+ * CTA routes through route hrefs so labels drive page-switching. Use as the
  * sticky site header for cloud hosting, PaaS, IaaS, serverless, DevOps, or any
  * engineering-focused landing page.
  */
 export const CloudInfraNavbar = defineCapsule({
   name: 'CloudInfraNavbar',
   description:
-    "Sticky translucent top navigation bar for a cloud / developer-platform SaaS site: blurred backdrop, border-bottomed header with a cloud-glyph logo tile + brand name, horizontal desktop nav links, command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Get Started' CTA, and a real mobile drawer. Navigation routes through useNavigate while auth/search/conversion state is shared through Lakebed. Use as the site header for cloud hosting, PaaS, IaaS, serverless, DevOps, or engineering-focused landing pages.",
+    "Sticky translucent top navigation bar for a cloud / developer-platform SaaS site: blurred backdrop, border-bottomed header with a cloud-glyph logo tile + brand name, horizontal desktop nav links, command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Get Started' CTA, and a real mobile drawer. Navigation routes through route hrefs while auth/search/conversion state is shared through Lakebed. Use as the site header for cloud hosting, PaaS, IaaS, serverless, DevOps, or engineering-focused landing pages.",
   props: z.object({
     /** Brand / product name shown beside the logo tile and in nav buttons. */
     brand: z.string().optional(),
@@ -49,7 +48,6 @@ export const CloudInfraNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'CloudShift'
     const nav = props.nav?.length
       ? props.nav
@@ -83,22 +81,16 @@ export const CloudInfraNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

@@ -2,11 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarNav,
   NavbarNavLink,
@@ -20,13 +20,13 @@ import {
  * centered/right horizontal nav links on desktop, and a "Log in" outline button
  * plus a filled primary "Get started" CTA on the right (with a hamburger button
  * on mobile). Clean, premium indigo-on-light aesthetic. Every link and CTA
- * routes through useNavigate. Use as the sticky site header for B2B SaaS,
+ * routes through route hrefs. Use as the sticky site header for B2B SaaS,
  * team/project-management tools, developer platforms, or modern software products.
  */
 export const MarketingNavbar = defineCapsule({
   name: 'MarketingNavbar',
   description:
-    "Glassy, sticky, backdrop-blurred top navigation bar for a product-marketing / SaaS landing page: border-bottomed header with an indigo brand-initial logo tile + product name on the left, horizontal nav links on the right (desktop), and a 'Log in' outline button plus a filled primary 'Get started' CTA, collapsing to a hamburger on mobile. Clean, premium indigo-on-light aesthetic. All links and CTAs route through useNavigate. Use as the sticky site header for B2B SaaS, team/project-management tools, developer platforms, workspaces, or modern software products.",
+    "Glassy, sticky, backdrop-blurred top navigation bar for a product-marketing / SaaS landing page: border-bottomed header with an indigo brand-initial logo tile + product name on the left, horizontal nav links on the right (desktop), and a 'Log in' outline button plus a filled primary 'Get started' CTA, collapsing to a hamburger on mobile. Clean, premium indigo-on-light aesthetic. All links and CTAs route through route hrefs. Use as the sticky site header for B2B SaaS, team/project-management tools, developer platforms, workspaces, or modern software products.",
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -43,7 +43,6 @@ export const MarketingNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Flowstate'
     const nav = props.nav?.length
       ? props.nav
@@ -75,42 +74,37 @@ export const MarketingNavbar = defineCapsule({
         )}
         containerClassName="max-w-6xl px-6"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2 text-xl font-extrabold tracking-tight text-foreground"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark />} />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="gap-2 text-xl font-extrabold tracking-tight text-foreground"
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark />} />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions className="gap-3">
-          <button
-            type="button"
-            onClick={() => go(loginLabel)}
+          <NavbarRouteLink
+            href={loginLabel}
             className="hidden rounded-xl border border-border bg-muted/60 px-5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:inline-flex"
           >
             {loginLabel}
-          </button>
-          <button
-            type="button"
-            onClick={() => go(ctaTarget)}
+          </NavbarRouteLink>
+          <NavbarRouteLink
+            href={ctaTarget}
             className="hidden rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-[0_4px_14px_rgba(79,70,229,0.35)] transition-colors hover:bg-primary/90 sm:inline-flex"
           >
             {ctaLabel}
-          </button>
+          </NavbarRouteLink>
           <MobileNavDrawer
             brand={brand}
             nav={nav}

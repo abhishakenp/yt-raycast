@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -43,13 +42,13 @@ const brandMark = (
  * search portal. A sticky bordered-bottom bar holds a logo-tile + wordmark on
  * the left, inline page nav on desktop, command listing search, Shoo account
  * dropdown, saved/request badge, seller inquiry CTA, and a real Sheet mobile
- * drawer. Nav links route through useNavigate; search/auth/inquiry controls use
+ * drawer. Nav links route through route hrefs; search/auth/inquiry controls use
  * shared Lakebed state.
  */
 export const PropertyListingNavbar = defineCapsule({
   name: 'PropertyListingNavbar',
   description:
-    "Clean sticky top navigation for a property marketplace / search portal: house wordmark, desktop For Sale / For Rent / New / Agents nav, command listing search, Shoo account dropdown, saved/request badge, a fullstack 'Post Listing' inquiry CTA, and a real Sheet mobile drawer. Nav links route through useNavigate; search/auth/inquiry controls use shared Lakebed state.",
+    "Clean sticky top navigation for a property marketplace / search portal: house wordmark, desktop For Sale / For Rent / New / Agents nav, command listing search, Shoo account dropdown, saved/request badge, a fullstack 'Post Listing' inquiry CTA, and a real Sheet mobile drawer. Nav links route through route hrefs; search/auth/inquiry controls use shared Lakebed state.",
   props: z.object({
     /** Brand wordmark beside the logo tile. */
     brand: z.string().optional(),
@@ -63,7 +62,6 @@ export const PropertyListingNavbar = defineCapsule({
   }),
   lakebed: propertyListingLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Nestable'
     const nav = props.links?.length
       ? props.links
@@ -77,22 +75,16 @@ export const PropertyListingNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go('Home')}
-            className="min-w-0 gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={brandMark} />
-              <LogoLabel className="truncate text-xl font-semibold tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={'Home'} className="min-w-0 gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={brandMark} />
+            <LogoLabel className="truncate text-xl font-semibold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

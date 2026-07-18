@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -21,14 +20,14 @@ import {
  * on the left, a horizontal set of nav links in the center (desktop), and a
  * rounded primary CTA on the right. The brand button routes to `homeTarget`,
  * nav links route to their own labels, and the CTA routes to `ctaTarget`.
- * Every link routes through useNavigate so labels can drive page-switching.
+ * Every link routes through route hrefs so labels can drive page-switching.
  * Use as the sticky site header for coding bootcamps, dev academies, vocational
  * tech schools, or any cohort-based education brand.
  */
 export const BootcampNavbar = defineCapsule({
   name: 'BootcampNavbar',
   description:
-    'Sticky translucent top navigation bar for a coding bootcamp / career-school landing page: blurred, border-bottomed header pinned to the top with a solid brand-initial logo tile + academy name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Brand button routes to homeTarget, nav links route to their own labels, and the CTA routes to ctaTarget through useNavigate. Use as the sticky site header for coding bootcamps, dev academies, vocational tech schools, or cohort-based education brands.',
+    'Sticky translucent top navigation bar for a coding bootcamp / career-school landing page: blurred, border-bottomed header pinned to the top with a solid brand-initial logo tile + academy name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Brand button routes to homeTarget, nav links route to their own labels, and the CTA routes to ctaTarget through route hrefs. Use as the sticky site header for coding bootcamps, dev academies, vocational tech schools, or cohort-based education brands.',
   props: z.object({
     /** Brand / academy name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -41,7 +40,6 @@ export const BootcampNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'CodeCraft Academy'
     const nav = props.nav?.length
       ? props.nav
@@ -72,26 +70,16 @@ export const BootcampNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
-              <LogoLabel className="text-lg font-semibold" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
+            <LogoLabel className="text-lg font-semibold" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink
-              key={label}
-              onClick={() => go(label)}
-              className="font-normal"
-            >
+            <NavbarNavLink key={label} href={label} className="font-normal">
               {label}
             </NavbarNavLink>
           ))}
@@ -100,7 +88,7 @@ export const BootcampNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="primary"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="hidden px-5 py-2.5 sm:inline-flex"
           >
             Apply Now

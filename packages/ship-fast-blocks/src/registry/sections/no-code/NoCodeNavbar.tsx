@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,14 +26,14 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * pinned to the top with an inverse cube-glyph logo tile beside the brand name
  * on the left, a centered set of nav links (desktop), and a "Sign in" text link
  * plus a filled primary CTA on the right. Every link and CTA route through
- * useNavigate so labels can drive page-switching. Use as the sticky site header
+ * route hrefs so labels can drive page-switching. Use as the sticky site header
  * for no-code / website-builder / page-builder / SaaS platform landing pages.
  * Renders fully with no props via baked-in "Buildr" defaults.
  */
 export const NoCodeNavbar = defineCapsule({
   name: 'NoCodeNavbar',
   description:
-    'Sticky translucent top navigation bar for a clean, bright no-code / app-builder SaaS site: backdrop-blurred, border-bottomed header pinned to the top with an inverse cube-glyph logo tile + brand name, centered nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped fullstack CTA, and a reusable Sheet mobile drawer. Nav links route through useNavigate while conversion CTAs write to shared Lakebed state.',
+    'Sticky translucent top navigation bar for a clean, bright no-code / app-builder SaaS site: backdrop-blurred, border-bottomed header pinned to the top with an inverse cube-glyph logo tile + brand name, centered nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped fullstack CTA, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -50,7 +49,6 @@ export const NoCodeNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Buildr'
     const nav = props.nav?.length
       ? props.nav
@@ -89,22 +87,16 @@ export const NoCodeNavbar = defineCapsule({
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
         containerClassName="max-w-7xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="flex items-center gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

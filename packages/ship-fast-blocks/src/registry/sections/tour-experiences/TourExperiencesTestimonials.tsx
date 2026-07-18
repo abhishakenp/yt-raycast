@@ -9,6 +9,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * TourExperiencesTestimonials — traveler-review wall for an adventure /
@@ -77,7 +78,7 @@ export const TourExperiencesTestimonials = defineCapsule({
 
     return (
       <section className="bg-muted/30 px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <TestimonialGrid
             heading={props.heading ?? 'Stories from the trail'}
             subheading={
@@ -112,7 +113,7 @@ export const TourExperiencesTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

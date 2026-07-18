@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -24,14 +23,14 @@ import {
  * directory / listings site. A bordered card-surface header with a location-pin
  * glyph + wordmark on the left, a centered row of category nav links, and a
  * right-side cluster of a text "Sign In" action plus a filled primary
- * "List Your Business" CTA. Every link and CTA routes through useNavigate.
+ * "List Your Business" CTA. Every link and CTA routes through route hrefs.
  * Use as the site header for local directories, business-listing marketplaces,
  * find-a-service platforms, review-and-discovery sites, or city guides.
  */
 export const DirectoryNavbar = defineCapsule({
   name: 'DirectoryNavbar',
   description:
-    'Clean horizontal top navigation bar for a local-business DIRECTORY / listings site: a bordered card-surface header with a location-pin glyph plus wordmark on the left, a centered row of category nav links, and a right-side cluster of a text Sign In action and a filled primary List Your Business CTA. Every link and CTA routes through useNavigate. Use as the site header for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, city guides, or yellow-pages-style apps.',
+    'Clean horizontal top navigation bar for a local-business DIRECTORY / listings site: a bordered card-surface header with a location-pin glyph plus wordmark on the left, a centered row of category nav links, and a right-side cluster of a text Sign In action and a filled primary List Your Business CTA. Every link and CTA routes through route hrefs. Use as the site header for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, city guides, or yellow-pages-style apps.',
   props: z.object({
     /** Brand / directory name shown in the navbar. */
     brand: z.string().optional(),
@@ -47,7 +46,6 @@ export const DirectoryNavbar = defineCapsule({
   }),
   lakebed: directoryLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'LocalFindr'
     const nav = props.nav?.length
       ? props.nav
@@ -76,24 +74,18 @@ export const DirectoryNavbar = defineCapsule({
         height="compact"
         className={cn('bg-card', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<PinLogo className="size-8 text-foreground" />}
-              />
-              <LogoLabel className="text-xl font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<PinLogo className="size-8 text-foreground" />}
+            />
+            <LogoLabel className="text-xl font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

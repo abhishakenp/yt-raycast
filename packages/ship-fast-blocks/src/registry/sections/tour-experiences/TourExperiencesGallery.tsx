@@ -9,6 +9,7 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * TourExperiencesGallery — destination gallery for an adventure / guided-tour
@@ -66,7 +67,7 @@ export const TourExperiencesGallery = defineCapsule({
 
     return (
       <section className="bg-muted/30 px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <GalleryGrid className={props.className}>
             <SectionHeading
               title={props.heading ?? 'Where the trail takes you'}
@@ -94,7 +95,7 @@ export const TourExperiencesGallery = defineCapsule({
               })}
             </GalleryGridItems>
           </GalleryGrid>
-        </div>
+        </Container>
       </section>
     )
   },

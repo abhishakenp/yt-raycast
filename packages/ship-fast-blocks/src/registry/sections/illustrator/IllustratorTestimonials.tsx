@@ -10,6 +10,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * IllustratorTestimonials — a client testimonials wall for an illustrator /
@@ -81,7 +82,7 @@ export const IllustratorTestimonials = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <TestimonialGrid eyebrow={eyebrow} heading={heading}>
             {items.map((t) => {
               const __iv__ = t as {
@@ -111,7 +112,7 @@ export const IllustratorTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

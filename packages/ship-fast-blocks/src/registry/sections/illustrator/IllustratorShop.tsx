@@ -11,6 +11,7 @@ import {
   ProductCardTitle,
 } from '#/section-kit/ProductCard.tsx'
 import { ShopGrid, ShopCard } from '#/section-kit/ShopGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -132,7 +133,7 @@ export const IllustratorShop = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
             <p className="mb-2 text-sm font-medium uppercase tracking-wider text-chart-2">
               {eyebrow}
@@ -202,7 +203,7 @@ export const IllustratorShop = defineCapsule({
               <ArrowRight className="size-4" />
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

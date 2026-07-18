@@ -2,11 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarNav,
   NavbarNavLink,
@@ -28,7 +28,7 @@ import { publicationLakebed } from '../blog/publication-lakebed.ts'
  * affordance on the left and a filled Lakebed "Subscribe" button plus a Shoo
  * profile dropdown on the right; and a dense, bordered horizontal section nav
  * beneath (Latest, World, Politics, Business, Tech, Culture, Opinion). Section
- * links route through useNavigate while search, account, subscription, and
+ * links route through route hrefs while search, account, subscription, and
  * mobile menu actions use Lakebed-backed UI. Use as the sticky site header for
  * digital newspapers, magazines, newsrooms, media brands or longform
  * publications. Renders fully with no props via baked-in "The Daily Ledger"
@@ -37,7 +37,7 @@ import { publicationLakebed } from '../blog/publication-lakebed.ts'
 export const NewsroomNavbar = defineCapsule({
   name: 'NewsroomNavbar',
   description:
-    "Refined editorial masthead bar for a digital newsroom or online magazine: a sticky, press-feeling header in three tiers — a thin top utility strip with today's date and a live 'BREAKING' ticker; a prominent center-stage serif wordmark row flanked by command article search, a Shoo profile dropdown, and a filled Lakebed subscribe button; a Sheet mobile menu; and a dense bordered horizontal section nav beneath (Latest, World, Politics, Business, Tech, Culture, Opinion). Section and article links route through useNavigate while search, account, and subscription actions use Lakebed-backed UI. Use as the sticky site header for digital newspapers, magazines, newsrooms, media brands or longform publications.",
+    "Refined editorial masthead bar for a digital newsroom or online magazine: a sticky, press-feeling header in three tiers — a thin top utility strip with today's date and a live 'BREAKING' ticker; a prominent center-stage serif wordmark row flanked by command article search, a Shoo profile dropdown, and a filled Lakebed subscribe button; a Sheet mobile menu; and a dense bordered horizontal section nav beneath (Latest, World, Politics, Business, Tech, Culture, Opinion). Section and article links route through route hrefs while search, account, and subscription actions use Lakebed-backed UI. Use as the sticky site header for digital newspapers, magazines, newsrooms, media brands or longform publications.",
   props: z.object({
     /** Publication / masthead wordmark rendered in a prominent serif. */
     brand: z.string().optional(),
@@ -55,7 +55,6 @@ export const NewsroomNavbar = defineCapsule({
   }),
   lakebed: publicationLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'The Daily Ledger'
     const date = props.date ?? 'Sunday, June 22, 2026'
     const breaking =
@@ -97,13 +96,12 @@ export const NewsroomNavbar = defineCapsule({
                   <span className="size-1.5 animate-pulse rounded-full bg-primary-foreground" />
                   Breaking
                 </span>
-                <button
-                  type="button"
-                  onClick={() => go(breaking)}
+                <NavbarRouteLink
+                  href={breaking}
                   className="truncate text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {breaking}
-                </button>
+                </NavbarRouteLink>
               </div>
             </div>
           </Container>
@@ -138,17 +136,14 @@ export const NewsroomNavbar = defineCapsule({
             </PublicationSearchButton>
           </div>
 
-          <NavbarBrand asChild>
-            <button
-              type="button"
-              onClick={() => go(sections[0])}
-              className="justify-self-center text-center font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
-            >
-              <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-                <LogoImage className="mr-2 size-7 align-middle" />
-                <LogoLabel />
-              </BrandLogo>
-            </button>
+          <NavbarBrand
+            href={sections[0]}
+            className="justify-self-center text-center font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+          >
+            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+              <LogoImage className="mr-2 size-7 align-middle" />
+              <LogoLabel />
+            </BrandLogo>
           </NavbarBrand>
 
           <NavbarActions className="justify-end gap-2 sm:gap-4">
@@ -173,7 +168,7 @@ export const NewsroomNavbar = defineCapsule({
               {sections.map((label, i) => (
                 <NavbarNavLink
                   key={label}
-                  onClick={() => go(label)}
+                  href={label}
                   className={cn(
                     'shrink-0 rounded-sm px-3 py-1.5 uppercase tracking-wide hover:bg-muted',
                     i === 0

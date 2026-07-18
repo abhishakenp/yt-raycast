@@ -8,6 +8,7 @@ import {
   FaqItem,
   FaqQuestion,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * IllustratorFaq — a narrow, centered FAQ list for an illustrator /
@@ -67,7 +68,7 @@ export const IllustratorFaq = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl">
+        <Container size="sm">
           <div className="mb-16 text-center">
             <p className="mb-2 text-sm font-medium uppercase tracking-wider text-chart-3">
               {eyebrow}
@@ -97,7 +98,7 @@ export const IllustratorFaq = defineCapsule({
               ))}
             </dl>
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

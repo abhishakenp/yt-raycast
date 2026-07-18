@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -36,7 +35,7 @@ const brandMark = (
 export const PetVeterinaryNavbar = defineCapsule({
   name: 'PetVeterinaryNavbar',
   description:
-    "Warm, caring navigation header for a veterinary clinic / pet-healthcare site, composing the shared SiteNav kit composite. Renders a friendly paw-glyph brand mark in a rounded primary tile, the clinic wordmark, a desktop link row (Services, Pricing, Our Team, Reviews, Contact), an optional click-to-call phone number, and a filled primary 'Book Appointment' CTA — with a real mobile drawer on small screens. All links and the CTA route via SiteNav's useNavigate wiring. Use it as the sticky site header for veterinary clinics, animal hospitals, pet healthcare practices, vet offices, or emergency animal care.",
+    "Warm, caring navigation header for a veterinary clinic / pet-healthcare site, composing the shared SiteNav kit composite. Renders a friendly paw-glyph brand mark in a rounded primary tile, the clinic wordmark, a desktop link row (Services, Pricing, Our Team, Reviews, Contact), an optional click-to-call phone number, and a filled primary 'Book Appointment' CTA — with a real mobile drawer on small screens. All links and the CTA route via SiteNav's route hrefs wiring. Use it as the sticky site header for veterinary clinics, animal hospitals, pet healthcare practices, vet offices, or emergency animal care.",
   props: z.object({
     /** Clinic / brand name shown beside the paw mark. */
     brand: z.string().optional(),
@@ -61,26 +60,19 @@ export const PetVeterinaryNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const phone = props.phone ?? '(555) 123-4567'
     const homeTarget = props.homeTarget ?? nav[0]
-    const go = useNavigate()
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            {brandMark}
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="font-semibold" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          {brandMark}
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="font-semibold" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -97,7 +89,7 @@ export const PetVeterinaryNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {cta}
           </NavbarCta>

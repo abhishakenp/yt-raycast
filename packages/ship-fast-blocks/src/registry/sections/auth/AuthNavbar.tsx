@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -21,11 +20,11 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
 /**
  * AuthNavbar — sticky site header for Authly, a developer authentication-as-a-service
  * product (think Clerk / Auth0). Thin configuration over the shared `SiteNav`
- * composite: a sharp sans wordmark beside an inline keyhole / shield line mark,
- * centered nav links on desktop (Product, Docs, Pricing, Customers), and a
- * high-contrast "Start Free" CTA that routes to sign-up. Use as the header for
- * auth platforms, identity APIs, login SDKs, or any developer-first SaaS where
- * getting started fast matters. Renders fully with no props.
+ * composite: a keyhole mark set in a filled primary tile beside a sharp sans
+ * wordmark, centered nav links on desktop (Product, Docs, Pricing, Customers),
+ * and search / account / menu actions on the right. The bar reads as frosted
+ * glass over the page. Use as the header for auth platforms, identity APIs,
+ * login SDKs, or any developer-first SaaS. Renders fully with no props.
  */
 function KeyholeMark({ className }: { className?: string }) {
   return (
@@ -48,7 +47,7 @@ function KeyholeMark({ className }: { className?: string }) {
 export const AuthNavbar = defineCapsule({
   name: 'AuthNavbar',
   description:
-    "Sticky developer-auth product header (Authly, an authentication-as-a-service like Clerk / Auth0) with a sharp wordmark, centered desktop nav links (Product, Docs, Pricing, Customers), command plan search, Shoo account dropdown, selected-plan badge, a high-contrast fullstack 'Start Free' CTA, and a real mobile drawer. Navigation routes through useNavigate; auth/search/conversion state is shared through Lakebed. Use as the header for auth platforms, identity APIs, login SDKs, or any developer-first SaaS landing page.",
+    'Sticky developer-auth product header (Authly, an authentication-as-a-service like Clerk / Auth0) with a keyhole brand tile, a sharp wordmark, centered desktop nav links (Product, Docs, Pricing, Customers), command plan search, Shoo account dropdown, and a real mobile drawer, all on a frosted-glass bar. Navigation routes through route hrefs; auth/search/conversion state is shared through Lakebed. Use as the header for auth platforms, identity APIs, login SDKs, or any developer-first SaaS landing page.',
   props: z.object({
     /** Product / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -64,7 +63,6 @@ export const AuthNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Product', 'Docs', 'Pricing', 'Customers']
@@ -74,49 +72,55 @@ export const AuthNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="responsive"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-border/70 bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
         rowClassName="min-w-0 gap-3"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(props.homeTarget ?? 'Home')}
-            className="min-w-0 shrink items-center gap-3"
-          >
-            <BrandLogo brand={brand} className="min-w-0 flex-row">
-              <LogoImage
-                className="size-7"
-                fallback={
-                  <KeyholeMark className="size-7 shrink-0 text-primary" />
-                }
-              />
-              <LogoLabel className="hidden truncate text-lg font-semibold tracking-tight text-foreground sm:inline md:text-xl" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={props.homeTarget ?? 'Home'}
+          className="group min-w-0 shrink items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <BrandLogo brand={brand} className="min-w-0 flex-row gap-2.5">
+            <LogoImage
+              className="size-8 rounded-lg"
+              fallback={
+                <span className="inline-grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm shadow-primary/30 transition-transform group-hover:scale-105 motion-reduce:transform-none">
+                  <KeyholeMark className="size-4.5" />
+                </span>
+              }
+            />
+            <LogoLabel className="hidden truncate text-lg font-semibold tracking-tight text-foreground sm:inline md:text-xl" />
+          </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-1">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="shrink-0 gap-2 sm:gap-3">
+        <NavbarActions className="shrink-0 gap-1.5 sm:gap-2">
           <SaasSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            buttonClassName="hidden rounded-full border border-transparent p-2.5 text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
           />
           <SaasAccountButton
             lakebed={lakebed}
-            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+            buttonClassName="rounded-full border border-transparent p-2.5 text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
           <SaasMobileMenu
             brand={brand}
             nav={nav}
             homeTarget={props.homeTarget ?? 'Home'}
-            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            buttonClassName="rounded-full border border-transparent p-2.5 text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:hidden"
           />
         </NavbarActions>
       </SiteNav>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,14 +18,14 @@ import {
  * contractor site. A backdrop-blurred, border-bottomed header pinned to the
  * top: a hard-hat logo tile + brand name on the left, horizontal nav links in
  * the center, and a phone link plus a 'Get a Quote' CTA on the right (desktop).
- * Links and CTA route through useNavigate so labels can drive page-switching.
+ * Links and CTA route through route hrefs so labels can drive page-switching.
  * Use as the sticky site header for construction firms, contractors, builders,
  * or trades businesses.
  */
 export const ConstructionNavbar = defineCapsule({
   name: 'ConstructionNavbar',
   description:
-    "Sticky top navigation bar for a construction / general contractor site: backdrop-blurred, border-bottomed header with a hard-hat logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a 'Get a Quote' CTA on the right (desktop). Links and CTA route through useNavigate for page-switching. Use as the sticky site header for construction firms, contractors, builders, or trades businesses.",
+    "Sticky top navigation bar for a construction / general contractor site: backdrop-blurred, border-bottomed header with a hard-hat logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a 'Get a Quote' CTA on the right (desktop). Links and CTA route through route hrefs for page-switching. Use as the sticky site header for construction firms, contractors, builders, or trades businesses.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -35,7 +34,6 @@ export const ConstructionNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'BuildRight'
     const nav = props.nav?.length
       ? props.nav
@@ -81,29 +79,26 @@ export const ConstructionNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<LogoMark className="size-8" tone="foreground" />}
-              />
-              <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<LogoMark className="size-8" tone="foreground" />}
+            />
+            <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <button
-            type="button"
-            onClick={() => go(phone)}
+          <a
+            href={`tel:${phone.replace(/[^\d+]/g, '')}`}
             className="hidden items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:flex"
           >
             <svg
@@ -120,12 +115,8 @@ export const ConstructionNavbar = defineCapsule({
               <path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
             {phone}
-          </button>
-          <NavbarCta
-            variant="dark"
-            onClick={() => go(ctaLabel)}
-            className="px-5 py-2.5"
-          >
+          </a>
+          <NavbarCta variant="dark" href={ctaLabel} className="px-5 py-2.5">
             {ctaLabel}
           </NavbarCta>
           <MobileNavDrawer

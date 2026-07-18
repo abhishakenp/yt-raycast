@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -20,7 +19,7 @@ import {
  * of nav links in the center, and a pill-shaped primary CTA on the right
  * (desktop), with a hamburger menu button on mobile. Calm, organic and premium
  * on a warm stone canvas with a sage-green accent. Every link and the CTA route
- * through useNavigate so labels can drive page-switching. Use as the sticky site
+ * through route hrefs so labels can drive page-switching. Use as the sticky site
  * header for landscapers, lawn-care and yard-maintenance services, garden
  * designers, hardscaping/patio contractors or grounds-keeping companies. Renders
  * fully with no props via baked-in "Earth & Edge" defaults.
@@ -28,7 +27,7 @@ import {
 export const LandscapingNavbar = defineCapsule({
   name: 'LandscapingNavbar',
   description:
-    'Sticky translucent top navigation bar for a landscaping / outdoor-design company: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand mark + wordmark on the left, horizontal nav links in the center, and a pill-shaped primary CTA on the right (desktop), plus a hamburger menu on mobile. Calm, organic and premium on a warm stone canvas with a sage-green accent. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for landscapers, lawn-care and yard-maintenance services, garden designers, hardscaping/patio contractors, irrigation specialists or grounds-keeping companies.',
+    'Sticky translucent top navigation bar for a landscaping / outdoor-design company: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand mark + wordmark on the left, horizontal nav links in the center, and a pill-shaped primary CTA on the right (desktop), plus a hamburger menu on mobile. Calm, organic and premium on a warm stone canvas with a sage-green accent. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for landscapers, lawn-care and yard-maintenance services, garden designers, hardscaping/patio contractors, irrigation specialists or grounds-keeping companies.',
   props: z.object({
     /** Brand / company name shown beside the mark. */
     brand: z.string().optional(),
@@ -43,7 +42,6 @@ export const LandscapingNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Earth & Edge'
     const nav = props.nav?.length
       ? props.nav
@@ -74,24 +72,18 @@ export const LandscapingNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
             <NavbarNavLink
               key={label}
-              onClick={() => go(label)}
+              href={label}
               className="hover:text-primary"
             >
               {label}
@@ -99,7 +91,7 @@ export const LandscapingNavbar = defineCapsule({
           ))}
           <NavbarCta
             variant="primary-pill"
-            onClick={() => go(contactTarget)}
+            href={contactTarget}
             className="px-5 py-2.5"
           >
             {cta}

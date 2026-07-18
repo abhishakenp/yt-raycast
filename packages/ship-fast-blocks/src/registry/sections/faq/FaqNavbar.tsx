@@ -2,11 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
@@ -20,14 +20,14 @@ import {
  * left, centered text nav links (desktop), and a "Contact Support" text link plus
  * a solid primary "Sign In" button on the right, with a hamburger toggle on
  * mobile. Backdrop-blurred translucent background, bottom border. Every item routes
- * through useNavigate so labels can drive page-switching. Use as the site header
+ * through route hrefs so labels can drive page-switching. Use as the site header
  * for SaaS knowledge bases, help centers, documentation landings, or support pages.
  * Renders fully with no props via baked-in "FlowSync" defaults.
  */
 export const FaqNavbar = defineCapsule({
   name: 'FaqNavbar',
   description:
-    "Sticky top navigation bar for a help-center / FAQ / support page with a clean, light, documentation aesthetic: brand logo tile + name on the left, centered text nav links on desktop, and a 'Contact Support' text link plus a solid primary 'Sign In' button on the right, with a hamburger toggle on mobile. Backdrop-blurred translucent background with a bottom border. Links route through useNavigate for page-switching. Use as the site header for SaaS knowledge bases, help centers, documentation landings, or support pages.",
+    "Sticky top navigation bar for a help-center / FAQ / support page with a clean, light, documentation aesthetic: brand logo tile + name on the left, centered text nav links on desktop, and a 'Contact Support' text link plus a solid primary 'Sign In' button on the right, with a hamburger toggle on mobile. Backdrop-blurred translucent background with a bottom border. Links route through route hrefs for page-switching. Use as the site header for SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
     /** Brand / product name shown in the navbar. */
     brand: z.string().optional(),
@@ -42,7 +42,6 @@ export const FaqNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'FlowSync'
     const nav = props.nav?.length
       ? props.nav
@@ -81,31 +80,24 @@ export const FaqNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel className="text-lg font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel className="text-lg font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions className="gap-4">
-          <button
-            type="button"
-            onClick={() => go(contactSupport)}
+          <NavbarRouteLink
+            href={contactSupport}
             className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
             <svg
@@ -122,12 +114,8 @@ export const FaqNavbar = defineCapsule({
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             {contactSupport}
-          </button>
-          <NavbarCta
-            variant="primary"
-            onClick={() => go(signIn)}
-            className="px-4 py-2"
-          >
+          </NavbarRouteLink>
+          <NavbarCta variant="primary" href={signIn} className="px-4 py-2">
             {signIn}
           </NavbarCta>
           <MobileNavDrawer

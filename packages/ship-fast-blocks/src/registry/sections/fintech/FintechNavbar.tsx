@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,7 +18,7 @@ import {
  * inline shield brand mark beside the product wordmark, a horizontal row of
  * nav links on desktop, a primary "Get Started" pill CTA on the right, and a
  * real mobile drawer (Sheet) on small screens. Every link and CTA routes
- * through useNavigate so labels drive page-switching. Use as the header for
+ * through route hrefs so labels drive page-switching. Use as the header for
  * banking apps, digital wallets, payments products, lending platforms, or any
  * finance startup landing page. Renders fully with no props via baked-in
  * "Vault" defaults.
@@ -45,7 +44,7 @@ function ShieldMark({ className }: { className?: string }) {
 export const FintechNavbar = defineCapsule({
   name: 'FintechNavbar',
   description:
-    "Sticky fintech / neobank site header built on the shared SiteNav composite: an inline shield brand mark + product wordmark, horizontal desktop nav links, a primary 'Get Started' pill CTA, and a real mobile drawer. All links and CTA route through useNavigate for page-switching. Use as the header for banking apps, digital wallets, payment products, lending platforms, or finance startup landing pages.",
+    "Sticky fintech / neobank site header built on the shared SiteNav composite: an inline shield brand mark + product wordmark, horizontal desktop nav links, a primary 'Get Started' pill CTA, and a real mobile drawer. All links and CTA route through route hrefs for page-switching. Use as the header for banking apps, digital wallets, payment products, lending platforms, or finance startup landing pages.",
   props: z.object({
     /** Brand / product name shown beside the shield mark. */
     brand: z.string().optional(),
@@ -60,7 +59,6 @@ export const FintechNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Features', 'Security', 'Pricing', 'FAQ']
@@ -70,22 +68,16 @@ export const FintechNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <ShieldMark className="size-8 text-primary" />
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <ShieldMark className="size-8 text-primary" />
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -94,7 +86,7 @@ export const FintechNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

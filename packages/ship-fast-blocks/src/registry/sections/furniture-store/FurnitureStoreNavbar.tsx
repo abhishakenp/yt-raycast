@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -26,7 +25,7 @@ import {
  * horizontal set of category nav links (with a destructive-colored "Sale" link)
  * in the center, and a set of search / account / cart icon buttons (cart shows a
  * count badge) plus a mobile hamburger on the right. Links and icon buttons route
- * through useNavigate for page-switching. Use as the sticky site header for
+ * through route hrefs for page-switching. Use as the sticky site header for
  * furniture stores, home-decor or interiors brands, homewares retailers, or any
  * warm boutique-retail landing page. Renders fully with no props via baked-in
  * "Haven & Home" defaults.
@@ -34,7 +33,7 @@ import {
 export const FurnitureStoreNavbar = defineCapsule({
   name: 'FurnitureStoreNavbar',
   description:
-    "Sticky backdrop-blurred top navigation bar for a warm minimal furniture / home-decor e-commerce site: bordered-bottom header pinned to the top with a house-glyph logo tile + store name on the left, horizontal category nav links (with a destructive-colored 'Sale' link) in the center, and search / account / cart icon buttons (cart shows a count badge) plus a mobile hamburger on the right. Links and icon buttons route through useNavigate for page-switching. Use as the sticky site header for furniture stores, home-decor or interiors brands, homewares retailers, or any warm boutique-retail landing page.",
+    "Sticky backdrop-blurred top navigation bar for a warm minimal furniture / home-decor e-commerce site: bordered-bottom header pinned to the top with a house-glyph logo tile + store name on the left, horizontal category nav links (with a destructive-colored 'Sale' link) in the center, and search / account / cart icon buttons (cart shows a count badge) plus a mobile hamburger on the right. Links and icon buttons route through route hrefs for page-switching. Use as the sticky site header for furniture stores, home-decor or interiors brands, homewares retailers, or any warm boutique-retail landing page.",
   props: z.object({
     /** Brand / store name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -46,7 +45,6 @@ export const FurnitureStoreNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Haven & Home'
     const nav = props.nav?.length
       ? props.nav
@@ -70,27 +68,24 @@ export const FurnitureStoreNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(brand)}
-            className="gap-2"
-            aria-label={`${brand} - Return to homepage`}
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<LogoMark className="size-8 text-muted-foreground" />}
-              />
-              <LogoLabel className="text-xl font-semibold tracking-tight lg:text-2xl" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={brand}
+          className="gap-2"
+          aria-label={`${brand} - Return to homepage`}
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<LogoMark className="size-8 text-muted-foreground" />}
+            />
+            <LogoLabel className="text-xl font-semibold tracking-tight lg:text-2xl" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
             <NavbarNavLink
               key={label}
-              onClick={() => go(label)}
+              href={label}
               className={cn(
                 label.toLowerCase() === 'sale'
                   ? 'text-destructive hover:text-destructive/80'

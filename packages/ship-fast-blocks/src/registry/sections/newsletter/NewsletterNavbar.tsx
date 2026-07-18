@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -25,14 +24,14 @@ import {
  * links with the final label promoted to an outlined "Subscribe" pill on the
  * right; on mobile a hamburger button collapses to the first nav route. Warm,
  * calm, literary aesthetic on a light paper-toned surface. Every item routes
- * through useNavigate for page-switching. Use as the sticky site header for
+ * through route hrefs for page-switching. Use as the sticky site header for
  * newsletters, Substack-style publications, blogs, essayists, or content
  * creators. Renders fully with no props via baked-in defaults.
  */
 export const NewsletterNavbar = defineCapsule({
   name: 'NewsletterNavbar',
   description:
-    "Sticky, backdrop-blurred top navigation bar for an editorial newsletter / subscription site: a serif initial-mark logo tile + publication name on the left, quiet text nav links in the center, and the final nav label promoted to an outlined 'Subscribe' pill on the right (desktop); a hamburger button on mobile. Warm, calm, literary aesthetic on a light paper-toned surface. Items route through useNavigate for page-switching. Use as the sticky site header for newsletters, Substack-style publications, blogs, essayists, digests, or content creators.",
+    "Sticky, backdrop-blurred top navigation bar for an editorial newsletter / subscription site: a serif initial-mark logo tile + publication name on the left, quiet text nav links in the center, and the final nav label promoted to an outlined 'Subscribe' pill on the right (desktop); a hamburger button on mobile. Warm, calm, literary aesthetic on a light paper-toned surface. Items route through route hrefs for page-switching. Use as the sticky site header for newsletters, Substack-style publications, blogs, essayists, digests, or content creators.",
   props: z.object({
     /** Brand / publication name shown beside the serif logo mark. */
     brand: z.string().optional(),
@@ -42,7 +41,6 @@ export const NewsletterNavbar = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'The Quiet Observer'
     const nav = props.nav?.length
       ? props.nav
@@ -67,22 +65,16 @@ export const NewsletterNavbar = defineCapsule({
         className={cn('bg-background/80', props.className)}
         containerClassName="max-w-6xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(brand)}
-            className="group flex items-center gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8 text-lg" />} />
-              <LogoLabel className="font-serif text-xl font-medium tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={brand} className="group flex items-center gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8 text-lg" />} />
+            <LogoLabel className="font-serif text-xl font-medium tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

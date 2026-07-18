@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,14 +26,14 @@ import {
  * wordmark on the left, a horizontal set of muted nav links in the center
  * (desktop), command search, Shoo account dropdown, shared Lakebed cart drawer,
  * an outlined "book a table" CTA on the right, and a real mobile drawer. Brand,
- * links, and CTA route through useNavigate so labels can drive page-switching.
+ * links, and CTA route through route hrefs so labels can drive page-switching.
  * Use as the sticky site header for cocktail bars, nightclubs, lounges,
  * speakeasies, or any dark, premium after-dark venue page.
  */
 export const BarNightclubNavbar = defineCapsule({
   name: 'BarNightclubNavbar',
   description:
-    "Fixed translucent top navigation bar for a moody cocktail-bar / nightclub site: backdrop-blurred, hairline border-bottomed header pinned to the top with a light-weight wide letter-spaced uppercase brand wordmark on the left, horizontal muted nav links in the center (desktop), command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, an outlined 'book a table' CTA on the right, and a real mobile drawer. Brand, links, and CTA route through useNavigate for page-switching. Use as the sticky site header for cocktail bars, nightclubs, lounges, speakeasies, or any dark premium after-dark venue page.",
+    "Fixed translucent top navigation bar for a moody cocktail-bar / nightclub site: backdrop-blurred, hairline border-bottomed header pinned to the top with a light-weight wide letter-spaced uppercase brand wordmark on the left, horizontal muted nav links in the center (desktop), command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, an outlined 'book a table' CTA on the right, and a real mobile drawer. Brand, links, and CTA route through route hrefs for page-switching. Use as the sticky site header for cocktail bars, nightclubs, lounges, speakeasies, or any dark premium after-dark venue page.",
   props: z.object({
     /** Bar / venue name shown as the uppercase wordmark. */
     brand: z.string().optional(),
@@ -52,7 +51,6 @@ export const BarNightclubNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'NOIR'
     const nav = props.nav?.length
       ? props.nav
@@ -68,22 +66,19 @@ export const BarNightclubNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="text-2xl font-light uppercase tracking-[0.2em] text-foreground"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-              <LogoImage className="mr-2 size-7 align-middle" />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="text-2xl font-light uppercase tracking-[0.2em] text-foreground"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+            <LogoImage className="mr-2 size-7 align-middle" />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="[&>button]:tracking-wide">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -105,7 +100,7 @@ export const BarNightclubNavbar = defineCapsule({
           />
           <NavbarCta
             variant="outline"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="hidden border-foreground px-6 py-2 tracking-wide hover:bg-foreground hover:text-background md:inline-flex"
           >
             {cta}

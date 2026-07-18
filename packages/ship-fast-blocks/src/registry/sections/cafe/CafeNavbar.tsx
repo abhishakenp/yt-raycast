@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -26,14 +25,14 @@ import {
  * owl brand mark + cafe name on the left, horizontal nav links in the center
  * (desktop), menu command search, Shoo account dropdown, shared Lakebed cart
  * drawer, a pill-shaped "Visit Us" CTA, and a real mobile drawer on the right.
- * Every link and the CTA route through useNavigate so labels drive
+ * Every link and the CTA route through route hrefs so labels drive
  * page-switching. Use as the sticky site header for cafes, bakeries, tea
  * houses, brunch spots, or any warm food-and-drink landing page.
  */
 export const CafeNavbar = defineCapsule({
   name: 'CafeNavbar',
   description:
-    'Fixed translucent top navigation bar for a cozy cafe / coffee shop: backdrop-blurred header with an inline owl brand mark + cafe name on the left, horizontal nav links in the center (desktop), menu command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a pill-shaped primary CTA, and a real mobile drawer on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink landing pages.',
+    'Fixed translucent top navigation bar for a cozy cafe / coffee shop: backdrop-blurred header with an inline owl brand mark + cafe name on the left, horizontal nav links in the center (desktop), menu command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a pill-shaped primary CTA, and a real mobile drawer on the right. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink landing pages.',
   props: z.object({
     /** Cafe / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -51,7 +50,6 @@ export const CafeNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Little Owl Coffee'
     const nav = props.nav?.length
       ? props.nav
@@ -78,24 +76,16 @@ export const CafeNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<OwlMark className="size-8 text-primary" />}
-              />
-              <LogoLabel className="font-serif text-xl font-medium text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<OwlMark className="size-8 text-primary" />} />
+            <LogoLabel className="font-serif text-xl font-medium text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="gap-10">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -117,7 +107,7 @@ export const CafeNavbar = defineCapsule({
           />
           <NavbarCta
             variant="dark-pill"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="hidden px-5 py-2.5 sm:inline-flex"
           >
             {ctaLabel}

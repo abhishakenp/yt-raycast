@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,14 +18,14 @@ import {
  * pinned to the top with a layered-diamond brand glyph beside the agency name on
  * the left, horizontal nav links plus a rounded pill primary CTA on the right
  * (desktop), and a hamburger menu button on mobile. The last nav item drives the
- * CTA target; every link routes through useNavigate for page-switching. Use as
+ * CTA target; every link routes through route hrefs for page-switching. Use as
  * the sticky site header for marketing / growth agencies, SEO / paid-ads shops,
  * lead-gen consultancies, or B2B SaaS growth firms. Renders fully with no props.
  */
 export const MarketingAgencyNavbar = defineCapsule({
   name: 'MarketingAgencyNavbar',
   description:
-    'Sticky translucent top navigation bar for a growth / digital marketing-agency site: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand glyph + agency name on the left, horizontal nav links and a rounded pill primary CTA on the right (desktop), and a hamburger menu button on mobile. The last nav item drives the CTA target; links route through useNavigate for page-switching. Use as the sticky site header for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
+    'Sticky translucent top navigation bar for a growth / digital marketing-agency site: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand glyph + agency name on the left, horizontal nav links and a rounded pill primary CTA on the right (desktop), and a hamburger menu button on mobile. The last nav item drives the CTA target; links route through route hrefs for page-switching. Use as the sticky site header for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
   props: z.object({
     /** Agency / brand name shown beside the logo glyph. */
     brand: z.string().optional(),
@@ -35,7 +34,6 @@ export const MarketingAgencyNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Nexus Growth'
     const nav = props.nav?.length
       ? props.nav
@@ -61,28 +59,22 @@ export const MarketingAgencyNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<LogoMark className="size-8 text-foreground" />}
-              />
-              <LogoLabel className="text-lg font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<LogoMark className="size-8 text-foreground" />}
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
-          <NavbarCta
-            variant="primary-pill"
-            onClick={() => go(navCta)}
-            className="px-4 py-2"
-          >
+          <NavbarCta variant="primary-pill" href={navCta} className="px-4 py-2">
             {navCta}
           </NavbarCta>
         </NavbarNav>

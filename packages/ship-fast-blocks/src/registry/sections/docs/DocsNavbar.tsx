@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -18,7 +17,7 @@ import {
  * site. Thin configuration over the shared `SiteNav` composite: a clean
  * stacked-blocks brand mark beside the product wordmark, desktop section links,
  * a "Get Started" CTA, and a real mobile drawer (Sheet) on small screens. Every
- * link routes through SiteNav's useNavigate so PageSwitch can swap pages, and
+ * link routes through SiteNav's route hrefs so PageSwitch can swap pages, and
  * nav labels match site routes. Use as the sticky header for docs homes, API
  * references, SDK guides, developer portals, or knowledge bases. Renders fully
  * with no props via baked-in "StackForge" defaults.
@@ -43,7 +42,7 @@ function StackedBlocksMark({ className }: { className?: string }) {
 export const DocsNavbar = defineCapsule({
   name: 'DocsNavbar',
   description:
-    "Sticky developer DOCUMENTATION / API-reference site header built on the shared SiteNav composite: a clean stacked-blocks brand mark + product wordmark, desktop section links, a 'Get Started' CTA, and a real mobile drawer. Links route through useNavigate for page-switching and nav labels match site routes. Use as the sticky header for docs homes, API references, SDK guides, developer portals, or knowledge bases.",
+    "Sticky developer DOCUMENTATION / API-reference site header built on the shared SiteNav composite: a clean stacked-blocks brand mark + product wordmark, desktop section links, a 'Get Started' CTA, and a real mobile drawer. Links route through route hrefs for page-switching and nav labels match site routes. Use as the sticky header for docs homes, API references, SDK guides, developer portals, or knowledge bases.",
   props: z.object({
     /** Brand / product name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -58,7 +57,6 @@ export const DocsNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Getting Started', 'API Reference', 'SDKs', 'Changelog']
@@ -68,22 +66,16 @@ export const DocsNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <StackedBlocksMark className="size-8 text-primary" />
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="text-xl font-medium text-foreground" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <StackedBlocksMark className="size-8 text-primary" />
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="text-xl font-medium text-foreground" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -92,7 +84,7 @@ export const DocsNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

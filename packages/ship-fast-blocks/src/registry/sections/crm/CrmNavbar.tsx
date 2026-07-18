@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,14 +26,14 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * bar-chart brand glyph beside the product name on the left, a horizontal set of
  * nav links in the center (desktop), and a "Sign In" text link plus a rounded
  * primary "Start Free Trial" CTA on the right. Every link routes through
- * useNavigate so labels can drive page-switching. Use as the site header for
+ * route hrefs so labels can drive page-switching. Use as the site header for
  * CRM products, sales-pipeline tools, sales-enablement or B2B SaaS marketing
  * pages. Renders fully with no props via baked-in "Pipeline Pro" defaults.
  */
 export const CrmNavbar = defineCapsule({
   name: 'CrmNavbar',
   description:
-    'Sticky translucent top navigation bar for a CRM / sales-platform SaaS site: backdrop-blurred, border-bottomed header pinned to the top with a bar-chart brand glyph + product name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped fullstack trial CTA, and a reusable Sheet mobile drawer. Nav links route through useNavigate while conversion CTAs write to shared Lakebed state. Use as the site header for CRM products, sales-pipeline tools, sales-enablement or B2B SaaS marketing pages.',
+    'Sticky translucent top navigation bar for a CRM / sales-platform SaaS site: backdrop-blurred, border-bottomed header pinned to the top with a bar-chart brand glyph + product name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped fullstack trial CTA, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state. Use as the site header for CRM products, sales-pipeline tools, sales-enablement or B2B SaaS marketing pages.',
   props: z.object({
     /** Brand / product name shown beside the logo glyph. */
     brand: z.string().optional(),
@@ -50,7 +49,6 @@ export const CrmNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Pipeline Pro'
     const nav = props.nav?.length
       ? props.nav
@@ -80,24 +78,18 @@ export const CrmNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<LogoMark className="size-8 text-primary" />}
-              />
-              <LogoLabel className="text-xl font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<LogoMark className="size-8 text-primary" />}
+            />
+            <LogoLabel className="text-xl font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

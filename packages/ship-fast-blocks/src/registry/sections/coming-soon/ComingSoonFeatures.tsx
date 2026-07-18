@@ -9,6 +9,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ComingSoonFeatures — product capabilities grid for a "launching soon" / waitlist
@@ -81,7 +82,7 @@ export const ComingSoonFeatures = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <div className="mb-20 text-center">
             <h2 className="mb-4 text-2xl font-light text-foreground sm:text-3xl lg:text-4xl">
               {heading}
@@ -111,7 +112,7 @@ export const ComingSoonFeatures = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

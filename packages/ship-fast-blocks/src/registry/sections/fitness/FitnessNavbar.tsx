@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -24,14 +23,14 @@ import {
  * monogram logo tile (first letter of the brand) + short brand wordmark on the left,
  * horizontal muted-to-foreground nav links on the right (desktop), a filled primary
  * pill CTA built from the LAST nav item (e.g. "Start Trial"), and a hamburger menu
- * button on mobile. Every link and CTA routes through useNavigate so PageSwitch can
+ * button on mobile. Every link and CTA routes through route hrefs so PageSwitch can
  * swap pages. Use as the sticky site header for gyms, fitness studios, CrossFit
  * boxes, yoga / pilates / boxing / spin studios or personal-training businesses.
  */
 export const FitnessNavbar = defineCapsule({
   name: 'FitnessNavbar',
   description:
-    "Sticky translucent top navigation bar for a gym / fitness-studio site: a backdrop-blurred, border-bottomed header with a square monogram logo tile (first letter of the brand) + short brand wordmark on the left, horizontal muted-to-foreground nav links on the right (desktop), a filled primary pill CTA built from the LAST nav item (e.g. 'Start Trial'), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing, spin / cycle studios, or personal-training businesses.",
+    "Sticky translucent top navigation bar for a gym / fitness-studio site: a backdrop-blurred, border-bottomed header with a square monogram logo tile (first letter of the brand) + short brand wordmark on the left, horizontal muted-to-foreground nav links on the right (desktop), a filled primary pill CTA built from the LAST nav item (e.g. 'Start Trial'), and a hamburger menu button on mobile. All links and CTAs route through route hrefs. Use as the sticky site header for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing, spin / cycle studios, or personal-training businesses.",
   props: z.object({
     /** Brand / studio name; first letter forms the monogram, first word is shown. */
     brand: z.string().optional(),
@@ -41,7 +40,6 @@ export const FitnessNavbar = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Base Fitness Studio'
     const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? 'BASE'
     const nav = props.nav?.length
@@ -54,27 +52,25 @@ export const FitnessNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/90', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo brand={brandShort}>
-              <LogoImage
-                fallback={
-                  <span
-                    className="grid size-8 place-items-center rounded-sm bg-foreground text-sm font-bold text-background"
-                    aria-hidden="true"
-                  >
-                    {brandShort.charAt(0)}
-                  </span>
-                }
-              />
-              <LogoLabel className="text-lg font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <BrandLogo brand={brandShort}>
+            <LogoImage
+              fallback={
+                <span
+                  className="grid size-8 place-items-center rounded-sm bg-foreground text-sm font-bold text-background"
+                  aria-hidden="true"
+                >
+                  {brandShort.charAt(0)}
+                </span>
+              }
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="[&>button]:font-normal">
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

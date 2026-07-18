@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -18,7 +17,7 @@ import {
  * A backdrop-blurred, border-bottomed header pinned to the top of the viewport
  * with a shield logo tile + brand name on the left, horizontal nav links in the
  * center, and a phone link plus a primary "Get a Quote" CTA on the right
- * (desktop). Every link and CTA routes through useNavigate so labels can drive
+ * (desktop). Every link and CTA routes through route hrefs so labels can drive
  * page-switching. Clean, trustworthy, corporate aesthetic on a light canvas
  * with a single brand-blue accent. Use as the sticky site header for insurance
  * carriers, insurtech startups, brokers, or financial-protection products.
@@ -27,7 +26,7 @@ import {
 export const InsuranceNavbar = defineCapsule({
   name: 'InsuranceNavbar',
   description:
-    "Sticky top navigation bar for an insurance / fintech site: backdrop-blurred, border-bottomed header with a shield logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a primary 'Get a Quote' CTA on the right (desktop). Links and CTA route through useNavigate for page-switching. Clean, trustworthy corporate aesthetic on a light canvas with a single brand-blue accent. Use as the sticky site header for insurance carriers, insurtech startups, brokers, or financial-protection products.",
+    "Sticky top navigation bar for an insurance / fintech site: backdrop-blurred, border-bottomed header with a shield logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a primary 'Get a Quote' CTA on the right (desktop). Links and CTA route through route hrefs for page-switching. Clean, trustworthy corporate aesthetic on a light canvas with a single brand-blue accent. Use as the sticky site header for insurance carriers, insurtech startups, brokers, or financial-protection products.",
   props: z.object({
     /** Brand / company name shown beside the shield logo. */
     brand: z.string().optional(),
@@ -40,7 +39,6 @@ export const InsuranceNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'SecureLife'
     const nav = props.nav?.length
       ? props.nav
@@ -94,37 +92,30 @@ export const InsuranceNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(brand)} className="gap-2">
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<Shield className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={brand} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<Shield className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <button
-            type="button"
-            onClick={() => go(phone)}
+          <a
+            href={`tel:${phone.replace(/[^\d+]/g, '')}`}
             className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
           >
             <Phone className="size-4" />
             {phone}
-          </button>
-          <NavbarCta
-            variant="primary"
-            onClick={() => go(ctaLabel)}
-            className="px-4 py-2"
-          >
+          </a>
+          <NavbarCta variant="primary" href={ctaLabel} className="px-4 py-2">
             {ctaLabel}
           </NavbarCta>
         </NavbarActions>

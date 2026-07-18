@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,7 +26,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * pinned to the top of the viewport: a shield-glyph logo beside the brand name
  * on the left, a horizontal set of nav links in the center (desktop), and a
  * "Contact Sales" text link plus a solid primary "Get Demo" CTA on the right.
- * Every nav item, the contact link and the CTA route through useNavigate so
+ * Every nav item, the contact link and the CTA route through route hrefs so
  * labels can drive page-switching. Use as the sticky site header for
  * cybersecurity vendors, SOC/MDR/XDR/SIEM providers, zero-trust, cloud-security,
  * compliance-automation, or any authoritative B2B security SaaS landing page.
@@ -36,7 +35,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
 export const CybersecurityNavbar = defineCapsule({
   name: 'CybersecurityNavbar',
   description:
-    'Sticky translucent top navigation bar for an enterprise cybersecurity / security-platform site: backdrop-blurred, border-bottomed header pinned to the top with a shield-glyph logo + brand name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped contact/demo CTAs, and a reusable Sheet mobile drawer. Nav links route through useNavigate while conversion CTAs write to shared Lakebed state.',
+    'Sticky translucent top navigation bar for an enterprise cybersecurity / security-platform site: backdrop-blurred, border-bottomed header pinned to the top with a shield-glyph logo + brand name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped contact/demo CTAs, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / product name shown beside the shield logo. */
     brand: z.string().optional(),
@@ -52,7 +51,6 @@ export const CybersecurityNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'SentinelGuard'
     const nav = props.nav?.length
       ? props.nav
@@ -82,20 +80,18 @@ export const CybersecurityNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<ShieldMark className="size-8 text-foreground" />}
-              />
-              <LogoLabel className="text-xl font-bold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<ShieldMark className="size-8 text-foreground" />}
+            />
+            <LogoLabel className="text-xl font-bold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="[&>button]:font-normal">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

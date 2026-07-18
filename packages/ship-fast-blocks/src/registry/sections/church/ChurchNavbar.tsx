@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,13 +18,13 @@ import {
  * site. A backdrop-blurred, border-bottomed header pinned to the top with a star
  * brand mark + church name on the left, horizontal nav links and a pill-shaped
  * 'Give Today' CTA on the right (desktop), and a hamburger menu button on mobile.
- * CTA route through useNavigate so labels can drive page-switching. Use as the sticky
+ * CTA route through route hrefs so labels can drive page-switching. Use as the sticky
  * site header for churches, parishes, worship centers, ministries, or religious nonprofits.
  */
 export const ChurchNavbar = defineCapsule({
   name: 'ChurchNavbar',
   description:
-    "Fixed translucent top navigation bar for a church or faith-community site: backdrop-blurred, border-bottomed header pinned to the top with a star brand mark + church name on the left, horizontal nav links and a pill-shaped 'Give Today' CTA on the right (desktop), and a hamburger menu button on mobile. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for churches, parishes, worship centers, ministries, or religious nonprofits.",
+    "Fixed translucent top navigation bar for a church or faith-community site: backdrop-blurred, border-bottomed header pinned to the top with a star brand mark + church name on the left, horizontal nav links and a pill-shaped 'Give Today' CTA on the right (desktop), and a hamburger menu button on mobile. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for churches, parishes, worship centers, ministries, or religious nonprofits.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -35,7 +34,6 @@ export const ChurchNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Grace Community'
     const nav = props.nav?.length
       ? props.nav
@@ -57,22 +55,16 @@ export const ChurchNavbar = defineCapsule({
         className={cn('bg-background/95 backdrop-blur-sm', props.className)}
         containerClassName="px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<Star />} />
-              <LogoLabel className="text-xl font-medium tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<Star />} />
+            <LogoLabel className="text-xl font-medium tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -81,7 +73,7 @@ export const ChurchNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="primary-pill"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="hidden px-5 py-2.5 sm:inline-flex"
           >
             {ctaLabel}

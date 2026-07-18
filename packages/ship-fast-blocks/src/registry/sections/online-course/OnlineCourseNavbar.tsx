@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -33,7 +32,7 @@ const brandMark = (
  * e-learning platform. Composes the shared SiteNav kit composite to render a
  * book/open-pages brand mark, a wordmark, a desktop link row, and a single
  * solid primary "Enroll" call to action with a real mobile drawer. Brand,
- * links, and CTA all route through the kit's useNavigate so labels drive
+ * links, and CTA all route through the kit's route hrefs so labels drive
  * page-switching. Use as the site header for course platforms, e-learning
  * marketplaces, MOOCs, bootcamps, academies, or training providers. Renders
  * fully with no props via baked-in "LearnSpace" defaults.
@@ -41,7 +40,7 @@ const brandMark = (
 export const OnlineCourseNavbar = defineCapsule({
   name: 'OnlineCourseNavbar',
   description:
-    "Sticky top navigation header for an online-course / e-learning platform built on the shared SiteNav kit composite: a book/open-pages brand mark, a wordmark, a desktop link row, and a single solid primary 'Enroll' CTA with a real mobile drawer. Brand, links, and CTA all route through the kit's useNavigate for page-switching. Use as the site header for course platforms, e-learning marketplaces, MOOCs, bootcamps, academies, or training providers.",
+    "Sticky top navigation header for an online-course / e-learning platform built on the shared SiteNav kit composite: a book/open-pages brand mark, a wordmark, a desktop link row, and a single solid primary 'Enroll' CTA with a real mobile drawer. Brand, links, and CTA all route through the kit's route hrefs for page-switching. Use as the site header for course platforms, e-learning marketplaces, MOOCs, bootcamps, academies, or training providers.",
   props: z.object({
     /** Brand / platform name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -56,7 +55,6 @@ export const OnlineCourseNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'LearnSpace'
     const nav = props.nav?.length
       ? props.nav
@@ -67,22 +65,16 @@ export const OnlineCourseNavbar = defineCapsule({
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            {brandMark}
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="font-semibold tracking-tight" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          {brandMark}
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="font-semibold tracking-tight" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -91,7 +83,7 @@ export const OnlineCourseNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -71,7 +70,6 @@ export const BlogNavbar = defineCapsule({
   }),
   lakebed: publicationLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Home', 'Design', 'Engineering', 'Product', 'About']
@@ -86,26 +84,20 @@ export const BlogNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="min-w-0 gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<QuillMark className="size-8 text-primary" />}
-              />
-              <LogoLabel className="truncate text-xl font-bold tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="min-w-0 gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<QuillMark className="size-8 text-primary" />}
+            />
+            <LogoLabel className="truncate text-xl font-bold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
             <NavbarNavLink
               key={label}
-              onClick={() => go(label)}
+              href={label}
               className={cn(
                 label === homeTarget
                   ? 'text-foreground'

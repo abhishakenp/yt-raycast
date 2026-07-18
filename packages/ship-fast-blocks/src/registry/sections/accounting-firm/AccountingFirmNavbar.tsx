@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -21,7 +20,7 @@ import {
  * horizontal nav links in the center (desktop), and a filled "Schedule
  * Consultation" primary CTA plus a hamburger menu button on the right. Calm,
  * trustworthy professional-services aesthetic. Every nav link and the CTA route
- * through useNavigate so labels can drive page-switching. Use as the sticky site
+ * through route hrefs so labels can drive page-switching. Use as the sticky site
  * header for accounting firms, CPA practices, tax-preparation services,
  * bookkeeping/payroll providers, audit/assurance firms, or financial advisory
  * practices. Renders fully with no props via baked-in "Northridge" defaults.
@@ -29,7 +28,7 @@ import {
 export const AccountingFirmNavbar = defineCapsule({
   name: 'AccountingFirmNavbar',
   description:
-    'Sticky translucent top navigation bar for a CPA / accounting-firm site: backdrop-blurred, border-bottomed header pinned to the top with a neutral brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), and a filled Schedule-Consultation primary CTA plus a hamburger menu button on the right. Calm, trustworthy professional-services look; links and CTA route through useNavigate for page-switching. Use as the sticky site header for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.',
+    'Sticky translucent top navigation bar for a CPA / accounting-firm site: backdrop-blurred, border-bottomed header pinned to the top with a neutral brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), and a filled Schedule-Consultation primary CTA plus a hamburger menu button on the right. Calm, trustworthy professional-services look; links and CTA route through route hrefs for page-switching. Use as the sticky site header for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.',
   props: z.object({
     /** Firm / brand name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -40,7 +39,6 @@ export const AccountingFirmNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Northridge'
     const nav = props.nav?.length
       ? props.nav
@@ -65,18 +63,16 @@ export const AccountingFirmNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
-              <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
+            <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -85,7 +81,7 @@ export const AccountingFirmNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="primary"
-            onClick={() => go(cta)}
+            href={cta}
             className="hidden rounded-md px-5 py-2.5 sm:inline-flex"
           >
             {cta}

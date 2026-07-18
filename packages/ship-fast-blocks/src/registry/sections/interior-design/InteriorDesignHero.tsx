@@ -12,6 +12,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * InteriorDesignHero — refined split hero band for an upscale interior-design /
@@ -75,7 +76,7 @@ export const InteriorDesignHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="space-y-8">
               <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -160,7 +161,7 @@ export const InteriorDesignHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

@@ -9,6 +9,7 @@ import {
   StepTimelineGrid,
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * InteriorDesignProcess — numbered process band on a muted surface for an
@@ -69,7 +70,7 @@ export const InteriorDesignProcess = defineCapsule({
         variant="muted"
         className={cn('px-4 py-20 sm:px-6 md:py-28 lg:px-8', props.className)}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <StepTimelineHeader>
             <p className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -96,7 +97,7 @@ export const InteriorDesignProcess = defineCapsule({
               </StepItem>
             ))}
           </StepTimelineGrid>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

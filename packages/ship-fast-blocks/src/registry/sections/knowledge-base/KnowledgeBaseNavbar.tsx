@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -10,6 +9,7 @@ import {
   NavbarBrand,
   NavbarNav,
   NavbarNavLink,
+  NavbarRouteLink,
   SiteNav,
 } from '#/section-kit/index.ts'
 
@@ -20,14 +20,14 @@ import {
  * the left, a horizontal set of nav links in the center, and a compact muted
  * "Search" pill with a ⌘K hint on the right (desktop), plus a hamburger menu on
  * mobile. Calm, light, editorial documentation aesthetic. Brand button, nav
- * links and the search pill all route through useNavigate. Use as the sticky
+ * links and the search pill all route through route hrefs. Use as the sticky
  * site header for help centers, support portals, knowledge bases, docs landings
  * or FAQ hubs. Renders fully with no props via baked-in "Help Center" defaults.
  */
 export const KnowledgeBaseNavbar = defineCapsule({
   name: 'KnowledgeBaseNavbar',
   description:
-    "Sticky translucent top navigation bar for a help-center / knowledge-base / support site: backdrop-blurred, border-bottomed header pinned to the top with a solid rounded brand tile (book glyph) + wordmark on the left, horizontal nav links in the center, and a compact muted 'Search' pill with a ⌘K hint on the right (desktop), plus a hamburger menu on mobile. Calm, light, editorial documentation aesthetic; brand, nav links and search pill route through useNavigate for page-switching. Use as the sticky site header for help centers, support portals, knowledge bases, docs landings or FAQ hubs.",
+    "Sticky translucent top navigation bar for a help-center / knowledge-base / support site: backdrop-blurred, border-bottomed header pinned to the top with a solid rounded brand tile (book glyph) + wordmark on the left, horizontal nav links in the center, and a compact muted 'Search' pill with a ⌘K hint on the right (desktop), plus a hamburger menu on mobile. Calm, light, editorial documentation aesthetic; brand, nav links and search pill route through route hrefs for page-switching. Use as the sticky site header for help centers, support portals, knowledge bases, docs landings or FAQ hubs.",
   props: z.object({
     /** Brand / help-center name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -40,7 +40,6 @@ export const KnowledgeBaseNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Help Center'
     const nav = props.nav?.length
       ? props.nav
@@ -96,32 +95,28 @@ export const KnowledgeBaseNavbar = defineCapsule({
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
         containerClassName="max-w-7xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-            aria-label={`${brand} home`}
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel className="text-lg font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="gap-2"
+          aria-label={`${brand} home`}
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel className="text-lg font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions className="gap-4">
-          <button
-            type="button"
-            onClick={() => go(searchLabel)}
+          <NavbarRouteLink
+            href={searchLabel}
             className="hidden items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent sm:flex"
             aria-label="Search help articles"
           >
@@ -130,7 +125,7 @@ export const KnowledgeBaseNavbar = defineCapsule({
             <kbd className="hidden rounded border border-border bg-background px-1.5 py-0.5 text-xs lg:inline-block">
               ⌘K
             </kbd>
-          </button>
+          </NavbarRouteLink>
           <MobileNavDrawer
             brand={brand}
             nav={nav}

@@ -1,11 +1,11 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
@@ -19,14 +19,14 @@ import {
  * to the top with a solid brand-initial logo tile + company name on the left,
  * horizontal nav links on the right (desktop), a secondary text link plus a
  * filled primary "Request Demo" CTA, and a hamburger menu button on mobile.
- * Every link and CTA routes through useNavigate. Use as the sticky site header
+ * Every link and CTA routes through route hrefs. Use as the sticky site header
  * for enterprise software vendors, SaaS platforms, IT consultancies, or any
  * corporate site that needs gravitas and clear conversion paths.
  */
 export const CorporateNavbar = defineCapsule({
   name: 'CorporateNavbar',
   description:
-    'Sticky translucent top navigation bar for an enterprise / corporate B2B site: backdrop-blurred, border-bottomed header with a solid brand-initial logo tile + company name on the left, horizontal nav links and a secondary text link plus a filled primary CTA on the right (desktop), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for enterprise software, SaaS, IT consultancies, or any corporate site.',
+    'Sticky translucent top navigation bar for an enterprise / corporate B2B site: backdrop-blurred, border-bottomed header with a solid brand-initial logo tile + company name on the left, horizontal nav links and a secondary text link plus a filled primary CTA on the right (desktop), and a hamburger menu button on mobile. All links and CTAs route through route hrefs. Use as the sticky site header for enterprise software, SaaS, IT consultancies, or any corporate site.',
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -34,14 +34,13 @@ export const CorporateNavbar = defineCapsule({
     nav: z.array(z.string()).optional(),
     /** Label shown on the primary filled CTA button. */
     ctaLabel: z.string().optional(),
-    /** Navigation target for the primary CTA button (go(label)). */
+    /** Navigation target for the primary CTA button (href target). */
     ctaTarget: z.string().optional(),
     /** Label + target for the secondary text link beside the CTA. */
     secondaryCta: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Nexus'
     const nav = props.nav?.length
       ? props.nav
@@ -75,32 +74,29 @@ export const CorporateNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
-              <LogoLabel className="text-lg font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
+            <LogoLabel className="text-lg font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <button
-            type="button"
-            onClick={() => go(secondaryCta)}
+          <NavbarRouteLink
+            href={secondaryCta}
             className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
             {secondaryCta}
-          </button>
-          <NavbarCta variant="primary" onClick={() => go(ctaTarget)}>
+          </NavbarRouteLink>
+          <NavbarCta variant="primary" href={ctaTarget}>
             {ctaLabel}
           </NavbarCta>
           <MobileNavDrawer

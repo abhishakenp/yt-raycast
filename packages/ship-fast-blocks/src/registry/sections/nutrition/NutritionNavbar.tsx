@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -18,7 +17,7 @@ import {
  * wellness site, built on the shared SiteNav kit composite. Renders a fresh
  * leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a
  * filled primary pill CTA on the right, with a real mobile drawer (Sheet) on
- * small screens. All links and the CTA route through SiteNav's useNavigate so
+ * small screens. All links and the CTA route through SiteNav's route hrefs so
  * PageSwitch can swap pages. Use as the site header for nutrition coaches,
  * registered dietitians, meal-plan subscriptions, diet / wellness programs,
  * weight-loss or healthy-eating services and fitness-nutrition apps.
@@ -26,7 +25,7 @@ import {
 export const NutritionNavbar = defineCapsule({
   name: 'NutritionNavbar',
   description:
-    'Sticky top navigation header for a nutrition-coaching / wellness site, built on the shared SiteNav kit composite: a fresh leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a filled primary pill CTA on the right, with a real mobile drawer on small screens. All links and the CTA route through useNavigate. Use as the sticky site header for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss or healthy-eating services and fitness-nutrition apps.',
+    'Sticky top navigation header for a nutrition-coaching / wellness site, built on the shared SiteNav kit composite: a fresh leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a filled primary pill CTA on the right, with a real mobile drawer on small screens. All links and the CTA route through route hrefs. Use as the sticky site header for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss or healthy-eating services and fitness-nutrition apps.',
   props: z.object({
     /** Brand name shown beside the leaf mark. */
     brand: z.string().optional(),
@@ -43,7 +42,6 @@ export const NutritionNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Nourish'
     const nav = props.nav?.length
       ? props.nav
@@ -71,22 +69,16 @@ export const NutritionNavbar = defineCapsule({
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            {LeafMark}
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="text-xl font-medium text-foreground" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          {LeafMark}
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="text-xl font-medium text-foreground" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -95,7 +87,7 @@ export const NutritionNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

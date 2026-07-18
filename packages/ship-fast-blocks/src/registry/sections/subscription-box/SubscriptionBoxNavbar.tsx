@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -70,7 +69,6 @@ export const SubscriptionBoxNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['How it works', 'Boxes', 'Pricing', 'FAQ']
@@ -86,24 +84,18 @@ export const SubscriptionBoxNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<GiftBoxMark className="size-8 text-primary" />}
-              />
-              <LogoLabel className="text-xl font-bold tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<GiftBoxMark className="size-8 text-primary" />}
+            />
+            <LogoLabel className="text-xl font-bold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -125,7 +117,7 @@ export const SubscriptionBoxNavbar = defineCapsule({
           />
           <NavbarCta
             variant="primary-pill"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="hidden px-4 py-2 sm:inline-flex"
           >
             {ctaLabel}

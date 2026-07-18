@@ -32,7 +32,7 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { useIsActiveRoute, useRouteHref } from '#/lib/use-navigate.tsx'
 import type { SaasPlanInput, saasLakebed } from './saas-lakebed.ts'
 
 type SaasLakebedRuntime = LakebedClientRuntime<typeof saasLakebed>
@@ -365,9 +365,8 @@ export function SaasAccountButton({
           <div className="p-2">
             <AccountDropdownItem
               disabled={auth.isLoading}
-              onSelect={(event) => {
-                event.preventDefault()
-                setHistoryOpen(true)
+              onSelect={() => {
+                window.setTimeout(() => setHistoryOpen(true), 0)
               }}
             >
               Session history
@@ -476,7 +475,8 @@ export function SaasMobileMenu({
   nav: string[]
 }) {
   const [open, setOpen] = useState(false)
-  const go = useNavigate()
+  const homeHref = useRouteHref(homeTarget ?? 'Home')
+  const isActiveRoute = useIsActiveRoute()
   const normalizedHomeLabel = 'home'
   const targetHome = homeTarget ?? 'Home'
   const links = nav.filter((item) => {
@@ -484,13 +484,7 @@ export function SaasMobileMenu({
     return navLabel && navLabel.toLowerCase() !== normalizedHomeLabel
   })
 
-  const navigate = useCallback(
-    (target: string) => {
-      setOpen(false)
-      go(target)
-    },
-    [go],
-  )
+  const closeMenu = useCallback(() => setOpen(false), [])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -510,25 +504,46 @@ export function SaasMobileMenu({
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-1 px-3 py-4">
-          <button
-            type="button"
-            onClick={() => navigate(targetHome)}
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          <a
+            href={homeHref}
+            onClick={closeMenu}
+            aria-current={isActiveRoute(targetHome) ? 'page' : undefined}
+            className={cn(
+              'rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted',
+              isActiveRoute(targetHome) && 'border-l-2 border-primary bg-muted',
+            )}
           >
             Home
-          </button>
+          </a>
           {links.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => navigate(item)}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              {item}
-            </button>
+            <SaasMobileMenuLink key={item} item={item} onNavigate={closeMenu} />
           ))}
         </div>
       </SheetContent>
     </Sheet>
+  )
+}
+
+function SaasMobileMenuLink({
+  item,
+  onNavigate,
+}: {
+  item: string
+  onNavigate: () => void
+}) {
+  const href = useRouteHref(item)
+  const isActive = useIsActiveRoute()(item)
+  return (
+    <a
+      href={href}
+      onClick={onNavigate}
+      aria-current={isActive ? 'page' : undefined}
+      className={cn(
+        'rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+        isActive && 'border-l-2 border-primary bg-muted text-foreground',
+      )}
+    >
+      {item}
+    </a>
   )
 }

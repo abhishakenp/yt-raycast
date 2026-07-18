@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,14 +26,14 @@ import {
  * horizontal set of nav links in the center (desktop), product/menu search,
  * Shoo account dropdown, a shared Lakebed cart drawer, and an "Order Online"
  * pill CTA. Warm, editorial, light aesthetic with neutral surfaces. Every link
- * and the CTA route through useNavigate so labels can drive page-switching. Use
+ * and the CTA route through route hrefs so labels can drive page-switching. Use
  * as the sticky site header for bakeries, patisseries, cafes, pastry kitchens,
  * or any local food maker.
  */
 export const BakeryNavbar = defineCapsule({
   name: 'BakeryNavbar',
   description:
-    "Sticky, backdrop-blurred top navigation bar for an artisan-bakery / craft-bread shop site: a border-bottomed header pinned to the top with the bakery name as a wordmark on the left, horizontal nav links in the center (desktop), menu command search, Shoo account dropdown, a shared Lakebed cart drawer with reactive badge, and an 'Order Online' pill CTA plus a real mobile drawer. Warm, editorial, light aesthetic on neutral card surfaces; links and CTA route through useNavigate for page-switching. Use as the sticky site header for bakeries, patisseries, sourdough/artisan-bread shops, cafes, pastry kitchens, dessert and cake studios, or any local food maker.",
+    "Sticky, backdrop-blurred top navigation bar for an artisan-bakery / craft-bread shop site: a border-bottomed header pinned to the top with the bakery name as a wordmark on the left, horizontal nav links in the center (desktop), menu command search, Shoo account dropdown, a shared Lakebed cart drawer with reactive badge, and an 'Order Online' pill CTA plus a real mobile drawer. Warm, editorial, light aesthetic on neutral card surfaces; links and CTA route through route hrefs for page-switching. Use as the sticky site header for bakeries, patisseries, sourdough/artisan-bread shops, cafes, pastry kitchens, dessert and cake studios, or any local food maker.",
   props: z.object({
     /** Brand / bakery name shown as the wordmark. */
     brand: z.string().optional(),
@@ -50,7 +49,6 @@ export const BakeryNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Flour & Stone'
     const nav = props.nav?.length
       ? props.nav
@@ -113,22 +111,19 @@ export const BakeryNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-card/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(nav[0])}
-            className="gap-2 text-xl font-semibold tracking-tight text-foreground lg:text-2xl"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-              <LogoImage className="mr-2 size-7 align-middle" />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={nav[0]}
+          className="gap-2 text-xl font-semibold tracking-tight text-foreground lg:text-2xl"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+            <LogoImage className="mr-2 size-7 align-middle" />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -157,7 +152,7 @@ export const BakeryNavbar = defineCapsule({
           </CommerceCartButton>
           <NavbarCta
             variant="dark"
-            onClick={() => go(orderTarget)}
+            href={orderTarget}
             className="hidden px-4 py-2 sm:inline-flex"
           >
             {orderCta}

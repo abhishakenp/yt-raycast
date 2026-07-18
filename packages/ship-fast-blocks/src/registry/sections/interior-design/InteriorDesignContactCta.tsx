@@ -150,7 +150,9 @@ export const InteriorDesignContactCta = defineCapsule({
                   </FeatureListItemIcon>
                   <FeatureListItemBody>
                     <FeatureListItemTitle asChild>
-                      <p className="font-medium text-foreground">{studioLabel}</p>
+                      <p className="font-medium text-foreground">
+                        {studioLabel}
+                      </p>
                     </FeatureListItemTitle>
                     <FeatureListItemDescription className="whitespace-pre-line">
                       {studioAddress}
@@ -176,7 +178,9 @@ export const InteriorDesignContactCta = defineCapsule({
                   </FeatureListItemIcon>
                   <FeatureListItemBody>
                     <FeatureListItemTitle asChild>
-                      <p className="font-medium text-foreground">{emailLabel}</p>
+                      <p className="font-medium text-foreground">
+                        {emailLabel}
+                      </p>
                     </FeatureListItemTitle>
                     <button
                       type="button"
@@ -206,7 +210,9 @@ export const InteriorDesignContactCta = defineCapsule({
                   </FeatureListItemIcon>
                   <FeatureListItemBody>
                     <FeatureListItemTitle asChild>
-                      <p className="font-medium text-foreground">{phoneLabel}</p>
+                      <p className="font-medium text-foreground">
+                        {phoneLabel}
+                      </p>
                     </FeatureListItemTitle>
                     <button
                       type="button"

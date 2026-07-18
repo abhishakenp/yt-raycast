@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -25,7 +24,7 @@ import { inquiryLakebed } from './inquiry-lakebed.ts'
  * A blurred, border-bottomed header pinned to the top with a gradient orbit-glyph
  * logo tile + brand name on the left, a horizontal set of nav links in the center
  * (desktop), a Shoo account dropdown, a Lakebed-backed primary CTA, and a real
- * mobile Sheet menu on the right. Nav links route through useNavigate so labels
+ * mobile Sheet menu on the right. Nav links route through route hrefs so labels
  * drive page-switching, while contact actions stay in scoped Lakebed state. Use
  * as the sticky site header for SaaS, agency, or startup contact pages. Renders
  * fully with no props via baked-in "Orbit Digital" defaults.
@@ -33,7 +32,7 @@ import { inquiryLakebed } from './inquiry-lakebed.ts'
 export const ContactNavbar = defineCapsule({
   name: 'ContactNavbar',
   description:
-    'Glassy sticky top navigation bar for a contact / support page: a blurred, border-bottomed header with a gradient orbit-glyph logo tile + brand name on the left, horizontal nav links in the center (desktop), Shoo profile dropdown, scoped Lakebed CTA, and real Sheet hamburger menu. Nav links route through useNavigate while inquiry actions stay in Lakebed state. Use as the sticky site header for SaaS, agency, or startup contact pages.',
+    'Glassy sticky top navigation bar for a contact / support page: a blurred, border-bottomed header with a gradient orbit-glyph logo tile + brand name on the left, horizontal nav links in the center (desktop), Shoo profile dropdown, scoped Lakebed CTA, and real Sheet hamburger menu. Nav links route through route hrefs while inquiry actions stay in Lakebed state. Use as the sticky site header for SaaS, agency, or startup contact pages.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -49,7 +48,6 @@ export const ContactNavbar = defineCapsule({
   }),
   lakebed: inquiryLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Orbit Digital'
     const nav = props.nav?.length
       ? props.nav
@@ -89,27 +87,21 @@ export const ContactNavbar = defineCapsule({
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
         containerClassName="max-w-[1160px] px-6"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2 text-lg font-extrabold tracking-tight text-foreground"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark />} />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="gap-2 text-lg font-extrabold tracking-tight text-foreground"
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark />} />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="gap-8 text-[0.9375rem] font-medium" asChild>
           <ul>
             {nav.map((label) => (
               <li key={label}>
-                <NavbarNavLink
-                  onClick={() => go(label)}
-                  className="hover:text-foreground"
-                >
+                <NavbarNavLink href={label} className="hover:text-foreground">
                   {label}
                 </NavbarNavLink>
               </li>

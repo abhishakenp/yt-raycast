@@ -2,134 +2,37 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
-import type { ReactNode } from 'react'
+import {
+  Globe2Icon,
+  Layers3Icon,
+  RadarIcon,
+  ShieldCheckIcon,
+  UsersRoundIcon,
+  WandSparklesIcon,
+} from 'lucide-react'
 
 import {
-  FeatureGrid,
   FeatureCard,
   FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * AuthFeatures — capability grid for Authly, a developer authentication product.
- * Thin configuration over the shared `FeatureGrid` composite: a centered heading
- * ("Everything you need to ship auth") above a 3-column responsive grid of
- * feature cards, each pairing a token line-icon with a title and description.
- * Baked defaults cover the core auth surface — SSO / SAML, MFA & 2FA,
- * passwordless (magic links + passkeys), a user-management dashboard, social
- * login (OAuth), and bot & fraud protection. Use to explain an auth platform,
- * identity API, or login SDK. Renders fully with no props.
+ * AuthFeatures — capability dossier for Authly, a developer authentication
+ * product. A sticky left rail holds a large tight-tracked heading and a live
+ * "feature map" console card; the right side is an asymmetric editorial grid
+ * of capability cards, each opening with a mono dossier mark above a title
+ * with an inline line-icon, a description, and a hairline signal rule. Baked
+ * defaults cover the core auth surface — SSO / SAML, MFA & 2FA, passwordless,
+ * user management, social login, and bot & fraud protection. Use to explain an
+ * auth platform, identity API, or login SDK. Renders fully with no props.
  */
-function IconShield({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M12 3 4 6v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V6l-8-3Z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  )
-}
-function IconLayers({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m12 2 9 5-9 5-9-5 9-5Z" />
-      <path d="m3 12 9 5 9-5" />
-      <path d="m3 17 9 5 9-5" />
-    </svg>
-  )
-}
-function IconWand({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M15 9l-2-2M17.8 6.2 19 5M3 21l9-9" />
-    </svg>
-  )
-}
-function IconUsers({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  )
-}
-function IconGlobe({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-    </svg>
-  )
-}
-function IconBot({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <rect x="4" y="8" width="16" height="11" rx="2" />
-      <path d="M12 8V5M9 13h.01M15 13h.01M2 13v2M22 13v2" />
-    </svg>
-  )
-}
-
 export const AuthFeatures = defineCapsule({
   name: 'AuthFeatures',
   description:
-    "Capability grid for a developer-auth product built on the shared FeatureGrid composite: a centered heading ('Everything you need to ship auth') above a 3-column responsive grid of feature cards, each with a token line-icon, title, and description. Baked defaults cover the core auth surface — SSO / SAML, MFA & 2FA, passwordless (magic links + passkeys), a user-management dashboard, social login (OAuth), and bot & fraud protection. Use to explain an auth platform, identity API, or login SDK.",
+    "Capability dossier for a developer-auth product: a sticky left rail with a large tight-tracked heading ('Everything you need to ship auth') and a live 'feature map' console card beside an asymmetric editorial grid of capability cards — mono dossier marks above titles with inline line-icons, descriptions, and hairline signal rules. Baked defaults cover SSO / SAML, MFA & 2FA, passwordless (magic links + passkeys), a user-management dashboard, social login (OAuth), and bot & fraud protection. Use to explain an auth platform, identity API, or login SDK.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -147,13 +50,13 @@ export const AuthFeatures = defineCapsule({
       props.subheading ??
       'A complete identity platform behind a clean API — add only what you need and scale the rest as you grow.'
 
-    const icons: ReactNode[] = [
-      <IconLayers className="size-6" />,
-      <IconShield className="size-6" />,
-      <IconWand className="size-6" />,
-      <IconUsers className="size-6" />,
-      <IconGlobe className="size-6" />,
-      <IconBot className="size-6" />,
+    const icons = [
+      <Layers3Icon className="size-5" aria-hidden="true" />,
+      <ShieldCheckIcon className="size-5" aria-hidden="true" />,
+      <WandSparklesIcon className="size-5" aria-hidden="true" />,
+      <UsersRoundIcon className="size-5" aria-hidden="true" />,
+      <Globe2Icon className="size-5" aria-hidden="true" />,
+      <RadarIcon className="size-5" aria-hidden="true" />,
     ]
 
     const baked = props.features?.length
@@ -195,30 +98,110 @@ export const AuthFeatures = defineCapsule({
       ...f,
       icon: icons[i % icons.length],
     }))
+    const featureMarks = ['lead', 'signal', 'path', 'flow', 'reach', 'guard']
+    const featureLayouts = [
+      'md:col-span-2 xl:col-span-3 xl:-rotate-1',
+      'md:col-span-2 xl:col-span-3 xl:translate-y-6 xl:rotate-1',
+      'xl:col-span-2 xl:rotate-1',
+      'xl:col-span-2 xl:translate-y-6 xl:-rotate-1',
+      'xl:col-span-2 xl:-rotate-[0.5deg]',
+      'md:col-span-2 xl:col-span-6',
+    ]
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'overflow-hidden border-y border-border bg-muted/30 py-16 sm:py-20 lg:py-28',
+          props.className,
+        )}
+      >
         <Container>
-          <FeatureGrid heading={heading} subheading={subheading} columns={3}>
-            {features.map((f) => {
-              const __iv__ = f as {
-                title: string
-                description: string
-                icon?: React.ReactNode
-                points?: string[]
-                cta?: string
-                price?: string
-                imageAlt?: string
-              }
-              return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
-              )
-            })}
-          </FeatureGrid>
+          <div className="grid gap-10 xl:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)] xl:items-start">
+            <div className="lg:sticky lg:top-24">
+              <SectionHeading
+                title={heading}
+                subtitle={subheading}
+                align="left"
+                className="max-w-xl"
+                titleClassName="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.6rem] lg:leading-[1.12]"
+                subtitleClassName="text-pretty leading-7"
+              />
+              <div className="mt-8 hidden max-w-sm rounded-2xl border border-border bg-background p-4 shadow-sm shadow-foreground/5 lg:block">
+                <div className="flex items-center justify-between border-b border-border pb-3 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <span>feature map</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 rounded-full bg-primary"
+                    />
+                    live
+                  </span>
+                </div>
+                <div className="mt-4 space-y-3 font-mono text-xs text-muted-foreground">
+                  {features.slice(0, 3).map((feature, index) => (
+                    <div
+                      key={feature.title}
+                      className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3"
+                    >
+                      <span className="text-primary">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="truncate text-foreground">
+                        {feature.title}
+                      </span>
+                      <span aria-hidden="true">· ok</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-6 lg:gap-5">
+              {features.map((f, index) => {
+                const mark = featureMarks[index % featureMarks.length]
+                const layout = featureLayouts[index % featureLayouts.length]
+                return (
+                  <FeatureCard
+                    key={f.title}
+                    className={cn(
+                      'relative min-w-0 overflow-hidden rounded-2xl border-border bg-background p-5 shadow-sm shadow-foreground/5 sm:p-6',
+                      layout,
+                    )}
+                  >
+                    <span className="-mx-5 -mt-5 mb-5 block w-fit rounded-br-xl border-b border-r border-border bg-muted/70 px-4 py-2 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground sm:-mx-6 sm:-mt-6">
+                      {mark} {String(index + 1).padStart(2, '0')}
+                    </span>
+                    {layout.includes('col-span-6') ? (
+                      <span
+                        aria-hidden="true"
+                        className="absolute right-6 top-6 hidden -rotate-3 rounded-md border-[3px] border-double border-primary/50 px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-[0.14em] text-primary/70 xl:inline-flex"
+                      >
+                        cleared
+                      </span>
+                    ) : null}
+                    <div className="min-w-0 space-y-2">
+                      <FeatureTitle className="flex items-center gap-2.5 text-base font-semibold leading-7 text-balance sm:text-lg">
+                        <FeatureIcon className="size-8 shrink-0 rounded-lg bg-transparent text-primary">
+                          {f.icon}
+                        </FeatureIcon>
+                        {f.title}
+                      </FeatureTitle>
+                      <FeatureDescription className="text-sm leading-6 text-pretty">
+                        {f.description}
+                      </FeatureDescription>
+                    </div>
+                    <div
+                      className="mt-6 flex items-center gap-2"
+                      aria-hidden="true"
+                    >
+                      <span className="h-px w-8 shrink-0 bg-primary" />
+                      <span className="h-px flex-1 bg-border" />
+                    </div>
+                  </FeatureCard>
+                )
+              })}
+            </div>
+          </div>
         </Container>
       </section>
     )

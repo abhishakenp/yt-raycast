@@ -2,11 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
@@ -19,13 +19,13 @@ import {
  * community-platform / discussion-forum marketing site. Blurred, border-bottomed
  * header with a brand mark + product name on the left, a horizontal row of nav
  * links on desktop, and a sign-in text button + primary CTA button on the right.
- * Every link and the CTA route through useNavigate. Use as the sticky site header
+ * Every link and the CTA route through route hrefs. Use as the sticky site header
  * for community platforms, SaaS forums, knowledge bases, or membership networks.
  */
 export const CommunityForumNavbar = defineCapsule({
   name: 'CommunityForumNavbar',
   description:
-    'Sticky translucent top navigation bar for a community-platform / discussion-forum marketing site: blurred, border-bottomed header with a brand mark + product name on the left, a horizontal row of nav links on desktop, and a sign-in text button + primary CTA button on the right. Every link and the CTA route through useNavigate. Use as the sticky site header for community platforms, SaaS forums, knowledge bases, or membership networks.',
+    'Sticky translucent top navigation bar for a community-platform / discussion-forum marketing site: blurred, border-bottomed header with a brand mark + product name on the left, a horizontal row of nav links on desktop, and a sign-in text button + primary CTA button on the right. Every link and the CTA route through route hrefs. Use as the sticky site header for community platforms, SaaS forums, knowledge bases, or membership networks.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -35,7 +35,6 @@ export const CommunityForumNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Forum'
     const nav = props.nav?.length
       ? props.nav
@@ -68,38 +67,31 @@ export const CommunityForumNavbar = defineCapsule({
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
         containerClassName="max-w-6xl"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<BrandMark className="size-8 text-foreground" />}
-              />
-              <LogoLabel className="text-xl font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<BrandMark className="size-8 text-foreground" />}
+            />
+            <LogoLabel className="text-xl font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <button
-            type="button"
-            onClick={() => go(signIn)}
+          <NavbarRouteLink
+            href={signIn}
             className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
             {signIn}
-          </button>
-          <NavbarCta variant="primary" onClick={() => go(navCta)}>
+          </NavbarRouteLink>
+          <NavbarCta variant="primary" href={navCta}>
             {navCta}
           </NavbarCta>
           <MobileNavDrawer

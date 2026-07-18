@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -18,7 +17,7 @@ import {
  * wedding photographer portfolio. Thin configuration over the shared `SiteNav`
  * composite: a serif wordmark brand, evenly spaced desktop nav links, a "Book a
  * Shoot" CTA pill on the right, and a real mobile drawer (Sheet) on small
- * screens. Every link and the CTA route through useNavigate so labels drive
+ * screens. Every link and the CTA route through route hrefs so labels drive
  * page-switching. Use as the sticky site header for wedding photographers,
  * portrait studios, elopement shooters, or any warm, editorial visual-creative
  * portfolio. Renders fully with no props via baked-in "Elena Vossen" defaults.
@@ -26,7 +25,7 @@ import {
 export const PhotographyNavbar = defineCapsule({
   name: 'PhotographyNavbar',
   description:
-    "Fixed translucent site header for a fine-art / wedding photographer portfolio built on the shared SiteNav composite: a serif wordmark brand, evenly spaced desktop nav links, a 'Book a Shoot' CTA pill, and a real mobile drawer (Sheet) on small screens. Every link and the CTA route through useNavigate for page-switching. Use as the sticky site header for wedding photographers, portrait studios, elopement shooters, or warm editorial visual-creative portfolios.",
+    "Fixed translucent site header for a fine-art / wedding photographer portfolio built on the shared SiteNav composite: a serif wordmark brand, evenly spaced desktop nav links, a 'Book a Shoot' CTA pill, and a real mobile drawer (Sheet) on small screens. Every link and the CTA route through route hrefs for page-switching. Use as the sticky site header for wedding photographers, portrait studios, elopement shooters, or warm editorial visual-creative portfolios.",
   props: z.object({
     /** Photographer / studio name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -48,25 +47,18 @@ export const PhotographyNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Book a Shoot'
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const homeTarget = props.homeTarget ?? nav[0]
-    const go = useNavigate()
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="font-serif text-2xl font-medium tracking-tight" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="font-serif text-2xl font-medium tracking-tight" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -75,7 +67,7 @@ export const PhotographyNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

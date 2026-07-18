@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -57,26 +56,19 @@ export const PodcastNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Subscribe'
     const ctaTarget = props.ctaTarget ?? 'Subscribe'
     const homeTarget = props.homeTarget ?? nav[0]
-    const go = useNavigate()
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <MicWaveMark className="size-8 text-primary" />
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="font-semibold tracking-tight text-xl" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <MicWaveMark className="size-8 text-primary" />
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="font-semibold tracking-tight text-xl" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -85,7 +77,7 @@ export const PodcastNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

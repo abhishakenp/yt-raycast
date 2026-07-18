@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,14 +26,14 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * a near-black brand tile + pen glyph and product name on the left, a centered
  * horizontal set of nav links (desktop), and a "Sign in" text link plus a
  * near-black filled primary CTA on the right. Every link and CTA routes through
- * useNavigate for page-switching. Use as the sticky site header for AI writing
+ * route hrefs for page-switching. Use as the sticky site header for AI writing
  * assistants, AI copilots, generative-AI tools, developer-AI products, or any
  * modern minimal SaaS marketing site. Renders fully with no props.
  */
 export const AiProductNavbar = defineCapsule({
   name: 'AiProductNavbar',
   description:
-    'Sticky backdrop-blurred top navigation bar for a clean, light AI SaaS / product landing page: a near-black rounded brand tile with a pen/edit glyph + product name on the left, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, near-black fullstack primary CTA, and a real mobile drawer. Links route through useNavigate while auth and conversion actions use shared Lakebed state. Use as the sticky site header for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or any modern minimal conversion-focused SaaS marketing site.',
+    'Sticky backdrop-blurred top navigation bar for a clean, light AI SaaS / product landing page: a near-black rounded brand tile with a pen/edit glyph + product name on the left, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, near-black fullstack primary CTA, and a real mobile drawer. Links route through route hrefs while auth and conversion actions use shared Lakebed state. Use as the sticky site header for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or any modern minimal conversion-focused SaaS marketing site.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -50,7 +49,6 @@ export const AiProductNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'WriteFlow'
     const nav = props.nav?.length
       ? props.nav
@@ -88,22 +86,19 @@ export const AiProductNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(brand)}
-            className="gap-2 text-xl font-semibold tracking-tight text-foreground"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={brand}
+          className="gap-2 text-xl font-semibold tracking-tight text-foreground"
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

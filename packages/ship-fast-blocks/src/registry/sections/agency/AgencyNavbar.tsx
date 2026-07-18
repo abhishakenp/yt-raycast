@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,7 +18,7 @@ import {
  * top of the viewport: a gradient brand-initial logo tile beside the studio name
  * on the left, a horizontal set of nav links plus a pill-shaped primary CTA on
  * the right (desktop), and a hamburger menu button on mobile. Every link and the
- * CTA route through useNavigate so labels can drive page-switching. Use as the
+ * CTA route through route hrefs so labels can drive page-switching. Use as the
  * sticky site header for agencies, design studios, branding/marketing shops,
  * freelance creatives, production houses, or any moody premium landing page.
  * Renders fully with no props via baked-in "Studio Rise" defaults.
@@ -27,7 +26,7 @@ import {
 export const AgencyNavbar = defineCapsule({
   name: 'AgencyNavbar',
   description:
-    'Fixed translucent top navigation bar for a creative agency / design studio site: backdrop-blurred, border-bottomed header pinned to the top with a gradient brand-initial logo tile + studio name on the left, horizontal nav links and a pill-shaped primary CTA on the right (desktop), and a hamburger menu button on mobile. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for agencies, studios, branding/marketing shops, freelance creatives, or production houses.',
+    'Fixed translucent top navigation bar for a creative agency / design studio site: backdrop-blurred, border-bottomed header pinned to the top with a gradient brand-initial logo tile + studio name on the left, horizontal nav links and a pill-shaped primary CTA on the right (desktop), and a hamburger menu button on mobile. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for agencies, studios, branding/marketing shops, freelance creatives, or production houses.',
   props: z.object({
     /** Brand / studio name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -38,7 +37,6 @@ export const AgencyNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Studio Rise'
     const nav = props.nav?.length
       ? props.nav
@@ -64,28 +62,25 @@ export const AgencyNavbar = defineCapsule({
         className={cn('bg-background/70', props.className)}
         containerClassName="px-6"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(nav[0])}
-            className="gap-2 text-xl font-bold tracking-tight text-foreground"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={nav[0]}
+          className="gap-2 text-xl font-bold tracking-tight text-foreground"
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
           <NavbarCta
             variant="primary-pill"
-            onClick={() => go(nav[nav.length - 1])}
+            href={nav[nav.length - 1]}
             className="px-5 py-2.5 font-semibold"
           >
             {cta}

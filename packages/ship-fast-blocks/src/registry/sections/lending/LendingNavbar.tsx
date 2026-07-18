@@ -1,9 +1,9 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
@@ -17,7 +17,7 @@ import {
  * top of the viewport: a near-ink rounded logo tile beside the lender name on the
  * left, a horizontal set of nav links in the center (desktop), and a "Sign In"
  * text link plus a solid primary "Apply Now" CTA on the right. Every nav item and
- * CTA routes through useNavigate so labels can drive page-switching. Use as the
+ * CTA routes through route hrefs so labels can drive page-switching. Use as the
  * clean, trustworthy site header for personal-loan lenders, lending marketplaces,
  * debt-consolidation services, fintech credit products, or financing brands.
  * Renders fully with no props via baked-in "ClearLoan" defaults.
@@ -25,7 +25,7 @@ import {
 export const LendingNavbar = defineCapsule({
   name: 'LendingNavbar',
   description:
-    "Sticky translucent top navigation bar for a personal-lending / loan marketing site: backdrop-blurred, border-bottomed header pinned to the top with a near-ink rounded logo tile + lender name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Apply Now' CTA on the right. Nav items and CTA route through useNavigate for page-switching. Use as the clean, trustworthy site header for personal-loan lenders, lending marketplaces, debt-consolidation services, fintech credit products, or financing brands.",
+    "Sticky translucent top navigation bar for a personal-lending / loan marketing site: backdrop-blurred, border-bottomed header pinned to the top with a near-ink rounded logo tile + lender name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Apply Now' CTA on the right. Nav items and CTA route through route hrefs for page-switching. Use as the clean, trustworthy site header for personal-loan lenders, lending marketplaces, debt-consolidation services, fintech credit products, or financing brands.",
   props: z.object({
     /** Brand / lender name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -40,7 +40,6 @@ export const LendingNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'ClearLoan'
     const nav = props.nav?.length
       ? props.nav
@@ -68,38 +67,29 @@ export const LendingNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-              <LogoIcon className="size-5" />
-            </span>
-            <span className="text-xl font-semibold text-foreground">
-              {brand}
-            </span>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
+            <LogoIcon className="size-5" />
+          </span>
+          <span className="text-xl font-semibold text-foreground">{brand}</span>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions className="gap-4">
-          <button
-            type="button"
-            onClick={() => go(signIn)}
+          <NavbarRouteLink
+            href={signIn}
             className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
           >
             {signIn}
-          </button>
-          <NavbarCta
-            variant="primary"
-            onClick={() => go(ctaTarget)}
-            className="px-5 py-2.5"
-          >
+          </NavbarRouteLink>
+          <NavbarCta variant="primary" href={ctaTarget} className="px-5 py-2.5">
             {cta}
           </NavbarCta>
         </NavbarActions>

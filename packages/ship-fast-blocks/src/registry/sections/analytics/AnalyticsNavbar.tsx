@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -44,14 +43,14 @@ const brandMark = (
  * product marketing site. Composes the shared SiteNav kit composite to render a
  * bar-chart brand mark, a crisp wordmark, a desktop link row (Product, Features,
  * Pricing, Docs), and a sticky filled-primary "Start Free" call to action with a
- * real mobile drawer. Every link and CTA routes through useNavigate. Use it as
+ * real mobile drawer. Every link and CTA routes through route hrefs. Use it as
  * the first band of any analytics, BI, dashboard, or data-product landing page
  * for a consistent, route-aware site header. Renders fully with no props.
  */
 export const AnalyticsNavbar = defineCapsule({
   name: 'AnalyticsNavbar',
   description:
-    "Sharp, data-forward top navigation header for an analytics product marketing site. Renders a bar-chart brand mark, crisp wordmark, desktop link row (Product, Features, Pricing, Docs), command plan search, Shoo account dropdown, selected-plan badge, and a sticky filled-primary fullstack 'Start Free' call to action with a real mobile drawer. Nav routes use useNavigate while auth/search/conversion use shared Lakebed state. Use it as the first band of any analytics, BI, dashboard, or data-product landing page.",
+    "Sharp, data-forward top navigation header for an analytics product marketing site. Renders a bar-chart brand mark, crisp wordmark, desktop link row (Product, Features, Pricing, Docs), command plan search, Shoo account dropdown, selected-plan badge, and a sticky filled-primary fullstack 'Start Free' call to action with a real mobile drawer. Nav routes use route hrefs while auth/search/conversion use shared Lakebed state. Use it as the first band of any analytics, BI, dashboard, or data-product landing page.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -64,7 +63,6 @@ export const AnalyticsNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Pulse Analytics'
     const nav = props.nav?.length
       ? props.nav
@@ -81,22 +79,19 @@ export const AnalyticsNavbar = defineCapsule({
           props.className,
         )}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(props.homeTarget ?? nav[0])}
-            className="min-w-0 gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={brandMark} />
-              <LogoLabel className="truncate text-xl font-semibold tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={props.homeTarget ?? nav[0]}
+          className="min-w-0 gap-3"
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={brandMark} />
+            <LogoLabel className="truncate text-xl font-semibold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

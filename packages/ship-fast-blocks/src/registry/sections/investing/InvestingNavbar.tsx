@@ -1,10 +1,10 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
@@ -18,7 +18,7 @@ import {
  * the top of the viewport: a trend-line brand glyph tile beside the platform
  * name on the left, a horizontal set of nav links in the center (desktop), and a
  * subtle "Sign in" link plus a filled "Get started" primary button on the right.
- * Every link and CTA routes through useNavigate so labels can drive page
+ * Every link and CTA routes through route hrefs so labels can drive page
  * switching. Use as the sticky site header for stock brokerages, trading apps,
  * robo-advisors, crypto exchanges, wealth-management or any fintech product.
  * Renders fully with no props via baked-in "Vestora" defaults.
@@ -26,7 +26,7 @@ import {
 export const InvestingNavbar = defineCapsule({
   name: 'InvestingNavbar',
   description:
-    "Sticky backdrop-blurred top navigation bar for a modern investing / fintech brokerage site: a trend-line brand glyph tile + platform name on the left, horizontal nav links in the center (desktop), and a subtle 'Sign in' link plus a filled 'Get started' primary button on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for stock brokerages, trading apps, robo-advisors, crypto exchanges or wealth-management products.",
+    "Sticky backdrop-blurred top navigation bar for a modern investing / fintech brokerage site: a trend-line brand glyph tile + platform name on the left, horizontal nav links in the center (desktop), and a subtle 'Sign in' link plus a filled 'Get started' primary button on the right. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for stock brokerages, trading apps, robo-advisors, crypto exchanges or wealth-management products.",
   props: z.object({
     /** Brand / platform name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -39,7 +39,6 @@ export const InvestingNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Vestora'
     const nav = props.nav?.length
       ? props.nav
@@ -73,36 +72,29 @@ export const InvestingNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-2">
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <button
-            type="button"
-            onClick={() => go(signIn)}
+          <NavbarRouteLink
+            href={signIn}
             className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
           >
             {signIn}
-          </button>
-          <NavbarCta
-            variant="primary"
-            onClick={() => go(getStarted)}
-            className="px-4 py-2"
-          >
+          </NavbarRouteLink>
+          <NavbarCta variant="primary" href={getStarted} className="px-4 py-2">
             {getStarted}
           </NavbarCta>
         </NavbarActions>

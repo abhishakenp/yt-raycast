@@ -2,10 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarNav,
   NavbarNavLink,
@@ -26,7 +26,7 @@ import {
  * wide letter-spaced uppercase nav links in the center (desktop), and a
  * product command search, Shoo account dropdown, shared cart drawer, mobile
  * drawer, and an underlined "Book Appointment" CTA on the right. Every link and
- * the CTA route through useNavigate so labels drive page-switching. Use as the
+ * the CTA route through route hrefs so labels drive page-switching. Use as the
  * sticky site header for fine jewelers, diamond houses, engagement-ring
  * boutiques, watch or high-jewelry maisons. Renders fully with no props via
  * baked-in "Maison Noir" defaults.
@@ -34,7 +34,7 @@ import {
 export const JewelryStoreNavbar = defineCapsule({
   name: 'JewelryStoreNavbar',
   description:
-    'Fixed translucent top navigation bar for a luxury fine-jewelry boutique on a near-black canvas: backdrop-blurred bordered header with a serif gold maison wordmark on the left, wide letter-spaced uppercase nav links in the center (desktop), product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a real mobile drawer, and an underlined Book Appointment CTA on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
+    'Fixed translucent top navigation bar for a luxury fine-jewelry boutique on a near-black canvas: backdrop-blurred bordered header with a serif gold maison wordmark on the left, wide letter-spaced uppercase nav links in the center (desktop), product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a real mobile drawer, and an underlined Book Appointment CTA on the right. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
   props: z.object({
     /** Maison / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -52,7 +52,6 @@ export const JewelryStoreNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Maison Noir'
     const nav = props.nav?.length
       ? props.nav
@@ -71,22 +70,19 @@ export const JewelryStoreNavbar = defineCapsule({
         className={cn('bg-background/90', props.className)}
         containerClassName="px-6 lg:px-12 xl:px-20"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="font-serif text-2xl tracking-wider text-primary"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-              <LogoImage className="mr-2 size-7 align-middle" />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="font-serif text-2xl tracking-wider text-primary"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+            <LogoImage className="mr-2 size-7 align-middle" />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="[&>button]:uppercase [&>button]:tracking-widest [&>button]:hover:text-primary">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -152,13 +148,12 @@ export const JewelryStoreNavbar = defineCapsule({
               />
             </svg>
           </CommerceCartButton>
-          <button
-            type="button"
-            onClick={() => go(ctaTarget)}
+          <NavbarRouteLink
+            href={ctaTarget}
             className="hidden border-b border-primary pb-0.5 text-sm uppercase tracking-widest text-primary sm:block"
           >
             {ctaLabel}
-          </button>
+          </NavbarRouteLink>
           <CommerceMobileMenu
             brand={brand}
             nav={nav}

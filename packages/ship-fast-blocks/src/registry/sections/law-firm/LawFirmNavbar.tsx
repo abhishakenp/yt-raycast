@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -20,7 +19,7 @@ import {
  * links plus a solid "Free Consultation" CTA on the right (desktop), and a
  * hamburger menu button on mobile. Refined, authoritative, serif-driven
  * editorial aesthetic with sharp squared corners. Every link routes through
- * useNavigate so labels can drive page-switching. Use as the sticky site header
+ * route hrefs so labels can drive page-switching. Use as the sticky site header
  * for law firms, attorneys, legal practices, solicitors, barristers, corporate
  * counsel, accounting/advisory or any premium professional-services site.
  * Renders fully with no props via baked-in "Reinhart & Associates" defaults.
@@ -28,7 +27,7 @@ import {
 export const LawFirmNavbar = defineCapsule({
   name: 'LawFirmNavbar',
   description:
-    "Sticky bordered top navigation bar for a corporate / trial law-firm site on the card surface: a squared brand tile bearing the firm initial beside a two-line serif wordmark (firm name + tracked-uppercase tagline) on the left, a row of quiet monochrome nav links plus a solid 'Free Consultation' CTA on the right (desktop), and a hamburger menu button on mobile. Refined, authoritative, serif-driven editorial aesthetic with sharp squared corners. Links route through useNavigate for page-switching. Use as the sticky site header for law firms, attorneys, legal practices, solicitors, barristers, corporate counsel, litigation boutiques, estate-planning, tax or accounting/advisory firms.",
+    "Sticky bordered top navigation bar for a corporate / trial law-firm site on the card surface: a squared brand tile bearing the firm initial beside a two-line serif wordmark (firm name + tracked-uppercase tagline) on the left, a row of quiet monochrome nav links plus a solid 'Free Consultation' CTA on the right (desktop), and a hamburger menu button on mobile. Refined, authoritative, serif-driven editorial aesthetic with sharp squared corners. Links route through route hrefs for page-switching. Use as the sticky site header for law firms, attorneys, legal practices, solicitors, barristers, corporate counsel, litigation boutiques, estate-planning, tax or accounting/advisory firms.",
   props: z.object({
     /** Firm / brand name shown in the wordmark and brand tile initial. */
     brand: z.string().optional(),
@@ -41,7 +40,6 @@ export const LawFirmNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Reinhart & Associates'
     const tagline = props.tagline ?? 'Attorneys at Law'
     const nav = props.nav?.length
@@ -59,46 +57,40 @@ export const LawFirmNavbar = defineCapsule({
         height="default"
         className={cn('bg-card', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(nav[0])}
-            className="gap-3 text-left"
-          >
-            <BrandLogo brand={brand} className="size-10 rounded-sm">
-              <LogoImage
-                className="size-10 rounded-sm"
-                fallback={
-                  <span
-                    className="grid size-10 place-items-center rounded-sm bg-primary font-serif text-lg font-bold text-primary-foreground"
-                    aria-hidden="true"
-                  >
-                    {brandInitial}
-                  </span>
-                }
-              />
-              <LogoLabel />
-            </BrandLogo>
-            <span className="block">
-              <span className="block font-serif text-xl font-semibold tracking-tight text-foreground">
-                {brand}
-              </span>
-              <span className="block text-xs uppercase tracking-widest text-muted-foreground">
-                {tagline}
-              </span>
+        <NavbarBrand href={nav[0]} className="gap-3 text-left">
+          <BrandLogo brand={brand} className="size-10 rounded-sm">
+            <LogoImage
+              className="size-10 rounded-sm"
+              fallback={
+                <span
+                  className="grid size-10 place-items-center rounded-sm bg-primary font-serif text-lg font-bold text-primary-foreground"
+                  aria-hidden="true"
+                >
+                  {brandInitial}
+                </span>
+              }
+            />
+            <LogoLabel />
+          </BrandLogo>
+          <span className="block">
+            <span className="block font-serif text-xl font-semibold tracking-tight text-foreground">
+              {brand}
             </span>
-          </button>
+            <span className="block text-xs uppercase tracking-widest text-muted-foreground">
+              {tagline}
+            </span>
+          </span>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
           <NavbarCta
             variant="primary"
-            onClick={() => go(nav[nav.length - 1])}
+            href={nav[nav.length - 1]}
             className="rounded-none px-6 py-3"
           >
             {ctaLabel}

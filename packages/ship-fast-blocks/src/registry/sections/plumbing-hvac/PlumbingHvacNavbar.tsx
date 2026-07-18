@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,7 +18,7 @@ import {
  * pipe/droplet logo mark beside the company wordmark, horizontal desktop nav
  * links (Services, About, Reviews, Service Area, Contact), a click-to-call
  * phone number, a pill "Schedule Service" CTA, and a real mobile drawer on
- * small screens. Every nav item and the CTA route through useNavigate so the
+ * small screens. Every nav item and the CTA route through route hrefs so the
  * labels can drive page-switching. Use as the sticky site header for plumbers,
  * HVAC contractors, drain/sewer services, water heater installers, and other
  * licensed home-service trades. Renders fully with no props via baked-in
@@ -51,7 +50,7 @@ function PipeMark({ className }: { className?: string }) {
 export const PlumbingHvacNavbar = defineCapsule({
   name: 'PlumbingHvacNavbar',
   description:
-    "Sticky top navigation bar for a local plumbing & HVAC trade site built on the shared SiteNav composite: a pipe/droplet logo mark and company wordmark, horizontal desktop nav links, a click-to-call phone number, a pill 'Schedule Service' CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the sticky site header for plumbers, HVAC contractors, drain/sewer services, water heater installers, and other licensed home-service trades.",
+    "Sticky top navigation bar for a local plumbing & HVAC trade site built on the shared SiteNav composite: a pipe/droplet logo mark and company wordmark, horizontal desktop nav links, a click-to-call phone number, a pill 'Schedule Service' CTA, and a real mobile drawer. Nav items and CTA route through route hrefs for page-switching. Use as the sticky site header for plumbers, HVAC contractors, drain/sewer services, water heater installers, and other licensed home-service trades.",
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -76,26 +75,19 @@ export const PlumbingHvacNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Schedule Service'
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const homeTarget = props.homeTarget ?? nav[0]
-    const go = useNavigate()
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <PipeMark className="size-[18px]" />
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="text-xl font-extrabold tracking-tight" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <PipeMark className="size-[18px]" />
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="text-xl font-extrabold tracking-tight" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -112,7 +104,7 @@ export const PlumbingHvacNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

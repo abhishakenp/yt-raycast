@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,14 +26,14 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * with a blue brand "bolt" logo tile + product name on the left, horizontal nav
  * links centered/right on desktop, and a "Sign In" text link plus a filled
  * primary "Get Started" CTA on the right. Clean, light, slate-and-blue product
- * aesthetic. Every link and CTA routes through useNavigate. Use as the sticky
+ * aesthetic. Every link and CTA routes through route hrefs. Use as the sticky
  * site header for developer tools, API platforms, backend-as-a-service, or
  * technical SaaS products.
  */
 export const DevToolNavbar = defineCapsule({
   name: 'DevToolNavbar',
   description:
-    "Sticky, backdrop-blurred top navigation bar for a developer tool / API platform site: border-bottomed header with a blue brand 'bolt' logo tile + product name, horizontal nav links on desktop, command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Get Started' CTA, and a real mobile drawer. Clean, light, slate-and-blue product aesthetic. Navigation routes through useNavigate while auth/search/conversion state is shared through Lakebed. Use as the sticky site header for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
+    "Sticky, backdrop-blurred top navigation bar for a developer tool / API platform site: border-bottomed header with a blue brand 'bolt' logo tile + product name, horizontal nav links on desktop, command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Get Started' CTA, and a real mobile drawer. Clean, light, slate-and-blue product aesthetic. Navigation routes through route hrefs while auth/search/conversion state is shared through Lakebed. Use as the sticky site header for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -52,7 +51,6 @@ export const DevToolNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'DevStack'
     const nav = props.nav?.length
       ? props.nav
@@ -90,22 +88,16 @@ export const DevToolNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<BoltMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<BoltMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

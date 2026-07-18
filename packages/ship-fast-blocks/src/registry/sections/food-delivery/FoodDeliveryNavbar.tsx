@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -25,7 +24,7 @@ import {
  * pinned to the top: a location-pin brand mark beside the brand name on the
  * left, a horizontal set of nav links in the center (desktop), and a text
  * "Sign In" link plus a rounded-full filled "Get Started" CTA on the right.
- * Every link and CTA routes through useNavigate so labels can drive
+ * Every link and CTA routes through route hrefs so labels can drive
  * page-switching. Use as the sticky site header for food-delivery apps,
  * restaurant aggregators, online-ordering platforms, or takeout services.
  * Renders fully with no props via baked-in "nosh" defaults.
@@ -33,7 +32,7 @@ import {
 export const FoodDeliveryNavbar = defineCapsule({
   name: 'FoodDeliveryNavbar',
   description:
-    'Fixed translucent top navigation bar for a food-delivery / restaurant-marketplace site: backdrop-blurred, border-bottomed header pinned to the top with a location-pin brand mark + brand name on the left, horizontal nav links in the center (desktop), and a text Sign In link plus a rounded-full filled Get Started CTA on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for food-delivery apps, restaurant aggregators, online-ordering platforms, ghost-kitchen/meal-delivery startups, or takeout services.',
+    'Fixed translucent top navigation bar for a food-delivery / restaurant-marketplace site: backdrop-blurred, border-bottomed header pinned to the top with a location-pin brand mark + brand name on the left, horizontal nav links in the center (desktop), and a text Sign In link plus a rounded-full filled Get Started CTA on the right. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for food-delivery apps, restaurant aggregators, online-ordering platforms, ghost-kitchen/meal-delivery startups, or takeout services.',
   props: z.object({
     /** Brand name shown beside the pin mark. */
     brand: z.string().optional(),
@@ -49,7 +48,6 @@ export const FoodDeliveryNavbar = defineCapsule({
   }),
   lakebed: foodDeliveryLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'nosh'
     const nav = props.nav?.length
       ? props.nav
@@ -73,24 +71,18 @@ export const FoodDeliveryNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<PinMark className="size-8 text-foreground" />}
-              />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<PinMark className="size-8 text-foreground" />}
+            />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

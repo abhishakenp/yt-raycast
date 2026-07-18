@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,7 +18,7 @@ import {
  * a hand-drawn palm-and-sun logo mark beside the property wordmark, horizontal
  * desktop nav links (Stays, Amenities, Gallery, Reviews, Book Now), a phone
  * number, a pill "Book Now" CTA, and a real mobile drawer (Sheet) on small
- * screens. Every nav item and the CTA route through useNavigate so labels can
+ * screens. Every nav item and the CTA route through route hrefs so labels can
  * drive page-switching. Use as the inviting site header for vacation rentals,
  * beach houses, cabins, villas, or boutique short-stay properties. Renders fully
  * with no props via baked-in "Azure Cove Retreats" defaults.
@@ -50,7 +49,7 @@ function PalmMark({ className }: { className?: string }) {
 export const VacationRentalNavbar = defineCapsule({
   name: 'VacationRentalNavbar',
   description:
-    'Airy sticky top navigation for a vacation-rental / getaway listing site built on the shared SiteNav composite: a palm-and-sun logo mark and property wordmark, horizontal desktop nav links, a phone number, a pill Book Now CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the inviting site header for vacation rentals, beach houses, cabins, villas, or boutique short-stay properties.',
+    'Airy sticky top navigation for a vacation-rental / getaway listing site built on the shared SiteNav composite: a palm-and-sun logo mark and property wordmark, horizontal desktop nav links, a phone number, a pill Book Now CTA, and a real mobile drawer. Nav items and CTA route through route hrefs for page-switching. Use as the inviting site header for vacation rentals, beach houses, cabins, villas, or boutique short-stay properties.',
   props: z.object({
     /** Property / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -70,7 +69,6 @@ export const VacationRentalNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Stays', 'Amenities', 'Gallery', 'Reviews', 'Book Now']
-    const go = useNavigate()
     const brand = props.brand ?? 'Azure Cove Retreats'
     const brandMark = <PalmMark className="size-8 text-primary" />
     const brandClassName = 'text-xl font-semibold tracking-tight'
@@ -80,22 +78,16 @@ export const VacationRentalNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            {brandMark}
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className={brandClassName} />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          {brandMark}
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className={brandClassName} />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -112,7 +104,7 @@ export const VacationRentalNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

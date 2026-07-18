@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,7 +18,7 @@ import {
  * sprout-glyph logo mark beside the organization name on the left, desktop nav
  * links, and a pill-shaped primary "Donate" CTA on the right, plus a real
  * mobile drawer (Sheet) on small screens. Every link and the CTA route through
- * useNavigate so labels can drive page-switching. Use as the sticky site header
+ * route hrefs so labels can drive page-switching. Use as the sticky site header
  * for nonprofits, charities, NGOs, foundations, humanitarian or community
  * organizations. Renders fully with no props via baked-in "Roots of Hope"
  * defaults.
@@ -46,7 +45,7 @@ function SproutMark({ className }: { className?: string }) {
 export const NonprofitNavbar = defineCapsule({
   name: 'NonprofitNavbar',
   description:
-    "Sticky nonprofit / charity / NGO site header built on the shared SiteNav composite: a layered sprout-glyph logo mark + organization name on the left, desktop nav links, a pill-shaped primary 'Donate' CTA on the right, and a real mobile drawer. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for nonprofits, charities, NGOs, foundations, humanitarian or community organizations.",
+    "Sticky nonprofit / charity / NGO site header built on the shared SiteNav composite: a layered sprout-glyph logo mark + organization name on the left, desktop nav links, a pill-shaped primary 'Donate' CTA on the right, and a real mobile drawer. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for nonprofits, charities, NGOs, foundations, humanitarian or community organizations.",
   props: z.object({
     /** Organization / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -61,7 +60,6 @@ export const NonprofitNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Mission', 'Impact', 'Programs', 'Stories']
@@ -71,22 +69,16 @@ export const NonprofitNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <SproutMark className="size-8 text-primary" />
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <SproutMark className="size-8 text-primary" />
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -95,7 +87,7 @@ export const NonprofitNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

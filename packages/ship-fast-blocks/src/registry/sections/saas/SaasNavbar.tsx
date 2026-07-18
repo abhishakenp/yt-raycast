@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -26,7 +25,7 @@ import { saasLakebed } from './saas-lakebed.ts'
  * page. Thin configuration over the shared `SiteNav` composite: a gradient-tile
  * clock-glyph logo mark beside the product wordmark, horizontal desktop nav
  * links, a pill "Get Started" CTA, and a real mobile drawer (Sheet) on small
- * screens. Every nav item and the CTA route through useNavigate so labels can
+ * screens. Every nav item and the CTA route through route hrefs so labels can
  * drive page-switching. Use as the sticky site header for AI tools, SaaS apps,
  * productivity/scheduling products, developer tools, or modern B2B startups.
  * Renders fully with no props via baked-in "Chronos AI" defaults.
@@ -58,7 +57,7 @@ function ClockMark({ className }: { className?: string }) {
 export const SaasNavbar = defineCapsule({
   name: 'SaasNavbar',
   description:
-    'Glassy sticky top navigation bar for an AI-product / SaaS landing page: a gradient-tile clock-glyph logo and product wordmark, horizontal desktop nav links, command plan search, Shoo profile dropdown, selected-plan badge, a scoped fullstack trial CTA, and a real mobile drawer. Nav items route through useNavigate while conversion CTAs write to shared Lakebed state. Use as the sticky site header for AI tools, SaaS apps, productivity/scheduling products, developer tools, or modern B2B startups.',
+    'Glassy sticky top navigation bar for an AI-product / SaaS landing page: a gradient-tile clock-glyph logo and product wordmark, horizontal desktop nav links, command plan search, Shoo profile dropdown, selected-plan badge, a scoped fullstack trial CTA, and a real mobile drawer. Nav items route through route hrefs while conversion CTAs write to shared Lakebed state. Use as the sticky site header for AI tools, SaaS apps, productivity/scheduling products, developer tools, or modern B2B startups.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -74,7 +73,6 @@ export const SaasNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Features', 'How It Works', 'Pricing', 'Testimonials', 'FAQ']
@@ -89,22 +87,16 @@ export const SaasNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="min-w-0 gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<ClockMark className="size-[18px]" />} />
-              <LogoLabel className="truncate text-xl font-extrabold tracking-tight text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="min-w-0 gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<ClockMark className="size-[18px]" />} />
+            <LogoLabel className="truncate text-xl font-extrabold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

@@ -16,6 +16,7 @@ import {
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ComingSoonPricing — three-tier pricing table for a "launching soon" / waitlist
@@ -115,7 +116,7 @@ export const ComingSoonPricing = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-5xl">
+        <Container size="md">
           <PricingGrid>
             <SectionHeading title={heading} subtitle={description} />
             {plans
@@ -220,7 +221,7 @@ export const ComingSoonPricing = defineCapsule({
                 )
               })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },

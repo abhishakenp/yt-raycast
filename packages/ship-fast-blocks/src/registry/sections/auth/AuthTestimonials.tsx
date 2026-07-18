@@ -1,10 +1,11 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { z } from 'zod/v4'
+import { StarIcon } from 'lucide-react'
 
 import {
-  TestimonialGrid,
   TestimonialCard,
   TestimonialQuote,
   TestimonialAuthor,
@@ -13,19 +14,27 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * AuthTestimonials — 3-up developer testimonial wall for Authly, a developer
- * authentication product. Thin configuration over the shared `TestimonialGrid`
- * composite: a centered heading ("Developers ship faster with us") above a
- * responsive card grid where each card renders a star row from the rating, the
- * quoted testimonial, and an attribution pairing the engineer's name with their
- * role and company. The public `reviews` prop ({quote, name, role, company,
- * rating}) maps to the composite's items. Use for social proof on an auth
- * platform, identity API, or login SDK. Renders fully with no props.
+ * AuthTestimonials — field-report wall for Authly, a developer authentication
+ * product. A sticky left rail carries the section heading; the right side is an
+ * asymmetric editorial grid of report cards, each opening with a mono note mark
+ * and a primary star row, a large quoted testimonial, and an attribution row
+ * pairing a mono initials tile with the engineer's name, role, and company.
+ * The public `reviews` prop ({quote, name, role, company, rating}) maps to the
+ * composite's items. Use for social proof on an auth platform, identity API,
+ * or login SDK. Renders fully with no props.
  */
+const initialsFrom = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('') || '––'
+
 export const AuthTestimonials = defineCapsule({
   name: 'AuthTestimonials',
   description:
-    "3-up developer testimonial wall for a developer-auth product built on the shared TestimonialGrid composite: a centered heading ('Developers ship faster with us') above a responsive card grid. Each card renders a star row matching the rating, a quoted testimonial, and an attribution pairing the engineer's name with their role and company. Use for social proof on an auth platform, identity API, or login SDK.",
+    "Field-report testimonial wall for a developer-auth product: a sticky left rail with the heading ('Developers ship faster with us') beside an asymmetric editorial grid of report cards — mono note marks, primary star rows, large quoted testimonials, and attribution rows pairing mono initials tiles with each engineer's name, role, and company. Use for social proof on an auth platform, identity API, or login SDK.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -81,36 +90,94 @@ export const AuthTestimonials = defineCapsule({
       company: r.company,
       rating: r.rating,
     }))
+    const quoteLayouts = [
+      'xl:col-span-7 xl:-rotate-1',
+      'xl:col-span-5 xl:translate-y-8 xl:rotate-1',
+      'xl:col-span-8 xl:col-start-3 xl:rotate-[0.5deg]',
+    ]
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'overflow-hidden bg-background py-16 sm:py-20 lg:py-28',
+          props.className,
+        )}
+      >
         <Container>
-          <TestimonialGrid heading={heading}>
-            {items.map((t) => {
-              const __iv__ = t as {
-                quote: string
-                name: string
-                role?: string
-                company?: string
-                meta?: string
-                rating?: number
-                avatarAlt?: string
-              }
-              return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:items-start">
+            <div className="relative lg:sticky lg:top-24">
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -left-6 -top-14 select-none font-serif text-[10rem] leading-none text-foreground/[0.06]"
+              >
+                “
+              </span>
+              <SectionHeading
+                title={heading}
+                align="left"
+                className="max-w-lg"
+                titleClassName="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.6rem] lg:leading-[1.12]"
+              />
+              <p className="mt-6 max-w-sm text-sm leading-6 text-pretty text-muted-foreground">
+                Engineers who replaced homegrown auth with Authly, quoted with
+                permission.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-12">
+              {items.map((t, index) => {
+                const meta = [t.role, t.company].filter(Boolean).join(' · ')
+                const rating = Math.max(0, Math.min(5, t.rating ?? 5))
+                return (
+                  <TestimonialCard
+                    key={t.name}
+                    className={cn(
+                      'min-w-0 rounded-2xl bg-card p-6 shadow-sm shadow-foreground/5 sm:p-7',
+                      quoteLayouts[index % quoteLayouts.length],
                     )}
-                  </TestimonialAuthor>
-                </TestimonialCard>
-              )
-            })}
-          </TestimonialGrid>
+                  >
+                    <div className="mb-5 flex items-start justify-between gap-4">
+                      <span className="-mx-6 -mt-6 block w-fit rounded-br-xl border-b border-r border-border bg-muted/70 px-4 py-2 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground sm:-mx-7 sm:-mt-7">
+                        note {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <div
+                        className="flex gap-1 pt-1 text-primary"
+                        aria-hidden="true"
+                      >
+                        {Array.from({ length: rating }).map((_, starIndex) => (
+                          <StarIcon
+                            key={`${t.name}-${starIndex}`}
+                            className="size-4 fill-current"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <TestimonialQuote className="text-pretty text-base leading-7 sm:text-lg sm:leading-8">
+                      “{t.quote}”
+                    </TestimonialQuote>
+                    <TestimonialAuthor className="mt-4 flex-row items-center gap-3 border-t border-border pt-5">
+                      <span
+                        aria-hidden="true"
+                        className="inline-grid size-10 shrink-0 place-items-center rounded-full border border-border bg-muted font-mono text-xs font-bold text-foreground"
+                      >
+                        {initialsFrom(t.name)}
+                      </span>
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <TestimonialName className="text-base">
+                          {t.name}
+                        </TestimonialName>
+                        {meta ? (
+                          <TestimonialMeta className="font-mono text-xs uppercase tracking-[0.12em]">
+                            {meta}
+                          </TestimonialMeta>
+                        ) : null}
+                      </span>
+                    </TestimonialAuthor>
+                  </TestimonialCard>
+                )
+              })}
+            </div>
+          </div>
         </Container>
       </section>
     )

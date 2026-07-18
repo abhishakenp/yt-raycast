@@ -14,6 +14,7 @@ import {
   HeroStatValue,
   HeroStatLabel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -108,7 +109,7 @@ export const FurnitureStoreHero = defineCapsule({
         className={cn('relative bg-muted', props.className)}
         aria-labelledby="furniture-hero-heading"
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="grid min-h-[70vh] lg:min-h-[80vh] lg:grid-cols-2">
             <div className="order-2 flex flex-col justify-center px-4 py-12 sm:px-6 lg:order-1 lg:px-12 lg:py-0">
               <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -176,7 +177,7 @@ export const FurnitureStoreHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

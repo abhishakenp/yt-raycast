@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -25,14 +24,14 @@ import {
  * pinned to the top with a bolt logo mark + store name on the left, a horizontal
  * row of category nav links, and utility icons on the right (product search,
  * Shoo account, cart drawer with a quantity badge, mobile hamburger). Nav links
- * route through useNavigate while utilities use shared Lakebed commerce state.
+ * route through route hrefs while utilities use shared Lakebed commerce state.
  * Use as the sticky site header for electronics stores, gadget shops,
  * consumer-tech retailers, audio/headphone shops, or camera/drone stores.
  */
 export const ElectronicsStoreNavbar = defineCapsule({
   name: 'ElectronicsStoreNavbar',
   description:
-    'Sticky translucent top navigation bar for a premium electronics / gadgets e-commerce storefront: a blurred, border-bottomed header pinned to the top with a bolt logo mark plus store name on the left, horizontal category nav links, and utility icons on the right (product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, mobile drawer). Nav links route through useNavigate while utilities use shared Lakebed commerce state. Use as the sticky site header for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, camera/drone stores, or any modern product-catalog storefront.',
+    'Sticky translucent top navigation bar for a premium electronics / gadgets e-commerce storefront: a blurred, border-bottomed header pinned to the top with a bolt logo mark plus store name on the left, horizontal category nav links, and utility icons on the right (product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, mobile drawer). Nav links route through route hrefs while utilities use shared Lakebed commerce state. Use as the sticky site header for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, camera/drone stores, or any modern product-catalog storefront.',
   props: z.object({
     /** Brand / store name shown in the navbar. */
     brand: z.string().optional(),
@@ -48,7 +47,6 @@ export const ElectronicsStoreNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'TechNova'
     const nav = props.nav?.length
       ? props.nav
@@ -87,22 +85,16 @@ export const ElectronicsStoreNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<BoltMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<BoltMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="gap-6">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

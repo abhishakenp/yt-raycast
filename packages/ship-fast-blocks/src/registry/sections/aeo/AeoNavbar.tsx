@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,7 +26,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * mark beside the product name, desktop nav links (Features, How it works,
  * Pricing, FAQ), and a single "Start Free" pill CTA that routes to pricing. A
  * real mobile drawer (Sheet) appears on small screens and every link routes via
- * useNavigate. Use as the sticky header for AEO, generative-search, or
+ * route hrefs. Use as the sticky header for AEO, generative-search, or
  * brand-citation analytics products. Renders fully with no props via "Citeable"
  * defaults.
  */
@@ -55,7 +54,7 @@ const BrandMark = () => (
 export const AeoNavbar = defineCapsule({
   name: 'AeoNavbar',
   description:
-    "Sticky site header for an Answer-Engine-Optimization (AEO) SaaS with a citation-spark brand mark, centered desktop nav links (Features, How it works, Pricing, FAQ), command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Start Free' CTA, and a real mobile drawer. Navigation routes through useNavigate while search/auth/conversion state is shared through Lakebed. Use as the sticky header for AEO platforms, generative-search visibility tools, or brand-citation analytics products.",
+    "Sticky site header for an Answer-Engine-Optimization (AEO) SaaS with a citation-spark brand mark, centered desktop nav links (Features, How it works, Pricing, FAQ), command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Start Free' CTA, and a real mobile drawer. Navigation routes through route hrefs while search/auth/conversion state is shared through Lakebed. Use as the sticky header for AEO platforms, generative-search visibility tools, or brand-citation analytics products.",
   props: z.object({
     /** Brand / product name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -71,7 +70,6 @@ export const AeoNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Citeable'
     const nav = props.nav?.length
       ? props.nav
@@ -85,22 +83,16 @@ export const AeoNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(props.homeTarget ?? brand)}
-            className="min-w-0 gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<BrandMark />} />
-              <LogoLabel className="truncate text-lg font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={props.homeTarget ?? brand} className="min-w-0 gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<BrandMark />} />
+            <LogoLabel className="truncate text-lg font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

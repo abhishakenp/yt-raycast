@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -72,7 +71,6 @@ export const RestaurantNavbar = defineCapsule({
   }),
   lakebed: restaurantLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Menu', 'About', 'Gallery', 'Reservations', 'Contact']
@@ -88,24 +86,18 @@ export const RestaurantNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<ForkKnifeMark className="size-8 text-primary" />}
-              />
-              <LogoLabel className="font-serif text-xl font-medium text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<ForkKnifeMark className="size-8 text-primary" />}
+            />
+            <LogoLabel className="font-serif text-xl font-medium text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -28,13 +27,13 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * "Dental Care" eyebrow on the left, horizontal nav links on the right
  * (desktop), a filled primary pill CTA (the last nav item, e.g. "Book
  * Appointment"), and a hamburger menu button on mobile. Every link and CTA
- * routes through useNavigate. Use as the sticky site header for dentists,
+ * routes through route hrefs. Use as the sticky site header for dentists,
  * dental offices, orthodontists, or cosmetic / pediatric dental clinics.
  */
 export const DentalNavbar = defineCapsule({
   name: 'DentalNavbar',
   description:
-    "Sticky translucent top navigation bar for a dental practice / dentist site: backdrop-blurred, border-bottomed header with a rounded mint-primary tooth-glyph logo tile + practice name and a 'Dental Care' eyebrow on the left, horizontal nav links on the right (desktop), a filled primary pill CTA built from the last nav item (e.g. 'Book Appointment'), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for dentists, dental offices, orthodontists, or cosmetic / pediatric dental clinics.",
+    "Sticky translucent top navigation bar for a dental practice / dentist site: backdrop-blurred, border-bottomed header with a rounded mint-primary tooth-glyph logo tile + practice name and a 'Dental Care' eyebrow on the left, horizontal nav links on the right (desktop), a filled primary pill CTA built from the last nav item (e.g. 'Book Appointment'), and a hamburger menu button on mobile. All links and CTAs route through route hrefs. Use as the sticky site header for dentists, dental offices, orthodontists, or cosmetic / pediatric dental clinics.",
   props: z.object({
     /** Practice / brand name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -46,7 +45,6 @@ export const DentalNavbar = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Bright Smile'
     const tagline = props.tagline ?? 'Dental Care'
     const nav = props.nav?.length
@@ -87,33 +85,27 @@ export const DentalNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(nav[0])}
-            className="gap-3 text-left"
-          >
-            <BrandLogo brand={brand} className="size-10">
-              <LogoImage
-                className="size-10"
-                fallback={<LogoBadge className="size-10" />}
-              />
-              <LogoLabel />
-            </BrandLogo>
-            <span className="leading-tight">
-              <span className="block text-xl font-semibold text-foreground">
-                {brand}
-              </span>
-              <span className="-mt-1 block text-sm text-muted-foreground">
-                {tagline}
-              </span>
+        <NavbarBrand href={nav[0]} className="gap-3 text-left">
+          <BrandLogo brand={brand} className="size-10">
+            <LogoImage
+              className="size-10"
+              fallback={<LogoBadge className="size-10" />}
+            />
+            <LogoLabel />
+          </BrandLogo>
+          <span className="leading-tight">
+            <span className="block text-xl font-semibold text-foreground">
+              {brand}
             </span>
-          </button>
+            <span className="-mt-1 block text-sm text-muted-foreground">
+              {tagline}
+            </span>
+          </span>
         </NavbarBrand>
 
         <NavbarNav className="[&>button]:font-medium">
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

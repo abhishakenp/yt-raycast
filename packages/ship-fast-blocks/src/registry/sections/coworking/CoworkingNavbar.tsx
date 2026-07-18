@@ -3,7 +3,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -22,7 +21,7 @@ import {
  * gradient tile beside the wordmark, an optional front-desk phone sits
  * right, and the CTA is a primary pill with a shimmer sweep on hover. Small
  * screens get the real shared mobile drawer. All links route through
- * useNavigate. Use as the fixed site header for coworking spaces, shared
+ * route hrefs. Use as the fixed site header for coworking spaces, shared
  * offices, flex-office platforms, or any membership-driven workspace brand.
  * Renders fully with no props via baked-in "Northside" defaults.
  */
@@ -40,7 +39,7 @@ function BrandTile({ letter }: { letter: string }) {
 export const CoworkingNavbar = defineCapsule({
   name: 'CoworkingNavbar',
   description:
-    "Quiet glass site header for a coworking / workspace brand: a fixed full-width frosted bar (always backdrop-blurred, hairline bottom border) that gains a soft shadow after scrolling, with a gradient brand tile, desktop links sharing a hover pill, an optional front-desk phone, a shimmer-on-hover 'Book a Tour' CTA pill, and a real mobile drawer on small screens. All links route through useNavigate. Use as the fixed site header for coworking spaces, shared offices, flex-office platforms, or workspace membership pages.",
+    "Quiet glass site header for a coworking / workspace brand: a fixed full-width frosted bar (always backdrop-blurred, hairline bottom border) that gains a soft shadow after scrolling, with a gradient brand tile, desktop links sharing a hover pill, an optional front-desk phone, a shimmer-on-hover 'Book a Tour' CTA pill, and a real mobile drawer on small screens. All links route through route hrefs. Use as the fixed site header for coworking spaces, shared offices, flex-office platforms, or workspace membership pages.",
   props: z.object({
     /** Brand / workspace name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -57,7 +56,6 @@ export const CoworkingNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const [scrolled, setScrolled] = useState(false)
     const [hovered, setHovered] = useState<string | null>(null)
 
@@ -100,28 +98,21 @@ export const CoworkingNavbar = defineCapsule({
           props.className,
         )}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <Logo brand={brand} className="size-9">
-              <LogoImage
-                className="size-9"
-                fallback={<BrandTile letter={brand.charAt(0).toUpperCase()} />}
-              />
-              <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <Logo brand={brand} className="size-9">
+            <LogoImage
+              className="size-9"
+              fallback={<BrandTile letter={brand.charAt(0).toUpperCase()} />}
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
+          </Logo>
         </NavbarBrand>
 
         <NavbarNav className="gap-1" onMouseLeave={() => setHovered(null)}>
           {nav.map((label) => (
-            <button
+            <NavbarNavLink
               key={label}
-              type="button"
-              onClick={() => go(label)}
+              href={label}
               onMouseEnter={() => setHovered(label)}
               className="relative rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
             >
@@ -132,7 +123,7 @@ export const CoworkingNavbar = defineCapsule({
                 />
               ) : null}
               <span className="relative z-10">{label}</span>
-            </button>
+            </NavbarNavLink>
           ))}
         </NavbarNav>
 
@@ -148,7 +139,7 @@ export const CoworkingNavbar = defineCapsule({
 
           <NavbarCta
             variant="primary-pill"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="group relative hidden overflow-hidden px-5 py-2.5 font-semibold shadow-sm shadow-primary/25 transition-shadow duration-300 hover:shadow-md hover:shadow-primary/30 sm:inline-flex"
           >
             <span

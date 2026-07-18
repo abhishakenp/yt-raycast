@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -26,7 +25,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * header pinned to the top: a decorative check-in-circle logo mark + app name on
  * the left, a horizontal set of nav links in the center, and a primary pill CTA
  * button (e.g. "Download App") plus a mobile hamburger on the right. The brand
- * button, links and CTA all route through useNavigate for page-switching. Use as
+ * button, links and CTA all route through route hrefs for page-switching. Use as
  * the sticky site header for a habit tracker, fitness / wellness / meditation
  * app, productivity or to-do app, or any App-Store-distributed consumer product.
  * Renders fully with no props via baked-in "DailyFlow" defaults.
@@ -34,7 +33,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
 export const MobileAppNavbar = defineCapsule({
   name: 'MobileAppNavbar',
   description:
-    'Fixed, backdrop-blurred top navigation bar for a clean, minimalist mobile-app / consumer-product marketing site: a bordered-bottom header pinned to the top with a check-in-circle logo mark + app name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped download CTA, and a reusable Sheet mobile drawer. Nav links route through useNavigate while conversion CTAs write to shared Lakebed state.',
+    'Fixed, backdrop-blurred top navigation bar for a clean, minimalist mobile-app / consumer-product marketing site: a bordered-bottom header pinned to the top with a check-in-circle logo mark + app name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped download CTA, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / app name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -48,7 +47,6 @@ export const MobileAppNavbar = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'DailyFlow'
     const nav = props.nav?.length
       ? props.nav
@@ -78,22 +76,16 @@ export const MobileAppNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="flex items-center gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

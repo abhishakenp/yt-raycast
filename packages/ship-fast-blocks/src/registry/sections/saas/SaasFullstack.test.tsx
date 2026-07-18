@@ -825,6 +825,8 @@ describe('SaaS fullstack generated section behavior', () => {
         screen.queryByRole('dialog', { name: 'Session history' }),
       ).toBeNull()
     })
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
+    expect(await screen.findByText('Sign out')).toBeTruthy()
     fireEvent.click(screen.getByText('Sign out'))
     fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
 

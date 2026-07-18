@@ -8,6 +8,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * IllustratorStats — a compact dark stats band for an illustrator /
@@ -45,7 +46,7 @@ export const IllustratorStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <StatGrid
             columns={4}
             gap={'wide'}
@@ -67,7 +68,7 @@ export const IllustratorStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

@@ -10,6 +10,7 @@ import {
   PortfolioMedia,
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * IllustratorWork — a selected-work project gallery for an illustrator /
@@ -81,7 +82,7 @@ export const IllustratorWork = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="mb-12 flex flex-col justify-between gap-4 sm:mb-16 sm:flex-row sm:items-end">
             <div>
               <p className="mb-2 text-sm font-medium uppercase tracking-wider text-chart-1">
@@ -123,7 +124,7 @@ export const IllustratorWork = defineCapsule({
               </PortfolioItem>
             ))}
           </PortfolioGrid>
-        </div>
+        </Container>
       </section>
     )
   },

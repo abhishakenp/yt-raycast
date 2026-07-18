@@ -8,6 +8,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /** Inline icon set — currentColor → theme token, adventurous line art. */
 function CityIcon({ className }: { className?: string }) {
@@ -138,7 +139,7 @@ export const TourExperiencesServices = defineCapsule({
 
     return (
       <section className="bg-background px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <FeatureGrid
             heading={props.heading ?? 'Find your kind of adventure'}
             subheading={
@@ -167,7 +168,7 @@ export const TourExperiencesServices = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

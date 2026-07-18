@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -24,7 +23,7 @@ import {
  * EcommerceNavbar — sticky store header for a general online marketplace or
  * retail shop. Renders a bold sans-serif wordmark, category nav, product
  * command search, Shoo account dropdown, shared cart drawer with reactive badge,
- * and a real mobile drawer on small screens. Nav items route through useNavigate
+ * and a real mobile drawer on small screens. Nav items route through route hrefs
  * so labels can drive page-switching. Use as the site header for online stores, marketplaces,
  * electronics/home-goods shops, or any clean modern retail storefront. Renders
  * fully with no props via baked-in "Marketplace" defaults.
@@ -32,7 +31,7 @@ import {
 export const EcommerceNavbar = defineCapsule({
   name: 'EcommerceNavbar',
   description:
-    "Sticky store header for a general online marketplace or retail shop: a bold sans-serif wordmark, category nav (Shop, Categories, Deals, New, Sale), product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a primary 'Shop' CTA pill, and a real mobile drawer. Nav items and the CTA route through useNavigate and labels match the nav array so PageSwitch can swap pages. Use as the site header for online stores, marketplaces, electronics, home goods, multi-category retail, or any clean modern storefront.",
+    "Sticky store header for a general online marketplace or retail shop: a bold sans-serif wordmark, category nav (Shop, Categories, Deals, New, Sale), product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a primary 'Shop' CTA pill, and a real mobile drawer. Nav items and the CTA route through route hrefs and labels match the nav array so PageSwitch can swap pages. Use as the site header for online stores, marketplaces, electronics, home goods, multi-category retail, or any clean modern storefront.",
   props: z.object({
     /** Brand / store name shown as the bold wordmark. */
     brand: z.string().optional(),
@@ -50,7 +49,6 @@ export const EcommerceNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Shop', 'Categories', 'Deals', 'New', 'Sale']
@@ -113,22 +111,19 @@ export const EcommerceNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="text-xl font-bold tracking-tight text-foreground lg:text-2xl"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-              <LogoImage className="mr-2 size-7 align-middle" />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="text-xl font-bold tracking-tight text-foreground lg:text-2xl"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+            <LogoImage className="mr-2 size-7 align-middle" />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="gap-6">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -162,7 +157,7 @@ export const EcommerceNavbar = defineCapsule({
           </CommerceCartButton>
           <NavbarCta
             variant="primary-pill"
-            onClick={() => go(props.shopTarget ?? shopCta)}
+            href={props.shopTarget ?? shopCta}
             className="hidden px-5 py-2.5 sm:inline-flex"
           >
             {shopCta}

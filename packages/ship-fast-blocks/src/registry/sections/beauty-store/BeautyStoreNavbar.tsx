@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -24,14 +23,14 @@ import {
  * cosmetics e-commerce storefront. A blurred, border-bottomed header pinned to the top
  * with the store name (serif) on the left, a horizontal row of category nav links in the
  * center, and utility icons (search, account, cart with badge, mobile menu) on the
- * right. Every link and icon routes through useNavigate. Use as the sticky site header
+ * right. Every link and icon routes through route hrefs. Use as the sticky site header
  * for beauty stores, skincare shops, cosmetics brands, clean beauty retailers, or premium
  * personal-care DTC storefronts.
  */
 export const BeautyStoreNavbar = defineCapsule({
   name: 'BeautyStoreNavbar',
   description:
-    'Sticky translucent top navigation bar for a beauty / skincare / cosmetics e-commerce storefront: a blurred, border-bottomed header pinned to the top with the store name in serif on the left, horizontal category nav links in the center, and utility icons (search, account, cart with a quantity badge, mobile hamburger) on the right. Every link and icon routes through useNavigate. Use as the sticky site header for beauty stores, skincare shops, cosmetics brands, clean beauty retailers, or premium personal-care DTC storefronts.',
+    'Sticky translucent top navigation bar for a beauty / skincare / cosmetics e-commerce storefront: a blurred, border-bottomed header pinned to the top with the store name in serif on the left, horizontal category nav links in the center, and utility icons (search, account, cart with a quantity badge, mobile hamburger) on the right. Every link and icon routes through route hrefs. Use as the sticky site header for beauty stores, skincare shops, cosmetics brands, clean beauty retailers, or premium personal-care DTC storefronts.',
   props: z.object({
     /** Brand / store name shown in the navbar (serif). */
     brand: z.string().optional(),
@@ -47,7 +46,6 @@ export const BeautyStoreNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Lumière'
     const nav = props.nav?.length
       ? props.nav
@@ -112,22 +110,19 @@ export const BeautyStoreNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2 font-serif text-2xl font-semibold tracking-tight text-foreground"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-              <LogoImage className="mr-2 size-7 align-middle" />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="gap-2 font-serif text-2xl font-semibold tracking-tight text-foreground"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+            <LogoImage className="mr-2 size-7 align-middle" />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

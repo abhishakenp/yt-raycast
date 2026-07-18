@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -26,7 +25,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * the top: a heart-in-tile brand mark beside the clinic name on the left, a
  * horizontal set of nav links in the center (desktop), and a phone-number link
  * plus a solid "Book Appointment" primary CTA on the right. Every link and CTA
- * routes through useNavigate so labels can drive page-switching. Use as the
+ * routes through route hrefs so labels can drive page-switching. Use as the
  * sticky site header for doctors' offices, family-medicine practices,
  * pediatric / women's-health / telehealth clinics, hospitals or medical groups.
  * Renders fully with no props via baked-in "Vitality Health Partners" defaults.
@@ -34,7 +33,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 export const HealthcareNavbar = defineCapsule({
   name: 'HealthcareNavbar',
   description:
-    "Sticky translucent top navigation bar for a primary-care / medical-clinic site: backdrop-blurred, border-bottomed header pinned to the top with a heart-in-tile brand mark + clinic name on the left, horizontal nav links in the center (desktop), and a phone-number link plus a solid 'Book Appointment' primary CTA on the right. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for doctors' offices, family-medicine practices, pediatric / women's-health / telehealth clinics, hospitals or medical groups.",
+    "Sticky translucent top navigation bar for a primary-care / medical-clinic site: backdrop-blurred, border-bottomed header pinned to the top with a heart-in-tile brand mark + clinic name on the left, horizontal nav links in the center (desktop), and a phone-number link plus a solid 'Book Appointment' primary CTA on the right. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for doctors' offices, family-medicine practices, pediatric / women's-health / telehealth clinics, hospitals or medical groups.",
   props: z.object({
     /** Clinic / practice name shown beside the brand mark. */
     brand: z.string().optional(),
@@ -50,7 +49,6 @@ export const HealthcareNavbar = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Vitality Health Partners'
     const nav = props.nav?.length
       ? props.nav
@@ -86,27 +84,24 @@ export const HealthcareNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-3">
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<HeartMark className="size-10" />} />
-              <LogoLabel className="text-xl font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<HeartMark className="size-10" />} />
+            <LogoLabel className="text-xl font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="[&>button]:font-medium">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <button
-            type="button"
-            onClick={() => go(phone)}
+          <a
+            href={`tel:${phone.replace(/[^\d+]/g, '')}`}
             className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground lg:flex"
           >
             <svg
@@ -123,7 +118,7 @@ export const HealthcareNavbar = defineCapsule({
               <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
             <span className="font-medium">{phone}</span>
-          </button>
+          </a>
           <LocalServiceIntentBadge lakebed={lakebed} />
           <LocalServiceSearchButton
             lakebed={lakebed}

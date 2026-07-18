@@ -10,6 +10,7 @@ import {
   SplitStoryContent,
   SplitStoryBody,
 } from '#/section-kit/SplitStory.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * IllustratorAbout — a split about / bio band for an illustrator / visual-artist
@@ -76,7 +77,7 @@ export const IllustratorAbout = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <SplitStoryGrid>
             <div className="relative">
               <div className="aspect-[3/4] overflow-hidden rounded-xl">
@@ -124,7 +125,7 @@ export const IllustratorAbout = defineCapsule({
               </div>
             </SplitStoryContent>
           </SplitStoryGrid>
-        </div>
+        </Container>
       </SplitStory>
     )
   },

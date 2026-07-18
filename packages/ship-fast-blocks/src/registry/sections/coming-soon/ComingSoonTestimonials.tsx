@@ -10,6 +10,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ComingSoonTestimonials — early-access testimonial wall for a "launching soon" /
@@ -92,7 +93,7 @@ export const ComingSoonTestimonials = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-6xl">
+        <Container size="lg">
           <TestimonialGrid heading={heading} subheading={description}>
             {gridItems.map((t) => {
               const __iv__ = t as {
@@ -119,7 +120,7 @@ export const ComingSoonTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-        </div>
+        </Container>
       </section>
     )
   },

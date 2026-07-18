@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -22,7 +21,7 @@ import {
  * ComingSoonNavbar — minimal top navigation bar for a "launching soon" / waitlist
  * pre-launch landing page. A clean, airy header with the brand name on the left
  * and two text-link nav items on the right (desktop); the last nav item gets an
- * underlined "active" treatment. Every link routes through useNavigate so labels
+ * underlined "active" treatment. Every link routes through route hrefs so labels
  * can drive page-switching. Use as the site header for SaaS waitlists, app
  * pre-launch pages, beta sign-up landers, or any minimal coming-soon page.
  * Renders fully with no props via baked-in "Nexus" defaults.
@@ -30,7 +29,7 @@ import {
 export const ComingSoonNavbar = defineCapsule({
   name: 'ComingSoonNavbar',
   description:
-    "Minimal top navigation bar for a 'launching soon' / waitlist pre-launch landing page: clean airy header with the brand name on the left and two text-link nav items on the right (desktop), with the last nav item underlined as the active state. Links route through useNavigate for page-switching. Use as the site header for SaaS waitlists, app pre-launch pages, beta sign-up landers, or minimal coming-soon pages.",
+    "Minimal top navigation bar for a 'launching soon' / waitlist pre-launch landing page: clean airy header with the brand name on the left and two text-link nav items on the right (desktop), with the last nav item underlined as the active state. Links route through route hrefs for page-switching. Use as the site header for SaaS waitlists, app pre-launch pages, beta sign-up landers, or minimal coming-soon pages.",
   props: z.object({
     /** Brand / product name shown in the navbar. */
     brand: z.string().optional(),
@@ -40,7 +39,6 @@ export const ComingSoonNavbar = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Nexus'
     const links = props.links?.length
       ? props.links
@@ -54,25 +52,19 @@ export const ComingSoonNavbar = defineCapsule({
         containerClassName="max-w-6xl xl:px-12"
         rowClassName="py-6"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(brand)}
-            aria-label={`${brand} Home`}
-            className="text-xl font-semibold tracking-tight text-foreground"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-              <LogoImage className="mr-2 size-7 align-middle" />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={brand}
+          aria-label={`${brand} Home`}
+          className="text-xl font-semibold tracking-tight text-foreground"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+            <LogoImage className="mr-2 size-7 align-middle" />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarActions className="gap-6">
-          <NavbarNavLink
-            onClick={() => go(links[0])}
-            className="hidden sm:block"
-          >
+          <NavbarNavLink href={links[0]} className="hidden sm:block">
             {links[0]}
           </NavbarNavLink>
           <NewsletterAccountButton

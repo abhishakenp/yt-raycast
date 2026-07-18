@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -20,7 +19,7 @@ import {
  * viewport: an indigo-to-violet gradient zap-glyph logo tile beside the brand
  * name on the left, a horizontal set of nav links in the center (desktop), and
  * a dark "Work with us" pill CTA with a trailing arrow on the right. Every nav
- * item and the CTA route through useNavigate so labels can drive page-switching.
+ * item and the CTA route through route hrefs so labels can drive page-switching.
  * Use as the sticky site header for startups, product studios, agencies, SaaS
  * companies, or any premium brand's about/company page. Renders fully with no
  * props via baked-in "Kinetic Labs" defaults.
@@ -28,7 +27,7 @@ import {
 export const AboutNavbar = defineCapsule({
   name: 'AboutNavbar',
   description:
-    "Glassy sticky top navigation bar for a modern company / ABOUT page: a backdrop-blurred, border-bottomed header pinned to the top with an indigo-to-violet gradient zap-glyph logo tile + brand name on the left, a horizontal set of nav links in the center (desktop), and a dark 'Work with us' pill CTA with a trailing arrow on the right. Every nav item and the CTA route through useNavigate for page-switching. Use as the sticky site header for startups, product studios, agencies, SaaS companies, or any premium brand's about/company page.",
+    "Glassy sticky top navigation bar for a modern company / ABOUT page: a backdrop-blurred, border-bottomed header pinned to the top with an indigo-to-violet gradient zap-glyph logo tile + brand name on the left, a horizontal set of nav links in the center (desktop), and a dark 'Work with us' pill CTA with a trailing arrow on the right. Every nav item and the CTA route through route hrefs for page-switching. Use as the sticky site header for startups, product studios, agencies, SaaS companies, or any premium brand's about/company page.",
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -41,7 +40,6 @@ export const AboutNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Kinetic Labs'
     const nav = props.nav?.length
       ? props.nav
@@ -101,24 +99,21 @@ export const AboutNavbar = defineCapsule({
         )}
         containerClassName="max-w-6xl px-6 sm:px-8 lg:px-12"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(nav[0])}
-            className="gap-2.5 text-[1.05rem] font-extrabold tracking-tight text-foreground"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark />} />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={nav[0]}
+          className="gap-2.5 text-[1.05rem] font-extrabold tracking-tight text-foreground"
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark />} />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="gap-7 text-[0.92rem]">
           {nav.map((label) => (
             <NavbarNavLink
               key={label}
-              onClick={() => go(label)}
+              href={label}
               className="font-normal hover:text-primary"
             >
               {label}
@@ -129,7 +124,7 @@ export const AboutNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="dark"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="gap-2 px-4 py-2.5 font-semibold shadow-sm hover:-translate-y-px hover:shadow-md"
           >
             <span className="hidden sm:inline">{cta}</span>

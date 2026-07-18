@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -27,14 +26,14 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * pinned to the top with a calming "sun/wellness" brand mark + practice name on
  * the left, horizontal nav links on the right (desktop), a filled primary
  * "Book Session" CTA, and a hamburger toggle on mobile. Calm, warm, sage-and-sand
- * wellness aesthetic. Every link and CTA routes through useNavigate. Use as the
+ * wellness aesthetic. Every link and CTA routes through route hrefs. Use as the
  * sticky site header for therapists, counselors, psychologists, psychiatrists,
  * wellness centers, telehealth or behavioral-health practices.
  */
 export const MentalHealthNavbar = defineCapsule({
   name: 'MentalHealthNavbar',
   description:
-    "Sticky, backdrop-blurred top navigation bar for a therapy / counseling / mental-health practice site: a border-bottomed header with a calming 'sun/wellness' brand mark + practice name on the left, horizontal nav links on the right (desktop), a filled primary 'Book Session' CTA, and a mobile hamburger toggle. Calm, warm, sage-and-sand wellness aesthetic. All links and CTAs route through useNavigate. Use as the sticky site header for therapists, counselors, psychologists, psychiatrists, wellness centers, telehealth or behavioral-health practices.",
+    "Sticky, backdrop-blurred top navigation bar for a therapy / counseling / mental-health practice site: a border-bottomed header with a calming 'sun/wellness' brand mark + practice name on the left, horizontal nav links on the right (desktop), a filled primary 'Book Session' CTA, and a mobile hamburger toggle. Calm, warm, sage-and-sand wellness aesthetic. All links and CTAs route through route hrefs. Use as the sticky site header for therapists, counselors, psychologists, psychiatrists, wellness centers, telehealth or behavioral-health practices.",
   props: z.object({
     /** Practice / brand name shown beside the logo. */
     brand: z.string().optional(),
@@ -48,7 +47,6 @@ export const MentalHealthNavbar = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Stillpoint'
     const nav = props.nav?.length
       ? props.nav
@@ -80,26 +78,20 @@ export const MentalHealthNavbar = defineCapsule({
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
         containerClassName="max-w-6xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="flex items-center gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={<LogoMark className="size-8 text-primary" />}
-              />
-              <LogoLabel className="text-xl font-semibold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={<LogoMark className="size-8 text-primary" />}
+            />
+            <LogoLabel className="text-xl font-semibold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="gap-8">
           {nav.slice(0, -1).map((label) => (
             <NavbarNavLink
               key={label}
-              onClick={() => go(label)}
+              href={label}
               className="hover:text-primary"
             >
               {label}

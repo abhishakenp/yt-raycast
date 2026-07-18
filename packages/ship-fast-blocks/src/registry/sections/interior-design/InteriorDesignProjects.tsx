@@ -11,6 +11,7 @@ import {
   PortfolioCaption,
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * InteriorDesignProjects — filterable project portfolio gallery for an upscale
@@ -94,7 +95,7 @@ export const InteriorDesignProjects = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <div className="mb-12 flex flex-col gap-6 md:mb-16 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -163,7 +164,7 @@ export const InteriorDesignProjects = defineCapsule({
               {viewAll}
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

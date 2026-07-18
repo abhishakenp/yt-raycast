@@ -2,10 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
@@ -19,7 +19,7 @@ import {
  * the top: an animated open-book brand mark + platform name on the left,
  * horizontal nav links in the center (desktop), and a "Sign In" text link plus
  * a rounded pill primary CTA on the right. Every link and CTA route through
- * useNavigate so labels drive page-switching. Use as the sticky site header for
+ * route hrefs so labels drive page-switching. Use as the sticky site header for
  * kids-education startups, children's e-learning platforms, family learning
  * apps, tutoring or homeschool services, and playful course marketplaces.
  * Renders fully with no props via baked-in "WonderLearn" defaults.
@@ -27,7 +27,7 @@ import {
 export const KidsEducationNavbar = defineCapsule({
   name: 'KidsEducationNavbar',
   description:
-    "Sticky translucent top navigation bar for a bright, playful kids / family learning platform: backdrop-blurred header with an animated open-book brand mark + platform name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a rounded pill primary CTA on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for kids-education startups, children's e-learning platforms, family learning apps, tutoring or homeschool services, and playful course marketplaces.",
+    "Sticky translucent top navigation bar for a bright, playful kids / family learning platform: backdrop-blurred header with an animated open-book brand mark + platform name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a rounded pill primary CTA on the right. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for kids-education startups, children's e-learning platforms, family learning apps, tutoring or homeschool services, and playful course marketplaces.",
   props: z.object({
     /** Brand / platform name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -44,7 +44,6 @@ export const KidsEducationNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'WonderLearn'
     const nav = props.nav?.length
       ? props.nav
@@ -83,42 +82,35 @@ export const KidsEducationNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="group gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={
-                  <BookMark className="size-10 transition-transform duration-300 group-hover:rotate-12" />
-                }
-              />
-              <LogoLabel className="text-xl font-bold text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="group gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={
+                <BookMark className="size-10 transition-transform duration-300 group-hover:rotate-12" />
+              }
+            />
+            <LogoLabel className="text-xl font-bold text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="[&>button]:font-medium">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <button
-            type="button"
-            onClick={() => go(signInLabel)}
+          <NavbarRouteLink
+            href={signInLabel}
             className="hidden font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
           >
             {signInLabel}
-          </button>
+          </NavbarRouteLink>
           <NavbarCta
             variant="dark-pill"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="px-5 py-2.5 shadow-sm"
           >
             {ctaLabel}

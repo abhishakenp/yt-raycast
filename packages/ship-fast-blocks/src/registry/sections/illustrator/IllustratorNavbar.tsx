@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -25,7 +24,7 @@ import {
  * / visual-artist portfolio. A backdrop-blurred header pinned to the top: a
  * serif wordmark brand on the left, horizontal nav links in the center
  * (desktop), and a pill-shaped "Visit Shop" CTA plus a hamburger menu on the
- * right. Every link and the CTA route through useNavigate so labels drive
+ * right. Every link and the CTA route through route hrefs so labels drive
  * page-switching. Use as the sticky site header for illustrators, painters,
  * picture-book artists, surface designers, or any warm, editorial creative
  * portfolio. Renders fully with no props via baked-in "Mira Chen" defaults.
@@ -33,7 +32,7 @@ import {
 export const IllustratorNavbar = defineCapsule({
   name: 'IllustratorNavbar',
   description:
-    'Sticky translucent top navigation bar for an illustrator / visual-artist portfolio: backdrop-blurred header with a serif wordmark brand on the left, horizontal nav links in the center (desktop), a pill-shaped primary CTA and a hamburger menu on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for illustrators, painters, picture-book artists, surface designers, or warm editorial creative portfolios.',
+    'Sticky translucent top navigation bar for an illustrator / visual-artist portfolio: backdrop-blurred header with a serif wordmark brand on the left, horizontal nav links in the center (desktop), a pill-shaped primary CTA and a hamburger menu on the right. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for illustrators, painters, picture-book artists, surface designers, or warm editorial creative portfolios.',
   props: z.object({
     /** Artist / brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -51,7 +50,6 @@ export const IllustratorNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Mira Chen'
     const nav = props.nav?.length
       ? props.nav
@@ -67,22 +65,19 @@ export const IllustratorNavbar = defineCapsule({
         height="compact"
         className={cn('border-border/60 bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="font-serif text-xl tracking-tight transition-opacity hover:opacity-70 sm:text-2xl"
-          >
-            <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-              <LogoImage className="mr-2 size-7 align-middle" />
-              <LogoLabel />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="font-serif text-xl tracking-tight transition-opacity hover:opacity-70 sm:text-2xl"
+        >
+          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
+            <LogoImage className="mr-2 size-7 align-middle" />
+            <LogoLabel />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -104,7 +99,7 @@ export const IllustratorNavbar = defineCapsule({
           />
           <NavbarCta
             variant="dark-pill"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="hidden px-5 py-2.5 md:inline-flex"
           >
             {ctaLabel}

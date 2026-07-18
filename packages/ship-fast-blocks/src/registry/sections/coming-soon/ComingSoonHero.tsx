@@ -103,10 +103,11 @@ export const ComingSoonHero = defineCapsule({
           >
             {countdown.map((unit) => (
               <div key={unit.label} className="flex flex-col items-center">
-                <HeroStatBadge
-                  className="flex size-16 items-center justify-center rounded-lg sm:size-20"
-                >
-                  <HeroStatBadgeTitle asChild className="text-2xl font-light sm:text-3xl">
+                <HeroStatBadge className="flex size-16 items-center justify-center rounded-lg sm:size-20">
+                  <HeroStatBadgeTitle
+                    asChild
+                    className="text-2xl font-light sm:text-3xl"
+                  >
                     <span>{unit.value}</span>
                   </HeroStatBadgeTitle>
                 </HeroStatBadge>

@@ -2,10 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
+  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
@@ -19,14 +19,14 @@ import {
  * pinned to the top with a high-contrast brand bolt icon + protocol name on
  * the left, a horizontal set of nav links in the center, and a dual button
  * group on the right (secondary text link + primary filled CTA). Every link
- * and CTA routes through useNavigate for page-switching. Use as the sticky
+ * and CTA routes through route hrefs for page-switching. Use as the sticky
  * site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms,
  * bridges, staking networks, or Web3 infrastructure sites.
  */
 export const CryptoNavbar = defineCapsule({
   name: 'CryptoNavbar',
   description:
-    'Glassy sticky top navigation bar for a crypto / DeFi infrastructure landing page: backdrop-blurred, border-bottomed header with a high-contrast brand bolt icon + protocol name on the left, horizontal nav links in the center, and a dual button group on the right (secondary text link + primary filled CTA). All links route through useNavigate. Use as the sticky site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms, bridges, staking networks, or Web3 infrastructure sites.',
+    'Glassy sticky top navigation bar for a crypto / DeFi infrastructure landing page: backdrop-blurred, border-bottomed header with a high-contrast brand bolt icon + protocol name on the left, horizontal nav links in the center, and a dual button group on the right (secondary text link + primary filled CTA). All links route through route hrefs. Use as the sticky site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms, bridges, staking networks, or Web3 infrastructure sites.',
   props: z.object({
     /** Brand / protocol name shown beside the logo icon. */
     brand: z.string().optional(),
@@ -45,7 +45,6 @@ export const CryptoNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'NexusChain'
     const nav = props.nav?.length
       ? props.nav
@@ -79,50 +78,35 @@ export const CryptoNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={
-                  <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-                    <BoltIcon className="size-5" />
-                  </span>
-                }
-              />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={
+                <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
+                  <BoltIcon className="size-5" />
+                </span>
+              }
+            />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink
-              key={label}
-              onClick={() => go(label)}
-              className="font-normal"
-            >
+            <NavbarNavLink key={label} href={label} className="font-normal">
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <button
-            type="button"
-            onClick={() => go(docTarget)}
+          <NavbarRouteLink
+            href={docTarget}
             className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
           >
             {docLabel}
-          </button>
-          <NavbarCta
-            variant="dark"
-            onClick={() => go(ctaTarget)}
-            className="px-4 py-2"
-          >
+          </NavbarRouteLink>
+          <NavbarCta variant="dark" href={ctaTarget} className="px-4 py-2">
             {ctaLabel}
           </NavbarCta>
         </NavbarActions>

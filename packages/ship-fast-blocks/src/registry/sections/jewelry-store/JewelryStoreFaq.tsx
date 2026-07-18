@@ -9,6 +9,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * JewelryStoreFaq — accordion FAQ for a luxury jewelry maison. A centered gold
@@ -77,7 +78,7 @@ export const JewelryStoreFaq = defineCapsule({
         )}
       >
         <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="mx-auto max-w-3xl">
+          <Container size="sm">
             <div className="mb-16 text-center">
               <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
                 {eyebrow}
@@ -101,7 +102,7 @@ export const JewelryStoreFaq = defineCapsule({
                 </FaqItem>
               ))}
             </FaqAccordion>
-          </div>
+          </Container>
         </div>
       </section>
     )

@@ -7,6 +7,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -74,7 +75,7 @@ export const InteriorDesignFaq = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-3xl">
+        <Container size="sm">
           <div className="mb-16 text-center">
             <p className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {eyebrow}
@@ -102,7 +103,7 @@ export const InteriorDesignFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

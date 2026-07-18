@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * InteriorDesignStats — compact metrics band on a muted surface for an upscale
@@ -46,7 +47,7 @@ export const InteriorDesignStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <StatGrid
             columns={4}
             gap={'wide'}
@@ -64,7 +65,7 @@ export const InteriorDesignStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

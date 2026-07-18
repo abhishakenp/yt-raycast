@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -25,13 +24,13 @@ import { eventLakebed } from './event-lakebed.ts'
  * brand-initials mark plus the event name on the left, a horizontal row of nav
  * links in the center, a shared registration badge, a real mobile Sheet menu,
  * and a primary "Get Tickets" CTA on the right. Nav links route through
- * useNavigate; the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences,
+ * route hrefs; the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences,
  * summits, meetups, workshops, festivals, webinars, or any ticketed event.
  */
 export const EventNavbar = defineCapsule({
   name: 'EventNavbar',
   description:
-    "Sticky translucent top navigation bar for a conference / event landing page: a blurred, border-bottomed header pinned to the top with a square brand-initials mark plus the event name on the left, a horizontal row of nav links in the center, a shared Lakebed registration badge, a real mobile Sheet menu, and a primary 'Get Tickets' CTA button on the right. Nav links route through useNavigate, and the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences, summits, meetups, workshops, festivals, webinars, hackathons, or any ticketed event.",
+    "Sticky translucent top navigation bar for a conference / event landing page: a blurred, border-bottomed header pinned to the top with a square brand-initials mark plus the event name on the left, a horizontal row of nav links in the center, a shared Lakebed registration badge, a real mobile Sheet menu, and a primary 'Get Tickets' CTA button on the right. Nav links route through route hrefs, and the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences, summits, meetups, workshops, festivals, webinars, hackathons, or any ticketed event.",
   props: z.object({
     /** Brand / event name shown in the navbar. */
     brand: z.string().optional(),
@@ -47,7 +46,6 @@ export const EventNavbar = defineCapsule({
   }),
   lakebed: eventLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'DesignFront'
     const nav = props.nav?.length
       ? props.nav
@@ -63,31 +61,25 @@ export const EventNavbar = defineCapsule({
         className={cn('bg-background/95 backdrop-blur', props.className)}
         containerClassName="max-w-6xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={
-                  <span
-                    className="grid size-8 place-items-center rounded-lg bg-foreground text-sm font-bold text-background"
-                    aria-hidden="true"
-                  >
-                    {brand.slice(0, 2).toUpperCase()}
-                  </span>
-                }
-              />
-              <LogoLabel className="text-lg font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={
+                <span
+                  className="grid size-8 place-items-center rounded-lg bg-foreground text-sm font-bold text-background"
+                  aria-hidden="true"
+                >
+                  {brand.slice(0, 2).toUpperCase()}
+                </span>
+              }
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="[&>button]:font-normal">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

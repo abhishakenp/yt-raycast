@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,14 +18,14 @@ import {
  * with a wordmark on the left, a centered set of nav links (Classes / Schedule /
  * Teachers / Pricing), a filled primary "Start Free Trial" CTA on the right, and
  * a real mobile drawer (Sheet) on small screens. The wordmark and every nav item
- * route through useNavigate. Use as the opening site navigation for yoga
+ * route through route hrefs. Use as the opening site navigation for yoga
  * studios, movement spaces, pilates studios, and mindfulness centers. Renders
  * fully with no props via baked-in defaults.
  */
 export const YogaStudioNavbar = defineCapsule({
   name: 'YogaStudioNavbar',
   description:
-    "Warm, grounded top navigation for a yoga-studio site built on the shared SiteNav composite: a clean bordered-bottom bar with a wordmark on the left, centered nav links (Classes / Schedule / Teachers / Pricing), a filled primary 'Start Free Trial' CTA on the right, and a real mobile drawer. The wordmark and links route through useNavigate. Use as the opening site navigation for yoga studios, movement spaces, pilates studios, and mindfulness centers.",
+    "Warm, grounded top navigation for a yoga-studio site built on the shared SiteNav composite: a clean bordered-bottom bar with a wordmark on the left, centered nav links (Classes / Schedule / Teachers / Pricing), a filled primary 'Start Free Trial' CTA on the right, and a real mobile drawer. The wordmark and links route through route hrefs. Use as the opening site navigation for yoga studios, movement spaces, pilates studios, and mindfulness centers.",
   props: z.object({
     /** Wordmark / brand name on the left. */
     brand: z.string().optional(),
@@ -44,7 +43,6 @@ export const YogaStudioNavbar = defineCapsule({
     const links = props.links?.length
       ? props.links
       : ['Classes', 'Schedule', 'Teachers', 'Pricing']
-    const go = useNavigate()
     const brand = props.brand ?? 'Grove Yoga'
     const brandClassName = 'text-xl font-bold tracking-tight'
     const ctaLabel = props.cta ?? 'Start Free Trial'
@@ -52,21 +50,15 @@ export const YogaStudioNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? 'Home'
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className={brandClassName} />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className={brandClassName} />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {links.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -75,7 +67,7 @@ export const YogaStudioNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

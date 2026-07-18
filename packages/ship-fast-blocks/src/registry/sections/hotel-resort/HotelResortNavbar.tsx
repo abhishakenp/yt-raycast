@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -35,7 +34,7 @@ import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
 export const HotelResortNavbar = defineCapsule({
   name: 'HotelResortNavbar',
   description:
-    'Fixed translucent top navigation bar for a luxury hotel / resort & spa site: backdrop-blurred, border-bottomed header pinned to the top with a circular brand-initial logo mark + resort name on the left, horizontal nav links in the center (desktop), and a phone number, room search, profile dropdown, booking badge, and a solid Book Now CTA on the right, with a real Sheet menu on mobile. Nav links route through useNavigate for page-switching while booking/profile/search actions use shared Lakebed state. Use as the sticky site header for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
+    'Fixed translucent top navigation bar for a luxury hotel / resort & spa site: backdrop-blurred, border-bottomed header pinned to the top with a circular brand-initial logo mark + resort name on the left, horizontal nav links in the center (desktop), and a phone number, room search, profile dropdown, booking badge, and a solid Book Now CTA on the right, with a real Sheet menu on mobile. Nav links route through route hrefs for page-switching while booking/profile/search actions use shared Lakebed state. Use as the sticky site header for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
   props: z.object({
     /** Resort / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -51,7 +50,6 @@ export const HotelResortNavbar = defineCapsule({
   }),
   lakebed: hotelResortLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Azure Coast'
     const nav = props.nav?.length
       ? props.nav
@@ -79,22 +77,20 @@ export const HotelResortNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
         containerClassName="px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button type="button" onClick={() => go(nav[0])} className="gap-3">
-            <BrandLogo brand={brand}>
-              <LogoImage
-                fallback={
-                  <LogoMark className="size-10 bg-foreground text-lg text-background" />
-                }
-              />
-              <LogoLabel className="text-xl font-medium tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage
+              fallback={
+                <LogoMark className="size-10 bg-foreground text-lg text-background" />
+              }
+            />
+            <LogoLabel className="text-xl font-medium tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -110,13 +106,12 @@ export const HotelResortNavbar = defineCapsule({
             lakebed={lakebed}
             buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
           />
-          <button
-            type="button"
-            onClick={() => go(phone)}
+          <a
+            href={`tel:${phone.replace(/[^\d+]/g, '')}`}
             className="hidden text-sm text-muted-foreground lg:block"
           >
             {phone}
-          </button>
+          </a>
           <HotelBookingActionButton
             lakebed={lakebed}
             intentLabel={bookTarget}

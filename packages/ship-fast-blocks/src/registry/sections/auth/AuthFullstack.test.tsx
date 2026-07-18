@@ -180,6 +180,11 @@ const { AuthNavbar } = await import('./AuthNavbar.tsx')
 const { AuthPricing } = await import('./AuthPricing.tsx')
 const { AuthHero } = await import('./AuthHero.tsx')
 const { AuthCta } = await import('./AuthCta.tsx')
+const { AuthFeatures } = await import('./AuthFeatures.tsx')
+const { AuthSteps } = await import('./AuthSteps.tsx')
+const { AuthStats } = await import('./AuthStats.tsx')
+const { AuthTestimonials } = await import('./AuthTestimonials.tsx')
+const { AuthLogos } = await import('./AuthLogos.tsx')
 
 function testPlan(plan: TestPlanInput, index: number): TestPlan {
   return {
@@ -775,6 +780,9 @@ describe('auth fullstack generated section behavior', () => {
     const historyDialog = await screen.findByRole('dialog', {
       name: 'Session history',
     })
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).toBeNull()
+    })
     expect(within(historyDialog).getByText('Avery Stone')).toBeTruthy()
     expect(within(historyDialog).getByText('avery@example.com')).toBeTruthy()
     expect(within(historyDialog).queryByText('Google via Shoo')).toBeNull()
@@ -801,6 +809,8 @@ describe('auth fullstack generated section behavior', () => {
         screen.queryByRole('dialog', { name: 'Session history' }),
       ).toBeNull()
     })
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Account' }))
+    expect(await screen.findByText('Sign out')).toBeTruthy()
     fireEvent.click(screen.getByText('Sign out'))
     fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
 
@@ -871,6 +881,105 @@ describe('auth fullstack generated section behavior', () => {
     expect(codeWindow?.className).toContain('rounded-2xl')
     expect(screen.getByRole('button', { name: 'Start Building' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Docs' })).toBeTruthy()
+  })
+
+  it('renders AuthPricing as one responsive grid with plan actions', async () => {
+    const { lakebed, state } = createAuthLakebedStub()
+    lakebedRef.current = lakebed
+
+    function AuthProbe() {
+      return AuthPricing.client.component({
+        props: {},
+        statementId: 'auth_pricing',
+      })
+    }
+
+    render(<AuthProbe />)
+
+    const headings = screen.getAllByRole('heading', {
+      name: 'Simple, usage-based pricing',
+    })
+    const grid = document.querySelector('[data-slot="pricing-grid"]')
+    const tiers = document.querySelectorAll('[data-slot="pricing-tier"]')
+
+    expect(headings).toHaveLength(1)
+    expect(grid?.className).toContain('md:grid-cols-2')
+    expect(grid?.className).toContain('xl:grid-cols-3')
+    expect(tiers).toHaveLength(3)
+    expect(tiers[1]?.className).toContain('h-full')
+    expect(tiers[1]?.className).toContain('ring-primary')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start Pro for Pro' }))
+
+    await waitFor(() => {
+      expect(state().intents.at(-1)).toEqual({
+        label: 'Sign Up',
+        plan: 'Pro',
+        source: 'pricing',
+        type: 'trial',
+      })
+    })
+  })
+
+  it('renders auth proof sections as asymmetric operational dossiers', () => {
+    const { lakebed } = createAuthLakebedStub()
+    lakebedRef.current = lakebed
+
+    function AuthProbe() {
+      return (
+        <>
+          {AuthLogos.client.component({
+            props: {},
+            statementId: 'auth_logos',
+          })}
+          {AuthFeatures.client.component({
+            props: {},
+            statementId: 'auth_features',
+          })}
+          {AuthSteps.client.component({
+            props: {},
+            statementId: 'auth_steps',
+          })}
+          {AuthStats.client.component({
+            props: {},
+            statementId: 'auth_stats',
+          })}
+          {AuthTestimonials.client.component({
+            props: {},
+            statementId: 'auth_testimonials',
+          })}
+        </>
+      )
+    }
+
+    render(<AuthProbe />)
+
+    const featureCard = screen
+      .getByText('lead 01')
+      .closest('[data-slot="feature-card"]')
+    const stepCard = screen
+      .getByRole('heading', { name: 'Install the SDK' })
+      .closest('[data-slot="card"]')
+    const statItem = screen
+      .getByText('signal 01')
+      .closest('[data-slot="stat-item"]')
+    const quoteCard = screen
+      .getByText('note 01')
+      .closest('[data-slot="testimonial-card"]')
+    const logoItem = screen
+      .getByText('Northwind')
+      .closest('[data-slot="logo-strip-item"]')
+
+    expect(screen.getByText('feature map')).toBeTruthy()
+    expect(screen.getByText('path preview')).toBeTruthy()
+    expect(screen.getByText('metrics snapshot')).toBeTruthy()
+    expect(featureCard?.className).toContain('md:col-span-2')
+    expect(featureCard?.className).not.toContain('row-span')
+    expect(featureCard?.className).not.toContain('lg:col-span-1')
+    expect(stepCard?.className).toContain('md:col-span-3')
+    expect(statItem?.className).toContain('xl:col-span-3')
+    expect(quoteCard?.className).toContain('xl:col-span-7')
+    expect(logoItem?.className).toContain('md:-rotate-1')
   })
 
   it('scopes auth sign-up loading to the clicked action across hero, pricing, and CTA', async () => {

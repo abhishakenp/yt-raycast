@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -20,7 +19,7 @@ import {
  * links in the center (desktop), and a rounded primary CTA on the right, with a
  * hamburger menu button on mobile. Clean, corporate and trust-forward on a light
  * surface with a deep slate primary. Every link and the CTA route through
- * useNavigate so labels can drive page-switching. Use as the sticky site header
+ * route hrefs so labels can drive page-switching. Use as the sticky site header
  * for logistics providers, freight forwarders, shipping carriers, courier,
  * warehousing, customs-brokerage or cargo/transport companies. Renders fully with
  * no props via baked-in "SwiftFreight" defaults.
@@ -28,7 +27,7 @@ import {
 export const LogisticsNavbar = defineCapsule({
   name: 'LogisticsNavbar',
   description:
-    'Sticky, backdrop-blurred top navigation bar for a global-logistics / freight-forwarding company: a border-bottomed header pinned to the top with a bolt-mark brand tile + wordmark on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right, plus a hamburger menu on mobile. Clean, corporate and trust-forward on a light surface with a deep slate primary. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for logistics providers, freight forwarders, shipping carriers, courier, warehousing, customs-brokerage, supply-chain, fulfillment or cargo/transport companies.',
+    'Sticky, backdrop-blurred top navigation bar for a global-logistics / freight-forwarding company: a border-bottomed header pinned to the top with a bolt-mark brand tile + wordmark on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right, plus a hamburger menu on mobile. Clean, corporate and trust-forward on a light surface with a deep slate primary. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for logistics providers, freight forwarders, shipping carriers, courier, warehousing, customs-brokerage, supply-chain, fulfillment or cargo/transport companies.',
   props: z.object({
     /** Brand / company name shown beside the mark. */
     brand: z.string().optional(),
@@ -43,7 +42,6 @@ export const LogisticsNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'SwiftFreight'
     const nav = props.nav?.length
       ? props.nav
@@ -78,22 +76,16 @@ export const LogisticsNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-2"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav breakpoint="lg">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -102,7 +94,7 @@ export const LogisticsNavbar = defineCapsule({
         <NavbarActions className="gap-4">
           <NavbarCta
             variant="primary"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
             className="hidden sm:inline-flex"
           >
             {cta}

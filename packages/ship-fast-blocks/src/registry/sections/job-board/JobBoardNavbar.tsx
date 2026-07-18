@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -26,7 +25,7 @@ import {
  * viewport: a briefcase brand-mark tile beside the product name on the left, a
  * horizontal set of nav links in the center (desktop), and a "Sign In" text link
  * plus a solid primary "Post a Job" CTA on the right. Every link and CTA routes
- * through useNavigate so labels can drive page-switching. Use as the sticky site
+ * through route hrefs so labels can drive page-switching. Use as the sticky site
  * header for job boards, careers sites, hiring marketplaces, recruiting platforms
  * or talent networks. Renders fully with no props via baked-in "WorkFlow"
  * defaults.
@@ -34,7 +33,7 @@ import {
 export const JobBoardNavbar = defineCapsule({
   name: 'JobBoardNavbar',
   description:
-    "Sticky backdrop-blurred top navigation bar for a job-board / careers marketplace: border-bottomed header pinned to the top with a briefcase brand-mark tile + product name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Post a Job' CTA on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for job boards, careers sites, hiring marketplaces, recruiting platforms or talent networks.",
+    "Sticky backdrop-blurred top navigation bar for a job-board / careers marketplace: border-bottomed header pinned to the top with a briefcase brand-mark tile + product name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Post a Job' CTA on the right. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for job boards, careers sites, hiring marketplaces, recruiting platforms or talent networks.",
   props: z.object({
     /** Brand / product name shown beside the briefcase mark. */
     brand: z.string().optional(),
@@ -50,7 +49,6 @@ export const JobBoardNavbar = defineCapsule({
   }),
   lakebed: jobBoardLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'WorkFlow'
     const nav = props.nav?.length
       ? props.nav
@@ -89,22 +87,19 @@ export const JobBoardNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="flex items-center gap-2 text-foreground"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<BriefcaseMark className="size-8" />} />
-              <LogoLabel className="text-xl font-semibold tracking-tight" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="flex items-center gap-2 text-foreground"
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<BriefcaseMark className="size-8" />} />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}

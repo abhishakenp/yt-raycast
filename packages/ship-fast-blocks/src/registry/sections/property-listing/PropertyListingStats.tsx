@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PropertyListingStats — a marketplace-scale band for a property portal. A
@@ -54,7 +55,7 @@ export const PropertyListingStats = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           {heading || description ? (
             <SectionHeading title={heading} subtitle={description} />
           ) : null}
@@ -69,7 +70,7 @@ export const PropertyListingStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

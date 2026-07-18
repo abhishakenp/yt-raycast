@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import { kitActionClasses } from '#/section-kit/types.ts'
@@ -11,6 +10,7 @@ import {
   NavbarBrand,
   NavbarNav,
   NavbarNavLink,
+  NavbarRouteLink,
   SiteNav,
 } from '#/section-kit/index.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -41,23 +41,24 @@ export const ProductDetailNavbar = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Aurora'
     const nav = props.nav?.length
       ? props.nav
       : ['Overview', 'Features', 'Reviews', 'FAQ']
     const productTitle = props.productTitle ?? 'Aurora Pro Headphones'
     const productPrice = props.productPrice ?? '$299'
-    const cta = props.cta ?? {
-      label: 'Add to Cart',
-      target: 'Overview',
-      variant: 'primary' as const,
-    }
+    const cta =
+      props.cta ??
+      ({
+        label: 'Add to Cart',
+        target: 'Overview',
+        variant: 'primary',
+      } satisfies {
+        label: string
+        target: string
+        variant: 'primary'
+      })
     const ctaAddsProduct = isProductPurchaseIntent(cta.label)
-
-    const runCta = () => {
-      go(cta.target ?? cta.label)
-    }
 
     const mark = (
       <svg
@@ -85,22 +86,16 @@ export const ProductDetailNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
         containerClassName="max-w-7xl px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(nav[0])}
-            className="flex items-center gap-3"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={mark} />
-              <LogoLabel className="text-xl font-medium text-foreground" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand href={nav[0]} className="flex items-center gap-3">
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={mark} />
+            <LogoLabel className="text-xl font-medium text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -129,16 +124,15 @@ export const ProductDetailNavbar = defineCapsule({
               {cta.label}
             </CommerceAddItemButton>
           ) : (
-            <button
-              type="button"
-              onClick={runCta}
+            <NavbarRouteLink
+              href={cta.target ?? cta.label}
               className={cn(
                 kitActionClasses(cta.variant),
                 'hidden items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
               )}
             >
               {cta.label}
-            </button>
+            </NavbarRouteLink>
           )}
 
           <MobileNavDrawer
@@ -170,19 +164,16 @@ export const ProductDetailNavbar = defineCapsule({
                     {cta.label}
                   </CommerceAddItemButton>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      runCta()
-                      close()
-                    }}
+                  <NavbarRouteLink
+                    href={cta.target ?? cta.label}
+                    onClick={close}
                     className={cn(
                       kitActionClasses(cta.variant),
                       'inline-flex flex-1 items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70',
                     )}
                   >
                     {cta.label}
-                  </button>
+                  </NavbarRouteLink>
                 )}
               </div>
             )}

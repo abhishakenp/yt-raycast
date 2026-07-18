@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
@@ -26,7 +25,7 @@ import {
  * marketplace name, centered category nav links on desktop, product command
  * search, Shoo account dropdown, shared cart drawer with reactive badge, a
  * vibrant "Sell on …" seller CTA, and a real mobile drawer on small screens.
- * Every nav item and the CTA route through useNavigate. Use as the sticky site
+ * Every nav item and the CTA route through route hrefs. Use as the sticky site
  * header for online marketplaces, multi-vendor or maker/artisan platforms,
  * handmade/craft stores, and retail aggregators. Renders fully with no props
  * via baked-in "MarketHub" defaults.
@@ -34,7 +33,7 @@ import {
 export const MarketplaceNavbar = defineCapsule({
   name: 'MarketplaceNavbar',
   description:
-    "Sticky site header for a multi-vendor marketplace / e-commerce destination: a solid brand-square logo tile beside the marketplace name, centered category nav links on desktop, product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a vibrant 'Sell on …' seller-onboarding CTA, and a real mobile drawer on small screens. Every nav item and the CTA route through useNavigate. Use as the sticky site header for online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.",
+    "Sticky site header for a multi-vendor marketplace / e-commerce destination: a solid brand-square logo tile beside the marketplace name, centered category nav links on desktop, product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a vibrant 'Sell on …' seller-onboarding CTA, and a real mobile drawer on small screens. Every nav item and the CTA route through route hrefs. Use as the sticky site header for online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.",
   props: z.object({
     /** Brand / marketplace name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -52,7 +51,6 @@ export const MarketplaceNavbar = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'MarketHub'
     const nav = props.nav?.length
       ? props.nav
@@ -83,22 +81,19 @@ export const MarketplaceNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
         containerClassName="max-w-7xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="flex items-center gap-3 text-left"
-          >
-            <BrandLogo brand={brand}>
-              <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
-              <LogoLabel className="text-lg font-bold tracking-tight text-foreground sm:text-xl" />
-            </BrandLogo>
-          </button>
+        <NavbarBrand
+          href={homeTarget}
+          className="flex items-center gap-3 text-left"
+        >
+          <BrandLogo brand={brand}>
+            <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
+            <LogoLabel className="text-lg font-bold tracking-tight text-foreground sm:text-xl" />
+          </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="gap-6">
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -126,7 +121,7 @@ export const MarketplaceNavbar = defineCapsule({
           />
           <NavbarCta
             variant="primary-pill"
-            onClick={() => go(props.ctaTarget ?? 'Sell')}
+            href={props.ctaTarget ?? 'Sell'}
             className="hidden px-5 py-2.5 font-semibold sm:inline-flex"
           >
             {ctaLabel}

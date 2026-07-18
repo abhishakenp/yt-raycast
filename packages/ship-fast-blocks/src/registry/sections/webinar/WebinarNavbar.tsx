@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -63,7 +62,6 @@ export const WebinarNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Overview', 'Agenda', 'Speakers', 'FAQ']
-    const go = useNavigate()
     const brand = props.brand ?? 'Catalyst Labs'
     const brandMark = <BroadcastMark className="size-8 text-primary" />
     const brandClassName = 'font-semibold tracking-tight'
@@ -72,22 +70,16 @@ export const WebinarNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            {brandMark}
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className={brandClassName} />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          {brandMark}
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className={brandClassName} />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -96,7 +88,7 @@ export const WebinarNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {ctaLabel}
           </NavbarCta>

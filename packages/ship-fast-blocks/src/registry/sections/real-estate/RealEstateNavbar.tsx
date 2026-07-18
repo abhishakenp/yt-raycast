@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
@@ -19,13 +18,13 @@ import {
  * inline nav (Buy / Sell / Rent / Agents / Contact) on desktop, and a right
  * cluster with a phone link plus a filled "List a Property" primary CTA. The
  * wordmark, every nav item, the phone link, and the CTA all route through
- * useNavigate. Use as the site header for real-estate brokerages, agent teams,
+ * route hrefs. Use as the site header for real-estate brokerages, agent teams,
  * and luxury property firms. Renders fully with no props via baked defaults.
  */
 export const RealEstateNavbar = defineCapsule({
   name: 'RealEstateNavbar',
   description:
-    "Confident sticky top navigation for a premium real-estate brokerage: a serif wordmark on the left, a centered Buy / Sell / Rent / Agents / Contact inline nav on desktop, and a right cluster with a phone link plus a filled 'List a Property' primary CTA. Wordmark, nav items, phone, and CTA route through useNavigate. Use as the site header for brokerages, agent teams, and luxury property firms.",
+    "Confident sticky top navigation for a premium real-estate brokerage: a serif wordmark on the left, a centered Buy / Sell / Rent / Agents / Contact inline nav on desktop, and a right cluster with a phone link plus a filled 'List a Property' primary CTA. Wordmark, nav items, phone, and CTA route through route hrefs. Use as the site header for brokerages, agent teams, and luxury property firms.",
   props: z.object({
     /** Serif brand wordmark on the left. */
     brand: z.string().optional(),
@@ -48,25 +47,18 @@ export const RealEstateNavbar = defineCapsule({
     const cta = props.cta ?? 'List a Property'
     const ctaTarget = props.ctaTarget ?? 'List'
     const homeTarget = 'Home'
-    const go = useNavigate()
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand asChild>
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="gap-3"
-          >
-            <Logo brand={brand}>
-              <LogoImage />
-              <LogoLabel className="font-serif text-xl font-semibold tracking-tight" />
-            </Logo>
-          </button>
+        <NavbarBrand href={homeTarget} className="gap-3">
+          <Logo brand={brand}>
+            <LogoImage />
+            <LogoLabel className="font-serif text-xl font-semibold tracking-tight" />
+          </Logo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} onClick={() => go(label)}>
+            <NavbarNavLink key={label} href={label}>
               {label}
             </NavbarNavLink>
           ))}
@@ -83,7 +75,7 @@ export const RealEstateNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 sm:inline-flex"
-            onClick={() => go(ctaTarget)}
+            href={ctaTarget}
           >
             {cta}
           </NavbarCta>

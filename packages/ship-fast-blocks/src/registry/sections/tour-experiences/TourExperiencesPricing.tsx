@@ -15,6 +15,7 @@ import {
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * TourExperiencesPricing — tour-package pricing for an adventure / guided-tour
@@ -101,7 +102,7 @@ export const TourExperiencesPricing = defineCapsule({
 
     return (
       <section className="bg-background px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
-        <div className="mx-auto max-w-7xl">
+        <Container size="xl">
           <PricingGrid className={props.className}>
             <SectionHeading
               title={props.heading ?? 'Pick your pace, book your seat'}
@@ -199,7 +200,7 @@ export const TourExperiencesPricing = defineCapsule({
               )
             })}
           </PricingGrid>
-        </div>
+        </Container>
       </section>
     )
   },
