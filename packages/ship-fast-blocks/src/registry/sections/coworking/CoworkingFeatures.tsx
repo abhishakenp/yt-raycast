@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { GridField } from '#/section-kit/motion.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
  * CoworkingFeatures — calm, dimensional amenity grid for a coworking or
@@ -99,10 +100,10 @@ export const CoworkingFeatures = defineCapsule({
     const columns = props.columns ?? 3
     const uniformCols =
       columns === 2
-        ? 'sm:grid-cols-2'
+        ? '1-sm-2'
         : columns === 4
-          ? 'sm:grid-cols-2 lg:grid-cols-4'
-          : 'sm:grid-cols-2 lg:grid-cols-3'
+          ? '1-2-4'
+          : '1-sm-2-lg-3'
     const bentoSpans = [
       'sm:col-span-2 lg:col-span-4',
       'sm:col-span-1 lg:col-span-2',
@@ -159,21 +160,18 @@ export const CoworkingFeatures = defineCapsule({
             </p>
           </div>
 
-          <div
-            className={cn(
-              'mt-14 grid grid-cols-1 gap-5',
-              bento ? 'sm:grid-cols-2 lg:grid-cols-6' : uniformCols,
-            )}
+          <BentoGrid
+            cols={bento ? '1-sm-2-lg-6' : uniformCols}
+            gap="sm"
+            className="mt-14 gap-5"
           >
             {features.map((feature, index) => {
               const Icon = icons[index % icons.length]
               return (
-                <div
+                <BentoTile
                   key={`${feature.title}-${index}`}
-                  className={cn(
-                    'rounded-3xl',
-                    bento && bentoSpans[index % bentoSpans.length],
-                  )}
+                  span={bento ? bentoSpans[index % bentoSpans.length] : ''}
+                  className="rounded-3xl"
                 >
                   <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-8 shadow-sm backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10">
                     <div
@@ -192,10 +190,10 @@ export const CoworkingFeatures = defineCapsule({
                       </p>
                     ) : null}
                   </div>
-                </div>
+                </BentoTile>
               )
             })}
-          </div>
+          </BentoGrid>
         </Container>
       </section>
     )
