@@ -11,6 +11,7 @@ import {
   PortfolioCaption,
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AgencyWork — selected-work / case-study gallery for a creative digital-agency
@@ -105,7 +106,7 @@ export const AgencyWork = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6">
+        <Container size="xl" className="px-6 lg:px-6">
           <div className="mb-16 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -159,7 +160,7 @@ export const AgencyWork = defineCapsule({
               </PortfolioItem>
             ))}
           </PortfolioGrid>
-        </div>
+        </Container>
       </section>
     )
   },

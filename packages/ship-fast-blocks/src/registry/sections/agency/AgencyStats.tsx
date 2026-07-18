@@ -9,6 +9,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AgencyStats — split stats / about band for a creative digital-agency page. A
@@ -54,7 +55,7 @@ export const AgencyStats = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto max-w-7xl px-6">
+        <Container size="xl" className="px-6 lg:px-6">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
               <h2 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -89,7 +90,7 @@ export const AgencyStats = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

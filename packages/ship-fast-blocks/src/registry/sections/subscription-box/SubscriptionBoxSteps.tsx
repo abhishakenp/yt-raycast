@@ -3,7 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StepTimeline, StepTimelineGrid, StepItem } from '#/section-kit/StepTimeline.tsx'
+import {
+  StepTimeline,
+  StepTimelineGrid,
+  StepItem,
+} from '#/section-kit/StepTimeline.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * SubscriptionBoxSteps — bespoke "how it works" band for a subscription-box
@@ -123,7 +128,7 @@ export const SubscriptionBoxSteps = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6">
+        <Container size="xl" className="px-6 lg:px-6">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -153,7 +158,7 @@ export const SubscriptionBoxSteps = defineCapsule({
               )
             })}
           </StepTimelineGrid>
-        </div>
+        </Container>
       </StepTimeline>
     )
   },

@@ -9,6 +9,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AgencyServices — capabilities / services grid for a creative digital-agency
@@ -82,7 +83,7 @@ export const AgencyServices = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6">
+        <Container size="xl" className="px-6 lg:px-6">
           <div className="mb-16 max-w-3xl">
             <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
               {heading}
@@ -111,7 +112,7 @@ export const AgencyServices = defineCapsule({
               )
             })}
           </FeatureGrid>
-        </div>
+        </Container>
       </section>
     )
   },

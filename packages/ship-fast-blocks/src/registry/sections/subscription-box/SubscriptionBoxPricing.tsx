@@ -22,6 +22,7 @@ import {
   PricingTierFeature,
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * SubscriptionBoxPricing — pricing band for a subscription-box brand built on
@@ -136,7 +137,7 @@ export const SubscriptionBoxPricing = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto max-w-7xl px-6">
+        <Container size="xl" className="px-6 lg:px-6">
           <section className="flex flex-col gap-10">
             <SectionHeading title={heading} subtitle={subheading} />
             <PricingGrid className={props.className}>
@@ -240,7 +241,7 @@ export const SubscriptionBoxPricing = defineCapsule({
               })}
             </PricingGrid>
           </section>
-        </div>
+        </Container>
       </section>
     )
   },
