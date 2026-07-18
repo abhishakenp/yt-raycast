@@ -6,6 +6,13 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
+  FeatureListItem,
+  FeatureListItemIcon,
+  FeatureListItemBody,
+  FeatureListItemTitle,
+  FeatureListItemDescription,
+} from '#/section-kit/FeatureListItem.tsx'
+import {
   ContactForm,
   ContactFormField,
   ContactFormLabel,
@@ -313,18 +320,21 @@ export const ContactFormDetails = defineCapsule({
               </h2>
               <div className="flex flex-col gap-6">
                 {detailItems.map((item) => (
-                  <div
+                  <FeatureListItem
                     key={item.label}
-                    className="flex items-start gap-4 rounded-lg border border-transparent bg-muted/40 p-5 transition-all hover:border-border hover:bg-muted/60"
+                    className="rounded-lg border border-transparent bg-muted/40 p-5 transition-all hover:border-border hover:bg-muted/60"
                   >
-                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+                    <FeatureListItemIcon className="grid size-11 place-items-center rounded-xl bg-primary/15 text-primary">
                       {detailIcons[item.icon ?? 'mail']}
-                    </span>
-                    <div>
-                      <h3 className="mb-0.5 text-[0.95rem] font-semibold text-foreground">
-                        {item.label}
-                      </h3>
-                      <p className="text-[0.9rem] leading-[1.5] text-muted-foreground">
+                    </FeatureListItemIcon>
+                    <FeatureListItemBody>
+                      <FeatureListItemTitle
+                        asChild
+                        className="mb-0.5 text-[0.95rem] font-semibold"
+                      >
+                        <h3>{item.label}</h3>
+                      </FeatureListItemTitle>
+                      <FeatureListItemDescription className="text-[0.9rem] leading-[1.5]">
                         {item.value}
                         {item.value2 ? (
                           <>
@@ -332,9 +342,9 @@ export const ContactFormDetails = defineCapsule({
                             {item.value2}
                           </>
                         ) : null}
-                      </p>
-                    </div>
-                  </div>
+                      </FeatureListItemDescription>
+                    </FeatureListItemBody>
+                  </FeatureListItem>
                 ))}
               </div>
 

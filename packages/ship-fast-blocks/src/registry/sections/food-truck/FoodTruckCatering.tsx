@@ -4,6 +4,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
+  FeatureListItem,
+  FeatureListItemIcon,
+  FeatureListItemBody,
+  FeatureListItemTitle,
+  FeatureListItemDescription,
+} from '#/section-kit/FeatureListItem.tsx'
+import {
   ContactForm,
   ContactFormField,
   ContactFormLabel,
@@ -120,8 +127,8 @@ export const FoodTruckCatering = defineCapsule({
 
               <div className="space-y-4 pt-4">
                 {cateringOptions.map((opt) => (
-                  <div key={opt.title} className="flex items-start gap-4">
-                    <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-background/10">
+                  <FeatureListItem key={opt.title}>
+                    <FeatureListItemIcon className="grid size-8 place-items-center rounded-lg bg-background/10">
                       <svg
                         className="size-4"
                         fill="none"
@@ -136,14 +143,16 @@ export const FoodTruckCatering = defineCapsule({
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">{opt.title}</h4>
-                      <p className="text-sm text-background/70">
+                    </FeatureListItemIcon>
+                    <FeatureListItemBody>
+                      <FeatureListItemTitle className="font-semibold">
+                        {opt.title}
+                      </FeatureListItemTitle>
+                      <FeatureListItemDescription className="text-background/70">
                         {opt.description}
-                      </p>
-                    </div>
-                  </div>
+                      </FeatureListItemDescription>
+                    </FeatureListItemBody>
+                  </FeatureListItem>
                 ))}
               </div>
 
