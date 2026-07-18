@@ -7,6 +7,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { TopicGrid } from '#/section-kit/TopicGrid.tsx'
 
 /**
  * NewsroomTopics — an editorial "Browse by section" block for a digital
@@ -126,7 +127,7 @@ export const NewsroomTopics = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{subheading}</p>
           </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <TopicGrid cols="1-2-4" className="gap-8">
             {topics.map((topic) => (
               <Card
                 asChild
@@ -165,7 +166,7 @@ export const NewsroomTopics = defineCapsule({
                 </button>
               </Card>
             ))}
-          </div>
+          </TopicGrid>
         </Container>
       </section>
     )
