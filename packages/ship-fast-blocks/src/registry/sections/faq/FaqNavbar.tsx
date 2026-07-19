@@ -8,10 +8,10 @@ import {
   NavbarActions,
   NavbarRouteLink,
   NavbarBrand,
-  NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
+  SignInButton,
 } from '#/section-kit/index.ts'
 
 /**
@@ -115,9 +115,7 @@ export const FaqNavbar = defineCapsule({
             </svg>
             {contactSupport}
           </NavbarRouteLink>
-          <NavbarCta variant="primary" href={signIn} className="px-4 py-2">
-            {signIn}
-          </NavbarCta>
+          <SignInButton variant="primary" label={signIn} className="shrink-0" />
           <MobileNavDrawer
             brand={brand}
             nav={nav}

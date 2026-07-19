@@ -4,12 +4,12 @@ import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
-  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
+  SignInButton,
 } from '#/section-kit/index.ts'
 
 /**
@@ -88,12 +88,11 @@ export const InvestingNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
-          <NavbarRouteLink
-            href={signIn}
-            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-          >
-            {signIn}
-          </NavbarRouteLink>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden text-sm font-medium sm:block"
+          />
           <NavbarCta variant="primary" href={getStarted} className="px-4 py-2">
             {getStarted}
           </NavbarCta>

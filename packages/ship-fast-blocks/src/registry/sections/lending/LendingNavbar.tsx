@@ -3,12 +3,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import {
   NavbarActions,
-  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
+  SignInButton,
 } from '#/section-kit/index.ts'
 
 /**
@@ -83,12 +83,11 @@ export const LendingNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-4">
-          <NavbarRouteLink
-            href={signIn}
-            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-          >
-            {signIn}
-          </NavbarRouteLink>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden text-sm font-medium sm:block"
+          />
           <NavbarCta variant="primary" href={ctaTarget} className="px-5 py-2.5">
             {cta}
           </NavbarCta>

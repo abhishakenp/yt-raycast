@@ -6,12 +6,12 @@ import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
-  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
+  SignInButton,
 } from '#/section-kit/index.ts'
 
 /**
@@ -85,12 +85,11 @@ export const CommunityForumNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
-          <NavbarRouteLink
-            href={signIn}
-            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-          >
-            {signIn}
-          </NavbarRouteLink>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden text-sm font-medium sm:inline-flex"
+          />
           <NavbarCta variant="primary" href={navCta}>
             {navCta}
           </NavbarCta>

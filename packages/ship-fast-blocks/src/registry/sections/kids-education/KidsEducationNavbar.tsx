@@ -5,12 +5,12 @@ import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
-  NavbarRouteLink,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
+  SignInButton,
 } from '#/section-kit/index.ts'
 
 /**
@@ -102,12 +102,11 @@ export const KidsEducationNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
-          <NavbarRouteLink
-            href={signInLabel}
-            className="hidden font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-          >
-            {signInLabel}
-          </NavbarRouteLink>
+          <SignInButton
+            variant="ghost"
+            label={signInLabel}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="dark-pill"
             href={ctaTarget}
