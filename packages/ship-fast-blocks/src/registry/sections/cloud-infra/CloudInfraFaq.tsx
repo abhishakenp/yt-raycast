@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 import { z } from 'zod/v4'
 
@@ -85,7 +86,7 @@ export const CloudInfraFaq = defineCapsule({
 
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <Container size="4xl">
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -114,7 +115,7 @@ export const CloudInfraFaq = defineCapsule({
               </FaqItem>
             ))}
           </FaqAccordion>
-        </div>
+        </Container>
       </section>
     )
   },

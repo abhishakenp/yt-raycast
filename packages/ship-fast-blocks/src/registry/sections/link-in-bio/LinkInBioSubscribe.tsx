@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
   SubscribeBand,
@@ -58,57 +59,54 @@ export const LinkInBioSubscribe = defineCapsule({
     const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <SubscribeBand
-        className={cn(
-          'mx-auto w-full max-w-md px-6 pt-28 pb-10',
-          props.className,
-        )}
-      >
-        <Card rounded="2xl" className="text-center sm:p-8">
-          <div className="mx-auto grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+      <SubscribeBand className={cn('pt-28 pb-10', props.className)}>
+        <Container className="max-w-md">
+          <Card rounded="2xl" className="text-center sm:p-8">
+            <div className="mx-auto grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+
+            <Eyebrow
+              variant="text"
+              className="mt-4 block font-medium tracking-wider text-accent"
             >
-              <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
+              {eyebrow}
+            </Eyebrow>
+            <SubscribeHeading className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
+              {heading}
+            </SubscribeHeading>
+            <SubscribeDescription className="mt-2 text-sm text-muted-foreground">
+              {subheading}
+            </SubscribeDescription>
 
-          <Eyebrow
-            variant="text"
-            className="mt-4 block font-medium tracking-wider text-accent"
-          >
-            {eyebrow}
-          </Eyebrow>
-          <SubscribeHeading className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
-            {heading}
-          </SubscribeHeading>
-          <SubscribeDescription className="mt-2 text-sm text-muted-foreground">
-            {subheading}
-          </SubscribeDescription>
+            <NewsletterSubscribeForm
+              lakebed={lakebed}
+              source={ctaTarget}
+              placeholder={placeholder}
+              buttonLabel={ctaLabel}
+              successMessage="You're subscribed. New links and drops will arrive by email."
+              className="mt-6 flex flex-col gap-3"
+              inputClassName="w-full rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              buttonClassName="w-full rounded-full bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            />
 
-          <NewsletterSubscribeForm
-            lakebed={lakebed}
-            source={ctaTarget}
-            placeholder={placeholder}
-            buttonLabel={ctaLabel}
-            successMessage="You're subscribed. New links and drops will arrive by email."
-            className="mt-6 flex flex-col gap-3"
-            inputClassName="w-full rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            buttonClassName="w-full rounded-full bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-          />
-
-          <SubscribeFineprint className="mt-3 text-xs text-muted-foreground">
-            {note}
-          </SubscribeFineprint>
-        </Card>
+            <SubscribeFineprint className="mt-3 text-xs text-muted-foreground">
+              {note}
+            </SubscribeFineprint>
+          </Card>
+        </Container>
       </SubscribeBand>
     )
   },

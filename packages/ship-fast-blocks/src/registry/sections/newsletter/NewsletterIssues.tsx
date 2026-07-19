@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import {
   StoryCard,
@@ -140,7 +141,7 @@ export const NewsletterIssues = defineCapsule({
 
     return (
       <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Container size="lg">
           <SectionHeading
             title={heading}
             subtitle={description}
@@ -201,7 +202,7 @@ export const NewsletterIssues = defineCapsule({
               <ArrowRight className="ml-2 size-4" />
             </button>
           </div>
-        </div>
+        </Container>
       </section>
     )
   },

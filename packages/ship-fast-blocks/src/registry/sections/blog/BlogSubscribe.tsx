@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
@@ -59,38 +60,40 @@ export const BlogSubscribe = defineCapsule({
     return (
       <SubscribeBand
         aria-label="Newsletter signup"
-        className={cn('mx-auto w-full max-w-4xl px-6 py-16', props.className)}
+        className={cn('py-16', props.className)}
       >
-        <Card
-          rounded="2xl"
-          padding="lg"
-          className="text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:p-12"
-        >
-          <span className="inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-accent">
-            {eyebrow}
-          </span>
-          <NewsletterCtaHeading className="mt-5 text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
-            {heading}
-          </NewsletterCtaHeading>
-          <NewsletterCtaDescription className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            {subheading}
-          </NewsletterCtaDescription>
-          <SubscribeForm asChild>
-            <PublicationSubscribeForm
-              lakebed={lakebed}
-              source={ctaTarget}
-              placeholder={placeholder}
-              buttonLabel={ctaLabel}
-              successMessage="You're on the list. Watch your inbox for the next edition."
-              className="mx-auto mt-7 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row"
-              inputClassName="w-full flex-1 rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
-              buttonClassName="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-            />
-          </SubscribeForm>
-          <NewsletterCtaFineprint className="mt-4 text-[0.8rem] text-muted-foreground">
-            {note}
-          </NewsletterCtaFineprint>
-        </Card>
+        <Container size="4xl">
+          <Card
+            rounded="2xl"
+            padding="lg"
+            className="text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:p-12"
+          >
+            <span className="inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-accent">
+              {eyebrow}
+            </span>
+            <NewsletterCtaHeading className="mt-5 text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+              {heading}
+            </NewsletterCtaHeading>
+            <NewsletterCtaDescription className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
+              {subheading}
+            </NewsletterCtaDescription>
+            <SubscribeForm asChild>
+              <PublicationSubscribeForm
+                lakebed={lakebed}
+                source={ctaTarget}
+                placeholder={placeholder}
+                buttonLabel={ctaLabel}
+                successMessage="You're on the list. Watch your inbox for the next edition."
+                className="mx-auto mt-7 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row"
+                inputClassName="w-full flex-1 rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+                buttonClassName="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+              />
+            </SubscribeForm>
+            <NewsletterCtaFineprint className="mt-4 text-[0.8rem] text-muted-foreground">
+              {note}
+            </NewsletterCtaFineprint>
+          </Card>
+        </Container>
       </SubscribeBand>
     )
   },

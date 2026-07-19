@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   StoryCard,
   StoryCardImage,
@@ -153,66 +154,68 @@ export const BlogStoryGrid = defineCapsule({
     return (
       <section
         aria-label="Latest articles"
-        className={cn('mx-auto w-full max-w-6xl px-6 pb-14', props.className)}
+        className={cn('pb-14', props.className)}
       >
-        <div className="flex flex-col items-start gap-1.5 py-5 sm:flex-row sm:items-baseline sm:justify-between">
-          <SectionHeading
-            align="left"
-            title={title}
-            className="gap-0"
-            titleClassName="font-serif text-2xl font-bold tracking-tight text-foreground"
-          />
-          <button
-            type="button"
-            onClick={() => go(viewAllTarget)}
-            className="group inline-flex items-center gap-2 text-[0.85rem] font-semibold text-primary"
-          >
-            {viewAll}
-            <Arrow />
-          </button>
-        </div>
+        <Container size="lg">
+          <div className="flex flex-col items-start gap-1.5 py-5 sm:flex-row sm:items-baseline sm:justify-between">
+            <SectionHeading
+              align="left"
+              title={title}
+              className="gap-0"
+              titleClassName="font-serif text-2xl font-bold tracking-tight text-foreground"
+            />
+            <button
+              type="button"
+              onClick={() => go(viewAllTarget)}
+              className="group inline-flex items-center gap-2 text-[0.85rem] font-semibold text-primary"
+            >
+              {viewAll}
+              <Arrow />
+            </button>
+          </div>
 
-        <ArticleGrid cols="1-2-3">
-          {posts.map((post) => (
-            <StoryCard onClick={() => go(postTarget)} variant="bordered">
-              <StoryCardImageContainer>
-                <StoryCardImage
-                  alt={post.alt}
-                  w={800}
-                  h={500}
-                  className="h-[12.5rem]"
-                  variant="bordered"
-                />
-                <StoryCardMeta>
-                  {
-                    <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground shadow-sm backdrop-blur">
-                      {post.tag}
-                    </span>
-                  }
-                </StoryCardMeta>
-              </StoryCardImageContainer>
-              <StoryCardBody>
-                <StoryCardTitle>{post.title}</StoryCardTitle>
-                <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
-                <StoryCardFooter>
-                  {
-                    <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
-                      <span className="inline-flex items-center gap-2.5 text-[0.82rem] font-semibold text-foreground">
-                        <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.625rem] font-bold text-primary-foreground">
-                          {post.author.charAt(0)}
+          <ArticleGrid cols="1-2-3">
+            {posts.map((post) => (
+              <StoryCard onClick={() => go(postTarget)} variant="bordered">
+                <StoryCardImageContainer>
+                  <StoryCardImage
+                    alt={post.alt}
+                    w={800}
+                    h={500}
+                    className="h-[12.5rem]"
+                    variant="bordered"
+                  />
+                  <StoryCardMeta>
+                    {
+                      <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground shadow-sm backdrop-blur">
+                        {post.tag}
+                      </span>
+                    }
+                  </StoryCardMeta>
+                </StoryCardImageContainer>
+                <StoryCardBody>
+                  <StoryCardTitle>{post.title}</StoryCardTitle>
+                  <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
+                  <StoryCardFooter>
+                    {
+                      <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
+                        <span className="inline-flex items-center gap-2.5 text-[0.82rem] font-semibold text-foreground">
+                          <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.625rem] font-bold text-primary-foreground">
+                            {post.author.charAt(0)}
+                          </span>
+                          {post.author}
                         </span>
-                        {post.author}
-                      </span>
-                      <span className="text-[0.78rem] text-muted-foreground">
-                        {post.date}
-                      </span>
-                    </div>
-                  }
-                </StoryCardFooter>
-              </StoryCardBody>
-            </StoryCard>
-          ))}
-        </ArticleGrid>
+                        <span className="text-[0.78rem] text-muted-foreground">
+                          {post.date}
+                        </span>
+                      </div>
+                    }
+                  </StoryCardFooter>
+                </StoryCardBody>
+              </StoryCard>
+            ))}
+          </ArticleGrid>
+        </Container>
       </section>
     )
   },

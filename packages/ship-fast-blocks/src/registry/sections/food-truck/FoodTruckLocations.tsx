@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { LocationBlock, LocationHours } from '#/section-kit/LocationBlock.tsx'
 import {
@@ -133,87 +134,91 @@ export const FoodTruckLocations = defineCapsule({
       <LocationBlock
         className={cn('bg-muted px-6 pt-28 pb-20 border-0', props.className)}
       >
-        <LocationList className="mx-auto max-w-6xl">
-          <SectionHeading
-            eyebrow={locEyebrow}
-            title={locHeading}
-            subtitle={locDesc}
-            align="center"
-            eyebrowClassName="text-muted-foreground tracking-widest"
-            titleClassName="text-3xl font-bold md:text-4xl"
-            subtitleClassName="mx-auto max-w-lg"
-            className="mb-16"
-          />
+        <LocationList>
+          <Container size="lg">
+            <SectionHeading
+              eyebrow={locEyebrow}
+              title={locHeading}
+              subtitle={locDesc}
+              align="center"
+              eyebrowClassName="text-muted-foreground tracking-widest"
+              titleClassName="text-3xl font-bold md:text-4xl"
+              subtitleClassName="mx-auto max-w-lg"
+              className="mb-16"
+            />
 
-          <ResponsiveGrid gap="md" className="md:grid-cols-3">
-            {locDays.map((d, i) => (
-              <LocationItem key={d.day}>
-                <LocationCard>
-                  <div className="mb-4 flex items-center gap-3">
-                    <div
-                      className={cn(
-                        'grid size-12 place-items-center rounded-lg font-bold',
-                        dayAccents[i % dayAccents.length],
-                      )}
-                    >
-                      {d.initial}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{d.day}</h3>
-                      <p className="text-sm text-muted-foreground">{d.area}</p>
-                    </div>
-                  </div>
-                  <LocationHours className="space-y-2 text-sm">
-                    {(d.rows ?? []).map((row) => (
+            <ResponsiveGrid gap="md" className="md:grid-cols-3">
+              {locDays.map((d, i) => (
+                <LocationItem key={d.day}>
+                  <LocationCard>
+                    <div className="mb-4 flex items-center gap-3">
                       <div
-                        key={row.label}
-                        className="flex justify-between gap-4"
+                        className={cn(
+                          'grid size-12 place-items-center rounded-lg font-bold',
+                          dayAccents[i % dayAccents.length],
+                        )}
                       >
-                        <span className="text-muted-foreground">
-                          {row.label}
-                        </span>
-                        <span className="text-right font-medium">
-                          {row.value}
-                        </span>
+                        {d.initial}
                       </div>
-                    ))}
-                  </LocationHours>
-                </LocationCard>
-              </LocationItem>
-            ))}
-          </ResponsiveGrid>
+                      <div>
+                        <h3 className="font-semibold">{d.day}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {d.area}
+                        </p>
+                      </div>
+                    </div>
+                    <LocationHours className="space-y-2 text-sm">
+                      {(d.rows ?? []).map((row) => (
+                        <div
+                          key={row.label}
+                          className="flex justify-between gap-4"
+                        >
+                          <span className="text-muted-foreground">
+                            {row.label}
+                          </span>
+                          <span className="text-right font-medium">
+                            {row.value}
+                          </span>
+                        </div>
+                      ))}
+                    </LocationHours>
+                  </LocationCard>
+                </LocationItem>
+              ))}
+            </ResponsiveGrid>
 
-          <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-xl bg-foreground p-6 text-background md:flex-row">
-            <div className="flex items-center gap-4">
-              <div className="grid size-12 place-items-center rounded-lg bg-background/10">
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+            <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-xl bg-foreground p-6 text-background md:flex-row">
+              <div className="flex items-center gap-4">
+                <div className="grid size-12 place-items-center rounded-lg bg-background/10">
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold">{locBannerTitle}</p>
+                  <p className="text-sm text-background/70">{locBannerNote}</p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold">{locBannerTitle}</p>
-                <p className="text-sm text-background/70">{locBannerNote}</p>
-              </div>
+              <button
+                type="button"
+                onClick={() => go(locBannerCta)}
+                className="rounded-full bg-background px-6 py-2 font-medium text-foreground transition-colors hover:bg-background/90"
+              >
+                {locBannerCta}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => go(locBannerCta)}
-              className="rounded-full bg-background px-6 py-2 font-medium text-foreground transition-colors hover:bg-background/90"
-            >
-              {locBannerCta}
-            </button>
-          </div>
+          </Container>
         </LocationList>
       </LocationBlock>
     )

@@ -8,6 +8,7 @@ import {
   LogoStripLabel,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * AuthLogos — the "cleared partners" registry band for Authly, a developer
@@ -59,13 +60,13 @@ export const AuthLogos = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto flex max-w-4xl items-center gap-5 px-5 sm:px-6">
+        <Container size="4xl" className="flex items-center gap-5 px-5 sm:px-6">
           <span aria-hidden="true" className="h-px flex-1 bg-border" />
           <LogoStripLabel className="shrink font-mono text-[0.68rem] font-medium tracking-[0.14em] text-muted-foreground">
             {eyebrow}
           </LogoStripLabel>
           <span aria-hidden="true" className="h-px flex-1 bg-border" />
-        </div>
+        </Container>
         <div className="mt-9 -mx-4 -rotate-1 border-y-2 border-foreground bg-foreground py-5 sm:-mx-8">
           <Marquee duration={42} gap={20} className="px-4">
             {logos.filter(Boolean).map((logo, index) => (
