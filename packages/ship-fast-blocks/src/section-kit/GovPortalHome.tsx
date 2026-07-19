@@ -6,7 +6,7 @@ import { cn } from '#/lib/utils.ts'
 const GovPortalHome = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & { asChild?: boolean }
->(({ className, asChild, ...props }, ref) => {
+>(({ className, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
