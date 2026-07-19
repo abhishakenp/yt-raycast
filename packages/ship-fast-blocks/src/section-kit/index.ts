@@ -407,6 +407,7 @@ export {
 } from './PathwayGrid.tsx'
 
 export { KpisGrid, KpiTrendArrow } from './KpisGrid.tsx'
+export { MapOverlay, MapPin } from './MapBlock.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

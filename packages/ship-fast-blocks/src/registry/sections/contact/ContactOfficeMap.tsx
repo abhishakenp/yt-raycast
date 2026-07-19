@@ -11,6 +11,7 @@ import {
   LocationMap,
   LocationContact,
 } from '#/section-kit/LocationBlock.tsx'
+import { MapOverlay, MapPin } from '#/section-kit/MapBlock.tsx'
 
 /**
  * ContactOfficeMap — split office information and photo section for a contact page.
@@ -134,26 +135,8 @@ export const ContactOfficeMap = defineCapsule({
                 loading="lazy"
                 className="absolute inset-0 size-full object-cover"
               />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-background/70 via-transparent to-primary/10"
-              />
-              <span className="absolute bottom-4 left-4 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              </span>
+              <MapOverlay />
+              <MapPin />
             </LocationMap>
           </LocationBlock>
         </Container>
