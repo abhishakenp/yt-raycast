@@ -11,6 +11,7 @@ import {
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * EventPlannerStats — impact band pairing a stats column with a photo collage. A
@@ -91,7 +92,7 @@ export const EventPlannerStats = defineCapsule({
                 })}
               </StatGrid>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <ResponsiveGrid cols="2" gap="sm">
               <div className="space-y-4">
                 <Image
                   alt={statsImageAlts[0]}
@@ -124,7 +125,7 @@ export const EventPlannerStats = defineCapsule({
                   className="h-64 w-full rounded-xl object-cover"
                 />
               </div>
-            </div>
+            </ResponsiveGrid>
           </div>
         </Container>
       </section>

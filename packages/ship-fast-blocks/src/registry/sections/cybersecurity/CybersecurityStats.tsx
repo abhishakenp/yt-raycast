@@ -118,14 +118,20 @@ export const CybersecurityStats = defineCapsule({
             })}
           </StatGrid>
           <div className="mt-16 border-t border-background/20 pt-16">
-            <div className="grid gap-8 text-center md:grid-cols-3">
+            <StatGrid columns={3} gap="default" className="text-center">
               {secondary.map((s) => (
-                <div key={s.label}>
-                  <p className="mb-1 text-2xl font-bold">{s.value}</p>
-                  <p className="text-sm text-background/60">{s.label}</p>
-                </div>
+                <StatItem key={s.label} align="center">
+                  <StatValue
+                    size="default"
+                    color="inverted"
+                    className="text-2xl"
+                  >
+                    {s.value}
+                  </StatValue>
+                  <StatLabel color="inverted">{s.label}</StatLabel>
+                </StatItem>
               ))}
-            </div>
+            </StatGrid>
           </div>
         </Container>
       </section>

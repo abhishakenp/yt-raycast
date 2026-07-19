@@ -19,6 +19,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FilmDirectorStats = defineCapsule({
   name: 'FilmDirectorStats',
   description:
@@ -114,7 +115,11 @@ export const FilmDirectorStats = defineCapsule({
               )
             })}
           </StatGrid>
-          <div className="mt-16 grid gap-8 border-t border-border pt-16 md:grid-cols-3">
+          <ResponsiveGrid
+            cols="1-md-3"
+            gap="lg"
+            className="mt-16 border-t border-border pt-16"
+          >
             {statAwards.map((a) => (
               <div key={a.name} className="flex items-center gap-4">
                 <div className="grid size-12 place-items-center rounded-md bg-secondary text-secondary-foreground">
@@ -126,7 +131,7 @@ export const FilmDirectorStats = defineCapsule({
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )
