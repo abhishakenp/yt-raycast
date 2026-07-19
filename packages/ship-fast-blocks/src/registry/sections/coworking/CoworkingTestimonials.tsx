@@ -13,6 +13,7 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CoworkingTestimonials — quiet editorial member-quote wall for a coworking
@@ -143,12 +144,13 @@ export const CoworkingTestimonials = defineCapsule({
                 Member stories
               </span>
             </span>
-            <h2 className="mt-5 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-              {heading}
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-              {subheading}
-            </p>
+            <SectionHeading
+              title={heading}
+              subtitle={subheading}
+              className="mt-5 gap-0"
+              titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+              subtitleClassName="mt-4 text-lg leading-relaxed text-muted-foreground"
+            />
           </div>
 
           <div className="mx-auto mt-16 grid max-w-md grid-cols-1 items-start gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3">

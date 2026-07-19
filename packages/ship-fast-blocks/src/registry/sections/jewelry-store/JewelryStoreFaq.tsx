@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * JewelryStoreFaq — accordion FAQ for a luxury jewelry maison. A centered gold
@@ -79,14 +80,13 @@ export const JewelryStoreFaq = defineCapsule({
       >
         <div className="w-full px-6 lg:px-12 xl:px-20">
           <Container size="sm">
-            <div className="mb-16 text-center">
-              <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
-                {eyebrow}
-              </p>
-              <h2 className="font-serif text-4xl text-foreground lg:text-5xl">
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              className="mb-16 gap-0"
+              eyebrowClassName="mb-4 text-sm uppercase tracking-[0.3em] text-primary"
+              titleClassName="font-serif text-4xl text-foreground lg:text-5xl"
+            />
             <FaqAccordion>
               {items.map((f) => (
                 <FaqItem key={f.question} variant="muted">

@@ -22,6 +22,7 @@ import {
  * or online-ordering platforms.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   RestaurantList,
   RestaurantItem,
@@ -184,14 +185,14 @@ export const FoodDeliveryRestaurants = defineCapsule({
       >
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {restaurantsHeading}
-              </h2>
-              <p className="mt-2 text-lg text-muted-foreground">
-                {restaurantsDesc}
-              </p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={restaurantsHeading}
+              subtitle={restaurantsDesc}
+              className="gap-0"
+              titleClassName="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="mt-2 text-lg text-muted-foreground"
+            />
             <button
               type="button"
               onClick={() =>

@@ -12,6 +12,7 @@ import {
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * AgencyWork — selected-work / case-study gallery for a creative digital-agency
@@ -108,14 +109,14 @@ export const AgencyWork = defineCapsule({
       >
         <Container size="xl" className="px-6 lg:px-6">
           <div className="mb-16 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div>
-              <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-                {heading}
-              </h2>
-              <p className="max-w-xl text-lg text-muted-foreground">
-                {description}
-              </p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleClassName="mb-4 text-4xl font-bold tracking-tight sm:text-5xl"
+              subtitleClassName="max-w-xl text-lg text-muted-foreground"
+            />
             <button
               type="button"
               onClick={() => go(viewAll)}

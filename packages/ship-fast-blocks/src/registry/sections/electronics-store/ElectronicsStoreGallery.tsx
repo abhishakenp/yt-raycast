@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -75,9 +76,12 @@ export const ElectronicsStoreGallery = defineCapsule({
     return (
       <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
         <Container>
-          <h2 className="mb-8 text-2xl font-semibold text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-8 gap-0"
+            titleClassName="text-2xl font-semibold text-foreground"
+          />
           <GalleryGrid>
             <GalleryGridItems columns={3}>
               {items

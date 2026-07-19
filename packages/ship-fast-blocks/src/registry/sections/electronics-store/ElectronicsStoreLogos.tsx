@@ -30,8 +30,7 @@ export const ElectronicsStoreLogos = defineCapsule({
     const brands = props.brands?.length
       ? props.brands
       : ['Apple', 'Sony', 'Samsung', 'Bose', 'Logitech', 'DJI']
-    const caption =
-      props.caption ?? 'Trusted by leading electronics brands'
+    const caption = props.caption ?? 'Trusted by leading electronics brands'
     return (
       <LogoStrip
         className={cn('border-b border-border py-12', props.className)}

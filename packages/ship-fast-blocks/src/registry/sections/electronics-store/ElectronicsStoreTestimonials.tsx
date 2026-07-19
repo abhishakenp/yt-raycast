@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -72,9 +73,11 @@ export const ElectronicsStoreTestimonials = defineCapsule({
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
         <Container>
-          <h2 className="mb-12 text-center text-2xl font-semibold text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            title={heading}
+            className="mb-12 gap-0"
+            titleClassName="text-2xl font-semibold text-foreground"
+          />
           <TestimonialGrid columns={3}>
             {items.map((t) => {
               const __iv__ = t as {

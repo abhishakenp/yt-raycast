@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -65,7 +66,11 @@ export const FoodTruckFaq = defineCapsule({
             <span className="text-sm uppercase tracking-widest text-muted-foreground">
               {faqEyebrow}
             </span>
-            <h2 className="text-3xl font-bold md:text-4xl">{faqHeading}</h2>
+            <SectionHeading
+              title={faqHeading}
+              className="gap-0"
+              titleClassName="text-3xl font-bold md:text-4xl"
+            />
           </div>
           <FaqAccordion>
             {faqItems.map((item) => (

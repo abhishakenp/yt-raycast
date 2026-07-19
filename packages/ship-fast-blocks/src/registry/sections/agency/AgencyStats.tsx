@@ -10,6 +10,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * AgencyStats — split stats / about band for a creative digital-agency page. A
@@ -58,12 +59,14 @@ export const AgencyStats = defineCapsule({
         <Container size="xl" className="px-6 lg:px-6">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
-              <h2 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl">
-                {heading}
-              </h2>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-                {description}
-              </p>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="mb-8 gap-0"
+                titleClassName="mb-8 text-4xl font-bold tracking-tight sm:text-5xl"
+                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+              />
               <StatGrid columns={2}>
                 {items.map((s) => {
                   const __iv__ = s as { value: string; label: string }

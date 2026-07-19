@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 export const FoodDeliverySteps = defineCapsule({
   name: 'FoodDeliverySteps',
@@ -62,12 +63,13 @@ export const FoodDeliverySteps = defineCapsule({
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {stepsHeading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">{stepsDesc}</p>
-          </div>
+          <SectionHeading
+            title={stepsHeading}
+            subtitle={stepsDesc}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="mt-4 text-lg text-muted-foreground"
+          />
           <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {stepItems.map((step, i) => (
               <div key={step.title} className="text-center">

@@ -17,6 +17,7 @@ import {
   PieceSpecs,
 } from '#/section-kit/PiecesGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -156,14 +157,14 @@ export const JewelryStorePieces = defineCapsule({
       >
         <Container size="xl" className="sm:px-4">
           <div className="mb-16 flex flex-col lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
-                {eyebrow}
-              </p>
-              <h2 className="font-serif text-4xl text-foreground lg:text-5xl">
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-4 text-sm uppercase tracking-[0.3em] text-primary"
+              titleClassName="font-serif text-4xl text-foreground lg:text-5xl"
+            />
             <button
               type="button"
               onClick={() => go(viewAll)}

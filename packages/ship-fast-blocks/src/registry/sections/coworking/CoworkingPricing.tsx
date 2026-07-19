@@ -7,6 +7,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
   PricingGrid,
@@ -163,12 +164,13 @@ export const CoworkingPricing = defineCapsule({
             >
               Membership plans
             </Eyebrow>
-            <h2 className="mt-5 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-              {heading}
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-              {subheading}
-            </p>
+            <SectionHeading
+              title={heading}
+              subtitle={subheading}
+              className="mt-5 gap-0"
+              titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+              subtitleClassName="mt-4 text-lg leading-relaxed text-muted-foreground"
+            />
           </div>
 
           <PricingGrid

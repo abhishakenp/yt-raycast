@@ -9,6 +9,7 @@ import {
   GalleryMasonryColumn,
 } from '#/section-kit/GalleryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * FoodTruckGallery — a masonry-style food GALLERY section. A centered eyebrow +
@@ -49,7 +50,11 @@ export const FoodTruckGallery = defineCapsule({
             <span className="text-sm uppercase tracking-widest text-muted-foreground">
               {galleryEyebrow}
             </span>
-            <h2 className="text-3xl font-bold md:text-4xl">{galleryHeading}</h2>
+            <SectionHeading
+              title={galleryHeading}
+              className="gap-0"
+              titleClassName="text-3xl font-bold md:text-4xl"
+            />
           </div>
           <GalleryMasonry columns="1-3">
             {[0, 1, 2].map((col) => (

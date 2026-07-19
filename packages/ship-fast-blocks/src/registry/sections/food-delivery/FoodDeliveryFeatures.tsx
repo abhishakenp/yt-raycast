@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -66,12 +67,13 @@ export const FoodDeliveryFeatures = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {featuresHeading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">{featuresDesc}</p>
-          </div>
+          <SectionHeading
+            title={featuresHeading}
+            subtitle={featuresDesc}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="mt-4 text-lg text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {featureItems.map((f) => {
               const __iv__ = f as {

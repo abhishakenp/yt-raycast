@@ -13,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CategoryGrid, CategoryCard } from '#/section-kit/CategoryGrid.tsx'
 export const ElectronicsStoreCategories = defineCapsule({
   name: 'ElectronicsStoreCategories',
@@ -89,9 +90,12 @@ export const ElectronicsStoreCategories = defineCapsule({
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
         <Container>
-          <h2 className="mb-8 text-2xl font-semibold text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-8 gap-0"
+            titleClassName="text-2xl font-semibold text-foreground"
+          />
           <CategoryGrid cols="2-lg-4" gap="sm">
             {items.map((c) => (
               <CategoryCard asChild key={c.name}>

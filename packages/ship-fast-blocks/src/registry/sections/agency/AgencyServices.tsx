@@ -10,6 +10,7 @@ import {
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * AgencyServices — capabilities / services grid for a creative digital-agency
@@ -84,14 +85,14 @@ export const AgencyServices = defineCapsule({
         )}
       >
         <Container size="xl" className="px-6 lg:px-6">
-          <div className="mb-16 max-w-3xl">
-            <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            align="left"
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-6 text-4xl font-bold tracking-tight sm:text-5xl"
+            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {items.map((f) => {
               const __iv__ = f as {

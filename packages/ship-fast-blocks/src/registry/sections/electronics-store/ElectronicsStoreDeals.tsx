@@ -29,6 +29,7 @@ import {
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { DealsGrid } from '#/section-kit/DealsGrid.tsx'
 export const ElectronicsStoreDeals = defineCapsule({
   name: 'ElectronicsStoreDeals',
@@ -157,12 +158,14 @@ export const ElectronicsStoreDeals = defineCapsule({
       >
         <Container>
           <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="mb-2 text-3xl font-semibold text-background">
-                {heading}
-              </h2>
-              <p className="text-background/60">{description}</p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleClassName="mb-2 text-3xl font-semibold text-background"
+              subtitleClassName="text-background/60"
+            />
             <div className="flex items-center gap-4 rounded-lg bg-background/10 p-4">
               <span className="text-sm text-background/60">
                 {countdownLabel}

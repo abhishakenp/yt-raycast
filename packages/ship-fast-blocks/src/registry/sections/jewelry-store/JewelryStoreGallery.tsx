@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryMasonry,
   GalleryMasonryColumn,
@@ -54,14 +55,13 @@ export const JewelryStoreGallery = defineCapsule({
         )}
       >
         <div className="w-full px-6 lg:px-12 xl:px-20">
-          <div className="mx-auto mb-20 max-w-2xl text-center">
-            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">
-              {eyebrow}
-            </p>
-            <h2 className="font-serif text-4xl text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-20 max-w-2xl gap-0"
+            eyebrowClassName="mb-4 text-sm uppercase tracking-[0.3em] text-primary"
+            titleClassName="font-serif text-4xl text-foreground lg:text-5xl"
+          />
           <GalleryMasonry columns="1-3">
             <GalleryMasonryColumn>
               <MasonryTile treatment="3-4-card">

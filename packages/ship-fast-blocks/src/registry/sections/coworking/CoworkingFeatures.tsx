@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { GridField } from '#/section-kit/motion.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
 
 /**
@@ -99,11 +100,7 @@ export const CoworkingFeatures = defineCapsule({
     const bento = !authored?.length && props.columns == null
     const columns = props.columns ?? 3
     const uniformCols =
-      columns === 2
-        ? '1-sm-2'
-        : columns === 4
-          ? '1-2-4'
-          : '1-sm-2-lg-3'
+      columns === 2 ? '1-sm-2' : columns === 4 ? '1-2-4' : '1-sm-2-lg-3'
     const bentoSpans = [
       'sm:col-span-2 lg:col-span-4',
       'sm:col-span-1 lg:col-span-2',
@@ -151,9 +148,12 @@ export const CoworkingFeatures = defineCapsule({
                   Amenities
                 </span>
               </span>
-              <h2 className="mt-5 max-w-xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-                {heading}
-              </h2>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="mt-5 max-w-xl gap-0"
+                titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+              />
             </div>
             <p className="text-lg leading-relaxed text-muted-foreground lg:pb-1">
               {subheading}

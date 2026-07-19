@@ -31,6 +31,7 @@ import {
  * Lakebed cart; chips and view-all route through useNavigate. Use as the main catalog grid on electronics or gadget storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const ElectronicsStoreProducts = defineCapsule({
   name: 'ElectronicsStoreProducts',
@@ -186,9 +187,12 @@ export const ElectronicsStoreProducts = defineCapsule({
       <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
         <Container>
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-2xl font-semibold text-foreground">
-              {heading}
-            </h2>
+            <SectionHeading
+              align="left"
+              title={heading}
+              className="gap-0"
+              titleClassName="text-2xl font-semibold text-foreground"
+            />
             <div className="flex gap-2">
               {filters.map((f, i) => (
                 <FilterChip
