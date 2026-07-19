@@ -140,6 +140,7 @@ const CommandSearchInput = React.forwardRef<
     <CommandInput
       ref={setInputRef}
       aria-label={ariaLabel}
+      data-slot="command-search-input"
       className={className}
       {...props}
     />
@@ -151,14 +152,21 @@ const CommandSearchList = React.forwardRef<
   React.ComponentRef<typeof CommandList>,
   React.ComponentProps<typeof CommandList>
 >(({ className, ...props }, ref) => (
-  <CommandList ref={ref} className={className} {...props} />
+  <CommandList
+    ref={ref}
+    data-slot="command-search-list"
+    className={className}
+    {...props}
+  />
 ))
 CommandSearchList.displayName = 'CommandSearchList'
 
 const CommandSearchEmpty = React.forwardRef<
   React.ComponentRef<typeof CommandEmpty>,
   React.ComponentProps<typeof CommandEmpty>
->((props, ref) => <CommandEmpty ref={ref} {...props} />)
+>((props, ref) => (
+  <CommandEmpty ref={ref} data-slot="command-search-empty" {...props} />
+))
 CommandSearchEmpty.displayName = 'CommandSearchEmpty'
 
 type CommandSearchGroupProps = Omit<
